@@ -249,28 +249,9 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     # new "signal"
     syd2=syd-meansigvb
 
-    # prepare stimulus and response-regressors
-    h=pupil_kernel(fs=fsd) ## pupil kernel
-
-    # event-onsets for each event
-    x1 = np.zeros((event_onsets.size, syd.size), dtype=np.float) # onsets
-
-    # event-onsets as indices of the txd array
-    evon_ix=np.argmin(np.abs(np.tile(event_onsets, (syd.size,1)).T-txd), axis=1)
-    x1[ np.arange(event_onsets.size), evon_ix ]=1
-
-    # convolve with PRF to get single-trial regressors
-    vprint(10, "Building PRF regressors with shape %s"%str(x1.shape))    
-    for i in range(event_onsets.size):
-        x1[i,]=np.convolve(x1[i,], h, mode="full")[0:x1[i,].size]
-    vprint(10, "Done building PRF regressors with shape %s"%str(x1.shape))        
-    
-    ## we use a non-negative least squares solver to force the PRF-coefficients to be positive
-    vprint(10, "Estimating PRF model (NNLS) with shape %s"%str(x1.shape))    
-    coef=scipy.optimize.nnls(x1.T, syd2)[0]
-    pred=np.dot(x1.T, coef)  ## predicted signal
-    resid=syd2-pred         ## residual
-    vprint(10, "Done estimating PRF model (NNLS) with shape %s"%str(x1.shape))    
+    vprint(10, "Estimating PRF model (NNLS)")    
+    coef,pred,resid=pupilresponse_nnls(txd,syd2,event_onsets,fs=fsd)
+    vprint(10, "Done Estimating PRF model (NNLS)")
     
     ### 2nd iteration
     ## get new peaks
