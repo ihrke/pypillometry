@@ -75,7 +75,7 @@ def generate_pupil_data(event_onsets, fs=1000, baseline_lowpass=0.2,
     noise=noise_amp*np.mean(x0)*np.random.randn(n)
     
     sy = x0 + amp*x1 + amp*x2 + noise
-    return (tx,sy,x0,deltas)
+    return (tx,sy,x0,delta_weights)
 
 
 def get_dataset(ntrials=100, isi=2, rtdist=(1,0.5),fs=1000,pad=5.0):
