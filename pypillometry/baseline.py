@@ -8,6 +8,38 @@ from scipy.interpolate import interp1d, splrep, splev
 
 from .pupil import *
 
+def bspline(txd, knots, spline_degree=3):
+    """
+    Re-implementation from https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html.
+    Similar behaviour as R's bs() function from the splines-library.
+    """
+    n=txd.shape[0]
+    num_knots=knots.shape[0]
+
+    def build_b_spline(t, ext_knots, ind, order):
+        n=t.shape[0]
+        b_spline=np.zeros(n)
+        w1=np.zeros(n)
+        w2=np.zeros(n)
+        if order==1:
+            b_spline=np.zeros(n)
+            b_spline[np.logical_and(t>=ext_knots[ind], t<ext_knots[ind+1]) ]=1
+        else:
+            if ext_knots[ind] != ext_knots[ind+order-1]:
+                w1=(t-np.array([ext_knots[ind]]*n))/(ext_knots[ind+order-1]-ext_knots[ind])
+            if ext_knots[ind+1]!=ext_knots[ind+order]:
+                w2=1-(t-np.array([ext_knots[ind+1]]*n))/(ext_knots[ind+order]-ext_knots[ind+1])
+            b_spline=w1*build_b_spline(t,ext_knots,ind,order-1)+w2*build_b_spline(t,ext_knots,ind+1,order-1)
+        return b_spline
+
+    num_basis = num_knots + spline_degree - 1; # total number of B-splines
+    B=np.zeros( (num_basis, n) )
+    ext_knots=np.concatenate( ([knots[0]]*spline_degree, knots, 
+                              [knots[num_knots-1]]*spline_degree) )
+    for i in range(num_basis):
+        B[i,:] = build_b_spline(txd, ext_knots, i, spline_degree+1)
+    B[num_basis-1,n-1]=1
+    return B.T
 
 # filter-functions for baseline-regressor
 def butter_lowpass(cutoff, fs, order=5):
@@ -20,7 +52,6 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
     b, a = butter_lowpass(cutoff, fs, order=order)
     y = signal.filtfilt(b, a, data)
     return y
-
 
 def downsample(y,R):
     """

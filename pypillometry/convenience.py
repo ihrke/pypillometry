@@ -5,6 +5,16 @@ def nprange(ar):
 
 
 def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None, figsize=(16,8)):
+    """
+    Plotting with interactive adjustment of plotting window.
+    To use this, do
+
+    $ pip install ipywidgets
+    $ jupyter nbextension enable --py widgetsnbextension
+    $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+    """
+    import pylab as plt
     from ipywidgets import interact, interactive, fixed, interact_manual, Layout
     import ipywidgets as widgets
 

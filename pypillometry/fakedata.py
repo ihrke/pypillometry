@@ -76,3 +76,26 @@ def generate_pupil_data(event_onsets, fs=1000, baseline_lowpass=0.2,
     
     sy = x0 + amp*x1 + amp*x2 + noise
     return (tx,sy,x0,deltas)
+
+
+def get_dataset(ntrials=100, isi=2, rtdist=(1,0.5),fs=1000,pad=5.0):
+    """
+    Convenience function to run `generate_pupil_data()` with standard parameters.
+
+    ntrials=100
+    isi=2 # inter-stimulus-interval
+    rtdist=(1,0.5) # reaction times (mean,sd)
+    fs=1000 # sampling rate
+    pad=5.0 ## padding for signal in seconds
+    """
+    stim_onsets=np.arange(ntrials)*isi+pad
+    rts=stats.truncnorm.rvs( (0-rtdist[0])/rtdist[1], np.inf, loc=rtdist[0], scale=rtdist[1], size=ntrials)
+    resp_onsets=stim_onsets+rts
+    event_onsets=np.concatenate( (stim_onsets, resp_onsets) )
+
+    tx,sy,baseline,response_coef=generate_pupil_data(event_onsets, fs=fs, 
+                                                     baseline_lowpass=0.1, 
+                                                     evoked_response_perc=0.001,
+                                                     noise_amp=0.0002, 
+                                                     prop_spurious_events=0.2)
+    return tx,sy,baseline,event_onsets, response_coef
