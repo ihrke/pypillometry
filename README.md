@@ -1,4 +1,6 @@
 # pypillometry
+![](https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png)
+
 pupillometry with python
 
 
