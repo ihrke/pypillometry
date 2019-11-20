@@ -1,3 +1,9 @@
+"""
+baseline.py
+===========
+
+Functions for estimating tonic pupillary fluctuations (baseline).
+"""
 import numpy as np
 import scipy.signal as signal
 import scipy

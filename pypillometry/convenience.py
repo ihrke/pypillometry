@@ -1,3 +1,10 @@
+"""
+convenience.py
+==============
+
+Some convenience functions.
+"""
+
 import numpy as np
 
 def nprange(ar):

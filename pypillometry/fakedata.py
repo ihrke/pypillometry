@@ -1,3 +1,9 @@
+"""
+fakedata.py
+====================================
+
+Generate artificial pupil-data.
+"""
 import numpy as np
 import scipy.stats as stats
 

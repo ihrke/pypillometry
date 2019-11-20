@@ -1,3 +1,9 @@
+"""
+Pypillometry
+============
+
+This is a python-package to help with processing of pupillometric data.
+"""
 from .baseline import *
 from .convenience import *
 from .fakedata import *

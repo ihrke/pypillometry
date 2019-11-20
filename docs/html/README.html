@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Python Module Index &#8212; pypillometry  documentation</title>
+    <title>pypillometry &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -15,14 +15,11 @@
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
-
 
   </head><body>
   
@@ -34,44 +31,36 @@
 
           <div class="body" role="main">
             
-
-   <h1>Python Module Index</h1>
-
-   <div class="modindex-jumpbox">
-   <a href="#cap-p"><strong>p</strong></a>
-   </div>
-
-   <table class="indextable modindextable">
-     <tr class="pcap"><td></td><td>&#160;</td><td></td></tr>
-     <tr class="cap" id="cap-p"><td></td><td>
-       <strong>p</strong></td><td></td></tr>
-     <tr>
-       <td><img src="_static/minus.png" class="toggler"
-              id="toggle-1" style="display: none" alt="-" /></td>
-       <td>
-       <a href="index.html#module-pypillometry"><code class="xref">pypillometry</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="index.html#module-pypillometry.baseline"><code class="xref">pypillometry.baseline</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="index.html#module-pypillometry.convenience"><code class="xref">pypillometry.convenience</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="index.html#module-pypillometry.fakedata"><code class="xref">pypillometry.fakedata</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="index.html#module-pypillometry.pupil"><code class="xref">pypillometry.pupil</code></a></td><td>
-       <em></em></td></tr>
-   </table>
+  <div class="section" id="pypillometry">
+<h1>pypillometry<a class="headerlink" href="#pypillometry" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW"><img alt="" src="https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW" /></a>
+<p>pupillometry with python</p>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="using-conda">
+<h3>Using <code class="docutils literal notranslate"><span class="pre">conda</span></code><a class="headerlink" href="#using-conda" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ conda create -n pypil python=3
+$ conda activate pypil
+$ conda install anaconda
+$ conda activate pypil
+</pre></div>
+</div>
+<p>To enable plotting widgets in jupyter notebook and jupyter lab</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ conda install ipywidgets nodejs
+$ jupyter nbextension enable --py widgetsnbextension
+$ jupyter labextension install @jupyter-widgets/jupyterlab-manager
+</pre></div>
+</div>
+<p>For <code class="docutils literal notranslate"><span class="pre">pystan</span></code>, I needed to do</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pystan</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">gcc_linux</span><span class="o">-</span><span class="mi">64</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">gxx_linux</span><span class="o">-</span><span class="mi">64</span>
+</pre></div>
+</div>
+<p>otherwise, there were random crashes of the jupyter kernel for some reason.</p>
+</div>
+</div>
+</div>
 
 
           </div>
@@ -130,6 +119,9 @@
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
+      |
+      <a href="_sources/README.md.txt"
+          rel="nofollow">Page source</a>
     </div>
 
     

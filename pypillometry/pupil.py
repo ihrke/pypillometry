@@ -1,3 +1,9 @@
+"""
+pupil.py
+========
+
+functions related to pupillary responses.
+"""
 import numpy as np
 import scipy.optimize
 
@@ -6,17 +12,10 @@ def pupil_kernel(duration=4, fs=1000, npar=10.1, tmax=930.0):
     According to Hoeks and Levelt (1993, 
     https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf), 
     the PRF can be described by the so-called Erlang gamma function
-    $$
-    h_{HL}(t) = t^n e^{-nt/t_{max}}
-    $$
+    $$h_{HL}(t) = t^n e^{-nt/t_{max}}$$
     which we normalize to
-    $$
-    h(t)=\frac{1}{h_{max}} h_{HL}(t) 
-    $$
-    where 
-    $$
-    h_{max} = \max_t{\left(h_{HL}(t)\right)} = e^{-n}t_{max}^{n}
-    $$
+    $$h(t)=\\frac{1}{h_{max}} h_{HL}(t)$$
+    where $$h_{max} = \max_t{\\left(h_{HL}(t)\\right)} = e^{-n}t_{max}^{n}$$
     which yields a maximum value of 1 for this function. 
     The function $h(t)$ is implemented in `pp.pupil_kernel()`.
     
@@ -65,7 +64,7 @@ def pupilresponse_nnls(tx, sy, event_onsets, fs, npar=10.1, tmax=930):
         sampling rate in Hz
         
     npar,tmax: float
-        parameters for `pupil_kernel()`
+        parameters for :py:func:`pypillometry.pupil.pupil_kernel()`
         
     Returns:
     --------

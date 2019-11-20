@@ -12,6 +12,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -34,7 +35,317 @@
 <h1>Welcome to pypillometry’s documentation!<a class="headerlink" href="#welcome-to-pypillometry-s-documentation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<span class="target" id="module-pypillometry"></span></div>
+</div>
+<div class="section" id="pypillometry">
+<h1>pypillometry<a class="headerlink" href="#pypillometry" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW"><img alt="" src="https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW" /></a>
+<p>pupillometry with python</p>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="using-conda">
+<h3>Using <code class="docutils literal notranslate"><span class="pre">conda</span></code><a class="headerlink" href="#using-conda" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ conda create -n pypil python=3
+$ conda activate pypil
+$ conda install anaconda
+$ conda activate pypil
+</pre></div>
+</div>
+<p>To enable plotting widgets in jupyter notebook and jupyter lab</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ conda install ipywidgets nodejs
+$ jupyter nbextension enable --py widgetsnbextension
+$ jupyter labextension install @jupyter-widgets/jupyterlab-manager
+</pre></div>
+</div>
+<p>For <code class="docutils literal notranslate"><span class="pre">pystan</span></code>, I needed to do</p>
+<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pystan</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">gcc_linux</span><span class="o">-</span><span class="mi">64</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">gxx_linux</span><span class="o">-</span><span class="mi">64</span>
+</pre></div>
+</div>
+<p>otherwise, there were random crashes of the jupyter kernel for some reason.</p>
+<span class="target" id="module-pypillometry"></span><div class="section" id="id1">
+<h4>Pypillometry<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>This is a python-package to help with processing of pupillometric data.</p>
+</div>
+<span class="target" id="module-pypillometry.fakedata"></span><div class="section" id="fakedata-py">
+<h4>fakedata.py<a class="headerlink" href="#fakedata-py" title="Permalink to this headline">¶</a></h4>
+<p>Generate artificial pupil-data.</p>
+<dl class="function">
+<dt id="pypillometry.fakedata.generate_pupil_data">
+<code class="sig-prename descclassname">pypillometry.fakedata.</code><code class="sig-name descname">generate_pupil_data</code><span class="sig-paren">(</span><em class="sig-param">event_onsets</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">baseline_lowpass=0.2</em>, <em class="sig-param">evoked_response_perc=0.02</em>, <em class="sig-param">response_fluct_sd=1</em>, <em class="sig-param">prop_spurious_events=0.5</em>, <em class="sig-param">noise_amp=0.0005</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.fakedata.generate_pupil_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate artificial pupil data as a sum of slow baseline-fluctuations
+on which event-evoked responses are “riding”.</p>
+<dl class="simple">
+<dt>event_onsets: list</dt><dd><p>list of all events that evoke a response (in seconds)</p>
+</dd>
+<dt>fs: float</dt><dd><p>sampling rate in Hz</p>
+</dd>
+<dt>baseline_lowpass: float</dt><dd><p>cutoff for the lowpass-filter that defines the baseline
+(highest allowed frequency in the baseline fluctuations)</p>
+</dd>
+<dt>evoked_response_perc: float</dt><dd><p>amplitude of the pupil-response as proportion of the baseline</p>
+</dd>
+<dt>response_fluct_sd: float</dt><dd><p>How much do the amplitudes of the individual events fluctuate?
+This is determined by drawing each individual pupil-response to
+a single event from a (positive) normal distribution with mean as determined
+by <cite>evoked_response_perc</cite> and sd <cite>response_fluct_sd</cite> (in units of
+<cite>evoked_response_perc</cite>).</p>
+</dd>
+<dt>prop_spurious_events: float</dt><dd><p>Add random events to the pupil signal. <cite>prop_spurious_events</cite> is expressed
+as proportion of the number of real events.</p>
+</dd>
+<dt>noise_amp: float</dt><dd><p>Amplitude of random gaussian noise that sits on top of the simulated signal.
+Expressed in units of mean baseline pupil diameter.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>tx, sy: np.array</dt><dd><p>time and simulated pupil-dilation (n)</p>
+</dd>
+<dt>x0: np.array</dt><dd><p>baseline (n)</p>
+</dd>
+<dt>delta_weights: np.array</dt><dd><p>pupil-response strengths (len(event_onsets))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.fakedata.get_dataset">
+<code class="sig-prename descclassname">pypillometry.fakedata.</code><code class="sig-name descname">get_dataset</code><span class="sig-paren">(</span><em class="sig-param">ntrials=100</em>, <em class="sig-param">isi=2</em>, <em class="sig-param">rtdist=(1</em>, <em class="sig-param">0.5)</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">pad=5.0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.fakedata.get_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function to run <cite>generate_pupil_data()</cite> with standard parameters.</p>
+<p>ntrials=100
+isi=2 # inter-stimulus-interval
+rtdist=(1,0.5) # reaction times (mean,sd)
+fs=1000 # sampling rate
+pad=5.0 ## padding for signal in seconds</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-pypillometry.baseline"></span><div class="section" id="baseline-py">
+<h4>baseline.py<a class="headerlink" href="#baseline-py" title="Permalink to this headline">¶</a></h4>
+<p>Functions for estimating tonic pupillary fluctuations (baseline).</p>
+<dl class="function">
+<dt id="pypillometry.baseline.baseline_envelope">
+<code class="sig-prename descclassname">pypillometry.baseline.</code><code class="sig-name descname">baseline_envelope</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">lp=2</em>, <em class="sig-param">prominence_thr=80</em>, <em class="sig-param">interp_method='cubic'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.baseline.baseline_envelope" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract baseline based on the lower envelope of the (filtered) signal.</p>
+<p>Steps:</p>
+<ul class="simple">
+<li><p>filter away noise</p></li>
+<li><p>detect high-prominence throughs in the signal</p></li>
+<li><p>calculate lower envelope based on these peaks</p></li>
+</ul>
+<dl>
+<dt>tx<span class="classifier">np.ndarray</span></dt><dd><p>time-vector in seconds</p>
+</dd>
+<dt>sy<span class="classifier">np.ndarray</span></dt><dd><p>raw pupil signal</p>
+</dd>
+<dt>event_onsets<span class="classifier">list</span></dt><dd><p>onsets of events (stimuli/responses) in seconds</p>
+</dd>
+<dt>fs<span class="classifier">float</span></dt><dd><p>sampling rate in Hz</p>
+</dd>
+<dt>lp<span class="classifier">float</span></dt><dd><p>low-pass filter cutoff for removing random noise</p>
+</dd>
+<dt>prominence_thr<span class="classifier">float in [0,100]</span></dt><dd><p>percentile of the prominence distribution (of the peaks) to
+use for determining prominent peaks (see <cite>scipy.stats.peak_prominences()</cite>)</p>
+</dd>
+<dt>interp_method<span class="classifier">string, one of [“linear”, “cubic”, “spline”]</span></dt><dd><p>“linear” - linear interpolation between the high-prominence peaks
+“cubic”  - cubic interpolation through all high-prominence peaks
+“spline” - a smoothing spline that is guaranteed to go through all</p>
+<blockquote>
+<div><p>high-prominence peaks and smoothes through all the other
+(lower-prominence) peaks</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.baseline.baseline_envelope_iter_bspline">
+<code class="sig-prename descclassname">pypillometry.baseline.</code><code class="sig-name descname">baseline_envelope_iter_bspline</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets</em>, <em class="sig-param">fs</em>, <em class="sig-param">fsd=10</em>, <em class="sig-param">lp=2</em>, <em class="sig-param">lam_sig=1</em>, <em class="sig-param">lam_min=1</em>, <em class="sig-param">lam_max=100</em>, <em class="sig-param">verbose=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.baseline.baseline_envelope_iter_bspline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract baseline based (re-)estimating the lower envelope using B-splines.
+See notebook <cite>baseline_interp.ipynb</cite> for details.
+The signal is downsampled (to <cite>fsd</cite> Hz) for speed.</p>
+<dl class="simple">
+<dt>tx<span class="classifier">np.ndarray</span></dt><dd><p>time-vector in seconds</p>
+</dd>
+<dt>sy<span class="classifier">np.ndarray</span></dt><dd><p>raw pupil signal</p>
+</dd>
+<dt>event_onsets<span class="classifier">list</span></dt><dd><p>onsets of events (stimuli/responses) in seconds</p>
+</dd>
+<dt>fs<span class="classifier">float</span></dt><dd><p>sampling rate in Hz</p>
+</dd>
+<dt>fsd<span class="classifier">float</span></dt><dd><p>downsampled sampling rate (if too slow, decrease)</p>
+</dd>
+<dt>lp<span class="classifier">float</span></dt><dd><p>lowpass-filter cutoff (Hz)</p>
+</dd>
+<dt>lam_sig: float</dt><dd><p>parameter steering how much the baseline is shaped by the non-peaks of the signal</p>
+</dd>
+<dt>lam_min,lam_max: float</dt><dd><p>parameters mapping how much low- and high-prominence peaks influence the baseline</p>
+</dd>
+<dt>verbose: int [0, 100]</dt><dd><p>how much information to print (0 nothing, 100 everything)</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>(txd,syd,base2,base1)<span class="classifier">tuple</span></dt><dd><p>txd: downsampled time-array
+syd: downsampled and lowpass-filtered pupil signal
+base1: is the estimated base after the first round
+base2: is the final baseline estimate</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.baseline.baseline_pupil_model">
+<code class="sig-prename descclassname">pypillometry.baseline.</code><code class="sig-name descname">baseline_pupil_model</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">lp1=2</em>, <em class="sig-param">lp2=0.2</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.baseline.baseline_pupil_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract baseline based on filtering after removing stim-locked activity.</p>
+<p>Steps:</p>
+<ul class="simple">
+<li><p>filter away noise</p></li>
+<li><p>regress out event-locked activity from the filtered signal using NNLS</p></li>
+<li><p>remove modeled signal from filtered data</p></li>
+<li><p>run another lowpass-filter to get rid of spurious signals</p></li>
+</ul>
+<dl class="simple">
+<dt>tx<span class="classifier">np.ndarray</span></dt><dd><p>time-vector in seconds</p>
+</dd>
+<dt>sy<span class="classifier">np.ndarray</span></dt><dd><p>raw pupil signal</p>
+</dd>
+<dt>event_onsets<span class="classifier">list</span></dt><dd><p>onsets of events (stimuli/responses) in seconds</p>
+</dd>
+<dt>fs<span class="classifier">float</span></dt><dd><p>sampling rate in Hz</p>
+</dd>
+<dt>lp1<span class="classifier">float</span></dt><dd><p>low-pass filter cutoff for removing random noise</p>
+</dd>
+<dt>lp2<span class="classifier">float</span></dt><dd><p>low-pass filter cutoff for removing spurious peaks from the baseline-signal</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.baseline.bspline">
+<code class="sig-prename descclassname">pypillometry.baseline.</code><code class="sig-name descname">bspline</code><span class="sig-paren">(</span><em class="sig-param">txd</em>, <em class="sig-param">knots</em>, <em class="sig-param">spline_degree=3</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.baseline.bspline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Re-implementation from <a class="reference external" href="https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html">https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html</a>.
+Similar behaviour as R’s bs() function from the splines-library.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.baseline.downsample">
+<code class="sig-prename descclassname">pypillometry.baseline.</code><code class="sig-name descname">downsample</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">R</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.baseline.downsample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple downsampling scheme using mean within the downsampling window.</p>
+<dl class="simple">
+<dt>y: np.array</dt><dd><p>signal to downsample</p>
+</dd>
+<dt>R: int</dt><dd><p>decimate-factor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<span class="target" id="module-pypillometry.pupil"></span><div class="section" id="pupil-py">
+<h4>pupil.py<a class="headerlink" href="#pupil-py" title="Permalink to this headline">¶</a></h4>
+<p>functions related to pupillary responses.</p>
+<dl class="function">
+<dt id="pypillometry.pupil.pupil_kernel">
+<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupil_kernel</code><span class="sig-paren">(</span><em class="sig-param">duration=4</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">npar=10.1</em>, <em class="sig-param">tmax=930.0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupil_kernel" title="Permalink to this definition">¶</a></dt>
+<dd><p>According to Hoeks and Levelt (1993,
+<a class="reference external" href="https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf">https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf</a>),
+the PRF can be described by the so-called Erlang gamma function
+$$h_{HL}(t) = t^n e^{-nt/t_{max}}$$
+which we normalize to
+$$h(t)=\frac{1}{h_{max}} h_{HL}(t)$$
+where $$h_{max} = \max_t{\left(h_{HL}(t)\right)} = e^{-n}t_{max}^{n}$$
+which yields a maximum value of 1 for this function.
+The function <span class="math notranslate nohighlight">\(h(t)\)</span> is implemented in <cite>pp.pupil_kernel()</cite>.</p>
+<dl class="simple">
+<dt>duration: float</dt><dd><p>maximum of the time window for which to calculate the PRF [0,duration]</p>
+</dd>
+<dt>fs: float</dt><dd><p>sampling rate for resolving the PRF</p>
+</dd>
+<dt>npar: float</dt><dd><p>n in the equation above</p>
+</dd>
+<dt>tmax: float</dt><dd><p>t_{max} in the equation above</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>h: np.array</dt><dd><p>sampled version of h(t) over the interval [0,`duration`] with sampling rate <cite>fs</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.pupil.pupilresponse_nnls">
+<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupilresponse_nnls</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets</em>, <em class="sig-param">fs</em>, <em class="sig-param">npar=10.1</em>, <em class="sig-param">tmax=930</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupilresponse_nnls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate single-event pupil responses based on canonical PRF (<cite>pupil_kernel()</cite>)
+using non-negative least-squares (NNLS).</p>
+<dl class="simple">
+<dt>tx<span class="classifier">np.ndarray</span></dt><dd><p>time-vector in seconds</p>
+</dd>
+<dt>sy<span class="classifier">np.ndarray</span></dt><dd><p>probably baseline-corrected pupil signal</p>
+</dd>
+<dt>event_onsets<span class="classifier">list</span></dt><dd><p>onsets of events (stimuli/responses) in seconds</p>
+</dd>
+<dt>fs<span class="classifier">float</span></dt><dd><p>sampling rate in Hz</p>
+</dd>
+<dt>npar,tmax: float</dt><dd><p>parameters for <a class="reference internal" href="#pypillometry.pupil.pupil_kernel" title="pypillometry.pupil.pupil_kernel"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_kernel()</span></code></a></p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>(coef,pred,resid): tuple</dt><dd><p>coef: purely-positive regression coefficients
+pred: predicted signal
+resid: residuals (sy-pred)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<span class="target" id="module-pypillometry.convenience"></span><div class="section" id="convenience-py">
+<h4>convenience.py<a class="headerlink" href="#convenience-py" title="Permalink to this headline">¶</a></h4>
+<p>Some convenience functions.</p>
+<dl class="function">
+<dt id="pypillometry.convenience.StanModel_cache">
+<code class="sig-prename descclassname">pypillometry.convenience.</code><code class="sig-name descname">StanModel_cache</code><span class="sig-paren">(</span><em class="sig-param">model_code</em>, <em class="sig-param">model_name=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.convenience.StanModel_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use just as you would <cite>stan</cite></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.convenience.p_asym_laplac">
+<code class="sig-prename descclassname">pypillometry.convenience.</code><code class="sig-name descname">p_asym_laplac</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">mu</em>, <em class="sig-param">sigma</em>, <em class="sig-param">tau</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.convenience.p_asym_laplac" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asymmetric laplace distribution <a class="reference external" href="https://en.wikipedia.org/wiki/Asymmetric_Laplace_distribution">https://en.wikipedia.org/wiki/Asymmetric_Laplace_distribution</a>;
+Parametrization as here: <a class="reference external" href="https://github.com/stan-dev/stan/issues/2312">https://github.com/stan-dev/stan/issues/2312</a></p>
+<p>tau in [0,1]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.convenience.p_asym_laplac_kappa">
+<code class="sig-prename descclassname">pypillometry.convenience.</code><code class="sig-name descname">p_asym_laplac_kappa</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">mu</em>, <em class="sig-param">lam</em>, <em class="sig-param">kappa</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.convenience.p_asym_laplac_kappa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Asymmetric laplace distribution <a class="reference external" href="https://en.wikipedia.org/wiki/Asymmetric_Laplace_distribution">https://en.wikipedia.org/wiki/Asymmetric_Laplace_distribution</a>;
+Wikipedia parametrization.</p>
+<p>kappa in [0, infty] where 1 means symmetry</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.convenience.plot_pupil_ipy">
+<code class="sig-prename descclassname">pypillometry.convenience.</code><code class="sig-name descname">plot_pupil_ipy</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">overlays=None</em>, <em class="sig-param">overlay_labels=None</em>, <em class="sig-param">figsize=(16</em>, <em class="sig-param">8)</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.convenience.plot_pupil_ipy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plotting with interactive adjustment of plotting window.
+To use this, do</p>
+<p>$ pip install ipywidgets
+$ jupyter nbextension enable –py widgetsnbextension
+$ jupyter labextension install &#64;jupyter-widgets/jupyterlab-manager</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.convenience.trans_logistic_vec">
+<code class="sig-prename descclassname">pypillometry.convenience.</code><code class="sig-name descname">trans_logistic_vec</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">a</em>, <em class="sig-param">b</em>, <em class="sig-param">inverse=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.convenience.trans_logistic_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>vectorized version of trans_logistic()</p>
+<p>goes from [a,b] to [-inf,+inf] and back;
+inverse=False: [a,b] -&gt; [-inf, +inf]
+inverse=True:  [-inf,+inf] -&gt; [a,b]
+if a or b is +/-infty, a logarithmic/exponential transform is used</p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+</div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
@@ -51,6 +362,9 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo"/>
+            </a></p>
 <h1 class="logo"><a href="#">pypillometry</a></h1>
 
 
