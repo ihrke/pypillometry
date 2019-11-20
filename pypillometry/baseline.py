@@ -83,6 +83,22 @@ def bspline(txd, knots, spline_degree=3):
     """
     Re-implementation from https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html.
     Similar behaviour as R's bs() function from the splines-library.
+    
+    Parameters
+    -----------
+    
+    txd: np.array
+        time-vector
+    knots: np.array
+        location of the knots
+    spline_degree: int
+        degree of the spline
+        
+    Returns
+    --------
+    
+    B: np.array
+        matrix of basis functions
     """
     n=txd.shape[0]
     num_knots=knots.shape[0]
@@ -112,14 +128,53 @@ def bspline(txd, knots, spline_degree=3):
     B[num_basis-1,n-1]=1
     return B.T
 
-# filter-functions for baseline-regressor
 def butter_lowpass(cutoff, fs, order=5):
+    """
+    Get lowpass-filter coefficients for Butterworth-filter.
+    
+    Parameters
+    -----------
+    
+    cutoff: float
+        lowpass-filter cutoff
+    fs: float
+        sampling rate
+    order: int
+        filter order
+        
+    Returns
+    -------
+    
+    (b,a): tuple (float,float)
+        filter coefficients
+    """
     nyq = 0.5 * fs
     normal_cutoff = cutoff / nyq
     b, a = signal.butter(order, normal_cutoff, btype='low', analog=False)
     return b, a
 
 def butter_lowpass_filter(data, cutoff, fs, order=5):
+    """
+    Lowpass-filter signal using a Butterworth-filter.
+    
+    Parameters
+    -----------
+    
+    data: np.array
+        data to lowpass-filter
+    cutoff: float
+        lowpass-filter cutoff
+    fs: float
+        sampling rate
+    order: int
+        filter order
+        
+    Returns
+    -------
+    
+    y: np.array
+        filtered data
+    """
     b, a = butter_lowpass(cutoff, fs, order=order)
     y = signal.filtfilt(b, a, data)
     return y
@@ -128,7 +183,7 @@ def downsample(y,R):
     """
     Simple downsampling scheme using mean within the downsampling window.
     
-    Parameters:
+    Parameters
     -----------
     
     y: np.array
@@ -136,6 +191,12 @@ def downsample(y,R):
         
     R: int
         decimate-factor
+        
+    Returns
+    -------
+    
+    y: np.array
+        downsampled data
     """
     pad_size = int(math.ceil(float(y.size)/R)*R - y.size)
     y_padded = np.append(y, np.zeros(pad_size)*np.NaN)
@@ -152,7 +213,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     See notebook `baseline_interp.ipynb` for details.
     The signal is downsampled (to `fsd` Hz) for speed.
     
-    Parameters:
+    Parameters
     -----------
     
     tx : np.ndarray
@@ -182,7 +243,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     verbose: int [0, 100]
         how much information to print (0 nothing, 100 everything)
     
-    Return:
+    Returns
     -------
     
     (txd,syd,base2,base1) : tuple
@@ -304,7 +365,7 @@ def baseline_envelope(tx,sy,event_onsets, fs=1000, lp=2, prominence_thr=80, inte
     - detect high-prominence throughs in the signal 
     - calculate lower envelope based on these peaks
     
-    Parameters:
+    Parameters
     -----------
     
     tx : np.ndarray
@@ -332,6 +393,12 @@ def baseline_envelope(tx,sy,event_onsets, fs=1000, lp=2, prominence_thr=80, inte
         "spline" - a smoothing spline that is guaranteed to go through all
                    high-prominence peaks and smoothes through all the other
                    (lower-prominence) peaks
+                   
+    Returns
+    --------
+    
+    base: np.array
+        baseline estimate
     """
     syc=butter_lowpass_filter(sy, fs=fs, order=2, cutoff=lp)
     peaks_ix=signal.find_peaks(-syc)[0]
@@ -373,7 +440,7 @@ def baseline_pupil_model(tx,sy,event_onsets, fs=1000, lp1=2, lp2=0.2):
     - remove modeled signal from filtered data
     - run another lowpass-filter to get rid of spurious signals
     
-    Parameters:
+    Parameters
     -----------
     
     tx : np.ndarray
@@ -393,6 +460,12 @@ def baseline_pupil_model(tx,sy,event_onsets, fs=1000, lp1=2, lp2=0.2):
         
     lp2 : float
         low-pass filter cutoff for removing spurious peaks from the baseline-signal        
+        
+    Returns
+    --------
+    
+    base: np.array
+        baseline estimate        
     """
     syc=butter_lowpass_filter(sy, fs=fs, order=2, cutoff=lp1)
     

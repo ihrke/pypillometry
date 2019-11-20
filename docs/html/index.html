@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Welcome to pypillometry’s documentation! &#8212; pypillometry  documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -14,21 +14,24 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <link rel="search" title="Search" href="search.html" /> 
   </head><body>
-  
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">pypillometry  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <div class="section" id="welcome-to-pypillometry-s-documentation">
@@ -75,35 +78,32 @@ $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 <code class="sig-prename descclassname">pypillometry.fakedata.</code><code class="sig-name descname">generate_pupil_data</code><span class="sig-paren">(</span><em class="sig-param">event_onsets</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">baseline_lowpass=0.2</em>, <em class="sig-param">evoked_response_perc=0.02</em>, <em class="sig-param">response_fluct_sd=1</em>, <em class="sig-param">prop_spurious_events=0.5</em>, <em class="sig-param">noise_amp=0.0005</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.fakedata.generate_pupil_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate artificial pupil data as a sum of slow baseline-fluctuations
 on which event-evoked responses are “riding”.</p>
-<dl class="simple">
-<dt>event_onsets: list</dt><dd><p>list of all events that evoke a response (in seconds)</p>
-</dd>
-<dt>fs: float</dt><dd><p>sampling rate in Hz</p>
-</dd>
-<dt>baseline_lowpass: float</dt><dd><p>cutoff for the lowpass-filter that defines the baseline
-(highest allowed frequency in the baseline fluctuations)</p>
-</dd>
-<dt>evoked_response_perc: float</dt><dd><p>amplitude of the pupil-response as proportion of the baseline</p>
-</dd>
-<dt>response_fluct_sd: float</dt><dd><p>How much do the amplitudes of the individual events fluctuate?
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event_onsets</strong> (<em>list</em>) – list of all events that evoke a response (in seconds)</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
+<li><p><strong>baseline_lowpass</strong> (<em>float</em>) – cutoff for the lowpass-filter that defines the baseline
+(highest allowed frequency in the baseline fluctuations)</p></li>
+<li><p><strong>evoked_response_perc</strong> (<em>float</em>) – amplitude of the pupil-response as proportion of the baseline</p></li>
+<li><p><strong>response_fluct_sd</strong> (<em>float</em>) – How much do the amplitudes of the individual events fluctuate?
 This is determined by drawing each individual pupil-response to
 a single event from a (positive) normal distribution with mean as determined
 by <cite>evoked_response_perc</cite> and sd <cite>response_fluct_sd</cite> (in units of
-<cite>evoked_response_perc</cite>).</p>
+<cite>evoked_response_perc</cite>).</p></li>
+<li><p><strong>prop_spurious_events</strong> (<em>float</em>) – Add random events to the pupil signal. <cite>prop_spurious_events</cite> is expressed
+as proportion of the number of real events.</p></li>
+<li><p><strong>noise_amp</strong> (<em>float</em>) – Amplitude of random gaussian noise that sits on top of the simulated signal.
+Expressed in units of mean baseline pupil diameter.</p></li>
+</ul>
 </dd>
-<dt>prop_spurious_events: float</dt><dd><p>Add random events to the pupil signal. <cite>prop_spurious_events</cite> is expressed
-as proportion of the number of real events.</p>
-</dd>
-<dt>noise_amp: float</dt><dd><p>Amplitude of random gaussian noise that sits on top of the simulated signal.
-Expressed in units of mean baseline pupil diameter.</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>tx, sy: np.array</dt><dd><p>time and simulated pupil-dilation (n)</p>
-</dd>
-<dt>x0: np.array</dt><dd><p>baseline (n)</p>
-</dd>
-<dt>delta_weights: np.array</dt><dd><p>pupil-response strengths (len(event_onsets))</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>tx, sy</strong> (<em>np.array</em>) – time and simulated pupil-dilation (n)</p></li>
+<li><p><strong>x0</strong> (<em>np.array</em>) – baseline (n)</p></li>
+<li><p><strong>delta_weights</strong> (<em>np.array</em>) – pupil-response strengths (len(event_onsets))</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -112,11 +112,26 @@ Expressed in units of mean baseline pupil diameter.</p>
 <dt id="pypillometry.fakedata.get_dataset">
 <code class="sig-prename descclassname">pypillometry.fakedata.</code><code class="sig-name descname">get_dataset</code><span class="sig-paren">(</span><em class="sig-param">ntrials=100</em>, <em class="sig-param">isi=2</em>, <em class="sig-param">rtdist=(1</em>, <em class="sig-param">0.5)</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">pad=5.0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.fakedata.get_dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience function to run <cite>generate_pupil_data()</cite> with standard parameters.</p>
-<p>ntrials=100
-isi=2 # inter-stimulus-interval
-rtdist=(1,0.5) # reaction times (mean,sd)
-fs=1000 # sampling rate
-pad=5.0 ## padding for signal in seconds</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ntrials</strong> (<em>int</em>) – number of trials</p></li>
+<li><p><strong>isi</strong> (<em>float</em>) – inter-stimulus interval in seconds</p></li>
+<li><p><strong>rtdist</strong> (<em>tuple</em><em> (</em><em>float</em><em>,</em><em>float</em><em>)</em>) – mean and std of a (truncated at zero) normal distribution to generate response times</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate</p></li>
+<li><p><strong>pad</strong> (<em>float</em>) – padding before the first and after the last event in seconds</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>tx, sy</strong> (<em>np.array</em>) – time and simulated pupil-dilation (n)</p></li>
+<li><p><strong>baseline</strong> (<em>np.array</em>) – baseline (n)</p></li>
+<li><p><strong>event_onsets</strong> (<em>np.array</em>) – timing of the simulated event-onsets (stimuli and responses not separated)</p></li>
+<li><p><strong>response_coef</strong> (<em>np.array</em>) – pupil-response strengths (len(event_onsets))</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -133,27 +148,31 @@ pad=5.0 ## padding for signal in seconds</p>
 <li><p>detect high-prominence throughs in the signal</p></li>
 <li><p>calculate lower envelope based on these peaks</p></li>
 </ul>
-<dl>
-<dt>tx<span class="classifier">np.ndarray</span></dt><dd><p>time-vector in seconds</p>
-</dd>
-<dt>sy<span class="classifier">np.ndarray</span></dt><dd><p>raw pupil signal</p>
-</dd>
-<dt>event_onsets<span class="classifier">list</span></dt><dd><p>onsets of events (stimuli/responses) in seconds</p>
-</dd>
-<dt>fs<span class="classifier">float</span></dt><dd><p>sampling rate in Hz</p>
-</dd>
-<dt>lp<span class="classifier">float</span></dt><dd><p>low-pass filter cutoff for removing random noise</p>
-</dd>
-<dt>prominence_thr<span class="classifier">float in [0,100]</span></dt><dd><p>percentile of the prominence distribution (of the peaks) to
-use for determining prominent peaks (see <cite>scipy.stats.peak_prominences()</cite>)</p>
-</dd>
-<dt>interp_method<span class="classifier">string, one of [“linear”, “cubic”, “spline”]</span></dt><dd><p>“linear” - linear interpolation between the high-prominence peaks
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
+<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
+<li><p><strong>event_onsets</strong> (<em>list</em>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
+<li><p><strong>lp</strong> (<em>float</em>) – low-pass filter cutoff for removing random noise</p></li>
+<li><p><strong>prominence_thr</strong> (<em>float in</em><em> [</em><em>0</em><em>,</em><em>100</em><em>]</em>) – percentile of the prominence distribution (of the peaks) to
+use for determining prominent peaks (see <cite>scipy.stats.peak_prominences()</cite>)</p></li>
+<li><p><strong>interp_method</strong> (<em>string</em><em>, </em><em>one of</em><em> [</em><em>&quot;linear&quot;</em><em>, </em><em>&quot;cubic&quot;</em><em>, </em><em>&quot;spline&quot;</em><em>]</em>) – <p>“linear” - linear interpolation between the high-prominence peaks
 “cubic”  - cubic interpolation through all high-prominence peaks
 “spline” - a smoothing spline that is guaranteed to go through all</p>
 <blockquote>
 <div><p>high-prominence peaks and smoothes through all the other
 (lower-prominence) peaks</p>
 </div></blockquote>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>base</strong> – baseline estimate</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -164,31 +183,28 @@ use for determining prominent peaks (see <cite>scipy.stats.peak_prominences()</c
 <dd><p>Extract baseline based (re-)estimating the lower envelope using B-splines.
 See notebook <cite>baseline_interp.ipynb</cite> for details.
 The signal is downsampled (to <cite>fsd</cite> Hz) for speed.</p>
-<dl class="simple">
-<dt>tx<span class="classifier">np.ndarray</span></dt><dd><p>time-vector in seconds</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
+<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
+<li><p><strong>event_onsets</strong> (<em>list</em>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
+<li><p><strong>fsd</strong> (<em>float</em>) – downsampled sampling rate (if too slow, decrease)</p></li>
+<li><p><strong>lp</strong> (<em>float</em>) – lowpass-filter cutoff (Hz)</p></li>
+<li><p><strong>lam_sig</strong> (<em>float</em>) – parameter steering how much the baseline is shaped by the non-peaks of the signal</p></li>
+<li><p><strong>lam_min</strong><strong>,</strong><strong>lam_max</strong> (<em>float</em>) – parameters mapping how much low- and high-prominence peaks influence the baseline</p></li>
+<li><p><strong>verbose</strong> (<em>int</em><em> [</em><em>0</em><em>, </em><em>100</em><em>]</em>) – how much information to print (0 nothing, 100 everything)</p></li>
+</ul>
 </dd>
-<dt>sy<span class="classifier">np.ndarray</span></dt><dd><p>raw pupil signal</p>
-</dd>
-<dt>event_onsets<span class="classifier">list</span></dt><dd><p>onsets of events (stimuli/responses) in seconds</p>
-</dd>
-<dt>fs<span class="classifier">float</span></dt><dd><p>sampling rate in Hz</p>
-</dd>
-<dt>fsd<span class="classifier">float</span></dt><dd><p>downsampled sampling rate (if too slow, decrease)</p>
-</dd>
-<dt>lp<span class="classifier">float</span></dt><dd><p>lowpass-filter cutoff (Hz)</p>
-</dd>
-<dt>lam_sig: float</dt><dd><p>parameter steering how much the baseline is shaped by the non-peaks of the signal</p>
-</dd>
-<dt>lam_min,lam_max: float</dt><dd><p>parameters mapping how much low- and high-prominence peaks influence the baseline</p>
-</dd>
-<dt>verbose: int [0, 100]</dt><dd><p>how much information to print (0 nothing, 100 everything)</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>(txd,syd,base2,base1)<span class="classifier">tuple</span></dt><dd><p>txd: downsampled time-array
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>(txd,syd,base2,base1)</strong> – txd: downsampled time-array
 syd: downsampled and lowpass-filtered pupil signal
 base1: is the estimated base after the first round
 base2: is the final baseline estimate</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
@@ -204,18 +220,22 @@ base2: is the final baseline estimate</p>
 <li><p>remove modeled signal from filtered data</p></li>
 <li><p>run another lowpass-filter to get rid of spurious signals</p></li>
 </ul>
-<dl class="simple">
-<dt>tx<span class="classifier">np.ndarray</span></dt><dd><p>time-vector in seconds</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
+<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
+<li><p><strong>event_onsets</strong> (<em>list</em>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
+<li><p><strong>lp1</strong> (<em>float</em>) – low-pass filter cutoff for removing random noise</p></li>
+<li><p><strong>lp2</strong> (<em>float</em>) – low-pass filter cutoff for removing spurious peaks from the baseline-signal</p></li>
+</ul>
 </dd>
-<dt>sy<span class="classifier">np.ndarray</span></dt><dd><p>raw pupil signal</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>base</strong> – baseline estimate</p>
 </dd>
-<dt>event_onsets<span class="classifier">list</span></dt><dd><p>onsets of events (stimuli/responses) in seconds</p>
-</dd>
-<dt>fs<span class="classifier">float</span></dt><dd><p>sampling rate in Hz</p>
-</dd>
-<dt>lp1<span class="classifier">float</span></dt><dd><p>low-pass filter cutoff for removing random noise</p>
-</dd>
-<dt>lp2<span class="classifier">float</span></dt><dd><p>low-pass filter cutoff for removing spurious peaks from the baseline-signal</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -225,16 +245,82 @@ base2: is the final baseline estimate</p>
 <code class="sig-prename descclassname">pypillometry.baseline.</code><code class="sig-name descname">bspline</code><span class="sig-paren">(</span><em class="sig-param">txd</em>, <em class="sig-param">knots</em>, <em class="sig-param">spline_degree=3</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.baseline.bspline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Re-implementation from <a class="reference external" href="https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html">https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html</a>.
 Similar behaviour as R’s bs() function from the splines-library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>txd</strong> (<em>np.array</em>) – time-vector</p></li>
+<li><p><strong>knots</strong> (<em>np.array</em>) – location of the knots</p></li>
+<li><p><strong>spline_degree</strong> (<em>int</em>) – degree of the spline</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>B</strong> – matrix of basis functions</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.baseline.butter_lowpass">
+<code class="sig-prename descclassname">pypillometry.baseline.</code><code class="sig-name descname">butter_lowpass</code><span class="sig-paren">(</span><em class="sig-param">cutoff</em>, <em class="sig-param">fs</em>, <em class="sig-param">order=5</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.baseline.butter_lowpass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get lowpass-filter coefficients for Butterworth-filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate</p></li>
+<li><p><strong>order</strong> (<em>int</em>) – filter order</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>(b,a)</strong> – filter coefficients</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple (float,float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.baseline.butter_lowpass_filter">
+<code class="sig-prename descclassname">pypillometry.baseline.</code><code class="sig-name descname">butter_lowpass_filter</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">cutoff</em>, <em class="sig-param">fs</em>, <em class="sig-param">order=5</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.baseline.butter_lowpass_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lowpass-filter signal using a Butterworth-filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.array</em>) – data to lowpass-filter</p></li>
+<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate</p></li>
+<li><p><strong>order</strong> (<em>int</em>) – filter order</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y</strong> – filtered data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="pypillometry.baseline.downsample">
 <code class="sig-prename descclassname">pypillometry.baseline.</code><code class="sig-name descname">downsample</code><span class="sig-paren">(</span><em class="sig-param">y</em>, <em class="sig-param">R</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.baseline.downsample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simple downsampling scheme using mean within the downsampling window.</p>
-<dl class="simple">
-<dt>y: np.array</dt><dd><p>signal to downsample</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<em>np.array</em>) – signal to downsample</p></li>
+<li><p><strong>R</strong> (<em>int</em>) – decimate-factor</p></li>
+</ul>
 </dd>
-<dt>R: int</dt><dd><p>decimate-factor</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>y</strong> – downsampled data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -255,18 +341,20 @@ $$h(t)=\frac{1}{h_{max}} h_{HL}(t)$$
 where $$h_{max} = \max_t{\left(h_{HL}(t)\right)} = e^{-n}t_{max}^{n}$$
 which yields a maximum value of 1 for this function.
 The function <span class="math notranslate nohighlight">\(h(t)\)</span> is implemented in <cite>pp.pupil_kernel()</cite>.</p>
-<dl class="simple">
-<dt>duration: float</dt><dd><p>maximum of the time window for which to calculate the PRF [0,duration]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>duration</strong> (<em>float</em>) – maximum of the time window for which to calculate the PRF [0,duration]</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate for resolving the PRF</p></li>
+<li><p><strong>npar</strong> (<em>float</em>) – n in the equation above</p></li>
+<li><p><strong>tmax</strong> (<em>float</em>) – t_{max} in the equation above</p></li>
+</ul>
 </dd>
-<dt>fs: float</dt><dd><p>sampling rate for resolving the PRF</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>h</strong> – sampled version of h(t) over the interval [0,`duration`] with sampling rate <cite>fs</cite></p>
 </dd>
-<dt>npar: float</dt><dd><p>n in the equation above</p>
-</dd>
-<dt>tmax: float</dt><dd><p>t_{max} in the equation above</p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>h: np.array</dt><dd><p>sampled version of h(t) over the interval [0,`duration`] with sampling rate <cite>fs</cite></p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -276,22 +364,23 @@ The function <span class="math notranslate nohighlight">\(h(t)\)</span> is imple
 <code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupilresponse_nnls</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets</em>, <em class="sig-param">fs</em>, <em class="sig-param">npar=10.1</em>, <em class="sig-param">tmax=930</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupilresponse_nnls" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate single-event pupil responses based on canonical PRF (<cite>pupil_kernel()</cite>)
 using non-negative least-squares (NNLS).</p>
-<dl class="simple">
-<dt>tx<span class="classifier">np.ndarray</span></dt><dd><p>time-vector in seconds</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
+<li><p><strong>sy</strong> (<em>np.ndarray</em>) – probably baseline-corrected pupil signal</p></li>
+<li><p><strong>event_onsets</strong> (<em>list</em>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
+<li><p><strong>npar</strong><strong>,</strong><strong>tmax</strong> (<em>float</em>) – parameters for <a class="reference internal" href="#pypillometry.pupil.pupil_kernel" title="pypillometry.pupil.pupil_kernel"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_kernel()</span></code></a></p></li>
+</ul>
 </dd>
-<dt>sy<span class="classifier">np.ndarray</span></dt><dd><p>probably baseline-corrected pupil signal</p>
-</dd>
-<dt>event_onsets<span class="classifier">list</span></dt><dd><p>onsets of events (stimuli/responses) in seconds</p>
-</dd>
-<dt>fs<span class="classifier">float</span></dt><dd><p>sampling rate in Hz</p>
-</dd>
-<dt>npar,tmax: float</dt><dd><p>parameters for <a class="reference internal" href="#pypillometry.pupil.pupil_kernel" title="pypillometry.pupil.pupil_kernel"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_kernel()</span></code></a></p>
-</dd>
-</dl>
-<dl class="simple">
-<dt>(coef,pred,resid): tuple</dt><dd><p>coef: purely-positive regression coefficients
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>(coef,pred,resid)</strong> – coef: purely-positive regression coefficients
 pred: predicted signal
 resid: residuals (sy-pred)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
@@ -357,7 +446,6 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
 
 
           </div>
-          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -365,24 +453,33 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
             <p class="logo"><a href="#">
               <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo"/>
             </a></p>
-<h1 class="logo"><a href="#">pypillometry</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="#">Documentation overview</a><ul>
-  </ul></li>
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to pypillometry’s documentation!</a></li>
+<li><a class="reference internal" href="#pypillometry">pypillometry</a><ul>
+<li><a class="reference internal" href="#setup">Setup</a><ul>
+<li><a class="reference internal" href="#using-conda">Using <code class="docutils literal notranslate"><span class="pre">conda</span></code></a><ul>
+<li><a class="reference internal" href="#id1">Pypillometry</a></li>
+<li><a class="reference internal" href="#fakedata-py">fakedata.py</a></li>
+<li><a class="reference internal" href="#baseline-py">baseline.py</a></li>
+<li><a class="reference internal" href="#pupil-py">pupil.py</a></li>
+<li><a class="reference internal" href="#convenience-py">convenience.py</a></li>
 </ul>
-</div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
@@ -393,32 +490,25 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;2019, Matthias Mittner.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/index.rst.txt"
-          rel="nofollow">Page source</a>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">pypillometry  documentation</a> &#187;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Matthias Mittner.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
   </body>
 </html>

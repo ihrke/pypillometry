@@ -16,7 +16,7 @@ def generate_pupil_data(event_onsets, fs=1000, baseline_lowpass=0.2,
     Generate artificial pupil data as a sum of slow baseline-fluctuations
     on which event-evoked responses are "riding". 
     
-    Parameters:
+    Parameters
     -----------
     
     event_onsets: list
@@ -48,7 +48,7 @@ def generate_pupil_data(event_onsets, fs=1000, baseline_lowpass=0.2,
         Expressed in units of mean baseline pupil diameter.
         
     
-    Returns:
+    Returns
     --------
     
     tx, sy: np.array
@@ -99,11 +99,32 @@ def get_dataset(ntrials=100, isi=2, rtdist=(1,0.5),fs=1000,pad=5.0):
     """
     Convenience function to run `generate_pupil_data()` with standard parameters.
 
-    ntrials=100
-    isi=2 # inter-stimulus-interval
-    rtdist=(1,0.5) # reaction times (mean,sd)
-    fs=1000 # sampling rate
-    pad=5.0 ## padding for signal in seconds
+    Parameters
+    -----------
+    
+    ntrials:int
+        number of trials
+    isi: float
+        inter-stimulus interval in seconds
+    rtdist: tuple (float,float)
+        mean and std of a (truncated at zero) normal distribution to generate response times
+    fs: float
+        sampling rate
+    pad: float
+        padding before the first and after the last event in seconds
+    
+    Returns
+    --------
+        
+    tx, sy: np.array
+        time and simulated pupil-dilation (n)
+    baseline: np.array
+        baseline (n)
+    event_onsets: np.array
+        timing of the simulated event-onsets (stimuli and responses not separated)
+    response_coef: np.array
+        pupil-response strengths (len(event_onsets))
+
     """
     stim_onsets=np.arange(ntrials)*isi+pad
     rts=stats.truncnorm.rvs( (0-rtdist[0])/rtdist[1], np.inf, loc=rtdist[0], scale=rtdist[1], size=ntrials)

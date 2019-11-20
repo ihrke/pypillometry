@@ -19,7 +19,7 @@ def pupil_kernel(duration=4, fs=1000, npar=10.1, tmax=930.0):
     which yields a maximum value of 1 for this function. 
     The function $h(t)$ is implemented in `pp.pupil_kernel()`.
     
-    Parameters:
+    Parameters
     -----------
     
     duration: float
@@ -31,7 +31,7 @@ def pupil_kernel(duration=4, fs=1000, npar=10.1, tmax=930.0):
     tmax: float
         t_{max} in the equation above
         
-    Returns:
+    Returns
     --------
     
     h: np.array
@@ -48,7 +48,7 @@ def pupilresponse_nnls(tx, sy, event_onsets, fs, npar=10.1, tmax=930):
     Estimate single-event pupil responses based on canonical PRF (`pupil_kernel()`)
     using non-negative least-squares (NNLS).
         
-    Parameters:
+    Parameters
     -----------
     
     tx : np.ndarray
@@ -66,7 +66,7 @@ def pupilresponse_nnls(tx, sy, event_onsets, fs, npar=10.1, tmax=930):
     npar,tmax: float
         parameters for :py:func:`pypillometry.pupil.pupil_kernel()`
         
-    Returns:
+    Returns
     --------
     
     (coef,pred,resid): tuple
