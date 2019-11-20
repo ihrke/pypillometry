@@ -24,7 +24,7 @@ def generate_pupil_data(event_onsets, fs=1000, baseline_lowpass=0.2,
         (highest allowed frequency in the baseline fluctuations)
         
     evoked_response_perc: float
-        amplitude of the pupil-response assproportion of the baseline 
+        amplitude of the pupil-response as proportion of the baseline 
     
     response_fluct_sd: float
         How much do the amplitudes of the individual events fluctuate?
@@ -40,6 +40,17 @@ def generate_pupil_data(event_onsets, fs=1000, baseline_lowpass=0.2,
     noise_amp: float
         Amplitude of random gaussian noise that sits on top of the simulated signal.
         Expressed in units of mean baseline pupil diameter.
+        
+    
+    Returns:
+    --------
+    
+    tx, sy: np.array
+        time and simulated pupil-dilation (n)
+    x0: np.array
+        baseline (n)
+    delta_weights: np.array
+        pupil-response strengths (len(event_onsets))
     """
     T=np.array(event_onsets).max()+5 # stop 5 sec after last event
     n=int(np.ceil(T*fs)) # number of sampling points
