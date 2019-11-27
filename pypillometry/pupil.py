@@ -7,31 +7,6 @@ functions related to pupillary responses.
 import numpy as np
 import scipy.optimize
 
-def pupil_get_max_duration(npar,tmax,thr=1e-8,stepsize=1.):
-    """
-    Get the time when the PRF with parameters $n$ and $t_{max}$ is decayed to
-    `thr`. This gives an indication of how long the `duration` parameter
-    in :py:func:`pupil_kernel()` should be chosen.
-    
-    Parameters
-    -----------
-    npar,tmax: float
-        PRF parameters, see :py:func:`pupil_kernel()`
-    thr: float
-        desired value to which the PRF is decayed (the lower `thr`, the longer the duration)
-    stepsize: float
-        precision of the maximum duration in ms
-        
-    Returns
-    --------
-    tdur: float
-        first value of t so that PRF(t)<`thr`
-    """
-    # start looking from `tmax` (which is time of the peak)
-    tdur=tmax
-    while pp.pupil_kernel_t(tdur,npar,tmax)>thr:
-        tdur=tdur+stepsize # in steps of `stepsize` ms
-    return tdur
 
 def pupil_kernel_t(t,npar,tmax):
     """
@@ -65,6 +40,32 @@ def pupil_kernel_t(t,npar,tmax):
     h = t**(npar) * np.exp(-npar*t / tmax)   #Erlang gamma function Hoek & Levelt (1993)
     h=h/hmax
     return h
+
+def pupil_get_max_duration(npar,tmax,thr=1e-8,stepsize=1.):
+    """
+    Get the time when the PRF with parameters $n$ and $t_{max}$ is decayed to
+    `thr`. This gives an indication of how long the `duration` parameter
+    in :py:func:`pupil_kernel()` should be chosen.
+    
+    Parameters
+    -----------
+    npar,tmax: float
+        PRF parameters, see :py:func:`pupil_kernel()`
+    thr: float
+        desired value to which the PRF is decayed (the lower `thr`, the longer the duration)
+    stepsize: float
+        precision of the maximum duration in ms
+        
+    Returns
+    --------
+    tdur: float
+        first value of t so that PRF(t)<`thr`
+    """
+    # start looking from `tmax` (which is time of the peak)
+    tdur=tmax
+    while pupil_kernel_t(tdur,npar,tmax)>thr:
+        tdur=tdur+stepsize # in steps of `stepsize` ms
+    return tdur
 
 def pupil_kernel(duration=4000, fs=1000, npar=10.1, tmax=930.0):
     """

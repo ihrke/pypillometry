@@ -79,7 +79,7 @@ $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 <p>Generate artificial pupil-data.</p>
 <dl class="function">
 <dt id="pypillometry.fakedata.generate_pupil_data">
-<code class="sig-prename descclassname">pypillometry.fakedata.</code><code class="sig-name descname">generate_pupil_data</code><span class="sig-paren">(</span><em class="sig-param">event_onsets</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">baseline_lowpass=0.2</em>, <em class="sig-param">evoked_response_perc=0.02</em>, <em class="sig-param">response_fluct_sd=1</em>, <em class="sig-param">prf_npar=(10.35</em>, <em class="sig-param">0)</em>, <em class="sig-param">prf_tmax=(917.0</em>, <em class="sig-param">0)</em>, <em class="sig-param">prop_spurious_events=0.5</em>, <em class="sig-param">noise_amp=0.0005</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.fakedata.generate_pupil_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pypillometry.fakedata.</code><code class="sig-name descname">generate_pupil_data</code><span class="sig-paren">(</span><em class="sig-param">event_onsets</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">pad=5000</em>, <em class="sig-param">baseline_lowpass=0.2</em>, <em class="sig-param">evoked_response_perc=0.02</em>, <em class="sig-param">response_fluct_sd=1</em>, <em class="sig-param">prf_npar=(10.35</em>, <em class="sig-param">0)</em>, <em class="sig-param">prf_tmax=(917.0</em>, <em class="sig-param">0)</em>, <em class="sig-param">prop_spurious_events=0.2</em>, <em class="sig-param">noise_amp=0.0005</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.fakedata.generate_pupil_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate artificial pupil data as a sum of slow baseline-fluctuations
 on which event-evoked responses are “riding”.</p>
 <dl class="field-list simple">
@@ -87,6 +87,7 @@ on which event-evoked responses are “riding”.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>event_onsets</strong> (<em>list</em>) – list of all events that evoke a response (in seconds)</p></li>
 <li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
+<li><p><strong>pad</strong> (<em>float</em>) – append <cite>pad</cite> milliseconds of signal after the last event is decayed</p></li>
 <li><p><strong>baseline_lowpass</strong> (<em>float</em>) – cutoff for the lowpass-filter that defines the baseline
 (highest allowed frequency in the baseline fluctuations)</p></li>
 <li><p><strong>evoked_response_perc</strong> (<em>float</em>) – amplitude of the pupil-response as proportion of the baseline</p></li>
@@ -120,8 +121,8 @@ Expressed in units of mean baseline pupil diameter.</p></li>
 
 <dl class="function">
 <dt id="pypillometry.fakedata.get_dataset">
-<code class="sig-prename descclassname">pypillometry.fakedata.</code><code class="sig-name descname">get_dataset</code><span class="sig-paren">(</span><em class="sig-param">ntrials=100</em>, <em class="sig-param">isi=2</em>, <em class="sig-param">rtdist=(1</em>, <em class="sig-param">0.5)</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">pad=5.0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.fakedata.get_dataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convenience function to run <cite>generate_pupil_data()</cite> with standard parameters.</p>
+<code class="sig-prename descclassname">pypillometry.fakedata.</code><code class="sig-name descname">get_dataset</code><span class="sig-paren">(</span><em class="sig-param">ntrials=100</em>, <em class="sig-param">isi=2000</em>, <em class="sig-param">rtdist=(1000</em>, <em class="sig-param">500)</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">pad=5000</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.fakedata.get_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function to run <a class="reference internal" href="#pypillometry.fakedata.generate_pupil_data" title="pypillometry.fakedata.generate_pupil_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_pupil_data()</span></code></a> with standard parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
