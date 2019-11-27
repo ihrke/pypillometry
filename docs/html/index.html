@@ -66,16 +66,20 @@ $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 </pre></div>
 </div>
 <p>otherwise, there were random crashes of the jupyter kernel for some reason.</p>
-<span class="target" id="module-pypillometry"></span><div class="section" id="id1">
-<h4>Pypillometry<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+<div class="section" id="module-pypillometry">
+<span id="api-documentation"></span><h2>API documentation<a class="headerlink" href="#module-pypillometry" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Pypillometry<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>This is a python-package to help with processing of pupillometric data.</p>
 </div>
 <span class="target" id="module-pypillometry.fakedata"></span><div class="section" id="fakedata-py">
-<h4>fakedata.py<a class="headerlink" href="#fakedata-py" title="Permalink to this headline">¶</a></h4>
+<h3>fakedata.py<a class="headerlink" href="#fakedata-py" title="Permalink to this headline">¶</a></h3>
 <p>Generate artificial pupil-data.</p>
 <dl class="function">
 <dt id="pypillometry.fakedata.generate_pupil_data">
-<code class="sig-prename descclassname">pypillometry.fakedata.</code><code class="sig-name descname">generate_pupil_data</code><span class="sig-paren">(</span><em class="sig-param">event_onsets</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">baseline_lowpass=0.2</em>, <em class="sig-param">evoked_response_perc=0.02</em>, <em class="sig-param">response_fluct_sd=1</em>, <em class="sig-param">prop_spurious_events=0.5</em>, <em class="sig-param">noise_amp=0.0005</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.fakedata.generate_pupil_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pypillometry.fakedata.</code><code class="sig-name descname">generate_pupil_data</code><span class="sig-paren">(</span><em class="sig-param">event_onsets</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">baseline_lowpass=0.2</em>, <em class="sig-param">evoked_response_perc=0.02</em>, <em class="sig-param">response_fluct_sd=1</em>, <em class="sig-param">prf_npar=(10.35</em>, <em class="sig-param">0)</em>, <em class="sig-param">prf_tmax=(917.0</em>, <em class="sig-param">0)</em>, <em class="sig-param">prop_spurious_events=0.5</em>, <em class="sig-param">noise_amp=0.0005</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.fakedata.generate_pupil_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate artificial pupil data as a sum of slow baseline-fluctuations
 on which event-evoked responses are “riding”.</p>
 <dl class="field-list simple">
@@ -91,6 +95,12 @@ This is determined by drawing each individual pupil-response to
 a single event from a (positive) normal distribution with mean as determined
 by <cite>evoked_response_perc</cite> and sd <cite>response_fluct_sd</cite> (in units of
 <cite>evoked_response_perc</cite>).</p></li>
+<li><p><strong>prf_npar</strong> (<em>tuple</em><em> (</em><em>float</em><em>,</em><em>float</em><em>)</em>) – (mean,std) of the npar parameter from <a class="reference internal" href="#pypillometry.pupil.pupil_kernel" title="pypillometry.pupil.pupil_kernel"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_kernel()</span></code></a>.
+If the std is exactly zero, then the mean is used for all pupil-responses.
+If the std is positive, npar is taken i.i.d. from ~ normal(mean,std) for each event.</p></li>
+<li><p><strong>prf_tmax</strong> (<em>tuple</em><em> (</em><em>float</em><em>,</em><em>float</em><em>)</em>) – (mean,std) of the tmax parameter from <a class="reference internal" href="#pypillometry.pupil.pupil_kernel" title="pypillometry.pupil.pupil_kernel"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_kernel()</span></code></a>.
+If the std is exactly zero, then the mean is used for all pupil-responses.
+If the std is positive, tmax is taken i.i.d. from ~ normal(mean,std) for each event.</p></li>
 <li><p><strong>prop_spurious_events</strong> (<em>float</em>) – Add random events to the pupil signal. <cite>prop_spurious_events</cite> is expressed
 as proportion of the number of real events.</p></li>
 <li><p><strong>noise_amp</strong> (<em>float</em>) – Amplitude of random gaussian noise that sits on top of the simulated signal.
@@ -136,7 +146,7 @@ Expressed in units of mean baseline pupil diameter.</p></li>
 
 </div>
 <span class="target" id="module-pypillometry.baseline"></span><div class="section" id="baseline-py">
-<h4>baseline.py<a class="headerlink" href="#baseline-py" title="Permalink to this headline">¶</a></h4>
+<h3>baseline.py<a class="headerlink" href="#baseline-py" title="Permalink to this headline">¶</a></h3>
 <p>Functions for estimating tonic pupillary fluctuations (baseline).</p>
 <dl class="function">
 <dt id="pypillometry.baseline.baseline_envelope">
@@ -327,11 +337,34 @@ Similar behaviour as R’s bs() function from the splines-library.</p>
 
 </div>
 <span class="target" id="module-pypillometry.pupil"></span><div class="section" id="pupil-py">
-<h4>pupil.py<a class="headerlink" href="#pupil-py" title="Permalink to this headline">¶</a></h4>
+<h3>pupil.py<a class="headerlink" href="#pupil-py" title="Permalink to this headline">¶</a></h3>
 <p>functions related to pupillary responses.</p>
 <dl class="function">
+<dt id="pypillometry.pupil.pupil_get_max_duration">
+<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupil_get_max_duration</code><span class="sig-paren">(</span><em class="sig-param">npar</em>, <em class="sig-param">tmax</em>, <em class="sig-param">thr=1e-08</em>, <em class="sig-param">stepsize=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupil_get_max_duration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the time when the PRF with parameters <span class="math notranslate nohighlight">\(n\)</span> and <span class="math notranslate nohighlight">\(t_{max}\)</span> is decayed to
+<cite>thr</cite>. This gives an indication of how long the <cite>duration</cite> parameter
+in <a class="reference internal" href="#pypillometry.pupil.pupil_kernel" title="pypillometry.pupil.pupil_kernel"><code class="xref py py-func docutils literal notranslate"><span class="pre">pupil_kernel()</span></code></a> should be chosen.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>npar</strong><strong>,</strong><strong>tmax</strong> (<em>float</em>) – PRF parameters, see <a class="reference internal" href="#pypillometry.pupil.pupil_kernel" title="pypillometry.pupil.pupil_kernel"><code class="xref py py-func docutils literal notranslate"><span class="pre">pupil_kernel()</span></code></a></p></li>
+<li><p><strong>thr</strong> (<em>float</em>) – desired value to which the PRF is decayed (the lower <cite>thr</cite>, the longer the duration)</p></li>
+<li><p><strong>stepsize</strong> (<em>float</em>) – precision of the maximum duration in ms</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>tdur</strong> – first value of t so that PRF(t)&lt;<cite>thr</cite></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="pypillometry.pupil.pupil_kernel">
-<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupil_kernel</code><span class="sig-paren">(</span><em class="sig-param">duration=4</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">npar=10.1</em>, <em class="sig-param">tmax=930.0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupil_kernel" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupil_kernel</code><span class="sig-paren">(</span><em class="sig-param">duration=4000</em>, <em class="sig-param">fs=1000</em>, <em class="sig-param">npar=10.1</em>, <em class="sig-param">tmax=930.0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupil_kernel" title="Permalink to this definition">¶</a></dt>
 <dd><p>According to Hoeks and Levelt (1993,
 <a class="reference external" href="https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf">https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf</a>),
 the PRF can be described by the so-called Erlang gamma function
@@ -344,7 +377,7 @@ The function <span class="math notranslate nohighlight">\(h(t)\)</span> is imple
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>duration</strong> (<em>float</em>) – maximum of the time window for which to calculate the PRF [0,duration]</p></li>
+<li><p><strong>duration</strong> (<em>float</em>) – in ms; maximum of the time window for which to calculate the PRF [0,duration]</p></li>
 <li><p><strong>fs</strong> (<em>float</em>) – sampling rate for resolving the PRF</p></li>
 <li><p><strong>npar</strong> (<em>float</em>) – n in the equation above</p></li>
 <li><p><strong>tmax</strong> (<em>float</em>) – t_{max} in the equation above</p></li>
@@ -352,6 +385,36 @@ The function <span class="math notranslate nohighlight">\(h(t)\)</span> is imple
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>h</strong> – sampled version of h(t) over the interval [0,`duration`] with sampling rate <cite>fs</cite></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.pupil.pupil_kernel_t">
+<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupil_kernel_t</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">npar</em>, <em class="sig-param">tmax</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupil_kernel_t" title="Permalink to this definition">¶</a></dt>
+<dd><p>According to Hoeks and Levelt (1993,
+<a class="reference external" href="https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf">https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf</a>),
+the PRF can be described by the so-called Erlang gamma function
+$$h_{HL}(t) = t^n e^{-nt/t_{max}}$$
+which we normalize to
+$$h(t)=\frac{1}{h_{max}} h_{HL}(t)$$
+where $$h_{max} = \max_t{\left(h_{HL}(t)\right)} = e^{-n}t_{max}^{n}$$
+which yields a maximum value of 1 for this function.
+The function <span class="math notranslate nohighlight">\(h(t)\)</span> is implemented in <a class="reference internal" href="#pypillometry.pupil.pupil_kernel" title="pypillometry.pupil.pupil_kernel"><code class="xref py py-func docutils literal notranslate"><span class="pre">pupil_kernel()</span></code></a>.</p>
+<p>This version of the function evaluates the PRF at inputs <cite>t</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>float/np.array</em>) – in ms</p></li>
+<li><p><strong>npar</strong> (<em>float</em>) – n in the equation above</p></li>
+<li><p><strong>tmax</strong> (<em>float</em>) – t_{max} in the equation above</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>h</strong> – PRF evaluated at <cite>t</cite></p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.array</p>
@@ -387,7 +450,7 @@ resid: residuals (sy-pred)</p>
 
 </div>
 <span class="target" id="module-pypillometry.convenience"></span><div class="section" id="convenience-py">
-<h4>convenience.py<a class="headerlink" href="#convenience-py" title="Permalink to this headline">¶</a></h4>
+<h3>convenience.py<a class="headerlink" href="#convenience-py" title="Permalink to this headline">¶</a></h3>
 <p>Some convenience functions.</p>
 <dl class="function">
 <dt id="pypillometry.convenience.StanModel_cache">
@@ -434,7 +497,6 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
 </div>
 </div>
 </div>
-</div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
@@ -458,14 +520,15 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
 <li><a class="reference internal" href="#">Welcome to pypillometry’s documentation!</a></li>
 <li><a class="reference internal" href="#pypillometry">pypillometry</a><ul>
 <li><a class="reference internal" href="#setup">Setup</a><ul>
-<li><a class="reference internal" href="#using-conda">Using <code class="docutils literal notranslate"><span class="pre">conda</span></code></a><ul>
+<li><a class="reference internal" href="#using-conda">Using <code class="docutils literal notranslate"><span class="pre">conda</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-pypillometry">API documentation</a><ul>
 <li><a class="reference internal" href="#id1">Pypillometry</a></li>
 <li><a class="reference internal" href="#fakedata-py">fakedata.py</a></li>
 <li><a class="reference internal" href="#baseline-py">baseline.py</a></li>
 <li><a class="reference internal" href="#pupil-py">pupil.py</a></li>
 <li><a class="reference internal" href="#convenience-py">convenience.py</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>

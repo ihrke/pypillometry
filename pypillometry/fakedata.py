@@ -11,6 +11,7 @@ from .baseline import *
 
 def generate_pupil_data(event_onsets, fs=1000, baseline_lowpass=0.2, 
                         evoked_response_perc=0.02, response_fluct_sd=1,
+                        prf_npar=(10.35,0), prf_tmax=(917.0,0),
                         prop_spurious_events=0.5, noise_amp=0.0005):
     """
     Generate artificial pupil data as a sum of slow baseline-fluctuations
@@ -38,7 +39,17 @@ def generate_pupil_data(event_onsets, fs=1000, baseline_lowpass=0.2,
         a single event from a (positive) normal distribution with mean as determined
         by `evoked_response_perc` and sd `response_fluct_sd` (in units of 
         `evoked_response_perc`).
-        
+
+    prf_npar: tuple (float,float)
+        (mean,std) of the npar parameter from :py:func:`pypillometry.pupil.pupil_kernel()`. 
+        If the std is exactly zero, then the mean is used for all pupil-responses.
+        If the std is positive, npar is taken i.i.d. from ~ normal(mean,std) for each event.
+
+    prf_tmax: tuple (float,float)
+        (mean,std) of the tmax parameter from :py:func:`pypillometry.pupil.pupil_kernel()`. 
+        If the std is exactly zero, then the mean is used for all pupil-responses.
+        If the std is positive, tmax is taken i.i.d. from ~ normal(mean,std) for each event.
+
     prop_spurious_events: float
         Add random events to the pupil signal. `prop_spurious_events` is expressed
         as proportion of the number of real events. 

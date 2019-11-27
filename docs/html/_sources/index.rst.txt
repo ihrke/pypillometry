@@ -8,6 +8,9 @@ Welcome to pypillometry's documentation!
 
 .. mdinclude:: ./README.md
 
+API documentation
+-----------------
+
 .. automodule:: pypillometry
     :members:
 

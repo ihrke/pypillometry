@@ -7,7 +7,66 @@ functions related to pupillary responses.
 import numpy as np
 import scipy.optimize
 
-def pupil_kernel(duration=4, fs=1000, npar=10.1, tmax=930.0):
+def pupil_get_max_duration(npar,tmax,thr=1e-8,stepsize=1.):
+    """
+    Get the time when the PRF with parameters $n$ and $t_{max}$ is decayed to
+    `thr`. This gives an indication of how long the `duration` parameter
+    in :py:func:`pupil_kernel()` should be chosen.
+    
+    Parameters
+    -----------
+    npar,tmax: float
+        PRF parameters, see :py:func:`pupil_kernel()`
+    thr: float
+        desired value to which the PRF is decayed (the lower `thr`, the longer the duration)
+    stepsize: float
+        precision of the maximum duration in ms
+        
+    Returns
+    --------
+    tdur: float
+        first value of t so that PRF(t)<`thr`
+    """
+    # start looking from `tmax` (which is time of the peak)
+    tdur=tmax
+    while pp.pupil_kernel_t(tdur,npar,tmax)>thr:
+        tdur=tdur+stepsize # in steps of `stepsize` ms
+    return tdur
+
+def pupil_kernel_t(t,npar,tmax):
+    """
+    According to Hoeks and Levelt (1993, 
+    https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf), 
+    the PRF can be described by the so-called Erlang gamma function
+    $$h_{HL}(t) = t^n e^{-nt/t_{max}}$$
+    which we normalize to
+    $$h(t)=\\frac{1}{h_{max}} h_{HL}(t)$$
+    where $$h_{max} = \max_t{\\left(h_{HL}(t)\\right)} = e^{-n}t_{max}^{n}$$
+    which yields a maximum value of 1 for this function. 
+    The function $h(t)$ is implemented in :py:func:`pupil_kernel()`.
+    
+    This version of the function evaluates the PRF at inputs `t`.
+    
+    Parameters
+    -----------
+    t: float/np.array
+        in ms
+    npar: float
+        n in the equation above
+    tmax: float
+        t_{max} in the equation above
+
+    Returns
+    --------
+    h: np.array
+        PRF evaluated at `t`
+    """
+    hmax=np.exp(-npar)*tmax**npar ## theoretical maximum
+    h = t**(npar) * np.exp(-npar*t / tmax)   #Erlang gamma function Hoek & Levelt (1993)
+    h=h/hmax
+    return h
+
+def pupil_kernel(duration=4000, fs=1000, npar=10.1, tmax=930.0):
     """
     According to Hoeks and Levelt (1993, 
     https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf), 
@@ -23,7 +82,7 @@ def pupil_kernel(duration=4, fs=1000, npar=10.1, tmax=930.0):
     -----------
     
     duration: float
-        maximum of the time window for which to calculate the PRF [0,duration]
+        in ms; maximum of the time window for which to calculate the PRF [0,duration]
     fs: float
         sampling rate for resolving the PRF
     npar: float
@@ -37,11 +96,12 @@ def pupil_kernel(duration=4, fs=1000, npar=10.1, tmax=930.0):
     h: np.array
         sampled version of h(t) over the interval [0,`duration`] with sampling rate `fs`
     """
-    n=int(duration*fs)
-    t = np.linspace(0,duration, n, dtype = np.float)*1000 # in ms
-    h = t**(npar) * np.exp(-npar*t / tmax)   #Erlang gamma function Hoek & Levelt (1993)
+    n=int(duration/1000.*fs)
+    t = np.linspace(0,duration, n, dtype = np.float)
+    h=pupil_kernel_t(t,npar,tmax)
+    #h = t**(npar) * np.exp(-npar*t / tmax)   #Erlang gamma function Hoek & Levelt (1993)
     #hmax=np.exp(-npar)*tmax**npar ## theoretical maximum
-    return h/h.max() # rescale to height=1
+    return h#/h.max() # rescale to height=1
 
 def pupilresponse_nnls(tx, sy, event_onsets, fs, npar=10.1, tmax=930):
     """
