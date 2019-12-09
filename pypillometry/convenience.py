@@ -93,6 +93,21 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
     $ jupyter nbextension enable --py widgetsnbextension
     $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 
+    Parameters
+    ----------
+    
+    tx : np.ndarray
+        time-vector in seconds    
+    sy : np.ndarray
+        raw pupil signal        
+    event_onsets : list
+        onsets of events (stimuli/responses) in seconds
+    overlays: tuple of np.array
+        signals to overlay over the plot, given as tuple of arrays of same length as `tx`
+    overlay_labels: tuple of strings
+        labels for the overlays to be displayed in the legend
+    figsize: tuple of int
+        dimensions for the plot
     """
     import pylab as plt
     from ipywidgets import interact, interactive, fixed, interact_manual, Layout
@@ -133,3 +148,5 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
     )
 
     interact(draw_plot, plotxrange=wid_range)
+    
+

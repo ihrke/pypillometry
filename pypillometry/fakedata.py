@@ -1,7 +1,6 @@
 """
 fakedata.py
 ====================================
-
 Generate artificial pupil-data.
 """
 import numpy as np
@@ -41,17 +40,14 @@ def generate_pupil_data(event_onsets, fs=1000, pad=5000, baseline_lowpass=0.2,
         a single event from a (positive) normal distribution with mean as determined
         by `evoked_response_perc` and sd `response_fluct_sd` (in units of 
         `evoked_response_perc`).
-
     prf_npar: tuple (float,float)
         (mean,std) of the npar parameter from :py:func:`pypillometry.pupil.pupil_kernel()`. 
         If the std is exactly zero, then the mean is used for all pupil-responses.
         If the std is positive, npar is taken i.i.d. from ~ normal(mean,std) for each event.
-
     prf_tmax: tuple (float,float)
         (mean,std) of the tmax parameter from :py:func:`pypillometry.pupil.pupil_kernel()`. 
         If the std is exactly zero, then the mean is used for all pupil-responses.
         If the std is positive, tmax is taken i.i.d. from ~ normal(mean,std) for each event.
-
     prop_spurious_events: float
         Add random events to the pupil signal. `prop_spurious_events` is expressed
         as proportion of the number of real events. 
@@ -151,23 +147,25 @@ def generate_pupil_data(event_onsets, fs=1000, pad=5000, baseline_lowpass=0.2,
     return (tx,sy,x0,delta_weights)
 
 
-def get_dataset(ntrials=100, isi=2000, rtdist=(1000,500),fs=1000,pad=5000):
+def get_dataset(ntrials=100, isi=2000, rtdist=(1000,500),fs=1000,pad=5000, **kwargs):
     """
     Convenience function to run :py:func:`generate_pupil_data()` with standard parameters.
-
     Parameters
     -----------
     
     ntrials:int
         number of trials
     isi: float
-        inter-stimulus interval in seconds
+        inter-stimulus interval in milliseconds
     rtdist: tuple (float,float)
         mean and std of a (truncated at zero) normal distribution to generate response times
     fs: float
         sampling rate
     pad: float
         padding before the first and after the last event in seconds
+    kwargs: dict
+        arguments for :py:func:`pypillometry.fakedata.generate_pupil_data()`
+
     
     Returns
     --------
@@ -180,7 +178,6 @@ def get_dataset(ntrials=100, isi=2000, rtdist=(1000,500),fs=1000,pad=5000):
         timing of the simulated event-onsets (stimuli and responses not separated)
     response_coef: np.array
         pupil-response strengths (len(event_onsets))
-
     """
     prf_npar=(10.35,0)
     prf_tmax=(917.0,0)
@@ -189,11 +186,6 @@ def get_dataset(ntrials=100, isi=2000, rtdist=(1000,500),fs=1000,pad=5000):
     resp_onsets=stim_onsets+rts
     event_onsets=np.concatenate( (stim_onsets, resp_onsets) )
 
-    tx,sy,baseline,response_coef=generate_pupil_data(event_onsets, fs=fs, pad=pad,
-                                                     prf_npar=prf_npar,
-                                                     prf_tmax=prf_tmax,
-                                                     baseline_lowpass=0.2, 
-                                                     evoked_response_perc=0.001,
-                                                     noise_amp=0.0002, 
-                                                     prop_spurious_events=0.2)
+    kwargs.update({"fs":fs})
+    tx,sy,baseline,response_coef=generate_pupil_data(event_onsets, **kwargs)
     return tx,sy,baseline,event_onsets, response_coef

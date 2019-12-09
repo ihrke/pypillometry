@@ -11,8 +11,9 @@ Welcome to pypillometry's documentation!
 API documentation
 -----------------
 
-.. automodule:: pypillometry
+.. automodule:: pypillometry.pupildata
     :members:
+    :special-members:
 
 .. automodule:: pypillometry.fakedata
     :members:
