@@ -6,7 +6,7 @@ functions related to pupillary responses.
 """
 import numpy as np
 import scipy.optimize
-
+from .convenience import *
 
 def pupil_kernel_t(t,npar,tmax):
     """
@@ -154,7 +154,7 @@ def pupil_build_design_matrix(tx,event_onsets,fs,npar,tmax,max_duration="estimat
     x1[ np.logical_and(X>=evon_ix_M1, X<evon_ix_M2) ]=np.tile(h, evon_ix.size)
     return x1
 
-def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free"):
+def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=10):
     """
     Estimate pupil-response based on event-onsets.
     
@@ -173,53 +173,68 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free"):
         tmax-parameter for the canonical response-function or "free";
         in case of "free", the function optimizes for this parameter
     """
+    def vprint(v, s):
+        if v<=verbose:
+            print(s,end="")
+
     if npar=="free" and tmax=="free":
         print("MSG: optimizing both npar and tmax, might take a while...")
         def objective(x, event_onsets, tx,sy,fs):
-            npar,tmax=x
-            x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, 6000)
+            vprint(50,".")
+            npar_t,tmax_t=x
+            npar=trans_logistic_vec(npar_t, a=1, b=20, inverse=True)
+            tmax=trans_logistic_vec(tmax_t, a=100, b=2000, inverse=True)
+            maxdur=pupil_get_max_duration(npar,tmax)
+            vprint(100, "\nnpar,tmax,maxdur=(%.2f,%.2f,%i)"%(npar,tmax,maxdur))            
+            x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, maxdur)
             coef=scipy.optimize.nnls(x1.T, sy)[0]    
             pred=np.dot(x1.T, coef)  ## predicted signal
             resid=sy-pred         ## residuals            
             return np.sum(resid**2)
-        r=scipy.optimize.minimize(objective, (10,900), 
+        
+        npar_start_trans=trans_logistic_vec(10,a=1,b=20,inverse=False)
+        tmax_start_trans=trans_logistic_vec(900,a=100,b=2000,inverse=False)
+        r=scipy.optimize.minimize(objective, (npar_start_trans, tmax_start_trans), 
                                   args=(event_onsets,tx,sy,fs), 
                                   method="Nelder-Mead")        
-        npar, tmax=r.x[0], r.x[1]
+        npar=trans_logistic_vec(r.x[0], a=1, b=20, inverse=False)
+        tmax=trans_logistic_vec(r.x[1], a=100, b=2000, inverse=False)
     elif npar=="free":
         print("MSG: optimizing npar only, might take a while...")
         def objective(x, tmax, event_onsets, tx,sy,fs):
-            npar=x[0]
+            vprint(50,".")
+            npar=x
+            vprint(100, "\nnpar=(%.2f)"%(npar))            
             x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, 6000)
             coef=scipy.optimize.nnls(x1.T, sy)[0]    
             pred=np.dot(x1.T, coef)  ## predicted signal
             resid=sy-pred         ## residuals            
             return np.sum(resid**2)
-        r=scipy.optimize.minimize(objective, (10,), 
+        r=scipy.optimize.minimize_scalar(objective, bounds=(0,20),
                                   args=(tmax,event_onsets,tx,sy,fs), 
-                                  method="Nelder-Mead")        
-        npar=r.x[0]
+                                  method="bounded")        
+        npar=r.x
     elif tmax=="free":
         print("MSG: optimizing tmax only, might take a while...")
         def objective(x, npar, event_onsets, tx,sy,fs):
-            tmax=x[0]
+            vprint(50,".")            
+            tmax=x
+            vprint(100, "\ntmax=(%.2f)"%(tmax))            
             x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, 6000)
             coef=scipy.optimize.nnls(x1.T, sy)[0]    
             pred=np.dot(x1.T, coef)  ## predicted signal
             resid=sy-pred         ## residuals            
             return np.sum(resid**2)
-        r=scipy.optimize.minimize(objective, (900,), 
+        r=scipy.optimize.minimize_scalar(objective, bounds=(400,1500),
                                   args=(npar,event_onsets,tx,sy,fs), 
-                                  method="Nelder-Mead")        
-        npar=r.x[0]        
-    else:
-        pass
+                                  method="bounded")        
+        tmax=r.x
     
     x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, 6000)
     coef=scipy.optimize.nnls(x1.T, sy)[0]    
     pred=np.dot(x1.T, coef)  ## predicted signal
     
-    return pred, coef, x1
+    return pred, coef, npar, tmax, x1
 
         
      

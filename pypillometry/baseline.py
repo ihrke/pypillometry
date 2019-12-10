@@ -317,7 +317,9 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     syd2=syd-meansigvb
 
     vprint(10, "Estimating PRF model (NNLS)")    
-    coef,pred,resid=pupilresponse_nnls(txd,syd2,event_onsets,fs=fsd)
+    #coef,pred,resid=pupilresponse_nnls(txd,syd2,event_onsets,fs=fsd)
+    pred, coef, _, _, _=pupil_response(txd, syd2, event_onsets, fsd, npar=10, tmax=917)
+    resid=syd-pred
     vprint(10, "Done Estimating PRF model (NNLS)")
     
     ### 2nd iteration

@@ -82,6 +82,65 @@ $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">sim_params={}</em>, <em class="sig-param">real_baseline=None</em>, <em class="sig-param">real_response_coef=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="pypillometry.pupildata.FakePupilData.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">interactive=False</em>, <em class="sig-param">baseline=True</em>, <em class="sig-param">response=False</em>, <em class="sig-param">model=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a plot of the pupil data using <cite>matplotlib</cite> or <a class="reference internal" href="#pypillometry.convenience.plot_pupil_ipy" title="pypillometry.convenience.plot_pupil_ipy"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.convenience.plot_pupil_ipy()</span></code></a>
+if <cite>interactive=True</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>baseline</strong> (<em>plot baseline if estimated</em>) – </p></li>
+<li><p><strong>response</strong> (<em>plot response if estimated</em>) – </p></li>
+<li><p><strong>model</strong> (<em>plot full model if baseline and response have been estimated</em>) – </p></li>
+<li><p><strong>interactive</strong> (<em>if True</em><em>, </em><em>plot with sliders to adjust range</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.FakePupilData.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param">mean=None</em>, <em class="sig-param">sd=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale the pupillary signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.
+If these variables are not provided, use the signal’s mean and std.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mean</strong> (<em>mean to subtract from signal</em>) – </p></li>
+<li><p><strong>sd</strong> (<em>sd to scale with</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Scaling-parameters are being saved in the <cite>scale_params</cite> argument.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.FakePupilData.unscale">
+<code class="sig-name descname">unscale</code><span class="sig-paren">(</span><em class="sig-param">mean=None</em>, <em class="sig-param">sd=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.unscale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale back to original values using either values provided as arguments
+or the values stored in <cite>scale_params</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mean</strong> (<em>mean to add from signal</em>) – </p></li>
+<li><p><strong>sd</strong> (<em>sd to scale with</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -181,10 +240,21 @@ if True, <cite>fsd</cite> is the decimate factor</p></li>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.estimate_response">
-<code class="sig-name descname">estimate_response</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.estimate_response" title="Permalink to this definition">¶</a></dt>
-<dd><div class="admonition note">
+<code class="sig-name descname">estimate_response</code><span class="sig-paren">(</span><em class="sig-param">npar='free'</em>, <em class="sig-param">tmax='free'</em>, <em class="sig-param">verbose=50</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.estimate_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate pupil-response based on event-onsets, see
+<a class="reference internal" href="#pypillometry.pupil.pupil_response" title="pypillometry.pupil.pupil_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_response()</span></code></a>.</p>
+<dl class="simple">
+<dt>npar: float</dt><dd><p>npar-parameter for the canonical response-function or “free”;
+in case of “free”, the function optimizes for this parameter</p>
+</dd>
+<dt>tmax: float</dt><dd><p>tmax-parameter for the canonical response-function or “free”;
+in case of “free”, the function optimizes for this parameter</p>
+</dd>
+</dl>
+<div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>the results of the estimation is stored in members <cite>response</cite> and <cite>response_pars</cite></p>
+<p>the results of the estimation is stored in members <cite>response</cite>, <cite>response_x</cite> (design matrix)
+and <cite>response_pars</cite></p>
 </div>
 </dd></dl>
 
@@ -216,12 +286,17 @@ see <a class="reference internal" href="#pypillometry.baseline.butter_lowpass_fi
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">interactive=False</em>, <em class="sig-param">baseline=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.plot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">interactive=False</em>, <em class="sig-param">baseline=True</em>, <em class="sig-param">response=False</em>, <em class="sig-param">model=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a plot of the pupil data using <cite>matplotlib</cite> or <a class="reference internal" href="#pypillometry.convenience.plot_pupil_ipy" title="pypillometry.convenience.plot_pupil_ipy"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.convenience.plot_pupil_ipy()</span></code></a>
 if <cite>interactive=True</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>interactive</strong> (<em>if True</em><em>, </em><em>plot with sliders to adjust range</em>) – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>baseline</strong> (<em>plot baseline if estimated</em>) – </p></li>
+<li><p><strong>response</strong> (<em>plot response if estimated</em>) – </p></li>
+<li><p><strong>model</strong> (<em>plot full model if baseline and response have been estimated</em>) – </p></li>
+<li><p><strong>interactive</strong> (<em>if True</em><em>, </em><em>plot with sliders to adjust range</em>) – </p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
@@ -251,6 +326,14 @@ If these variables are not provided, use the signal’s mean and std.</p>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.sub_slice">
+<code class="sig-name descname">sub_slice</code><span class="sig-paren">(</span><em class="sig-param">start=-inf</em>, <em class="sig-param">end=inf</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.sub_slice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new <cite>PupilData</cite> object that is a shortened version
+of the current one (contains all data between <cite>start</cite> and
+<cite>end</cite> in the local time-units).</p>
 </dd></dl>
 
 <dl class="method">
@@ -308,11 +391,27 @@ Expressed in units of mean baseline pupil diameter.</p></li>
 
 <dl class="function">
 <dt id="pypillometry.pupildata.plotpd">
-<code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">plotpd</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">subplots=False</em>, <em class="sig-param">baseline=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.plotpd" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">plotpd</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">subplots=False</em>, <em class="sig-param">baseline=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.plotpd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plotting for <cite>PupilData</cite> objects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>subplots</strong> (plot the different <cite>PupilData</cite>-objects in the same plot or subplots) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.pupildata.plotpd_ia">
+<code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">plotpd_ia</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">figsize=(16</em>, <em class="sig-param">8)</em>, <em class="sig-param">baseline=True</em>, <em class="sig-param">events=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.plotpd_ia" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interactive plotting for multiple <cite>PupilData</cite> objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<cite>PupilData</cite> datasets to plot) – </p></li>
+<li><p><strong>figsize</strong> (<em>dimensions of the plot</em>) – </p></li>
+<li><p><strong>baseline</strong> (<em>plot baselines</em><em>, </em><em>too?</em>) – </p></li>
+<li><p><strong>events</strong> (plot event-markers? if None, no events are plotted, otherwise <cite>events</cite>) – is the index of the <cite>PupilData</cite> object to take the events from</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -700,7 +799,7 @@ The function <span class="math notranslate nohighlight">\(h(t)\)</span> is imple
 
 <dl class="function">
 <dt id="pypillometry.pupil.pupil_response">
-<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupil_response</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets</em>, <em class="sig-param">fs</em>, <em class="sig-param">npar='free'</em>, <em class="sig-param">tmax='free'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupil_response" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupil_response</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets</em>, <em class="sig-param">fs</em>, <em class="sig-param">npar='free'</em>, <em class="sig-param">tmax='free'</em>, <em class="sig-param">verbose=10</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupil_response" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate pupil-response based on event-onsets.</p>
 <dl class="simple">
 <dt>tx<span class="classifier">np.ndarray</span></dt><dd><p>time-vector in milliseconds</p>
