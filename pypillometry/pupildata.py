@@ -203,7 +203,7 @@ class PupilData:
         self.sy=downsample(self.sy, dsfac)
         self.fs=fsd
 
-    def copy(self, new_name: Optional[str]=None) -> PupilData:
+    def copy(self, new_name: Optional[str]=None):
         """
         Make and return a deep-copy of the pupil data.
         """
