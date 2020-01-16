@@ -179,8 +179,6 @@ def get_dataset(ntrials=100, isi=2000, rtdist=(1000,500),fs=1000,pad=5000, **kwa
     response_coef: np.array
         pupil-response strengths (len(event_onsets))
     """
-    prf_npar=(10.35,0)
-    prf_tmax=(917.0,0)
     stim_onsets=np.arange(ntrials)*isi+pad
     rts=stats.truncnorm.rvs( (0-rtdist[0])/rtdist[1], np.inf, loc=rtdist[0], scale=rtdist[1], size=ntrials)
     resp_onsets=stim_onsets+rts

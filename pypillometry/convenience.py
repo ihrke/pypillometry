@@ -5,6 +5,7 @@ convenience.py
 Some convenience functions.
 """
 
+
 import numpy as np
 
 def nprange(ar):
@@ -82,6 +83,7 @@ def StanModel_cache(model_code, model_name=None, **kwargs):
     else:
         print("Using cached StanModel")
     return sm
+
 
 
 def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None, figsize=(16,8)):

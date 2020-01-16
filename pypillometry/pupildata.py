@@ -20,7 +20,7 @@ import copy
 import math
 
 #from pytypes import typechecked
-from typing import Sequence, Union, List, TypeVar, Optional, Tuple
+from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
 PupilArray=Union[np.ndarray, List[float]]
 
 #@typechecked
@@ -219,9 +219,17 @@ class PupilData:
             fsd=float(self.fs/dsfac)
         else:
             dsfac=int(self.fs/fsd) # calculate downsampling factor
-        self.tx=downsample(self.tx, dsfac)
-        self.sy=downsample(self.sy, dsfac)
-        self.baseline=downsample(self.baseline, dsfac)
+        
+        ## downsample all arrays that have the original sy-length
+        # (this is so that the function is general for subclasses, as well)
+        nd=self.sy.size
+        for k, v in self.__dict__.items():
+            if isinstance(v,np.ndarray) and v.size==nd:
+                self.__dict__[k]=downsample(self.__dict__[k], dsfac)
+            
+        #self.tx=downsample(self.tx, dsfac)
+        #self.sy=downsample(self.sy, dsfac)
+        #self.baseline=downsample(self.baseline, dsfac)
         self.fs=fsd
 
     def copy(self, new_name: Optional[str]=None):
@@ -308,7 +316,31 @@ class PupilData:
             raise ValueError("Undefined method for baseline estimation: %s"%method)         
         self.baseline_estimated=True
 
-    def estimate_response(self, npar: Union[str,float]="free", tmax: Union[str,float]="free", verbose: int=50):
+    def stat_per_event(self, interval: Tuple[float,float], statfct: Callable=np.mean):
+        """
+        Return result of applying a statistical function to pupillometric data in a
+        given interval relative to event-onsets. For example, extract mean 
+        pupil-size in interval before trial onset.
+
+        Parameters
+        -----------
+        interval : tuple (min,max)
+            time-window in ms relative to event-onset (0 is event-onset)
+
+        statfct : function
+            function mapping np.array to a single number
+
+        Returns
+        --------
+
+        result: np.array
+            number of event-onsets long result array
+        """
+        return stat_event_interval(self.tx, self.sy, self.event_onsets, interval, statfct)
+        
+    def estimate_response(self, npar: Union[str,float]="free", tmax: Union[str,float]="free", 
+                          verbose: int=50,
+                          bounds: dict={"npar":(1,20), "tmax":(100,2000)}):
         """
         Estimate pupil-response based on event-onsets, see
         :py:func:`pypillometry.pupil.pupil_response()`.
@@ -319,7 +351,9 @@ class PupilData:
         tmax: float
             tmax-parameter for the canonical response-function or "free";
             in case of "free", the function optimizes for this parameter
-        
+        bounds: dict
+            in case that one or both parameters are estimated, give the lower
+            and upper bounds for the parameters        
         
         Note
         ----
@@ -332,12 +366,14 @@ class PupilData:
         
         pred, coef, npar_est, tmax_est, x1=pupil_response(self.tx, self.sy-self.baseline, 
                                                           self.event_onsets, self.fs, 
-                                                          npar=npar, tmax=tmax, verbose=verbose)
+                                                          npar=npar, tmax=tmax, verbose=verbose,
+                                                         bounds=bounds)
         self.response_pars={"npar":npar_est,
                             "npar_free":True if npar=="free" else False,
                             "tmax":tmax_est,
                             "tmax_free":True if tmax=="free" else False,
-                            "coef":coef
+                            "coef":coef,
+                            "bounds":bounds
                            }
         
         self.response=pred
@@ -415,7 +451,8 @@ class FakePupilData(PupilData):
              interactive: bool=False, 
              baseline: bool=True, 
              response: bool=False,
-             model: bool=True
+             model: bool=True,
+             simulated: bool=True
             ) -> None:
         """
         Make a plot of the pupil data using `matplotlib` or :py:func:`pypillometry.convenience.plot_pupil_ipy()`
@@ -426,19 +463,30 @@ class FakePupilData(PupilData):
         baseline: plot baseline if estimated
         response: plot response if estimated
         model: plot full model if baseline and response have been estimated
+        simulated: plot also the "ground-truth" baseline and response (i.e., the simulated one)?
         interactive: if True, plot with sliders to adjust range
         """
         overlays=tuple()
         overlay_labels=tuple()
         if baseline and self.baseline_estimated:
-            overlays+=(self.baseline,self.sim_baseline)                
-            overlay_labels+=("baseline","sim baseline")
+            overlays+=(self.baseline,)
+            overlay_labels+=("baseline",)
+        if baseline and simulated:
+            overlays+=(self.sim_baseline,)
+            overlay_labels+=("sim_baseline",)
         if response and self.response_estimated:
-            overlays+=(self.response,self.sim_response)
-            overlay_labels+=("response","sim response")             
+            overlays+=(self.response,)
+            overlay_labels+=("response",)
+        if response and simulated:
+            overlays+=(self.sim_response,)
+            overlay_labels+=("sim_response",)
         if model and self.baseline_estimated and self.response_estimated:
-            overlays+=(self.baseline+self.response,self.sim_baseline+self.sim_response)
-            overlay_labels+=("model","real model")        
+            overlays+=(self.baseline+self.response,)
+            overlay_labels+=("model",)
+        if model and simulated:
+            overlays+=(self.sim_baseline+self.sim_response,)
+            overlay_labels+=("real model",)
+            
         if interactive:
             plot_pupil_ipy(self.tx, self.sy, self.event_onsets,
                            overlays=overlays, overlay_labels=overlay_labels)
@@ -591,10 +639,10 @@ def create_fake_pupildata(**kwargs):
         "prf_npar":(10.35,0),
         "prf_tmax":(917.0,0),
         "prop_spurious_events":0.1,
-        "noise_amp":0.0002
+        "noise_amp":0.0001
     }
     sim_params.update(kwargs)
-    print(sim_params)
+    #print(sim_params)
     tx,sy,baseline,event_onsets,response_coef=get_dataset(**sim_params)
     ds=FakePupilData(sy,sim_params["fs"],tx, event_onsets,sim_params=sim_params, 
                      real_baseline=baseline, real_response_coef=response_coef)
