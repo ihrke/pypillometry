@@ -84,7 +84,7 @@ $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 
 <dl class="method">
 <dt id="pypillometry.pupildata.FakePupilData.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">interactive=False</em>, <em class="sig-param">baseline=True</em>, <em class="sig-param">response=False</em>, <em class="sig-param">model=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.plot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">interactive=False</em>, <em class="sig-param">baseline=True</em>, <em class="sig-param">response=False</em>, <em class="sig-param">model=True</em>, <em class="sig-param">simulated=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a plot of the pupil data using <cite>matplotlib</cite> or <a class="reference internal" href="#pypillometry.convenience.plot_pupil_ipy" title="pypillometry.convenience.plot_pupil_ipy"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.convenience.plot_pupil_ipy()</span></code></a>
 if <cite>interactive=True</cite>.</p>
 <dl class="field-list simple">
@@ -93,6 +93,7 @@ if <cite>interactive=True</cite>.</p>
 <li><p><strong>baseline</strong> (<em>plot baseline if estimated</em>) – </p></li>
 <li><p><strong>response</strong> (<em>plot response if estimated</em>) – </p></li>
 <li><p><strong>model</strong> (<em>plot full model if baseline and response have been estimated</em>) – </p></li>
+<li><p><strong>simulated</strong> (<em>plot also the &quot;ground-truth&quot; baseline and response</em><em> (</em><em>i.e.</em><em>, </em><em>the simulated one</em><em>)</em><em>?</em>) – </p></li>
 <li><p><strong>interactive</strong> (<em>if True</em><em>, </em><em>plot with sliders to adjust range</em>) – </p></li>
 </ul>
 </dd>
@@ -240,7 +241,7 @@ if True, <cite>fsd</cite> is the decimate factor</p></li>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.estimate_response">
-<code class="sig-name descname">estimate_response</code><span class="sig-paren">(</span><em class="sig-param">npar='free'</em>, <em class="sig-param">tmax='free'</em>, <em class="sig-param">verbose=50</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.estimate_response" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">estimate_response</code><span class="sig-paren">(</span><em class="sig-param">npar='free'</em>, <em class="sig-param">tmax='free'</em>, <em class="sig-param">verbose=50</em>, <em class="sig-param">bounds={'npar': (1</em>, <em class="sig-param">20)</em>, <em class="sig-param">'tmax': (100</em>, <em class="sig-param">2000)}</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.estimate_response" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate pupil-response based on event-onsets, see
 <a class="reference internal" href="#pypillometry.pupil.pupil_response" title="pypillometry.pupil.pupil_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_response()</span></code></a>.</p>
 <dl class="simple">
@@ -249,6 +250,9 @@ in case of “free”, the function optimizes for this parameter</p>
 </dd>
 <dt>tmax: float</dt><dd><p>tmax-parameter for the canonical response-function or “free”;
 in case of “free”, the function optimizes for this parameter</p>
+</dd>
+<dt>bounds: dict</dt><dd><p>in case that one or both parameters are estimated, give the lower
+and upper bounds for the parameters</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -324,6 +328,28 @@ If these variables are not provided, use the signal’s mean and std.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.stat_per_event">
+<code class="sig-name descname">stat_per_event</code><span class="sig-paren">(</span><em class="sig-param">interval</em>, <em class="sig-param">statfct=&lt;function mean&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.stat_per_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return result of applying a statistical function to pupillometric data in a
+given interval relative to event-onsets. For example, extract mean
+pupil-size in interval before trial onset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>interval</strong> (<em>tuple</em><em> (</em><em>min</em><em>,</em><em>max</em><em>)</em>) – time-window in ms relative to event-onset (0 is event-onset)</p></li>
+<li><p><strong>statfct</strong> (<em>function</em>) – function mapping np.array to a single number</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>result</strong> – number of event-onsets long result array</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -687,6 +713,13 @@ Similar behaviour as R’s bs() function from the splines-library.</p>
 <h3>pupil.py<a class="headerlink" href="#pupil-py" title="Permalink to this headline">¶</a></h3>
 <p>functions related to pupillary responses.</p>
 <dl class="function">
+<dt id="pypillometry.pupil.plot_prf">
+<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">plot_prf</code><span class="sig-paren">(</span><em class="sig-param">npar=10.1</em>, <em class="sig-param">tmax=930</em>, <em class="sig-param">max_duration='estimate'</em>, <em class="sig-param">fs=500</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.plot_prf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot profile of the pupil-response function (PRF) with
+parameters <cite>npar</cite> and <cite>tmax</cite>.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="pypillometry.pupil.pupil_build_design_matrix">
 <code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupil_build_design_matrix</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">event_onsets</em>, <em class="sig-param">fs</em>, <em class="sig-param">npar</em>, <em class="sig-param">tmax</em>, <em class="sig-param">max_duration='estimate'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupil_build_design_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct design matrix (nevents x n).
@@ -799,7 +832,7 @@ The function <span class="math notranslate nohighlight">\(h(t)\)</span> is imple
 
 <dl class="function">
 <dt id="pypillometry.pupil.pupil_response">
-<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupil_response</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets</em>, <em class="sig-param">fs</em>, <em class="sig-param">npar='free'</em>, <em class="sig-param">tmax='free'</em>, <em class="sig-param">verbose=10</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupil_response" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">pupil_response</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets</em>, <em class="sig-param">fs</em>, <em class="sig-param">npar='free'</em>, <em class="sig-param">tmax='free'</em>, <em class="sig-param">verbose=10</em>, <em class="sig-param">bounds={'npar': (1</em>, <em class="sig-param">20)</em>, <em class="sig-param">'tmax': (100</em>, <em class="sig-param">2000)}</em>, <em class="sig-param">display_progress=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.pupil_response" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate pupil-response based on event-onsets.</p>
 <dl class="simple">
 <dt>tx<span class="classifier">np.ndarray</span></dt><dd><p>time-vector in milliseconds</p>
@@ -815,6 +848,9 @@ in case of “free”, the function optimizes for this parameter</p>
 </dd>
 <dt>tmax: float</dt><dd><p>tmax-parameter for the canonical response-function or “free”;
 in case of “free”, the function optimizes for this parameter</p>
+</dd>
+<dt>bounds: dict</dt><dd><p>in case that one or both parameters are estimated, give the lower
+and upper bounds for the parameters</p>
 </dd>
 </dl>
 </dd></dl>
@@ -841,6 +877,31 @@ resid: residuals (sy-pred)</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.pupil.stat_event_interval">
+<code class="sig-prename descclassname">pypillometry.pupil.</code><code class="sig-name descname">stat_event_interval</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets</em>, <em class="sig-param">interval</em>, <em class="sig-param">statfct=&lt;function mean&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupil.stat_event_interval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return result of applying a statistical function to pupillometric data in a
+given interval relative to event-onsets. For example, extract mean
+pupil-size in interval before trial onset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in milliseconds</p></li>
+<li><p><strong>sy</strong> (<em>np.ndarray</em>) – (baseline-corrected) pupil signal</p></li>
+<li><p><strong>event_onsets</strong> (<em>list</em>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>interval</strong> (<em>tuple</em><em> (</em><em>min</em><em>,</em><em>max</em><em>)</em>) – time-window in ms relative to event-onset (0 is event-onset)</p></li>
+<li><p><strong>statfct</strong> (<em>function</em>) – function mapping np.array to a single number</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>result</strong> – number of event-onsets long result array</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
