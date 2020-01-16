@@ -344,6 +344,7 @@ class PupilData:
         """
         Estimate pupil-response based on event-onsets, see
         :py:func:`pypillometry.pupil.pupil_response()`.
+        
 
         npar: float
             npar-parameter for the canonical response-function or "free";
