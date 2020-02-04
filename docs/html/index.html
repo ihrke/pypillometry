@@ -42,7 +42,8 @@
 <div class="section" id="pypillometry">
 <h1>pypillometry<a class="headerlink" href="#pypillometry" title="Permalink to this headline">¶</a></h1>
 <a class="reference external image-reference" href="https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW"><img alt="" src="https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW" /></a>
-<p>pupillometry with python</p>
+<p>Analysing pupillometric data with Python.</p>
+<p>Github-repository: <a class="reference external" href="https://github.com/ihrke/pypillometry">https://github.com/ihrke/pypillometry</a></p>
 <div class="section" id="setup">
 <h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="using-conda">
@@ -290,7 +291,7 @@ see <a class="reference internal" href="#pypillometry.baseline.butter_lowpass_fi
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">interactive=False</em>, <em class="sig-param">baseline=True</em>, <em class="sig-param">response=False</em>, <em class="sig-param">model=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.plot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">interactive=False</em>, <em class="sig-param">baseline=True</em>, <em class="sig-param">response=False</em>, <em class="sig-param">model=True</em>, <em class="sig-param">units='s'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a plot of the pupil data using <cite>matplotlib</cite> or <a class="reference internal" href="#pypillometry.convenience.plot_pupil_ipy" title="pypillometry.convenience.plot_pupil_ipy"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.convenience.plot_pupil_ipy()</span></code></a>
 if <cite>interactive=True</cite>.</p>
 <dl class="field-list simple">
@@ -300,6 +301,7 @@ if <cite>interactive=True</cite>.</p>
 <li><p><strong>response</strong> (<em>plot response if estimated</em>) – </p></li>
 <li><p><strong>model</strong> (<em>plot full model if baseline and response have been estimated</em>) – </p></li>
 <li><p><strong>interactive</strong> (<em>if True</em><em>, </em><em>plot with sliders to adjust range</em>) – </p></li>
+<li><p><strong>units</strong> (<em>one of &quot;sec&quot;=seconds</em><em>, </em><em>&quot;ms&quot;=millisec</em><em>, </em><em>&quot;min&quot;=minutes</em><em>, </em><em>&quot;h&quot;=hours</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -325,11 +327,6 @@ If these variables are not provided, use the signal’s mean and std.</p>
 <p class="admonition-title">Note</p>
 <p>Scaling-parameters are being saved in the <cite>scale_params</cite> argument.</p>
 </div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="method">
@@ -934,7 +931,7 @@ Wikipedia parametrization.</p>
 
 <dl class="function">
 <dt id="pypillometry.convenience.plot_pupil_ipy">
-<code class="sig-prename descclassname">pypillometry.convenience.</code><code class="sig-name descname">plot_pupil_ipy</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">overlays=None</em>, <em class="sig-param">overlay_labels=None</em>, <em class="sig-param">figsize=(16</em>, <em class="sig-param">8)</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.convenience.plot_pupil_ipy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pypillometry.convenience.</code><code class="sig-name descname">plot_pupil_ipy</code><span class="sig-paren">(</span><em class="sig-param">tx</em>, <em class="sig-param">sy</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">overlays=None</em>, <em class="sig-param">overlay_labels=None</em>, <em class="sig-param">figsize=(16</em>, <em class="sig-param">8)</em>, <em class="sig-param">xlab='ms'</em>, <em class="sig-param">nsteps=100</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.convenience.plot_pupil_ipy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plotting with interactive adjustment of plotting window.
 To use this, do</p>
 <p>$ pip install ipywidgets
@@ -949,6 +946,8 @@ $ jupyter labextension install &#64;jupyter-widgets/jupyterlab-manager</p>
 <li><p><strong>overlays</strong> (<em>tuple of np.array</em>) – signals to overlay over the plot, given as tuple of arrays of same length as <cite>tx</cite></p></li>
 <li><p><strong>overlay_labels</strong> (<em>tuple of strings</em>) – labels for the overlays to be displayed in the legend</p></li>
 <li><p><strong>figsize</strong> (<em>tuple of int</em>) – dimensions for the plot</p></li>
+<li><p><strong>xlab</strong> (<em>str</em>) – label for x-axis</p></li>
+<li><p><strong>nsteps</strong> (<em>int</em>) – number of steps for slider</p></li>
 </ul>
 </dd>
 </dl>
