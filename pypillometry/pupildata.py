@@ -157,9 +157,10 @@ class PupilData:
         self.scale_params={"mean":0, "sd":1}
         self.sy=(self.sy*sd)+mean
         self.baseline=(self.baseline*sd)+mean
-        self.response=(self.response*sd)        
+        self.response=(self.response*sd)
+        return self
         
-    def scale(self, mean: Optional[float]=None, sd: Optional[float]=None) -> None:
+    def scale(self, mean: Optional[float]=None, sd: Optional[float]=None):
         """
         Scale the pupillary signal by subtracting `mean` and dividing by `sd`.
         If these variables are not provided, use the signal's mean and std.
@@ -183,6 +184,7 @@ class PupilData:
         self.sy=(self.sy-mean)/sd
         self.baseline=(self.baseline-mean)/sd
         self.response=(self.response)/sd
+        return self
         
     def lowpass_filter(self, cutoff: float, order: int=2):
         """
@@ -198,6 +200,7 @@ class PupilData:
             filter order
         """
         self.sy=butter_lowpass_filter(self.sy, cutoff, self.fs, order)
+        return self
 
         
     def downsample(self, fsd: float, dsfac: bool=False):
@@ -231,6 +234,7 @@ class PupilData:
         #self.sy=downsample(self.sy, dsfac)
         #self.baseline=downsample(self.baseline, dsfac)
         self.fs=fsd
+        return self
 
     def copy(self, new_name: Optional[str]=None):
         """
@@ -250,7 +254,8 @@ class PupilData:
              interactive: bool=False, 
              baseline: bool=True, 
              response: bool=False,
-             model: bool=True
+             model: bool=True,
+             units: str="s"
             ) -> None:
         """
         Make a plot of the pupil data using `matplotlib` or :py:func:`pypillometry.convenience.plot_pupil_ipy()`
@@ -262,7 +267,24 @@ class PupilData:
         response: plot response if estimated
         model: plot full model if baseline and response have been estimated
         interactive: if True, plot with sliders to adjust range
+        units: one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours
         """
+        if units=="sec":
+            tx=self.tx/1000.
+            xlab="seconds"
+            evon=self.event_onsets/1000.
+        elif units=="min":
+            tx=self.tx/1000./60.
+            xlab="minutes"
+            evon=self.event_onsets/1000./60.
+        elif units=="h":
+            tx=self.tx/1000./60./60.
+            xlab="hours"
+            evon=self.event_onsets/1000./60./60.
+        else:
+            tx=self.tx
+            xlab="ms"
+            evon=self.event_onsets
         overlays=tuple()
         overlay_labels=tuple()
         if baseline and self.baseline_estimated:
@@ -275,13 +297,16 @@ class PupilData:
             overlays+=(self.baseline+self.response,)
             overlay_labels+=("model",)        
         if interactive:
-            plot_pupil_ipy(self.tx, self.sy, self.event_onsets,
-                           overlays=overlays, overlay_labels=overlay_labels)
+            plot_pupil_ipy(tx, self.sy, evon,
+                           overlays=overlays, overlay_labels=overlay_labels,
+                          xlab=xlab)
         else:
-            plt.plot(self.tx, self.sy)
+            plt.plot(tx, self.sy)
             for i,ov in enumerate(overlays):
-                plt.plot(self.tx, ov, label=overlay_labels[i])
+                plt.plot(tx, ov, label=overlay_labels[i])
+            plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)            
             plt.legend()
+            plt.xlabel(xlab)
             
     def estimate_baseline(self, method: str="envelope_iter_bspline_2", **kwargs):
         """
@@ -315,6 +340,7 @@ class PupilData:
         else:
             raise ValueError("Undefined method for baseline estimation: %s"%method)         
         self.baseline_estimated=True
+        return self
 
     def stat_per_event(self, interval: Tuple[float,float], statfct: Callable=np.mean):
         """
@@ -380,6 +406,7 @@ class PupilData:
         self.response=pred
         self.response_x=x1
         self.response_estimated=True
+        return self
         
     
 #@typechecked   
@@ -427,6 +454,7 @@ class FakePupilData(PupilData):
         super().unscale(mean,sd)
         self.sim_baseline=(self.sim_baseline*ssd)+mmean
         self.sim_response=(self.sim_response*ssd)
+        return self
         
     def scale(self, mean: Optional[float]=None, sd: Optional[float]=None) -> None:
         """
@@ -447,6 +475,7 @@ class FakePupilData(PupilData):
         mean,sd=self.scale_params["mean"],self.scale_params["sd"]
         self.sim_baseline=(self.sim_baseline-mean)/sd
         self.sim_response=(self.sim_response)/sd
+        return self
         
     def plot(self, 
              interactive: bool=False, 

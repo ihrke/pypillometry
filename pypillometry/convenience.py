@@ -86,7 +86,8 @@ def StanModel_cache(model_code, model_name=None, **kwargs):
 
 
 
-def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None, figsize=(16,8)):
+def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None, 
+                   figsize=(16,8), xlab="ms", nsteps=100):
     """
     Plotting with interactive adjustment of plotting window.
     To use this, do
@@ -110,6 +111,10 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
         labels for the overlays to be displayed in the legend
     figsize: tuple of int
         dimensions for the plot
+    xlab: str
+        label for x-axis
+    nsteps: int
+        number of steps for slider
     """
     import pylab as plt
     from ipywidgets import interact, interactive, fixed, interact_manual, Layout
@@ -131,6 +136,7 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
                     plt.plot(tx[ixmin:ixmax],overlay[ixmin:ixmax], label=lab)
         plt.vlines(event_onsets, *plt.ylim(), color="grey", alpha=0.5)
         plt.xlim(xmin,xmax)
+        plt.xlabel(xlab)
         if overlay_labels is not None:
             plt.legend()
 
@@ -139,7 +145,7 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
         value=[tx.min(), tx.max()],
         min=tx.min(),
         max=tx.max(),
-        step=1,
+        step=(tx.max()-tx.min())/nsteps,
         description=' ',
         disabled=False,
         continuous_update=False,
