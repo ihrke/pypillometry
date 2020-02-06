@@ -108,18 +108,32 @@ class PupilData:
         self.response_pars=None
         self.response_estimated=False
         
-    def sub_slice(self, start: float=-np.inf, end: float=np.inf):
+    def _unit_fac(self, units):
+        if units=="sec":
+            fac=1./1000.
+        elif units=="min":
+            fac=1./1000./60.
+        elif units=="h":
+            fac=1./1000./60./60.
+        else:
+            fac=1.
+        return fac
+    
+    def sub_slice(self, start: float=-np.inf, end: float=np.inf, units: str="sec"):
         """
         Return a new `PupilData` object that is a shortened version
         of the current one (contains all data between `start` and
-        `end` in the local time-units).
+        `end` in units given by `units` (one of "ms", "sec", "min", "h").
         """
         slic=self.copy()
-        keepix=np.where(np.logical_and(slic.tx>=start, slic.tx<=end))
+        fac=self._unit_fac(units)
+        tx=self.tx*fac
+        keepix=np.where(np.logical_and(tx>=start, tx<=end))
         for k, v in slic.__dict__.items():
             if isinstance(v,np.ndarray) and v.size==self.sy.size:
                 slic.__dict__[k]=slic.__dict__[k][keepix]
-        keepev=np.logical_and(slic.event_onsets>=start, slic.event_onsets<=end)
+        evon=slic.event_onsets*slic._unit_fac(units)
+        keepev=np.logical_and(evon>=start, evon<=end)
         slic.event_onsets=slic.event_onsets[keepev]
         return slic
         
@@ -249,13 +263,53 @@ class PupilData:
         else:
             result.name=new_name
         return result        
+
+    def _plot(self, plot_range, overlays, overlay_labels, units, interactive):
+        fac=self._unit_fac(units)
+        if units=="sec":
+            xlab="seconds"
+        elif units=="min":
+            xlab="minutes"
+        elif units=="h":
+            xlab="hours"
+        else:
+            xlab="ms"
+        tx=self.tx*fac
+        evon=self.event_onsets*fac
         
-    def plot(self, 
+        start,end=plot_range
+        if start==-np.infty:
+            startix=0
+        else:
+            startix=np.argmin(np.abs(tx-start))
+            
+        if end==np.infty:
+            endix=tx.size
+        else:
+            endix=np.argmin(np.abs(tx-end))
+        
+        tx=tx[startix:endix]
+        evon=np.array([ev for ev in evon if ev>=start and ev<end])
+        overlays=(ov[startix:endix] for ov in overlays)
+        
+        if interactive:
+            plot_pupil_ipy(tx, self.sy[startix:endix], evon,
+                           overlays=overlays, overlay_labels=overlay_labels,
+                          xlab=xlab)
+        else:
+            plt.plot(tx, self.sy[startix:endix])
+            for i,ov in enumerate(overlays):
+                plt.plot(tx, ov, label=overlay_labels[i])
+            plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)            
+            plt.legend()
+            plt.xlabel(xlab)        
+    
+    def plot(self, plot_range: Tuple[float,float]=(-np.infty, +np.infty),
              interactive: bool=False, 
              baseline: bool=True, 
              response: bool=False,
              model: bool=True,
-             units: str="s"
+             units: str="sec"
             ) -> None:
         """
         Make a plot of the pupil data using `matplotlib` or :py:func:`pypillometry.convenience.plot_pupil_ipy()`
@@ -263,28 +317,14 @@ class PupilData:
 
         Parameters
         ----------
+        plot_range: tuple (start,end): plot from start to end (in units of `units`)
         baseline: plot baseline if estimated
         response: plot response if estimated
         model: plot full model if baseline and response have been estimated
         interactive: if True, plot with sliders to adjust range
         units: one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours
         """
-        if units=="sec":
-            tx=self.tx/1000.
-            xlab="seconds"
-            evon=self.event_onsets/1000.
-        elif units=="min":
-            tx=self.tx/1000./60.
-            xlab="minutes"
-            evon=self.event_onsets/1000./60.
-        elif units=="h":
-            tx=self.tx/1000./60./60.
-            xlab="hours"
-            evon=self.event_onsets/1000./60./60.
-        else:
-            tx=self.tx
-            xlab="ms"
-            evon=self.event_onsets
+
         overlays=tuple()
         overlay_labels=tuple()
         if baseline and self.baseline_estimated:
@@ -295,18 +335,9 @@ class PupilData:
             overlay_labels+=("response",)             
         if model and self.baseline_estimated and self.response_estimated:
             overlays+=(self.baseline+self.response,)
-            overlay_labels+=("model",)        
-        if interactive:
-            plot_pupil_ipy(tx, self.sy, evon,
-                           overlays=overlays, overlay_labels=overlay_labels,
-                          xlab=xlab)
-        else:
-            plt.plot(tx, self.sy)
-            for i,ov in enumerate(overlays):
-                plt.plot(tx, ov, label=overlay_labels[i])
-            plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)            
-            plt.legend()
-            plt.xlabel(xlab)
+            overlay_labels+=("model",)
+        self._plot(plot_range, overlays, overlay_labels, units, interactive)
+
             
     def estimate_baseline(self, method: str="envelope_iter_bspline_2", **kwargs):
         """
@@ -476,13 +507,28 @@ class FakePupilData(PupilData):
         self.sim_baseline=(self.sim_baseline-mean)/sd
         self.sim_response=(self.sim_response)/sd
         return self
-        
-    def plot(self, 
+
+    def sub_slice(self, start: float=-np.inf, end: float=np.inf, units: str="sec"):
+        """
+        Return a new `PupilData` object that is a shortened version
+        of the current one (contains all data between `start` and
+        `end` in units given by `units` (one of "ms", "sec", "min", "h").
+        """
+        slic=super().sub_slice(start,end,units)
+        evon=self.event_onsets*self._unit_fac(units)
+        keepev=np.logical_and(evon>=start, evon<=end)
+        slic.sim_response_coef=slic.sim_response_coef[keepev]
+        return slic
+            
+    
+    def plot(self,
+             plot_range: Tuple[float,float]=(-np.infty, +np.infty),             
              interactive: bool=False, 
              baseline: bool=True, 
              response: bool=False,
              model: bool=True,
-             simulated: bool=True
+             simulated: bool=True,
+             units: str="sec"
             ) -> None:
         """
         Make a plot of the pupil data using `matplotlib` or :py:func:`pypillometry.convenience.plot_pupil_ipy()`
@@ -490,11 +536,13 @@ class FakePupilData(PupilData):
 
         Parameters
         ----------
+        plot_range: tuple (start,end): plot from start to end (in units of `units`)
         baseline: plot baseline if estimated
         response: plot response if estimated
         model: plot full model if baseline and response have been estimated
         simulated: plot also the "ground-truth" baseline and response (i.e., the simulated one)?
         interactive: if True, plot with sliders to adjust range
+        units: one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours
         """
         overlays=tuple()
         overlay_labels=tuple()
@@ -516,16 +564,8 @@ class FakePupilData(PupilData):
         if model and simulated:
             overlays+=(self.sim_baseline+self.sim_response,)
             overlay_labels+=("real model",)
-            
-        if interactive:
-            plot_pupil_ipy(self.tx, self.sy, self.event_onsets,
-                           overlays=overlays, overlay_labels=overlay_labels)
-        else:
-            plt.plot(self.tx, self.sy)
-            for i,ov in enumerate(overlays):
-                plt.plot(self.tx, ov, label=overlay_labels[i])
-            plt.legend()
-            
+        self._plot(plot_range, overlays, overlay_labels, units, interactive)
+
         
         
 def plotpd_ia(*args: PupilData, figsize: Tuple[int]=(16,8), baseline: bool=True, events: Optional[int]=0):
