@@ -8,8 +8,10 @@ Main object-oriented entry point
 from .convenience import *
 from .baseline import *
 from .fakedata import *
+from .preproc import *
 
 import pylab as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import scipy.signal as signal
 from scipy import interpolate
@@ -108,6 +110,10 @@ class PupilData:
         self.response_pars=None
         self.response_estimated=False
         
+        ## initialize blinks
+        self.blinks=np.empty((0,2), dtype=np.int)
+        self.blink_mask=np.zeros(len(self), dtype=np.int)
+        
     def _unit_fac(self, units):
         if units=="sec":
             fac=1./1000.
@@ -135,6 +141,9 @@ class PupilData:
         evon=slic.event_onsets*slic._unit_fac(units)
         keepev=np.logical_and(evon>=start, evon<=end)
         slic.event_onsets=slic.event_onsets[keepev]
+        ## just remove all detected blinks (need to rerun `detect_blinks()`)
+        slic.blinks=np.empty((0,2), dtype=np.int)
+        slic.blink_mask=np.zeros(len(slic), dtype=np.int)
         return slic
         
     def __repr__(self) -> str:
@@ -145,6 +154,8 @@ class PupilData:
             nevents=self.nevents(), 
             fs=self.fs, 
             duration_minutes=len(self)/self.fs/60,
+            start_min=self.tx.min()/1000./60.,
+            end_min=self.tx.max()/1000./60.,
             baseline_estimated=self.baseline_estimated,
             response_estimated=self.response_estimated)
         s="PupilData({name}):\n".format(name=self.name)
@@ -438,7 +449,88 @@ class PupilData:
         self.response_x=x1
         self.response_estimated=True
         return self
+    
+    def detect_blinks(self, min_duration:float=50, blink_val:float=0, units:str="ms"):
+        """
+        Detect blinks as consecutive sequence of `blink_val` (f.eks., 0 or NaN) of at least
+        `min_duration` duration (in `units`). 
+        Detected blinks are put into member `blinks` (matrix 2 x nblinks where start and end
+        are stored as indexes) and member `blink_mask` which codes for each sampling point
+        whether there is a blink (1) or not (0).
+
+        Parameters
+        ----------
+
+        min_duration: minimum duration for a sequence of missing numbers to be treated as blink
+        blink_val: "missing value" code
+        units: one of "ms", "sec", "min", "h"
+        """
+        fac=self._unit_fac(units)
+        min_duration_ms=min_duration*fac
+        min_duration_ix=int(min_duration_ms/1000.*self.fs)
+
+        self.blinks=detect_blinks(self.sy, min_duration_ix, blink_val)
+        self.blink_mask=np.zeros(self.sy.size, dtype=np.int)
         
+        for start,end in self.blinks:
+            self.blink_mask[start:end]=1
+        return self
+
+    def plot_blinks(self, pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
+                    figsize: Tuple[int,int]=(10,10), 
+                    pre_blink: float=100, post_blink: float=100, units: str="ms", 
+                    plot_index: bool=True):
+        """
+        Plot the detected blinks into separate figures each with nrow x ncol subplots. 
+
+        Parameters
+        ----------
+        pdf_file: if the name of a file is given, the figures are saved into a multi-page PDF file
+        ncol: number of columns for the blinks
+        pre_blink: extend plot a certain time before each blink (in ms)
+        post_blink: extend plot a certain time after each blink (in ms)
+        units: units in which the signal is plotted
+        plot_index: plot a number with the blinks' index (e.g., for identifying abnormal blinks)
+
+        Returns
+        -------
+
+        list of plt.Figure objects each with nrow*ncol subplots; in Jupyter Notebook, those are
+            displayed inline one after the other
+        """
+        fac=self._unit_fac(units)
+        pre_blink_ix=int((pre_blink/1000.)*self.fs)
+        post_blink_ix=int((post_blink/1000.)*self.fs)
+
+        nblinks=self.blinks.shape[0]
+        nsubplots=nrow*ncol # number of subplots per figure
+        nfig=int(np.ceil(nblinks/nsubplots))
+
+        figs=[]
+        iblink=0
+        for i in range(nfig):
+            fig=plt.figure(figsize=figsize)
+            axs = fig.subplots(nrow, ncol).flatten()
+
+            for ix,(start,end) in enumerate(self.blinks[(i*nsubplots):(i+1)*nsubplots]):
+                iblink+=1
+                slic=slice(start-pre_blink_ix,end+post_blink_ix)
+                ax=axs[ix]
+                ax.plot(self.tx[slic]*fac,self.sy[slic])
+                ax.axvspan(self.tx[start]*fac,self.tx[end]*fac,color="red", alpha=0.2)
+                if plot_index: 
+                    ax.text(0.5, 0.5, '%i'%(iblink), fontsize=12, horizontalalignment='center',     
+                            verticalalignment='center', transform=ax.transAxes)
+            figs.append(fig)
+
+        if pdf_file is not None:
+            print("> Saving file '%s'"%pdf_file)
+            with PdfPages(pdf_file) as pdf:
+                for fig in figs:
+                    pdf.savefig(fig)
+        return figs
+
+
     
 #@typechecked   
 class FakePupilData(PupilData):
