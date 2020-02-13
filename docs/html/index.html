@@ -85,17 +85,19 @@ $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 
 <dl class="method">
 <dt id="pypillometry.pupildata.FakePupilData.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">interactive=False</em>, <em class="sig-param">baseline=True</em>, <em class="sig-param">response=False</em>, <em class="sig-param">model=True</em>, <em class="sig-param">simulated=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.plot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">plot_range=(-inf</em>, <em class="sig-param">inf)</em>, <em class="sig-param">interactive=False</em>, <em class="sig-param">baseline=True</em>, <em class="sig-param">response=False</em>, <em class="sig-param">model=True</em>, <em class="sig-param">simulated=True</em>, <em class="sig-param">units='sec'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a plot of the pupil data using <cite>matplotlib</cite> or <a class="reference internal" href="#pypillometry.convenience.plot_pupil_ipy" title="pypillometry.convenience.plot_pupil_ipy"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.convenience.plot_pupil_ipy()</span></code></a>
 if <cite>interactive=True</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>plot_range</strong> (tuple (start,end): plot from start to end (in units of <cite>units</cite>)) – </p></li>
 <li><p><strong>baseline</strong> (<em>plot baseline if estimated</em>) – </p></li>
 <li><p><strong>response</strong> (<em>plot response if estimated</em>) – </p></li>
 <li><p><strong>model</strong> (<em>plot full model if baseline and response have been estimated</em>) – </p></li>
 <li><p><strong>simulated</strong> (<em>plot also the &quot;ground-truth&quot; baseline and response</em><em> (</em><em>i.e.</em><em>, </em><em>the simulated one</em><em>)</em><em>?</em>) – </p></li>
 <li><p><strong>interactive</strong> (<em>if True</em><em>, </em><em>plot with sliders to adjust range</em>) – </p></li>
+<li><p><strong>units</strong> (<em>one of &quot;sec&quot;=seconds</em><em>, </em><em>&quot;ms&quot;=millisec</em><em>, </em><em>&quot;min&quot;=minutes</em><em>, </em><em>&quot;h&quot;=hours</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -126,6 +128,14 @@ If these variables are not provided, use the signal’s mean and std.</p>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.FakePupilData.sub_slice">
+<code class="sig-name descname">sub_slice</code><span class="sig-paren">(</span><em class="sig-param">start=-inf</em>, <em class="sig-param">end=inf</em>, <em class="sig-param">units='sec'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.sub_slice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new <cite>PupilData</cite> object that is a shortened version
+of the current one (contains all data between <cite>start</cite> and
+<cite>end</cite> in units given by <cite>units</cite> (one of “ms”, “sec”, “min”, “h”).</p>
 </dd></dl>
 
 <dl class="method">
@@ -195,9 +205,53 @@ using <cite>sampling_rate</cite></p></li>
 </dd></dl>
 
 <dl class="method">
+<dt id="pypillometry.pupildata.PupilData.blink_interp_mahot">
+<code class="sig-name descname">blink_interp_mahot</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=10</em>, <em class="sig-param">blinkwindow=500</em>, <em class="sig-param">plot=None</em>, <em class="sig-param">plot_dim=(5</em>, <em class="sig-param">3)</em>, <em class="sig-param">plot_figsize=(10</em>, <em class="sig-param">8)</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blink_interp_mahot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the blink-interpolation method by Mahot (2013):
+&lt;<a class="reference external" href="https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001">https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001</a>&gt;.</p>
+<p>This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
+so a “plot” option is provided that will plot many diagnostics (see paper linked above) that
+can help to set good parameter values for <cite>winsize</cite>, <cite>vel_onset</cite>, <cite>vel_offset</cite> and <cite>margin</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>winsize</strong> (<em>size of the Hanning-window in ms</em>) – </p></li>
+<li><p><strong>vel_onset</strong> (<em>velocity-threshold to detect the onset of the blink</em>) – </p></li>
+<li><p><strong>vel_offset</strong> (<em>velocity-threshold to detect the offset of the blink</em>) – </p></li>
+<li><p><strong>margin</strong> (<em>margin that is subtracted/added to onset and offset</em>) – </p></li>
+<li><p><strong>blinkwindow</strong> (<em>how much time before and after each blink to include</em><em> (</em><em>in ms</em><em>)</em>) – </p></li>
+<li><p><strong>plot</strong> (<em>if a string</em><em>, </em><em>the plot is going to be saved to a multipage PDF file;</em>) – if None, no plotting is done
+if True, plot is not saved but produced</p></li>
+<li><p><strong>plot_dim</strong> (<em>tuple nrow x ncol</em><em> (</em><em>number of subplots</em><em>)</em>) – </p></li>
+<li><p><strong>plot_figsize</strong> (<em>dimensions for each figure</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pypillometry.pupildata.PupilData.copy">
 <code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param">new_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make and return a deep-copy of the pupil data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.detect_blinks">
+<code class="sig-name descname">detect_blinks</code><span class="sig-paren">(</span><em class="sig-param">min_duration=50</em>, <em class="sig-param">blink_val=0</em>, <em class="sig-param">units='ms'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.detect_blinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect blinks as consecutive sequence of <cite>blink_val</cite> (f.eks., 0 or NaN) of at least
+<cite>min_duration</cite> duration (in <cite>units</cite>).
+Detected blinks are put into member <cite>blinks</cite> (matrix 2 x nblinks where start and end
+are stored as indexes) and member <cite>blink_mask</cite> which codes for each sampling point
+whether there is a blink (1) or not (0).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_duration</strong> (<em>minimum duration for a sequence of missing numbers to be treated as blink</em>) – </p></li>
+<li><p><strong>blink_val</strong> (<em>&quot;missing value&quot; code</em>) – </p></li>
+<li><p><strong>units</strong> (<em>one of &quot;ms&quot;</em><em>, </em><em>&quot;sec&quot;</em><em>, </em><em>&quot;min&quot;</em><em>, </em><em>&quot;h&quot;</em>) – </p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -279,6 +333,17 @@ see <a class="reference internal" href="#pypillometry.baseline.butter_lowpass_fi
 </dd></dl>
 
 <dl class="method">
+<dt id="pypillometry.pupildata.PupilData.nblinks">
+<code class="sig-name descname">nblinks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.nblinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of detected blinks. Should be run after <cite>detect_blinks()</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pypillometry.pupildata.PupilData.nevents">
 <code class="sig-name descname">nevents</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.nevents" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return number of events in pupillometric data.</p>
@@ -291,12 +356,13 @@ see <a class="reference internal" href="#pypillometry.baseline.butter_lowpass_fi
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">interactive=False</em>, <em class="sig-param">baseline=True</em>, <em class="sig-param">response=False</em>, <em class="sig-param">model=True</em>, <em class="sig-param">units='s'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.plot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">plot_range=(-inf</em>, <em class="sig-param">inf)</em>, <em class="sig-param">interactive=False</em>, <em class="sig-param">baseline=True</em>, <em class="sig-param">response=False</em>, <em class="sig-param">model=True</em>, <em class="sig-param">units='sec'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a plot of the pupil data using <cite>matplotlib</cite> or <a class="reference internal" href="#pypillometry.convenience.plot_pupil_ipy" title="pypillometry.convenience.plot_pupil_ipy"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.convenience.plot_pupil_ipy()</span></code></a>
 if <cite>interactive=True</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>plot_range</strong> (tuple (start,end): plot from start to end (in units of <cite>units</cite>)) – </p></li>
 <li><p><strong>baseline</strong> (<em>plot baseline if estimated</em>) – </p></li>
 <li><p><strong>response</strong> (<em>plot response if estimated</em>) – </p></li>
 <li><p><strong>model</strong> (<em>plot full model if baseline and response have been estimated</em>) – </p></li>
@@ -306,6 +372,30 @@ if <cite>interactive=True</cite>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.plot_blinks">
+<code class="sig-name descname">plot_blinks</code><span class="sig-paren">(</span><em class="sig-param">pdf_file=None</em>, <em class="sig-param">nrow=5</em>, <em class="sig-param">ncol=3</em>, <em class="sig-param">figsize=(10</em>, <em class="sig-param">10)</em>, <em class="sig-param">pre_blink=100</em>, <em class="sig-param">post_blink=100</em>, <em class="sig-param">units='ms'</em>, <em class="sig-param">plot_index=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.plot_blinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the detected blinks into separate figures each with nrow x ncol subplots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdf_file</strong> (<em>if the name of a file is given</em><em>, </em><em>the figures are saved into a multi-page PDF file</em>) – </p></li>
+<li><p><strong>ncol</strong> (<em>number of columns for the blinks</em>) – </p></li>
+<li><p><strong>pre_blink</strong> (<em>extend plot a certain time before each blink</em><em> (</em><em>in ms</em><em>)</em>) – </p></li>
+<li><p><strong>post_blink</strong> (<em>extend plot a certain time after each blink</em><em> (</em><em>in ms</em><em>)</em>) – </p></li>
+<li><p><strong>units</strong> (<em>units in which the signal is plotted</em>) – </p></li>
+<li><p><strong>plot_index</strong> (<em>plot a number with the blinks' index</em><em> (</em><em>e.g.</em><em>, </em><em>for identifying abnormal blinks</em><em>)</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>displayed inline one after the other</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of plt.Figure objects each with nrow*ncol subplots; in Jupyter Notebook, those are</p>
 </dd>
 </dl>
 </dd></dl>
@@ -353,10 +443,10 @@ pupil-size in interval before trial onset.</p>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.sub_slice">
-<code class="sig-name descname">sub_slice</code><span class="sig-paren">(</span><em class="sig-param">start=-inf</em>, <em class="sig-param">end=inf</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.sub_slice" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sub_slice</code><span class="sig-paren">(</span><em class="sig-param">start=-inf</em>, <em class="sig-param">end=inf</em>, <em class="sig-param">units='sec'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.sub_slice" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a new <cite>PupilData</cite> object that is a shortened version
 of the current one (contains all data between <cite>start</cite> and
-<cite>end</cite> in the local time-units).</p>
+<cite>end</cite> in units given by <cite>units</cite> (one of “ms”, “sec”, “min”, “h”).</p>
 </dd></dl>
 
 <dl class="method">
