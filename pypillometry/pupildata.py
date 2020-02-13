@@ -11,9 +11,11 @@ from .fakedata import *
 from .preproc import *
 
 import pylab as plt
+import matplotlib as mpl
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 import scipy.signal as signal
+from scipy.interpolate import interp1d
 from scipy import interpolate
 import scipy
 from random import choice
@@ -38,6 +40,12 @@ class PupilData:
     def nevents(self) -> int:
         """Return number of events in pupillometric data."""
         return self.event_onsets.size
+
+    def nblinks(self) -> int:
+        """
+        Return number of detected blinks. Should be run after `detect_blinks()`.
+        """
+        return self.blinks.shape[0]
     
     
     def _random_id(self, n:int=8) -> str:
@@ -113,6 +121,9 @@ class PupilData:
         ## initialize blinks
         self.blinks=np.empty((0,2), dtype=np.int)
         self.blink_mask=np.zeros(len(self), dtype=np.int)
+        
+        ## interpolated mask
+        self.interpolated_mask=np.zeros(len(self), dtype=np.int)
         
     def _unit_fac(self, units):
         if units=="sec":
@@ -529,6 +540,143 @@ class PupilData:
                 for fig in figs:
                     pdf.savefig(fig)
         return figs
+    
+    def blink_interp_mahot(self, winsize: float=11, 
+                           vel_onset: float=-5, vel_offset: float=5, 
+                           margin: float=10, 
+                           blinkwindow: float=500,
+                           plot: Optional[str]=None, 
+                           plot_dim: Tuple[int,int]=(5,3),
+                           plot_figsize: Tuple[int,int]=(10,8)):
+        """
+        Implements the blink-interpolation method by Mahot (2013):
+        <https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001>.
+
+        This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
+        so a "plot" option is provided that will plot many diagnostics (see paper linked above) that
+        can help to set good parameter values for `winsize`, `vel_onset`, `vel_offset` and `margin`.
+
+        Parameters
+        ----------
+        winsize: size of the Hanning-window in ms
+        vel_onset: velocity-threshold to detect the onset of the blink
+        vel_offset: velocity-threshold to detect the offset of the blink
+        margin: margin that is subtracted/added to onset and offset
+        blinkwindow: how much time before and after each blink to include (in ms)
+        plot: if a string, the plot is going to be saved to a multipage PDF file; 
+              if None, no plotting is done
+              if True, plot is not saved but produced
+        plot_dim: tuple nrow x ncol (number of subplots)
+        plot_figsize: dimensions for each figure
+        """
+        # parameters in sampling units (from ms)
+        winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
+        margin_ix=int(np.ceil(margin/1000.*self.fs)) 
+        blinkwindow_ix=int(blinkwindow/1000.*self.fs)
+
+        # generate smoothed signal and velocity-profile
+        sym=smooth_window(self.sy, winsize_ix, "hanning")
+        vel=np.r_[0,np.diff(sym)] 
+        syr=self.sy.copy() ## reconstructed signal
+
+        nrow,ncol=plot_dim
+        nsubplots=nrow*ncol    
+        nfig=int(np.ceil(self.nblinks()/nsubplots))
+        figs=[]
+        if isinstance(plot,str):
+            _backend=mpl.get_backend()
+            mpl.use("pdf")
+            plt.ioff() ## avoid showing plots when saving to PDF 
+
+
+        # loop through blinks
+        for ix,(start,end) in enumerate(self.blinks):                
+            if plot is not None:            
+                if ix % nsubplots==0:
+                    fig,axs=plt.subplots(nrow,ncol,figsize=plot_figsize)
+                    axs=axs.flatten()
+                    figs.append(fig)
+
+            # TODO: 
+            # [ ] what if there are several blinks/more missing data in that window? calc of t1-t4 blind to that
+            # [x] what if the velocity profile detects several transients?
+            #   -> pick the start of the on-/offset that is closest to start/end of blink
+            slic=slice(start-blinkwindow_ix, end+blinkwindow_ix)
+            winlength=vel[slic].size
+
+            onsets=np.where(vel[slic]<=vel_onset)[0]
+            offsets=np.where(vel[slic]>=vel_offset)[0]
+            if onsets.size==0 or offsets.size==0:
+                continue
+            ## onsets are in "local" indices of the windows, start-end of blink global
+            startl,endl=blinkwindow_ix,end-start+blinkwindow_ix
+
+            # find vel-crossing next to start of blink and move back to start of that crossing
+            onset_ix=np.argmin(np.abs((onsets-startl<=0)*(onsets-startl)))
+            while(onsets[onset_ix-1]+1==onsets[onset_ix]):
+                onset_ix-=1
+            onset=onsets[onset_ix]
+            onset=max(0, onset-margin_ix) # avoid overflow to the left
+
+            # find start of "reversal period" and move forward until it drops back
+            offset_ix=np.argmin(np.abs(((offsets-endl<0)*np.iinfo(np.int).max)+(offsets-endl)))
+            while(offset_ix<(len(offsets)-1) and offsets[offset_ix+1]-1==offsets[offset_ix]):
+                offset_ix+=1        
+            offset=offsets[offset_ix]
+            offset=min(winlength-1, offset+margin_ix) # avoid overflow to the right
+
+            # calc the 4 time points
+            t2,t3=onset,offset
+            t1=max(0,t2-t3+t2)
+            t4=min(t3-t2+t3, winlength-1)
+
+            txpts=[self.tx[start-blinkwindow_ix+pt] for pt in [t1,t2,t3,t4]]
+            sypts=[self.sy[start-blinkwindow_ix+pt] for pt in [t1,t2,t3,t4]]
+            intfct=interp1d(txpts,sypts, kind="cubic")
+            islic=slice(start-blinkwindow_ix+t2, start-blinkwindow_ix+t3)
+            syr[islic]=intfct(self.tx[islic])
+
+            ## record the interpolated datapoints
+            self.interpolated_mask[islic]=1
+
+            ## plotting for diagnostics
+            #--------------------------
+            if plot is not None:            
+                #fig,ax1=plt.subplots()
+                ax1=axs[ix % nsubplots]
+                ax1.plot(self.tx[slic], self.sy[slic], color="blue", label="raw")
+                ax1.plot(self.tx[slic], sym[slic], color="green", label="smoothed")
+                ax1.plot(self.tx[slic], syr[slic], color="red", label="interpolated")
+                ax2=ax1.twinx()
+                ax2.plot(self.tx[slic], vel[slic], color="orange", label="velocity")
+
+                for pt in (t1,t2,t3,t4):
+                    ax1.plot(self.tx[start-blinkwindow_ix+pt], sym[start-blinkwindow_ix+pt], "o", color="red")
+                ax1.text(0.5, 0.5, '%i'%(ix+1), fontsize=12, horizontalalignment='center',     
+                    verticalalignment='center', transform=ax1.transAxes)
+                if ix % nsubplots==0:
+                    handles1, labels1 = ax1.get_legend_handles_labels()
+                    handles2, labels2 = ax2.get_legend_handles_labels()
+                    handles=handles1+handles2
+                    labels=labels1+labels2
+                    fig.legend(handles, labels, loc='upper right')            
+        if isinstance(plot, str):
+            print("> Writing PDF file '%s'"%plot)
+            with PdfPages(plot) as pdf:
+                for fig in figs:
+                    pdf.savefig(fig)         
+            ## switch back to original backend and interactive mode                
+            mpl.use(_backend) 
+            plt.ion()
+        elif plot is not None:
+            for fig in figs:
+                fig.show()
+
+        # replace signal with the reconstructed one
+        self.sy=syr
+
+        return self
+
 
 
     

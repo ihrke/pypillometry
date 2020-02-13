@@ -55,7 +55,6 @@ def smooth_window(x,window_len=11,window='hanning'):
 
 
     s=np.r_[x[window_len-1:0:-1],x,x[-2:-window_len-1:-1]]
-    print(len(s))
     if window == 'flat': #moving average
         w=np.ones(window_len,'d')
     else:
