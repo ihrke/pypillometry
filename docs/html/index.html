@@ -530,6 +530,59 @@ Expressed in units of mean baseline pupil diameter.</p></li>
 </dd></dl>
 
 </div>
+<span class="target" id="module-pypillometry.preproc"></span><div class="section" id="preproc-py">
+<h3>preproc.py<a class="headerlink" href="#preproc-py" title="Permalink to this headline">¶</a></h3>
+<p>preprocessing functions (blinks, smoothing, missing data…)</p>
+<dl class="function">
+<dt id="pypillometry.preproc.detect_blinks">
+<code class="sig-prename descclassname">pypillometry.preproc.</code><code class="sig-name descname">detect_blinks</code><span class="sig-paren">(</span><em class="sig-param">sy</em>, <em class="sig-param">min_duration</em>, <em class="sig-param">blink_val</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.preproc.detect_blinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect blinks as consecutive sequence of <cite>blink_val</cite> (f.eks., 0 or NaN) of at least
+<cite>min_duration</cite> successive values in the signal <cite>sy</cite>.
+Detected blinks are put a matrix <cite>blinks</cite> (nblinks x 2) where start and end
+are stored as indexes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sy</strong> (<em>np.array</em><em> (</em><em>float</em><em>)</em>) – signal</p></li>
+<li><p><strong>min_duration</strong> (<em>int</em>) – minimum number of consecutive samples for a sequence of missing numbers to be treated as blink</p></li>
+<li><p><strong>blink_val</strong> – “missing value” code</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array (nblinks x 2) containing the indices of the start/end of the blinks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.preproc.smooth_window">
+<code class="sig-prename descclassname">pypillometry.preproc.</code><code class="sig-name descname">smooth_window</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">window_len=11</em>, <em class="sig-param">window='hanning'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.preproc.smooth_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>smooth the data using a window with requested size.</p>
+<p>This method is based on the convolution of a scaled window with the signal.
+The signal is prepared by introducing reflected copies of the signal
+(with the window size) in both ends so that transient parts are minimized
+in the begining and end part of the output signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>the input signal</em>) – </p></li>
+<li><p><strong>window_len</strong> (<em>the dimension of the smoothing window; should be an odd integer</em>) – </p></li>
+<li><p><strong>window</strong> (<em>the type of window from 'flat'</em><em>, </em><em>'hanning'</em><em>, </em><em>'hamming'</em><em>, </em><em>'bartlett'</em><em>, </em><em>'blackman'</em>) – flat window will produce a moving average smoothing.</p></li>
+<li><p><strong>Results</strong> – </p></li>
+<li><p><strong>-------</strong> – </p></li>
+<li><p><strong>np.array</strong> (<em>the smoothed signal</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<p>see also:</p>
+<p>numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
+scipy.signal.lfilter</p>
+</dd></dl>
+
+</div>
 <span class="target" id="module-pypillometry.fakedata"></span><div class="section" id="fakedata-py">
 <h3>fakedata.py<a class="headerlink" href="#fakedata-py" title="Permalink to this headline">¶</a></h3>
 <p>Generate artificial pupil-data.</p>
@@ -1084,6 +1137,7 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
 </li>
 <li><a class="reference internal" href="#module-pypillometry.pupildata">API documentation</a><ul>
 <li><a class="reference internal" href="#pupildata-py">pupildata.py</a></li>
+<li><a class="reference internal" href="#preproc-py">preproc.py</a></li>
 <li><a class="reference internal" href="#fakedata-py">fakedata.py</a></li>
 <li><a class="reference internal" href="#baseline-py">baseline.py</a></li>
 <li><a class="reference internal" href="#pupil-py">pupil.py</a></li>

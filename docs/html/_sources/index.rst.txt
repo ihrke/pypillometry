@@ -15,6 +15,10 @@ API documentation
     :members:
     :special-members:
 
+
+.. automodule:: pypillometry.preproc
+    :members:
+
 .. automodule:: pypillometry.fakedata
     :members:
 
