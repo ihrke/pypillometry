@@ -1,23 +1,16 @@
 Welcome to pypillometry's documentation!
 ========================================
 
-:class:`pypillometry.PupilData`
-
-:meth:`pandas.read_csv`
-
-.. mdinclude:: ./README.md
-
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   docs/installation
    docs/usage
    docs/api
    docs/dev
 
-
-
+.. mdinclude:: ./README.md
 
 
 Indices and tables

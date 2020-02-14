@@ -7,12 +7,14 @@
     <title>pypillometry &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
   </head><body>
@@ -39,31 +41,6 @@
 <a class="reference external image-reference" href="https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW"><img alt="" src="https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW" /></a>
 <p>Analysing pupillometric data with Python.</p>
 <p>Github-repository: <a class="reference external" href="https://github.com/ihrke/pypillometry">https://github.com/ihrke/pypillometry</a></p>
-<div class="section" id="setup">
-<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="using-conda">
-<h3>Using <code class="docutils literal notranslate"><span class="pre">conda</span></code><a class="headerlink" href="#using-conda" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ conda create -n pypil python=3
-$ conda activate pypil
-$ conda install anaconda
-$ conda activate pypil
-</pre></div>
-</div>
-<p>To enable plotting widgets in jupyter notebook and jupyter lab</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span>$ conda install ipywidgets nodejs
-$ jupyter nbextension enable --py widgetsnbextension
-$ jupyter labextension install @jupyter-widgets/jupyterlab-manager
-</pre></div>
-</div>
-<p>For <code class="docutils literal notranslate"><span class="pre">pystan</span></code>, I needed to do</p>
-<div class="highlight-guess notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pystan</span>
-<span class="n">conda</span> <span class="n">install</span> <span class="n">gcc_linux</span><span class="o">-</span><span class="mi">64</span>
-<span class="n">conda</span> <span class="n">install</span> <span class="n">gxx_linux</span><span class="o">-</span><span class="mi">64</span>
-</pre></div>
-</div>
-<p>otherwise, there were random crashes of the jupyter kernel for some reason.</p>
-</div>
-</div>
 </div>
 
 
@@ -75,17 +52,6 @@ $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo"/>
             </a></p>
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">pypillometry</a><ul>
-<li><a class="reference internal" href="#setup">Setup</a><ul>
-<li><a class="reference internal" href="#using-conda">Using <code class="docutils literal notranslate"><span class="pre">conda</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -102,7 +68,7 @@ $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -121,7 +87,7 @@ $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/1b464ef.
     </div>
   </body>
 </html>

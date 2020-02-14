@@ -13,6 +13,14 @@ So far, reading in data is not part of the :py:mod:`pypillometry`-package. There
 
 Data is input into :mod:`pypillometry` using the :func:`constructor <pypillometry.pupildata.PupilData.__init__>` of the :class:`~pypillometry.pupildata.PupilData` object.
 
+
+:ref:`An example for importing data </docs/importdata.ipynb>`
+
+
+
+
+
+
 Pre-processing data
 -------------------
 

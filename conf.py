@@ -30,24 +30,26 @@ author = 'Matthias Mittner'
 # ones.
 extensions=['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon', 
             'sphinx_math_dollar', 'sphinx.ext.mathjax', "m2r",'sphinx_autodoc_typehints',
-            'sphinx.ext.intersphinx', 'sphinx.ext.autosummary']
-exclude_patterns = ['notebooks', '_build', '**.ipynb_checkpoints']
+            'sphinx.ext.intersphinx', 'sphinx.ext.autosummary', "nbsphinx"]
+
+# List of patterns, relative to source directory, that match files and
+# directories to ignore when looking for source files.
+# This pattern also affects html_static_path and html_extra_path.
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints', 'notebooks']
+
+
 # Add mappings
 intersphinx_mapping = {
     'urllib3': ('http://urllib3.readthedocs.org/en/latest', None),
     'python': ('http://docs.python.org/3', None),
     'numpy': ('http://docs.scipy.org/doc/numpy', None),
     'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('http://matplotlib.sourceforge.net', None)    
+    'matplotlib': ('http://matplotlib.sourceforge.net', None),
+    'pystan': ('https://pystan.readthedocs.io/en/latest/', None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
-
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
-# This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 
 # -- Options for HTML output -------------------------------------------------
