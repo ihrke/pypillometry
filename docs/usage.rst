@@ -28,6 +28,7 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
 
     PupilData.detect_blinks
     PupilData.blink_interp_mahot
+    PupilData.plot_blinks
 
 **Smoothing/low-pass filtering:**
 
@@ -37,8 +38,43 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
     PupilData.smooth_window
     PupilData.downsample
 
-Plotting
---------
+**Changing/Slicing data**
+
+.. autosummary::
+
+    PupilData.sub_slice
+    PupilData.copy
+    PupilData.scale
+    PupilData.unscale
+
+Plotting/Summarizing Data
+-------------------------
+
+**Plotting**
+
+.. autosummary::
+
+    PupilData.plot
+    PupilData.plot_blinks
+    
+
+**Inspecting/Summarizing**
+
+.. autosummary::
+
+    PupilData.summary
+    PupilData.stat_per_event    
+    
 
 Baseline/Response estimation
 ----------------------------
+
+.. autosummary::
+
+    PupilData.estimate_baseline
+    PupilData.estimate_response    
+    PupilData.stat_per_event
+    
+Artificial Data
+---------------
+

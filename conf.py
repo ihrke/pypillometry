@@ -13,6 +13,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
@@ -30,7 +31,7 @@ author = 'Matthias Mittner'
 extensions=['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon', 
             'sphinx_math_dollar', 'sphinx.ext.mathjax', "m2r",'sphinx_autodoc_typehints',
             'sphinx.ext.intersphinx', 'sphinx.ext.autosummary']
-
+exclude_patterns = ['notebooks', '_build', '**.ipynb_checkpoints']
 # Add mappings
 intersphinx_mapping = {
     'urllib3': ('http://urllib3.readthedocs.org/en/latest', None),

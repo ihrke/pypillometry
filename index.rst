@@ -14,6 +14,7 @@ Welcome to pypillometry's documentation!
 
    docs/usage
    docs/api
+   docs/dev
 
 
 

@@ -163,10 +163,12 @@ class PupilData:
     def summary(self) -> dict:
         """Return a summary of the :class:`.PupilData`-object."""
         summary=dict(
+            name=self.name,
             n=len(self),
-            nmiss=np.sum(np.isnan(self.sy)),
+            nmiss=np.sum(np.isnan(self.sy))+np.sum(self.sy==0),
             nevents=self.nevents(), 
             nblinks=self.nblinks(),
+            ninterpolated=self.interpolated_mask.sum(),
             blinks_per_min=self.nblinks()/(len(self)/self.fs/60.),
             fs=self.fs, 
             duration_minutes=self.get_duration("min"),
@@ -179,6 +181,7 @@ class PupilData:
     def __repr__(self) -> str:
         """Return a string-representation of the dataset."""
         pars=self.summary()
+        del pars["name"]
         s="PupilData({name}):\n".format(name=self.name)
         flen=max([len(k) for k in pars.keys()])
         for k,v in pars.items():
@@ -567,8 +570,8 @@ class PupilData:
         Returns
         -------
 
-        list of plt.Figure objects each with nrow*ncol subplots; in Jupyter Notebook, those are
-            displayed inline one after the other
+        list of plt.Figure objects each with nrow*ncol subplots
+        in Jupyter Notebook, those are displayed inline one after the other
         """
         fac=self._unit_fac(units)
         pre_blink_ix=int((pre_blink/1000.)*self.fs)
