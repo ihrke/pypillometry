@@ -84,10 +84,10 @@ def detect_blinks(sy, min_duration, blink_val):
     x=np.r_[0, np.diff((sy==blink_val).astype(np.int))]
     starts=np.where(x==1)[0]
     ends=np.where(x==-1)[0]-1
-    if ends.size<starts.size: 
+    if ends.size!=starts.size: 
         ## is the first start earlier than the first end?
         if starts[0]>ends[0]:
-            starts=starts[1:] # drop first start
+            ends=ends[1:] # drop first end
         else:
             starts=starts[:-1] # drop last start
     blinks=[ [start,end] for start,end in zip(starts,ends) if end-start>=min_duration]

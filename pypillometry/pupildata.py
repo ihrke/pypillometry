@@ -9,6 +9,7 @@ from .convenience import *
 from .baseline import *
 from .fakedata import *
 from .preproc import *
+from .io import *
 
 import pylab as plt
 import matplotlib as mpl
@@ -128,6 +129,33 @@ class PupilData:
         ## interpolated mask
         self.interpolated_mask=np.zeros(len(self), dtype=np.int)
         
+    def write_shelve(self, fname:str):
+        """
+        Save to file (using :mod:`shelve`).
+        
+        Parameters
+        ----------
+        
+        fname: str
+            filename
+        """
+        pd_write_shelve(self, fname)
+       
+    @classmethod
+    def from_shelve(cls, fname:str):
+        """
+        Reads a :class:`.PupilData` object from a shelve-file.
+        Use as ``pypillometry.PupilData.from_shelve("yourfile.shelve")``.
+        
+        Parameters
+        ----------
+        
+        fname: str
+            filename
+        """
+        r=pd_read_shelve(fname)
+        return r
+        
     def _unit_fac(self, units):
         if units=="sec":
             fac=1./1000.
@@ -166,6 +194,7 @@ class PupilData:
             name=self.name,
             n=len(self),
             nmiss=np.sum(np.isnan(self.sy))+np.sum(self.sy==0),
+            perc_miss=(np.sum(np.isnan(self.sy))+np.sum(self.sy==0))/len(self)*100.,
             nevents=self.nevents(), 
             nblinks=self.nblinks(),
             ninterpolated=self.interpolated_mask.sum(),
@@ -553,7 +582,7 @@ class PupilData:
 
     def plot_blinks(self, pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
                     figsize: Tuple[int,int]=(10,10), 
-                    pre_blink: float=100, post_blink: float=100, units: str="ms", 
+                    pre_blink: float=500, post_blink: float=500, units: str="ms", 
                     plot_index: bool=True):
         """
         Plot the detected blinks into separate figures each with nrow x ncol subplots. 

@@ -5,6 +5,8 @@ API documentation
     :members:
     :special-members:
 
+.. automodule:: pypillometry.io
+    :members:
 
 .. automodule:: pypillometry.preproc
     :members:
