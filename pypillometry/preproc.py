@@ -11,7 +11,6 @@ import pylab as plt
 from .convenience import *
 
 
-## from SciPy Cookbook: https://scipy-cookbook.readthedocs.io/items/SignalSmooth.html
 def smooth_window(x,window_len=11,window='hanning'):
     """smooth the data using a window with requested size.
     
@@ -20,23 +19,18 @@ def smooth_window(x,window_len=11,window='hanning'):
     (with the window size) in both ends so that transient parts are minimized
     in the begining and end part of the output signal.
     
+    adapted from SciPy Cookbook: `<https://scipy-cookbook.readthedocs.io/items/SignalSmooth.html>`_.
+    
     Parameters
     ----------    
     x: the input signal 
     window_len: the dimension of the smoothing window; should be an odd integer
     window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
-        flat window will produce a moving average smoothing.
+            flat window will produce a moving average smoothing.
 
-    Results
+    Returns
     -------
-    
-    np.array: the smoothed signal
-        
-    
-    see also: 
-    
-    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
-    scipy.signal.lfilter
+    np.array: the smoothed signal        
     """
 
     if x.ndim != 1:

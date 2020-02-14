@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('.'))
 # -- Project information -----------------------------------------------------
 
 project = 'pypillometry'
-copyright = '2019, Matthias Mittner'
+copyright = '2020, Matthias Mittner'
 author = 'Matthias Mittner'
 
 
@@ -28,7 +28,17 @@ author = 'Matthias Mittner'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions=['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon', 
-            'sphinx_math_dollar', 'sphinx.ext.mathjax', "m2r",'sphinx_autodoc_typehints']
+            'sphinx_math_dollar', 'sphinx.ext.mathjax', "m2r",'sphinx_autodoc_typehints',
+            'sphinx.ext.intersphinx', 'sphinx.ext.autosummary']
+
+# Add mappings
+intersphinx_mapping = {
+    'urllib3': ('http://urllib3.readthedocs.org/en/latest', None),
+    'python': ('http://docs.python.org/3', None),
+    'numpy': ('http://docs.scipy.org/doc/numpy', None),
+    'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('http://matplotlib.sourceforge.net', None)    
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

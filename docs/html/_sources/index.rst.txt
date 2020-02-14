@@ -1,35 +1,23 @@
 Welcome to pypillometry's documentation!
 ========================================
 
+:class:`pypillometry.PupilData`
+
+:meth:`pandas.read_csv`
+
+.. mdinclude:: ./README.md
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-
-.. mdinclude:: ./README.md
-
-API documentation
------------------
-
-.. automodule:: pypillometry.pupildata
-    :members:
-    :special-members:
+   docs/usage
+   docs/api
 
 
-.. automodule:: pypillometry.preproc
-    :members:
 
-.. automodule:: pypillometry.fakedata
-    :members:
 
-.. automodule:: pypillometry.baseline
-    :members:
-
-.. automodule:: pypillometry.pupil
-    :members:
-
-.. automodule:: pypillometry.convenience
-    :members:
 
 Indices and tables
 ==================

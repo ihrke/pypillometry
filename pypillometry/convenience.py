@@ -87,6 +87,7 @@ def StanModel_cache(model_code, model_name=None, **kwargs):
 
 
 def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None, 
+                   blinks=None, interpolated=None,
                    figsize=(16,8), xlab="ms", nsteps=100):
     """
     Plotting with interactive adjustment of plotting window.
@@ -126,7 +127,7 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
         ixmax=np.argmin(np.abs(tx-xmax))
         plt.figure(figsize=figsize)
 
-        plt.plot(tx[ixmin:ixmax],sy[ixmin:ixmax])
+        plt.plot(tx[ixmin:ixmax],sy[ixmin:ixmax], label="signal")
         if overlays is not None:
             if type(overlays) is np.ndarray:
                 plt.plot(tx[ixmin:ixmax],overlays[ixmin:ixmax],label=overlay_labels)
@@ -134,6 +135,11 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
                 for i,overlay in enumerate(overlays):
                     lab=overlay_labels[i] if overlay_labels is not None else None
                     plt.plot(tx[ixmin:ixmax],overlay[ixmin:ixmax], label=lab)
+        for istart,iend in interpolated:
+            plt.gca().axvspan(tx[istart],tx[iend],color="green", alpha=0.1)
+        for istart,iend in blinks:
+            plt.gca().axvspan(tx[istart],tx[iend],color="red", alpha=0.1)
+
         plt.vlines(event_onsets, *plt.ylim(), color="grey", alpha=0.5)
         plt.xlim(xmin,xmax)
         plt.xlabel(xlab)

@@ -47,6 +47,9 @@ class PupilData:
         """
         return self.blinks.shape[0]
     
+    def get_duration(self, units="min"):
+        fac=self._unit_fac(units)
+        return (len(self)/self.fs*1000)*fac
     
     def _random_id(self, n:int=8) -> str:
         """
@@ -156,19 +159,26 @@ class PupilData:
         slic.blinks=np.empty((0,2), dtype=np.int)
         slic.blink_mask=np.zeros(len(slic), dtype=np.int)
         return slic
-        
-    def __repr__(self) -> str:
-        """Return a string-representation of the dataset."""
-        pars=dict(
+
+    def summary(self) -> dict:
+        """Return a summary of the :class:`.PupilData`-object."""
+        summary=dict(
             n=len(self),
             nmiss=np.sum(np.isnan(self.sy)),
             nevents=self.nevents(), 
+            nblinks=self.nblinks(),
+            blinks_per_min=self.nblinks()/(len(self)/self.fs/60.),
             fs=self.fs, 
-            duration_minutes=len(self)/self.fs/60,
+            duration_minutes=self.get_duration("min"),
             start_min=self.tx.min()/1000./60.,
             end_min=self.tx.max()/1000./60.,
             baseline_estimated=self.baseline_estimated,
-            response_estimated=self.response_estimated)
+            response_estimated=self.response_estimated)        
+        return summary
+    
+    def __repr__(self) -> str:
+        """Return a string-representation of the dataset."""
+        pars=self.summary()
         s="PupilData({name}):\n".format(name=self.name)
         flen=max([len(k) for k in pars.keys()])
         for k,v in pars.items():
@@ -238,6 +248,19 @@ class PupilData:
         self.sy=butter_lowpass_filter(self.sy, cutoff, self.fs, order)
         return self
 
+    def smooth_window(self, window: str="hanning", winsize: float=11):
+        """
+        Apply smoothing of the signal using a moving window. See :func:`.smooth_window()`.
+        
+        Parameters
+        ----------
+        window: (the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'); 
+                flat window will produce a moving average smoothing.
+        winsize: the length of the window in ms 
+        """
+        winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
+        self.sy=smooth_window(sy, winsize_ix, window )
+        return self
         
     def downsample(self, fsd: float, dsfac: bool=False):
         """
@@ -286,7 +309,7 @@ class PupilData:
             result.name=new_name
         return result        
 
-    def _plot(self, plot_range, overlays, overlay_labels, units, interactive):
+    def _plot(self, plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated):
         fac=self._unit_fac(units)
         if units=="sec":
             xlab="seconds"
@@ -315,14 +338,50 @@ class PupilData:
         overlays=(ov[startix:endix] for ov in overlays)
         
         if interactive:
+            blinks=np.empty((0,2), dtype=np.int)
+            interpolated=np.empty((0,2), dtype=np.int)
+            if highlight_blinks:
+                blinks=[]
+                for sblink,eblink in self.blinks:
+                    if eblink<startix or sblink>endix:
+                        continue
+                    else:
+                        sblink=max(0,sblink-startix)
+                        eblink=min(endix,eblink-startix)
+                    blinks.append([sblink,eblink])
+                blinks=np.array(blinks)
+            if highlight_interpolated:
+                a=np.diff(np.r_[0, self.interpolated_mask[startix:endix], 0])[:-1]
+                istarts=np.where(a>0)[0]
+                iends=np.where(a<0)[0]
+                interpolated=[]
+                for istart,iend in zip(istarts,iends):
+                    interpolated.append([istart,iend])
             plot_pupil_ipy(tx, self.sy[startix:endix], evon,
                            overlays=overlays, overlay_labels=overlay_labels,
+                           blinks=blinks, interpolated=interpolated,
                           xlab=xlab)
         else:
-            plt.plot(tx, self.sy[startix:endix])
+            plt.plot(tx, self.sy[startix:endix], label="signal")
             for i,ov in enumerate(overlays):
                 plt.plot(tx, ov, label=overlay_labels[i])
-            plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)            
+            plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)
+            if highlight_interpolated:
+                a=np.diff(np.r_[0, self.interpolated_mask[startix:endix], 0])[:-1]
+                istarts=np.where(a>0)[0]
+                iends=np.where(a<0)[0]
+                for istart,iend in zip(istarts,iends):
+                    plt.gca().axvspan(tx[istart],tx[iend],color="green", alpha=0.1)
+            if highlight_blinks:
+                for sblink,eblink in self.blinks:
+                    if eblink<startix or sblink>endix:
+                        continue
+                    else:
+                        sblink=max(0,sblink-startix)
+                        eblink=min(endix,eblink-startix)
+                    plt.gca().axvspan(tx[sblink],tx[eblink],color="red", alpha=0.2)
+                
+                
             plt.legend()
             plt.xlabel(xlab)        
     
@@ -331,6 +390,8 @@ class PupilData:
              baseline: bool=True, 
              response: bool=False,
              model: bool=True,
+             highlight_blinks: bool=True,
+             highlight_interpolated: bool=True,
              units: str="sec"
             ) -> None:
         """
@@ -358,7 +419,7 @@ class PupilData:
         if model and self.baseline_estimated and self.response_estimated:
             overlays+=(self.baseline+self.response,)
             overlay_labels+=("model",)
-        self._plot(plot_range, overlays, overlay_labels, units, interactive)
+        self._plot(plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated)
 
             
     def estimate_baseline(self, method: str="envelope_iter_bspline_2", **kwargs):
@@ -528,7 +589,17 @@ class PupilData:
                 slic=slice(start-pre_blink_ix,end+post_blink_ix)
                 ax=axs[ix]
                 ax.plot(self.tx[slic]*fac,self.sy[slic])
+
+                ## highlight interpolated data
+                a=np.diff(np.r_[0,self.interpolated_mask[slic],0])[:-1]
+                istarts=start-pre_blink_ix+np.where(a>0)[0]
+                iends=start-pre_blink_ix+np.where(a<0)[0]
+                for istart,iend in zip(istarts,iends):
+                    ax.axvspan(self.tx[istart]*fac,self.tx[iend]*fac,color="green", alpha=0.1)
+
+                ## highlight blink
                 ax.axvspan(self.tx[start]*fac,self.tx[end]*fac,color="red", alpha=0.2)
+
                 if plot_index: 
                     ax.text(0.5, 0.5, '%i'%(iblink), fontsize=12, horizontalalignment='center',     
                             verticalalignment='center', transform=ax.transAxes)
@@ -539,8 +610,8 @@ class PupilData:
             with PdfPages(pdf_file) as pdf:
                 for fig in figs:
                     pdf.savefig(fig)
-        return figs
-    
+        return figs    
+
     def blink_interp_mahot(self, winsize: float=11, 
                            vel_onset: float=-5, vel_offset: float=5, 
                            margin: float=10, 
@@ -549,8 +620,10 @@ class PupilData:
                            plot_dim: Tuple[int,int]=(5,3),
                            plot_figsize: Tuple[int,int]=(10,8)):
         """
-        Implements the blink-interpolation method by Mahot (2013):
-        <https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001>.
+        Implements the blink-interpolation method by Mahot (2013).
+        
+        Mahot, 2013:
+        https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
 
         This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
         so a "plot" option is provided that will plot many diagnostics (see paper linked above) that
