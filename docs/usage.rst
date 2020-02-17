@@ -42,6 +42,9 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
 **Handling Blinks:**
 
 
+:ref:`An example for how to handle blinks </docs/blinks.ipynb>`
+
+
 .. autosummary::
 
     PupilData.detect_blinks

@@ -5,12 +5,16 @@ io.py
 Read/Write data from/to disk.
 """
 
-import shelve
+try:
+   import cPickle as pickle
+except:
+   import pickle
+import requests
 from .pupildata import *
 
-def pd_write_shelve(pdobj, fname):
+def pd_write_pickle(pdobj, fname):
     """
-    Store the :class:`.PupilData`-object `pdobj` in file using :mod:`shelve`.
+    Store the :class:`.PupilData`-object `pdobj` in file using :mod:`pickle`.
     
     Parameters
     ----------
@@ -20,12 +24,12 @@ def pd_write_shelve(pdobj, fname):
     fname: str
         filename to save to
     """
-    with shelve.open('fname') as f:
-        f['pdobj'] = pdobj
+    with open(fname, "wb") as f:
+        pickle.dump(pdobj,f)
     
-def pd_read_shelve(fname):
+def pd_read_pickle(fname):
     """
-    Read the :class:`.PupilData`-object `pdobj` from file using :mod:`shelve`.
+    Read the :class:`.PupilData`-object `pdobj` from file using :mod:`pickle`.
     
     Parameters
     ----------
@@ -39,6 +43,6 @@ def pd_read_shelve(fname):
     pdobj: :class:`.PupilData`
         loaded dataset 
     """
-    with shelve.open('fname') as f:
-        pdobj=f['pdobj']
+    with open(fname, 'rb') as f:
+        pdobj=pickle.load(f)
     return pdobj

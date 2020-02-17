@@ -129,9 +129,9 @@ class PupilData:
         ## interpolated mask
         self.interpolated_mask=np.zeros(len(self), dtype=np.int)
         
-    def write_shelve(self, fname:str):
+    def write_file(self, fname:str):
         """
-        Save to file (using :mod:`shelve`).
+        Save to file (using :mod:`pickle`).
         
         Parameters
         ----------
@@ -139,13 +139,13 @@ class PupilData:
         fname: str
             filename
         """
-        pd_write_shelve(self, fname)
+        pd_write_pickle(self, fname)
        
     @classmethod
-    def from_shelve(cls, fname:str):
+    def from_file(cls, fname:str):
         """
-        Reads a :class:`.PupilData` object from a shelve-file.
-        Use as ``pypillometry.PupilData.from_shelve("yourfile.shelve")``.
+        Reads a :class:`.PupilData` object from a pickle-file.
+        Use as ``pypillometry.PupilData.from_file("yourfile.pd")``.
         
         Parameters
         ----------
@@ -153,7 +153,7 @@ class PupilData:
         fname: str
             filename
         """
-        r=pd_read_shelve(fname)
+        r=pd_read_pickle(fname)
         return r
         
     def _unit_fac(self, units):

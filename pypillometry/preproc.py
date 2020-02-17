@@ -90,6 +90,8 @@ def detect_blinks(sy, min_duration, blink_val):
             ends=ends[1:] # drop first end
         else:
             starts=starts[:-1] # drop last start
+    if ends[-1]==x.size:
+        ends[-1]-=1
     blinks=[ [start,end] for start,end in zip(starts,ends) if end-start>=min_duration]
     return np.array(blinks)
     
