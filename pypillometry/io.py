@@ -35,7 +35,7 @@ def pd_read_pickle(fname):
     ----------
     
     fname: str
-        filename to save to
+        filename or URL to load data from
         
     Returns
     -------
@@ -43,6 +43,12 @@ def pd_read_pickle(fname):
     pdobj: :class:`.PupilData`
         loaded dataset 
     """
-    with open(fname, 'rb') as f:
-        pdobj=pickle.load(f)
+    if fname.startswith("http"):
+        # try loading from URL
+        res=requests.get(fname)
+        if res.status_code==200:
+            pdobj=pickle.loads(res.content)
+    else:
+        with open(fname, 'rb') as f:
+            pdobj=pickle.load(f)
     return pdobj

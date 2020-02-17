@@ -644,6 +644,46 @@ class PupilData:
                     pdf.savefig(fig)
         return figs    
 
+    def blinks_merge(self, distance: float=100, remove_signal: bool=False):
+        """
+        Merge together blinks that are close together. 
+        Some subjects blink repeatedly and standard detection/interpolation can result in weird results.
+        This function simply treats repeated blinks as one long blink.
+
+        Parameters
+        ----------
+
+        distance: merge together blinks that are closer together than `distance` in ms
+        remove_signal: 
+            if True, set all signal values during the "new blinks" to zero so 
+            that :func:`.detect_blinks()` will pick them up; interpolation will work
+            either way
+        """
+        distance_ix=distance/self.fs*1000.
+
+        newblinks=[] 
+        i=1
+        cblink=self.blinks[0,:] ## start with first blink
+        while(i<self.nblinks()):
+            if (self.blinks[i,0]-cblink[1])<=distance_ix:
+                # merge
+                cblink[1]=self.blinks[i,1]
+            else:
+                newblinks.append(cblink)
+                cblink=self.blinks[i,:]
+            i+=1            
+
+        newblinks=np.array(newblinks)       
+
+        self.blinks=newblinks
+
+        ## set signal to zero within the new blinks
+        if remove_signal:
+            for start,end in self.blinks:
+                self.sy[start:end]=0
+
+        return self    
+    
     def blink_interp_mahot(self, winsize: float=11, 
                            vel_onset: float=-5, vel_offset: float=5, 
                            margin: float=10, 
