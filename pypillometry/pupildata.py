@@ -688,6 +688,7 @@ class PupilData:
                            vel_onset: float=-5, vel_offset: float=5, 
                            margin: float=10, 
                            blinkwindow: float=500,
+                           interp_type: str="cubic",
                            plot: Optional[str]=None, 
                            plot_dim: Tuple[int,int]=(5,3),
                            plot_figsize: Tuple[int,int]=(10,8)):
@@ -703,16 +704,26 @@ class PupilData:
 
         Parameters
         ----------
-        winsize: size of the Hanning-window in ms
-        vel_onset: velocity-threshold to detect the onset of the blink
-        vel_offset: velocity-threshold to detect the offset of the blink
-        margin: margin that is subtracted/added to onset and offset
-        blinkwindow: how much time before and after each blink to include (in ms)
-        plot: if a string, the plot is going to be saved to a multipage PDF file; 
-              if None, no plotting is done
-              if True, plot is not saved but produced
-        plot_dim: tuple nrow x ncol (number of subplots)
-        plot_figsize: dimensions for each figure
+        winsize: float
+            size of the Hanning-window in ms
+        vel_onset: float
+            velocity-threshold to detect the onset of the blink
+        vel_offset: float
+            velocity-threshold to detect the offset of the blink
+        margin: float
+            margin that is subtracted/added to onset and offset (in ms)
+        blinkwindow: float
+            how much time before and after each blink to include (in ms)
+        interp_type: str
+            type of interpolation accepted by :func:`scipy.interpolate.interp1d()`
+        plot: True, str or None
+            if a string, the plot is going to be saved to a multipage PDF file; 
+            if None, no plotting is done
+            if True, plot is not saved but produced
+        plot_dim: tuple nrow x ncol 
+            number of subplots
+        plot_figsize: tuple (width, height)
+            dimensions for each figure
         """
         # parameters in sampling units (from ms)
         winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
@@ -741,20 +752,21 @@ class PupilData:
                     fig,axs=plt.subplots(nrow,ncol,figsize=plot_figsize)
                     axs=axs.flatten()
                     figs.append(fig)
-
             # TODO: 
             # [ ] what if there are several blinks/more missing data in that window? calc of t1-t4 blind to that
             # [x] what if the velocity profile detects several transients?
             #   -> pick the start of the on-/offset that is closest to start/end of blink
-            slic=slice(start-blinkwindow_ix, end+blinkwindow_ix)
+            winstart,winend=max(0,start-blinkwindow_ix), min(end+blinkwindow_ix, len(self))
+            slic=slice(winstart, winend) #start-blinkwindow_ix, end+blinkwindow_ix)
             winlength=vel[slic].size
 
             onsets=np.where(vel[slic]<=vel_onset)[0]
             offsets=np.where(vel[slic]>=vel_offset)[0]
             if onsets.size==0 or offsets.size==0:
                 continue
+
             ## onsets are in "local" indices of the windows, start-end of blink global
-            startl,endl=blinkwindow_ix,end-start+blinkwindow_ix
+            startl,endl=blinkwindow_ix if winstart>0 else start,end-start+blinkwindow_ix
 
             # find vel-crossing next to start of blink and move back to start of that crossing
             onset_ix=np.argmin(np.abs((onsets-startl<=0)*(onsets-startl)))
@@ -774,11 +786,11 @@ class PupilData:
             t2,t3=onset,offset
             t1=max(0,t2-t3+t2)
             t4=min(t3-t2+t3, winlength-1)
-
-            txpts=[self.tx[start-blinkwindow_ix+pt] for pt in [t1,t2,t3,t4]]
-            sypts=[self.sy[start-blinkwindow_ix+pt] for pt in [t1,t2,t3,t4]]
-            intfct=interp1d(txpts,sypts, kind="cubic")
-            islic=slice(start-blinkwindow_ix+t2, start-blinkwindow_ix+t3)
+            
+            txpts=[self.tx[winstart+pt] for pt in [t1,t2,t3,t4]]
+            sypts=[self.sy[winstart+pt] for pt in [t1,t2,t3,t4]]
+            intfct=interp1d(txpts,sypts, kind=interp_type)
+            islic=slice(winstart+t2, winstart+t3)
             syr[islic]=intfct(self.tx[islic])
 
             ## record the interpolated datapoints
@@ -789,14 +801,14 @@ class PupilData:
             if plot is not None:            
                 #fig,ax1=plt.subplots()
                 ax1=axs[ix % nsubplots]
-                ax1.plot(self.tx[slic], self.sy[slic], color="blue", label="raw")
-                ax1.plot(self.tx[slic], sym[slic], color="green", label="smoothed")
-                ax1.plot(self.tx[slic], syr[slic], color="red", label="interpolated")
+                ax1.plot(self.tx[slic]/1000., self.sy[slic], color="blue", label="raw")
+                ax1.plot(self.tx[slic]/1000., sym[slic], color="green", label="smoothed")
+                ax1.plot(self.tx[slic]/1000., syr[slic], color="red", label="interpolated")
                 ax2=ax1.twinx()
-                ax2.plot(self.tx[slic], vel[slic], color="orange", label="velocity")
+                ax2.plot(self.tx[slic]/1000., vel[slic], color="orange", label="velocity")
 
                 for pt in (t1,t2,t3,t4):
-                    ax1.plot(self.tx[start-blinkwindow_ix+pt], sym[start-blinkwindow_ix+pt], "o", color="red")
+                    ax1.plot(self.tx[winstart+pt]/1000., sym[winstart+pt], "o", color="red")
                 ax1.text(0.5, 0.5, '%i'%(ix+1), fontsize=12, horizontalalignment='center',     
                     verticalalignment='center', transform=ax1.transAxes)
                 if ix % nsubplots==0:
@@ -815,7 +827,8 @@ class PupilData:
             plt.ion()
         elif plot is not None:
             for fig in figs:
-                fig.show()
+                pass
+                #fig.show()
 
         # replace signal with the reconstructed one
         self.sy=syr

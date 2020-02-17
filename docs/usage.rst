@@ -49,6 +49,7 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
 
     PupilData.detect_blinks
     PupilData.blink_interp_mahot
+    PupilData.blinks_merge
     PupilData.plot_blinks
 
 **Smoothing/low-pass filtering:**

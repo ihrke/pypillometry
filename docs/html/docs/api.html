@@ -181,7 +181,7 @@ using <cite>sampling_rate</cite></p></li>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.blink_interp_mahot">
-<code class="sig-name descname">blink_interp_mahot</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=10</em>, <em class="sig-param">blinkwindow=500</em>, <em class="sig-param">plot=None</em>, <em class="sig-param">plot_dim=(5</em>, <em class="sig-param">3)</em>, <em class="sig-param">plot_figsize=(10</em>, <em class="sig-param">8)</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blink_interp_mahot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">blink_interp_mahot</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=10</em>, <em class="sig-param">blinkwindow=500</em>, <em class="sig-param">interp_type='cubic'</em>, <em class="sig-param">plot=None</em>, <em class="sig-param">plot_dim=(5</em>, <em class="sig-param">3)</em>, <em class="sig-param">plot_figsize=(10</em>, <em class="sig-param">8)</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blink_interp_mahot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the blink-interpolation method by Mahot (2013).</p>
 <p>Mahot, 2013:
 <a class="reference external" href="https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001">https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001</a>.</p>
@@ -191,15 +191,35 @@ can help to set good parameter values for <cite>winsize</cite>, <cite>vel_onset<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>winsize</strong> (<em>size of the Hanning-window in ms</em>) – </p></li>
-<li><p><strong>vel_onset</strong> (<em>velocity-threshold to detect the onset of the blink</em>) – </p></li>
-<li><p><strong>vel_offset</strong> (<em>velocity-threshold to detect the offset of the blink</em>) – </p></li>
-<li><p><strong>margin</strong> (<em>margin that is subtracted/added to onset and offset</em>) – </p></li>
-<li><p><strong>blinkwindow</strong> (<em>how much time before and after each blink to include</em><em> (</em><em>in ms</em><em>)</em>) – </p></li>
-<li><p><strong>plot</strong> (<em>if a string</em><em>, </em><em>the plot is going to be saved to a multipage PDF file;</em>) – if None, no plotting is done
+<li><p><strong>winsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – size of the Hanning-window in ms</p></li>
+<li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the onset of the blink</p></li>
+<li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the offset of the blink</p></li>
+<li><p><strong>margin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – margin that is subtracted/added to onset and offset (in ms)</p></li>
+<li><p><strong>blinkwindow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – how much time before and after each blink to include (in ms)</p></li>
+<li><p><strong>interp_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – type of interpolation accepted by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.interpolate.interp1d()</span></code></p></li>
+<li><p><strong>plot</strong> (<em>True</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if a string, the plot is going to be saved to a multipage PDF file;
+if None, no plotting is done
 if True, plot is not saved but produced</p></li>
-<li><p><strong>plot_dim</strong> (<em>tuple nrow x ncol</em><em> (</em><em>number of subplots</em><em>)</em>) – </p></li>
-<li><p><strong>plot_figsize</strong> (<em>dimensions for each figure</em>) – </p></li>
+<li><p><strong>plot_dim</strong> (<em>tuple nrow x ncol</em>) – number of subplots</p></li>
+<li><p><strong>plot_figsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em> (</em><em>width</em><em>, </em><em>height</em><em>)</em>) – dimensions for each figure</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.blinks_merge">
+<code class="sig-name descname">blinks_merge</code><span class="sig-paren">(</span><em class="sig-param">distance=100</em>, <em class="sig-param">remove_signal=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merge together blinks that are close together.
+Some subjects blink repeatedly and standard detection/interpolation can result in weird results.
+This function simply treats repeated blinks as one long blink.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distance</strong> (merge together blinks that are closer together than <cite>distance</cite> in ms) – </p></li>
+<li><p><strong>remove_signal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if True, set all signal values during the “new blinks” to zero so
+that <a class="reference internal" href="#pypillometry.preproc.detect_blinks" title="pypillometry.preproc.detect_blinks"><code class="xref py py-func docutils literal notranslate"><span class="pre">detect_blinks()</span></code></a> will pick them up; interpolation will work
+either way</p></li>
 </ul>
 </dd>
 </dl>
@@ -294,10 +314,10 @@ and <cite>response_pars</cite></p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pypillometry.pupildata.PupilData.from_shelve">
-<em class="property">classmethod </em><code class="sig-name descname">from_shelve</code><span class="sig-paren">(</span><em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.from_shelve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads a <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object from a shelve-file.
-Use as <code class="docutils literal notranslate"><span class="pre">pypillometry.PupilData.from_shelve(&quot;yourfile.shelve&quot;)</span></code>.</p>
+<dt id="pypillometry.pupildata.PupilData.from_file">
+<em class="property">classmethod </em><code class="sig-name descname">from_file</code><span class="sig-paren">(</span><em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object from a pickle-file.
+Use as <code class="docutils literal notranslate"><span class="pre">pypillometry.PupilData.from_file(&quot;yourfile.pd&quot;)</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – filename</p>
@@ -479,9 +499,9 @@ or the values stored in <cite>scale_params</cite>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pypillometry.pupildata.PupilData.write_shelve">
-<code class="sig-name descname">write_shelve</code><span class="sig-paren">(</span><em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.write_shelve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save to file (using <a class="reference external" href="https://docs.python.org/3/library/shelve.html#module-shelve" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">shelve</span></code></a>).</p>
+<dt id="pypillometry.pupildata.PupilData.write_file">
+<code class="sig-name descname">write_file</code><span class="sig-paren">(</span><em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.write_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save to file (using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – filename</p>
@@ -559,12 +579,12 @@ Expressed in units of mean baseline pupil diameter.</p></li>
 <h2>io.py<a class="headerlink" href="#io-py" title="Permalink to this headline">¶</a></h2>
 <p>Read/Write data from/to disk.</p>
 <dl class="function">
-<dt id="pypillometry.io.pd_read_shelve">
-<code class="sig-prename descclassname">pypillometry.io.</code><code class="sig-name descname">pd_read_shelve</code><span class="sig-paren">(</span><em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.io.pd_read_shelve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object <cite>pdobj</cite> from file using <a class="reference external" href="https://docs.python.org/3/library/shelve.html#module-shelve" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">shelve</span></code></a>.</p>
+<dt id="pypillometry.io.pd_read_pickle">
+<code class="sig-prename descclassname">pypillometry.io.</code><code class="sig-name descname">pd_read_pickle</code><span class="sig-paren">(</span><em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.io.pd_read_pickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object <cite>pdobj</cite> from file using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – filename to save to</p>
+<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – filename or URL to load data from</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>pdobj</strong> – loaded dataset</p>
@@ -576,9 +596,9 @@ Expressed in units of mean baseline pupil diameter.</p></li>
 </dd></dl>
 
 <dl class="function">
-<dt id="pypillometry.io.pd_write_shelve">
-<code class="sig-prename descclassname">pypillometry.io.</code><code class="sig-name descname">pd_write_shelve</code><span class="sig-paren">(</span><em class="sig-param">pdobj</em>, <em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.io.pd_write_shelve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object <cite>pdobj</cite> in file using <a class="reference external" href="https://docs.python.org/3/library/shelve.html#module-shelve" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">shelve</span></code></a>.</p>
+<dt id="pypillometry.io.pd_write_pickle">
+<code class="sig-prename descclassname">pypillometry.io.</code><code class="sig-name descname">pd_write_pickle</code><span class="sig-paren">(</span><em class="sig-param">pdobj</em>, <em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.io.pd_write_pickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object <cite>pdobj</cite> in file using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1249,7 +1269,7 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/de5e2c3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/31c9217.
     </div>
   </body>
 </html>

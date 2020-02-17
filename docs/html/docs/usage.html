@@ -66,6 +66,7 @@
 <h2>Pre-processing data<a class="headerlink" href="#pre-processing-data" title="Permalink to this headline">¶</a></h2>
 <p>Assuming you have generated a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object, you can use the following functions.</p>
 <p><strong>Handling Blinks:</strong></p>
+<p><a class="reference internal" href="blinks.html"><span class="std std-ref">An example for how to handle blinks</span></a></p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -78,7 +79,10 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blink_interp_mahot" title="pypillometry.pupildata.PupilData.blink_interp_mahot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blink_interp_mahot</span></code></a>([winsize, …])</p></td>
 <td><p>Implements the blink-interpolation method by Mahot (2013).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot_blinks" title="pypillometry.pupildata.PupilData.plot_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot_blinks</span></code></a>([pdf_file, nrow, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_merge" title="pypillometry.pupildata.PupilData.blinks_merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_merge</span></code></a>([distance, remove_signal])</p></td>
+<td><p>Merge together blinks that are close together.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot_blinks" title="pypillometry.pupildata.PupilData.plot_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot_blinks</span></code></a>([pdf_file, nrow, …])</p></td>
 <td><p>Plot the detected blinks into separate figures each with nrow x ncol subplots.</p></td>
 </tr>
 </tbody>
@@ -266,7 +270,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/de5e2c3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/31c9217.
     </div>
   </body>
 </html>
