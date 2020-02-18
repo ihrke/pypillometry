@@ -554,7 +554,7 @@ class PupilData:
         self.response_estimated=True
         return self
     
-    def detect_blinks(self, min_duration:float=50, blink_val:float=0, units:str="ms"):
+    def blinks_detect(self, min_duration:float=50, blink_val:float=0, units:str="ms"):
         """
         Detect blinks as consecutive sequence of `blink_val` (f.eks., 0 or NaN) of at least
         `min_duration` duration (in `units`). 
@@ -565,9 +565,12 @@ class PupilData:
         Parameters
         ----------
 
-        min_duration: minimum duration for a sequence of missing numbers to be treated as blink
-        blink_val: "missing value" code
-        units: one of "ms", "sec", "min", "h"
+        min_duration: float
+            minimum duration for a sequence of missing numbers to be treated as blink
+        blink_val: float
+            "missing value" code
+        units: str
+            one of "ms", "sec", "min", "h"
         """
         fac=self._unit_fac(units)
         min_duration_ms=min_duration*fac
@@ -580,7 +583,7 @@ class PupilData:
             self.blink_mask[start:end]=1
         return self
 
-    def plot_blinks(self, pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
+    def blinks_plot(self, pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
                     figsize: Tuple[int,int]=(10,10), 
                     pre_blink: float=500, post_blink: float=500, units: str="ms", 
                     plot_index: bool=True):
@@ -589,12 +592,18 @@ class PupilData:
 
         Parameters
         ----------
-        pdf_file: if the name of a file is given, the figures are saved into a multi-page PDF file
-        ncol: number of columns for the blinks
-        pre_blink: extend plot a certain time before each blink (in ms)
-        post_blink: extend plot a certain time after each blink (in ms)
-        units: units in which the signal is plotted
-        plot_index: plot a number with the blinks' index (e.g., for identifying abnormal blinks)
+        pdf_file: str or None
+            if the name of a file is given, the figures are saved into a multi-page PDF file
+        ncol: int
+            number of columns for the blink-plots
+        pre_blink: float
+            extend plot a certain time before each blink (in ms)
+        post_blink: float
+            extend plot a certain time after each blink (in ms)
+        units: str
+            units in which the signal is plotted
+        plot_index: bool
+            plot a number with the blinks' index (e.g., for identifying abnormal blinks)
 
         Returns
         -------
@@ -653,8 +662,9 @@ class PupilData:
         Parameters
         ----------
 
-        distance: merge together blinks that are closer together than `distance` in ms
-        remove_signal: 
+        distance: float
+            merge together blinks that are closer together than `distance` in ms
+        remove_signal: bool
             if True, set all signal values during the "new blinks" to zero so 
             that :func:`.detect_blinks()` will pick them up; interpolation will work
             either way
@@ -684,7 +694,7 @@ class PupilData:
 
         return self    
     
-    def blink_interp_mahot(self, winsize: float=11, 
+    def blinks_interp_mahot(self, winsize: float=11, 
                            vel_onset: float=-5, vel_offset: float=5, 
                            margin: float=10, 
                            blinkwindow: float=500,
@@ -834,8 +844,6 @@ class PupilData:
         self.sy=syr
 
         return self
-
-
 
     
 #@typechecked   
