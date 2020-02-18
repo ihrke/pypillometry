@@ -271,12 +271,13 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<p>The first step is, of course, the identification of blinks. The function <code class="docutils literal notranslate"><span class="pre">blinks_detect()</span></code> looks for sequences of successive missing datapoint</p>
 <p>function blink_summary() returning blink-summary object (dict with some fancy plotting/displaying)</p>
 <div class="section" id="Short,-successive-blinks">
 <h2>Short, successive blinks<a class="headerlink" href="#Short,-successive-blinks" title="Permalink to this headline">¶</a></h2>
 <p>Some subjects blink in quick succession so that the eye almost immediately starts closing again once it opens from the previous blink. In that case, it is very difficult to define the onset and offset of such blink sequences.</p>
 <p>Here is an example dataset recorded in our lab. We see a couple of “normal” blinks, as well as some fast sequences of sequential blinks (e.g., between seconds 131 and 134).</p>
-<p>We can detect the blinks using the <code class="docutils literal notranslate"><span class="pre">detect_blinks()</span></code> function and see that each of the blinks is independently represented (red background).</p>
+<p>We can detect the blinks using the <code class="docutils literal notranslate"><span class="pre">blinks_detect()</span></code> function and see that each of the blinks is independently represented (red background).</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
@@ -284,7 +285,7 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;https://github.com/ihrke/pypillometry/raw/master/data/example_shortblinks.pd&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="n">d2</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">detect_blinks</span><span class="p">()</span>
+<span class="n">d2</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
 <span class="n">d2</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -293,17 +294,17 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_4_0.png" src="../_images/docs_blinks_4_0.png" />
+<img alt="../_images/docs_blinks_5_0.png" src="../_images/docs_blinks_5_0.png" />
 </div>
 </div>
-<p>If we apply the blink-detection algorithm implemented in <code class="docutils literal notranslate"><span class="pre">blink_interp_mahot()</span></code>, bad things happen.</p>
+<p>If we apply the blink-detection algorithm implemented in <code class="docutils literal notranslate"><span class="pre">blinks_interp_mahot()</span></code>, bad things happen.</p>
 <p>Here, we set the <code class="docutils literal notranslate"><span class="pre">margin</span></code> parameter to 50 ms which seems to be reasonable for this subject. With the <code class="docutils literal notranslate"><span class="pre">plot=True</span></code> parameter, we can generate diagnostic plots that give us an idea whether the procedure worked satisfactorily. We see immediately that the interpolation (red curve) gives reasonable results for isolated blinks (e.g., blink 2 and 3) but fails spectacularly for situations where there are surrounding blinks (e.g., blinks 8 and 9).</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">d2</span><span class="o">.</span><span class="n">blink_interp_mahot</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plot_figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">),</span> <span class="n">plot_dim</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
+<span></span><span class="n">d2</span><span class="o">.</span><span class="n">blinks_interp_mahot</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">plot_figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">),</span> <span class="n">plot_dim</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
 </pre></div>
 </div>
 </div>
@@ -311,7 +312,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_6_0.png" src="../_images/docs_blinks_6_0.png" />
+<img alt="../_images/docs_blinks_7_0.png" src="../_images/docs_blinks_7_0.png" />
 </div>
 </div>
 <p>We see the problem even better when plotting the interpolated and the raw signal on top of each other: The orange, interpolated signal shows spurious peaks and throughs because of the badly picked interpolation points in many cases.</p>
@@ -329,7 +330,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_8_0.png" src="../_images/docs_blinks_8_0.png" />
+<img alt="../_images/docs_blinks_9_0.png" src="../_images/docs_blinks_9_0.png" />
 </div>
 </div>
 <p>One solution to cope with this situation, is to merge together sequences of short blinks to one large blink. The function <code class="docutils literal notranslate"><span class="pre">blinks_merge()</span></code> merges together blinks that are closer together than <code class="docutils literal notranslate"><span class="pre">distance</span></code> milliseconds. Here, we use the criterion of 150 ms and merge together blinks that are close than that.</p>
@@ -339,7 +340,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
-<span class="n">d3</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">detect_blinks</span><span class="p">()</span><span class="o">.</span><span class="n">blinks_merge</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+<span class="n">d3</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">blinks_merge</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
 <span class="n">d3</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -348,7 +349,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_10_0.png" src="../_images/docs_blinks_10_0.png" />
+<img alt="../_images/docs_blinks_11_0.png" src="../_images/docs_blinks_11_0.png" />
 </div>
 </div>
 <p>Running the blink-interpolation of this merged-blink dataset results in better results (even though we should in general be careful with this data as it contains quite a high percentage of missing data due to blinks). The blue curve is the raw data, the orange the previous interpolated dataset and the green curve is the interpolated dataset after merging close blinks.</p>
@@ -357,7 +358,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">d3</span><span class="o">.</span><span class="n">blink_interp_mahot</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="mi">50</span><span class="p">);</span>
+<span></span><span class="n">d3</span><span class="o">.</span><span class="n">blinks_interp_mahot</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="mi">50</span><span class="p">);</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
 <span class="n">pp</span><span class="o">.</span><span class="n">plotpd</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">d2</span><span class="p">,</span><span class="n">d3</span><span class="p">)</span>
 </pre></div>
@@ -367,7 +368,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_12_0.png" src="../_images/docs_blinks_12_0.png" />
+<img alt="../_images/docs_blinks_13_0.png" src="../_images/docs_blinks_13_0.png" />
 </div>
 </div>
 </div>
@@ -425,7 +426,7 @@ div.rendered_html tbody tr:hover {
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/31c9217.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/5368b77.
     </div>
   </body>
 </html>

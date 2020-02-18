@@ -51,11 +51,11 @@
 <p>Main object-oriented entry point</p>
 <dl class="class">
 <dt id="pypillometry.pupildata.FakePupilData">
-<em class="property">class </em><code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">FakePupilData</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">sim_params={}</em>, <em class="sig-param">real_baseline=None</em>, <em class="sig-param">real_response_coef=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">FakePupilData</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">event_labels=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">sim_params={}</em>, <em class="sig-param">real_baseline=None</em>, <em class="sig-param">real_response_coef=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulated pupil data for validation purposes.</p>
 <dl class="method">
 <dt id="pypillometry.pupildata.FakePupilData.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">sim_params={}</em>, <em class="sig-param">real_baseline=None</em>, <em class="sig-param">real_response_coef=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">event_labels=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">sim_params={}</em>, <em class="sig-param">real_baseline=None</em>, <em class="sig-param">real_response_coef=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -132,17 +132,17 @@ or the values stored in <cite>scale_params</cite>.</p>
 
 <dl class="class">
 <dt id="pypillometry.pupildata.PupilData">
-<em class="property">class </em><code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">PupilData</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">PupilData</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">event_labels=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class representing pupillometric data.</p>
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">event_labels=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
 <li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/1.18/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
-using <cite>sampling_rate</cite></p></li>
+using <cite>sampling_rate</cite> (in ms)</p></li>
 <li><p><strong>pupil</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/1.18/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]) – pupillary data at times <cite>time</cite> assumed to be in ms</p></li>
 <li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/1.18/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – time-onsets of any events that are to be modelled in the pupil</p></li>
 <li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – sampling-rate of the pupillary signal in Hz</p></li>
@@ -180,8 +180,27 @@ using <cite>sampling_rate</cite></p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="pypillometry.pupildata.PupilData.blink_interp_mahot">
-<code class="sig-name descname">blink_interp_mahot</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=10</em>, <em class="sig-param">blinkwindow=500</em>, <em class="sig-param">interp_type='cubic'</em>, <em class="sig-param">plot=None</em>, <em class="sig-param">plot_dim=(5</em>, <em class="sig-param">3)</em>, <em class="sig-param">plot_figsize=(10</em>, <em class="sig-param">8)</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blink_interp_mahot" title="Permalink to this definition">¶</a></dt>
+<dt id="pypillometry.pupildata.PupilData.blinks_detect">
+<code class="sig-name descname">blinks_detect</code><span class="sig-paren">(</span><em class="sig-param">min_duration=50</em>, <em class="sig-param">blink_val=0</em>, <em class="sig-param">units='ms'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_detect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect blinks as consecutive sequence of <cite>blink_val</cite> (f.eks., 0 or NaN) of at least
+<cite>min_duration</cite> duration (in <cite>units</cite>).
+Detected blinks are put into member <cite>blinks</cite> (matrix 2 x nblinks where start and end
+are stored as indexes) and member <cite>blink_mask</cite> which codes for each sampling point
+whether there is a blink (1) or not (0).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_duration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – minimum duration for a sequence of missing numbers to be treated as blink</p></li>
+<li><p><strong>blink_val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – “missing value” code</p></li>
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – one of “ms”, “sec”, “min”, “h”</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.blinks_interp_mahot">
+<code class="sig-name descname">blinks_interp_mahot</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=10</em>, <em class="sig-param">blinkwindow=500</em>, <em class="sig-param">interp_type='cubic'</em>, <em class="sig-param">plot=None</em>, <em class="sig-param">plot_dim=(5</em>, <em class="sig-param">3)</em>, <em class="sig-param">plot_figsize=(10</em>, <em class="sig-param">8)</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_interp_mahot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the blink-interpolation method by Mahot (2013).</p>
 <p>Mahot, 2013:
 <a class="reference external" href="https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001">https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001</a>.</p>
@@ -216,8 +235,8 @@ This function simply treats repeated blinks as one long blink.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>distance</strong> (merge together blinks that are closer together than <cite>distance</cite> in ms) – </p></li>
-<li><p><strong>remove_signal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if True, set all signal values during the “new blinks” to zero so
+<li><p><strong>distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – merge together blinks that are closer together than <cite>distance</cite> in ms</p></li>
+<li><p><strong>remove_signal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if True, set all signal values during the “new blinks” to zero so
 that <a class="reference internal" href="#pypillometry.preproc.detect_blinks" title="pypillometry.preproc.detect_blinks"><code class="xref py py-func docutils literal notranslate"><span class="pre">detect_blinks()</span></code></a> will pick them up; interpolation will work
 either way</p></li>
 </ul>
@@ -226,28 +245,34 @@ either way</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="pypillometry.pupildata.PupilData.copy">
-<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param">new_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make and return a deep-copy of the pupil data.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pypillometry.pupildata.PupilData.detect_blinks">
-<code class="sig-name descname">detect_blinks</code><span class="sig-paren">(</span><em class="sig-param">min_duration=50</em>, <em class="sig-param">blink_val=0</em>, <em class="sig-param">units='ms'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.detect_blinks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Detect blinks as consecutive sequence of <cite>blink_val</cite> (f.eks., 0 or NaN) of at least
-<cite>min_duration</cite> duration (in <cite>units</cite>).
-Detected blinks are put into member <cite>blinks</cite> (matrix 2 x nblinks where start and end
-are stored as indexes) and member <cite>blink_mask</cite> which codes for each sampling point
-whether there is a blink (1) or not (0).</p>
+<dt id="pypillometry.pupildata.PupilData.blinks_plot">
+<code class="sig-name descname">blinks_plot</code><span class="sig-paren">(</span><em class="sig-param">pdf_file=None</em>, <em class="sig-param">nrow=5</em>, <em class="sig-param">ncol=3</em>, <em class="sig-param">figsize=(10</em>, <em class="sig-param">10)</em>, <em class="sig-param">pre_blink=500</em>, <em class="sig-param">post_blink=500</em>, <em class="sig-param">units='ms'</em>, <em class="sig-param">plot_index=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the detected blinks into separate figures each with nrow x ncol subplots.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>min_duration</strong> (<em>minimum duration for a sequence of missing numbers to be treated as blink</em>) – </p></li>
-<li><p><strong>blink_val</strong> (<em>&quot;missing value&quot; code</em>) – </p></li>
-<li><p><strong>units</strong> (<em>one of &quot;ms&quot;</em><em>, </em><em>&quot;sec&quot;</em><em>, </em><em>&quot;min&quot;</em><em>, </em><em>&quot;h&quot;</em>) – </p></li>
+<li><p><strong>pdf_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if the name of a file is given, the figures are saved into a multi-page PDF file</p></li>
+<li><p><strong>ncol</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – number of columns for the blink-plots</p></li>
+<li><p><strong>pre_blink</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – extend plot a certain time before each blink (in ms)</p></li>
+<li><p><strong>post_blink</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – extend plot a certain time after each blink (in ms)</p></li>
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – units in which the signal is plotted</p></li>
+<li><p><strong>plot_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – plot a number with the blinks’ index (e.g., for identifying abnormal blinks)</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>list of plt.Figure objects each with nrow*ncol subplots</em></p></li>
+<li><p><em>in Jupyter Notebook, those are displayed inline one after the other</em></p></li>
+</ul>
+</p>
+</dd>
 </dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><em class="sig-param">new_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make and return a deep-copy of the pupil data.</p>
 </dd></dl>
 
 <dl class="method">
@@ -385,26 +410,13 @@ if <cite>interactive=True</cite>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pypillometry.pupildata.PupilData.plot_blinks">
-<code class="sig-name descname">plot_blinks</code><span class="sig-paren">(</span><em class="sig-param">pdf_file=None</em>, <em class="sig-param">nrow=5</em>, <em class="sig-param">ncol=3</em>, <em class="sig-param">figsize=(10</em>, <em class="sig-param">10)</em>, <em class="sig-param">pre_blink=500</em>, <em class="sig-param">post_blink=500</em>, <em class="sig-param">units='ms'</em>, <em class="sig-param">plot_index=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.plot_blinks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the detected blinks into separate figures each with nrow x ncol subplots.</p>
+<dt id="pypillometry.pupildata.PupilData.reset_time">
+<code class="sig-name descname">reset_time</code><span class="sig-paren">(</span><em class="sig-param">t0=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.reset_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets time so that the time-array starts at time zero (t0).
+Resets onsets etc.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pdf_file</strong> (<em>if the name of a file is given</em><em>, </em><em>the figures are saved into a multi-page PDF file</em>) – </p></li>
-<li><p><strong>ncol</strong> (<em>number of columns for the blinks</em>) – </p></li>
-<li><p><strong>pre_blink</strong> (<em>extend plot a certain time before each blink</em><em> (</em><em>in ms</em><em>)</em>) – </p></li>
-<li><p><strong>post_blink</strong> (<em>extend plot a certain time after each blink</em><em> (</em><em>in ms</em><em>)</em>) – </p></li>
-<li><p><strong>units</strong> (<em>units in which the signal is plotted</em>) – </p></li>
-<li><p><strong>plot_index</strong> (<em>plot a number with the blinks' index</em><em> (</em><em>e.g.</em><em>, </em><em>for identifying abnormal blinks</em><em>)</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><em>list of plt.Figure objects each with nrow*ncol subplots</em></p></li>
-<li><p><em>in Jupyter Notebook, those are displayed inline one after the other</em></p></li>
-</ul>
-</p>
+<dd class="field-odd"><p><strong>t0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – time at which the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>’s time-vector starts</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1269,7 +1281,7 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/77d1ee0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/5368b77.
     </div>
   </body>
 </html>

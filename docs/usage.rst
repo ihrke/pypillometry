@@ -68,6 +68,7 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
     PupilData.copy
     PupilData.scale
     PupilData.unscale
+    PupilData.reset_time
 
 Plotting/Summarizing Data
 -------------------------

@@ -47,10 +47,10 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
 
 .. autosummary::
 
-    PupilData.detect_blinks
-    PupilData.blink_interp_mahot
+    PupilData.blinks_detect
+    PupilData.blinks_interp_mahot
     PupilData.blinks_merge
-    PupilData.plot_blinks
+    PupilData.blinks_plot
 
 **Smoothing/low-pass filtering:**
 
@@ -68,6 +68,7 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
     PupilData.copy
     PupilData.scale
     PupilData.unscale
+    PupilData.reset_time
 
 Plotting/Summarizing Data
 -------------------------

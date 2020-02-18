@@ -67,6 +67,7 @@ class PupilData:
                  sampling_rate: Optional[float]=None,
                  time: Optional[PupilArray]=None,
                  event_onsets: Optional[PupilArray]=None,
+                 event_labels: Optional[PupilArray]=None,
                  name: Optional[str]=None):
         """
         Parameters
@@ -76,7 +77,7 @@ class PupilData:
             name of the dataset or `None` (in which case a random string is selected)
         time: 
             timing array or `None`, in which case the time-array goes from [0,maxT]
-            using `sampling_rate`
+            using `sampling_rate` (in ms)
         pupil:
             pupillary data at times `time` assumed to be in ms
         event_onsets:
@@ -84,7 +85,7 @@ class PupilData:
         sampling_rate:
             sampling-rate of the pupillary signal in Hz
         """
-        self.sy=np.array(pupil)
+        self.sy=np.array(pupil, dtype=np.float)
         if sampling_rate is None and time is None:
             raise ValueError("you have to specify either sampling_rate or time-vector (or both)")
         
@@ -92,7 +93,7 @@ class PupilData:
             maxT=len(self)/sampling_rate*1000.
             self.tx=np.linspace(0,maxT, num=len(self))
         else:
-            self.tx=time
+            self.tx=np.array(time, dtype=np.float)
         
         if sampling_rate is None:
             self.fs=np.round(1000./np.median(np.diff(self.tx)))
@@ -100,9 +101,23 @@ class PupilData:
             self.fs=sampling_rate
             
         if event_onsets is None:
-            self.event_onsets=np.array([])
+            self.event_onsets=np.array([], dtype=np.float)
         else:
-            self.event_onsets=np.array(event_onsets)
+            self.event_onsets=np.array(event_onsets, dtype=np.float)
+        
+        # check whether onsets are in range
+        for onset in self.event_onsets:
+            if onset<self.tx.min() or onset>self.tx.max():
+                raise ValueError("some event-onsets outside data range according to time-vector")
+            
+            
+        if event_labels is None:
+            self.event_labels=np.zeros_like(self.event_onsets)
+        else:
+            if self.event_onsets.size!=np.array(event_labels).size:
+                raise ValueError("event_labels must have same length as event_onsets")
+            self.event_labels=np.array(event_labels)
+          
         if self.tx.size != self.sy.size:
             raise ValueError("time and pupil-array must have same length, found {} vs {}".format(
                 self.tx.size,self.sy.size))
@@ -128,6 +143,21 @@ class PupilData:
         
         ## interpolated mask
         self.interpolated_mask=np.zeros(len(self), dtype=np.int)
+        
+    def reset_time(self, t0: float=0):
+        """
+        Resets time so that the time-array starts at time zero (t0).
+        Resets onsets etc.
+        
+        Parameters
+        ----------
+        t0: float
+            time at which the :class:`.PupilData`'s time-vector starts
+        """
+        t0=self.tx.min()
+        self.tx=self.tx-t0
+        self.event_onsets=self.event_onsets-t0
+        return self
         
     def write_file(self, fname:str):
         """
@@ -183,6 +213,7 @@ class PupilData:
         evon=slic.event_onsets*slic._unit_fac(units)
         keepev=np.logical_and(evon>=start, evon<=end)
         slic.event_onsets=slic.event_onsets[keepev]
+        slic.event_labels=slic.event_labels[keepev]
         ## just remove all detected blinks (need to rerun `detect_blinks()`)
         slic.blinks=np.empty((0,2), dtype=np.int)
         slic.blink_mask=np.zeros(len(slic), dtype=np.int)
@@ -410,7 +441,7 @@ class PupilData:
                         continue
                     else:
                         sblink=max(0,sblink-startix)
-                        eblink=min(endix,eblink-startix)
+                        eblink=min(endix-startix-1,eblink-startix)
                     plt.gca().axvspan(tx[sblink],tx[eblink],color="red", alpha=0.2)
                 
                 
@@ -856,13 +887,14 @@ class FakePupilData(PupilData):
                  sampling_rate: Optional[float]=None,
                  time: Optional[PupilArray]=None,
                  event_onsets: Optional[PupilArray]=None,
+                 event_labels: Optional[PupilArray]=None,
                  name: Optional[str]=None,
                  sim_params: dict={},
                  real_baseline: Optional[PupilArray]=None,
                  real_response_coef: Optional[PupilArray]=None):
         """
         """
-        super().__init__(pupil,sampling_rate,time,event_onsets,name)
+        super().__init__(pupil,sampling_rate,time,event_onsets,event_labels,name)
         self.name="fake_"+self.name
         self.sim_params=sim_params
         self.sim_baseline=real_baseline

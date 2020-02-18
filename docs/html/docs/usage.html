@@ -73,16 +73,16 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.detect_blinks" title="pypillometry.pupildata.PupilData.detect_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.detect_blinks</span></code></a>([min_duration, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_detect" title="pypillometry.pupildata.PupilData.blinks_detect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_detect</span></code></a>([min_duration, …])</p></td>
 <td><p>Detect blinks as consecutive sequence of <cite>blink_val</cite> (f.eks., 0 or NaN) of at least <cite>min_duration</cite> duration (in <cite>units</cite>).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blink_interp_mahot" title="pypillometry.pupildata.PupilData.blink_interp_mahot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blink_interp_mahot</span></code></a>([winsize, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_interp_mahot" title="pypillometry.pupildata.PupilData.blinks_interp_mahot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_interp_mahot</span></code></a>([winsize, …])</p></td>
 <td><p>Implements the blink-interpolation method by Mahot (2013).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_merge" title="pypillometry.pupildata.PupilData.blinks_merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_merge</span></code></a>([distance, remove_signal])</p></td>
 <td><p>Merge together blinks that are close together.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot_blinks" title="pypillometry.pupildata.PupilData.plot_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot_blinks</span></code></a>([pdf_file, nrow, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_plot" title="pypillometry.pupildata.PupilData.blinks_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_plot</span></code></a>([pdf_file, nrow, …])</p></td>
 <td><p>Plot the detected blinks into separate figures each with nrow x ncol subplots.</p></td>
 </tr>
 </tbody>
@@ -124,6 +124,9 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.unscale" title="pypillometry.pupildata.PupilData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.unscale</span></code></a>([mean, sd])</p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.reset_time" title="pypillometry.pupildata.PupilData.reset_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.reset_time</span></code></a>([t0])</p></td>
+<td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -139,8 +142,8 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot" title="pypillometry.pupildata.PupilData.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot</span></code></a>([plot_range, interactive, …])</p></td>
 <td><p>Make a plot of the pupil data using <cite>matplotlib</cite> or <a class="reference internal" href="api.html#pypillometry.convenience.plot_pupil_ipy" title="pypillometry.convenience.plot_pupil_ipy"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.convenience.plot_pupil_ipy()</span></code></a> if <cite>interactive=True</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot_blinks" title="pypillometry.pupildata.PupilData.plot_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot_blinks</span></code></a>([pdf_file, nrow, …])</p></td>
-<td><p>Plot the detected blinks into separate figures each with nrow x ncol subplots.</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot_blinks</span></code></p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.plotpd" title="pypillometry.pupildata.plotpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plotpd</span></code></a>(*args[, subplots, baseline])</p></td>
 <td><p>Plotting for <cite>PupilData</cite> objects.</p></td>
@@ -270,7 +273,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/31c9217.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/5368b77.
     </div>
   </body>
 </html>
