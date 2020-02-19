@@ -397,7 +397,10 @@ class PupilData:
             endix=np.argmin(np.abs(tx-end))
         
         tx=tx[startix:endix]
-        evon=np.array([ev for ev in evon if ev>=start and ev<end])
+        
+        ixx=np.logical_and(evon>=start, evon<end)
+        evlab=self.event_labels[ixx]
+        evon=evon[ixx]
         overlays=(ov[startix:endix] for ov in overlays)
         
         if interactive:
@@ -429,6 +432,9 @@ class PupilData:
             for i,ov in enumerate(overlays):
                 plt.plot(tx, ov, label=overlay_labels[i])
             plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)
+            ll,ul=plt.ylim()
+            for ev,lab in zip(evon,evlab):
+                plt.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
             if highlight_interpolated:
                 a=np.diff(np.r_[0, self.interpolated_mask[startix:endix], 0])[:-1]
                 istarts=np.where(a>0)[0]
@@ -463,12 +469,18 @@ class PupilData:
 
         Parameters
         ----------
-        plot_range: tuple (start,end): plot from start to end (in units of `units`)
-        baseline: plot baseline if estimated
-        response: plot response if estimated
-        model: plot full model if baseline and response have been estimated
-        interactive: if True, plot with sliders to adjust range
-        units: one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours
+        plot_range: tuple (start,end)
+            plot from start to end (in units of `units`)
+        baseline: bool
+            plot baseline if estimated
+        response: bool
+            plot response if estimated
+        model: bool
+            plot full model if baseline and response have been estimated
+        interactive: bool
+            if True, plot with sliders to adjust range
+        units: str
+            one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours
         """
 
         overlays=tuple()
@@ -484,7 +496,61 @@ class PupilData:
             overlay_labels+=("model",)
         self._plot(plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated)
 
-            
+    def plot_segments(self, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), **kwargs):
+        """
+        Plot the whole dataset chunked up into segments (usually to a PDF file).
+
+        Parameters
+        ----------
+
+        pdffile: str or None
+            file name to store the PDF; if None, no PDF is written 
+        interv: float
+            duration of each of the segments to be plotted (in minutes)
+        figsize: Tuple[int,int]
+            dimensions of the figures
+        kwargs: 
+            arguments passed to :func:`.PupilData.plot()`
+
+        Returns
+        -------
+
+        figs: list of :class:`matplotlib.Figure` objects
+        """
+
+        # start and end in minutes
+        smins,emins=self.tx.min()/1000./60., self.tx.max()/1000./60.
+        segments=[]
+        cstart=smins
+        cend=smins
+        while cend<emins:
+            cend=min(emins, cstart+interv)
+            segments.append( (cstart,cend) )
+            cstart=cend
+
+        figs=[]
+        _backend=mpl.get_backend()
+        mpl.use("pdf")
+        plt.ioff() ## avoid showing plots when saving to PDF 
+
+        for start,end in segments:
+            plt.figure(figsize=figsize)
+            self.plot( (start,end), units="min", **kwargs)
+            figs.append(plt.gcf())
+
+
+        if isinstance(pdffile, str):
+            print("> Writing PDF file '%s'"%pdffile)
+            with PdfPages(pdffile) as pdf:
+                for fig in figs:
+                    pdf.savefig(fig)         
+
+        ## switch back to original backend and interactive mode                        
+        mpl.use(_backend) 
+        plt.ion()
+
+        return figs        
+    
     def estimate_baseline(self, method: str="envelope_iter_bspline_2", **kwargs):
         """
         Apply one of the baseline-estimation methods.
@@ -651,6 +717,11 @@ class PupilData:
         nfig=int(np.ceil(nblinks/nsubplots))
 
         figs=[]
+        if isinstance(pdf_file,str):
+            _backend=mpl.get_backend()
+            mpl.use("pdf")
+            plt.ioff() ## avoid showing plots when saving to PDF 
+        
         iblink=0
         for i in range(nfig):
             fig=plt.figure(figsize=figsize)
@@ -682,6 +753,10 @@ class PupilData:
             with PdfPages(pdf_file) as pdf:
                 for fig in figs:
                     pdf.savefig(fig)
+            ## switch back to original backend and interactive mode                
+            mpl.use(_backend) 
+            plt.ion()
+            
         return figs    
 
     def blinks_merge(self, distance: float=100, remove_signal: bool=False):
@@ -713,7 +788,7 @@ class PupilData:
                 newblinks.append(cblink)
                 cblink=self.blinks[i,:]
             i+=1            
-
+        newblinks.append(cblink)
         newblinks=np.array(newblinks)       
 
         self.blinks=newblinks
@@ -725,9 +800,51 @@ class PupilData:
 
         return self    
     
+    def blinks_interpolate(self, winsize: float=11, 
+                           vel_onset: float=-5, vel_offset: float=5, 
+                           margin: Tuple[float,float]=(10,30), 
+                           interp_type: str="cubic"):
+        """
+        Interpolation of missing data "in one go".
+        Detection of blinks happens using Mahot (2013), see :func:`.blink_onsets_mahot()`.
+        
+        Parameters
+        ----------
+        winsize: float
+            size of the Hanning-window in ms
+        vel_onset: float
+            velocity-threshold to detect the onset of the blink
+        vel_offset: float
+            velocity-threshold to detect the offset of the blink
+        margin: Tuple[float,float]
+            margin that is subtracted/added to onset and offset (in ms)
+        interp_type: str
+            type of interpolation accepted by :func:`scipy.interpolate.interp1d()`        
+        """
+        # parameters in sampling units (from ms)
+        winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
+        margin_ix=tuple(int(np.ceil(m/1000.*self.fs)) for m in margin)
+        if winsize_ix % 2==0: ## ensure smoothing window is odd
+            winsize_ix+=1 
+
+        # generate smoothed signal and velocity-profile
+        sym=smooth_window(self.sy, winsize_ix, "hanning")
+        vel=np.r_[0,np.diff(sym)] 
+
+        blink_onsets=blink_onsets_mahot(self.sy, self.blinks, winsize_ix, vel_onset, vel_offset,
+                                        margin_ix, int(np.ceil(500/1000*self.fs)))
+        self.interpolated_mask=np.zeros(self.sy.size)
+        for on,off in blink_onsets:
+            self.interpolated_mask[on:off]=1
+        f=scipy.interpolate.interp1d(self.tx[self.interpolated_mask==0], self.sy[self.interpolated_mask==0], 
+                                     kind=interp_type, bounds_error=False, fill_value=0)
+        syr=f(self.tx)
+        self.sy=syr
+        return self
+                        
     def blinks_interp_mahot(self, winsize: float=11, 
                            vel_onset: float=-5, vel_offset: float=5, 
-                           margin: float=10, 
+                           margin: Tuple[float,float]=(10,30), 
                            blinkwindow: float=500,
                            interp_type: str="cubic",
                            plot: Optional[str]=None, 
@@ -751,7 +868,7 @@ class PupilData:
             velocity-threshold to detect the onset of the blink
         vel_offset: float
             velocity-threshold to detect the offset of the blink
-        margin: float
+        margin: Tuple[float,float]
             margin that is subtracted/added to onset and offset (in ms)
         blinkwindow: float
             how much time before and after each blink to include (in ms)
@@ -768,8 +885,10 @@ class PupilData:
         """
         # parameters in sampling units (from ms)
         winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
-        margin_ix=int(np.ceil(margin/1000.*self.fs)) 
+        margin_ix=tuple(int(np.ceil(m/1000.*self.fs)) for m in margin)
         blinkwindow_ix=int(blinkwindow/1000.*self.fs)
+        if winsize_ix % 2==0: ## ensure smoothing window is odd
+            winsize_ix+=1 
 
         # generate smoothed signal and velocity-profile
         sym=smooth_window(self.sy, winsize_ix, "hanning")
@@ -785,58 +904,37 @@ class PupilData:
             mpl.use("pdf")
             plt.ioff() ## avoid showing plots when saving to PDF 
 
-
+        blink_onsets=blink_onsets_mahot(self.sy, self.blinks, winsize_ix, vel_onset, vel_offset,
+                                           margin_ix, blinkwindow_ix)
+            
         # loop through blinks
-        for ix,(start,end) in enumerate(self.blinks):                
+        for ix,(onset,offset) in enumerate(blink_onsets):                
             if plot is not None:            
                 if ix % nsubplots==0:
                     fig,axs=plt.subplots(nrow,ncol,figsize=plot_figsize)
                     axs=axs.flatten()
                     figs.append(fig)
-            # TODO: 
-            # [ ] what if there are several blinks/more missing data in that window? calc of t1-t4 blind to that
-            # [x] what if the velocity profile detects several transients?
-            #   -> pick the start of the on-/offset that is closest to start/end of blink
-            winstart,winend=max(0,start-blinkwindow_ix), min(end+blinkwindow_ix, len(self))
-            slic=slice(winstart, winend) #start-blinkwindow_ix, end+blinkwindow_ix)
-            winlength=vel[slic].size
-
-            onsets=np.where(vel[slic]<=vel_onset)[0]
-            offsets=np.where(vel[slic]>=vel_offset)[0]
-            if onsets.size==0 or offsets.size==0:
-                continue
-
-            ## onsets are in "local" indices of the windows, start-end of blink global
-            startl,endl=blinkwindow_ix if winstart>0 else start,end-start+blinkwindow_ix
-
-            # find vel-crossing next to start of blink and move back to start of that crossing
-            onset_ix=np.argmin(np.abs((onsets-startl<=0)*(onsets-startl)))
-            while(onsets[onset_ix-1]+1==onsets[onset_ix]):
-                onset_ix-=1
-            onset=onsets[onset_ix]
-            onset=max(0, onset-margin_ix) # avoid overflow to the left
-
-            # find start of "reversal period" and move forward until it drops back
-            offset_ix=np.argmin(np.abs(((offsets-endl<0)*np.iinfo(np.int).max)+(offsets-endl)))
-            while(offset_ix<(len(offsets)-1) and offsets[offset_ix+1]-1==offsets[offset_ix]):
-                offset_ix+=1        
-            offset=offsets[offset_ix]
-            offset=min(winlength-1, offset+margin_ix) # avoid overflow to the right
 
             # calc the 4 time points
             t2,t3=onset,offset
             t1=max(0,t2-t3+t2)
-            t4=min(t3-t2+t3, winlength-1)
+            t4=min(t3-t2+t3, len(self)-1)
+            if t1==t2:
+                t2+=1
+            if t3==t4:
+                t3-=1
             
-            txpts=[self.tx[winstart+pt] for pt in [t1,t2,t3,t4]]
-            sypts=[self.sy[winstart+pt] for pt in [t1,t2,t3,t4]]
+            txpts=[self.tx[pt] for pt in [t1,t2,t3,t4]]
+            sypts=[self.sy[pt] for pt in [t1,t2,t3,t4]]
             intfct=interp1d(txpts,sypts, kind=interp_type)
-            islic=slice(winstart+t2, winstart+t3)
+            islic=slice(t2, t3)
             syr[islic]=intfct(self.tx[islic])
 
             ## record the interpolated datapoints
             self.interpolated_mask[islic]=1
 
+            slic=slice(max(0,onset-blinkwindow_ix), min(offset+blinkwindow_ix, len(self)))
+            
             ## plotting for diagnostics
             #--------------------------
             if plot is not None:            
@@ -849,7 +947,7 @@ class PupilData:
                 ax2.plot(self.tx[slic]/1000., vel[slic], color="orange", label="velocity")
 
                 for pt in (t1,t2,t3,t4):
-                    ax1.plot(self.tx[winstart+pt]/1000., sym[winstart+pt], "o", color="red")
+                    ax1.plot(self.tx[pt]/1000., sym[pt], "o", color="red")
                 ax1.text(0.5, 0.5, '%i'%(ix+1), fontsize=12, horizontalalignment='center',     
                     verticalalignment='center', transform=ax1.transAxes)
                 if ix % nsubplots==0:

@@ -48,6 +48,7 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
 .. autosummary::
 
     PupilData.blinks_detect
+    PupilData.blinks_interpolate    
     PupilData.blinks_interp_mahot
     PupilData.blinks_merge
     PupilData.blinks_plot
@@ -78,7 +79,8 @@ Plotting/Summarizing Data
 .. autosummary::
 
     PupilData.plot
-    PupilData.plot_blinks
+    PupilData.plot_segments
+    PupilData.blinks_plot
     plotpd
     plotpd_ia
     

@@ -58,10 +58,7 @@ def smooth_window(x,window_len=11,window='hanning'):
     return y[(window_len-1):(-window_len+1)]
 
 
-
-#<https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001>
-
-def detect_blinks(sy, min_duration, blink_val):
+def detect_blinks(sy, min_duration, blink_val=0):
     """
     Detect blinks as consecutive sequence of `blink_val` (f.eks., 0 or NaN) of at least
     `min_duration` successive values in the signal `sy`.
@@ -95,3 +92,62 @@ def detect_blinks(sy, min_duration, blink_val):
     blinks=[ [start,end] for start,end in zip(starts,ends) if end-start>=min_duration]
     return np.array(blinks)
     
+    
+def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin, blinkwindow):
+    """
+    Method for finding the on- and offset for each blink (excluding transient).
+    See https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
+    
+    Parameters
+    ----------
+    sy: np.array
+        pupil data
+    blinks: np.array (nblinks x 2) 
+        blink onset/offset matrix (contiguous zeros)
+    smooth_winsize: int (odd)
+        size of the Hanning-window in sampling points
+    vel_onset: float
+        velocity-threshold to detect the onset of the blink
+    vel_offset: float
+        velocity-threshold to detect the offset of the blink
+    margin: tuple (int,int)
+        margin that is subtracted/added to onset and offset (in sampling points)
+    blinkwindow: int
+        how much time before and after each blink to include (in sampling points)        
+    """
+    # generate smoothed signal and velocity-profile
+    sym=smooth_window(sy, smooth_winsize, "hanning")
+    vel=np.r_[0,np.diff(sym)] 
+    blinkwindow_ix=blinkwindow
+    n=sym.size
+    
+    newblinks=[]
+    for ix,(start,end) in enumerate(blinks):                
+        winstart,winend=max(0,start-blinkwindow_ix), min(end+blinkwindow_ix, n)
+        slic=slice(winstart, winend) #start-blinkwindow_ix, end+blinkwindow_ix)
+        winlength=vel[slic].size
+
+        onsets=np.where(vel[slic]<=vel_onset)[0]
+        offsets=np.where(vel[slic]>=vel_offset)[0]
+        if onsets.size==0 or offsets.size==0:
+            continue
+
+        ## onsets are in "local" indices of the windows, start-end of blink global
+        startl,endl=blinkwindow_ix if winstart>0 else start,end-start+blinkwindow_ix
+
+        # find vel-crossing next to start of blink and move back to start of that crossing
+        onset_ix=np.argmin(np.abs((onsets-startl<=0)*(onsets-startl)))
+        while(onsets[onset_ix-1]+1==onsets[onset_ix]):
+            onset_ix-=1
+        onset=onsets[onset_ix]
+        onset=max(0, onset-margin[0]) # avoid overflow to the left
+
+        # find start of "reversal period" and move forward until it drops back
+        offset_ix=np.argmin(np.abs(((offsets-endl<0)*np.iinfo(np.int).max)+(offsets-endl)))
+        while(offset_ix<(len(offsets)-1) and offsets[offset_ix+1]-1==offsets[offset_ix]):
+            offset_ix+=1        
+        offset=offsets[offset_ix]
+        offset=min(winlength-1, offset+margin[1]) # avoid overflow to the right
+        newblinks.append( [onset+winstart,offset+winstart] )
+    
+    return np.array(newblinks)    

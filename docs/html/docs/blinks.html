@@ -271,7 +271,36 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<p>The first step is, of course, the identification of blinks. The function <code class="docutils literal notranslate"><span class="pre">blinks_detect()</span></code> looks for sequences of successive missing datapoint</p>
+<p>The first step is, of course, the identification of blinks. The function <code class="docutils literal notranslate"><span class="pre">blinks_detect()</span></code> looks for sequences of successive missing datapoints.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(array([2291.,    0.,    0.,    0.,   24.,  171.,  437., 5505., 3550.,
+         523.]),
+ array([   0. ,  106.2,  212.4,  318.6,  424.8,  531. ,  637.2,  743.4,
+         849.6,  955.8, 1062. ]),
+ &lt;a list of 10 Patch objects&gt;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_blinks_3_1.png" src="../_images/docs_blinks_3_1.png" />
+</div>
+</div>
 <p>function blink_summary() returning blink-summary object (dict with some fancy plotting/displaying)</p>
 <div class="section" id="Short,-successive-blinks">
 <h2>Short, successive blinks<a class="headerlink" href="#Short,-successive-blinks" title="Permalink to this headline">¶</a></h2>
@@ -294,7 +323,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_5_0.png" src="../_images/docs_blinks_5_0.png" />
+<img alt="../_images/docs_blinks_6_0.png" src="../_images/docs_blinks_6_0.png" />
 </div>
 </div>
 <p>If we apply the blink-detection algorithm implemented in <code class="docutils literal notranslate"><span class="pre">blinks_interp_mahot()</span></code>, bad things happen.</p>
@@ -312,7 +341,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_7_0.png" src="../_images/docs_blinks_7_0.png" />
+<img alt="../_images/docs_blinks_8_0.png" src="../_images/docs_blinks_8_0.png" />
 </div>
 </div>
 <p>We see the problem even better when plotting the interpolated and the raw signal on top of each other: The orange, interpolated signal shows spurious peaks and throughs because of the badly picked interpolation points in many cases.</p>
@@ -330,7 +359,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_9_0.png" src="../_images/docs_blinks_9_0.png" />
+<img alt="../_images/docs_blinks_10_0.png" src="../_images/docs_blinks_10_0.png" />
 </div>
 </div>
 <p>One solution to cope with this situation, is to merge together sequences of short blinks to one large blink. The function <code class="docutils literal notranslate"><span class="pre">blinks_merge()</span></code> merges together blinks that are closer together than <code class="docutils literal notranslate"><span class="pre">distance</span></code> milliseconds. Here, we use the criterion of 150 ms and merge together blinks that are close than that.</p>
@@ -349,7 +378,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_11_0.png" src="../_images/docs_blinks_11_0.png" />
+<img alt="../_images/docs_blinks_12_0.png" src="../_images/docs_blinks_12_0.png" />
 </div>
 </div>
 <p>Running the blink-interpolation of this merged-blink dataset results in better results (even though we should in general be careful with this data as it contains quite a high percentage of missing data due to blinks). The blue curve is the raw data, the orange the previous interpolated dataset and the green curve is the interpolated dataset after merging close blinks.</p>
@@ -368,7 +397,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_13_0.png" src="../_images/docs_blinks_13_0.png" />
+<img alt="../_images/docs_blinks_14_0.png" src="../_images/docs_blinks_14_0.png" />
 </div>
 </div>
 </div>
@@ -426,7 +455,7 @@ div.rendered_html tbody tr:hover {
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/5368b77.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/ea11ce6.
     </div>
   </body>
 </html>

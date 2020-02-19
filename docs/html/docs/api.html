@@ -141,10 +141,10 @@ or the values stored in <cite>scale_params</cite>.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
-<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/1.18/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
 using <cite>sampling_rate</cite> (in ms)</p></li>
-<li><p><strong>pupil</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/1.18/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]) – pupillary data at times <cite>time</cite> assumed to be in ms</p></li>
-<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/1.18/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – time-onsets of any events that are to be modelled in the pupil</p></li>
+<li><p><strong>pupil</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]) – pupillary data at times <cite>time</cite> assumed to be in ms</p></li>
+<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – time-onsets of any events that are to be modelled in the pupil</p></li>
 <li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – sampling-rate of the pupillary signal in Hz</p></li>
 </ul>
 </dd>
@@ -200,7 +200,7 @@ whether there is a blink (1) or not (0).</p>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.blinks_interp_mahot">
-<code class="sig-name descname">blinks_interp_mahot</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=10</em>, <em class="sig-param">blinkwindow=500</em>, <em class="sig-param">interp_type='cubic'</em>, <em class="sig-param">plot=None</em>, <em class="sig-param">plot_dim=(5</em>, <em class="sig-param">3)</em>, <em class="sig-param">plot_figsize=(10</em>, <em class="sig-param">8)</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_interp_mahot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">blinks_interp_mahot</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=(10</em>, <em class="sig-param">30)</em>, <em class="sig-param">blinkwindow=500</em>, <em class="sig-param">interp_type='cubic'</em>, <em class="sig-param">plot=None</em>, <em class="sig-param">plot_dim=(5</em>, <em class="sig-param">3)</em>, <em class="sig-param">plot_figsize=(10</em>, <em class="sig-param">8)</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_interp_mahot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the blink-interpolation method by Mahot (2013).</p>
 <p>Mahot, 2013:
 <a class="reference external" href="https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001">https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001</a>.</p>
@@ -213,7 +213,7 @@ can help to set good parameter values for <cite>winsize</cite>, <cite>vel_onset<
 <li><p><strong>winsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – size of the Hanning-window in ms</p></li>
 <li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the onset of the blink</p></li>
 <li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the offset of the blink</p></li>
-<li><p><strong>margin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – margin that is subtracted/added to onset and offset (in ms)</p></li>
+<li><p><strong>margin</strong> (<em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – margin that is subtracted/added to onset and offset (in ms)</p></li>
 <li><p><strong>blinkwindow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – how much time before and after each blink to include (in ms)</p></li>
 <li><p><strong>interp_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – type of interpolation accepted by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.interpolate.interp1d()</span></code></p></li>
 <li><p><strong>plot</strong> (<em>True</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – if a string, the plot is going to be saved to a multipage PDF file;
@@ -221,6 +221,24 @@ if None, no plotting is done
 if True, plot is not saved but produced</p></li>
 <li><p><strong>plot_dim</strong> (<em>tuple nrow x ncol</em>) – number of subplots</p></li>
 <li><p><strong>plot_figsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em> (</em><em>width</em><em>, </em><em>height</em><em>)</em>) – dimensions for each figure</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.blinks_interpolate">
+<code class="sig-name descname">blinks_interpolate</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=(10</em>, <em class="sig-param">30)</em>, <em class="sig-param">interp_type='cubic'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_interpolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolation of missing data “in one go”.
+Detection of blinks happens using Mahot (2013), see <a class="reference internal" href="#pypillometry.preproc.blink_onsets_mahot" title="pypillometry.preproc.blink_onsets_mahot"><code class="xref py py-func docutils literal notranslate"><span class="pre">blink_onsets_mahot()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>winsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – size of the Hanning-window in ms</p></li>
+<li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the onset of the blink</p></li>
+<li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the offset of the blink</p></li>
+<li><p><strong>margin</strong> (<em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – margin that is subtracted/added to onset and offset (in ms)</p></li>
+<li><p><strong>interp_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – type of interpolation accepted by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.interpolate.interp1d()</span></code></p></li>
 </ul>
 </dd>
 </dl>
@@ -395,16 +413,38 @@ if <cite>interactive=True</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>plot_range</strong> (tuple (start,end): plot from start to end (in units of <cite>units</cite>)) – </p></li>
-<li><p><strong>baseline</strong> (<em>plot baseline if estimated</em>) – </p></li>
-<li><p><strong>response</strong> (<em>plot response if estimated</em>) – </p></li>
-<li><p><strong>model</strong> (<em>plot full model if baseline and response have been estimated</em>) – </p></li>
-<li><p><strong>interactive</strong> (<em>if True</em><em>, </em><em>plot with sliders to adjust range</em>) – </p></li>
-<li><p><strong>units</strong> (<em>one of &quot;sec&quot;=seconds</em><em>, </em><em>&quot;ms&quot;=millisec</em><em>, </em><em>&quot;min&quot;=minutes</em><em>, </em><em>&quot;h&quot;=hours</em>) – </p></li>
+<li><p><strong>plot_range</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em> (</em><em>start</em><em>,</em><em>end</em><em>)</em>) – plot from start to end (in units of <cite>units</cite>)</p></li>
+<li><p><strong>baseline</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – plot baseline if estimated</p></li>
+<li><p><strong>response</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – plot response if estimated</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – plot full model if baseline and response have been estimated</p></li>
+<li><p><strong>interactive</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if True, plot with sliders to adjust range</p></li>
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – one of “sec”=seconds, “ms”=millisec, “min”=minutes, “h”=hours</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.plot_segments">
+<code class="sig-name descname">plot_segments</code><span class="sig-paren">(</span><em class="sig-param">pdffile=None</em>, <em class="sig-param">interv=1</em>, <em class="sig-param">figsize=(15</em>, <em class="sig-param">5)</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.plot_segments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the whole dataset chunked up into segments (usually to a PDF file).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pdffile</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – file name to store the PDF; if None, no PDF is written</p></li>
+<li><p><strong>interv</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – duration of each of the segments to be plotted (in minutes)</p></li>
+<li><p><strong>figsize</strong> (<em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>]</em>) – dimensions of the figures</p></li>
+<li><p><strong>kwargs</strong> – arguments passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.plot()</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>figs</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of <code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.Figure</span></code> objects</p>
 </dd>
 </dl>
 </dd></dl>
@@ -626,8 +666,28 @@ Expressed in units of mean baseline pupil diameter.</p></li>
 <h2>preproc.py<a class="headerlink" href="#preproc-py" title="Permalink to this headline">¶</a></h2>
 <p>preprocessing functions (blinks, smoothing, missing data…)</p>
 <dl class="function">
+<dt id="pypillometry.preproc.blink_onsets_mahot">
+<code class="sig-prename descclassname">pypillometry.preproc.</code><code class="sig-name descname">blink_onsets_mahot</code><span class="sig-paren">(</span><em class="sig-param">sy</em>, <em class="sig-param">blinks</em>, <em class="sig-param">smooth_winsize</em>, <em class="sig-param">vel_onset</em>, <em class="sig-param">vel_offset</em>, <em class="sig-param">margin</em>, <em class="sig-param">blinkwindow</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.preproc.blink_onsets_mahot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method for finding the on- and offset for each blink (excluding transient).
+See <a class="reference external" href="https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001">https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sy</strong> (<em>np.array</em>) – pupil data</p></li>
+<li><p><strong>blinks</strong> (<em>np.array</em><em> (</em><em>nblinks x 2</em><em>)</em>) – blink onset/offset matrix (contiguous zeros)</p></li>
+<li><p><strong>smooth_winsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> (</em><em>odd</em><em>)</em>) – size of the Hanning-window in sampling points</p></li>
+<li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the onset of the blink</p></li>
+<li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the offset of the blink</p></li>
+<li><p><strong>margin</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em> (</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em>) – margin that is subtracted/added to onset and offset (in sampling points)</p></li>
+<li><p><strong>blinkwindow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – how much time before and after each blink to include (in sampling points)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="pypillometry.preproc.detect_blinks">
-<code class="sig-prename descclassname">pypillometry.preproc.</code><code class="sig-name descname">detect_blinks</code><span class="sig-paren">(</span><em class="sig-param">sy</em>, <em class="sig-param">min_duration</em>, <em class="sig-param">blink_val</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.preproc.detect_blinks" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pypillometry.preproc.</code><code class="sig-name descname">detect_blinks</code><span class="sig-paren">(</span><em class="sig-param">sy</em>, <em class="sig-param">min_duration</em>, <em class="sig-param">blink_val=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.preproc.detect_blinks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect blinks as consecutive sequence of <cite>blink_val</cite> (f.eks., 0 or NaN) of at least
 <cite>min_duration</cite> successive values in the signal <cite>sy</cite>.
 Detected blinks are put a matrix <cite>blinks</cite> (nblinks x 2) where start and end
@@ -1281,7 +1341,7 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/5368b77.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/ea11ce6.
     </div>
   </body>
 </html>
