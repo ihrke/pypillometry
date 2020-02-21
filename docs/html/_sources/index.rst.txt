@@ -22,6 +22,7 @@ These examples are available as executable Jupyter Notebooks from the `Github re
 
    docs/importdata
    docs/blinks
+   docs/erpds
 
 
 Indices and tables
