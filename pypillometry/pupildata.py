@@ -21,12 +21,96 @@ from scipy import interpolate
 import scipy
 from random import choice
 
+import collections.abc
+
 import copy
 import math
 
 #from pytypes import typechecked
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
 PupilArray=Union[np.ndarray, List[float]]
+
+class ERPDSingleSubject:
+    """
+    Class representing a event-related pupillary dilation (ERPD) for one subject.
+    """
+    def __init__(self, pddata, name, tx, erpd, missing, baselines):
+        self.name=name
+        self.org=pddata
+        self.baselines=baselines
+        self.tx=tx
+        self.erpd=erpd
+        self.missing=missing
+
+    def summary(self) -> dict:
+        """Return a summary of the :class:`.PupilData`-object."""
+        summary=dict(
+            name=self.name,
+            dataset=self.org.name,
+            nevents=self.erpd.shape[0],
+            window=(self.tx.min(), self.tx.max())
+        )
+        return summary
+    
+    def __repr__(self) -> str:
+        """Return a string-representation of the dataset."""
+        pars=self.summary()
+        del pars["name"]
+        s="ERPDSinglSubject({name}):\n".format(name=self.name)
+        flen=max([len(k) for k in pars.keys()])
+        for k,v in pars.items():
+            s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
+        return s
+                
+    def plot_mean(self, overlays=None, varfct=scipy.stats.sem, plot_missing: bool=True): 
+        """
+        Plot mean and error-ribbons using `varct`.
+        
+        Parameters
+        ----------
+        
+        overlays: single or sequence of :class:`.ERPDSingleSubject`-objects 
+            the overlays will be added to the same plot
+        
+        varfct: callable or None
+            function to calculate error-bands (e.g., :func:`numpy.std` for standard-deviation 
+            or :func:`scipy.stats.sem` for standard-error)
+            if None, no error bands are plotted
+            
+        plot_missing: bool
+            plot percentage interpolated/missing data per time-point?
+        """
+        merpd=np.mean(self.erpd, axis=0)
+        sderpd=varfct(self.erpd, axis=0) if callable(varfct) else None
+        percmiss=np.mean(self.missing, axis=0)*100.
+        ax1=plt.gca()        
+        if sderpd is not None:
+            ax1.fill_between(self.tx, merpd-sderpd, merpd+sderpd, color="grey", alpha=0.3)
+        ax1.plot(self.tx, merpd, label=self.name)        
+        ax1.axvline(x=0, color="red")        
+        ax1.set_ylabel("mean PD")
+        ax1.set_xlabel("time (ms)")
+        ax1.set_title(self.org.name)
+        if plot_missing:
+            ax2=ax1.twinx()
+            ax2.plot(self.tx, percmiss, alpha=0.3)
+            ax2.set_ylim(0,100)
+            ax2.set_ylabel("% missing")
+            
+        if overlays is not None:
+            if not isinstance(overlays, collections.abc.Sequence):
+                overlays=[overlays]
+            for ov in overlays:
+                merpd=np.mean(ov.erpd, axis=0)
+                sderpd=varfct(ov.erpd, axis=0) if callable(varfct) else None
+                percmiss=np.mean(ov.missing, axis=0)*100.
+                if sderpd is not None:
+                    ax1.fill_between(self.tx, merpd-sderpd, merpd+sderpd, color="grey", alpha=0.3)
+                ax1.plot(self.tx, merpd, label=ov.name)        
+                if plot_missing:
+                    ax2.plot(ov.tx, percmiss, alpha=0.3)
+        ax1.legend()
+                
 
 #@typechecked
 class PupilData:
@@ -836,7 +920,7 @@ class PupilData:
         self.interpolated_mask=np.zeros(self.sy.size)
         for on,off in blink_onsets:
             self.interpolated_mask[on:off]=1
-        f=scipy.interpolate.interp1d(self.tx[self.interpolated_mask==0], self.sy[self.interpolated_mask==0], 
+        f=scipy.interpolate.interp1d(self.tx[self.interpolated_mask==0], sym[self.interpolated_mask==0], 
                                      kind=interp_type, bounds_error=False, fill_value=0)
         syr=f(self.tx)
         self.sy=syr
@@ -973,6 +1057,84 @@ class PupilData:
         self.sy=syr
 
         return self
+    
+    def get_erpd(self, erpd_name: str, event_select, 
+                 baseline_win: Optional[Tuple[float,float]]=None, 
+                 time_win: Tuple[float,float]=(-500, 2000)):
+        """
+        Extract event-related pupil dilation (ERPD).
+        No attempt is being made to exclude overlaps of the time-windows.
+
+        Parameters
+        ----------
+        erpd_name: str
+            identifier for the result (e.g., "cue-locked" or "conflict-trials")
+
+        baseline_win: tuple (float,float) or None
+            if None, no baseline-correction is applied
+            if tuple, the mean value in the window in milliseconds (relative to `time_win`) is 
+                subtracted from the single-trial ERPDs (baseline-correction)
+
+        event_select: str or function
+            variable describing which events to select and align to
+            - if str: use all events whose label contains the string
+            - if function: apply function to all labels, use those where the function returns True
+
+        time_win: Tuple[float, float]
+            time before and after event to include (in ms)
+
+
+        """
+        if callable(event_select):
+            event_ix=np.array([bool(event_select(evlab)) for evlab in self.event_labels])
+        elif isinstance(event_select, str):
+            event_ix=np.array([event_select in evlab for evlab in self.event_labels])
+        else:
+            raise ValueError("event_select must be string or function")
+
+
+        nev=event_ix.sum()
+        time_win_ix=tuple(( int(np.ceil(tw/1000.*self.fs)) for tw in time_win ))
+        duration_ix=time_win_ix[1]-time_win_ix[0]
+        txw=np.linspace(time_win[0], time_win[1], num=duration_ix)
+
+        ## resulting matrix and missing (interpolated/blinks/...) indicator for each datapoint
+        erpd=np.zeros((nev,duration_ix))
+        missing=np.ones((nev,duration_ix))
+
+        # event-onsets as indices of the tx array
+        evon=self.event_onsets[event_ix]
+        # vectorized version (seems to be worse than naive one)
+        #evon_ix=np.argmin(np.abs(np.tile(evon, (self.tx.size,1)).T-self.tx), axis=1)
+        # naive version
+        evon_ix=np.array([np.argmin(np.abs(ev-self.tx)) for ev in evon])
+
+        for i,ev in enumerate(evon_ix):
+            on,off=ev+time_win_ix[0], ev+time_win_ix[1]
+            onl,offl=0,duration_ix # "local" window indices
+            if on<0: ## pad with zeros in case timewindow starts before data
+                onl=np.abs(on)
+                on=0
+            if off>=self.tx.size:
+                offl=offl-(off-self.tx.size)
+                off=self.tx.size
+
+            erpd[i,onl:offl]=self.sy[on:off]
+            missing[i,onl:offl]=self.interpolated_mask[on:off]
+
+        baselines=[None for _ in range(nev)]
+        if baseline_win is not None:
+            if baseline_win[0]<time_win[0] or baseline_win[0]>time_win[1] or baseline_win[1]<time_win[0] or baseline_win[1]>time_win[1]:
+                print("WARNING: baseline-window misspecified %s vs. %s; NOT doing baseline correction"%(baseline_win, time_win))
+            else:
+                blwin_ix=tuple(( np.argmin(np.abs(bw-txw)) for bw in baseline_win ))
+
+                for i in range(nev):
+                    baselines[i]=np.mean(erpd[i,blwin_ix[0]:blwin_ix[1]])
+                    erpd[i,:]-=baselines[i]
+
+        return ERPDSingleSubject(self, erpd_name, txw, erpd, missing, baselines)
+    
 
     
 #@typechecked   

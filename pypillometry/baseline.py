@@ -223,7 +223,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
         raw pupil signal
         
     event_onsets : list
-        onsets of events (stimuli/responses) in seconds
+        onsets of events (stimuli/responses) in milliseconds
         
     fs : float
         sampling rate in Hz
