@@ -39,8 +39,8 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
 
 
 
-**Handling Blinks:**
-
+Handling Blinks
+^^^^^^^^^^^^^^^
 
 :ref:`An example for how to handle blinks </docs/blinks.ipynb>`
 
@@ -53,7 +53,8 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
     PupilData.blinks_merge
     PupilData.blinks_plot
 
-**Smoothing/low-pass filtering:**
+Smoothing/low-pass filtering
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autosummary::
 
@@ -61,7 +62,8 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
     PupilData.smooth_window
     PupilData.downsample
 
-**Changing/Slicing data**
+Changing/Slicing data
+^^^^^^^^^^^^^^^^^^^^^
 
 .. autosummary::
 
@@ -74,7 +76,8 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
 Plotting/Summarizing Data
 -------------------------
 
-**Plotting**
+Plotting
+^^^^^^^^
 
 .. autosummary::
 
@@ -85,12 +88,28 @@ Plotting/Summarizing Data
     plotpd_ia
     
 
-**Inspecting/Summarizing**
+Inspecting/Summarizing
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. autosummary::
 
     PupilData.summary
-    PupilData.stat_per_event    
+    PupilData.stat_per_event 
+    PupilData.get_erpd
+    
+Event-Related Pupil Dilation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Running :func:`PupilData.get_erpd` returns an Object of class :class:`ERPDSingleSubject`. This object has functions for plotting and summarising the event-related pupillary dilation. 
+
+:ref:`Here is an example for how to work with ERPDs </docs/erpds.ipynb>`
+
+
+.. autosummary::
+
+    PupilData.get_erpd
+    ERPDSingleSubject.summary
+    ERPDSingleSubject.plot_mean
     
 
 Baseline/Response estimation

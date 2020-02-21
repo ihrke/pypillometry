@@ -65,7 +65,8 @@
 <div class="section" id="pre-processing-data">
 <h2>Pre-processing data<a class="headerlink" href="#pre-processing-data" title="Permalink to this headline">¶</a></h2>
 <p>Assuming you have generated a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object, you can use the following functions.</p>
-<p><strong>Handling Blinks:</strong></p>
+<div class="section" id="handling-blinks">
+<h3>Handling Blinks<a class="headerlink" href="#handling-blinks" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference internal" href="blinks.html"><span class="std std-ref">An example for how to handle blinks</span></a></p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -90,7 +91,9 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Smoothing/low-pass filtering:</strong></p>
+</div>
+<div class="section" id="smoothing-low-pass-filtering">
+<h3>Smoothing/low-pass filtering<a class="headerlink" href="#smoothing-low-pass-filtering" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -108,7 +111,9 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Changing/Slicing data</strong></p>
+</div>
+<div class="section" id="changing-slicing-data">
+<h3>Changing/Slicing data<a class="headerlink" href="#changing-slicing-data" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -133,9 +138,11 @@
 </tbody>
 </table>
 </div>
+</div>
 <div class="section" id="plotting-summarizing-data">
 <h2>Plotting/Summarizing Data<a class="headerlink" href="#plotting-summarizing-data" title="Permalink to this headline">¶</a></h2>
-<p><strong>Plotting</strong></p>
+<div class="section" id="plotting">
+<h3>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -159,7 +166,9 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Inspecting/Summarizing</strong></p>
+</div>
+<div class="section" id="inspecting-summarizing">
+<h3>Inspecting/Summarizing<a class="headerlink" href="#inspecting-summarizing" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -172,8 +181,34 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.stat_per_event" title="pypillometry.pupildata.PupilData.stat_per_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.stat_per_event</span></code></a>(interval[, statfct])</p></td>
 <td><p>Return result of applying a statistical function to pupillometric data in a given interval relative to event-onsets.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
+<td><p>Extract event-related pupil dilation (ERPD).</p></td>
+</tr>
 </tbody>
 </table>
+</div>
+<div class="section" id="event-related-pupil-dilation">
+<h3>Event-Related Pupil Dilation<a class="headerlink" href="#event-related-pupil-dilation" title="Permalink to this headline">¶</a></h3>
+<p>Running <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.get_erpd()</span></code></a> returns an Object of class <a class="reference internal" href="api.html#pypillometry.pupildata.ERPDSingleSubject" title="pypillometry.pupildata.ERPDSingleSubject"><code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code></a>. This object has functions for plotting and summarising the event-related pupillary dilation.</p>
+<p><span class="xref std std-ref">Here is an example for how to work with ERPDs</span></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
+<td><p>Extract event-related pupil dilation (ERPD).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.ERPDSingleSubject.summary" title="pypillometry.pupildata.ERPDSingleSubject.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPDSingleSubject.summary</span></code></a>()</p></td>
+<td><p>Return a summary of the <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.ERPDSingleSubject.plot_mean" title="pypillometry.pupildata.ERPDSingleSubject.plot_mean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPDSingleSubject.plot_mean</span></code></a>([overlays, …])</p></td>
+<td><p>Plot mean and error-ribbons using <cite>varct</cite>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section" id="baseline-response-estimation">
 <h2>Baseline/Response estimation<a class="headerlink" href="#baseline-response-estimation" title="Permalink to this headline">¶</a></h2>
@@ -224,8 +259,18 @@
   <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#reading-data">Reading data</a></li>
-<li><a class="reference internal" href="#pre-processing-data">Pre-processing data</a></li>
-<li><a class="reference internal" href="#plotting-summarizing-data">Plotting/Summarizing Data</a></li>
+<li><a class="reference internal" href="#pre-processing-data">Pre-processing data</a><ul>
+<li><a class="reference internal" href="#handling-blinks">Handling Blinks</a></li>
+<li><a class="reference internal" href="#smoothing-low-pass-filtering">Smoothing/low-pass filtering</a></li>
+<li><a class="reference internal" href="#changing-slicing-data">Changing/Slicing data</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plotting-summarizing-data">Plotting/Summarizing Data</a><ul>
+<li><a class="reference internal" href="#plotting">Plotting</a></li>
+<li><a class="reference internal" href="#inspecting-summarizing">Inspecting/Summarizing</a></li>
+<li><a class="reference internal" href="#event-related-pupil-dilation">Event-Related Pupil Dilation</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#baseline-response-estimation">Baseline/Response estimation</a></li>
 <li><a class="reference internal" href="#artificial-data">Artificial Data</a></li>
 </ul>
@@ -279,7 +324,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/ea11ce6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/46eaa1d.
     </div>
   </body>
 </html>

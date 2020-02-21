@@ -1,5 +1,4 @@
-Welcome to pypillometry's documentation!
-========================================
+.. mdinclude:: ./README.md
 
 .. toctree::
    :maxdepth: 2
@@ -10,7 +9,19 @@ Welcome to pypillometry's documentation!
    docs/api
    docs/dev
 
-.. mdinclude:: ./README.md
+
+Example Notebooks
+-----------------
+
+These examples are available as executable Jupyter Notebooks from the `Github repository <https://github.com/ihrke/pypillometry/tree/master/docs>`_ (the files ending in `.ipynb`).
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples:
+
+   docs/importdata
+   docs/blinks
 
 
 Indices and tables

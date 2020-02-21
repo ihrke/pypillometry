@@ -50,6 +50,63 @@
 <h2>pupildata.py<a class="headerlink" href="#pupildata-py" title="Permalink to this headline">¶</a></h2>
 <p>Main object-oriented entry point</p>
 <dl class="class">
+<dt id="pypillometry.pupildata.ERPDSingleSubject">
+<em class="property">class </em><code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">ERPDSingleSubject</code><span class="sig-paren">(</span><em class="sig-param">pddata</em>, <em class="sig-param">name</em>, <em class="sig-param">tx</em>, <em class="sig-param">erpd</em>, <em class="sig-param">missing</em>, <em class="sig-param">baselines</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDSingleSubject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing a event-related pupillary dilation (ERPD) for one subject.</p>
+<dl class="method">
+<dt id="pypillometry.pupildata.ERPDSingleSubject.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">pddata</em>, <em class="sig-param">name</em>, <em class="sig-param">tx</em>, <em class="sig-param">erpd</em>, <em class="sig-param">missing</em>, <em class="sig-param">baselines</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDSingleSubject.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.ERPDSingleSubject.__repr__">
+<code class="sig-name descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDSingleSubject.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string-representation of the dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pypillometry.pupildata.ERPDSingleSubject.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#pypillometry.pupildata.ERPDSingleSubject.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.ERPDSingleSubject.plot_mean">
+<code class="sig-name descname">plot_mean</code><span class="sig-paren">(</span><em class="sig-param">overlays=None</em>, <em class="sig-param">varfct=&lt;function sem&gt;</em>, <em class="sig-param">plot_missing=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDSingleSubject.plot_mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot mean and error-ribbons using <cite>varct</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>overlays</strong> (single or sequence of <a class="reference internal" href="#pypillometry.pupildata.ERPDSingleSubject" title="pypillometry.pupildata.ERPDSingleSubject"><code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code></a>-objects) – the overlays will be added to the same plot</p></li>
+<li><p><strong>varfct</strong> (<em>callable</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – function to calculate error-bands (e.g., <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.std.html#numpy.std" title="(in NumPy v1.17)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.std()</span></code></a> for standard-deviation
+or <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.sem.html#scipy.stats.sem" title="(in SciPy v1.4.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.stats.sem()</span></code></a> for standard-error)
+if None, no error bands are plotted</p></li>
+<li><p><strong>plot_missing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – plot percentage interpolated/missing data per time-point?</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.ERPDSingleSubject.summary">
+<code class="sig-name descname">summary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDSingleSubject.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a summary of the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pypillometry.pupildata.FakePupilData">
 <em class="property">class </em><code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">FakePupilData</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">event_labels=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">sim_params={}</em>, <em class="sig-param">real_baseline=None</em>, <em class="sig-param">real_response_coef=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulated pupil data for validation purposes.</p>
@@ -364,6 +421,30 @@ Use as <code class="docutils literal notranslate"><span class="pre">pypillometry
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – filename</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.get_erpd">
+<code class="sig-name descname">get_erpd</code><span class="sig-paren">(</span><em class="sig-param">erpd_name</em>, <em class="sig-param">event_select</em>, <em class="sig-param">baseline_win=None</em>, <em class="sig-param">time_win=(-500</em>, <em class="sig-param">2000)</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.get_erpd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract event-related pupil dilation (ERPD).
+No attempt is being made to exclude overlaps of the time-windows.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>erpd_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – identifier for the result (e.g., “cue-locked” or “conflict-trials”)</p></li>
+<li><p><strong>baseline_win</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em> (</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>) or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <p>if None, no baseline-correction is applied
+if tuple, the mean value in the window in milliseconds (relative to <cite>time_win</cite>) is</p>
+<blockquote>
+<div><p>subtracted from the single-trial ERPDs (baseline-correction)</p>
+</div></blockquote>
+</p></li>
+<li><p><strong>event_select</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>function</em>) – variable describing which events to select and align to
+- if str: use all events whose label contains the string
+- if function: apply function to all labels, use those where the function returns True</p></li>
+<li><p><strong>time_win</strong> (<em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – time before and after event to include (in ms)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -864,7 +945,7 @@ The signal is downsampled (to <cite>fsd</cite> Hz) for speed.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
 <li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
-<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – onsets of events (stimuli/responses) in milliseconds</p></li>
 <li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – sampling rate in Hz</p></li>
 <li><p><strong>fsd</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – downsampled sampling rate (if too slow, decrease)</p></li>
 <li><p><strong>lp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – lowpass-filter cutoff (Hz)</p></li>
@@ -1341,7 +1422,7 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/ea11ce6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/46eaa1d.
     </div>
   </body>
 </html>
