@@ -102,7 +102,7 @@ Event-Related Pupil Dilation
 
 Running :func:`PupilData.get_erpd` returns an Object of class :class:`ERPDSingleSubject`. This object has functions for plotting and summarising the event-related pupillary dilation. 
 
-:ref:`Here is an example for how to work with ERPDs </docs/erpds.ipynb>`
+:ref:`Here is an example for how to work with ERPDs </docs/erpds.ipynb>`.
 
 
 .. autosummary::
