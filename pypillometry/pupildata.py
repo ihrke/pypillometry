@@ -20,6 +20,8 @@ from scipy.interpolate import interp1d
 from scipy import interpolate
 import scipy
 from random import choice
+import functools
+
 
 import collections.abc
 
@@ -29,6 +31,10 @@ import math
 #from pytypes import typechecked
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
 PupilArray=Union[np.ndarray, List[float]]
+
+
+_inplace=False ## default for whether or not inplace-operations should be used
+
 
 class ERPDSingleSubject:
     """
@@ -62,7 +68,7 @@ class ERPDSingleSubject:
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
         return s
                 
-    def plot_mean(self, overlays=None, varfct=scipy.stats.sem, plot_missing: bool=True): 
+    def plot(self, overlays=None, meanfct=np.mean, varfct=scipy.stats.sem, plot_missing: bool=True): 
         """
         Plot mean and error-ribbons using `varct`.
         
@@ -72,6 +78,8 @@ class ERPDSingleSubject:
         overlays: single or sequence of :class:`.ERPDSingleSubject`-objects 
             the overlays will be added to the same plot
         
+        meanfct: callable
+            mean-function to apply to the single-trial ERPDs for plotting
         varfct: callable or None
             function to calculate error-bands (e.g., :func:`numpy.std` for standard-deviation 
             or :func:`scipy.stats.sem` for standard-error)
@@ -80,7 +88,7 @@ class ERPDSingleSubject:
         plot_missing: bool
             plot percentage interpolated/missing data per time-point?
         """
-        merpd=np.mean(self.erpd, axis=0)
+        merpd=meanfct(self.erpd, axis=0)
         sderpd=varfct(self.erpd, axis=0) if callable(varfct) else None
         percmiss=np.mean(self.missing, axis=0)*100.
         ax1=plt.gca()        
@@ -101,7 +109,7 @@ class ERPDSingleSubject:
             if not isinstance(overlays, collections.abc.Sequence):
                 overlays=[overlays]
             for ov in overlays:
-                merpd=np.mean(ov.erpd, axis=0)
+                merpd=meanfct(ov.erpd, axis=0)
                 sderpd=varfct(ov.erpd, axis=0) if callable(varfct) else None
                 percmiss=np.mean(ov.missing, axis=0)*100.
                 if sderpd is not None:
@@ -152,7 +160,8 @@ class PupilData:
                  time: Optional[PupilArray]=None,
                  event_onsets: Optional[PupilArray]=None,
                  event_labels: Optional[PupilArray]=None,
-                 name: Optional[str]=None):
+                 name: Optional[str]=None,
+                 keep_orig: bool=True):
         """
         Parameters
         ----------
@@ -164,10 +173,15 @@ class PupilData:
             using `sampling_rate` (in ms)
         pupil:
             pupillary data at times `time` assumed to be in ms
-        event_onsets:
+        event_onsets: 
             time-onsets of any events that are to be modelled in the pupil
-        sampling_rate:
+        event_labels:
+            for each event in `event_onsets`, provide a label
+        sampling_rate: float
             sampling-rate of the pupillary signal in Hz
+        keep_orig: bool
+            keep a copy of the original dataset? If `True`, a copy of the :class:`.PupilData` object
+            as initiated in the constructor is stored in member `PupilData.original`
         """
         self.sy=np.array(pupil, dtype=np.float)
         if sampling_rate is None and time is None:
@@ -228,7 +242,11 @@ class PupilData:
         ## interpolated mask
         self.interpolated_mask=np.zeros(len(self), dtype=np.int)
         
-    def reset_time(self, t0: float=0):
+        self.original=None
+        if keep_orig: 
+            self.original=self.copy()
+       
+    def reset_time(self, t0: float=0, inplace=_inplace):
         """
         Resets time so that the time-array starts at time zero (t0).
         Resets onsets etc.
@@ -237,11 +255,15 @@ class PupilData:
         ----------
         t0: float
             time at which the :class:`.PupilData`'s time-vector starts
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes
         """
         t0=self.tx.min()
-        self.tx=self.tx-t0
-        self.event_onsets=self.event_onsets-t0
-        return self
+        obj=self if inplace else self.copy()            
+        obj.tx=self.tx-t0
+        obj.event_onsets=self.event_onsets-t0
+        return obj
         
     def write_file(self, fname:str):
         """
@@ -286,6 +308,16 @@ class PupilData:
         Return a new `PupilData` object that is a shortened version
         of the current one (contains all data between `start` and
         `end` in units given by `units` (one of "ms", "sec", "min", "h").
+
+        Parameters
+        ----------
+        
+        start: float
+            start for new dataset
+        end: float
+            end of new dataset
+        units: str
+            time units in which `start` and `end` are provided
         """
         slic=self.copy()
         fac=self._unit_fac(units)
@@ -332,28 +364,35 @@ class PupilData:
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
         return s
         
-    def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None):
+    def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace):
         """
         Scale back to original values using either values provided as arguments
         or the values stored in `scale_params`.
         
         Parameters
         ----------
-        mean: mean to add from signal
-        sd: sd to scale with        
+        mean: float
+            mean to add from signal
+        sd: float
+            sd to scale with        
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes
+        
         """
         if mean is None:
             mean=self.scale_params["mean"]
         if sd is None:
             sd=self.scale_params["sd"]
         
-        self.scale_params={"mean":0, "sd":1}
-        self.sy=(self.sy*sd)+mean
-        self.baseline=(self.baseline*sd)+mean
-        self.response=(self.response*sd)
-        return self
+        obj=self if inplace else self.copy()
+        obj.scale_params={"mean":0, "sd":1}
+        obj.sy=(self.sy*sd)+mean
+        obj.baseline=(self.baseline*sd)+mean
+        obj.response=(self.response*sd)
+        return obj
         
-    def scale(self, mean: Optional[float]=None, sd: Optional[float]=None):
+    def scale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace):
         """
         Scale the pupillary signal by subtracting `mean` and dividing by `sd`.
         If these variables are not provided, use the signal's mean and std.
@@ -361,8 +400,13 @@ class PupilData:
         Parameters
         ----------
         
-        mean: mean to subtract from signal
-        sd: sd to scale with
+        mean: float
+            mean to subtract from signal
+        sd: float
+            sd to scale with
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes        
         
         Note
         ----
@@ -372,14 +416,15 @@ class PupilData:
             mean=np.nanmean(self.sy)
         if sd is None:
             sd=np.nanstd(self.sy)
+
+        obj=self if inplace else self.copy()            
+        obj.scale_params={"mean":mean, "sd":sd}
+        obj.sy=(self.sy-mean)/sd
+        obj.baseline=(self.baseline-mean)/sd
+        obj.response=(self.response)/sd
+        return obj
         
-        self.scale_params={"mean":mean, "sd":sd}
-        self.sy=(self.sy-mean)/sd
-        self.baseline=(self.baseline-mean)/sd
-        self.response=(self.response)/sd
-        return self
-        
-    def lowpass_filter(self, cutoff: float, order: int=2):
+    def lowpass_filter(self, cutoff: float, order: int=2, inplace=_inplace):
         """
         Lowpass-filter signal using a Butterworth-filter, 
         see :py:func:`pypillometry.baseline.butter_lowpass_filter()`.
@@ -391,25 +436,35 @@ class PupilData:
             lowpass-filter cutoff
         order: int
             filter order
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                    
         """
-        self.sy=butter_lowpass_filter(self.sy, cutoff, self.fs, order)
-        return self
+        obj=self if inplace else self.copy()                    
+        obj.sy=butter_lowpass_filter(self.sy, cutoff, self.fs, order)
+        return obj
 
-    def smooth_window(self, window: str="hanning", winsize: float=11):
+    def smooth_window(self, window: str="hanning", winsize: float=11, inplace=_inplace):
         """
         Apply smoothing of the signal using a moving window. See :func:`.smooth_window()`.
         
         Parameters
         ----------
-        window: (the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'); 
-                flat window will produce a moving average smoothing.
-        winsize: the length of the window in ms 
+        window: str
+            (the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'); 
+             flat window will produce a moving average smoothing.
+        winsize: float
+            the length of the window in ms 
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                            
         """
         winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
-        self.sy=smooth_window(sy, winsize_ix, window )
-        return self
+        obj=self if inplace else self.copy()                            
+        obj.sy=smooth_window(self.sy, winsize_ix, window )
+        return obj
         
-    def downsample(self, fsd: float, dsfac: bool=False):
+    def downsample(self, fsd: float, dsfac: bool=False, inplace=_inplace):
         """
         Simple downsampling scheme using mean within the downsampling window.
         See :py:func:`pypillometry.baseline.downsample()`.
@@ -422,25 +477,27 @@ class PupilData:
         dsfac:
             if False, `fsd` is the new sampling rate;
             if True, `fsd` is the decimate factor
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                        
         """
         if dsfac:
             dsfac=fsd
             fsd=float(self.fs/dsfac)
         else:
             dsfac=int(self.fs/fsd) # calculate downsampling factor
+            
+        obj=self if inplace else self.copy()
         
         ## downsample all arrays that have the original sy-length
         # (this is so that the function is general for subclasses, as well)
         nd=self.sy.size
-        for k, v in self.__dict__.items():
+        for k, v in obj.__dict__.items():
             if isinstance(v,np.ndarray) and v.size==nd:
-                self.__dict__[k]=downsample(self.__dict__[k], dsfac)
+                obj.__dict__[k]=downsample(self.__dict__[k], dsfac)
             
-        #self.tx=downsample(self.tx, dsfac)
-        #self.sy=downsample(self.sy, dsfac)
-        #self.baseline=downsample(self.baseline, dsfac)
-        self.fs=fsd
-        return self
+        obj.fs=fsd
+        return obj
 
     def copy(self, new_name: Optional[str]=None):
         """
@@ -635,7 +692,7 @@ class PupilData:
 
         return figs        
     
-    def estimate_baseline(self, method: str="envelope_iter_bspline_2", **kwargs):
+    def estimate_baseline(self, method: str="envelope_iter_bspline_2", inplace=_inplace, **kwargs):
         """
         Apply one of the baseline-estimation methods.
         
@@ -647,6 +704,9 @@ class PupilData:
                                         with one iteration
             "envelope_iter_bspline_2": :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` 
                                         with two iterations
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                        
             
         kwargs:
             named arguments passed to the low-level function in :py:mod:`pypillometry.baseline`.
@@ -656,18 +716,19 @@ class PupilData:
         the results of the estimation is stored in member `baseline`
         
         """
+        obj=self if inplace else self.copy()
         if method=="envelope_iter_bspline_2":
             txd,syd,base2,base1=baseline_envelope_iter_bspline(self.tx, self.sy,self.event_onsets,self.fs,**kwargs)
             f=interpolate.interp1d(txd, base2, kind="cubic", bounds_error=False, fill_value="extrapolate")
-            self.baseline=f(self.tx)
+            obj.baseline=f(self.tx)
         elif method=="envelope_iter_bspline_1": 
             txd,syd,base2,base1=baseline_envelope_iter_bspline(self.tx, self.sy,self.event_onsets,self.fs,**kwargs)
             f=interpolate.interp1d(txd, base1, kind="cubic", bounds_error=False, fill_value="extrapolate")
-            self.baseline=f(self.tx)            
+            obj.baseline=f(self.tx)            
         else:
             raise ValueError("Undefined method for baseline estimation: %s"%method)         
-        self.baseline_estimated=True
-        return self
+        obj.baseline_estimated=True
+        return obj
 
     def stat_per_event(self, interval: Tuple[float,float], statfct: Callable=np.mean):
         """
@@ -693,7 +754,8 @@ class PupilData:
         
     def estimate_response(self, npar: Union[str,float]="free", tmax: Union[str,float]="free", 
                           verbose: int=50,
-                          bounds: dict={"npar":(1,20), "tmax":(100,2000)}):
+                          bounds: dict={"npar":(1,20), "tmax":(100,2000)},
+                          inplace=_inplace):
         """
         Estimate pupil-response based on event-onsets, see
         :py:func:`pypillometry.pupil.pupil_response()`.
@@ -708,6 +770,9 @@ class PupilData:
         bounds: dict
             in case that one or both parameters are estimated, give the lower
             and upper bounds for the parameters        
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                        
         
         Note
         ----
@@ -722,7 +787,8 @@ class PupilData:
                                                           self.event_onsets, self.fs, 
                                                           npar=npar, tmax=tmax, verbose=verbose,
                                                          bounds=bounds)
-        self.response_pars={"npar":npar_est,
+        obj=self if inplace else self.copy()
+        obj.response_pars={"npar":npar_est,
                             "npar_free":True if npar=="free" else False,
                             "tmax":tmax_est,
                             "tmax_free":True if tmax=="free" else False,
@@ -730,12 +796,12 @@ class PupilData:
                             "bounds":bounds
                            }
         
-        self.response=pred
-        self.response_x=x1
-        self.response_estimated=True
-        return self
+        obj.response=pred
+        obj.response_x=x1
+        obj.response_estimated=True
+        return obj
     
-    def blinks_detect(self, min_duration:float=50, blink_val:float=0, units:str="ms"):
+    def blinks_detect(self, min_duration:float=50, blink_val:float=0, units:str="ms",inplace=_inplace):
         """
         Detect blinks as consecutive sequence of `blink_val` (f.eks., 0 or NaN) of at least
         `min_duration` duration (in `units`). 
@@ -752,17 +818,21 @@ class PupilData:
             "missing value" code
         units: str
             one of "ms", "sec", "min", "h"
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                                    
         """
         fac=self._unit_fac(units)
         min_duration_ms=min_duration*fac
         min_duration_ix=int(min_duration_ms/1000.*self.fs)
 
-        self.blinks=detect_blinks(self.sy, min_duration_ix, blink_val)
-        self.blink_mask=np.zeros(self.sy.size, dtype=np.int)
+        obj=self if inplace else self.copy()
+        obj.blinks=detect_blinks(self.sy, min_duration_ix, blink_val)
+        obj.blink_mask=np.zeros(self.sy.size, dtype=np.int)
         
-        for start,end in self.blinks:
-            self.blink_mask[start:end]=1
-        return self
+        for start,end in obj.blinks:
+            obj.blink_mask[start:end]=1
+        return obj
 
     def blinks_plot(self, pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
                     figsize: Tuple[int,int]=(10,10), 
@@ -843,7 +913,7 @@ class PupilData:
             
         return figs    
 
-    def blinks_merge(self, distance: float=100, remove_signal: bool=False):
+    def blinks_merge(self, distance: float=100, remove_signal: bool=False, inplace=_inplace):
         """
         Merge together blinks that are close together. 
         Some subjects blink repeatedly and standard detection/interpolation can result in weird results.
@@ -858,6 +928,9 @@ class PupilData:
             if True, set all signal values during the "new blinks" to zero so 
             that :func:`.detect_blinks()` will pick them up; interpolation will work
             either way
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                                    
         """
         distance_ix=distance/self.fs*1000.
 
@@ -875,19 +948,20 @@ class PupilData:
         newblinks.append(cblink)
         newblinks=np.array(newblinks)       
 
-        self.blinks=newblinks
+        obj=self if inplace else self.copy()
+        obj.blinks=newblinks
 
         ## set signal to zero within the new blinks
         if remove_signal:
-            for start,end in self.blinks:
-                self.sy[start:end]=0
+            for start,end in obj.blinks:
+                obj.sy[start:end]=0
 
-        return self    
+        return obj    
     
     def blinks_interpolate(self, winsize: float=11, 
                            vel_onset: float=-5, vel_offset: float=5, 
                            margin: Tuple[float,float]=(10,30), 
-                           interp_type: str="cubic"):
+                           interp_type: str="cubic", inplace=_inplace):
         """
         Interpolation of missing data "in one go".
         Detection of blinks happens using Mahot (2013), see :func:`.blink_onsets_mahot()`.
@@ -903,7 +977,10 @@ class PupilData:
         margin: Tuple[float,float]
             margin that is subtracted/added to onset and offset (in ms)
         interp_type: str
-            type of interpolation accepted by :func:`scipy.interpolate.interp1d()`        
+            type of interpolation accepted by :func:`scipy.interpolate.interp1d()`   
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                                    
         """
         # parameters in sampling units (from ms)
         winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
@@ -917,14 +994,15 @@ class PupilData:
 
         blink_onsets=blink_onsets_mahot(self.sy, self.blinks, winsize_ix, vel_onset, vel_offset,
                                         margin_ix, int(np.ceil(500/1000*self.fs)))
-        self.interpolated_mask=np.zeros(self.sy.size)
+        obj=self if inplace else self.copy()
+        obj.interpolated_mask=np.zeros(self.sy.size)
         for on,off in blink_onsets:
-            self.interpolated_mask[on:off]=1
-        f=scipy.interpolate.interp1d(self.tx[self.interpolated_mask==0], sym[self.interpolated_mask==0], 
+            obj.interpolated_mask[on:off]=1
+        f=scipy.interpolate.interp1d(self.tx[obj.interpolated_mask==0], sym[obj.interpolated_mask==0], 
                                      kind=interp_type, bounds_error=False, fill_value=0)
         syr=f(self.tx)
-        self.sy=syr
-        return self
+        obj.sy=syr
+        return obj
                         
     def blinks_interp_mahot(self, winsize: float=11, 
                            vel_onset: float=-5, vel_offset: float=5, 
@@ -933,7 +1011,8 @@ class PupilData:
                            interp_type: str="cubic",
                            plot: Optional[str]=None, 
                            plot_dim: Tuple[int,int]=(5,3),
-                           plot_figsize: Tuple[int,int]=(10,8)):
+                           plot_figsize: Tuple[int,int]=(10,8),
+                           inplace=_inplace):
         """
         Implements the blink-interpolation method by Mahot (2013).
         
@@ -966,6 +1045,9 @@ class PupilData:
             number of subplots
         plot_figsize: tuple (width, height)
             dimensions for each figure
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                                    
         """
         # parameters in sampling units (from ms)
         winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
@@ -990,7 +1072,8 @@ class PupilData:
 
         blink_onsets=blink_onsets_mahot(self.sy, self.blinks, winsize_ix, vel_onset, vel_offset,
                                            margin_ix, blinkwindow_ix)
-            
+          
+        obj=self if inplace else self.copy()    
         # loop through blinks
         for ix,(onset,offset) in enumerate(blink_onsets):                
             if plot is not None:            
@@ -1015,7 +1098,7 @@ class PupilData:
             syr[islic]=intfct(self.tx[islic])
 
             ## record the interpolated datapoints
-            self.interpolated_mask[islic]=1
+            obj.interpolated_mask[islic]=1
 
             slic=slice(max(0,onset-blinkwindow_ix), min(offset+blinkwindow_ix, len(self)))
             
@@ -1054,9 +1137,9 @@ class PupilData:
                 #fig.show()
 
         # replace signal with the reconstructed one
-        self.sy=syr
+        obj.sy=syr
 
-        return self
+        return obj
     
     def get_erpd(self, erpd_name: str, event_select, 
                  baseline_win: Optional[Tuple[float,float]]=None, 
@@ -1169,7 +1252,7 @@ class FakePupilData(PupilData):
         self.sim_response_coef=real_response_coef
 
         
-    def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None):
+    def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace):
         """
         Scale back to original values using either values provided as arguments
         or the values stored in `scale_params`.
@@ -1178,14 +1261,17 @@ class FakePupilData(PupilData):
         ----------
         mean: mean to add from signal
         sd: sd to scale with        
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                                
         """
         mmean,ssd=self.scale_params["mean"],self.scale_params["sd"]
-        super().unscale(mean,sd)
-        self.sim_baseline=(self.sim_baseline*ssd)+mmean
-        self.sim_response=(self.sim_response*ssd)
-        return self
+        obj=super().unscale(mean,sd,inplace)
+        obj.sim_baseline=(self.sim_baseline*ssd)+mmean
+        obj.sim_response=(self.sim_response*ssd)
+        return obj
         
-    def scale(self, mean: Optional[float]=None, sd: Optional[float]=None) -> None:
+    def scale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace) -> None:
         """
         Scale the pupillary signal by subtracting `mean` and dividing by `sd`.
         If these variables are not provided, use the signal's mean and std.
@@ -1195,16 +1281,19 @@ class FakePupilData(PupilData):
         
         mean: mean to subtract from signal
         sd: sd to scale with
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                        
         
         Note
         ----
         Scaling-parameters are being saved in the `scale_params` argument. 
         """
-        super().scale(mean,sd)
-        mean,sd=self.scale_params["mean"],self.scale_params["sd"]
-        self.sim_baseline=(self.sim_baseline-mean)/sd
-        self.sim_response=(self.sim_response)/sd
-        return self
+        obj=super().scale(mean,sd)
+        mean,sd=obj.scale_params["mean"],obj.scale_params["sd"]
+        obj.sim_baseline=(self.sim_baseline-mean)/sd
+        obj.sim_response=(self.sim_response)/sd
+        return obj
 
     def sub_slice(self, start: float=-np.inf, end: float=np.inf, units: str="sec"):
         """

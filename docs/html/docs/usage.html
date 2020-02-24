@@ -132,8 +132,8 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.unscale" title="pypillometry.pupildata.PupilData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.unscale</span></code></a>([mean, sd])</p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.reset_time" title="pypillometry.pupildata.PupilData.reset_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.reset_time</span></code></a>([t0])</p></td>
-<td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.reset_time</span></code>(**kwargs)</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -190,7 +190,7 @@
 <div class="section" id="event-related-pupil-dilation">
 <h3>Event-Related Pupil Dilation<a class="headerlink" href="#event-related-pupil-dilation" title="Permalink to this headline">¶</a></h3>
 <p>Running <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.get_erpd()</span></code></a> returns an Object of class <a class="reference internal" href="api.html#pypillometry.pupildata.ERPDSingleSubject" title="pypillometry.pupildata.ERPDSingleSubject"><code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code></a>. This object has functions for plotting and summarising the event-related pupillary dilation.</p>
-<p><span class="xref std std-ref">Here is an example for how to work with ERPDs</span></p>
+<p><a class="reference internal" href="erpds.html"><span class="std std-ref">Here is an example for how to work with ERPDs</span></a>.</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -203,8 +203,8 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.ERPDSingleSubject.summary" title="pypillometry.pupildata.ERPDSingleSubject.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPDSingleSubject.summary</span></code></a>()</p></td>
 <td><p>Return a summary of the <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.ERPDSingleSubject.plot_mean" title="pypillometry.pupildata.ERPDSingleSubject.plot_mean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPDSingleSubject.plot_mean</span></code></a>([overlays, …])</p></td>
-<td><p>Plot mean and error-ribbons using <cite>varct</cite>.</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPDSingleSubject.plot_mean</span></code></p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -324,7 +324,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/46eaa1d.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/ccc3df2.
     </div>
   </body>
 </html>

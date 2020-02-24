@@ -264,7 +264,7 @@ div.rendered_html tbody tr:hover {
 <h1>Event-Related Pupil Dilations<a class="headerlink" href="#Event-Related-Pupil-Dilations" title="Permalink to this headline">¶</a></h1>
 <p>We are often interested in how the pupil responds to certain events, for example stimuli. On method to investigate this question is to extract the average pupil-dilation surrounding the events of interest.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -272,12 +272,13 @@ div.rendered_html tbody tr:hover {
 <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
 <span class="kn">import</span> <span class="nn">pypillometry</span> <span class="k">as</span> <span class="nn">pp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pylab</span> <span class="k">as</span> <span class="nn">plt</span>
 </pre></div>
 </div>
 </div>
 <p>Here, we will use the dataset created in the <a class="reference external" href="/docs/html/docs/importdata.html">importdata</a> example. We download this dataset <code class="docutils literal notranslate"><span class="pre">test.pd</span></code> from the Github page.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -287,7 +288,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <p>Next, we apply a basic blink-detection and interpolation pipeline as illustrated in the <a class="reference external" href="/docs/html/docs/blinks.html">blinks</a> example.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -301,12 +302,20 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_erpds_5_0.png" src="../_images/docs_erpds_5_0.png" />
-</div>
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-3-4dfd47fa9d66&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> d<span class="ansi-blue-fg">.</span>blinks_detect<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>blinks_merge<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">100</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>blinks_interp_mahot<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>lowpass_filter<span class="ansi-blue-fg">(</span>cutoff<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">5</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>scale<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg"> </span>plt<span class="ansi-blue-fg">.</span>figure<span class="ansi-blue-fg">(</span>figsize<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">15</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">5</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> d<span class="ansi-blue-fg">.</span>plot<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">2</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">3</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> units<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#34;min&#34;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">;</span>
+
+<span class="ansi-red-fg">NameError</span>: name &#39;plt&#39; is not defined
+</pre></div></div>
 </div>
 <p>Next, we want to create ERPDs based on some of the event-markers in this dataset. The markers in this set have a special structure where each label consists of information about experimental condition, block etc. We can take a look at the first few events:</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -314,23 +323,10 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-[&#39;C_GW_1_1_UD_UD&#39;,
- &#39;F_GW_1_1_10_0&#39;,
- &#39;C_NW_1_2_UD_UD&#39;,
- &#39;R_NW_1_2_UD_UD&#39;,
- &#39;F_NW_1_2_-1_0&#39;]
-</pre></div></div>
-</div>
 <p>The first letter contains information about which stimulus was presented, the letter combination after the first underscore codes the experimental condition. We can use the dataset’s <code class="docutils literal notranslate"><span class="pre">get_erpd()</span></code> function to extract the pupillary signal in the vicinity of some of these events. For that, we have to indicates which events we want to select by providing the <code class="docutils literal notranslate"><span class="pre">event_select</span></code> argument to that function. We start by extracting all stimuli coded as “C” (cues) by providing <code class="docutils literal notranslate"><span class="pre">event_select=&quot;C_&quot;</span></code> as an
 argument. This will match all labels that contain the string “C_” somewhere. We set the name of the object to <code class="docutils literal notranslate"><span class="pre">&quot;cue&quot;</span></code> to distinguish this ERPD from others we will create soon. Finally, we apply a baseline-correction using the <code class="docutils literal notranslate"><span class="pre">baseline_win</span></code> parameter (setting this to <code class="docutils literal notranslate"><span class="pre">None</span></code> results in no baseline correction).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -340,7 +336,7 @@ argument. This will match all labels that contain the string “C_” somewhere.
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -351,18 +347,18 @@ ERPDSinglSubject(cue):
  window : (-500.0, 2000.0)
 </pre></div></div>
 </div>
-<p>This ERPD contains data from 75 trials and goes from 500 ms before the cue-onset until 2000 ms post-cue onset. We can use the <code class="docutils literal notranslate"><span class="pre">plot_mean()</span></code> function of that object to visualize the curve. In addition to the mean curve and its standard error, we also get the percentage of missing (interpolated) datapoints in the dataset (the light blue curve). We can choose what is displayed as the errorbars by passing a function to <code class="docutils literal notranslate"><span class="pre">varfct</span></code>. For example, we can use <code class="docutils literal notranslate"><span class="pre">varfct=np.std</span></code> to display standard
-deviation instead of standard error.</p>
+<p>This ERPD contains data from 75 trials and goes from 500 ms before the cue-onset until 2000 ms post-cue onset. We can use the <code class="docutils literal notranslate"><span class="pre">plot()</span></code> function of that object to visualize the curve. In addition to the mean curve and its standard error, we also get the percentage of missing (interpolated) datapoints in the dataset (the light blue curve). We can choose what is displayed as the errorbars by passing a function to <code class="docutils literal notranslate"><span class="pre">varfct</span></code>. For example, we can use <code class="docutils literal notranslate"><span class="pre">varfct=np.std</span></code> to display standard deviation
+instead of standard error.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
-<span class="n">erpd_cue</span><span class="o">.</span><span class="n">plot_mean</span><span class="p">()</span>
+<span class="n">erpd_cue</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
-<span class="n">erpd_cue</span><span class="o">.</span><span class="n">plot_mean</span><span class="p">(</span><span class="n">varfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">)</span>
+<span class="n">erpd_cue</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">varfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -376,7 +372,7 @@ deviation instead of standard error.</p>
 <p>Sometimes, extracting labels based on string-matching alone is not sufficient. For example, in our current dataset, we would like to compare cues (labels starting with “C_”) that come from condition “GW” and “NA” against the cues from conditions “NW” and “GA” (what exactly that means is not so important for the present purposes). We can achieve that by passing a filter-function as argument <code class="docutils literal notranslate"><span class="pre">event_select</span></code> instead of passing a string. Such a function should return <code class="docutils literal notranslate"><span class="pre">True</span></code> whenever a label
 should be used and <code class="docutils literal notranslate"><span class="pre">False</span></code> when it should not be used. Here is an example of two such functions, one for cues from the “GW”/NA” conditions (call them “congruent”) and one for the “NW”/“GA” conditions (call them “conflict”).</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -397,7 +393,7 @@ should be used and <code class="docutils literal notranslate"><span class="pre">
 </div>
 <p>First, the label is split into parts using the substring “_“. Further, we return <code class="docutils literal notranslate"><span class="pre">True</span></code> only when the first element is a”C” and the second element is one of the relevant conditions. We can try whether this function works, by applying them to some labels:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -406,7 +402,7 @@ should be used and <code class="docutils literal notranslate"><span class="pre">
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -416,7 +412,7 @@ should be used and <code class="docutils literal notranslate"><span class="pre">
 </div>
 <p>We can now get to ERPD objects, one for each of the filter-functions.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -427,12 +423,12 @@ should be used and <code class="docutils literal notranslate"><span class="pre">
 </div>
 <p>Finally, we can plot the two objects together. For that, we can pass one of the objects as an additional argument to the <code class="docutils literal notranslate"><span class="pre">plot_mean()</span></code> function of the other one:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
-<span class="n">erpd_conf</span><span class="o">.</span><span class="n">plot_mean</span><span class="p">(</span><span class="n">overlays</span><span class="o">=</span><span class="n">erpd_cong</span><span class="p">)</span>
+<span class="n">erpd_conf</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">overlays</span><span class="o">=</span><span class="n">erpd_cong</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -495,7 +491,7 @@ should be used and <code class="docutils literal notranslate"><span class="pre">
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/bc9e442.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/ccc3df2.
     </div>
   </body>
 </html>

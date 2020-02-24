@@ -77,13 +77,14 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="pypillometry.pupildata.ERPDSingleSubject.plot_mean">
-<code class="sig-name descname">plot_mean</code><span class="sig-paren">(</span><em class="sig-param">overlays=None</em>, <em class="sig-param">varfct=&lt;function sem&gt;</em>, <em class="sig-param">plot_missing=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDSingleSubject.plot_mean" title="Permalink to this definition">¶</a></dt>
+<dt id="pypillometry.pupildata.ERPDSingleSubject.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">overlays=None</em>, <em class="sig-param">meanfct=&lt;function mean&gt;</em>, <em class="sig-param">varfct=&lt;function sem&gt;</em>, <em class="sig-param">plot_missing=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDSingleSubject.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot mean and error-ribbons using <cite>varct</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>overlays</strong> (single or sequence of <a class="reference internal" href="#pypillometry.pupildata.ERPDSingleSubject" title="pypillometry.pupildata.ERPDSingleSubject"><code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code></a>-objects) – the overlays will be added to the same plot</p></li>
+<li><p><strong>meanfct</strong> (<em>callable</em>) – mean-function to apply to the single-trial ERPDs for plotting</p></li>
 <li><p><strong>varfct</strong> (<em>callable</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – function to calculate error-bands (e.g., <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.std.html#numpy.std" title="(in NumPy v1.17)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.std()</span></code></a> for standard-deviation
 or <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.sem.html#scipy.stats.sem" title="(in SciPy v1.4.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.stats.sem()</span></code></a> for standard-error)
 if None, no error bands are plotted</p></li>
@@ -140,7 +141,7 @@ if <cite>interactive=True</cite>.</p>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.FakePupilData.scale">
-<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param">mean=None</em>, <em class="sig-param">sd=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.scale" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param">mean=None</em>, <em class="sig-param">sd=None</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.scale" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scale the pupillary signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.
 If these variables are not provided, use the signal’s mean and std.</p>
 <dl class="field-list simple">
@@ -148,6 +149,8 @@ If these variables are not provided, use the signal’s mean and std.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mean</strong> (<em>mean to subtract from signal</em>) – </p></li>
 <li><p><strong>sd</strong> (<em>sd to scale with</em>) – </p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
@@ -172,7 +175,7 @@ of the current one (contains all data between <cite>start</cite> and
 
 <dl class="method">
 <dt id="pypillometry.pupildata.FakePupilData.unscale">
-<code class="sig-name descname">unscale</code><span class="sig-paren">(</span><em class="sig-param">mean=None</em>, <em class="sig-param">sd=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.unscale" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">unscale</code><span class="sig-paren">(</span><em class="sig-param">mean=None</em>, <em class="sig-param">sd=None</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.FakePupilData.unscale" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scale back to original values using either values provided as arguments
 or the values stored in <cite>scale_params</cite>.</p>
 <dl class="field-list simple">
@@ -180,6 +183,8 @@ or the values stored in <cite>scale_params</cite>.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mean</strong> (<em>mean to add from signal</em>) – </p></li>
 <li><p><strong>sd</strong> (<em>sd to scale with</em>) – </p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
@@ -189,11 +194,11 @@ or the values stored in <cite>scale_params</cite>.</p>
 
 <dl class="class">
 <dt id="pypillometry.pupildata.PupilData">
-<em class="property">class </em><code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">PupilData</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">event_labels=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">PupilData</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">event_labels=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">keep_orig=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class representing pupillometric data.</p>
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">event_labels=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">pupil</em>, <em class="sig-param">sampling_rate=None</em>, <em class="sig-param">time=None</em>, <em class="sig-param">event_onsets=None</em>, <em class="sig-param">event_labels=None</em>, <em class="sig-param">name=None</em>, <em class="sig-param">keep_orig=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -202,7 +207,10 @@ or the values stored in <cite>scale_params</cite>.</p>
 using <cite>sampling_rate</cite> (in ms)</p></li>
 <li><p><strong>pupil</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]) – pupillary data at times <cite>time</cite> assumed to be in ms</p></li>
 <li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – time-onsets of any events that are to be modelled in the pupil</p></li>
-<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – sampling-rate of the pupillary signal in Hz</p></li>
+<li><p><strong>event_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
+<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – sampling-rate of the pupillary signal in Hz</p></li>
+<li><p><strong>keep_orig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object
+as initiated in the constructor is stored in member <cite>PupilData.original</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -238,7 +246,7 @@ using <cite>sampling_rate</cite> (in ms)</p></li>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.blinks_detect">
-<code class="sig-name descname">blinks_detect</code><span class="sig-paren">(</span><em class="sig-param">min_duration=50</em>, <em class="sig-param">blink_val=0</em>, <em class="sig-param">units='ms'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_detect" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">blinks_detect</code><span class="sig-paren">(</span><em class="sig-param">min_duration=50</em>, <em class="sig-param">blink_val=0</em>, <em class="sig-param">units='ms'</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_detect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect blinks as consecutive sequence of <cite>blink_val</cite> (f.eks., 0 or NaN) of at least
 <cite>min_duration</cite> duration (in <cite>units</cite>).
 Detected blinks are put into member <cite>blinks</cite> (matrix 2 x nblinks where start and end
@@ -250,6 +258,8 @@ whether there is a blink (1) or not (0).</p>
 <li><p><strong>min_duration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – minimum duration for a sequence of missing numbers to be treated as blink</p></li>
 <li><p><strong>blink_val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – “missing value” code</p></li>
 <li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – one of “ms”, “sec”, “min”, “h”</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
@@ -257,7 +267,7 @@ whether there is a blink (1) or not (0).</p>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.blinks_interp_mahot">
-<code class="sig-name descname">blinks_interp_mahot</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=(10</em>, <em class="sig-param">30)</em>, <em class="sig-param">blinkwindow=500</em>, <em class="sig-param">interp_type='cubic'</em>, <em class="sig-param">plot=None</em>, <em class="sig-param">plot_dim=(5</em>, <em class="sig-param">3)</em>, <em class="sig-param">plot_figsize=(10</em>, <em class="sig-param">8)</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_interp_mahot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">blinks_interp_mahot</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=(10</em>, <em class="sig-param">30)</em>, <em class="sig-param">blinkwindow=500</em>, <em class="sig-param">interp_type='cubic'</em>, <em class="sig-param">plot=None</em>, <em class="sig-param">plot_dim=(5</em>, <em class="sig-param">3)</em>, <em class="sig-param">plot_figsize=(10</em>, <em class="sig-param">8)</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_interp_mahot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the blink-interpolation method by Mahot (2013).</p>
 <p>Mahot, 2013:
 <a class="reference external" href="https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001">https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001</a>.</p>
@@ -278,6 +288,8 @@ if None, no plotting is done
 if True, plot is not saved but produced</p></li>
 <li><p><strong>plot_dim</strong> (<em>tuple nrow x ncol</em>) – number of subplots</p></li>
 <li><p><strong>plot_figsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em> (</em><em>width</em><em>, </em><em>height</em><em>)</em>) – dimensions for each figure</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
@@ -285,7 +297,7 @@ if True, plot is not saved but produced</p></li>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.blinks_interpolate">
-<code class="sig-name descname">blinks_interpolate</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=(10</em>, <em class="sig-param">30)</em>, <em class="sig-param">interp_type='cubic'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_interpolate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">blinks_interpolate</code><span class="sig-paren">(</span><em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">margin=(10</em>, <em class="sig-param">30)</em>, <em class="sig-param">interp_type='cubic'</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_interpolate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interpolation of missing data “in one go”.
 Detection of blinks happens using Mahot (2013), see <a class="reference internal" href="#pypillometry.preproc.blink_onsets_mahot" title="pypillometry.preproc.blink_onsets_mahot"><code class="xref py py-func docutils literal notranslate"><span class="pre">blink_onsets_mahot()</span></code></a>.</p>
 <dl class="field-list simple">
@@ -296,6 +308,8 @@ Detection of blinks happens using Mahot (2013), see <a class="reference internal
 <li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the offset of the blink</p></li>
 <li><p><strong>margin</strong> (<em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – margin that is subtracted/added to onset and offset (in ms)</p></li>
 <li><p><strong>interp_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – type of interpolation accepted by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.interpolate.interp1d()</span></code></p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
@@ -303,7 +317,7 @@ Detection of blinks happens using Mahot (2013), see <a class="reference internal
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.blinks_merge">
-<code class="sig-name descname">blinks_merge</code><span class="sig-paren">(</span><em class="sig-param">distance=100</em>, <em class="sig-param">remove_signal=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_merge" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">blinks_merge</code><span class="sig-paren">(</span><em class="sig-param">distance=100</em>, <em class="sig-param">remove_signal=False</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge together blinks that are close together.
 Some subjects blink repeatedly and standard detection/interpolation can result in weird results.
 This function simply treats repeated blinks as one long blink.</p>
@@ -314,6 +328,8 @@ This function simply treats repeated blinks as one long blink.</p>
 <li><p><strong>remove_signal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if True, set all signal values during the “new blinks” to zero so
 that <a class="reference internal" href="#pypillometry.preproc.detect_blinks" title="pypillometry.preproc.detect_blinks"><code class="xref py py-func docutils literal notranslate"><span class="pre">detect_blinks()</span></code></a> will pick them up; interpolation will work
 either way</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
@@ -352,7 +368,7 @@ either way</p></li>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.downsample">
-<code class="sig-name descname">downsample</code><span class="sig-paren">(</span><em class="sig-param">fsd</em>, <em class="sig-param">dsfac=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.downsample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">downsample</code><span class="sig-paren">(</span><em class="sig-param">fsd</em>, <em class="sig-param">dsfac=False</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.downsample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simple downsampling scheme using mean within the downsampling window.
 See <a class="reference internal" href="#pypillometry.baseline.downsample" title="pypillometry.baseline.downsample"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.baseline.downsample()</span></code></a>.</p>
 <dl class="field-list simple">
@@ -361,6 +377,8 @@ See <a class="reference internal" href="#pypillometry.baseline.downsample" title
 <li><p><strong>fsd</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – new sampling-rate or decimate-factor</p></li>
 <li><p><strong>dsfac</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if False, <cite>fsd</cite> is the new sampling rate;
 if True, <cite>fsd</cite> is the decimate factor</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
@@ -368,7 +386,7 @@ if True, <cite>fsd</cite> is the decimate factor</p></li>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.estimate_baseline">
-<code class="sig-name descname">estimate_baseline</code><span class="sig-paren">(</span><em class="sig-param">method='envelope_iter_bspline_2'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.estimate_baseline" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">estimate_baseline</code><span class="sig-paren">(</span><em class="sig-param">method='envelope_iter_bspline_2'</em>, <em class="sig-param">inplace=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.estimate_baseline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply one of the baseline-estimation methods.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -380,6 +398,8 @@ if True, <cite>fsd</cite> is the decimate factor</p></li>
 </dd>
 </dl>
 </p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 <li><p><strong>kwargs</strong> – named arguments passed to the low-level function in <a class="reference internal" href="#module-pypillometry.baseline" title="pypillometry.baseline"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry.baseline</span></code></a>.</p></li>
 </ul>
 </dd>
@@ -392,7 +412,7 @@ if True, <cite>fsd</cite> is the decimate factor</p></li>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.estimate_response">
-<code class="sig-name descname">estimate_response</code><span class="sig-paren">(</span><em class="sig-param">npar='free'</em>, <em class="sig-param">tmax='free'</em>, <em class="sig-param">verbose=50</em>, <em class="sig-param">bounds={'npar': (1</em>, <em class="sig-param">20)</em>, <em class="sig-param">'tmax': (100</em>, <em class="sig-param">2000)}</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.estimate_response" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">estimate_response</code><span class="sig-paren">(</span><em class="sig-param">npar='free'</em>, <em class="sig-param">tmax='free'</em>, <em class="sig-param">verbose=50</em>, <em class="sig-param">bounds={'npar': (1</em>, <em class="sig-param">20)</em>, <em class="sig-param">'tmax': (100</em>, <em class="sig-param">2000)}</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.estimate_response" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate pupil-response based on event-onsets, see
 <a class="reference internal" href="#pypillometry.pupil.pupil_response" title="pypillometry.pupil.pupil_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_response()</span></code></a>.</p>
 <dl class="simple">
@@ -404,6 +424,9 @@ in case of “free”, the function optimizes for this parameter</p>
 </dd>
 <dt>bounds: dict</dt><dd><p>in case that one or both parameters are estimated, give the lower
 and upper bounds for the parameters</p>
+</dd>
+<dt>inplace: bool</dt><dd><p>if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -451,7 +474,7 @@ if tuple, the mean value in the window in milliseconds (relative to <cite>time_w
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.lowpass_filter">
-<code class="sig-name descname">lowpass_filter</code><span class="sig-paren">(</span><em class="sig-param">cutoff</em>, <em class="sig-param">order=2</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.lowpass_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">lowpass_filter</code><span class="sig-paren">(</span><em class="sig-param">cutoff</em>, <em class="sig-param">order=2</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.lowpass_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Lowpass-filter signal using a Butterworth-filter,
 see <a class="reference internal" href="#pypillometry.baseline.butter_lowpass_filter" title="pypillometry.baseline.butter_lowpass_filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.baseline.butter_lowpass_filter()</span></code></a>.</p>
 <dl class="field-list simple">
@@ -459,6 +482,8 @@ see <a class="reference internal" href="#pypillometry.baseline.butter_lowpass_fi
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – lowpass-filter cutoff</p></li>
 <li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – filter order</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
@@ -532,26 +557,32 @@ if <cite>interactive=True</cite>.</p>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.reset_time">
-<code class="sig-name descname">reset_time</code><span class="sig-paren">(</span><em class="sig-param">t0=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.reset_time" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset_time</code><span class="sig-paren">(</span><em class="sig-param">t0=0</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.reset_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets time so that the time-array starts at time zero (t0).
 Resets onsets etc.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>t0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – time at which the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>’s time-vector starts</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – time at which the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>’s time-vector starts</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.scale">
-<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param">mean=None</em>, <em class="sig-param">sd=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.scale" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param">mean=None</em>, <em class="sig-param">sd=None</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.scale" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scale the pupillary signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.
 If these variables are not provided, use the signal’s mean and std.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mean</strong> (<em>mean to subtract from signal</em>) – </p></li>
-<li><p><strong>sd</strong> (<em>sd to scale with</em>) – </p></li>
+<li><p><strong>mean</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – mean to subtract from signal</p></li>
+<li><p><strong>sd</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – sd to scale with</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
@@ -563,13 +594,19 @@ If these variables are not provided, use the signal’s mean and std.</p>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.smooth_window">
-<code class="sig-name descname">smooth_window</code><span class="sig-paren">(</span><em class="sig-param">window='hanning'</em>, <em class="sig-param">winsize=11</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.smooth_window" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">smooth_window</code><span class="sig-paren">(</span><em class="sig-param">window='hanning'</em>, <em class="sig-param">winsize=11</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.smooth_window" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply smoothing of the signal using a moving window. See <a class="reference internal" href="#pypillometry.preproc.smooth_window" title="pypillometry.preproc.smooth_window"><code class="xref py py-func docutils literal notranslate"><span class="pre">smooth_window()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>window</strong> (<em>(</em><em>the type of window from 'flat'</em><em>, </em><em>'hanning'</em><em>, </em><em>'hamming'</em><em>, </em><em>'bartlett'</em><em>, </em><em>'blackman'</em><em>)</em><em>;</em>) – flat window will produce a moving average smoothing.</p></li>
-<li><p><strong>winsize</strong> (<em>the length of the window in ms</em>) – </p></li>
+<li><p><strong>window</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – <dl class="simple">
+<dt>(the type of window from ‘flat’, ‘hanning’, ‘hamming’, ‘bartlett’, ‘blackman’);</dt><dd><p>flat window will produce a moving average smoothing.</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>winsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – the length of the window in ms</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
@@ -603,6 +640,15 @@ pupil-size in interval before trial onset.</p>
 <dd><p>Return a new <cite>PupilData</cite> object that is a shortened version
 of the current one (contains all data between <cite>start</cite> and
 <cite>end</cite> in units given by <cite>units</cite> (one of “ms”, “sec”, “min”, “h”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – start for new dataset</p></li>
+<li><p><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – end of new dataset</p></li>
+<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – time units in which <cite>start</cite> and <cite>end</cite> are provided</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -618,14 +664,16 @@ of the current one (contains all data between <cite>start</cite> and
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.unscale">
-<code class="sig-name descname">unscale</code><span class="sig-paren">(</span><em class="sig-param">mean=None</em>, <em class="sig-param">sd=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.unscale" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">unscale</code><span class="sig-paren">(</span><em class="sig-param">mean=None</em>, <em class="sig-param">sd=None</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.unscale" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scale back to original values using either values provided as arguments
 or the values stored in <cite>scale_params</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mean</strong> (<em>mean to add from signal</em>) – </p></li>
-<li><p><strong>sd</strong> (<em>sd to scale with</em>) – </p></li>
+<li><p><strong>mean</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – mean to add from signal</p></li>
+<li><p><strong>sd</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – sd to scale with</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
@@ -1422,7 +1470,7 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/46eaa1d.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/ccc3df2.
     </div>
   </body>
 </html>
