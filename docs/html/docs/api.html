@@ -245,6 +245,12 @@ as initiated in the constructor is stored in member <cite>PupilData.original</ci
 </dd></dl>
 
 <dl class="method">
+<dt id="pypillometry.pupildata.PupilData.add_to_history">
+<code class="sig-name descname">add_to_history</code><span class="sig-paren">(</span><em class="sig-param">event</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.add_to_history" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add event to history</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pypillometry.pupildata.PupilData.blinks_detect">
 <code class="sig-name descname">blinks_detect</code><span class="sig-paren">(</span><em class="sig-param">min_duration=50</em>, <em class="sig-param">blink_val=0</em>, <em class="sig-param">units='ms'</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_detect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect blinks as consecutive sequence of <cite>blink_val</cite> (f.eks., 0 or NaN) of at least
@@ -553,6 +559,12 @@ if <cite>interactive=True</cite>.</p>
 <dd class="field-odd"><p>list of <code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.Figure</span></code> objects</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.print_history">
+<code class="sig-name descname">print_history</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.print_history" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pretty-print the history of the current dataset (which manipulations where done on it).</p>
 </dd></dl>
 
 <dl class="method">
@@ -1470,7 +1482,7 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/ccc3df2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/e5093ef.
     </div>
   </body>
 </html>

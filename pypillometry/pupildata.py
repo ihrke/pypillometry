@@ -20,7 +20,6 @@ from scipy.interpolate import interp1d
 from scipy import interpolate
 import scipy
 from random import choice
-import functools
 
 
 import collections.abc
@@ -34,6 +33,31 @@ PupilArray=Union[np.ndarray, List[float]]
 
 
 _inplace=False ## default for whether or not inplace-operations should be used
+
+
+import inspect
+import functools
+
+## decoratory to keep a history of actions performed on dataset
+# can only be used with functions that return "self" 
+def keephistory(func):
+    @functools.wraps(func)
+    def wrapper(*args,**kwargs):
+        obj=func(*args,**kwargs)
+        funcname=func.__name__
+        argstr=",".join(["%s"%(v) for v in args[1:]])
+        kwargstr=",".join(["%s=%s"%(k,v) for k,v in kwargs.items()])
+        allargs=argstr
+        if len(allargs)>0 and len(kwargstr)>0:
+            allargs+=","+kwargstr
+        elif len(kwargstr)>0:
+            allargs+=kwargstr
+        fstr="{func}({allargs})".format(func=funcname, allargs=allargs)
+        #fstr="{func}({argstr},{kwargstr})".format(func=funcname,argstr=argstr,kwargstr=kwargstr)
+        obj.add_to_history(fstr)
+        return obj
+    return wrapper
+        
 
 
 class ERPDSingleSubject:
@@ -125,6 +149,24 @@ class PupilData:
     """
     Class representing pupillometric data. 
     """
+    
+    def add_to_history(self, event):
+        """Add event to history"""
+        try:
+            self.history.append(event)
+        except:
+            self.history=[event]
+        
+    def print_history(self):
+        """
+        Pretty-print the history of the current dataset (which manipulations where done on it).
+        """
+        print("* "+self.name)
+        try:
+            for i,ev in enumerate(self.history):
+                print(" "*(i)+"└ " + ev)
+        except:
+            print("no history")
     
     def __len__(self) -> int:
         """Return number of sampling points in the pupil data."""
@@ -245,7 +287,11 @@ class PupilData:
         self.original=None
         if keep_orig: 
             self.original=self.copy()
+            
+        ## start with empty history    
+        self.history=[]
        
+    @keephistory
     def reset_time(self, t0: float=0, inplace=_inplace):
         """
         Resets time so that the time-array starts at time zero (t0).
@@ -302,7 +348,8 @@ class PupilData:
         else:
             fac=1.
         return fac
-    
+
+    @keephistory
     def sub_slice(self, start: float=-np.inf, end: float=np.inf, units: str="sec"):
         """
         Return a new `PupilData` object that is a shortened version
@@ -363,7 +410,8 @@ class PupilData:
         for k,v in pars.items():
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
         return s
-        
+    
+    @keephistory    
     def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace):
         """
         Scale back to original values using either values provided as arguments
@@ -391,7 +439,8 @@ class PupilData:
         obj.baseline=(self.baseline*sd)+mean
         obj.response=(self.response*sd)
         return obj
-        
+    
+    @keephistory
     def scale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace):
         """
         Scale the pupillary signal by subtracting `mean` and dividing by `sd`.
@@ -423,7 +472,8 @@ class PupilData:
         obj.baseline=(self.baseline-mean)/sd
         obj.response=(self.response)/sd
         return obj
-        
+    
+    @keephistory
     def lowpass_filter(self, cutoff: float, order: int=2, inplace=_inplace):
         """
         Lowpass-filter signal using a Butterworth-filter, 
@@ -444,6 +494,7 @@ class PupilData:
         obj.sy=butter_lowpass_filter(self.sy, cutoff, self.fs, order)
         return obj
 
+    @keephistory
     def smooth_window(self, window: str="hanning", winsize: float=11, inplace=_inplace):
         """
         Apply smoothing of the signal using a moving window. See :func:`.smooth_window()`.
@@ -463,7 +514,8 @@ class PupilData:
         obj=self if inplace else self.copy()                            
         obj.sy=smooth_window(self.sy, winsize_ix, window )
         return obj
-        
+    
+    @keephistory
     def downsample(self, fsd: float, dsfac: bool=False, inplace=_inplace):
         """
         Simple downsampling scheme using mean within the downsampling window.
@@ -692,6 +744,7 @@ class PupilData:
 
         return figs        
     
+    @keephistory
     def estimate_baseline(self, method: str="envelope_iter_bspline_2", inplace=_inplace, **kwargs):
         """
         Apply one of the baseline-estimation methods.
@@ -751,7 +804,8 @@ class PupilData:
             number of event-onsets long result array
         """
         return stat_event_interval(self.tx, self.sy, self.event_onsets, interval, statfct)
-        
+    
+    @keephistory
     def estimate_response(self, npar: Union[str,float]="free", tmax: Union[str,float]="free", 
                           verbose: int=50,
                           bounds: dict={"npar":(1,20), "tmax":(100,2000)},
@@ -801,6 +855,7 @@ class PupilData:
         obj.response_estimated=True
         return obj
     
+    @keephistory
     def blinks_detect(self, min_duration:float=50, blink_val:float=0, units:str="ms",inplace=_inplace):
         """
         Detect blinks as consecutive sequence of `blink_val` (f.eks., 0 or NaN) of at least
@@ -913,6 +968,7 @@ class PupilData:
             
         return figs    
 
+    @keephistory
     def blinks_merge(self, distance: float=100, remove_signal: bool=False, inplace=_inplace):
         """
         Merge together blinks that are close together. 
@@ -958,6 +1014,7 @@ class PupilData:
 
         return obj    
     
+    @keephistory
     def blinks_interpolate(self, winsize: float=11, 
                            vel_onset: float=-5, vel_offset: float=5, 
                            margin: Tuple[float,float]=(10,30), 
@@ -1003,7 +1060,8 @@ class PupilData:
         syr=f(self.tx)
         obj.sy=syr
         return obj
-                        
+    
+    @keephistory
     def blinks_interp_mahot(self, winsize: float=11, 
                            vel_onset: float=-5, vel_offset: float=5, 
                            margin: Tuple[float,float]=(10,30), 
@@ -1251,7 +1309,7 @@ class FakePupilData(PupilData):
         self.sim_response=real_response
         self.sim_response_coef=real_response_coef
 
-        
+    @keephistory    
     def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace):
         """
         Scale back to original values using either values provided as arguments
@@ -1270,7 +1328,8 @@ class FakePupilData(PupilData):
         obj.sim_baseline=(self.sim_baseline*ssd)+mmean
         obj.sim_response=(self.sim_response*ssd)
         return obj
-        
+    
+    @keephistory
     def scale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace) -> None:
         """
         Scale the pupillary signal by subtracting `mean` and dividing by `sd`.
@@ -1295,6 +1354,7 @@ class FakePupilData(PupilData):
         obj.sim_response=(self.sim_response)/sd
         return obj
 
+    @keephistory
     def sub_slice(self, start: float=-np.inf, end: float=np.inf, units: str="sec"):
         """
         Return a new `PupilData` object that is a shortened version
