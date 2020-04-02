@@ -58,7 +58,72 @@ def smooth_window(x,window_len=11,window='hanning'):
     return y[(window_len-1):(-window_len+1)]
 
 
-def detect_blinks(sy, min_duration, blink_val=0):
+def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset):
+    """
+    Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.
+    
+    This works similarly to :py:func:`blink_onsets_mahot()`.
+    
+    Parameters
+    ----------
+    sy: np.array
+        pupil data
+    smooth_winsize: int (odd)
+        size of the Hanning-window in sampling points
+    vel_onset: float
+        velocity-threshold to detect the onset of the blink
+    vel_offset: float
+        velocity-threshold to detect the offset of the blink    
+    """
+    # generate smoothed signal and velocity-profile
+    sym=smooth_window(sy, smooth_winsize, "hanning")
+    vel=np.r_[0,np.diff(sym)] 
+    n=sym.size
+
+    # find first negative vel-crossing 
+    #onsets=np.where(vel<=vel_onset)[0]
+    #onsets=onsets[np.r_[np.diff(onsets),10]>1]
+
+    #offsets=np.where(vel>=vel_offset)[0]
+    #offsets=offsets[np.r_[10,np.diff(offsets)]>1]
+
+
+    # find first negative vel-crossing 
+    onsets=np.where(vel<=vel_onset)[0]
+    onsets_ixx=np.r_[np.diff(onsets),10]>1
+    onsets_len=np.diff(np.r_[0,np.where(onsets_ixx)[0]])
+    onsets=onsets[onsets_ixx]
+    onsets=onsets[onsets_len>10]
+
+    ## offset finding
+    offsets=np.where(vel>=vel_offset)[0]
+    offsets_ixx=np.r_[10,np.diff(offsets)]>1
+    offsets_len=np.diff(np.r_[np.where(offsets_ixx)[0],offsets.size])
+    offsets=offsets[offsets_ixx]
+    offsets=offsets[offsets_len>10]
+    
+    
+    ## find corresponding on- and off-sets
+    blinks=[]
+    on=onsets[0]
+    while on is not None:
+        offs=offsets[offsets>on]
+        off=offs[0] if offs.size>0 else n
+        blinks.append([on,off])
+        ons=onsets[onsets>off]
+        on=ons[0] if ons.size>0 else None
+        
+    ## if on- off-sets fall in a zero-region, grow until first non-zero sample
+    blinks2=[]
+    for (on,off) in blinks:
+        while(sy[on]==0):
+            on-=1
+        while(sy[off]==0):
+            off+=1
+        blinks2.append([on,off])
+    return np.array(blinks2)
+
+def detect_blinks_zero(sy, min_duration, blink_val=0):
     """
     Detect blinks as consecutive sequence of `blink_val` (f.eks., 0 or NaN) of at least
     `min_duration` successive values in the signal `sy`.

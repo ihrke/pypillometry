@@ -59,6 +59,93 @@ def keephistory(func):
     return wrapper
         
 
+class ERPDGroup:
+    """
+    Class representing a event-related pupillary dilation (ERPD) on the group-level.
+    """
+    def __init__(self, erpds):
+        contrasts=np.unique([erpd.name for erpd in erpds])
+        if len(contrasts)>1:
+            raise ValueError("can only combine same constrasts, got %s"%str(contrasts))
+        self.name=contrasts[0]
+        txx=np.vstack([e.tx for e in erpds])
+        if not np.all(np.diff(txx,axis=0)==0):
+            raise ValueError("all time-vectors of the single-subject ERPDs must be identical")
+        self.tx=erpds[0].tx
+        self.erpds=[e.erpd for e in erpds]
+        self.N=len(erpds)
+        self.mean_missing=np.vstack([np.mean(e.missing, axis=0) for e in erpds])
+
+    def summary(self) -> dict:
+        """Return a summary of the :class:`.PupilData`-object."""
+        summary=dict(
+            name=self.name,
+            N=self.N,
+            timewin=(self.tx.min(), self.tx.max()),
+        )
+        return summary
+    
+    def __repr__(self) -> str:
+        """Return a string-representation of the dataset."""
+        pars=self.summary()
+        del pars["name"]
+        s="ERPDGroup({name}):\n".format(name=self.name)
+        flen=max([len(k) for k in pars.keys()])
+        for k,v in pars.items():
+            s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
+        return s
+                
+    def plot(self, overlays=None, meanfct=np.mean, varfct=scipy.stats.sem, plot_missing: bool=True, axes=None): 
+        """
+        Plot mean (using `meanfct`) and error-ribbons using `varct`.
+        
+        Parameters
+        ----------
+                
+        meanfct: callable
+            mean-function to apply to the single-trial ERPDs for plotting
+        varfct: callable or None
+            function to calculate error-bands (e.g., :func:`numpy.std` for standard-deviation 
+            or :func:`scipy.stats.sem` for standard-error)
+            if None, no error bands are plotted
+            
+        plot_missing: bool
+            plot percentage interpolated/missing data per time-point?
+        """
+        
+        merpd=meanfct(np.vstack([meanfct(e, axis=0) for e in self.erpds]), axis=0)
+        sderpd=varfct(np.vstack([meanfct(e, axis=0) for e in self.erpds]), axis=0) if callable(varfct) else None
+        percmiss=np.mean(self.mean_missing, axis=0)*100.
+        
+        if axes is None:
+            ax1=plt.gca()
+        else:
+            ax1=axes[0]
+            
+        if sderpd is not None:
+            ax1.fill_between(self.tx, merpd-sderpd, merpd+sderpd, color="grey", alpha=0.3)
+        ax1.plot(self.tx, merpd, label=self.name)        
+        if overlays is None and axes is None:
+            ax1.set_title(self.name)
+        ax1.axvline(x=0, color="red")        
+        ax1.set_ylabel("mean PD")
+        ax1.set_xlabel("time (ms)")
+        if plot_missing:
+            if axes is None:
+                ax2=ax1.twinx()
+            else: 
+                ax2=axes[1]
+            ax2.plot(self.tx, percmiss, alpha=0.3)
+            ax2.set_ylim(0,100)
+            ax2.set_ylabel("% missing")
+            
+        if overlays is not None:
+            if not isinstance(overlays, collections.abc.Sequence):
+                overlays=[overlays]
+            for ov in overlays:
+                ov.plot(axes=(ax1,ax2))
+            ax1.legend()
+
 
 class ERPDSingleSubject:
     """
@@ -855,22 +942,37 @@ class PupilData:
         obj.response_estimated=True
         return obj
     
+
     @keephistory
-    def blinks_detect(self, min_duration:float=50, blink_val:float=0, units:str="ms",inplace=_inplace):
+    def blinks_detect(self, min_duration:float=20, blink_val:float=0,
+                      winsize: float=11, vel_onset: float=-5, vel_offset: float=5, 
+                      units="ms", inplace=_inplace):
         """
-        Detect blinks as consecutive sequence of `blink_val` (f.eks., 0 or NaN) of at least
-        `min_duration` duration (in `units`). 
+        Detect blinks in the pupillary signal using several strategies.
+        First, blinks are detected as consecutive sequence of `blink_val` 
+        (f.eks., 0 or NaN). Second, blinks are defined as everything between
+        two crossings of the velocity profile (from negative to positive).
+        
         Detected blinks are put into member `blinks` (matrix 2 x nblinks where start and end
         are stored as indexes) and member `blink_mask` which codes for each sampling point
         whether there is a blink (1) or not (0).
 
+        Finally, detected blinks have to be at least `min_duration` duration (in `units`).
+        
         Parameters
         ----------
-
         min_duration: float
             minimum duration for a sequence of missing numbers to be treated as blink
         blink_val: float
             "missing value" code
+        winsize:
+            window-size for smoothing for velocity profile (in units)
+        vel_onset:
+            negative velocity that needs to be crossed; arbitrary units that depend on
+            sampling rate etc
+        vel_offset:
+            positive velocity that needs to be exceeded; arbitrary units that depend on
+            sampling rate etc
         units: str
             one of "ms", "sec", "min", "h"
         inplace: bool
@@ -878,17 +980,29 @@ class PupilData:
             if `False`, make and return copy before making changes                                                    
         """
         fac=self._unit_fac(units)
+        winsize_ms=winsize*fac
+        winsize_ix=int(winsize_ms/1000.*self.fs)
+        if winsize_ix % 2==0:
+            winsize += 1
         min_duration_ms=min_duration*fac
-        min_duration_ix=int(min_duration_ms/1000.*self.fs)
+        min_duration_ix=int(min_duration_ms/1000.*self.fs)        
 
         obj=self if inplace else self.copy()
-        obj.blinks=detect_blinks(self.sy, min_duration_ix, blink_val)
+        
+        ## detect blinks with the two methods
+        blinks_vel=detect_blinks_velocity(self.sy, winsize_ix, vel_onset, vel_offset)
+        blinks_zero=detect_blinks_zero(self.sy, 1, blink_val)
+
+        ## merge the two blinks
+        blinks=helper_merge_blinks(blinks_vel, blinks_zero)
+        obj.blinks=np.array([[on,off] for (on,off) in blinks if off-on>=min_duration_ix])
+        
         obj.blink_mask=np.zeros(self.sy.size, dtype=np.int)
         
         for start,end in obj.blinks:
             obj.blink_mask[start:end]=1
-        return obj
-
+        return obj    
+    
     def blinks_plot(self, pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
                     figsize: Tuple[int,int]=(10,10), 
                     pre_blink: float=500, post_blink: float=500, units: str="ms", 

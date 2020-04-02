@@ -50,6 +50,63 @@
 <h2>pupildata.py<a class="headerlink" href="#pupildata-py" title="Permalink to this headline">¶</a></h2>
 <p>Main object-oriented entry point</p>
 <dl class="class">
+<dt id="pypillometry.pupildata.ERPDGroup">
+<em class="property">class </em><code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">ERPDGroup</code><span class="sig-paren">(</span><em class="sig-param">erpds</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing a event-related pupillary dilation (ERPD) on the group-level.</p>
+<dl class="method">
+<dt id="pypillometry.pupildata.ERPDGroup.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">erpds</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDGroup.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.ERPDGroup.__repr__">
+<code class="sig-name descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDGroup.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string-representation of the dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pypillometry.pupildata.ERPDGroup.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#pypillometry.pupildata.ERPDGroup.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.ERPDGroup.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">overlays=None</em>, <em class="sig-param">meanfct=&lt;function mean&gt;</em>, <em class="sig-param">varfct=&lt;function sem&gt;</em>, <em class="sig-param">plot_missing=True</em>, <em class="sig-param">axes=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDGroup.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot mean (using <cite>meanfct</cite>) and error-ribbons using <cite>varct</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>meanfct</strong> (<em>callable</em>) – mean-function to apply to the single-trial ERPDs for plotting</p></li>
+<li><p><strong>varfct</strong> (<em>callable</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – function to calculate error-bands (e.g., <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.std.html#numpy.std" title="(in NumPy v1.17)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.std()</span></code></a> for standard-deviation
+or <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.sem.html#scipy.stats.sem" title="(in SciPy v1.4.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.stats.sem()</span></code></a> for standard-error)
+if None, no error bands are plotted</p></li>
+<li><p><strong>plot_missing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – plot percentage interpolated/missing data per time-point?</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.ERPDGroup.summary">
+<code class="sig-name descname">summary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDGroup.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a summary of the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="pypillometry.pupildata.ERPDSingleSubject">
 <em class="property">class </em><code class="sig-prename descclassname">pypillometry.pupildata.</code><code class="sig-name descname">ERPDSingleSubject</code><span class="sig-paren">(</span><em class="sig-param">pddata</em>, <em class="sig-param">name</em>, <em class="sig-param">tx</em>, <em class="sig-param">erpd</em>, <em class="sig-param">missing</em>, <em class="sig-param">baselines</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.ERPDSingleSubject" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class representing a event-related pupillary dilation (ERPD) for one subject.</p>
@@ -252,17 +309,25 @@ as initiated in the constructor is stored in member <cite>PupilData.original</ci
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.blinks_detect">
-<code class="sig-name descname">blinks_detect</code><span class="sig-paren">(</span><em class="sig-param">min_duration=50</em>, <em class="sig-param">blink_val=0</em>, <em class="sig-param">units='ms'</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_detect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Detect blinks as consecutive sequence of <cite>blink_val</cite> (f.eks., 0 or NaN) of at least
-<cite>min_duration</cite> duration (in <cite>units</cite>).
-Detected blinks are put into member <cite>blinks</cite> (matrix 2 x nblinks where start and end
+<code class="sig-name descname">blinks_detect</code><span class="sig-paren">(</span><em class="sig-param">min_duration=20</em>, <em class="sig-param">blink_val=0</em>, <em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">units='ms'</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_detect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect blinks in the pupillary signal using several strategies.
+First, blinks are detected as consecutive sequence of <cite>blink_val</cite>
+(f.eks., 0 or NaN). Second, blinks are defined as everything between
+two crossings of the velocity profile (from negative to positive).</p>
+<p>Detected blinks are put into member <cite>blinks</cite> (matrix 2 x nblinks where start and end
 are stored as indexes) and member <cite>blink_mask</cite> which codes for each sampling point
 whether there is a blink (1) or not (0).</p>
+<p>Finally, detected blinks have to be at least <cite>min_duration</cite> duration (in <cite>units</cite>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>min_duration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – minimum duration for a sequence of missing numbers to be treated as blink</p></li>
 <li><p><strong>blink_val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – “missing value” code</p></li>
+<li><p><strong>winsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – window-size for smoothing for velocity profile (in units)</p></li>
+<li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – negative velocity that needs to be crossed; arbitrary units that depend on
+sampling rate etc</p></li>
+<li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – positive velocity that needs to be exceeded; arbitrary units that depend on
+sampling rate etc</p></li>
 <li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – one of “ms”, “sec”, “min”, “h”</p></li>
 <li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
@@ -332,7 +397,7 @@ This function simply treats repeated blinks as one long blink.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – merge together blinks that are closer together than <cite>distance</cite> in ms</p></li>
 <li><p><strong>remove_signal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if True, set all signal values during the “new blinks” to zero so
-that <a class="reference internal" href="#pypillometry.preproc.detect_blinks" title="pypillometry.preproc.detect_blinks"><code class="xref py py-func docutils literal notranslate"><span class="pre">detect_blinks()</span></code></a> will pick them up; interpolation will work
+that <code class="xref py py-func docutils literal notranslate"><span class="pre">detect_blinks()</span></code> will pick them up; interpolation will work
 either way</p></li>
 <li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
@@ -827,8 +892,25 @@ See <a class="reference external" href="https://figshare.com/articles/A_simple_w
 </dd></dl>
 
 <dl class="function">
-<dt id="pypillometry.preproc.detect_blinks">
-<code class="sig-prename descclassname">pypillometry.preproc.</code><code class="sig-name descname">detect_blinks</code><span class="sig-paren">(</span><em class="sig-param">sy</em>, <em class="sig-param">min_duration</em>, <em class="sig-param">blink_val=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.preproc.detect_blinks" title="Permalink to this definition">¶</a></dt>
+<dt id="pypillometry.preproc.detect_blinks_velocity">
+<code class="sig-prename descclassname">pypillometry.preproc.</code><code class="sig-name descname">detect_blinks_velocity</code><span class="sig-paren">(</span><em class="sig-param">sy</em>, <em class="sig-param">smooth_winsize</em>, <em class="sig-param">vel_onset</em>, <em class="sig-param">vel_offset</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.preproc.detect_blinks_velocity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.</p>
+<p>This works similarly to <a class="reference internal" href="#pypillometry.preproc.blink_onsets_mahot" title="pypillometry.preproc.blink_onsets_mahot"><code class="xref py py-func docutils literal notranslate"><span class="pre">blink_onsets_mahot()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sy</strong> (<em>np.array</em>) – pupil data</p></li>
+<li><p><strong>smooth_winsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> (</em><em>odd</em><em>)</em>) – size of the Hanning-window in sampling points</p></li>
+<li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the onset of the blink</p></li>
+<li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the offset of the blink</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.preproc.detect_blinks_zero">
+<code class="sig-prename descclassname">pypillometry.preproc.</code><code class="sig-name descname">detect_blinks_zero</code><span class="sig-paren">(</span><em class="sig-param">sy</em>, <em class="sig-param">min_duration</em>, <em class="sig-param">blink_val=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.preproc.detect_blinks_zero" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect blinks as consecutive sequence of <cite>blink_val</cite> (f.eks., 0 or NaN) of at least
 <cite>min_duration</cite> successive values in the signal <cite>sy</cite>.
 Detected blinks are put a matrix <cite>blinks</cite> (nblinks x 2) where start and end
@@ -1482,7 +1564,7 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/e5093ef.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
     </div>
   </body>
 </html>

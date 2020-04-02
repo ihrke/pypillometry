@@ -75,7 +75,7 @@
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_detect" title="pypillometry.pupildata.PupilData.blinks_detect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_detect</span></code></a>([min_duration, …])</p></td>
-<td><p>Detect blinks as consecutive sequence of <cite>blink_val</cite> (f.eks., 0 or NaN) of at least <cite>min_duration</cite> duration (in <cite>units</cite>).</p></td>
+<td><p>Detect blinks in the pupillary signal using several strategies.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_interpolate" title="pypillometry.pupildata.PupilData.blinks_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_interpolate</span></code></a>([winsize, …])</p></td>
 <td><p>Interpolation of missing data “in one go”.</p></td>
@@ -83,7 +83,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_interp_mahot" title="pypillometry.pupildata.PupilData.blinks_interp_mahot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_interp_mahot</span></code></a>([winsize, …])</p></td>
 <td><p>Implements the blink-interpolation method by Mahot (2013).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_merge" title="pypillometry.pupildata.PupilData.blinks_merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_merge</span></code></a>([distance, remove_signal])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_merge" title="pypillometry.pupildata.PupilData.blinks_merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_merge</span></code></a>([distance, …])</p></td>
 <td><p>Merge together blinks that are close together.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_plot" title="pypillometry.pupildata.PupilData.blinks_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_plot</span></code></a>([pdf_file, nrow, …])</p></td>
@@ -100,13 +100,13 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.lowpass_filter" title="pypillometry.pupildata.PupilData.lowpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.lowpass_filter</span></code></a>(cutoff[, order])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.lowpass_filter" title="pypillometry.pupildata.PupilData.lowpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.lowpass_filter</span></code></a>(cutoff[, order, …])</p></td>
 <td><p>Lowpass-filter signal using a Butterworth-filter, see <a class="reference internal" href="api.html#pypillometry.baseline.butter_lowpass_filter" title="pypillometry.baseline.butter_lowpass_filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.baseline.butter_lowpass_filter()</span></code></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.smooth_window" title="pypillometry.pupildata.PupilData.smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.smooth_window</span></code></a>([window, winsize])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.smooth_window" title="pypillometry.pupildata.PupilData.smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.smooth_window</span></code></a>([window, winsize, …])</p></td>
 <td><p>Apply smoothing of the signal using a moving window.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.downsample" title="pypillometry.pupildata.PupilData.downsample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.downsample</span></code></a>(fsd[, dsfac])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.downsample" title="pypillometry.pupildata.PupilData.downsample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.downsample</span></code></a>(fsd[, dsfac, inplace])</p></td>
 <td><p>Simple downsampling scheme using mean within the downsampling window.</p></td>
 </tr>
 </tbody>
@@ -126,14 +126,14 @@
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.copy" title="pypillometry.pupildata.PupilData.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.copy</span></code></a>([new_name])</p></td>
 <td><p>Make and return a deep-copy of the pupil data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.scale" title="pypillometry.pupildata.PupilData.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.scale</span></code></a>([mean, sd])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.scale" title="pypillometry.pupildata.PupilData.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.scale</span></code></a>([mean, sd, inplace])</p></td>
 <td><p>Scale the pupillary signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.unscale" title="pypillometry.pupildata.PupilData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.unscale</span></code></a>([mean, sd])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.unscale" title="pypillometry.pupildata.PupilData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.unscale</span></code></a>([mean, sd, inplace])</p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.reset_time</span></code>(**kwargs)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.reset_time" title="pypillometry.pupildata.PupilData.reset_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.reset_time</span></code></a>([t0, inplace])</p></td>
+<td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
 </tr>
 </tbody>
 </table>
@@ -218,7 +218,7 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.estimate_baseline" title="pypillometry.pupildata.PupilData.estimate_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.estimate_baseline</span></code></a>([method])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.estimate_baseline" title="pypillometry.pupildata.PupilData.estimate_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.estimate_baseline</span></code></a>([method, inplace])</p></td>
 <td><p>Apply one of the baseline-estimation methods.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.estimate_response" title="pypillometry.pupildata.PupilData.estimate_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.estimate_response</span></code></a>([npar, tmax, …])</p></td>
@@ -324,7 +324,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.2+/ccc3df2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
     </div>
   </body>
 </html>
