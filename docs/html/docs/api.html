@@ -720,6 +720,99 @@ Expressed in units of mean baseline pupil diameter.</p></li>
 </dd></dl>
 
 </div>
+<span class="target" id="module-pypillometry.erpd"></span><div class="section" id="erpd-py">
+<h2>erpd.py<a class="headerlink" href="#erpd-py" title="Permalink to this headline">¶</a></h2>
+<p>Event-related pupil dilation.</p>
+<dl class="class">
+<dt id="pypillometry.erpd.ERPD">
+<em class="property">class </em><code class="sig-prename descclassname">pypillometry.erpd.</code><code class="sig-name descname">ERPD</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">tx</em>, <em class="sig-param">erpd</em>, <em class="sig-param">missing</em>, <em class="sig-param">baselines</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.erpd.ERPD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class representing a event-related pupillary dilation (ERPD) for one subject.</p>
+<dl class="method">
+<dt id="pypillometry.erpd.ERPD.from_file">
+<em class="property">classmethod </em><code class="sig-name descname">from_file</code><span class="sig-paren">(</span><em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.erpd.ERPD.from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a <a class="reference internal" href="#pypillometry.erpd.ERPD" title="pypillometry.erpd.ERPD"><code class="xref py py-class docutils literal notranslate"><span class="pre">ERPD</span></code></a> object from a pickle-file.
+Use as <code class="docutils literal notranslate"><span class="pre">pypillometry.ERPD.from_file(&quot;yourfile.pd&quot;)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – filename</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.erpd.ERPD.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">overlays=None</em>, <em class="sig-param">meanfct=&lt;function mean&gt;</em>, <em class="sig-param">varfct=&lt;function sem&gt;</em>, <em class="sig-param">plot_missing=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.erpd.ERPD.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot mean and error-ribbons using <cite>varct</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>overlays</strong> (single or sequence of <code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code>-objects) – the overlays will be added to the same plot</p></li>
+<li><p><strong>meanfct</strong> (<em>callable</em>) – mean-function to apply to the single-trial ERPDs for plotting</p></li>
+<li><p><strong>varfct</strong> (<em>callable</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – function to calculate error-bands (e.g., <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.std.html#numpy.std" title="(in NumPy v1.17)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.std()</span></code></a> for standard-deviation
+or <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.sem.html#scipy.stats.sem" title="(in SciPy v1.4.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.stats.sem()</span></code></a> for standard-error)
+if None, no error bands are plotted</p></li>
+<li><p><strong>plot_missing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – plot percentage interpolated/missing data per time-point?</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.erpd.ERPD.summary">
+<code class="sig-name descname">summary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.erpd.ERPD.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a summary of the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.erpd.ERPD.write_file">
+<code class="sig-name descname">write_file</code><span class="sig-paren">(</span><em class="sig-param">fname</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.erpd.ERPD.write_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save to file (using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – filename</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.erpd.group_erpd">
+<code class="sig-prename descclassname">pypillometry.erpd.</code><code class="sig-name descname">group_erpd</code><span class="sig-paren">(</span><em class="sig-param">datasets</em>, <em class="sig-param">erpd_name</em>, <em class="sig-param">event_select</em>, <em class="sig-param">baseline_win=None</em>, <em class="sig-param">time_win=(-500</em>, <em class="sig-param">2000)</em>, <em class="sig-param">subj_meanfct=&lt;function mean&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.erpd.group_erpd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate group-level ERPDs by applying <cite>subj_meanfct</cite> to each subj-level ERPD.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>datasets</strong> (<em>list of PupilData objects</em>) – one PupilData object for each subject that should go into the group-level ERPD.</p></li>
+<li><p><strong>erpd_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – identifier for the result (e.g., “cue-locked” or “conflict-trials”)</p></li>
+<li><p><strong>baseline_win</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em> (</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>) or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – <p>if None, no baseline-correction is applied
+if tuple, the mean value in the window in milliseconds (relative to <cite>time_win</cite>) is</p>
+<blockquote>
+<div><p>subtracted from the single-trial ERPDs (baseline-correction)</p>
+</div></blockquote>
+</p></li>
+<li><p><strong>event_select</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>function</em>) – variable describing which events to select and align to
+- if str: use all events whose label contains the string
+- if function: apply function to all labels, use those where the function returns True</p></li>
+<li><p><strong>time_win</strong> (<em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>]</em>) – time before and after event to include (in ms)</p></li>
+<li><p><strong>subj_meanfct</strong> (<em>fct</em>) – function to summarize each individual ERPD</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>an <a class="reference internal" href="#pypillometry.erpd.ERPD" title="pypillometry.erpd.ERPD"><code class="xref py py-class docutils literal notranslate"><span class="pre">ERPD</span></code></a> object for the group</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
 <span class="target" id="module-pypillometry.io"></span><div class="section" id="io-py">
 <h2>io.py<a class="headerlink" href="#io-py" title="Permalink to this headline">¶</a></h2>
 <p>Read/Write data from/to disk.</p>
@@ -1393,6 +1486,7 @@ if a or b is +/-infty, a logarithmic/exponential transform is used</p>
   <ul>
 <li><a class="reference internal" href="#">API documentation</a><ul>
 <li><a class="reference internal" href="#pupildata-py">pupildata.py</a></li>
+<li><a class="reference internal" href="#erpd-py">erpd.py</a></li>
 <li><a class="reference internal" href="#io-py">io.py</a></li>
 <li><a class="reference internal" href="#preproc-py">preproc.py</a></li>
 <li><a class="reference internal" href="#fakedata-py">fakedata.py</a></li>

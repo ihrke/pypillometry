@@ -5,6 +5,9 @@ API documentation
     :members:
     :special-members:
 
+.. automodule:: pypillometry.erpd
+    :members:
+
 .. automodule:: pypillometry.io
     :members:
 
