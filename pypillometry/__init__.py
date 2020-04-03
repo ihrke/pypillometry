@@ -9,6 +9,7 @@ from .convenience import *
 from .fakedata import *
 from .pupil import *
 from .pupildata import *
+from .erpd import *
 
 import os.path
 __package_path__ = os.path.abspath(os.path.dirname(__file__))

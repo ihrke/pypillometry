@@ -10,6 +10,7 @@ from .baseline import *
 from .fakedata import *
 from .preproc import *
 from .io import *
+from .erpd import *
 
 import pylab as plt
 import matplotlib as mpl
@@ -58,178 +59,7 @@ def keephistory(func):
         return obj
     return wrapper
         
-
-class ERPDGroup:
-    """
-    Class representing a event-related pupillary dilation (ERPD) on the group-level.
-    """
-    def __init__(self, erpds):
-        contrasts=np.unique([erpd.name for erpd in erpds])
-        if len(contrasts)>1:
-            raise ValueError("can only combine same constrasts, got %s"%str(contrasts))
-        self.name=contrasts[0]
-        txx=np.vstack([e.tx for e in erpds])
-        if not np.all(np.diff(txx,axis=0)==0):
-            raise ValueError("all time-vectors of the single-subject ERPDs must be identical")
-        self.tx=erpds[0].tx
-        self.erpds=[e.erpd for e in erpds]
-        self.N=len(erpds)
-        self.mean_missing=np.vstack([np.mean(e.missing, axis=0) for e in erpds])
-
-    def summary(self) -> dict:
-        """Return a summary of the :class:`.PupilData`-object."""
-        summary=dict(
-            name=self.name,
-            N=self.N,
-            timewin=(self.tx.min(), self.tx.max()),
-        )
-        return summary
-    
-    def __repr__(self) -> str:
-        """Return a string-representation of the dataset."""
-        pars=self.summary()
-        del pars["name"]
-        s="ERPDGroup({name}):\n".format(name=self.name)
-        flen=max([len(k) for k in pars.keys()])
-        for k,v in pars.items():
-            s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
-        return s
-                
-    def plot(self, overlays=None, meanfct=np.mean, varfct=scipy.stats.sem, plot_missing: bool=True, axes=None): 
-        """
-        Plot mean (using `meanfct`) and error-ribbons using `varct`.
-        
-        Parameters
-        ----------
-                
-        meanfct: callable
-            mean-function to apply to the single-trial ERPDs for plotting
-        varfct: callable or None
-            function to calculate error-bands (e.g., :func:`numpy.std` for standard-deviation 
-            or :func:`scipy.stats.sem` for standard-error)
-            if None, no error bands are plotted
-            
-        plot_missing: bool
-            plot percentage interpolated/missing data per time-point?
-        """
-        
-        merpd=meanfct(np.vstack([meanfct(e, axis=0) for e in self.erpds]), axis=0)
-        sderpd=varfct(np.vstack([meanfct(e, axis=0) for e in self.erpds]), axis=0) if callable(varfct) else None
-        percmiss=np.mean(self.mean_missing, axis=0)*100.
-        
-        if axes is None:
-            ax1=plt.gca()
-        else:
-            ax1=axes[0]
-            
-        if sderpd is not None:
-            ax1.fill_between(self.tx, merpd-sderpd, merpd+sderpd, color="grey", alpha=0.3)
-        ax1.plot(self.tx, merpd, label=self.name)        
-        if overlays is None and axes is None:
-            ax1.set_title(self.name)
-        ax1.axvline(x=0, color="red")        
-        ax1.set_ylabel("mean PD")
-        ax1.set_xlabel("time (ms)")
-        if plot_missing:
-            if axes is None:
-                ax2=ax1.twinx()
-            else: 
-                ax2=axes[1]
-            ax2.plot(self.tx, percmiss, alpha=0.3)
-            ax2.set_ylim(0,100)
-            ax2.set_ylabel("% missing")
-            
-        if overlays is not None:
-            if not isinstance(overlays, collections.abc.Sequence):
-                overlays=[overlays]
-            for ov in overlays:
-                ov.plot(axes=(ax1,ax2))
-            ax1.legend()
-
-
-class ERPDSingleSubject:
-    """
-    Class representing a event-related pupillary dilation (ERPD) for one subject.
-    """
-    def __init__(self, pddata, name, tx, erpd, missing, baselines):
-        self.name=name
-        self.org=pddata
-        self.baselines=baselines
-        self.tx=tx
-        self.erpd=erpd
-        self.missing=missing
-
-    def summary(self) -> dict:
-        """Return a summary of the :class:`.PupilData`-object."""
-        summary=dict(
-            name=self.name,
-            dataset=self.org.name,
-            nevents=self.erpd.shape[0],
-            window=(self.tx.min(), self.tx.max())
-        )
-        return summary
-    
-    def __repr__(self) -> str:
-        """Return a string-representation of the dataset."""
-        pars=self.summary()
-        del pars["name"]
-        s="ERPDSinglSubject({name}):\n".format(name=self.name)
-        flen=max([len(k) for k in pars.keys()])
-        for k,v in pars.items():
-            s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
-        return s
-                
-    def plot(self, overlays=None, meanfct=np.mean, varfct=scipy.stats.sem, plot_missing: bool=True): 
-        """
-        Plot mean and error-ribbons using `varct`.
-        
-        Parameters
-        ----------
-        
-        overlays: single or sequence of :class:`.ERPDSingleSubject`-objects 
-            the overlays will be added to the same plot
-        
-        meanfct: callable
-            mean-function to apply to the single-trial ERPDs for plotting
-        varfct: callable or None
-            function to calculate error-bands (e.g., :func:`numpy.std` for standard-deviation 
-            or :func:`scipy.stats.sem` for standard-error)
-            if None, no error bands are plotted
-            
-        plot_missing: bool
-            plot percentage interpolated/missing data per time-point?
-        """
-        merpd=meanfct(self.erpd, axis=0)
-        sderpd=varfct(self.erpd, axis=0) if callable(varfct) else None
-        percmiss=np.mean(self.missing, axis=0)*100.
-        ax1=plt.gca()        
-        if sderpd is not None:
-            ax1.fill_between(self.tx, merpd-sderpd, merpd+sderpd, color="grey", alpha=0.3)
-        ax1.plot(self.tx, merpd, label=self.name)        
-        ax1.axvline(x=0, color="red")        
-        ax1.set_ylabel("mean PD")
-        ax1.set_xlabel("time (ms)")
-        ax1.set_title(self.org.name)
-        if plot_missing:
-            ax2=ax1.twinx()
-            ax2.plot(self.tx, percmiss, alpha=0.3)
-            ax2.set_ylim(0,100)
-            ax2.set_ylabel("% missing")
-            
-        if overlays is not None:
-            if not isinstance(overlays, collections.abc.Sequence):
-                overlays=[overlays]
-            for ov in overlays:
-                merpd=meanfct(ov.erpd, axis=0)
-                sderpd=varfct(ov.erpd, axis=0) if callable(varfct) else None
-                percmiss=np.mean(ov.missing, axis=0)*100.
-                if sderpd is not None:
-                    ax1.fill_between(self.tx, merpd-sderpd, merpd+sderpd, color="grey", alpha=0.3)
-                ax1.plot(self.tx, merpd, label=ov.name)        
-                if plot_missing:
-                    ax2.plot(ov.tx, percmiss, alpha=0.3)
-        ax1.legend()
-                
+             
 
 #@typechecked
 class PupilData:
@@ -290,7 +120,8 @@ class PupilData:
                  event_onsets: Optional[PupilArray]=None,
                  event_labels: Optional[PupilArray]=None,
                  name: Optional[str]=None,
-                 keep_orig: bool=True):
+                 keep_orig: bool=True,
+                 fill_time_discontinuities: bool=True):
         """
         Parameters
         ----------
@@ -311,6 +142,9 @@ class PupilData:
         keep_orig: bool
             keep a copy of the original dataset? If `True`, a copy of the :class:`.PupilData` object
             as initiated in the constructor is stored in member `PupilData.original`
+        fill_time_discontinuities: bool
+            sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
+            when this option is True, such entries will be made and the signal set to 0 there
         """
         self.sy=np.array(pupil, dtype=np.float)
         if sampling_rate is None and time is None:
@@ -326,6 +160,41 @@ class PupilData:
             self.fs=np.round(1000./np.median(np.diff(self.tx)))
         else:
             self.fs=sampling_rate
+            
+        if fill_time_discontinuities:
+            ## find gaps in the time-vector
+            tx=self.tx
+            sy=self.sy
+            stepsize=np.median(np.diff(tx))
+            n=tx.size
+            gaps_end_ix=np.where(np.r_[stepsize,np.diff(tx)]>2*stepsize)[0]
+            ngaps=gaps_end_ix.size
+            if ngaps!=0:
+                ## at least one gap here
+                print("> Filling in %i gaps"%ngaps)
+                gaps_start_ix=gaps_end_ix-1
+                print( ((tx[gaps_end_ix]-tx[gaps_start_ix])/1000), "seconds" )
+                
+                ntx=[tx[0:gaps_start_ix[0]]] # initial
+                nsy=[sy[0:gaps_start_ix[0]]]
+                for i in range(ngaps):
+                    start,end=gaps_start_ix[i], gaps_end_ix[i]
+                    # fill in the gap
+                    ntx.append( np.linspace(tx[start],tx[end], int((tx[end]-tx[start])/stepsize), endpoint=False) )
+                    nsy.append( np.zeros(ntx[-1].size) )
+
+                    # append valid signal
+                    if i==ngaps-1:
+                        nstart=n
+                    else:
+                        nstart=gaps_start_ix[i+1]
+                    ntx.append( tx[end:nstart] )
+                    nsy.append( sy[end:nstart] )
+
+                ntx=np.concatenate(ntx)
+                nsy=np.concatenate(nsy) 
+                self.tx=ntx
+                self.sy=nsy
             
         if event_onsets is None:
             self.event_onsets=np.array([], dtype=np.float)
@@ -728,6 +597,7 @@ class PupilData:
                     else:
                         sblink=max(0,sblink-startix)
                         eblink=min(endix-startix-1,eblink-startix)
+                    
                     plt.gca().axvspan(tx[sblink],tx[eblink],color="red", alpha=0.2)
                 
                 
@@ -776,7 +646,7 @@ class PupilData:
             overlay_labels+=("model",)
         self._plot(plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated)
 
-    def plot_segments(self, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), **kwargs):
+    def plot_segments(self, overlay=None, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
         """
         Plot the whole dataset chunked up into segments (usually to a PDF file).
 
@@ -816,6 +686,10 @@ class PupilData:
         for start,end in segments:
             plt.figure(figsize=figsize)
             self.plot( (start,end), units="min", **kwargs)
+            if overlay is not None:
+                overlay.plot( (start, end), units="min", **kwargs)  
+            if ylim is not None:
+                plt.ylim(*ylim)
             figs.append(plt.gcf())
 
 
@@ -1388,7 +1262,7 @@ class PupilData:
                     baselines[i]=np.mean(erpd[i,blwin_ix[0]:blwin_ix[1]])
                     erpd[i,:]-=baselines[i]
 
-        return ERPDSingleSubject(self, erpd_name, txw, erpd, missing, baselines)
+        return ERPD(erpd_name, txw, erpd, missing, baselines)
     
 
     

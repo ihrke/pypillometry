@@ -81,14 +81,6 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset):
     n=sym.size
 
     # find first negative vel-crossing 
-    #onsets=np.where(vel<=vel_onset)[0]
-    #onsets=onsets[np.r_[np.diff(onsets),10]>1]
-
-    #offsets=np.where(vel>=vel_offset)[0]
-    #offsets=offsets[np.r_[10,np.diff(offsets)]>1]
-
-
-    # find first negative vel-crossing 
     onsets=np.where(vel<=vel_onset)[0]
     onsets_ixx=np.r_[np.diff(onsets),10]>1
     onsets_len=np.diff(np.r_[0,np.where(onsets_ixx)[0]])
@@ -116,9 +108,9 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset):
     ## if on- off-sets fall in a zero-region, grow until first non-zero sample
     blinks2=[]
     for (on,off) in blinks:
-        while(sy[on]==0):
+        while(on>0 and sy[on]==0):
             on-=1
-        while(sy[off]==0):
+        while(off<n-1 and sy[off]==0):
             off+=1
         blinks2.append([on,off])
     return np.array(blinks2)
