@@ -19,6 +19,7 @@ from hashlib import md5
 def zscale(y):
     return (y-np.nanmean(y))/np.nanstd(y)
 
+
 def p_asym_laplac(y, mu, sigma, tau):
     """
     Asymmetric laplace distribution https://en.wikipedia.org/wiki/Asymmetric_Laplace_distribution;
@@ -185,3 +186,15 @@ def helper_merge_blinks(b1,b2):
     off=b[-1,1]
     newb.append([on,off])
     return np.array(newb)
+
+
+def sizeof_fmt(num, suffix='B'):
+    """
+    Convert number of bytes in `num` into human-readable string representation.
+    Taken from https://stackoverflow.com/a/1094933
+    """
+    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)

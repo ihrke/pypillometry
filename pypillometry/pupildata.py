@@ -21,7 +21,7 @@ from scipy.interpolate import interp1d
 from scipy import interpolate
 import scipy
 from random import choice
-
+import pickle
 
 import collections.abc
 
@@ -73,7 +73,7 @@ class PupilData:
             self.history.append(event)
         except:
             self.history=[event]
-        
+            
     def print_history(self):
         """
         Pretty-print the history of the current dataset (which manipulations where done on it).
@@ -250,6 +250,15 @@ class PupilData:
         self.history=[]
        
     @keephistory
+    def drop_original(self, inplace=_inplace):
+        """
+        Drop original dataset from record (e.g., to save space).
+        """
+        obj=self if inplace else self.copy()
+        obj.original=None
+        return obj
+    
+    @keephistory
     def reset_time(self, t0: float=0, inplace=_inplace):
         """
         Resets time so that the time-array starts at time zero (t0).
@@ -359,14 +368,27 @@ class PupilData:
             response_estimated=self.response_estimated)        
         return summary
     
+    def size_bytes(self):
+        """
+        Return size of current dataset in bytes.
+        """
+        nbytes=len(pickle.dumps(self, -1))
+        return nbytes
+    
     def __repr__(self) -> str:
         """Return a string-representation of the dataset."""
         pars=self.summary()
         del pars["name"]
-        s="PupilData({name}):\n".format(name=self.name)
+        s="PupilData({name}, {size}):\n".format(name=self.name, size=sizeof_fmt(self.size_bytes()))
         flen=max([len(k) for k in pars.keys()])
         for k,v in pars.items():
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
+        s+=" History:\n *\n"
+        try:
+            for i,ev in enumerate(self.history):
+                s+=" "*(i+1)+"└ " + ev +"\n"
+        except:
+            s+=" └no history\n"
         return s
     
     @keephistory    
