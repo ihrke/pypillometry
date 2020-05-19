@@ -58,7 +58,7 @@ def smooth_window(x,window_len=11,window='hanning'):
     return y[(window_len-1):(-window_len+1)]
 
 
-def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset):
+def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_len=5, min_offset_len=5):
     """
     Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.
     
@@ -73,7 +73,11 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset):
     vel_onset: float
         velocity-threshold to detect the onset of the blink
     vel_offset: float
-        velocity-threshold to detect the offset of the blink    
+        velocity-threshold to detect the offset of the blink
+    min_onset_len: int
+        minimum number of consecutive samples that cross the threshold to detect onset
+    min_offset_len: int
+        minimum number of consecutive samples that cross the threshold to detect offset
     """
     # generate smoothed signal and velocity-profile
     sym=smooth_window(sy, smooth_winsize, "hanning")
@@ -85,14 +89,14 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset):
     onsets_ixx=np.r_[np.diff(onsets),10]>1
     onsets_len=np.diff(np.r_[0,np.where(onsets_ixx)[0]])
     onsets=onsets[onsets_ixx]
-    onsets=onsets[onsets_len>10]
+    onsets=onsets[onsets_len>min_onset_len]
 
     ## offset finding
     offsets=np.where(vel>=vel_offset)[0]
     offsets_ixx=np.r_[10,np.diff(offsets)]>1
     offsets_len=np.diff(np.r_[np.where(offsets_ixx)[0],offsets.size])
     offsets=offsets[offsets_ixx]
-    offsets=offsets[offsets_len>10]
+    offsets=offsets[offsets_len>min_offset_len]
     
     
     ## find corresponding on- and off-sets

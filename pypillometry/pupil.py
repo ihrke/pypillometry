@@ -322,6 +322,7 @@ def pupilresponse_nnls(tx, sy, event_onsets, fs, npar=10.1, tmax=930):
 
     return coef,pred,resid
     
+
 def stat_event_interval(tx,sy,event_onsets,interval,statfct=np.mean):
     """
     Return result of applying a statistical function to pupillometric data in a
@@ -355,28 +356,16 @@ def stat_event_interval(tx,sy,event_onsets,interval,statfct=np.mean):
     event_onsets=np.array(event_onsets)
     starts=event_onsets+interval[0]
     ends  =event_onsets+interval[1]
-    
-    # starts and ends as indices of the tx array
-    starts_ix=np.argmin(np.abs(np.tile(starts, (tx.size,1)).T-tx), axis=1)
-    ends_ix=np.argmin(np.abs(np.tile(ends, (tx.size,1)).T-tx), axis=1)
-    
-    # avoid empty intervals if sampling-freq is low
-    ends_ix[starts_ix==ends_ix] += 1
-    
-    if np.sum(starts<tx.min()):
-        print("WARN: %02i left interval boundaries lower than min"%(np.sum(starts<tx.min())))
-    if np.sum(starts>tx.max()):
-        print("WARN: %02i left interval boundaries higher than max"%(np.sum(starts>tx.max())))
-    if np.sum(ends<tx.min()):
-        print("WARN: %02i right interval boundaries lower than min"%(np.sum(ends<tx.min())))
-    if np.sum(ends>tx.max()):
-        print("WARN: %02i right interval boundaries higher than max"%(np.sum(ends>tx.max())))
-    
+
     res=np.zeros(event_onsets.size)
-    for i,interv in enumerate(zip(starts_ix,ends_ix)):
-        res[i] = statfct(sy[interv[0]:interv[1]])
-        
+
+    for i,interv in enumerate(zip(starts,ends)):
+        start_ix=np.argmin(np.abs(interv[0]-tx))
+        end_ix=np.argmin(np.abs(interv[1]-tx))
+        if start_ix==end_ix:
+            end_ix+=1
+        res[i]=statfct(sy[start_ix:end_ix])
     return res
-        
     
+        
     

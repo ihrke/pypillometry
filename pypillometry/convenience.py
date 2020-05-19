@@ -165,6 +165,10 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
     
 
 def helper_merge_blinks(b1,b2):
+    if b1.size==0:
+        return b2
+    elif b2.size==0:
+        return b1
     on=np.sort(np.concatenate( (b1[:,0], b2[:,0]) ))
     off=np.sort(np.concatenate( (b1[:,1], b2[:,1]) ))
     b=np.vstack((on,off)).T

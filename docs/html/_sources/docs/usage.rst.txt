@@ -108,12 +108,21 @@ Running :func:`PupilData.get_erpd` returns an Object of class :class:`ERPDSingle
 .. autosummary::
 
     PupilData.get_erpd
-    ERPDSingleSubject.summary
-    ERPDSingleSubject.plot_mean
+    
+.. currentmodule:: pypillometry.erpd
+
+.. autosummary::
+
+    group_erpd
+    ERPD.summary
+    ERPD.plot
+
     
 
 Baseline/Response estimation
 ----------------------------
+
+.. currentmodule:: pypillometry.pupildata
 
 .. autosummary::
 

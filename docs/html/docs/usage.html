@@ -152,7 +152,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot" title="pypillometry.pupildata.PupilData.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot</span></code></a>([plot_range, interactive, …])</p></td>
 <td><p>Make a plot of the pupil data using <cite>matplotlib</cite> or <a class="reference internal" href="api.html#pypillometry.convenience.plot_pupil_ipy" title="pypillometry.convenience.plot_pupil_ipy"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.convenience.plot_pupil_ipy()</span></code></a> if <cite>interactive=True</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot_segments" title="pypillometry.pupildata.PupilData.plot_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot_segments</span></code></a>([pdffile, interv, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot_segments" title="pypillometry.pupildata.PupilData.plot_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot_segments</span></code></a>([overlay, pdffile, …])</p></td>
 <td><p>Plot the whole dataset chunked up into segments (usually to a PDF file).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_plot" title="pypillometry.pupildata.PupilData.blinks_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_plot</span></code></a>([pdf_file, nrow, …])</p></td>
@@ -189,7 +189,7 @@
 </div>
 <div class="section" id="event-related-pupil-dilation">
 <h3>Event-Related Pupil Dilation<a class="headerlink" href="#event-related-pupil-dilation" title="Permalink to this headline">¶</a></h3>
-<p>Running <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.get_erpd()</span></code></a> returns an Object of class <a class="reference internal" href="api.html#pypillometry.pupildata.ERPDSingleSubject" title="pypillometry.pupildata.ERPDSingleSubject"><code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code></a>. This object has functions for plotting and summarising the event-related pupillary dilation.</p>
+<p>Running <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.get_erpd()</span></code></a> returns an Object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code>. This object has functions for plotting and summarising the event-related pupillary dilation.</p>
 <p><a class="reference internal" href="erpds.html"><span class="std std-ref">Here is an example for how to work with ERPDs</span></a>.</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -200,11 +200,22 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
 <td><p>Extract event-related pupil dilation (ERPD).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.ERPDSingleSubject.summary" title="pypillometry.pupildata.ERPDSingleSubject.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPDSingleSubject.summary</span></code></a>()</p></td>
+</tbody>
+</table>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.erpd.group_erpd" title="pypillometry.erpd.group_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">group_erpd</span></code></a>(datasets, erpd_name, event_select)</p></td>
+<td><p>Calculate group-level ERPDs by applying <cite>subj_meanfct</cite> to each subj-level ERPD.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.erpd.ERPD.summary" title="pypillometry.erpd.ERPD.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPD.summary</span></code></a>()</p></td>
 <td><p>Return a summary of the <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPDSingleSubject.plot_mean</span></code></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.erpd.ERPD.plot" title="pypillometry.erpd.ERPD.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPD.plot</span></code></a>([overlays, meanfct, varfct, …])</p></td>
+<td><p>Plot mean and error-ribbons using <cite>varct</cite>.</p></td>
 </tr>
 </tbody>
 </table>

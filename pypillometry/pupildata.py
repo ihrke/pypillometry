@@ -239,6 +239,8 @@ class PupilData:
         
         ## interpolated mask
         self.interpolated_mask=np.zeros(len(self), dtype=np.int)
+        self.missing=np.zeros(len(self), dtype=np.int)
+        self.missing[self.sy==0]=1
         
         self.original=None
         if keep_orig: 
@@ -343,8 +345,8 @@ class PupilData:
         summary=dict(
             name=self.name,
             n=len(self),
-            nmiss=np.sum(np.isnan(self.sy))+np.sum(self.sy==0),
-            perc_miss=(np.sum(np.isnan(self.sy))+np.sum(self.sy==0))/len(self)*100.,
+            nmiss=np.sum(self.missing),#np.sum(np.isnan(self.sy))+np.sum(self.sy==0),
+            perc_miss=np.sum(self.missing)/len(self)*100.,#(np.sum(np.isnan(self.sy))+np.sum(self.sy==0))/len(self)*100.,
             nevents=self.nevents(), 
             nblinks=self.nblinks(),
             ninterpolated=self.interpolated_mask.sum(),
@@ -595,7 +597,7 @@ class PupilData:
                     if eblink<startix or sblink>endix:
                         continue
                     else:
-                        sblink=max(0,sblink-startix)
+                        sblink=min(tx.size-1, max(0,sblink-startix))
                         eblink=min(endix-startix-1,eblink-startix)
                     
                     plt.gca().axvspan(tx[sblink],tx[eblink],color="red", alpha=0.2)
@@ -744,7 +746,7 @@ class PupilData:
         obj.baseline_estimated=True
         return obj
 
-    def stat_per_event(self, interval: Tuple[float,float], statfct: Callable=np.mean):
+    def stat_per_event(self, interval: Tuple[float,float], event_select=None, statfct: Callable=np.mean, return_missing: Optional[str]=None):
         """
         Return result of applying a statistical function to pupillometric data in a
         given interval relative to event-onsets. For example, extract mean 
@@ -752,19 +754,49 @@ class PupilData:
 
         Parameters
         -----------
+        event_select: str or function
+            variable describing which events to select and align to
+            - if str: use all events whose label contains the string
+            - if function: apply function to all labels, use those where the function returns True
+        
         interval : tuple (min,max)
             time-window in ms relative to event-onset (0 is event-onset)
 
         statfct : function
             function mapping np.array to a single number
 
+        return_missing: None, "nmiss", "prop"
+            if None, only an array with the stats per event is return
+            if "nmiss", returns a tuple (stat, nmiss) where `nmiss` is the number of missing vales in the timewin
+            if "prop", return a tuple (stat, prop_miss) where `prop_miss` is the proportion missing vales in the timewin
+    
         Returns
         --------
 
         result: np.array
             number of event-onsets long result array
         """
-        return stat_event_interval(self.tx, self.sy, self.event_onsets, interval, statfct)
+        if callable(event_select):
+            event_ix=np.array([bool(event_select(evlab)) for evlab in self.event_labels])
+        elif isinstance(event_select, str):
+            event_ix=np.array([event_select in evlab for evlab in self.event_labels])
+        elif event_select is None:
+            event_ix=np.arange(self.nevents())
+        else:
+            raise ValueError("event_select must be string or function")
+        
+        stat =stat_event_interval(self.tx, self.sy, self.event_onsets[event_ix], interval, statfct)
+        if return_missing=="nmiss":
+            nmiss=stat_event_interval(self.tx, np.logical_or(self.missing, self.interpolated_mask), 
+                                      self.event_onsets[event_ix], interval, np.sum)
+            ret=(stat,nmiss)
+        elif return_missing=="prop":
+            prop_miss=stat_event_interval(self.tx, np.logical_or(self.missing, self.interpolated_mask), 
+                                          self.event_onsets[event_ix], interval, np.mean)
+            ret=(stat,prop_miss)            
+        else: 
+            ret=stat
+        return ret
     
     @keephistory
     def estimate_response(self, npar: Union[str,float]="free", tmax: Union[str,float]="free", 
@@ -820,6 +852,8 @@ class PupilData:
     @keephistory
     def blinks_detect(self, min_duration:float=20, blink_val:float=0,
                       winsize: float=11, vel_onset: float=-5, vel_offset: float=5, 
+                      min_onset_len: int=5, min_offset_len: int=5,
+                      strategies: List[str]=["zero","velocity"],
                       units="ms", inplace=_inplace):
         """
         Detect blinks in the pupillary signal using several strategies.
@@ -847,6 +881,14 @@ class PupilData:
         vel_offset:
             positive velocity that needs to be exceeded; arbitrary units that depend on
             sampling rate etc
+        min_onset_len: int
+            minimum number of consecutive samples that crossed threshold in the velocity
+            profile to detect as onset (to avoid noise-induced changes)
+        min_offset_len: int
+            minimum number of consecutive samples that crossed threshold in the velocity
+            profile to detect as offset (to avoid noise-induced changes)            
+        strategies: list of strategies to use
+            so far, use a list containing any combination of "zero" and "velocity"
         units: str
             one of "ms", "sec", "min", "h"
         inplace: bool
@@ -863,9 +905,21 @@ class PupilData:
 
         obj=self if inplace else self.copy()
         
-        ## detect blinks with the two methods
-        blinks_vel=detect_blinks_velocity(self.sy, winsize_ix, vel_onset, vel_offset)
-        blinks_zero=detect_blinks_zero(self.sy, 1, blink_val)
+        # check for unknown strategies
+        for strat in strategies:
+            if strat not in ["zero", "velocity"]:
+                print("WARN: strategy '%s' unknown"%strat)
+        
+        ## detect blinks with the different strategies
+        if "velocity" in strategies:
+            blinks_vel=detect_blinks_velocity(self.sy, winsize_ix, vel_onset, vel_offset, min_onset_len, min_offset_len)
+        else: 
+            blinks_vel=np.array([])
+            
+        if "zero" in strategies:
+            blinks_zero=detect_blinks_zero(self.sy, 1, blink_val)
+        else:
+            blinks_zero=np.array([])
 
         ## merge the two blinks
         blinks=helper_merge_blinks(blinks_vel, blinks_zero)
@@ -1047,6 +1101,8 @@ class PupilData:
                                      kind=interp_type, bounds_error=False, fill_value=0)
         syr=f(self.tx)
         obj.sy=syr
+        
+        
         return obj
     
     @keephistory
@@ -1249,7 +1305,7 @@ class PupilData:
                 off=self.tx.size
 
             erpd[i,onl:offl]=self.sy[on:off]
-            missing[i,onl:offl]=self.interpolated_mask[on:off]
+            missing[i,onl:offl]=np.logical_or(self.interpolated_mask[on:off], self.missing[on:off])
 
         baselines=[None for _ in range(nev)]
         if baseline_win is not None:

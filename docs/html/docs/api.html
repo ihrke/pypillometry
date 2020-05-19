@@ -196,7 +196,7 @@ when this option is True, such entries will be made and the signal set to 0 ther
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.blinks_detect">
-<code class="sig-name descname">blinks_detect</code><span class="sig-paren">(</span><em class="sig-param">min_duration=20</em>, <em class="sig-param">blink_val=0</em>, <em class="sig-param">winsize=11</em>, <em class="sig-param">vel_onset=-5</em>, <em class="sig-param">vel_offset=5</em>, <em class="sig-param">units='ms'</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_detect" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">blinks_detect</code><span class="sig-paren">(</span><em class="sig-param">min_duration=20, blink_val=0, winsize=11, vel_onset=-5, vel_offset=5, min_onset_len=5, min_offset_len=5, strategies=['zero', 'velocity'], units='ms', inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_detect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect blinks in the pupillary signal using several strategies.
 First, blinks are detected as consecutive sequence of <cite>blink_val</cite>
 (f.eks., 0 or NaN). Second, blinks are defined as everything between
@@ -215,6 +215,11 @@ whether there is a blink (1) or not (0).</p>
 sampling rate etc</p></li>
 <li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – positive velocity that needs to be exceeded; arbitrary units that depend on
 sampling rate etc</p></li>
+<li><p><strong>min_onset_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – minimum number of consecutive samples that crossed threshold in the velocity
+profile to detect as onset (to avoid noise-induced changes)</p></li>
+<li><p><strong>min_offset_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – minimum number of consecutive samples that crossed threshold in the velocity
+profile to detect as offset (to avoid noise-induced changes)</p></li>
+<li><p><strong>strategies</strong> (<em>list of strategies to use</em>) – so far, use a list containing any combination of “zero” and “velocity”</p></li>
 <li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – one of “ms”, “sec”, “min”, “h”</p></li>
 <li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
@@ -873,7 +878,7 @@ See <a class="reference external" href="https://figshare.com/articles/A_simple_w
 
 <dl class="function">
 <dt id="pypillometry.preproc.detect_blinks_velocity">
-<code class="sig-prename descclassname">pypillometry.preproc.</code><code class="sig-name descname">detect_blinks_velocity</code><span class="sig-paren">(</span><em class="sig-param">sy</em>, <em class="sig-param">smooth_winsize</em>, <em class="sig-param">vel_onset</em>, <em class="sig-param">vel_offset</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.preproc.detect_blinks_velocity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pypillometry.preproc.</code><code class="sig-name descname">detect_blinks_velocity</code><span class="sig-paren">(</span><em class="sig-param">sy</em>, <em class="sig-param">smooth_winsize</em>, <em class="sig-param">vel_onset</em>, <em class="sig-param">vel_offset</em>, <em class="sig-param">min_onset_len=5</em>, <em class="sig-param">min_offset_len=5</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.preproc.detect_blinks_velocity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.</p>
 <p>This works similarly to <a class="reference internal" href="#pypillometry.preproc.blink_onsets_mahot" title="pypillometry.preproc.blink_onsets_mahot"><code class="xref py py-func docutils literal notranslate"><span class="pre">blink_onsets_mahot()</span></code></a>.</p>
 <dl class="field-list simple">

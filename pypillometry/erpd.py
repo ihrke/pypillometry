@@ -132,6 +132,12 @@ class ERPD:
         ax1.legend()
         
 
+def plot_erpds(erpds):
+    """
+    Plot a list of ERPD objects.
+    """
+    erpds[0].plot(erpds[1:len(erpds)])
+    
 
 def group_erpd(datasets: List, erpd_name: str, event_select, 
                baseline_win: Optional[Tuple[float,float]]=None, 
