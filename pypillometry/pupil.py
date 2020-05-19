@@ -37,6 +37,7 @@ def pupil_kernel_t(t,npar,tmax):
     h: np.array
         PRF evaluated at `t`
     """
+    t=np.array(t)
     hmax=np.exp(-npar)*tmax**npar ## theoretical maximum
     h = t**(npar) * np.exp(-npar*t / tmax)   #Erlang gamma function Hoek & Levelt (1993)
     h=h/hmax
