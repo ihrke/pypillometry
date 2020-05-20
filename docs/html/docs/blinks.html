@@ -268,7 +268,7 @@ div.rendered_html tbody tr:hover {
 <h1>Blink preprocessing<a class="headerlink" href="#Blink-preprocessing" title="Permalink to this headline">¶</a></h1>
 <p>One important step in the processing of pupillometric data is the handling of blinks.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -280,43 +280,13 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <p>The first step is, of course, the identification of blinks. The function <code class="docutils literal notranslate"><span class="pre">blinks_detect()</span></code> looks for sequences of successive missing datapoints.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-(array([2291.,    0.,    0.,    0.,   24.,  171.,  437., 5505., 3550.,
-         523.]),
- array([   0. ,  106.2,  212.4,  318.6,  424.8,  531. ,  637.2,  743.4,
-         849.6,  955.8, 1062. ]),
- &lt;a list of 10 Patch objects&gt;)
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/docs_blinks_3_1.png" src="../_images/docs_blinks_3_1.png" />
-</div>
-</div>
-<p>function blink_summary() returning blink-summary object (dict with some fancy plotting/displaying)</p>
 <div class="section" id="Short,-successive-blinks">
 <h2>Short, successive blinks<a class="headerlink" href="#Short,-successive-blinks" title="Permalink to this headline">¶</a></h2>
 <p>Some subjects blink in quick succession so that the eye almost immediately starts closing again once it opens from the previous blink. In that case, it is very difficult to define the onset and offset of such blink sequences.</p>
 <p>Here is an example dataset recorded in our lab. We see a couple of “normal” blinks, as well as some fast sequences of sequential blinks (e.g., between seconds 131 and 134).</p>
 <p>We can detect the blinks using the <code class="docutils literal notranslate"><span class="pre">blinks_detect()</span></code> function and see that each of the blinks is independently represented (red background).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -327,12 +297,42 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">AttributeError</span>                            Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-4-8ed01f96c7eb&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> plt<span class="ansi-blue-fg">.</span>figure<span class="ansi-blue-fg">(</span>figsize<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">15</span><span class="ansi-blue-fg">,</span> <span class="ansi-cyan-fg">5</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> d2<span class="ansi-blue-fg">=</span>d<span class="ansi-blue-fg">.</span>copy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>blinks_detect<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">----&gt; 4</span><span class="ansi-red-fg"> </span>d2<span class="ansi-blue-fg">.</span>plot<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/work/projects/pupil/pypillometry/pypillometry/pupildata.py</span> in <span class="ansi-cyan-fg">plot</span><span class="ansi-blue-fg">(self, plot_range, interactive, baseline, response, model, highlight_blinks, highlight_interpolated, units)</span>
+<span class="ansi-green-intense-fg ansi-bold">    669</span>             overlays<span class="ansi-blue-fg">+=</span><span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>baseline<span class="ansi-blue-fg">+</span>self<span class="ansi-blue-fg">.</span>response<span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    670</span>             overlay_labels<span class="ansi-blue-fg">+=</span><span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;model&#34;</span><span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 671</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_plot<span class="ansi-blue-fg">(</span>plot_range<span class="ansi-blue-fg">,</span> overlays<span class="ansi-blue-fg">,</span> overlay_labels<span class="ansi-blue-fg">,</span> units<span class="ansi-blue-fg">,</span> interactive<span class="ansi-blue-fg">,</span> highlight_blinks<span class="ansi-blue-fg">,</span> highlight_interpolated<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    672</span>
+<span class="ansi-green-intense-fg ansi-bold">    673</span>     <span class="ansi-green-fg">def</span> plot_segments<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> overlay<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> pdffile<span class="ansi-blue-fg">:</span> Optional<span class="ansi-blue-fg">[</span>str<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> interv<span class="ansi-blue-fg">:</span> float<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">,</span> figsize<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">15</span><span class="ansi-blue-fg">,</span><span class="ansi-cyan-fg">5</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> ylim<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">~/work/projects/pupil/pypillometry/pypillometry/pupildata.py</span> in <span class="ansi-cyan-fg">_plot</span><span class="ansi-blue-fg">(self, plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated)</span>
+<span class="ansi-green-intense-fg ansi-bold">    573</span>
+<span class="ansi-green-intense-fg ansi-bold">    574</span>         ixx<span class="ansi-blue-fg">=</span>np<span class="ansi-blue-fg">.</span>logical_and<span class="ansi-blue-fg">(</span>evon<span class="ansi-blue-fg">&gt;=</span>start<span class="ansi-blue-fg">,</span> evon<span class="ansi-blue-fg">&lt;</span>end<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 575</span><span class="ansi-red-fg">         </span>evlab<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>event_labels<span class="ansi-blue-fg">[</span>ixx<span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">    576</span>         evon<span class="ansi-blue-fg">=</span>evon<span class="ansi-blue-fg">[</span>ixx<span class="ansi-blue-fg">]</span>
+<span class="ansi-green-intense-fg ansi-bold">    577</span>         overlays<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">(</span>ov<span class="ansi-blue-fg">[</span>startix<span class="ansi-blue-fg">:</span>endix<span class="ansi-blue-fg">]</span> <span class="ansi-green-fg">for</span> ov <span class="ansi-green-fg">in</span> overlays<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">AttributeError</span>: &#39;PupilData&#39; object has no attribute &#39;event_labels&#39;
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_6_0.png" src="../_images/docs_blinks_6_0.png" />
-</div>
+<div class="highlight"><pre>
+&lt;Figure size 1080x360 with 0 Axes&gt;
+</pre></div></div>
 </div>
 <p>If we apply the blink-detection algorithm implemented in <code class="docutils literal notranslate"><span class="pre">blinks_interp_mahot()</span></code>, bad things happen.</p>
 <p>Here, we set the <code class="docutils literal notranslate"><span class="pre">margin</span></code> parameter to 50 ms which seems to be reasonable for this subject. With the <code class="docutils literal notranslate"><span class="pre">plot=True</span></code> parameter, we can generate diagnostic plots that give us an idea whether the procedure worked satisfactorily. We see immediately that the interpolation (red curve) gives reasonable results for isolated blinks (e.g., blink 2 and 3) but fails spectacularly for situations where there are surrounding blinks (e.g., blinks 8 and 9).</p>
@@ -349,7 +349,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_8_0.png" src="../_images/docs_blinks_8_0.png" />
+<img alt="../_images/docs_blinks_6_0.png" src="../_images/docs_blinks_6_0.png" />
 </div>
 </div>
 <p>We see the problem even better when plotting the interpolated and the raw signal on top of each other: The orange, interpolated signal shows spurious peaks and throughs because of the badly picked interpolation points in many cases.</p>
@@ -367,7 +367,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_10_0.png" src="../_images/docs_blinks_10_0.png" />
+<img alt="../_images/docs_blinks_8_0.png" src="../_images/docs_blinks_8_0.png" />
 </div>
 </div>
 <p>One solution to cope with this situation, is to merge together sequences of short blinks to one large blink. The function <code class="docutils literal notranslate"><span class="pre">blinks_merge()</span></code> merges together blinks that are closer together than <code class="docutils literal notranslate"><span class="pre">distance</span></code> milliseconds. Here, we use the criterion of 150 ms and merge together blinks that are close than that.</p>
@@ -386,7 +386,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_12_0.png" src="../_images/docs_blinks_12_0.png" />
+<img alt="../_images/docs_blinks_10_0.png" src="../_images/docs_blinks_10_0.png" />
 </div>
 </div>
 <p>Running the blink-interpolation of this merged-blink dataset results in better results (even though we should in general be careful with this data as it contains quite a high percentage of missing data due to blinks). The blue curve is the raw data, the orange the previous interpolated dataset and the green curve is the interpolated dataset after merging close blinks.</p>
@@ -405,7 +405,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_blinks_14_0.png" src="../_images/docs_blinks_14_0.png" />
+<img alt="../_images/docs_blinks_12_0.png" src="../_images/docs_blinks_12_0.png" />
 </div>
 </div>
 </div>

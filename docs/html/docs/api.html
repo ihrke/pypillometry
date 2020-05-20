@@ -145,11 +145,11 @@ if <cite>False</cite>, make and return copy before making changes</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
-<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
 using <cite>sampling_rate</cite> (in ms)</p></li>
-<li><p><strong>pupil</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]) – pupillary data at times <cite>time</cite> assumed to be in ms</p></li>
-<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – time-onsets of any events that are to be modelled in the pupil</p></li>
-<li><p><strong>event_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
+<li><p><strong>pupil</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]) – pupillary data at times <cite>time</cite> assumed to be in ms</p></li>
+<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – time-onsets of any events that are to be modelled in the pupil</p></li>
+<li><p><strong>event_labels</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <code class="docutils literal notranslate"><span class="pre">None</span></code>]) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
 <li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – sampling-rate of the pupillary signal in Hz</p></li>
 <li><p><strong>keep_orig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object
 as initiated in the constructor is stored in member <cite>PupilData.original</cite></p></li>
@@ -345,6 +345,12 @@ if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pypillometry.pupildata.PupilData.drop_original">
+<code class="sig-name descname">drop_original</code><span class="sig-paren">(</span><em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.drop_original" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drop original dataset from record (e.g., to save space).</p>
 </dd></dl>
 
 <dl class="method">
@@ -562,6 +568,12 @@ if <cite>False</cite>, make and return copy before making changes</p></li>
 </dd></dl>
 
 <dl class="method">
+<dt id="pypillometry.pupildata.PupilData.size_bytes">
+<code class="sig-name descname">size_bytes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.size_bytes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return size of current dataset in bytes.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pypillometry.pupildata.PupilData.smooth_window">
 <code class="sig-name descname">smooth_window</code><span class="sig-paren">(</span><em class="sig-param">window='hanning'</em>, <em class="sig-param">winsize=11</em>, <em class="sig-param">inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.smooth_window" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply smoothing of the signal using a moving window. See <a class="reference internal" href="#pypillometry.preproc.smooth_window" title="pypillometry.preproc.smooth_window"><code class="xref py py-func docutils literal notranslate"><span class="pre">smooth_window()</span></code></a>.</p>
@@ -583,15 +595,21 @@ if <cite>False</cite>, make and return copy before making changes</p></li>
 
 <dl class="method">
 <dt id="pypillometry.pupildata.PupilData.stat_per_event">
-<code class="sig-name descname">stat_per_event</code><span class="sig-paren">(</span><em class="sig-param">interval</em>, <em class="sig-param">statfct=&lt;function mean&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.stat_per_event" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">stat_per_event</code><span class="sig-paren">(</span><em class="sig-param">interval</em>, <em class="sig-param">event_select=None</em>, <em class="sig-param">statfct=&lt;function mean&gt;</em>, <em class="sig-param">return_missing=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.stat_per_event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return result of applying a statistical function to pupillometric data in a
 given interval relative to event-onsets. For example, extract mean
 pupil-size in interval before trial onset.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>event_select</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>function</em>) – variable describing which events to select and align to
+- if str: use all events whose label contains the string
+- if function: apply function to all labels, use those where the function returns True</p></li>
 <li><p><strong>interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em> (</em><em>min</em><em>,</em><em>max</em><em>)</em>) – time-window in ms relative to event-onset (0 is event-onset)</p></li>
 <li><p><strong>statfct</strong> (<em>function</em>) – function mapping np.array to a single number</p></li>
+<li><p><strong>return_missing</strong> (<a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a><em>, </em><em>&quot;nmiss&quot;</em><em>, </em><em>&quot;prop&quot;</em>) – if None, only an array with the stats per event is return
+if “nmiss”, returns a tuple (stat, nmiss) where <cite>nmiss</cite> is the number of missing vales in the timewin
+if “prop”, return a tuple (stat, prop_miss) where <cite>prop_miss</cite> is the proportion missing vales in the timewin</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -753,7 +771,7 @@ Use as <code class="docutils literal notranslate"><span class="pre">pypillometry
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>overlays</strong> (single or sequence of <code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code>-objects) – the overlays will be added to the same plot</p></li>
 <li><p><strong>meanfct</strong> (<em>callable</em>) – mean-function to apply to the single-trial ERPDs for plotting</p></li>
-<li><p><strong>varfct</strong> (<em>callable</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – function to calculate error-bands (e.g., <a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.std.html#numpy.std" title="(in NumPy v1.17)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.std()</span></code></a> for standard-deviation
+<li><p><strong>varfct</strong> (<em>callable</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – function to calculate error-bands (e.g., <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.std.html#numpy.std" title="(in NumPy v1.18)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.std()</span></code></a> for standard-deviation
 or <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.sem.html#scipy.stats.sem" title="(in SciPy v1.4.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.stats.sem()</span></code></a> for standard-error)
 if None, no error bands are plotted</p></li>
 <li><p><strong>plot_missing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – plot percentage interpolated/missing data per time-point?</p></li>
@@ -815,6 +833,12 @@ if tuple, the mean value in the window in milliseconds (relative to <cite>time_w
 <dd class="field-odd"><p>an <a class="reference internal" href="#pypillometry.erpd.ERPD" title="pypillometry.erpd.ERPD"><code class="xref py py-class docutils literal notranslate"><span class="pre">ERPD</span></code></a> object for the group</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.erpd.plot_erpds">
+<code class="sig-prename descclassname">pypillometry.erpd.</code><code class="sig-name descname">plot_erpds</code><span class="sig-paren">(</span><em class="sig-param">erpds</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.erpd.plot_erpds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a list of ERPD objects.</p>
 </dd></dl>
 
 </div>
@@ -888,6 +912,8 @@ See <a class="reference external" href="https://figshare.com/articles/A_simple_w
 <li><p><strong>smooth_winsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> (</em><em>odd</em><em>)</em>) – size of the Hanning-window in sampling points</p></li>
 <li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the onset of the blink</p></li>
 <li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – velocity-threshold to detect the offset of the blink</p></li>
+<li><p><strong>min_onset_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – minimum number of consecutive samples that cross the threshold to detect onset</p></li>
+<li><p><strong>min_offset_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – minimum number of consecutive samples that cross the threshold to detect offset</p></li>
 </ul>
 </dd>
 </dl>
@@ -1455,6 +1481,13 @@ $ jupyter labextension install &#64;jupyter-widgets/jupyterlab-manager</p>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="pypillometry.convenience.sizeof_fmt">
+<code class="sig-prename descclassname">pypillometry.convenience.</code><code class="sig-name descname">sizeof_fmt</code><span class="sig-paren">(</span><em class="sig-param">num</em>, <em class="sig-param">suffix='B'</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.convenience.sizeof_fmt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert number of bytes in <cite>num</cite> into human-readable string representation.
+Taken from <a class="reference external" href="https://stackoverflow.com/a/1094933">https://stackoverflow.com/a/1094933</a></p>
 </dd></dl>
 
 <dl class="function">

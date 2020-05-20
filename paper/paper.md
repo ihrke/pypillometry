@@ -24,6 +24,13 @@ bibliography: paper.bib
 blub @mathot2018pupillometry
 
 
+Other packages:
+
+- https://github.com/dr-JT/pupillometry/ (only pre-processing, R, reduced functionality)
+- https://github.com/samhforbes/PupillometryR (more comprehensive, R)
+- `GazeR` https://link.springer.com/article/10.3758/s13428-020-01374-8 (https://github.com/dmirman/gazer)
+- 
+
 # Acknowledgements
 
 I acknowledge contributions from 

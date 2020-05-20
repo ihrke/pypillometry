@@ -17,9 +17,9 @@ class TestIO(unittest.TestCase):
         self.assertEqual(len(d), 60001)
     
     def test_pd_write_pickle(self):
-        d=create_fake_pupildata(ntrials=10)
+        d=pd_read_pickle("data/test.pd")#create_fake_pupildata(ntrials=10)
         fpath=tempfile.mkdtemp()
-        fname=os.path.join(fpath, "test.pd")
+        fname=os.path.join(fpath, "test2.pd")
         pd_write_pickle(d, fname)
         x=pd_read_pickle(fname)
         self.assertEqual(x.size_bytes(), d.size_bytes())
