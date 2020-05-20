@@ -272,10 +272,10 @@ class PupilData:
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes
         """
-        t0=self.tx.min()
+        tmin=self.tx.min()
         obj=self if inplace else self.copy()            
-        obj.tx=self.tx-t0
-        obj.event_onsets=self.event_onsets-t0
+        obj.tx=(self.tx-tmin)+t0
+        obj.event_onsets=(self.event_onsets-tmin)+t0
         return obj
         
     def write_file(self, fname:str):

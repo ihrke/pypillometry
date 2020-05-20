@@ -1,6 +1,6 @@
 import unittest
 import tempfile
-import os
+import os, pickle, hashlib
 import sys
 #sys.path.insert(0,"..")
 #import pypillometry as pp
@@ -24,7 +24,9 @@ class TestIO(unittest.TestCase):
         x=pd_read_pickle(fname)
         self.assertEqual(x.size_bytes(), d.size_bytes())
         self.assertEqual(x.name, d.name)
-        
+        dmd5=hashlib.md5(pickle.dumps(d,-1)).hexdigest()
+        xmd5=hashlib.md5(pickle.dumps(x,-1)).hexdigest()
+        self.assertEqual(dmd5,xmd5)
 
 if __name__ == '__main__':
     unittest.main()
