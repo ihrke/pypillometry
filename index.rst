@@ -13,7 +13,7 @@
 Example Notebooks
 -----------------
 
-These examples are available as executable Jupyter Notebooks from the `Github repository <https://github.com/ihrke/pypillometry/tree/master/docs>`_ (the files ending in `.ipynb`).
+These examples are available as executable Jupyter Notebooks from the `Github repository <https://github.com/ihrke/pypillometry/tree/master/docs>`_ (the files ending in `.ipynb`). The link to the notebook files is given at the end of each page.
 
 
 .. toctree::
@@ -21,7 +21,7 @@ These examples are available as executable Jupyter Notebooks from the `Github re
    :caption: Examples:
 
    docs/importdata
-   docs/pipe
+   docs/pipes
    docs/blinks
    docs/erpds
 

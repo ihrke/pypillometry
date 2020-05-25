@@ -51,11 +51,13 @@ Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object,
 
 
 
-
 Handling Blinks
 ^^^^^^^^^^^^^^^
 
-:ref:`An example for how to handle blinks </docs/blinks.ipynb>`
+Pupillometric data usually contain blinks which show up as missing data in the signal where the eyetracker is unable to record the size of the pupil.
+A range of functions are available for detecting and interpolating blinks. 
+
+More details and an example can be found in the notebook: :ref:`An example for how to handle blinks </docs/blinks.ipynb>`
 
 
 .. autosummary::
@@ -99,6 +101,8 @@ Plotting
     PupilData.blinks_plot
     plotpd
     plotpd_ia
+    PupilData.get_erpd
+
     
 
 Inspecting/Summarizing

@@ -77,7 +77,9 @@
 <p>Assuming you have generated a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object, a range of pre-processing functions are available.</p>
 <div class="section" id="handling-blinks">
 <h3>Handling Blinks<a class="headerlink" href="#handling-blinks" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference internal" href="blinks.html"><span class="std std-ref">An example for how to handle blinks</span></a></p>
+<p>Pupillometric data usually contain blinks which show up as missing data in the signal where the eyetracker is unable to record the size of the pupil.
+A range of functions are available for detecting and interpolating blinks.</p>
+<p>More details and an example can be found in the notebook: <a class="reference internal" href="blinks.html"><span class="std std-ref">An example for how to handle blinks</span></a></p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -173,6 +175,9 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.plotpd_ia" title="pypillometry.pupildata.plotpd_ia"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plotpd_ia</span></code></a>(*args[, figsize, baseline, events])</p></td>
 <td><p>Interactive plotting for multiple <cite>PupilData</cite> objects.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
+<td><p>Extract event-related pupil dilation (ERPD).</p></td>
 </tr>
 </tbody>
 </table>

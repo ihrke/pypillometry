@@ -32,6 +32,21 @@ extensions=['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon',
             'sphinx_math_dollar', 'sphinx.ext.mathjax', "m2r",'sphinx_autodoc_typehints',
             'sphinx.ext.intersphinx', 'sphinx.ext.autosummary', "nbsphinx"]
 
+nbsphinx_epilog = """
+
+.. raw:: html
+
+    <div class="admonition note">
+    This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/{{ env.doc2path(env.docname, base=None) }}">{{ env.doc2path(env.docname, base=None) }}</a>
+    <br>
+    Interactive version:
+    <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath={{ env.doc2path(env.docname, base=None)|e }}"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+    </div>
+
+"""
+
+nbsphinx_prolog=nbsphinx_epilog
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
