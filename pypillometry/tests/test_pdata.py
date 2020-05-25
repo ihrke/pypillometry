@@ -76,6 +76,39 @@ class TestPupilData(unittest.TestCase):
             d.downsample(101)
         d2=self.dfake.downsample(5, dsfac=True)
         self.assertAlmostEqual(d.fs, d2.fs)
+    def test_copy(self):
+        d=self.dfake.copy()
+        d.sy[0]=self.dfake.sy[0]+1.0
+        self.assertNotEqual(d.sy[0], self.dfake.sy[0])
+    def test_estimate_baseline(self):
+        d=self.dfake.estimate_baseline()
+        self.assertLess(np.sum(d.sy<d.baseline), 0.1*len(d))
+    def test_stat_per_event(self):
+        a1=self.dfake.stat_per_event([-100,0], return_missing=None)
+        a2=self.dfake.stat_per_event([-100,0], return_missing="nmiss")
+        a3=self.dfake.stat_per_event([-100,0], return_missing="prop")
+        self.assertEqual(a1.__class__, np.ndarray)
+        self.assertEqual(a2.__class__, tuple)
+        self.assertEqual(a3.__class__, tuple)
+    def test_estimate_response(self):
+        d=self.dfake.estimate_response()
+    def test_blinks_detect(self):
+        d=self.d.blinks_detect()
+    def test_blinks_merge(self):
+        d=self.d.blinks_detect()
+        d2=d.blinks_merge()
+    def test_blinks_merge(self):
+        d=self.d.blinks_detect().blinks_merge().blinks_interpolate()
+    def test_blinks_merge(self):
+        d=self.d.blinks_detect().blinks_merge().blinks_interp_mahot()
+    def test_get_erpd(self):
+        a=self.d.get_erpd("test", lambda x: True)
+        self.assertEqual(a.__class__, ERPD)
+    
+    
+    
+        
+        
     
         
 
