@@ -94,12 +94,12 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "We see that sampling rate, number o datapoints and more is automatically printed along with the history of all operations applied to the dataset. This information can also be retrieved separately and in a form useful for further processing using separate functions `summary()` and `get_history()`."
+    "We see that sampling rate, number o datapoints and more is automatically printed along with the history of all operations applied to the dataset. This information can also be retrieved separately and in a form useful for further processing the function `summary()` which returns the information in the form of a `dict`:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": 8,
    "metadata": {},
    "outputs": [
     {
@@ -121,7 +121,7 @@
        " 'response_estimated': False}"
       ]
      },
-     "execution_count": 4,
+     "execution_count": 8,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -131,217 +131,77 @@
    ]
   },
   {
-   "cell_type": "code",
-   "execution_count": 5,
+   "cell_type": "markdown",
    "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/plain": [
-       "[{'funcstring': 'reset_time()',\n",
-       "  'funcname': 'reset_time',\n",
-       "  'args': (),\n",
-       "  'kwargs': {}},\n",
-       " {'funcstring': 'blinks_detect()',\n",
-       "  'funcname': 'blinks_detect',\n",
-       "  'args': (),\n",
-       "  'kwargs': {}},\n",
-       " {'funcstring': 'sub_slice(4,6,units=min)',\n",
-       "  'funcname': 'sub_slice',\n",
-       "  'args': (4, 6),\n",
-       "  'kwargs': {'units': 'min'}},\n",
-       " {'funcstring': 'drop_original()',\n",
-       "  'funcname': 'drop_original',\n",
-       "  'args': (),\n",
-       "  'kwargs': {}},\n",
-       " {'funcstring': 'blinks_detect()',\n",
-       "  'funcname': 'blinks_detect',\n",
-       "  'args': (),\n",
-       "  'kwargs': {}},\n",
-       " {'funcstring': 'blinks_merge()',\n",
-       "  'funcname': 'blinks_merge',\n",
-       "  'args': (),\n",
-       "  'kwargs': {}},\n",
-       " {'funcstring': 'lowpass_filter(3)',\n",
-       "  'funcname': 'lowpass_filter',\n",
-       "  'args': (3,),\n",
-       "  'kwargs': {}},\n",
-       " {'funcstring': 'downsample(50)',\n",
-       "  'funcname': 'downsample',\n",
-       "  'args': (50,),\n",
-       "  'kwargs': {}}]"
-      ]
-     },
-     "execution_count": 5,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
    "source": [
-    "d.history"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 6,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "dd=pp.create_fake_pupildata(ntrials=10)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 7,
-   "metadata": {},
-   "outputs": [
-    {
-     "ename": "IndexError",
-     "evalue": "boolean index did not match indexed array along dimension 0; dimension is 0 but corresponding boolean dimension is 1",
-     "output_type": "error",
-     "traceback": [
-      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
-      "\u001b[0;31mIndexError\u001b[0m                                Traceback (most recent call last)",
-      "\u001b[0;32m<ipython-input-7-09de6860071b>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0md\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mapply_history\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mdd\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
-      "\u001b[0;32m~/work/projects/pupil/pypillometry/pypillometry/pupildata.py\u001b[0m in \u001b[0;36mapply_history\u001b[0;34m(self, obj)\u001b[0m\n\u001b[1;32m    102\u001b[0m         \"\"\"\n\u001b[1;32m    103\u001b[0m         \u001b[0;32mfor\u001b[0m \u001b[0mev\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mhistory\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 104\u001b[0;31m             \u001b[0mobj\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mgetattr\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mobj\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mev\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"funcname\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0mev\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"args\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mev\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"kwargs\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    105\u001b[0m         \u001b[0;32mreturn\u001b[0m \u001b[0mobj\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    106\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
-      "\u001b[0;32m~/work/projects/pupil/pypillometry/pypillometry/pupildata.py\u001b[0m in \u001b[0;36mwrapper\u001b[0;34m(*args, **kwargs)\u001b[0m\n\u001b[1;32m     45\u001b[0m     \u001b[0;34m@\u001b[0m\u001b[0mfunctools\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mwraps\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mfunc\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     46\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0mwrapper\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 47\u001b[0;31m         \u001b[0mobj\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mfunc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m**\u001b[0m\u001b[0mkwargs\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     48\u001b[0m         \u001b[0mfuncname\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mfunc\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m__name__\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     49\u001b[0m         \u001b[0margstr\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m\",\"\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mjoin\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"%s\"\u001b[0m\u001b[0;34m%\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mv\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32mfor\u001b[0m \u001b[0mv\u001b[0m \u001b[0;32min\u001b[0m \u001b[0margs\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
-      "\u001b[0;32m~/work/projects/pupil/pypillometry/pypillometry/pupildata.py\u001b[0m in \u001b[0;36mblinks_detect\u001b[0;34m(self, min_duration, blink_val, winsize, vel_onset, vel_offset, min_onset_len, min_offset_len, strategies, units, inplace)\u001b[0m\n\u001b[1;32m    954\u001b[0m         \u001b[0;31m## detect blinks with the different strategies\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    955\u001b[0m         \u001b[0;32mif\u001b[0m \u001b[0;34m\"velocity\"\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mstrategies\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 956\u001b[0;31m             \u001b[0mblinks_vel\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mdetect_blinks_velocity\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msy\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mwinsize_ix\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mvel_onset\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mvel_offset\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mmin_onset_len\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mmin_offset_len\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    957\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    958\u001b[0m             \u001b[0mblinks_vel\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mnp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0marray\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
-      "\u001b[0;32m~/work/projects/pupil/pypillometry/pypillometry/preproc.py\u001b[0m in \u001b[0;36mdetect_blinks_velocity\u001b[0;34m(sy, smooth_winsize, vel_onset, vel_offset, min_onset_len, min_offset_len)\u001b[0m\n\u001b[1;32m     89\u001b[0m     \u001b[0monsets_ixx\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mnp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mr_\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0mnp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mdiff\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0monsets\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;36m10\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m>\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     90\u001b[0m     \u001b[0monsets_len\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mnp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mdiff\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mnp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mr_\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0mnp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mwhere\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0monsets_ixx\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 91\u001b[0;31m     \u001b[0monsets\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0monsets\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0monsets_ixx\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     92\u001b[0m     \u001b[0monsets\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0monsets\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0monsets_len\u001b[0m\u001b[0;34m>\u001b[0m\u001b[0mmin_onset_len\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     93\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
-      "\u001b[0;31mIndexError\u001b[0m: boolean index did not match indexed array along dimension 0; dimension is 0 but corresponding boolean dimension is 1"
-     ]
-    }
-   ],
-   "source": [
-    "d.apply_history(dd)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 13,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "dd=dd.downsample(100).lowpass_filter(10)"
+    "The history is internally stored in `PupilData`'s `history` member and can be applied to another object for convenience. That way, a pipeline can be developed on a single dataset and later be transferred to a whole folder of other (similar) datasets.\n",
+    "\n",
+    "As an example, we create several \"fake\" datasets representing data from several subjects (each with 10 trials):"
    ]
   },
   {
    "cell_type": "code",
    "execution_count": 17,
    "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/plain": [
-       "PupilData(fake_pihodolo_fi_de_lu_re, 1.5MiB):\n",
-       " n                 : 2415\n",
-       " nmiss             : 0.0\n",
-       " perc_miss         : 0.0\n",
-       " nevents           : 20\n",
-       " nblinks           : 0\n",
-       " ninterpolated     : 0.0\n",
-       " blinks_per_min    : 0.0\n",
-       " fs                : 100\n",
-       " duration_minutes  : 0.4025\n",
-       " start_min         : 7.500064686639967e-05\n",
-       " end_min           : 0.4023618036278195\n",
-       " baseline_estimated: False\n",
-       " response_estimated: False\n",
-       " History:\n",
-       " *\n",
-       " └ downsample(100)\n",
-       "  └ lowpass_filter(10)\n",
-       "   └ downsample(100)\n",
-       "    └ lowpass_filter(10)"
-      ]
-     },
-     "execution_count": 17,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
+   "outputs": [],
    "source": [
-    "dd.apply_history(dd)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 6,
-   "metadata": {},
-   "outputs": [
-    {
-     "ename": "TypeError",
-     "evalue": "string indices must be integers",
-     "output_type": "error",
-     "traceback": [
-      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
-      "\u001b[0;31mTypeError\u001b[0m                                 Traceback (most recent call last)",
-      "\u001b[0;32m<ipython-input-6-198ee4acfa72>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0md\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mapply_history\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0md\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
-      "\u001b[0;32m~/work/projects/pupil/pypillometry/pypillometry/pupildata.py\u001b[0m in \u001b[0;36mapply_history\u001b[0;34m(self, obj)\u001b[0m\n\u001b[1;32m    102\u001b[0m         \"\"\"\n\u001b[1;32m    103\u001b[0m         \u001b[0;32mfor\u001b[0m \u001b[0mev\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mhistory\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 104\u001b[0;31m             \u001b[0mobj\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mgetattr\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mobj\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mev\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"funcname\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0mev\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"args\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mev\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"kwargs\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    105\u001b[0m         \u001b[0;32mreturn\u001b[0m \u001b[0mobj\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    106\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
-      "\u001b[0;31mTypeError\u001b[0m: string indices must be integers"
-     ]
-    }
-   ],
-   "source": [
-    "d.apply_history(d)"
+    "nsubj=10 # number of subjects\n",
+    "data={k:pp.create_fake_pupildata(ntrials=10, fs=500) for k in range(1,nsubj+1)}"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "This object stores also the complete history of the operations applied to the dataset and allows to transfer it to a new dataset."
+    "The `dict` `data` now contains ten `PupilData` datasets. We will now use the data from the first subject to create a pipeline of processing operations:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 30,
+   "execution_count": 19,
    "metadata": {},
    "outputs": [
     {
-     "data": {
-      "text/plain": [
-       "<bound method PupilData.reset_time of PupilData(test_re_mo_vi_fa_bu_mi_ma_mi, 331.0KiB):\n",
-       " n                 : 6001\n",
-       " nmiss             : 117.2\n",
-       " perc_miss         : 1.9530078320279955\n",
-       " nevents           : 56\n",
-       " nblinks           : 24\n",
-       " ninterpolated     : 0.0\n",
-       " blinks_per_min    : 11.998000333277787\n",
-       " fs                : 50\n",
-       " duration_minutes  : 2.0003333333333333\n",
-       " start_min         : 4.00015\n",
-       " end_min           : 6.0\n",
-       " baseline_estimated: False\n",
-       " response_estimated: False\n",
-       " History:\n",
-       " *\n",
-       " └ reset_time()\n",
-       "  └ blinks_detect()\n",
-       "   └ sub_slice(4,6,units=min)\n",
-       "    └ drop_original()\n",
-       "     └ blinks_detect()\n",
-       "      └ blinks_merge()\n",
-       "       └ lowpass_filter(3)\n",
-       "        └ downsample(50)\n",
-       ">"
-      ]
-     },
-     "execution_count": 30,
-     "metadata": {},
-     "output_type": "execute_result"
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "* fake_puhimawo_me_la\n",
+      "└ lowpass_filter(5)\n",
+      " └ downsample(100)\n"
+     ]
     }
    ],
    "source": [
-    "getattr(d, \"reset_time\")"
+    "template=data[1].lowpass_filter(5).downsample(100)\n",
+    "template.print_history()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We have stored the result of these operations in a new dataset `template` which contains a record of these operations. We can now easily apply identical operations on all the datasets using the `apply_history()` function:"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 24,
    "metadata": {},
-   "outputs": [],
-   "source": []
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "* fake_rufurona_su_so\n",
+      "└ lowpass_filter(5)\n",
+      " └ downsample(100)\n"
+     ]
+    }
+   ],
+   "source": [
+    "preproc_data={k:template.apply_history(d) for k,d in data.items()}\n",
+    "preproc_data[5].print_history()"
+   ]
   }
  ],
  "metadata": {

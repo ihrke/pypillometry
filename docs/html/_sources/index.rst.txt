@@ -21,6 +21,7 @@ These examples are available as executable Jupyter Notebooks from the `Github re
    :caption: Examples:
 
    docs/importdata
+   docs/pipe
    docs/blinks
    docs/erpds
 
