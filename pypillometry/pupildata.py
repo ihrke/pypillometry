@@ -55,7 +55,7 @@ def keephistory(func):
             allargs+=kwargstr
         fstr="{func}({allargs})".format(func=funcname, allargs=allargs)
         #fstr="{func}({argstr},{kwargstr})".format(func=funcname,argstr=argstr,kwargstr=kwargstr)
-        obj.add_to_history(fstr)
+        obj.add_to_history({"funcstring":fstr, "funcname":funcname, "args":args[1:], "kwargs":kwargs})
         return obj
     return wrapper
         
@@ -81,10 +81,29 @@ class PupilData:
         print("* "+self.name)
         try:
             for i,ev in enumerate(self.history):
-                print(" "*(i)+"└ " + ev)
+                print(" "*(i)+"└ " + ev["funcstring"])
         except:
             print("no history")
-    
+   
+    def apply_history(self, obj):
+        """
+        Apply history of operations done on `self` to `obj`.
+        
+        Parameters:
+        -----------
+        
+        obj: :class:`.PupilData`
+            object of class :class:`.PupilData` to which the operations are to be transferred
+            
+        Returns:
+        --------
+        
+        copy of the :class:`.PupilData`-object to which the operations in `self` were applied
+        """
+        for ev in self.history:
+            obj=getattr(obj, ev["funcname"])(*ev["args"], **ev["kwargs"])
+        return obj
+
     def __len__(self) -> int:
         """Return number of sampling points in the pupil data."""
         return self.sy.size
@@ -386,7 +405,7 @@ class PupilData:
         s+=" History:\n *\n"
         try:
             for i,ev in enumerate(self.history):
-                s+=" "*(i+1)+"└ " + ev +"\n"
+                s+=" "*(i+1)+"└ " + ev["funcstring"] +"\n"
         except:
             s+=" └no history\n"
         return s

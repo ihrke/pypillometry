@@ -63,9 +63,18 @@
 </div>
 <p><a class="reference internal" href="importdata.html"><span class="std std-ref">An example for importing data from Eyelink EDF-files</span></a></p>
 </div>
+<div class="section" id="pipeline-based-processing">
+<h2>Pipeline-based processing<a class="headerlink" href="#pipeline-based-processing" title="Permalink to this headline">¶</a></h2>
+<p><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> implements a pipeline-like approach where each operation executed on a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object returns a copy of the (modified) object. This enables the “chaining” of commands as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;data/test.pd&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">blinks_merge</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This command loads a data-file (<cite>test.pd</cite>), applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object <cite>d</cite>. This object stores also the complete history of the operations applied to the dataset and allows to transfer it to a new dataset.</p>
+<p>See the following page more on this: <a class="reference internal" href="pipes.html"><span class="std std-ref">Pipeline-based processing in pypillometry</span></a></p>
+</div>
 <div class="section" id="pre-processing-data">
 <h2>Pre-processing data<a class="headerlink" href="#pre-processing-data" title="Permalink to this headline">¶</a></h2>
-<p>Assuming you have generated a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object, you can use the following functions.</p>
+<p>Assuming you have generated a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object, a range of pre-processing functions are available.</p>
 <div class="section" id="handling-blinks">
 <h3>Handling Blinks<a class="headerlink" href="#handling-blinks" title="Permalink to this headline">¶</a></h3>
 <p><a class="reference internal" href="blinks.html"><span class="std std-ref">An example for how to handle blinks</span></a></p>
@@ -271,6 +280,7 @@
   <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#reading-data">Reading data</a></li>
+<li><a class="reference internal" href="#pipeline-based-processing">Pipeline-based processing</a></li>
 <li><a class="reference internal" href="#pre-processing-data">Pre-processing data</a><ul>
 <li><a class="reference internal" href="#handling-blinks">Handling Blinks</a></li>
 <li><a class="reference internal" href="#smoothing-low-pass-filtering">Smoothing/low-pass filtering</a></li>

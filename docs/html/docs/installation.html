@@ -48,20 +48,22 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/ihrke/pypillometry.git
 <span class="nb">cd</span> pypillometry
+pip install -r requirements.txt
 python setup.py install
 </pre></div>
 </div>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
-<p><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> requires Python3 and a range of standard numerical computing packages</p>
+<p><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> requires Python3 and a range of standard numerical computing packages (all of which listed in the file <cite>requirements.txt</cite>)</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://docs.scipy.org/doc/numpy/reference/index.html#module-numpy" title="(in NumPy v1.17)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/index.html#module-scipy" title="(in SciPy v1.4.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy</span></code></a> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">matplotlib</span></code></p></li>
+<li><p><a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.18)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/index.html#module-scipy" title="(in SciPy v1.4.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy</span></code></a> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">matplotlib</span></code></p></li>
 <li><p><a class="reference external" href="https://pystan.readthedocs.io/en/latest/api.html#module-pystan" title="(in PyStan v2.19.1.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code></a></p></li>
 </ul>
-<p>It is useful to access <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> through Jupyter or Jupyter Notebook, so installing those packages is also useful.</p>
-<div class="section" id="setup">
-<h3>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h3>
-<p>To install the requirements, either manually install all the packages mentioned above, or use <code class="docutils literal notranslate"><span class="pre">conda</span></code>.</p>
+<p>It is useful to access <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> through Jupyter or Jupyter Notebook, so installing those packages is also useful but not necessary.</p>
+<p>All requirements can be installed by running <cite>pip install -r requirements.txt</cite>.</p>
+<div class="section" id="notes">
+<h3>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h3>
+<p>To install the requirements, either use <cite>pip</cite> as described above, manually install all the packages, or use <code class="docutils literal notranslate"><span class="pre">conda</span></code>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda create -n pypil <span class="nv">python</span><span class="o">=</span><span class="m">3</span>
 $ conda activate pypil
 $ conda install anaconda
@@ -98,7 +100,7 @@ $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
   <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
 <li><a class="reference internal" href="#requirements">Requirements</a><ul>
-<li><a class="reference internal" href="#setup">Setup</a></li>
+<li><a class="reference internal" href="#notes">Notes</a></li>
 </ul>
 </li>
 </ul>

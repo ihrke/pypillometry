@@ -30,13 +30,25 @@ However, data that has been converted into :class:`PupilData`-objects can be eas
 :ref:`An example for importing data from Eyelink EDF-files </docs/importdata.ipynb>`
 
 
+Pipeline-based processing
+-------------------------
+
+:py:mod:`pypillometry` implements a pipeline-like approach where each operation executed on a :class:`~pypillometry.pupildata.PupilData`-object returns a copy of the (modified) object. This enables the "chaining" of commands as follows:
+
+.. code-block:: python
+
+    d=PupilData.from_file("data/test.pd").lowpass_filter(3).downsample(50).blinks_detect().blinks_merge()
 
 
+This command loads a data-file (`test.pd`), applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object `d`. This object stores also the complete history of the operations applied to the dataset and allows to transfer it to a new dataset.
+
+See the following page more on this: :ref:`Pipeline-based processing in pypillometry </docs/pipes.ipynb>`
 
 Pre-processing data
 -------------------
 
-Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object, you can use the following functions.
+Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object, a range of pre-processing functions are available. 
+
 
 
 

@@ -195,6 +195,17 @@ when this option is True, such entries will be made and the signal set to 0 ther
 </dd></dl>
 
 <dl class="method">
+<dt id="pypillometry.pupildata.PupilData.apply_history">
+<code class="sig-name descname">apply_history</code><span class="sig-paren">(</span><em class="sig-param">obj</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.apply_history" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply history of operations done on <cite>self</cite> to <cite>obj</cite>.</p>
+<dl class="simple">
+<dt>obj: <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a></dt><dd><p>object of class <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> to which the operations are to be transferred</p>
+</dd>
+</dl>
+<p>copy of the <a class="reference internal" href="#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object to which the operations in <cite>self</cite> were applied</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="pypillometry.pupildata.PupilData.blinks_detect">
 <code class="sig-name descname">blinks_detect</code><span class="sig-paren">(</span><em class="sig-param">min_duration=20, blink_val=0, winsize=11, vel_onset=-5, vel_offset=5, min_onset_len=5, min_offset_len=5, strategies=['zero', 'velocity'], units='ms', inplace=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.pupildata.PupilData.blinks_detect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Detect blinks in the pupillary signal using several strategies.

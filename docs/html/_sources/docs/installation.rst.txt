@@ -5,30 +5,33 @@ Installation
 
     git clone https://github.com/ihrke/pypillometry.git
     cd pypillometry
+    pip install -r requirements.txt
     python setup.py install
 
 
 Requirements
 ------------
 
-:mod:`pypillometry` requires Python3 and a range of standard numerical computing packages
+:mod:`pypillometry` requires Python3 and a range of standard numerical computing packages (all of which listed in the file `requirements.txt`)
 
 - :mod:`numpy`, :mod:`scipy` and :mod:`matplotlib`
 - :mod:`pystan` 
 
-It is useful to access :mod:`pypillometry` through Jupyter or Jupyter Notebook, so installing those packages is also useful.
+It is useful to access :mod:`pypillometry` through Jupyter or Jupyter Notebook, so installing those packages is also useful but not necessary.
 
-Setup 
+All requirements can be installed by running `pip install -r requirements.txt`.
+
+Notes
 ^^^^^
 
-To install the requirements, either manually install all the packages mentioned above, or use ``conda``.
+
+To install the requirements, either use `pip` as described above, manually install all the packages, or use ``conda``.
 
 .. code-block:: bash
 
     $ conda create -n pypil python=3
     $ conda activate pypil
     $ conda install anaconda 
-
 
 The ``anaconda`` package contains all the requirements except :mod:`pystan`.
 
