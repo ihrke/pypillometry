@@ -16,7 +16,9 @@
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Event-Related Pupil Dilations" href="erpds.html" />
+    <link rel="prev" title="Blink preprocessing" href="blinks.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -27,7 +29,14 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li> 
+        <li class="right" >
+          <a href="erpds.html" title="Event-Related Pupil Dilations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="blinks.html" title="Blink preprocessing"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -263,6 +272,277 @@ Interactive version:
 <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/plotting.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
 </div><div class="section" id="Plotting-pupillometric-data-for-exploration">
 <h1>Plotting pupillometric data for exploration<a class="headerlink" href="#Plotting-pupillometric-data-for-exploration" title="Permalink to this headline">¶</a></h1>
+<p>It is crucial to validate preprocessing steps by visually inspecting the results using plots. Therefore, <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> implements several plotting facilities that encourage active exploration of the dataset. Some of the plotting functions require a Jupyter-notebook with enable widgets (see Installation instructions) so that the plots can be changed interactively, others are purely :mod:<code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>-based.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">pypillometry</span> <span class="k">as</span> <span class="nn">pp</span>
+<span class="kn">import</span> <span class="nn">pylab</span> <span class="k">as</span> <span class="nn">plt</span> <span class="c1">## access matplotlib functions</span>
+
+<span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;../data/test.pd&quot;</span><span class="p">)</span>
+<span class="n">d2</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">create_fake_pupildata</span><span class="p">(</span><span class="n">ntrials</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Each <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> object has a default <code class="docutils literal notranslate"><span class="pre">plot()</span></code> function that, by default, plots the complete signal at once.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_plotting_3_0.png" src="../_images/docs_plotting_3_0.png" />
+</div>
+</div>
+<p>Often, the signal is too long to fit comfortably into one plot, therefore plot allows to specify a range by specifying the <code class="docutils literal notranslate"><span class="pre">plot_range=</span></code> argument with a <code class="docutils literal notranslate"><span class="pre">tuple</span></code> giving start end end of the plot. For longer recordings, it can be useful to specify the range in different time units by using <code class="docutils literal notranslate"><span class="pre">units=</span></code>. <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> supports <code class="docutils literal notranslate"><span class="pre">ms</span></code> (milliseconds), <code class="docutils literal notranslate"><span class="pre">sec</span></code> (seconds), <code class="docutils literal notranslate"><span class="pre">min</span></code> (minutes) and <code class="docutils literal notranslate"><span class="pre">h</span></code> (hours).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mf">4.5</span><span class="p">,</span> <span class="mf">4.7</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_plotting_5_0.png" src="../_images/docs_plotting_5_0.png" />
+</div>
+</div>
+<p>Note that the scale of the plots went all the way to zero because missing data is represented by <code class="docutils literal notranslate"><span class="pre">0</span></code> in the used eyetracker.</p>
+<p>When we detect and interpolate blinks (see <a class="reference external" href="/docs/html/docs/blinks.html">blinks-notebook</a>), the scale is adjusted and detected blinks highlighted in red.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">## detect and interpolate blinks</span>
+<span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<span class="n">d2</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">blinks_interp_mahot</span><span class="p">()</span>
+
+<span class="c1">## plot results</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">d2</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_plotting_7_0.png" src="../_images/docs_plotting_7_0.png" />
+</div>
+</div>
+<p>In order to enable interactive plotting, you can either use widget-based plotting in the jupyter notebook by using <code class="docutils literal notranslate"><span class="pre">interactive=True</span></code>, or pop-out the plot in <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>’s plotting window which allows zooming, moving etc.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">## produces plot with adjustable x-axis for exploring signal</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "966a6639c256407b8b3b3712b170391a", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">## pops out the plot in matplotlibs native plotting window</span>
+<span class="o">%</span><span class="k">matplotlib</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Using matplotlib backend: MacOSX
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">## reset to inline-plotting</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<p>In case you are interested in modeling the signal (see notebook <a class="reference external" href="/docs/html/docs/modeling.html">modeling pupillometric signal</a>), the <code class="docutils literal notranslate"><span class="pre">plot()</span></code> function allows to plot the different components (baseline and response-model) as well as the full model.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">d2</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span><span class="o">.</span><span class="n">estimate_baseline</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+INFO:pystan:COMPILING THE C++ CODE FOR MODEL anon_model_ec1601f2cecc50945e53225706c9626e NOW.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">FileNotFoundError</span>                         Traceback (most recent call last)
+<span class="ansi-green-fg">~/work/projects/pupil/pypillometry/pypillometry/convenience.py</span> in <span class="ansi-cyan-fg">StanModel_cache</span><span class="ansi-blue-fg">(model_code, model_name, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     78</span>     <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 79</span><span class="ansi-red-fg">         </span>sm <span class="ansi-blue-fg">=</span> pickle<span class="ansi-blue-fg">.</span>load<span class="ansi-blue-fg">(</span>open<span class="ansi-blue-fg">(</span>cache_fn<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;rb&#39;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     80</span>     <span class="ansi-green-fg">except</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-red-fg">FileNotFoundError</span>: [Errno 2] No such file or directory: &#39;cached-model-ec1601f2cecc50945e53225706c9626e.pkl&#39;
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">DistutilsExecError</span>                        Traceback (most recent call last)
+<span class="ansi-green-fg">/opt/anaconda3/envs/pypil/lib/python3.7/distutils/unixccompiler.py</span> in <span class="ansi-cyan-fg">link</span><span class="ansi-blue-fg">(self, target_desc, objects, output_filename, output_dir, libraries, library_dirs, runtime_library_dirs, export_symbols, debug, extra_preargs, extra_postargs, build_temp, target_lang)</span>
+<span class="ansi-green-intense-fg ansi-bold">    204</span>
+<span class="ansi-green-fg">--&gt; 205</span><span class="ansi-red-fg">                 </span>self<span class="ansi-blue-fg">.</span>spawn<span class="ansi-blue-fg">(</span>linker <span class="ansi-blue-fg">+</span> ld_args<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    206</span>             <span class="ansi-green-fg">except</span> DistutilsExecError <span class="ansi-green-fg">as</span> msg<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/opt/anaconda3/envs/pypil/lib/python3.7/distutils/ccompiler.py</span> in <span class="ansi-cyan-fg">spawn</span><span class="ansi-blue-fg">(self, cmd)</span>
+<span class="ansi-green-intense-fg ansi-bold">    909</span>     <span class="ansi-green-fg">def</span> spawn<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> cmd<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 910</span><span class="ansi-red-fg">         </span>spawn<span class="ansi-blue-fg">(</span>cmd<span class="ansi-blue-fg">,</span> dry_run<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>dry_run<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    911</span>
+
+<span class="ansi-green-fg">/opt/anaconda3/envs/pypil/lib/python3.7/distutils/spawn.py</span> in <span class="ansi-cyan-fg">spawn</span><span class="ansi-blue-fg">(cmd, search_path, verbose, dry_run)</span>
+<span class="ansi-green-intense-fg ansi-bold">     35</span>     <span class="ansi-green-fg">if</span> os<span class="ansi-blue-fg">.</span>name <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">&#39;posix&#39;</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 36</span><span class="ansi-red-fg">         </span>_spawn_posix<span class="ansi-blue-fg">(</span>cmd<span class="ansi-blue-fg">,</span> search_path<span class="ansi-blue-fg">,</span> dry_run<span class="ansi-blue-fg">=</span>dry_run<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     37</span>     <span class="ansi-green-fg">elif</span> os<span class="ansi-blue-fg">.</span>name <span class="ansi-blue-fg">==</span> <span class="ansi-blue-fg">&#39;nt&#39;</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/opt/anaconda3/envs/pypil/lib/python3.7/distutils/spawn.py</span> in <span class="ansi-cyan-fg">_spawn_posix</span><span class="ansi-blue-fg">(cmd, search_path, verbose, dry_run)</span>
+<span class="ansi-green-intense-fg ansi-bold">    158</span>                           <span class="ansi-blue-fg">&#34;command %r failed with exit status %d&#34;</span>
+<span class="ansi-green-fg">--&gt; 159</span><span class="ansi-red-fg">                           % (cmd, exit_status))
+</span><span class="ansi-green-intense-fg ansi-bold">    160</span>             <span class="ansi-green-fg">elif</span> os<span class="ansi-blue-fg">.</span>WIFSTOPPED<span class="ansi-blue-fg">(</span>status<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-red-fg">DistutilsExecError</span>: command &#39;x86_64-apple-darwin13.4.0-clang++&#39; failed with exit status 1
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">LinkError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-18-f36708538997&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>d2<span class="ansi-blue-fg">.</span>scale<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>estimate_baseline<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/work/projects/pupil/pypillometry/pypillometry/pupildata.py</span> in <span class="ansi-cyan-fg">wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     45</span>     <span class="ansi-blue-fg">@</span>functools<span class="ansi-blue-fg">.</span>wraps<span class="ansi-blue-fg">(</span>func<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     46</span>     <span class="ansi-green-fg">def</span> wrapper<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 47</span><span class="ansi-red-fg">         </span>obj<span class="ansi-blue-fg">=</span>func<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     48</span>         funcname<span class="ansi-blue-fg">=</span>func<span class="ansi-blue-fg">.</span>__name__
+<span class="ansi-green-intense-fg ansi-bold">     49</span>         argstr<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#34;,&#34;</span><span class="ansi-blue-fg">.</span>join<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">&#34;%s&#34;</span><span class="ansi-blue-fg">%</span><span class="ansi-blue-fg">(</span>v<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">for</span> v <span class="ansi-green-fg">in</span> args<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/work/projects/pupil/pypillometry/pypillometry/pupildata.py</span> in <span class="ansi-cyan-fg">estimate_baseline</span><span class="ansi-blue-fg">(self, method, inplace, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    776</span>         obj<span class="ansi-blue-fg">=</span>self <span class="ansi-green-fg">if</span> inplace <span class="ansi-green-fg">else</span> self<span class="ansi-blue-fg">.</span>copy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    777</span>         <span class="ansi-green-fg">if</span> method<span class="ansi-blue-fg">==</span><span class="ansi-blue-fg">&#34;envelope_iter_bspline_2&#34;</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 778</span><span class="ansi-red-fg">             </span>txd<span class="ansi-blue-fg">,</span>syd<span class="ansi-blue-fg">,</span>base2<span class="ansi-blue-fg">,</span>base1<span class="ansi-blue-fg">=</span>baseline_envelope_iter_bspline<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>tx<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>sy<span class="ansi-blue-fg">,</span>self<span class="ansi-blue-fg">.</span>event_onsets<span class="ansi-blue-fg">,</span>self<span class="ansi-blue-fg">.</span>fs<span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    779</span>             f<span class="ansi-blue-fg">=</span>interpolate<span class="ansi-blue-fg">.</span>interp1d<span class="ansi-blue-fg">(</span>txd<span class="ansi-blue-fg">,</span> base2<span class="ansi-blue-fg">,</span> kind<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#34;cubic&#34;</span><span class="ansi-blue-fg">,</span> bounds_error<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">False</span><span class="ansi-blue-fg">,</span> fill_value<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#34;extrapolate&#34;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    780</span>             obj<span class="ansi-blue-fg">.</span>baseline<span class="ansi-blue-fg">=</span>f<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>tx<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/work/projects/pupil/pypillometry/pypillometry/baseline.py</span> in <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span><span class="ansi-blue-fg">(tx, sy, event_onsets, fs, fsd, lp, lam_sig, lam_min, lam_max, verbose)</span>
+<span class="ansi-green-intense-fg ansi-bold">    291</span>     vprint<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">10</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#34;Compiling Stan model&#34;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    292</span>
+<span class="ansi-green-fg">--&gt; 293</span><span class="ansi-red-fg">     </span>sm <span class="ansi-blue-fg">=</span> StanModel_cache<span class="ansi-blue-fg">(</span>stan_code_baseline_model_asym_laplac<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    294</span>
+<span class="ansi-green-intense-fg ansi-bold">    295</span>     <span class="ansi-red-fg">## put the data for the model together</span>
+
+<span class="ansi-green-fg">~/work/projects/pupil/pypillometry/pypillometry/convenience.py</span> in <span class="ansi-cyan-fg">StanModel_cache</span><span class="ansi-blue-fg">(model_code, model_name, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     79</span>         sm <span class="ansi-blue-fg">=</span> pickle<span class="ansi-blue-fg">.</span>load<span class="ansi-blue-fg">(</span>open<span class="ansi-blue-fg">(</span>cache_fn<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;rb&#39;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     80</span>     <span class="ansi-green-fg">except</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">---&gt; 81</span><span class="ansi-red-fg">         </span>sm <span class="ansi-blue-fg">=</span> pystan<span class="ansi-blue-fg">.</span>StanModel<span class="ansi-blue-fg">(</span>model_code<span class="ansi-blue-fg">=</span>model_code<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     82</span>         <span class="ansi-green-fg">with</span> open<span class="ansi-blue-fg">(</span>cache_fn<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#39;wb&#39;</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">as</span> f<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">     83</span>             pickle<span class="ansi-blue-fg">.</span>dump<span class="ansi-blue-fg">(</span>sm<span class="ansi-blue-fg">,</span> f<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">/opt/anaconda3/envs/pypil/lib/python3.7/site-packages/pystan/model.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, file, charset, model_name, model_code, stanc_ret, include_paths, boost_lib, eigen_lib, verbose, obfuscate_model_name, extra_compile_args)</span>
+<span class="ansi-green-intense-fg ansi-bold">    347</span>
+<span class="ansi-green-intense-fg ansi-bold">    348</span>         <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 349</span><span class="ansi-red-fg">             </span>build_extension<span class="ansi-blue-fg">.</span>run<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    350</span>         <span class="ansi-green-fg">finally</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    351</span>             <span class="ansi-green-fg">if</span> redirect_stderr<span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/opt/anaconda3/envs/pypil/lib/python3.7/distutils/command/build_ext.py</span> in <span class="ansi-cyan-fg">run</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    338</span>
+<span class="ansi-green-intense-fg ansi-bold">    339</span>         <span class="ansi-red-fg"># Now actually compile and link everything.</span>
+<span class="ansi-green-fg">--&gt; 340</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>build_extensions<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    341</span>
+<span class="ansi-green-intense-fg ansi-bold">    342</span>     <span class="ansi-green-fg">def</span> check_extensions_list<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> extensions<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/opt/anaconda3/envs/pypil/lib/python3.7/distutils/command/build_ext.py</span> in <span class="ansi-cyan-fg">build_extensions</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    447</span>             self<span class="ansi-blue-fg">.</span>_build_extensions_parallel<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    448</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 449</span><span class="ansi-red-fg">             </span>self<span class="ansi-blue-fg">.</span>_build_extensions_serial<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    450</span>
+<span class="ansi-green-intense-fg ansi-bold">    451</span>     <span class="ansi-green-fg">def</span> _build_extensions_parallel<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/opt/anaconda3/envs/pypil/lib/python3.7/distutils/command/build_ext.py</span> in <span class="ansi-cyan-fg">_build_extensions_serial</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    472</span>         <span class="ansi-green-fg">for</span> ext <span class="ansi-green-fg">in</span> self<span class="ansi-blue-fg">.</span>extensions<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    473</span>             <span class="ansi-green-fg">with</span> self<span class="ansi-blue-fg">.</span>_filter_build_errors<span class="ansi-blue-fg">(</span>ext<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 474</span><span class="ansi-red-fg">                 </span>self<span class="ansi-blue-fg">.</span>build_extension<span class="ansi-blue-fg">(</span>ext<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    475</span>
+<span class="ansi-green-intense-fg ansi-bold">    476</span>     <span class="ansi-blue-fg">@</span>contextlib<span class="ansi-blue-fg">.</span>contextmanager
+
+<span class="ansi-green-fg">/opt/anaconda3/envs/pypil/lib/python3.7/distutils/command/build_ext.py</span> in <span class="ansi-cyan-fg">build_extension</span><span class="ansi-blue-fg">(self, ext)</span>
+<span class="ansi-green-intense-fg ansi-bold">    557</span>             debug<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>debug<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    558</span>             build_temp<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>build_temp<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">--&gt; 559</span><span class="ansi-red-fg">             target_lang=language)
+</span><span class="ansi-green-intense-fg ansi-bold">    560</span>
+<span class="ansi-green-intense-fg ansi-bold">    561</span>     <span class="ansi-green-fg">def</span> swig_sources<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">,</span> sources<span class="ansi-blue-fg">,</span> extension<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/opt/anaconda3/envs/pypil/lib/python3.7/distutils/ccompiler.py</span> in <span class="ansi-cyan-fg">link_shared_object</span><span class="ansi-blue-fg">(self, objects, output_filename, output_dir, libraries, library_dirs, runtime_library_dirs, export_symbols, debug, extra_preargs, extra_postargs, build_temp, target_lang)</span>
+<span class="ansi-green-intense-fg ansi-bold">    715</span>                   libraries<span class="ansi-blue-fg">,</span> library_dirs<span class="ansi-blue-fg">,</span> runtime_library_dirs<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    716</span>                   export_symbols<span class="ansi-blue-fg">,</span> debug<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">--&gt; 717</span><span class="ansi-red-fg">                   extra_preargs, extra_postargs, build_temp, target_lang)
+</span><span class="ansi-green-intense-fg ansi-bold">    718</span>
+<span class="ansi-green-intense-fg ansi-bold">    719</span>
+
+<span class="ansi-green-fg">/opt/anaconda3/envs/pypil/lib/python3.7/distutils/unixccompiler.py</span> in <span class="ansi-cyan-fg">link</span><span class="ansi-blue-fg">(self, target_desc, objects, output_filename, output_dir, libraries, library_dirs, runtime_library_dirs, export_symbols, debug, extra_preargs, extra_postargs, build_temp, target_lang)</span>
+<span class="ansi-green-intense-fg ansi-bold">    205</span>                 self<span class="ansi-blue-fg">.</span>spawn<span class="ansi-blue-fg">(</span>linker <span class="ansi-blue-fg">+</span> ld_args<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    206</span>             <span class="ansi-green-fg">except</span> DistutilsExecError <span class="ansi-green-fg">as</span> msg<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 207</span><span class="ansi-red-fg">                 </span><span class="ansi-green-fg">raise</span> LinkError<span class="ansi-blue-fg">(</span>msg<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    208</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    209</span>             log<span class="ansi-blue-fg">.</span>debug<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#34;skipping %s (up-to-date)&#34;</span><span class="ansi-blue-fg">,</span> output_filename<span class="ansi-blue-fg">)</span>
+
+<span class="ansi-red-fg">LinkError</span>: command &#39;x86_64-apple-darwin13.4.0-clang++&#39; failed with exit status 1
+</pre></div></div>
+</div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -288,6 +568,12 @@ Interactive version:
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo"/>
             </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="blinks.html"
+                        title="previous chapter">Blink preprocessing</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="erpds.html"
+                        title="next chapter">Event-Related Pupil Dilations</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -318,7 +604,14 @@ Interactive version:
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li> 
+        <li class="right" >
+          <a href="erpds.html" title="Event-Related Pupil Dilations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="blinks.html" title="Blink preprocessing"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
