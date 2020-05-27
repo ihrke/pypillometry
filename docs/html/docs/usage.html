@@ -233,8 +233,9 @@ A range of functions are available for detecting and interpolating blinks.</p>
 </div>
 <div class="section" id="event-related-pupil-dilation">
 <h3>Event-Related Pupil Dilation<a class="headerlink" href="#event-related-pupil-dilation" title="Permalink to this headline">¶</a></h3>
+<p>The average pupillometric signal, timelocked to repeating events during the experiment, is referred to as “Event-related pupil dilation” or ERPD. In <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code>, the functionality for this is implemented in the class <a class="reference internal" href="api.html#pypillometry.erpd.ERPD" title="pypillometry.erpd.ERPD"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.erpd.ERPD</span></code></a>.</p>
 <p>Running <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.get_erpd()</span></code></a> returns an Object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code>. This object has functions for plotting and summarising the event-related pupillary dilation.</p>
-<p><a class="reference internal" href="erpds.html"><span class="std std-ref">Here is an example for how to work with ERPDs</span></a>.</p>
+<p><a class="reference internal" href="erpds.html"><span class="std std-ref">Here is an example notebook for for how to work with ERPDs</span></a>.</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -267,6 +268,8 @@ A range of functions are available for detecting and interpolating blinks.</p>
 </div>
 <div class="section" id="modeling-the-pupillometric-signal">
 <h2>Modeling the pupillometric signal<a class="headerlink" href="#modeling-the-pupillometric-signal" title="Permalink to this headline">¶</a></h2>
+<p>For some applications, it is interesting to model the full pupillometric signal as consisting of a (tonic) baseline and a (phasic) response component.
+The package implements novel algorithms developed in our lab and documentation will become available here.</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -287,13 +290,18 @@ A range of functions are available for detecting and interpolating blinks.</p>
 </div>
 <div class="section" id="artificial-data">
 <h2>Artificial Data<a class="headerlink" href="#artificial-data" title="Permalink to this headline">¶</a></h2>
+<p>For validation and testing purposes, it can be useful to generate artificial datasets. The package implements a <a class="reference internal" href="api.html#pypillometry.pupildata.FakePupilData" title="pypillometry.pupildata.FakePupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FakePupilData</span></code></a> as inheriting from regular <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> and therefore shares all its functionality. In addition to that, <a class="reference internal" href="api.html#pypillometry.pupildata.FakePupilData" title="pypillometry.pupildata.FakePupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FakePupilData</span></code></a> stores “ground-truth” data and parameters that was used while creating the artificial data.</p>
+<p>The function <a class="reference internal" href="api.html#pypillometry.pupildata.create_fake_pupildata" title="pypillometry.pupildata.create_fake_pupildata"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_fake_pupildata()</span></code></a> allows to quickly create datasets generating according to a provided experimental structure (see the functions documentation for an overview over the many available options).</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.create_fake_pupildata" title="pypillometry.pupildata.create_fake_pupildata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_fake_pupildata</span></code></a>(**kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.FakePupilData" title="pypillometry.pupildata.FakePupilData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FakePupilData</span></code></a>(pupil[, sampling_rate, time, …])</p></td>
+<td><p>Simulated pupil data for validation purposes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.create_fake_pupildata" title="pypillometry.pupildata.create_fake_pupildata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_fake_pupildata</span></code></a>(**kwargs)</p></td>
 <td><p>Return a <code class="xref py py-class docutils literal notranslate"><span class="pre">pyillometry.pupildata.FakePupilData</span></code> object by buildling it with <a class="reference internal" href="api.html#pypillometry.fakedata.get_dataset" title="pypillometry.fakedata.get_dataset"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.fakedata.get_dataset()</span></code></a>.</p></td>
 </tr>
 </tbody>

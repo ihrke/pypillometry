@@ -148,9 +148,11 @@ See the notebook :ref:`Summarizing pupillometric data </docs/summary.ipynb>` for
 Event-Related Pupil Dilation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+The average pupillometric signal, timelocked to repeating events during the experiment, is referred to as "Event-related pupil dilation" or ERPD. In :mod:`pypillometry`, the functionality for this is implemented in the class :class:`pypillometry.erpd.ERPD`.
+
 Running :func:`PupilData.get_erpd` returns an Object of class :class:`ERPDSingleSubject`. This object has functions for plotting and summarising the event-related pupillary dilation. 
 
-:ref:`Here is an example for how to work with ERPDs </docs/erpds.ipynb>`.
+:ref:`Here is an example notebook for for how to work with ERPDs </docs/erpds.ipynb>`.
 
 
 .. autosummary::
@@ -170,6 +172,9 @@ Running :func:`PupilData.get_erpd` returns an Object of class :class:`ERPDSingle
 Modeling the pupillometric signal
 ---------------------------------
 
+For some applications, it is interesting to model the full pupillometric signal as consisting of a (tonic) baseline and a (phasic) response component. 
+The package implements novel algorithms developed in our lab and documentation will become available here.
+
 .. currentmodule:: pypillometry.pupildata
 
 .. autosummary::
@@ -181,8 +186,12 @@ Modeling the pupillometric signal
 Artificial Data
 ---------------
 
-.. autosummary::
+For validation and testing purposes, it can be useful to generate artificial datasets. The package implements a :class:`FakePupilData` as inheriting from regular :class:`PupilData` and therefore shares all its functionality. In addition to that, :class:`FakePupilData` stores "ground-truth" data and parameters that was used while creating the artificial data.
 
+The function :func:`create_fake_pupildata` allows to quickly create datasets generating according to a provided experimental structure (see the functions documentation for an overview over the many available options).
+
+.. autosummary::
+    FakePupilData
     create_fake_pupildata
 
 
