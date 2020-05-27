@@ -2,11 +2,17 @@
 
 Overview
 ========
-
+   
 The package is divided into separate sub-modules that solve specific subtasks (pre-processing, baseline estimation etc). The functions in these modules operate on plain :py:mod:`numpy.array`'s or standard Python-structures. While these functions can be used directly, an easier approach is to use the class :py:class:`~pypillometry.pupildata.PupilData` which wraps these functions in a convenient way. Each object of class :py:class:`~pypillometry.pupildata.PupilData` represents one dataset of pupillometric data, including time, signal and external events (trial onsets, stimulus presentations, responses, etc). By calling the member functions of such an object, the corresponding function from one of the sub-modules is called using the appropriate arguments.
 
-Reading data
-------------
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   usage
+
+Reading/writing pupillometric data
+----------------------------------
 
 So far, reading in data is not part of the :py:mod:`pypillometry`-package. This is because the format of the eyetracker-files will vary depending on the setup of the eyetracker (there are many ways to represent event-triggers) and the actual model of the eyetracker. Python provides excellent functionality to parse text-based datafiles and we therefore give guidance how to use these tools rather than trying to implement that functionality in our package.
 
@@ -37,7 +43,7 @@ Pipeline-based processing
 
 .. code-block:: python
 
-    d=PupilData.from_file("data/test.pd").lowpass_filter(3).downsample(50).blinks_detect().blinks_merge()
+    d=PupilData.from_file("data/test.pd").blinks_detect().blinks_merge().lowpass_filter(3).downsample(50)
 
 
 This command loads a data-file (`test.pd`), applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object `d`. This object stores also the complete history of the operations applied to the dataset and allows to transfer it to a new dataset.
@@ -47,7 +53,11 @@ See the following page more on this: :ref:`Pipeline-based processing in pypillom
 Pre-processing data
 -------------------
 
-Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object, a range of pre-processing functions are available. 
+Assuming you have generated a :class:`~pypillometry.pupildata.PupilData` object, a range of pre-processing functions are available. The main pre-processing issues with pupillometric data are:
+
+- artifacts and missing data due to blinks (these can usually be corrected/interpolated)
+- missing data/artifacts from other sources (e.g., looking away, eyetracker losing pupil for other reasons)
+- smoothing/downsampling to get rid of high-freq low-amp noise
 
 
 
@@ -59,6 +69,7 @@ A range of functions are available for detecting and interpolating blinks.
 
 More details and an example can be found in the notebook: :ref:`An example for how to handle blinks </docs/blinks.ipynb>`
 
+The following is a list of functions for that purpose. Note that the functions take multiple arguments that control the algorithms behaviour. It is often crucial to adjust the parameters on an individual level since the artifacts tend to be quite dissimilar between subjects (but usually stable within-subject). All arguments are documented in the :ref:`API-docs </docs/api.rst>`.
 
 .. autosummary::
 
@@ -71,6 +82,10 @@ More details and an example can be found in the notebook: :ref:`An example for h
 Smoothing/low-pass filtering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+In most cases, pupillometric data should be low-pass filtered (e.g., using a cutoff of 4 Hz `Jackson & Sirois, 2009 <https://doi.org/10.1111/j.1467-7687.2008.00805.x>`_) or smoothed in other ways (e.g., with a running-window). 
+
+Tge following is a list of functions for smoothing:
+
 .. autosummary::
 
     PupilData.lowpass_filter
@@ -79,6 +94,10 @@ Smoothing/low-pass filtering
 
 Changing/Slicing data
 ^^^^^^^^^^^^^^^^^^^^^
+
+Often, pupillometric data needs to be trimmed, e.g., to remove pre-experiment recordings or to remove unusable parts of the data (:func:`PupilData.sub_slice`). The timing should usually be realigned to the start of the experiment (:func:`PupilData.reset_time`). Furthermore, a scaling (e.g., Z-transform) of the pupil-data can be useful for comparing multiple subjects (:func:`PupilData.scale`).
+
+The following is a list of available functions for these purposes:
 
 .. autosummary::
 
@@ -90,6 +109,10 @@ Changing/Slicing data
 
 Plotting/Summarizing Data
 -------------------------
+
+It is crucial to validate preprocessing steps by visually inspecting the results using plots. Therefore, :mod:`pypillometry` implements several plotting facilities that encourage active exploration of the dataset. 
+
+Please follow the tutorial :ref:`Plotting of pupillometric data </docs/plotting.ipynb>`
 
 Plotting
 ^^^^^^^^
@@ -153,4 +176,5 @@ Artificial Data
 .. autosummary::
 
     create_fake_pupildata
+
 

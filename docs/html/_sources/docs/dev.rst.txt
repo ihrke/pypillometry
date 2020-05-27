@@ -1,13 +1,16 @@
 Developers
 ==========
 
+.. image:: https://travis-ci.com/ihrke/pypillometry.svg?branch=master
+    :target: https://travis-ci.com/ihrke/pypillometry
+
 Contibuting
 -----------
 
 Development of this package happens on GitHub: https://github.com/ihrke/pypillometry
 
-Issue-tracker: https://github.com/ihrke/pypillometry/issues
-PR's welcome: https://github.com/ihrke/pypillometry/pulls
+- Issue-tracker: https://github.com/ihrke/pypillometry/issues
+- PR's welcome: https://github.com/ihrke/pypillometry/pulls
 
 Building docs
 -------------

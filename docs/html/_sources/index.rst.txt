@@ -6,24 +6,12 @@
 
    docs/installation
    docs/usage
+   docs/notebooks
    docs/api
    docs/dev
+   docs/future
 
-
-Example Notebooks
------------------
-
-These examples are available as executable Jupyter Notebooks from the `Github repository <https://github.com/ihrke/pypillometry/tree/master/docs>`_ (the files ending in `.ipynb`). The link to the notebook files is given at the end of each page.
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Examples:
-
-   docs/importdata
-   docs/pipes
-   docs/blinks
-   docs/erpds
+.. include:: /docs/notebooks.rst
 
 
 Indices and tables
