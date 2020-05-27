@@ -55,7 +55,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#pipeline-based-processing">Pipeline-based processing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pre-processing-data">Pre-processing data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plotting-summarizing-data">Plotting/Summarizing Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#baseline-response-estimation">Baseline/Response estimation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#modeling-the-pupillometric-signal">Modeling the pupillometric signal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#artificial-data">Artificial Data</a></li>
 </ul>
 </li>
@@ -99,6 +99,7 @@
 <p>Pupillometric data usually contain blinks which show up as missing data in the signal where the eyetracker is unable to record the size of the pupil.
 A range of functions are available for detecting and interpolating blinks.</p>
 <p>More details and an example can be found in the notebook: <a class="reference internal" href="blinks.html"><span class="std std-ref">An example for how to handle blinks</span></a></p>
+<p>A fully worked-out example of a real study can be found in this notebook: <a class="reference internal" href="preproc_example_pavlov.html"><span class="std std-ref">Preprocessing of a full dataset with multiple subjects</span></a></p>
 <p>The following is a list of functions for that purpose. Note that the functions take multiple arguments that control the algorithms behaviour. It is often crucial to adjust the parameters on an individual level since the artifacts tend to be quite dissimilar between subjects (but usually stable within-subject). All arguments are documented in the <a class="reference internal" href="api.html"><span class="std std-ref">API-docs</span></a>.</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -177,10 +178,10 @@ A range of functions are available for detecting and interpolating blinks.</p>
 </div>
 <div class="section" id="plotting-summarizing-data">
 <h2>Plotting/Summarizing Data<a class="headerlink" href="#plotting-summarizing-data" title="Permalink to this headline">¶</a></h2>
-<p>It is crucial to validate preprocessing steps by visually inspecting the results using plots. Therefore, <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> implements several plotting facilities that encourage active exploration of the dataset.</p>
-<p>Please follow the tutorial <a class="reference internal" href="plotting.html"><span class="std std-ref">Plotting of pupillometric data</span></a></p>
 <div class="section" id="plotting">
 <h3>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h3>
+<p>It is crucial to validate preprocessing steps by visually inspecting the results using plots. Therefore, <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> implements several plotting facilities that encourage active exploration of the dataset.</p>
+<p>Please see the tutorial <a class="reference internal" href="plotting.html"><span class="std std-ref">Plotting of pupillometric data</span></a> for more details.</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -210,6 +211,8 @@ A range of functions are available for detecting and interpolating blinks.</p>
 </div>
 <div class="section" id="inspecting-summarizing">
 <h3>Inspecting/Summarizing<a class="headerlink" href="#inspecting-summarizing" title="Permalink to this headline">¶</a></h3>
+<p>The package also provides several functions for summarizing datasets. Simply <cite>print()`ing a :class:`PupilData</cite> object gives a readable summary of the main properties of the dataset and also prints the complete history of the results. By calling <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.summary" title="pypillometry.pupildata.PupilData.summary"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.summary()</span></code></a>, summary data can be arranged and summarized in tabular form.</p>
+<p>See the notebook <a class="reference internal" href="summary.html"><span class="std std-ref">Summarizing pupillometric data</span></a> for more details.</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -262,8 +265,8 @@ A range of functions are available for detecting and interpolating blinks.</p>
 </table>
 </div>
 </div>
-<div class="section" id="baseline-response-estimation">
-<h2>Baseline/Response estimation<a class="headerlink" href="#baseline-response-estimation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="modeling-the-pupillometric-signal">
+<h2>Modeling the pupillometric signal<a class="headerlink" href="#modeling-the-pupillometric-signal" title="Permalink to this headline">¶</a></h2>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -324,7 +327,7 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <li><a class="reference internal" href="#event-related-pupil-dilation">Event-Related Pupil Dilation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#baseline-response-estimation">Baseline/Response estimation</a></li>
+<li><a class="reference internal" href="#modeling-the-pupillometric-signal">Modeling the pupillometric signal</a></li>
 <li><a class="reference internal" href="#artificial-data">Artificial Data</a></li>
 </ul>
 </li>

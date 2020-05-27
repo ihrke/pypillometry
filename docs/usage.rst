@@ -69,6 +69,8 @@ A range of functions are available for detecting and interpolating blinks.
 
 More details and an example can be found in the notebook: :ref:`An example for how to handle blinks </docs/blinks.ipynb>`
 
+A fully worked-out example of a real study can be found in this notebook: :ref:`Preprocessing of a full dataset with multiple subjects </docs/preproc_example_pavlov.ipynb>`
+
 The following is a list of functions for that purpose. Note that the functions take multiple arguments that control the algorithms behaviour. It is often crucial to adjust the parameters on an individual level since the artifacts tend to be quite dissimilar between subjects (but usually stable within-subject). All arguments are documented in the :ref:`API-docs </docs/api.rst>`.
 
 .. autosummary::
@@ -110,12 +112,14 @@ The following is a list of available functions for these purposes:
 Plotting/Summarizing Data
 -------------------------
 
-It is crucial to validate preprocessing steps by visually inspecting the results using plots. Therefore, :mod:`pypillometry` implements several plotting facilities that encourage active exploration of the dataset. 
-
-Please follow the tutorial :ref:`Plotting of pupillometric data </docs/plotting.ipynb>`
 
 Plotting
 ^^^^^^^^
+
+It is crucial to validate preprocessing steps by visually inspecting the results using plots. Therefore, :mod:`pypillometry` implements several plotting facilities that encourage active exploration of the dataset. 
+
+Please see the tutorial :ref:`Plotting of pupillometric data </docs/plotting.ipynb>` for more details.
+
 
 .. autosummary::
 
@@ -126,10 +130,14 @@ Plotting
     plotpd_ia
     PupilData.get_erpd
 
-    
+
 
 Inspecting/Summarizing
 ^^^^^^^^^^^^^^^^^^^^^^
+
+The package also provides several functions for summarizing datasets. Simply `print()`ing a :class:`PupilData` object gives a readable summary of the main properties of the dataset and also prints the complete history of the results. By calling :func:`PupilData.summary`, summary data can be arranged and summarized in tabular form. 
+
+See the notebook :ref:`Summarizing pupillometric data </docs/summary.ipynb>` for more details.
 
 .. autosummary::
 
@@ -159,8 +167,8 @@ Running :func:`PupilData.get_erpd` returns an Object of class :class:`ERPDSingle
 
     
 
-Baseline/Response estimation
-----------------------------
+Modeling the pupillometric signal
+---------------------------------
 
 .. currentmodule:: pypillometry.pupildata
 

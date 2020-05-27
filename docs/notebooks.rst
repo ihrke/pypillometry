@@ -17,6 +17,7 @@ When clicking on this link, the notebook will open in an interactive session in 
    /docs/pipes
    /docs/blinks
    /docs/plotting
+   /docs/summary
    /docs/erpds
    /docs/modeling
    /docs/preproc_example_pavlov

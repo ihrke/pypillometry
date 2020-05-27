@@ -1,5 +1,9 @@
 .. mdinclude:: ./README.md
 
+
+Documentation
+=============
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
