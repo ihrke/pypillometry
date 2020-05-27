@@ -19,3 +19,4 @@ When clicking on this link, the notebook will open in an interactive session in 
    /docs/plotting
    /docs/erpds
    /docs/modeling
+   /docs/preproc_example_pavlov
