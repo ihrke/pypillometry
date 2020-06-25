@@ -1496,7 +1496,7 @@ class FakePupilData(PupilData):
         if model and simulated:
             overlays+=(self.sim_baseline+self.sim_response,)
             overlay_labels+=("real model",)
-        self._plot(plot_range, overlays, overlay_labels, units, interactive)
+        self._plot(plot_range, overlays, overlay_labels, units, interactive, False, False)
 
         
         
