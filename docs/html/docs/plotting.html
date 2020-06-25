@@ -343,7 +343,7 @@ Interactive version:
 </div>
 </div>
 <p>Note that the scale of the plots went all the way to zero because missing data is represented by <code class="docutils literal notranslate"><span class="pre">0</span></code> in the used eyetracker.</p>
-<p>When we detect and interpolate blinks (see <a class="reference external" href="/docs/html/docs/blinks.html">blinks-notebook</a>), the scale is adjusted and detected blinks highlighted in red.</p>
+<p>When we detect and interpolate blinks (see <a class="reference external" href="blinks.html">blinks-notebook</a>), the scale is adjusted and detected blinks highlighted in red.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
@@ -415,7 +415,7 @@ Using matplotlib backend: MacOSX
 </pre></div>
 </div>
 </div>
-<p>In case you are interested in modeling the signal (see notebook <a class="reference external" href="/docs/html/docs/modeling.html">modeling pupillometric signal</a>), the <code class="docutils literal notranslate"><span class="pre">plot()</span></code> function allows to plot the different components (baseline and response-model) as well as the full model.</p>
+<p>In case you are interested in modeling the signal (see notebook <a class="reference external" href="modeling.html">modeling pupillometric signal</a>), the <code class="docutils literal notranslate"><span class="pre">plot()</span></code> function allows to plot the different components (baseline and response-model) as well as the full model.</p>
 <p>Furthermore, it is also possible to plot several datasets simultaneously using the module-level function <code class="docutils literal notranslate"><span class="pre">plotpd()</span></code>.</p>
 <p>By default, the signals are plotted into the same figure in different colors:</p>
 <div class="nbinput docutils container">
@@ -470,7 +470,7 @@ Using matplotlib backend: MacOSX
 <div class="section" id="plot_segments()">
 <h2><code class="docutils literal notranslate"><span class="pre">plot_segments()</span></code><a class="headerlink" href="#plot_segments()" title="Permalink to this headline">¶</a></h2>
 <p>It is usally a good idea to browse through the whole pupillometric data before and after preprocessing. This can be useful for tweaking preprocessing parameters or for detecting gross artifacts. <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> offers a function <code class="docutils literal notranslate"><span class="pre">plot_segments()</span></code>, that produces as many plots as necessary (each displaying part of the data).</p>
-<p>The default is to return a list of <code class="docutils literal notranslate"><span class="pre">matplotillb</span></code>-Figure objects that can then manually be plotted/inspected.</p>
+<p>The default is to return a list of <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>-Figure objects that can then manually be plotted/inspected.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
 </pre></div>
