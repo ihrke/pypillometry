@@ -11,3 +11,10 @@ This package implements functions for the analysis of pupillometric data. Featur
 - Homepage/Documentation: <http://ihrke.github.com/pypillometry>
 
 
+---
+
+The project is maintained by Matthias Mittner <matthias.mittner@uit.no>
+
+To report a bug or recommend a new feature, please use [github's issue tracker](https://github.com/ihrke/pypillometry/issues).
+
+For more details about how to contribute, please see the [contribution-section](https://ihrke.github.io/pypillometry/html/docs/dev.html) in the documentation.

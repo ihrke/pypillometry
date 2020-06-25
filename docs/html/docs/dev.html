@@ -47,21 +47,36 @@
   <div class="section" id="developers">
 <h1>Developers<a class="headerlink" href="#developers" title="Permalink to this headline">¶</a></h1>
 <a class="reference external image-reference" href="https://travis-ci.com/ihrke/pypillometry"><img alt="https://travis-ci.com/ihrke/pypillometry.svg?branch=master" src="https://travis-ci.com/ihrke/pypillometry.svg?branch=master" /></a>
-<div class="section" id="contibuting">
-<h2>Contibuting<a class="headerlink" href="#contibuting" title="Permalink to this headline">¶</a></h2>
+<p>This package is developed and maintained by the <a class="reference external" href="http://uit.no/research/cognitive-neuroscience">Cognitive Neuroscience Research Group</a> at the <a class="reference external" href="http://uit.no">University of Tromsø</a>. We encourage everyone to become a member of the team and to contribute to the package’s development, either by <a class="reference external" href="https://github.com/ihrke/pypillometry/issues">reporting bugs</a>, <a class="reference external" href="https://github.com/ihrke/pypillometry/pulls">providing enhancements</a> or otherwise.</p>
+<div class="section" id="how-to-contribute">
+<h2>How to contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this headline">¶</a></h2>
 <p>Development of this package happens on GitHub: <a class="reference external" href="https://github.com/ihrke/pypillometry">https://github.com/ihrke/pypillometry</a></p>
+<p>In order to contribute, please use</p>
 <ul class="simple">
-<li><p>Issue-tracker: <a class="reference external" href="https://github.com/ihrke/pypillometry/issues">https://github.com/ihrke/pypillometry/issues</a></p></li>
-<li><p>PR’s welcome: <a class="reference external" href="https://github.com/ihrke/pypillometry/pulls">https://github.com/ihrke/pypillometry/pulls</a></p></li>
+<li><p><a class="reference external" href="https://github.com/ihrke/pypillometry/issues">github’s issue tracker</a> for reporting bugs or proposing enhancements</p></li>
+<li><p><a class="reference external" href="https://github.com/ihrke/pypillometry/pulls">github’s pull-request (PR) feature</a> for contributing to the package and/or documentation</p></li>
 </ul>
+<p>If you are unfamiliar with Github’s system, you can read up about <a class="reference external" href="https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests">collaborating with issues and pull-requests on Github</a>.</p>
 </div>
-<div class="section" id="building-docs">
-<h2>Building docs<a class="headerlink" href="#building-docs" title="Permalink to this headline">¶</a></h2>
-<p>A couple of non-standard sphinx extensions are being used:</p>
+<div class="section" id="coding-style-package-architecture">
+<h2>Coding style/package architecture<a class="headerlink" href="#coding-style-package-architecture" title="Permalink to this headline">¶</a></h2>
+<p>We chose to put most functionality directly below <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code>’s main class <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>. This is mostly for convenience,
+as users can easily find and chain commands together (see the following page more on this: <a class="reference internal" href="pipes.html"><span class="std std-ref">Pipeline-based processing in pypillometry</span></a>).</p>
+<p>The implementation of the functionality, however, is coded in submodules using “stateless” functions that take <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.18)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays as arguments. So, in order to create a new function that changes a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object, you will first want to implement a function working purely on <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.18)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays and then create a thin wrapper function below <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> that calls this low-level function with the correct arguments.</p>
+</div>
+<div class="section" id="unit-testing">
+<h2>Unit-testing<a class="headerlink" href="#unit-testing" title="Permalink to this headline">¶</a></h2>
+<p>Every newly developed function should be provided with <a class="reference external" href="https://en.wikipedia.org/wiki/Unit_testing">Unit-testing functions</a>. As a minimum, the function should be called with some reasonable arguments to ensure that the function does not crash. Better yet, the results of the functions should be tested against the desired output within these test functions. All unit-tests are located in <cite>/pypillometry/tests/</cite> and are run automatically for every commit to Github using <a class="reference external" href="https://travis-ci.com/ihrke/pypillometry">Travis CI</a>.</p>
+</div>
+<div class="section" id="building-the-packages-documentation">
+<h2>Building the packages documentation<a class="headerlink" href="#building-the-packages-documentation" title="Permalink to this headline">¶</a></h2>
+<p>This is only necessary when extending <cite>pypillometry</cite>’s documentation (i.e., updating the website at <a class="reference external" href="https://ihrke.github.io/pypillometry">https://ihrke.github.io/pypillometry</a>).</p>
+<p>The package uses the <a class="reference external" href="https://www.sphinx-doc.org/">Sphinx documentation generator</a> to create this website. All source-files are located under <cite>/docs/</cite> (both <cite>.rst</cite> and <cite>.ipynb</cite> files are being used). In addition, the API-documentation is placed within each function or classes’ docstring.</p>
+<p>To compile the documentation, sphinx must be installed. In addition, a couple of non-standard sphinx extensions are being used:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;sphinx_math_dollar&#39;</span><span class="p">,</span>  <span class="s2">&quot;m2r&quot;</span><span class="p">,</span><span class="s1">&#39;sphinx_autodoc_typehints&#39;</span><span class="p">,</span> <span class="s1">&#39;nbsphinx&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Installation:</p>
+<p>These can be installed by using the following commands:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># jupyter notebooks</span>
 conda install -c conda-forge nbsphinx
 <span class="c1"># math</span>
@@ -72,6 +87,11 @@ pip install m2r
 conda install -c conda-forge sphinx-autodoc-typehints
 </pre></div>
 </div>
+<p>Finally, the documentation can be created by running</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make html
+</pre></div>
+</div>
+<p>in the packages’ root-directory.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>don’t run <cite>make clean</cite>, it will delete the source-files from <cite>docs</cite></p>
@@ -91,8 +111,10 @@ conda install -c conda-forge sphinx-autodoc-typehints
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Developers</a><ul>
-<li><a class="reference internal" href="#contibuting">Contibuting</a></li>
-<li><a class="reference internal" href="#building-docs">Building docs</a></li>
+<li><a class="reference internal" href="#how-to-contribute">How to contribute</a></li>
+<li><a class="reference internal" href="#coding-style-package-architecture">Coding style/package architecture</a></li>
+<li><a class="reference internal" href="#unit-testing">Unit-testing</a></li>
+<li><a class="reference internal" href="#building-the-packages-documentation">Building the packages documentation</a></li>
 </ul>
 </li>
 </ul>
