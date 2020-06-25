@@ -109,3 +109,7 @@ paper/compile.sh
 paper/apa.csl
 data/test_events.asc
 data/test_samples.asc
+.DS_Store
+docs/baseline.stan
+*.swp
+*.pkl
