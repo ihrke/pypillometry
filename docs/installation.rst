@@ -61,6 +61,8 @@ To circumvent this issue, I needed to install :mod:`pystan` using
 
 otherwise, there were random crashes of the jupyter kernel for some reason. 
 
+On Mac OS X, I had some trouble getting the compiler to work with PyStan. See `this issue <https://github.com/stan-dev/pystan/issues/622#issuecomment-518825883>`_ for a solution that worked for me.
+
 To enable interactive plotting widgets in jupyter notebook and jupyter lab, widgets need to be enabled in the notebook.
 
 .. code-block:: bash

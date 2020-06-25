@@ -1,9 +1,10 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plotting pupillometric data for exploration &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -13,11 +14,11 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Event-Related Pupil Dilations" href="erpds.html" />
+    <link rel="next" title="Summarizing pupillometric data" href="summary.html" />
     <link rel="prev" title="Blink preprocessing" href="blinks.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -30,13 +31,14 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="erpds.html" title="Event-Related Pupil Dilations"
+          <a href="summary.html" title="Summarizing pupillometric data"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="blinks.html" title="Blink preprocessing"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Plotting pupillometric data for exploration</a></li> 
       </ul>
     </div>  
 
@@ -111,20 +113,33 @@ div.nboutput.container div.prompt pre {
 /* all prompts */
 div.nbinput.container div.prompt,
 div.nboutput.container div.prompt {
-    min-width: 5ex;
-    padding-top: 0.3rem;
-    padding-right: 0.3rem;
-    text-align: right;
-    flex: 0;
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
 }
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
 @media (max-width: 540px) {
     div.nbinput.container div.prompt,
     div.nboutput.container div.prompt {
+        width: unset;
         text-align: left;
         padding: 0.4em;
     }
     div.nboutput.container div.prompt.empty {
         padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
     }
 }
 
@@ -217,7 +232,7 @@ div.nboutput.container div.output_area div[class*=highlight].math,
 div.nboutput.container div.output_area.rendered_html,
 div.nboutput.container div.output_area > div.output_javascript,
 div.nboutput.container div.output_area:not(.rendered_html) > img{
-    padding: 0.3rem;
+    padding: 5px;
 }
 
 /* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
@@ -580,6 +595,7 @@ Interactive version:
 <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/plotting.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
 </div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -601,8 +617,8 @@ Interactive version:
   <p class="topless"><a href="blinks.html"
                         title="previous chapter">Blink preprocessing</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="erpds.html"
-                        title="next chapter">Event-Related Pupil Dilations</a></p>
+  <p class="topless"><a href="summary.html"
+                        title="next chapter">Summarizing pupillometric data</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -634,18 +650,19 @@ Interactive version:
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="erpds.html" title="Event-Related Pupil Dilations"
+          <a href="summary.html" title="Summarizing pupillometric data"
              >next</a> |</li>
         <li class="right" >
           <a href="blinks.html" title="Blink preprocessing"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Plotting pupillometric data for exploration</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.1.
     </div>
   </body>
 </html>

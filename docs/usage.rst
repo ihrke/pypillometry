@@ -175,6 +175,8 @@ Modeling the pupillometric signal
 For some applications, it is interesting to model the full pupillometric signal as consisting of a (tonic) baseline and a (phasic) response component. 
 The package implements novel algorithms developed in our lab and documentation will become available here.
 
+More details are availabel in this notebook: :ref:`Modeling the pupillometric signal </docs/modeling.ipynb>`.
+
 .. currentmodule:: pypillometry.pupildata
 
 .. autosummary::
