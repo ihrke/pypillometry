@@ -102,3 +102,10 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+paper/paper.pdf
+paper/logo.png
+paper/latex.template
+paper/compile.sh
+paper/apa.csl
+data/test_events.asc
+data/test_samples.asc
