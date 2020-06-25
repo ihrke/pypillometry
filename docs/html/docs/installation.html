@@ -46,34 +46,47 @@
             
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/ihrke/pypillometry.git
-<span class="nb">cd</span> pypillometry
-pip install -r requirements.txt
-python setup.py install
+<p>Installing <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> and its dependencies is automated and can be done by running the following lines (on Mac OS X or Linux).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/ihrke/pypillometry.git
+$ <span class="nb">cd</span> pypillometry
+$ pip install -r requirements.txt
+$ python setup.py install
 </pre></div>
 </div>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
 <p><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> requires Python3 and a range of standard numerical computing packages (all of which listed in the file <cite>requirements.txt</cite>)</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.18)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/index.html#module-scipy" title="(in SciPy v1.4.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy</span></code></a> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">matplotlib</span></code></p></li>
+<li><p><a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.18)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/index.html#module-scipy" title="(in SciPy v1.5.0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy</span></code></a> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">matplotlib</span></code></p></li>
 <li><p><a class="reference external" href="https://pystan.readthedocs.io/en/latest/api.html#module-pystan" title="(in PyStan v2.19.1.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code></a></p></li>
 </ul>
 <p>It is useful to access <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> through Jupyter or Jupyter Notebook, so installing those packages is also useful but not necessary.</p>
 <p>All requirements can be installed by running <cite>pip install -r requirements.txt</cite>.</p>
-<div class="section" id="notes">
-<h3>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h3>
-<p>To install the requirements, either use <cite>pip</cite> as described above, manually install all the packages, or use <code class="docutils literal notranslate"><span class="pre">conda</span></code>.</p>
+</div>
+<div class="section" id="virtual-environments">
+<h2>Virtual environments<a class="headerlink" href="#virtual-environments" title="Permalink to this headline">¶</a></h2>
+<p>It can sometimes be useful to install a new package in a new virtual environment using either <a class="reference external" href="https://docs.python.org/3/tutorial/venv.html">Python’s virtual environments</a> or <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda create -n pypil <span class="nv">python</span><span class="o">=</span><span class="m">3</span>
 $ conda activate pypil
 $ conda install anaconda
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">anaconda</span></code> package contains all the requirements except <a class="reference external" href="https://pystan.readthedocs.io/en/latest/api.html#module-pystan" title="(in PyStan v2.19.1.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code></a>.</p>
-<p>To install <a class="reference external" href="https://pystan.readthedocs.io/en/latest/api.html#module-pystan" title="(in PyStan v2.19.1.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code></a>, I needed to do</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install pystan
-conda install gcc_linux-64
-conda install gxx_linux-64
+<p>The <code class="docutils literal notranslate"><span class="pre">anaconda</span></code> package contains all the requirements except <a class="reference external" href="https://pystan.readthedocs.io/en/latest/api.html#module-pystan" title="(in PyStan v2.19.1.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code></a> which can be installed from <a class="reference external" href="https://anaconda.org/conda-forge/pystan">conda-forge</a></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ conda install -c conda-forge pystan
+</pre></div>
+</div>
+</div>
+<div class="section" id="pystan">
+<h2>Pystan<a class="headerlink" href="#pystan" title="Permalink to this headline">¶</a></h2>
+<p>Note that the installation of <a class="reference external" href="https://pystan.readthedocs.io/en/latest/api.html#module-pystan" title="(in PyStan v2.19.1.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code></a> may cause trouble on Windows-systems (you may need to install a compiler). Please follow the instructions on <a class="reference external" href="https://pystan.readthedocs.io/en/latest/getting_started.html">the Pystan-webpage</a> should you encounter any trouble.</p>
+</div>
+<div class="section" id="notes-potential-problems">
+<h2>Notes/Potential Problems<a class="headerlink" href="#notes-potential-problems" title="Permalink to this headline">¶</a></h2>
+<p>Under Linux, I encountered a problem where <a class="reference external" href="https://pystan.readthedocs.io/en/latest/api.html#module-pystan" title="(in PyStan v2.19.1.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code></a> crashed the <a class="reference external" href="https://jupyter.org/">Jupyter kernel</a>.
+To circumvent this issue, I needed to install <a class="reference external" href="https://pystan.readthedocs.io/en/latest/api.html#module-pystan" title="(in PyStan v2.19.1.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code></a> using</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install pystan
+$ conda install gcc_linux-64
+$ conda install gxx_linux-64
 </pre></div>
 </div>
 <p>otherwise, there were random crashes of the jupyter kernel for some reason.</p>
@@ -82,7 +95,6 @@ conda install gxx_linux-64
 $ jupyter nbextension <span class="nb">enable</span> --py widgetsnbextension
 $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 </pre></div>
-</div>
 </div>
 </div>
 </div>
@@ -99,10 +111,10 @@ $ jupyter labextension install @jupyter-widgets/jupyterlab-manager
   <h3><a href="../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#requirements">Requirements</a><ul>
-<li><a class="reference internal" href="#notes">Notes</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#virtual-environments">Virtual environments</a></li>
+<li><a class="reference internal" href="#pystan">Pystan</a></li>
+<li><a class="reference internal" href="#notes-potential-problems">Notes/Potential Problems</a></li>
 </ul>
 </li>
 </ul>
