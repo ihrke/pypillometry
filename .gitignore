@@ -113,3 +113,4 @@ data/test_samples.asc
 docs/baseline.stan
 *.swp
 *.pkl
+src/*
