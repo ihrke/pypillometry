@@ -290,7 +290,7 @@ Interactive version:
 <p><strong>WARNING</strong>: This functionality is <strong>experimental</strong>. Some of the provided algorithms are unpublished (or in the process of being published) and may not work well.</p>
 <p>The idea behind the algorithms is detailed in this notebook (slides from a symposium talk):</p>
 <ul class="simple">
-<li><p><a class="reference external" href="/docs/html/docs/symp_talk_uit2019.html">Estimation of tonic and phasic pupillometric signals</a></p></li>
+<li><p><a class="reference external" href="symp_talk_uit2019.html">Estimation of tonic and phasic pupillometric signals</a></p></li>
 </ul>
 <p>This notebooks also includes results from a simulation study showing the superiority of the algorithm to more traditional approaches.</p>
 <div class="nbinput nblast docutils container">
@@ -407,7 +407,7 @@ Interactive version:
 <div class="section" id="Advance-methods-for-tonic/phasic-component-estimation">
 <h2>Advance methods for tonic/phasic component estimation<a class="headerlink" href="#Advance-methods-for-tonic/phasic-component-estimation" title="Permalink to this headline">¶</a></h2>
 <p>The simple method detailed above is appealing for its simplicity but has severe limitations. Most importantly, multiple overlapping pupillary responses can “look like” baseline-fluctuations when added together, thereby artificially inflating baseline-estimates particularly in cases where events are spaced closely in time (“fast paradigms”). For that reason, we developed specialized algorithms to disentangle tonic and phasic components of the pupillometric signal.</p>
-<p>This algorithm uses an iterative procedure to remove an initial estimate of the responses from the signal to continue to estimate the underlying baseline. Details about how this algorithm works and which parameters it supports are available in <a class="reference external" href="/docs/html/docs/symp_talk_uit2019.html">this notebook</a> and will be available in a forthcoming publication.</p>
+<p>This algorithm uses an iterative procedure to remove an initial estimate of the responses from the signal to continue to estimate the underlying baseline. Details about how this algorithm works and which parameters it supports are available in <a class="reference external" href="symp_talk_uit2019.html">this notebook</a> and will be available in a forthcoming publication.</p>
 <p>In practice, the functionality is implemented in <code class="docutils literal notranslate"><span class="pre">PupilData.estimate_baseline()</span></code> and <code class="docutils literal notranslate"><span class="pre">PupilData.estimate_response()</span></code>. The response-estimation depends on the estimated baseline, hence the <code class="docutils literal notranslate"><span class="pre">estimate_baseline()</span></code> function should always be called first. In order to increase speed, we filter the data and downsample it to 50 Hz before running the baseline- and response-estimation functions</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
@@ -576,9 +576,18 @@ Baseline: Corr(nov, real)= 0.7623237267947978
 Response: Corr(nov, real)= 0.6876359509086555
 </pre></div></div>
 </div>
-<p>We see that the correlations are much higher for the novel method when compared to the traditional methods. More sophisticated simulation studies are reported in <a class="reference external" href="/docs/html/docs/symp_talk_uit2019.html">this notebook</a>.</p>
-<p>The parameters for the baseline-estimation function are described in the API-documentation for <code class="docutils literal notranslate"><span class="pre">pypillometry.baseline.baseline_envelope_iter_bspline()</span></code> and, in more detail, in <a class="reference external" href="/docs/html/docs/symp_talk_uit2019.html">this notebook</a>.</p>
+<p>We see that the correlations are much higher for the novel method when compared to the traditional methods. More sophisticated simulation studies are reported in <a class="reference external" href="symp_talk_uit2019.html">this notebook</a>.</p>
+<p>The parameters for the baseline-estimation function are described in the API-documentation for <code class="docutils literal notranslate"><span class="pre">pypillometry.baseline.baseline_envelope_iter_bspline()</span></code> and, in more detail, in <a class="reference external" href="symp_talk_uit2019.html">this notebook</a>.</p>
 <p>The parameters for the response-estimation function are described in the API-documentation for <code class="docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_response()</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 <div class="admonition note">
