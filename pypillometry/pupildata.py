@@ -1379,6 +1379,7 @@ class FakePupilData(PupilData):
                  real_baseline: Optional[PupilArray]=None,
                  real_response_coef: Optional[PupilArray]=None):
         """
+        Constructor for artifical pupil data.
         """
         super().__init__(pupil,sampling_rate,time,event_onsets,event_labels,name)
         self.name="fake_"+self.name
@@ -1646,7 +1647,9 @@ def create_fake_pupildata(**kwargs):
     sim_params.update(kwargs)
     #print(sim_params)
     tx,sy,baseline,event_onsets,response_coef=get_dataset(**sim_params)
-    ds=FakePupilData(sy,sim_params["fs"],tx, event_onsets,sim_params=sim_params, 
+    event_labels=["event" for _ in range(event_onsets.size)]
+    ds=FakePupilData(sy,sim_params["fs"],tx, event_onsets,event_labels=event_labels,
+                     sim_params=sim_params, 
                      real_baseline=baseline, real_response_coef=response_coef)
     return ds
     

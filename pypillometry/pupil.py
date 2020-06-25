@@ -113,7 +113,7 @@ def plot_prf(npar=10.1,tmax=930,max_duration="estimate",fs=500,**kwargs):
     """
     if max_duration=="estimate":
         max_duration=pupil_get_max_duration(npar,tmax)
-    n=fs*(max_duration/1000.)
+    n=int(fs*(max_duration/1000.))
     tx=np.linspace(0,max_duration,n)
     prf=pupil_kernel_t(tx,npar,tmax)
     plt.plot(tx,prf,**kwargs)
