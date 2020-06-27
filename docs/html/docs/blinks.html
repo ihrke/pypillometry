@@ -328,7 +328,7 @@ Interactive version:
 <li><p>Second, blinks are defined as everything between two crossings of the velocity profile (from negative to positive).</p></li>
 <li><p>Finally, detected blinks have to be at least <code class="docutils literal notranslate"><span class="pre">min_duration</span></code> duration (in customizable <code class="docutils literal notranslate"><span class="pre">units</span></code>).</p></li>
 </ul>
-<p>As a consequence, there are several parameters that can be adjusted (see the <a class="reference external" href="/docs/api.rst">API-docs</a> for details). The most important ones are the following:</p>
+<p>As a consequence, there are several parameters that can be adjusted (see the <a class="reference external" href="api.html">API-docs</a> for details). The most important ones are the following:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">min_duration</span></code>: minimum duration for a sequence of missing numbers to be treated as blink</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">vel_onset</span></code>: negative velocity that needs to be crossed; arbitrary units that depend on sampling rate etc</p></li>
@@ -357,7 +357,7 @@ Interactive version:
 </div>
 </div>
 <p>We see that a period of seemingly valid pupil-data (around times 4.05 and 4.15 min) was marked as blink because of a sudden downward change in the pupil signal which might resemble the onset of a blink (a likely source of these artifacts are sudden eye-movements but we would need eyetracking-data to corrobate this hypothesis).</p>
-<p>his problem can be fixed by setting a stricter value for the velocity-profile based onset detection <code class="docutils literal notranslate"><span class="pre">vel_onset</span></code> or requiring a more prolonged onset-transient by increasing <code class="docutils literal notranslate"><span class="pre">min_onset_len</span></code>:</p>
+<p>This problem can be fixed by setting a stricter value for the velocity-profile based onset detection <code class="docutils literal notranslate"><span class="pre">vel_onset</span></code> or requiring a more prolonged onset-transient by increasing <code class="docutils literal notranslate"><span class="pre">min_onset_len</span></code>:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
 </pre></div>

@@ -22,7 +22,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "The `pypillometry` package provides several functions for summarizing datasets. Simply `print()`ing a :class:`PupilData` object gives a readable summary of the main properties of the dataset and also prints the complete history of operations applied to the dataset."
+    "The `pypillometry` package provides several functions for summarizing datasets. Simply `print()`ing a `PupilData` object gives a readable summary of the main properties of the dataset and also prints the complete history of operations applied to the dataset."
    ]
   },
   {
