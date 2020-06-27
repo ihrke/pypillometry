@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pypillometry",
-    version="0.0.1",
+    version="1.0.1",
     author="Matthias Mittner",
     author_email="matthias.mittner@uit.no",
     description="Pupillometry in Python.",
