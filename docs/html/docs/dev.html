@@ -99,6 +99,31 @@ conda install -c conda-forge sphinx-autodoc-typehints
 <p>don’t run <cite>make clean</cite>, it will delete the source-files from <cite>docs</cite></p>
 </div>
 </div>
+<div class="section" id="creating-releases">
+<h2>Creating Releases<a class="headerlink" href="#creating-releases" title="Permalink to this headline">¶</a></h2>
+<p>A release should be created whenever crucial bugs have been fixed or new functionality has been added.
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> goes with version numbers <cite>x.y.z</cite>. Increment <cite>z</cite> for bug-fixes, <cite>y</cite> for new features and
+<cite>x</cite> for releases that break backward-compatibility.</p>
+<p>Steps to create a new release:</p>
+<ol class="arabic">
+<li><p>Update/increment the version number in <cite>setup.py</cite></p></li>
+<li><dl class="simple">
+<dt>create a release on Github: <a class="reference external" href="https://github.com/ihrke/pypillometry/releases">https://github.com/ihrke/pypillometry/releases</a></dt><dd><ul class="simple">
+<li><p>this creates a git-tag</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>create distribution package for <a class="reference external" href="https://pypi.org/">PyPI</a> and upload package</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python setup.py sdist bdist_wheel
+$ twine upload dist/pypillometry-x.y.z*
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ol>
+</div>
 </div>
 
 
@@ -118,6 +143,7 @@ conda install -c conda-forge sphinx-autodoc-typehints
 <li><a class="reference internal" href="#coding-style-package-architecture">Coding style/package architecture</a></li>
 <li><a class="reference internal" href="#unit-testing">Unit-testing</a></li>
 <li><a class="reference internal" href="#building-the-packages-documentation">Building the packages documentation</a></li>
+<li><a class="reference internal" href="#creating-releases">Creating Releases</a></li>
 </ul>
 </li>
 </ul>
