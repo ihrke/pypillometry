@@ -1,8 +1,10 @@
 # Welcome to pypillometry!
 
 [![Build Status](https://travis-ci.com/ihrke/pypillometry.svg?branch=master)](https://travis-ci.com/ihrke/pypillometry)
+[![status](https://joss.theoj.org/papers/3b06f4f3d5b703fd99c7e622b7edebe4/status.svg)](https://joss.theoj.org/papers/3b06f4f3d5b703fd99c7e622b7edebe4)
 
 ![](https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW)
+
 
 This package implements functions for the analysis of pupillometric data. Features include preprocessing, blink handling, event-related pupil-dilation, plotting and signal modeling.
 
