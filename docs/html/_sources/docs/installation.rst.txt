@@ -10,14 +10,18 @@ Installing :mod:`pypillometry` and its dependencies is automated and can be done
     $ pip install -r requirements.txt
     $ python setup.py install
 
-:mod:`pypillometry` is on `PyPI <https://pypi.org/>`_ and released versions can be installed with `pip`:
+:mod:`pypillometry` is on `PyPI <https://pypi.org/>`_ and released versions can be installed with `pip` (this will also install the dependencies automatically):
 
 .. code-block:: bash
+
     $ pip install pypillometry
+
+(`link to the PyPI project page <https://pypi.org/project/pypillometry/>`_).
 
 It is also possible to install the developer's version directly from github using `pip`
 
 .. code-block:: bash
+
     $ pip install git+https://github.com/ihrke/pypillometry.git
 
 
