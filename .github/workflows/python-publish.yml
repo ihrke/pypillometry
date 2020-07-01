@@ -25,9 +25,11 @@ jobs:
     - name: Update version with latest tag
       run: git describe --tags > VERSION
     - name: Commit new VERSION file
-      uses: EndBug/add-and-commit@v4
+      uses: EndBug/add-and-commit@v4.2.0
       with:
         message: "update version"
+        ref: "master"
+        author_name: "release-manager"
         add: "VERSION"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
