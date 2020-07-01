@@ -7,8 +7,7 @@
 
 
 [![GitHub release](https://img.shields.io/github/release/ihrke/pypillometry.svg)](https://gitHub.com/ihrke/pypillometry/releases/)
-![PyPI](https://img.shields.io/pypi/v/pypillometry)
-
+[![PyPI version](https://badge.fury.io/py/pypillometry.svg)](https://badge.fury.io/py/pypillometry)
 
 
 ![](https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW)
