@@ -6,9 +6,12 @@ with open("README.md", "r") as fh:
 with open("requirements.txt") as fh:
     requirements=fh.read().split()
 
+with open("VERSION") as fh:
+    version=fh.read().strip()
+    
 setuptools.setup(
     name="pypillometry",
-    version="1.0.2",
+    version=version,
     author="Matthias Mittner",
     author_email="matthias.mittner@uit.no",
     description="Pupillometry in Python.",
