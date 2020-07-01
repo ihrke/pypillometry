@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.com/ihrke/pypillometry.svg?branch=master)](https://travis-ci.com/ihrke/pypillometry)
 [![GitHub issues](https://img.shields.io/github/issues/ihrke/pypillometry)](https://github.com/ihrke/pypillometry/issues)
 [![status](https://joss.theoj.org/papers/3b06f4f3d5b703fd99c7e622b7edebe4/status.svg)](https://joss.theoj.org/papers/3b06f4f3d5b703fd99c7e622b7edebe4)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3925528.svg)](https://doi.org/10.5281/zenodo.3925528)
+
 
 [![GitHub release](https://img.shields.io/github/release/ihrke/pypillometry.svg)](https://gitHub.com/ihrke/pypillometry/releases/)
 ![PyPI](https://img.shields.io/pypi/v/pypillometry)
