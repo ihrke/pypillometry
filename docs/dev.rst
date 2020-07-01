@@ -78,20 +78,18 @@ in the packages' root-directory.
 Creating Releases
 -----------------
 
+
 A release should be created whenever crucial bugs have been fixed or new functionality has been added.
 :mod:`pypillometry` goes with version numbers `x.y.z`. Increment `z` for bug-fixes, `y` for new features and
 `x` for releases that break backward-compatibility.
 
-Steps to create a new release:
+.. note::
 
-1. Update/increment the version number in `setup.py` 
-2. create a release on Github: https://github.com/ihrke/pypillometry/releases
-    - this creates a git-tag
-3. create distribution package for `PyPI <https://pypi.org/>`_ and upload package 
-    .. code-block:: bash
+    the process of uploading to PyPI has been automatized using Github actions; when a
+    release is created on `Github-releases <https://github.com/ihrke/pypillometry/releases>`_, the file 
+    `VERSION` is updated with the most recent tag
+    (must be `PEP-440 <https://www.python.org/dev/peps/pep-0440/#version-scheme>`_-compliant)
+    and a `PyPI <https://pypi.org/>`_ release is being issued
 
-        $ python setup.py sdist bdist_wheel
-        $ twine upload dist/pypillometry-x.y.z*
-        
    
 
