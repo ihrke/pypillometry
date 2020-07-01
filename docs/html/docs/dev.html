@@ -64,7 +64,7 @@
 <h2>Coding style/package architecture<a class="headerlink" href="#coding-style-package-architecture" title="Permalink to this headline">¶</a></h2>
 <p>We chose to put most functionality directly below <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code>’s main class <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>. This is mostly for convenience,
 as users can easily find and chain commands together (see the following page more on this: <a class="reference internal" href="pipes.html"><span class="std std-ref">Pipeline-based processing in pypillometry</span></a>).</p>
-<p>The implementation of the functionality, however, is coded in submodules using “stateless” functions that take <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.18)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays as arguments. So, in order to create a new function that changes a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object, you will first want to implement a function working purely on <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.18)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays and then create a thin wrapper function below <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> that calls this low-level function with the correct arguments.</p>
+<p>The implementation of the functionality, however, is coded in submodules using “stateless” functions that take <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.19)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays as arguments. So, in order to create a new function that changes a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object, you will first want to implement a function working purely on <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.19)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays and then create a thin wrapper function below <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> that calls this low-level function with the correct arguments.</p>
 </div>
 <div class="section" id="unit-testing">
 <h2>Unit-testing<a class="headerlink" href="#unit-testing" title="Permalink to this headline">¶</a></h2>
@@ -104,25 +104,14 @@ conda install -c conda-forge sphinx-autodoc-typehints
 <p>A release should be created whenever crucial bugs have been fixed or new functionality has been added.
 <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> goes with version numbers <cite>x.y.z</cite>. Increment <cite>z</cite> for bug-fixes, <cite>y</cite> for new features and
 <cite>x</cite> for releases that break backward-compatibility.</p>
-<p>Steps to create a new release:</p>
-<ol class="arabic">
-<li><p>Update/increment the version number in <cite>setup.py</cite></p></li>
-<li><dl class="simple">
-<dt>create a release on Github: <a class="reference external" href="https://github.com/ihrke/pypillometry/releases">https://github.com/ihrke/pypillometry/releases</a></dt><dd><ul class="simple">
-<li><p>this creates a git-tag</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl>
-<dt>create distribution package for <a class="reference external" href="https://pypi.org/">PyPI</a> and upload package</dt><dd><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python setup.py sdist bdist_wheel
-$ twine upload dist/pypillometry-x.y.z*
-</pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>the process of uploading to PyPI has been automatized using Github actions; when a
+release is created on <a class="reference external" href="https://github.com/ihrke/pypillometry/releases">Github-releases</a>, the file
+<cite>VERSION</cite> is updated with the most recent tag
+(must be <a class="reference external" href="https://www.python.org/dev/peps/pep-0440/#version-scheme">PEP-440</a>-compliant)
+and a <a class="reference external" href="https://pypi.org/">PyPI</a> release is being issued</p>
 </div>
-</dd>
-</dl>
-</li>
-</ol>
 </div>
 </div>
 
