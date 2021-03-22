@@ -142,6 +142,8 @@ def detect_blinks_zero(sy, min_duration, blink_val=0):
     x=np.r_[0, np.diff((sy==blink_val).astype(np.int))]
     starts=np.where(x==1)[0]
     ends=np.where(x==-1)[0]-1
+    if sy[0]==blink_val: ## first value missing?
+        starts=np.r_[0,starts]    
     if ends.size!=starts.size: 
         ## is the first start earlier than the first end?
         if starts[0]>ends[0]:
