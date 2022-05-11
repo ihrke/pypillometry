@@ -12,7 +12,7 @@ def nprange(ar):
     return (ar.min(),ar.max())
 
 
-import pystan
+import stan
 import pickle
 from hashlib import md5
 
@@ -24,7 +24,7 @@ def p_asym_laplac(y, mu, sigma, tau):
     """
     Asymmetric laplace distribution https://en.wikipedia.org/wiki/Asymmetric_Laplace_distribution;
     Parametrization as here: https://github.com/stan-dev/stan/issues/2312
-    
+
     tau in [0,1]
     """
     I=np.array(y<=mu, dtype=np.int)
@@ -34,7 +34,7 @@ def p_asym_laplac_kappa(y, mu, lam, kappa):
     """
     Asymmetric laplace distribution https://en.wikipedia.org/wiki/Asymmetric_Laplace_distribution;
     Wikipedia parametrization.
-    
+
     kappa in [0, infty] where 1 means symmetry
     """
     I=np.array(y<=mu, dtype=np.int)
@@ -44,7 +44,7 @@ def p_asym_laplac_kappa(y, mu, lam, kappa):
 def trans_logistic_vec(x, a, b, inverse=False):
     """
     vectorized version of trans_logistic()
-    
+
     goes from [a,b] to [-inf,+inf] and back;
     inverse=False: [a,b] -> [-inf, +inf]
     inverse=True:  [-inf,+inf] -> [a,b]
@@ -65,7 +65,7 @@ def trans_logistic_vec(x, a, b, inverse=False):
         x=np.where( (a==-np.infty) & (b<np.infty), b-np.exp(x), x)
         # variables from [-inf,inf] -> [a, b]
         x=np.where( (a>-np.infty) & (b<np.infty), (1./(1.+np.exp(-x)))*(b-a)+a, x)
-    
+
     return x
 
 def StanModel_cache(model_code, model_name=None, **kwargs):
@@ -78,7 +78,7 @@ def StanModel_cache(model_code, model_name=None, **kwargs):
     try:
         sm = pickle.load(open(cache_fn, 'rb'))
     except:
-        sm = pystan.StanModel(model_code=model_code)
+        sm = stan.StanModel(model_code=model_code)
         with open(cache_fn, 'wb') as f:
             pickle.dump(sm, f)
     else:
@@ -87,7 +87,7 @@ def StanModel_cache(model_code, model_name=None, **kwargs):
 
 
 
-def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None, 
+def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None,
                    blinks=None, interpolated=None,
                    figsize=(16,8), xlab="ms", nsteps=100):
     """
@@ -100,11 +100,11 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
 
     Parameters
     ----------
-    
+
     tx : np.ndarray
-        time-vector in seconds    
+        time-vector in seconds
     sy : np.ndarray
-        raw pupil signal        
+        raw pupil signal
     event_onsets : list
         onsets of events (stimuli/responses) in seconds
     overlays: tuple of np.array
@@ -163,7 +163,7 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
     )
 
     interact(draw_plot, plotxrange=wid_range)
-    
+
 
 def helper_merge_blinks(b1,b2):
     if b1.size==0:
@@ -178,7 +178,7 @@ def helper_merge_blinks(b1,b2):
     on,off=b[0,:]
     for i in range(1,b.shape[0]):
         if b[i,0]<=off:
-            # absorb onset from next 
+            # absorb onset from next
             off=max(off,b[i,1])
         else:
             newb.append([on,off])
