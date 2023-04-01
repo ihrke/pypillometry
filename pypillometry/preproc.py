@@ -139,7 +139,7 @@ def detect_blinks_zero(sy, min_duration, blink_val=0):
     -------
     np.array (nblinks x 2) containing the indices of the start/end of the blinks
     """
-    x=np.r_[0, np.diff((sy==blink_val).astype(np.int))]
+    x=np.r_[0, np.diff((sy==blink_val).astype(int))]
     starts=np.where(x==1)[0]
     ends=np.where(x==-1)[0]-1
     if sy[0]==blink_val: ## first value missing?
@@ -206,7 +206,7 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
         onset=max(0, onset-margin[0]) # avoid overflow to the left
 
         # find start of "reversal period" and move forward until it drops back
-        offset_ix=np.argmin(np.abs(((offsets-endl<0)*np.iinfo(np.int).max)+(offsets-endl)))
+        offset_ix=np.argmin(np.abs(((offsets-endl<0)*np.iinfo(int).max)+(offsets-endl)))
         while(offset_ix<(len(offsets)-1) and offsets[offset_ix+1]-1==offsets[offset_ix]):
             offset_ix+=1        
         offset=offsets[offset_ix]

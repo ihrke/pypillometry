@@ -27,7 +27,7 @@ def p_asym_laplac(y, mu, sigma, tau):
 
     tau in [0,1]
     """
-    I=np.array(y<=mu, dtype=np.int)
+    I=np.array(y<=mu, dtype=int)
     return (2*tau*(1-tau))/sigma*np.exp(-2/sigma * ( (1-tau)*I*(mu-y) + tau*(1-I)*(y-mu) ) )
 
 def p_asym_laplac_kappa(y, mu, lam, kappa):
@@ -37,7 +37,7 @@ def p_asym_laplac_kappa(y, mu, lam, kappa):
 
     kappa in [0, infty] where 1 means symmetry
     """
-    I=np.array(y<=mu, dtype=np.int)
+    I=np.array(y<=mu, dtype=int)
     return (lam)/(kappa+1./kappa)*np.exp( ( (lam/kappa)*I*(y-mu) - lam*kappa*(1-I)*(y-mu) ) )
 
 
