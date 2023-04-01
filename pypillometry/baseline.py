@@ -475,7 +475,7 @@ def baseline_pupil_model(tx,sy,event_onsets, fs=1000, lp1=2, lp2=0.2):
     event_onsets_ix=np.argmin(np.abs(np.tile(event_onsets, (sy.size,1)).T-tx), axis=1)
 
     # set up a single regressor
-    x1=np.zeros(sy.size, dtype=np.float)
+    x1=np.zeros(sy.size, dtype=float)
     x1[event_onsets_ix]=1
     kernel=pupil_kernel(4, fs=fs)
     x1=np.convolve(x1, kernel, mode="full")[0:x1.size]

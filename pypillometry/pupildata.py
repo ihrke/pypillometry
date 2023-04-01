@@ -165,7 +165,7 @@ class PupilData:
             sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
             when this option is True, such entries will be made and the signal set to 0 there
         """
-        self.sy=np.array(pupil, dtype=np.float)
+        self.sy=np.array(pupil, dtype=float)
         if sampling_rate is None and time is None:
             raise ValueError("you have to specify either sampling_rate or time-vector (or both)")
         
@@ -173,7 +173,7 @@ class PupilData:
             maxT=len(self)/sampling_rate*1000.
             self.tx=np.linspace(0,maxT, num=len(self))
         else:
-            self.tx=np.array(time, dtype=np.float)
+            self.tx=np.array(time, dtype=float)
         
         if sampling_rate is None:
             self.fs=np.round(1000./np.median(np.diff(self.tx)))
@@ -216,9 +216,9 @@ class PupilData:
                 self.sy=nsy
             
         if event_onsets is None:
-            self.event_onsets=np.array([], dtype=np.float)
+            self.event_onsets=np.array([], dtype=float)
         else:
-            self.event_onsets=np.array(event_onsets, dtype=np.float)
+            self.event_onsets=np.array(event_onsets, dtype=float)
         
         # check whether onsets are in range
         for onset in self.event_onsets:

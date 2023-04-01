@@ -159,7 +159,7 @@ def pupil_build_design_matrix(tx,event_onsets,fs,npar,tmax,max_duration="estimat
     h=pupil_kernel(duration=max_duration, fs=fs, npar=npar, tmax=tmax) ## pupil kernel
 
     # event-onsets for each event
-    x1 = np.zeros((event_onsets.size, tx.size), dtype=np.float) # onsets
+    x1 = np.zeros((event_onsets.size, tx.size), dtype=float) # onsets
 
     # event-onsets as indices of the txd array
     evon_ix=np.argmin(np.abs(np.tile(event_onsets, (tx.size,1)).T-tx), axis=1)
@@ -167,24 +167,6 @@ def pupil_build_design_matrix(tx,event_onsets,fs,npar,tmax,max_duration="estimat
     for i in range(evon_ix.size):
         slic_add=h.size if (evon_ix[i]+h.size)<x1.shape[1] else x1.shape[1]-evon_ix[i]            
         x1[i,evon_ix[i]:evon_ix[i]+slic_add]=h[0:slic_add]
-                
-      
-    ## old, vectorized version (I thought it would be faster but it is, in fact, a lot slower :-(
-    # # prepare stimulus and response-regressors
-    # h=pupil_kernel(duration=max_duration, fs=fs, npar=npar, tmax=tmax) ## pupil kernel
-    # 
-    # # event-onsets for each event
-    # x1 = np.zeros((event_onsets.size, tx.size), dtype=np.float) # onsets
-    # 
-    # # event-onsets as indices of the txd array
-    # evon_ix=np.argmin(np.abs(np.tile(event_onsets, (tx.size,1)).T-tx), axis=1)
-    # 
-    # X=np.meshgrid(np.arange(x1.shape[1]), np.arange(x1.shape[0]))[0]
-    # evon_ix_M1=np.tile(evon_ix, (x1.shape[1],1)).T
-    # evon_ix_M2=np.tile(evon_ix+h.size, (x1.shape[1],1)).T
-    # 
-    # x1[ np.arange(event_onsets.size), evon_ix ]=1
-    # x1[ np.logical_and(X>=evon_ix_M1, X<evon_ix_M2) ]=np.tile(h, evon_ix.size)
     return x1
 
 def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=10, 
