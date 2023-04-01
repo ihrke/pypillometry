@@ -253,12 +253,12 @@ class PupilData:
         self.response_estimated=False
         
         ## initialize blinks
-        self.blinks=np.empty((0,2), dtype=np.int)
-        self.blink_mask=np.zeros(len(self), dtype=np.int)
+        self.blinks=np.empty((0,2), dtype=int)
+        self.blink_mask=np.zeros(len(self), dtype=int)
         
         ## interpolated mask
-        self.interpolated_mask=np.zeros(len(self), dtype=np.int)
-        self.missing=np.zeros(len(self), dtype=np.int)
+        self.interpolated_mask=np.zeros(len(self), dtype=int)
+        self.missing=np.zeros(len(self), dtype=int)
         self.missing[self.sy==0]=1
         
         self.original=None
@@ -364,8 +364,8 @@ class PupilData:
         slic.event_onsets=slic.event_onsets[keepev]
         slic.event_labels=slic.event_labels[keepev]
         ## just remove all detected blinks (need to rerun `detect_blinks()`)
-        slic.blinks=np.empty((0,2), dtype=np.int)
-        slic.blink_mask=np.zeros(len(slic), dtype=np.int)
+        slic.blinks=np.empty((0,2), dtype=int)
+        slic.blink_mask=np.zeros(len(slic), dtype=int)
         return slic
 
     def summary(self) -> dict:
@@ -596,8 +596,8 @@ class PupilData:
         overlays=(ov[startix:endix] for ov in overlays)
         
         if interactive:
-            blinks=np.empty((0,2), dtype=np.int)
-            interpolated=np.empty((0,2), dtype=np.int)
+            blinks=np.empty((0,2), dtype=int)
+            interpolated=np.empty((0,2), dtype=int)
             if highlight_blinks:
                 blinks=[]
                 for sblink,eblink in self.blinks:
@@ -966,7 +966,7 @@ class PupilData:
         blinks=helper_merge_blinks(blinks_vel, blinks_zero)
         obj.blinks=np.array([[on,off] for (on,off) in blinks if off-on>=min_duration_ix])
         
-        obj.blink_mask=np.zeros(self.sy.size, dtype=np.int)
+        obj.blink_mask=np.zeros(self.sy.size, dtype=int)
         
         for start,end in obj.blinks:
             obj.blink_mask[start:end]=1

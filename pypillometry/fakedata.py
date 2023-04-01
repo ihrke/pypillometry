@@ -101,7 +101,7 @@ def generate_pupil_data(event_onsets, fs=1000, pad=5000, baseline_lowpass=0.2,
 
     ### real events regressor
     ## scaling
-    event_ix=(np.array(event_onsets)/1000.*fs).astype(np.int)
+    event_ix=(np.array(event_onsets)/1000.*fs).astype(int)
     #a, b = (myclip_a - my_mean) / my_std, (myclip_b - my_mean) / my_std
     delta_weights=stats.truncnorm.rvs(-1/response_fluct_sd,np.inf, loc=1, scale=response_fluct_sd, size=event_ix.size)
     x1=np.zeros_like(sy)
