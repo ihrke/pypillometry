@@ -8,6 +8,8 @@ import numpy as np
 import scipy.signal as signal
 import scipy
 import math
+import os
+import cmdstanpy
 
 import scipy.interpolate
 from scipy.interpolate import interp1d, splrep, splev
@@ -290,7 +292,11 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     # load or compile model
     vprint(10, "Compiling Stan model")
 
-    sm = StanModel_cache(stan_code_baseline_model_asym_laplac)
+    fname="stan/baseline_model_asym_laplac.stan"
+    fpath=os.path.join(os.path.split(__file__)[0], fname)
+    sm = cmdstanpy.CmdStanModel(stan_file=fpath)
+    sm.compile()
+    #sm = StanModel_cache(stan_code_baseline_model_asym_laplac)
     
     ## put the data for the model together
     data={
@@ -307,8 +313,8 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     
     ## variational optimization
     vprint(10, "Optimizing Stan model")
-    opt=sm.vb(data=data)
-    vbc=opt["mean_pars"]
+    opt=sm.variational(data=data)
+    vbc=opt.stan_variable("coef")
     meansigvb=np.dot(B, vbc)
     vprint(10, "Done optimizing Stan model")
     
@@ -350,8 +356,8 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     
     ##  variational optimization
     vprint(10, "2nd Optimizing Stan model")
-    opt=sm.vb(data=data2)
-    vbc2=opt["mean_pars"]
+    opt=sm.variational(data=data2)
+    vbc2=opt.stan_variable("coef")
     meansigvb2=np.dot(B2, vbc2)  
     vprint(10, "Done 2nd Optimizing Stan model")
     
@@ -475,7 +481,7 @@ def baseline_pupil_model(tx,sy,event_onsets, fs=1000, lp1=2, lp2=0.2):
     event_onsets_ix=np.argmin(np.abs(np.tile(event_onsets, (sy.size,1)).T-tx), axis=1)
 
     # set up a single regressor
-    x1=np.zeros(sy.size, dtype=np.float)
+    x1=np.zeros(sy.size, dtype=float)
     x1[event_onsets_ix]=1
     kernel=pupil_kernel(4, fs=fs)
     x1=np.convolve(x1, kernel, mode="full")[0:x1.size]

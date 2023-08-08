@@ -102,7 +102,7 @@ def pupil_kernel(duration=4000, fs=1000, npar=10.1, tmax=930.0):
         sampled version of h(t) over the interval [0,`duration`] with sampling rate `fs`
     """
     n=int(duration/1000.*fs)
-    t = np.linspace(0,duration, n, dtype = np.float)
+    t = np.linspace(0,duration, n, dtype = float)
     h=pupil_kernel_t(t,npar,tmax)
     #h = t**(npar) * np.exp(-npar*t / tmax)   #Erlang gamma function Hoek & Levelt (1993)
     #hmax=np.exp(-npar)*tmax**npar ## theoretical maximum
@@ -159,7 +159,7 @@ def pupil_build_design_matrix(tx,event_onsets,fs,npar,tmax,max_duration="estimat
     h=pupil_kernel(duration=max_duration, fs=fs, npar=npar, tmax=tmax) ## pupil kernel
 
     # event-onsets for each event
-    x1 = np.zeros((event_onsets.size, tx.size), dtype=np.float) # onsets
+    x1 = np.zeros((event_onsets.size, tx.size), dtype=float) # onsets
 
     # event-onsets as indices of the txd array
     evon_ix=np.argmin(np.abs(np.tile(event_onsets, (tx.size,1)).T-tx), axis=1)
@@ -174,7 +174,7 @@ def pupil_build_design_matrix(tx,event_onsets,fs,npar,tmax,max_duration="estimat
     # h=pupil_kernel(duration=max_duration, fs=fs, npar=npar, tmax=tmax) ## pupil kernel
     # 
     # # event-onsets for each event
-    # x1 = np.zeros((event_onsets.size, tx.size), dtype=np.float) # onsets
+    # x1 = np.zeros((event_onsets.size, tx.size), dtype=float) # onsets
     # 
     # # event-onsets as indices of the txd array
     # evon_ix=np.argmin(np.abs(np.tile(event_onsets, (tx.size,1)).T-tx), axis=1)

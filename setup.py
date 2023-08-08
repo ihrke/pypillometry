@@ -18,12 +18,19 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ihrke/pypillometry",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_namespace_packages(),#where="pypillometry", exclude="tests"),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    #include_package_data=True,
+    package_dir={"pypillometry": "pypillometry"},
+    package_data={
+        "pypillometry": [],
+        "pypillometry.stan": ['*.stan'],
+        "pypillometry.tests": []
+        },
     install_requires=requirements,
-    python_requires='>=3.6',
+    python_requires='>=3.10',
 )

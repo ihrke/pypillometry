@@ -1,6 +1,6 @@
 numpy
 scipy
-pystan
+cmdstanpy
 matplotlib
 pandas
 typing
