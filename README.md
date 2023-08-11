@@ -17,7 +17,7 @@ This package implements functions for the analysis of pupillometric data. Featur
 
 - Github-repository: <https://github.com/ihrke/pypillometry>
 
-- Homepage/Documentation: <http://ihrke.github.com/pypillometry>
+- Homepage/Documentation: <https://ihrke.github.io/pypillometry/html/index.html>
 
 
 ---
