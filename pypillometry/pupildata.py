@@ -139,24 +139,8 @@ class PupilData(GenericEyedata):
                 self.tx=ntx
                 self.sy=nsy
             
-        if event_onsets is None:
-            self.event_onsets=np.array([], dtype=float)
-        else:
-            self.event_onsets=np.array(event_onsets, dtype=float)
-        
-        # check whether onsets are in range
-        for onset in self.event_onsets:
-            if onset<self.tx.min() or onset>self.tx.max():
-                raise ValueError("some event-onsets outside data range according to time-vector")
-            
-            
-        if event_labels is None:
-            self.event_labels=np.zeros_like(self.event_onsets)
-        else:
-            if self.event_onsets.size!=np.array(event_labels).size:
-                raise ValueError("event_labels must have same length as event_onsets")
-            self.event_labels=np.array(event_labels)
-          
+        self.set_event_onsets(event_onsets, event_labels)
+
         if self.tx.size != self.sy.size:
             raise ValueError("time and pupil-array must have same length, found {} vs {}".format(
                 self.tx.size,self.sy.size))

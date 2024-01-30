@@ -115,3 +115,5 @@ docs/baseline.stan
 *.pkl
 src/*
 docs/symp_talk_uit2019.pdf
+data/002_rlmw_events.asc
+data/002_rlmw_samples.asc
