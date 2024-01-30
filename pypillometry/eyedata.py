@@ -11,17 +11,20 @@ import numpy as np
 from pypillometry import GenericEyedata, EyeDataDict, keephistory
 class EyeData(GenericEyedata):
     def __init__(self, 
-                 time: np.ndarray = None,
-                 left_x: np.ndarray = None,
-                 left_y: np.ndarray = None,
-                 left_pupil: np.ndarray = None,
-                 right_x: np.ndarray = None,
-                 right_y: np.ndarray = None,
-                 right_pupil: np.ndarray = None,
-                 sampling_rate: float = None,
-                 name: str = None,
-                 fill_time_discontinuities: bool = True,
-                 keep_orig: bool = False):
+                    time: np.ndarray = None,
+                    left_x: np.ndarray = None,
+                    left_y: np.ndarray = None,
+                    left_pupil: np.ndarray = None,
+                    right_x: np.ndarray = None,
+                    right_y: np.ndarray = None,
+                    right_pupil: np.ndarray = None,
+                    event_onsets: np.ndarray = None,
+                    event_labels: np.ndarray = None,
+                    sampling_rate: float = None,
+                    screen_limits: tuple = ((0,1280),(0,1024)),
+                    name: str = None,
+                    fill_time_discontinuities: bool = True,
+                    keep_orig: bool = False):
         """
         Parameters
         ----------
@@ -36,11 +39,13 @@ class EyeData(GenericEyedata):
             pupil is optional
         sampling_rate: float
             sampling-rate of the pupillary signal in Hz
+        screen_limits: tuple
+            ((xmin,xmax), (ymin,ymax)) for screen
         name: 
             name of the dataset or `None` (in which case a random string is selected)
 
         event_onsets: 
-            time-onsets of any events that are to be modelled in the pupil
+            time-onsets of any events in the data (in ms, matched in `time` vector)
         event_labels:
             for each event in `event_onsets`, provide a label
         keep_orig: bool
@@ -53,17 +58,21 @@ class EyeData(GenericEyedata):
         """
         if time is None and sampling_rate is None:
             raise ValueError("Either `time` or `sampling_rate` must be provided")
-    
+
         if (left_x is None or left_y is None) and (right_x is None or right_y is None):
             raise ValueError("At least one of the eye-traces must be provided (both x and y)")
         self.data=EyeDataDict(left_x=left_x, left_y=left_y, left_pupil=left_pupil,
-                              right_x=right_x, right_y=right_y, right_pupil=right_pupil)
+                                right_x=right_x, right_y=right_y, right_pupil=right_pupil)
         ## name
         if name is None:
             self.name = self._random_id()
         else:
             self.name=name
         
+        ## screen limits
+        self.screen_xlim=screen_limits[0]
+        self.screen_ylim=screen_limits[1]
+
         ## set time array and sampling rate
         if time is None:
             maxT=len(self.data)/sampling_rate*1000.
@@ -78,6 +87,8 @@ class EyeData(GenericEyedata):
         else:
             self.fs=sampling_rate
             
+        self.set_event_onsets(event_onsets, event_labels)
+
         ## start with empty history    
         self.history=[]            
 
@@ -88,7 +99,6 @@ class EyeData(GenericEyedata):
         ## fill in time discontinuities
         if fill_time_discontinuities:
             self.fill_time_discontinuities()
-
 
     @keephistory
     def fill_time_discontinuities(self, yval=0, print_info=True):
@@ -170,6 +180,7 @@ class EyeData(GenericEyedata):
             sampling_rate=self.fs,
             data=list(self.data.keys()),
             nevents=self.nevents(), 
+            screen_limits=(self.screen_xlim, self.screen_ylim),
             nmiss=np.sum(self.missing),
             perc_miss=np.sum(self.missing)/len(self)*100.,
             duration_minutes=self.get_duration("min"),
@@ -179,3 +190,44 @@ class EyeData(GenericEyedata):
         )
            
         return summary
+    
+    @keephistory
+    def sub_slice(self, 
+                start: float=-np.inf, 
+                end: float=np.inf, 
+                units: str=None, inplace=_inplace):
+        """
+        Return a new `EyeData` object that is a shortened version
+        of the current one (contains all data between `start` and
+        `end` in units given by `units` (one of "ms", "sec", "min", "h").
+        If units is `None`, use the units in the time vector.
+
+        Parameters
+        ----------
+        
+        start: float
+            start for new dataset
+        end: float
+            end of new dataset
+        units: str
+            time units in which `start` and `end` are provided
+        """
+        obj=self if inplace else self.copy()
+        tx=self.tx
+        if units is not None: 
+            fac=self._unit_fac(units)
+            tx *= fac
+        keepix=np.where(np.logical_and(tx>=start, tx<=end))
+
+        ndata={}
+        for k,v in obj.data.items():
+            ndata[k]=v[keepix]
+        obj.data=EyeDataDict(ndata)
+        obj.tx=obj.tx[keepix]
+
+        evon=obj.event_onsets*obj._unit_fac(units)
+        keepev=np.logical_and(evon>=start, evon<=end)
+        obj.event_onsets=obj.event_onsets[keepev]
+        obj.event_labels=obj.event_labels[keepev]
+        
+        return obj
