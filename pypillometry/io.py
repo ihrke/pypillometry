@@ -10,7 +10,6 @@ try:
 except:
    import pickle
 import requests
-from .pupildata import *
 
 def pd_write_pickle(pdobj, fname):
     """
