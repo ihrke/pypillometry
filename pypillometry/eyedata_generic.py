@@ -261,3 +261,17 @@ class GenericEyedata(ABC):
         except:
             s+=" └no history\n"
         return s
+    
+    def copy(self, new_name: Optional[str]=None):
+        """
+        Make and return a deep-copy of the pupil data.
+        """
+        cls = self.__class__
+        result = cls.__new__(cls)
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v))
+        if new_name is None:
+            result.name=self.name+"_"+self._random_id(n=2)
+        else:
+            result.name=new_name
+        return result        
