@@ -249,21 +249,6 @@ class PupilData(GenericEyedata):
             response_estimated=self.response_estimated)        
         return summary
     
-    def __repr__(self) -> str:
-        """Return a string-representation of the dataset."""
-        pars=self.summary()
-        del pars["name"]
-        s="PupilData({name}, {size}):\n".format(name=self.name, size=sizeof_fmt(self.size_bytes()))
-        flen=max([len(k) for k in pars.keys()])
-        for k,v in pars.items():
-            s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
-        s+=" History:\n *\n"
-        try:
-            for i,ev in enumerate(self.history):
-                s+=" "*(i+1)+"└ " + ev["funcstring"] +"\n"
-        except:
-            s+=" └no history\n"
-        return s
     
     @keephistory    
     def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace):

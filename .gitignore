@@ -114,3 +114,4 @@ docs/baseline.stan
 *.swp
 *.pkl
 src/*
+docs/symp_talk_uit2019.pdf

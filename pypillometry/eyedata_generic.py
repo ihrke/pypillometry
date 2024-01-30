@@ -40,11 +40,70 @@ def keephistory(func):
     return wrapper
         
 
+from collections.abc import MutableMapping
+class EyeDataDict(MutableMapping):
+    """
+    A dictionary that contains 1-dimensional ndarrays of equal length
+    and with the same datatype (float).
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.data = dict()
+        self.length=0
+        self.update(dict(*args, **kwargs))  # use the free update to set keys
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __setitem__(self, key, value):
+        if not isinstance(value, np.ndarray):
+            raise ValueError("Value must be numpy.ndarray")
+        if len(value.shape)>1:
+            raise ValueError("Array must be 1-dimensional")
+        if self.length==0:
+            self.length=value.shape[0]
+        if value.shape[0]!=self.length:
+            raise ValueError("Array must have same length as existing arrays")
+        self.data[key] = value.astype(float)
+
+    def __delitem__(self, key):
+        del self.data[key]
+
+    def __iter__(self):
+        return iter(self.data)
+    
+    def __len__(self):
+        return self.length
+    def __repr__(self) -> str:
+        r="EyeDataDict(vars=%i,n=%i): \n"%(len(self.data), self.length)
+        for k,v in self.data.items():
+            r+="  %s (%s): "%(k,v.dtype)
+            r+=", ".join(v[0:(min(5,self.length))].astype(str))
+            if self.length>5:
+                r+="..."
+            r+="\n"
+        return r
+
 class GenericEyedata(ABC):
+    """
+    Generic class for eyedata. 
+    Defines the basic structure of an eyedata object and 
+    implements some basic functions.
+    """
+    name: str  ## name of dataset
+    fs: float  ## sampling rate
+    data: dict ## dictionary with data (contains ndarrays)
+    tx: np.ndarray ## time vector
+    missing: np.ndarray ## missing data vector (1=missing, 0=not missing)
+    event_onsets: np.ndarray ## vector with event onsets in time units
+
     @abstractmethod
     def __init__():
+        """Constructor"""
         pass
+
     def _unit_fac(self, units):
+        """for converting units"""
         if units=="sec":
             fac=1./1000.
         elif units=="min":
@@ -171,3 +230,19 @@ class GenericEyedata(ABC):
     def summary(self) -> dict:
         """Return a summary of the :class:`.GenericEyedata`-object."""
         pass
+
+    def __repr__(self) -> str:
+        """Return a string-representation of the dataset."""
+        pars=self.summary()
+        del pars["name"]
+        s="PupilData({name}, {size}):\n".format(name=self.name, size=sizeof_fmt(self.size_bytes()))
+        flen=max([len(k) for k in pars.keys()])
+        for k,v in pars.items():
+            s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
+        s+=" History:\n *\n"
+        try:
+            for i,ev in enumerate(self.history):
+                s+=" "*(i+1)+"└ " + ev["funcstring"] +"\n"
+        except:
+            s+=" └no history\n"
+        return s
