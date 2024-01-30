@@ -9,11 +9,13 @@ All other eyedata classes should inherit from this class.
 import numpy as np
 from pypillometry import _inplace
 from .io import *
+from .convenience import sizeof_fmt
 
 #from pytypes import typechecked
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
 PupilArray=Union[np.ndarray, List[float]]
 import functools
+from random import choice
 
 ## abstract base class to enforce implementation of some functions for all classes
 from abc import ABC, abstractmethod 
@@ -45,6 +47,7 @@ class EyeDataDict(MutableMapping):
     """
     A dictionary that contains 1-dimensional ndarrays of equal length
     and with the same datatype (float).
+    Drops empty entries (None or length-0 ndarrays).
     """
 
     def __init__(self, *args, **kwargs):
@@ -56,6 +59,8 @@ class EyeDataDict(MutableMapping):
         return self.data[key]
 
     def __setitem__(self, key, value):
+        if value is None or len(value)==0:
+            return
         if not isinstance(value, np.ndarray):
             raise ValueError("Value must be numpy.ndarray")
         if len(value.shape)>1:
@@ -235,7 +240,9 @@ class GenericEyedata(ABC):
         """Return a string-representation of the dataset."""
         pars=self.summary()
         del pars["name"]
-        s="PupilData({name}, {size}):\n".format(name=self.name, size=sizeof_fmt(self.size_bytes()))
+        s="{cname}({name}, {size}):\n".format(cname=self.__class__.__name__,
+                                              name=self.name, 
+                                              size=sizeof_fmt(self.size_bytes()))
         flen=max([len(k) for k in pars.keys()])
         for k,v in pars.items():
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)

@@ -33,6 +33,12 @@ class TestEyeDataDict(unittest.TestCase):
     def test_init_wrong_dim(self):
         self.assertRaises(ValueError, EyeDataDict, a=np.array([[1,2,3], [4,5,6]]))
         
+    def test_drop_emtpy(self):
+        d=EyeDataDict(a=np.array([1,2,3]), b=np.array([4,5,6]), c=np.array([7,8,9]))
+        d["d"]=np.array([])
+        d["e"]=None
+        self.assertRaises(KeyError, d.__getitem__, "d")
+        self.assertRaises(KeyError, d.__getitem__, "e")
 
 if __name__ == '__main__':
     unittest.main()

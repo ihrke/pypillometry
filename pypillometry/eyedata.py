@@ -10,7 +10,7 @@ from .eyedata_generic import GenericEyedata
 
 class EyeData(GenericEyedata):
     def __init__(self, sampling_rate: float):
-        self.x = x
+        self.fs = sampling_rate
 
     def summary(self):
-        print("This is a summary of the data 2.")
+        return {"blb": "blb"}

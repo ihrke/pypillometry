@@ -22,7 +22,7 @@ import scipy.signal as signal
 from scipy.interpolate import interp1d
 from scipy import interpolate
 import scipy
-from random import choice
+
 import pickle
 
 import collections.abc
