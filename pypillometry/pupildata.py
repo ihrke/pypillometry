@@ -56,9 +56,6 @@ class PupilData(GenericEyedata):
         """
         return self.blinks.shape[0]
     
-    def get_duration(self, units="min"):
-        fac=self._unit_fac(units)
-        return (len(self)/self.fs*1000)*fac
     
     def __init__(self,
                  pupil: PupilArray, 

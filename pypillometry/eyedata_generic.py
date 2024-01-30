@@ -61,6 +61,7 @@ class EyeDataDict(MutableMapping):
     def __setitem__(self, key, value):
         if value is None or len(value)==0:
             return
+        value=np.array(value)
         if not isinstance(value, np.ndarray):
             raise ValueError("Value must be numpy.ndarray")
         if len(value.shape)>1:
@@ -118,6 +119,13 @@ class GenericEyedata(ABC):
         else:
             fac=1.
         return fac
+
+    def __len__(self):
+        return len(self.tx)
+
+    def get_duration(self, units="min"):
+        fac=self._unit_fac(units)
+        return (len(self)/self.fs*1000)*fac
 
     def add_to_history(self, event):
         """Add event to history"""
