@@ -39,23 +39,7 @@ import functools
 class PupilData(GenericEyedata):
     """
     Class representing pupillometric data. 
-    """
-    
-    def __len__(self) -> int:
-        """Return number of sampling points in the pupil data."""
-        return self.sy.size
-    
-    def nevents(self) -> int:
-        """Return number of events in pupillometric data."""
-        return self.event_onsets.size
-
-    def nblinks(self) -> int:
-        """
-        Return number of detected blinks. Should be run after `detect_blinks()`.
-        """
-        return self.blinks.shape[0]
-    
-    
+    """    
     def __init__(self,
                  pupil: PupilArray, 
                  sampling_rate: Optional[float]=None,
@@ -176,6 +160,12 @@ class PupilData(GenericEyedata):
         ## start with empty history    
         self.history=[]
        
+    def nblinks(self) -> int:
+        """
+        Return number of detected blinks. Should be run after `detect_blinks()`.
+        """
+        return self.blinks.shape[0]
+    
 
     @keephistory
     def sub_slice(self, start: float=-np.inf, end: float=np.inf, units: str="sec"):

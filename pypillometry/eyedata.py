@@ -143,7 +143,7 @@ class EyeData(GenericEyedata):
             self.tx=ntx
         return self
 
-    def has_left(self, ignorepupil=True): 
+    def has_left_eye(self, ignorepupil=True): 
         """Data from left eye available?"""
         if "left_x" in self.data and "left_y" in self.data:
             if ignorepupil:
@@ -153,7 +153,7 @@ class EyeData(GenericEyedata):
         else:
             return False
 
-    def has_right(self, ignorepupil=True):
+    def has_right_eye(self, ignorepupil=True):
         """Data from right eye available?"""
         if "right_x" in self.data and "right_y" in self.data:
             if ignorepupil:
@@ -169,6 +169,7 @@ class EyeData(GenericEyedata):
             n=len(self.data),
             sampling_rate=self.fs,
             data=list(self.data.keys()),
+            nevents=self.nevents(), 
             nmiss=np.sum(self.missing),
             perc_miss=np.sum(self.missing)/len(self)*100.,
             duration_minutes=self.get_duration("min"),

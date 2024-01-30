@@ -122,7 +122,12 @@ class GenericEyedata(ABC):
         return fac
 
     def __len__(self):
+        """Return number of sampling points"""
         return len(self.tx)
+
+    def nevents(self) -> int:
+        """Return number of events in data."""
+        return self.event_onsets.size
 
     def get_duration(self, units="min"):
         fac=self._unit_fac(units)
