@@ -16,6 +16,7 @@ from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
 PupilArray=Union[np.ndarray, List[float]]
 import functools
 from random import choice
+import copy
 
 ## abstract base class to enforce implementation of some functions for all classes
 from abc import ABC, abstractmethod 
@@ -227,7 +228,7 @@ class GenericEyedata(ABC):
     @classmethod
     def from_file(cls, fname:str):
         """
-        Reads a :class:`.PupilData` object from a pickle-file.
+        Reads a :class:`.GenericEyedata` object from a pickle-file.
         Use as ``pypillometry.PupilData.from_file("yourfile.pd")``.
         
         Parameters
@@ -274,4 +275,4 @@ class GenericEyedata(ABC):
             result.name=self.name+"_"+self._random_id(n=2)
         else:
             result.name=new_name
-        return result        
+        return result
