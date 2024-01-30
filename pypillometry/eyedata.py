@@ -7,6 +7,7 @@ This class allows to store eyetracking and pupil data in a single object.
 """
 from .eyedata_generic import GenericEyedata, keephistory
 import numpy as np
+from collections.abc import Iterable
 
 from pypillometry import GenericEyedata, EyeDataDict, keephistory
 class EyeData(GenericEyedata):
@@ -231,3 +232,51 @@ class EyeData(GenericEyedata):
         obj.event_labels=obj.event_labels[keepev]
         
         return obj
+    
+    def plot(self, 
+            plot_range: tuple=(-np.infty, +np.infty),
+            plot_data: list=["x","y","pupil"], 
+            plot_eyes: list=["left","right"],
+            units: str="sec",
+            figsize: tuple=(10,5)
+            ) -> None:
+        """
+        Plot the EyeData.
+        """
+        fac=self._unit_fac(units)
+        xlab=units
+        tx=self.tx*fac
+        evon=self.event_onsets*fac
+
+        start,end=plot_range
+        if start==-np.infty:
+            startix=0
+        else:
+            startix=np.argmin(np.abs(tx-start))
+            
+        if end==np.infty:
+            endix=tx.size
+        else:
+            endix=np.argmin(np.abs(tx-end))
+        
+        tx=tx[startix:endix]
+        ixx=np.logical_and(evon>=start, evon<end)
+        evlab=self.event_labels[ixx]
+        evon=evon[ixx]
+
+        nplots = len(plot_data)
+        fig, axs = plt.subplots(nplots,1)
+        # for the case when nplots=1, make axs iterable
+        if not isinstance(axs, Iterable):
+            axs=[axs]
+        fig.set_figheight(figsize[1]*nplots)
+        fig.set_figwidth(figsize[0])
+        for k,ax in zip(plot_data, axs):
+            for eye in plot_eyes:
+                ax.plot(tx, self.data["_".join([eye,k])][startix:endix], label=eye)
+            ax.set_title(k)
+            ax.legend()
+        
+        plt.legend()
+        plt.xlabel(xlab)        
+
