@@ -157,26 +157,6 @@ class EyeData(GenericEyedata):
             self.tx=ntx
         return self
 
-    def has_left_eye(self, ignorepupil=True): 
-        """Data from left eye available?"""
-        if "left_x" in self.data and "left_y" in self.data:
-            if ignorepupil:
-                return True
-            else:
-                return "left_pupil" in self.data
-        else:
-            return False
-
-    def has_right_eye(self, ignorepupil=True):
-        """Data from right eye available?"""
-        if "right_x" in self.data and "right_y" in self.data:
-            if ignorepupil:
-                return True
-            else:
-                return "right_pupil" in self.data
-        else:
-            return False
-
     def summary(self):
         summary=dict(
             name=self.name, 
