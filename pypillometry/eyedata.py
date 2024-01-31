@@ -6,6 +6,7 @@ Implement EyeData class for use with the pypillometry package.
 This class allows to store eyetracking and pupil data in a single object.
 """
 from .eyedata_generic import GenericEyedata, EyeDataDict, keephistory, _inplace
+from .pupildata import PupilData
 import numpy as np
 from collections.abc import Iterable
 import pylab as plt
@@ -508,4 +509,24 @@ class EyeData(GenericEyedata):
         ax.legend()
         ax.set_title(title)
         fig.tight_layout()
+
+    def get_pupildata(self, eye):
+        """
+        Return the pupil data as a PupilData object.
+
+        Parameters
+        ----------
+        eye : str, optional
+            Which eye to return data for. 
+        """
+        if eye not in [k.split("_")[0] for k in self.data.keys()]:
+            raise ValueError("No pupil data for eye: %s" % eye)
+        pobj = PupilData(self.data[eye+"_pupil"],
+                        sampling_rate=self.fs,
+                        time=self.tx, 
+                        event_onsets=self.event_onsets,
+                        event_labels=self.event_labels,
+                        name=self.name+"_pd",
+                        keep_orig=False)
+        return pobj        
 
