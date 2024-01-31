@@ -10,6 +10,7 @@ import numpy as np
 from collections.abc import Iterable
 import pylab as plt
 import matplotlib.patches as patches
+from matplotlib import cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
@@ -194,7 +195,9 @@ class EyeData(GenericEyedata):
         end: float
             end of new dataset
         units: str
-            time units in which `start` and `end` are provided
+            time units in which `start` and `end` are provided.
+            (one of "ms", "sec", "min", "h").
+            If units is `None`, use the units in the time vector.
         """
         obj=self if inplace else self.copy()
         tx=self.tx
@@ -221,7 +224,7 @@ class EyeData(GenericEyedata):
             plot_data: list=[], 
             plot_eyes: list=[],
             plot_onsets: str="line",
-            units: str="sec",
+            units: str=None,
             figsize: tuple=(10,5)
             ) -> None:
         """
@@ -242,14 +245,19 @@ class EyeData(GenericEyedata):
             Whether to plot markers for the event onsets. One of "line" (vertical lines),
             "label" (text label), "both" (both lines and labels), or "none" (no markers).
         units: str
-            The units to plot. Default is "sec".
+            The units to plot. Default is "sec". If None, use the units in the time vector.
         figsize: tuple
             The figure size (per subplot). Default is (10,5).
         """
-        fac=self._unit_fac(units)
+
+        tx=self.tx
+        evon=self.event_onsets
+        if units is not None: 
+            fac=self._unit_fac(units)
+            tx *= fac
+            evon *= fac
+
         xlab=units
-        tx=self.tx*fac
-        evon=self.event_onsets*fac
 
         # plot_range
         start,end=plot_range
@@ -326,7 +334,10 @@ class EyeData(GenericEyedata):
             gridsize="auto"
             ) -> None:
         """
-        Plot a part of the EyeData. Each data type is plotted in a separate subplot.
+        Plot EyeData as a heatmap. Typically used for a large amount of data
+        to spot the most frequent locations.
+        To plot a scanpath, use :meth:`.plot_scanpath()` instead.
+        Each eye is plotted in a separate subplot.
 
         Parameters:
         -----------
@@ -397,3 +408,100 @@ class EyeData(GenericEyedata):
                                 fill=False, edgecolor="red", linewidth=2)
                 ax.add_patch(screenrect)
 
+    def plot_scanpath(self, 
+            plot_range: tuple=(-np.infty, +np.infty), 
+            plot_eyes: list=[],
+            plot_screen: bool=True,
+            plot_onsets: bool=True,
+            title: str="",
+            units: str=None,
+            figsize: tuple=(10,10)
+            ) -> None:
+        """
+        Plot EyeData as a scanpath. Typically used for single trials
+        or another small amount of data. To plot a larger amount of data,
+        use :meth:`.plot_heatmap()` instead.
+
+        If several eyes are available, they are plotted in the same figure 
+        in different colors. You can choose between them using the `plot_eyes` 
+        parameter.
+
+        Parameters:
+        -----------
+
+        plot_range: tuple
+            The time range to plot. Default is (-np.infty, +np.infty), i.e. all data.
+        plot_eyes: list
+            The eyes to plot. Default is [], which means all available data ("left", "right",
+            average, regression, ...)
+        plot_screen: bool
+            Whether to plot the screen limits. Default is True.
+        plot_onsets: bool
+            Whether to plot the event onsets. Default is True.
+        title: str
+            The title of the plot. Default is "".
+        units: str
+            The units to plot. Default is "sec". Plotted only for the first "eye".
+            If None, the units are taken from the data.
+        figsize: tuple
+            The figure size (per subplot). Default is (10,5).
+        """
+        tx=self.tx
+        evon=self.event_onsets
+        if units is not None: 
+            fac=self._unit_fac(units)
+            tx *= fac
+            evon *= fac
+
+        xlab=units
+
+        # plot_range
+        start,end=plot_range
+        if start==-np.infty:
+            startix=0
+        else:
+            startix=np.argmin(np.abs(tx-start))
+            
+        if end==np.infty:
+            endix=tx.size
+        else:
+            endix=np.argmin(np.abs(tx-end))    
+        
+        # get events in range
+        evonixx=np.logical_and(evon>=start, evon<end)
+        evlab=self.event_labels[evonixx]
+        evon=evon[evonixx]
+        evontix=np.argmin(np.abs(tx-evon[:,np.newaxis]), axis=1).astype(int)
+
+        # which eyes to plot
+        if len(plot_eyes)==0:
+            plot_eyes=self.data.get_available_eyes()
+
+        fig, ax = plt.subplots(1,1)
+        fig.set_figheight(figsize[1])
+        fig.set_figwidth(figsize[0])
+
+        tnorm = tx[startix:endix]
+        tnorm = (tnorm - tnorm.min()) / (tnorm.max() - tnorm.min())
+        for eye in plot_eyes:
+            vx = "_".join([eye,"x"])
+            vy = "_".join([eye,"y"])
+            if vx in self.data.keys() and vy in self.data.keys():
+                ax.plot(self.data[vx][startix:endix], self.data[vy][startix:endix], alpha=0.3, label=eye)
+                ax.scatter(self.data[vx][startix:endix], self.data[vy][startix:endix], 
+                        s=1, c=cm.jet(tnorm))
+            if plot_onsets and eye==plot_eyes[0]:
+                for ix, lab in zip(evontix, evlab):
+                    ax.text(self.data[vx][ix], self.data[vy][ix], lab, 
+                            fontsize=12, ha="center", va="center")
+
+        ax.set_aspect("equal")
+        #fig.colorbar()
+        if plot_screen:
+            screenrect=patches.Rectangle((self.screen_xlim[0], self.screen_ylim[0]), 
+                            self.screen_xlim[1], self.screen_ylim[1], 
+                            fill=False, edgecolor="red", linewidth=2)
+            ax.add_patch(screenrect)
+        ax.legend()
+        ax.set_title(title)
+        fig.tight_layout()
