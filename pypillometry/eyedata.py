@@ -200,10 +200,13 @@ class EyeData(GenericEyedata):
             If units is `None`, use the units in the time vector.
         """
         obj=self if inplace else self.copy()
-        tx=self.tx
         if units is not None: 
             fac=self._unit_fac(units)
-            tx *= fac
+            tx = self.tx*fac
+            evon=obj.event_onsets*fac
+        else: 
+            tx = self.tx.copy()
+            evon=obj.event_onsets.copy()
         keepix=np.where(np.logical_and(tx>=start, tx<=end))
 
         ndata={}
@@ -212,7 +215,7 @@ class EyeData(GenericEyedata):
         obj.data=EyeDataDict(ndata)
         obj.tx=obj.tx[keepix]
 
-        evon=obj.event_onsets*obj._unit_fac(units)
+        
         keepev=np.logical_and(evon>=start, evon<=end)
         obj.event_onsets=obj.event_onsets[keepev]
         obj.event_labels=obj.event_labels[keepev]
@@ -250,12 +253,14 @@ class EyeData(GenericEyedata):
             The figure size (per subplot). Default is (10,5).
         """
 
-        tx=self.tx
-        evon=self.event_onsets
         if units is not None: 
             fac=self._unit_fac(units)
-            tx *= fac
-            evon *= fac
+            tx = self.tx*fac
+            evon = self.event_onsets*fac
+        else:
+            tx=self.tx.copy()
+            evon=self.event_onsets.copy()
+            units="tx"
 
         xlab=units
 
@@ -359,9 +364,7 @@ class EyeData(GenericEyedata):
             The gridsize for the hexbin plot. Default is "auto".
         """
         fac=self._unit_fac(units)
-        xlab=units
         tx=self.tx*fac
-        evon=self.event_onsets*fac
 
         # plot_range
         start,end=plot_range
@@ -378,6 +381,8 @@ class EyeData(GenericEyedata):
         # which eyes to plot
         if len(plot_eyes)==0:
             plot_eyes=self.data.get_available_eyes()
+        if not isinstance(plot_eyes, list):
+            plot_eyes=[plot_eyes]
 
         # choose gridsize
         if gridsize=="auto":
@@ -446,14 +451,13 @@ class EyeData(GenericEyedata):
         figsize: tuple
             The figure size (per subplot). Default is (10,5).
         """
-        tx=self.tx
-        evon=self.event_onsets
         if units is not None: 
             fac=self._unit_fac(units)
-            tx *= fac
-            evon *= fac
-
-        xlab=units
+            tx = self.tx*fac
+            evon = self.event_onsets*fac
+        else:
+            tx=self.tx.copy()
+            evon=self.event_onsets.copy()
 
         # plot_range
         start,end=plot_range
@@ -481,7 +485,7 @@ class EyeData(GenericEyedata):
         fig.set_figheight(figsize[1])
         fig.set_figwidth(figsize[0])
 
-        tnorm = tx[startix:endix]
+        tnorm = tx[startix:endix].copy()
         tnorm = (tnorm - tnorm.min()) / (tnorm.max() - tnorm.min())
         for eye in plot_eyes:
             vx = "_".join([eye,"x"])
