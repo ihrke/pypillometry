@@ -8,6 +8,10 @@ This class allows to store eyetracking and pupil data in a single object.
 from .eyedata_generic import GenericEyedata, EyeDataDict, keephistory, _inplace
 import numpy as np
 from collections.abc import Iterable
+import pylab as plt
+import matplotlib.patches as patches
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 
 class EyeData(GenericEyedata):
     def __init__(self, 
@@ -331,3 +335,85 @@ class EyeData(GenericEyedata):
         
         plt.legend()
         plt.xlabel(xlab)        
+
+    def plot_heatmap(self, 
+            plot_range: tuple=(-np.infty, +np.infty), 
+            plot_eyes: list=[],
+            plot_screen: bool=True,
+            units: str="sec",
+            figsize: tuple=(10,10),
+            cmap: str="jet",
+            gridsize="auto"
+            ) -> None:
+        """
+        Plot a part of the EyeData. Each data type is plotted in a separate subplot.
+
+        Parameters:
+        -----------
+
+        plot_range: tuple
+            The time range to plot. Default is (-np.infty, +np.infty), i.e. all data.
+        plot_eyes: list
+            The eyes to plot. Default is [], which means all available data ("left", "right",
+            average, regression, ...)
+        plot_screen: bool
+            Whether to plot the screen limits. Default is True.
+        units: str
+            The units to plot. Default is "sec".
+        figsize: tuple
+            The figure size (per subplot). Default is (10,5).
+        cmap: str
+            The colormap to use. Default is "jet".
+        gridsize: str or int
+            The gridsize for the hexbin plot. Default is "auto".
+        """
+        fac=self._unit_fac(units)
+        xlab=units
+        tx=self.tx*fac
+        evon=self.event_onsets*fac
+
+        # plot_range
+        start,end=plot_range
+        if start==-np.infty:
+            startix=0
+        else:
+            startix=np.argmin(np.abs(tx-start))
+            
+        if end==np.infty:
+            endix=tx.size
+        else:
+            endix=np.argmin(np.abs(tx-end))    
+        
+        # which eyes to plot
+        if len(plot_eyes)==0:
+            plot_eyes=self.data.get_available_eyes()
+
+        # choose gridsize
+        if gridsize=="auto":
+            gridsize=int(np.sqrt(endix-startix))
+
+        nplots = len(plot_eyes)
+        fig, axs = plt.subplots(1,nplots)
+        # for the case when nplots=1, make axs iterable
+        if not isinstance(axs, Iterable):
+            axs=[axs]
+        fig.set_figheight(figsize[1])
+        fig.set_figwidth(figsize[0]*nplots)
+        for eye,ax in zip(plot_eyes, axs):
+            vx = "_".join([eye,"x"])
+            vy = "_".join([eye,"y"])
+            if vx in self.data.keys() and vy in self.data.keys():
+                divider = make_axes_locatable(ax)
+                im=ax.hexbin(self.data[vx][startix:endix], self.data[vy][startix:endix], 
+                            gridsize=gridsize, cmap=cmap, mincnt=1)
+                cax = divider.append_axes('right', size='5%', pad=0.05)
+                fig.colorbar(im, cax=cax, orientation='vertical')
+            ax.set_title(eye)
+            ax.set_aspect("equal")
+            #fig.colorbar()
+            if plot_screen:
+                screenrect=patches.Rectangle((self.screen_xlim[0], self.screen_ylim[0]), 
+                                self.screen_xlim[1], self.screen_ylim[1], 
+                                fill=False, edgecolor="red", linewidth=2)
+                ax.add_patch(screenrect)
+
