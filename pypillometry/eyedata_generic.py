@@ -49,12 +49,29 @@ class EyeDataDict(MutableMapping):
     A dictionary that contains 1-dimensional ndarrays of equal length
     and with the same datatype (float).
     Drops empty entries (None or length-0 ndarrays).
+
+    Keys stored in this dictionary have the following shape:
+    (eye)_(variable) where eye is either "left" or "right" or a 
+    statistical combination (e.g., "mean" or "median" or "regress") and
+    variable is one of "x", "y", "pupil" (or other calculated entities).
     """
 
     def __init__(self, *args, **kwargs):
         self.data = dict()
         self.length=0
         self.update(dict(*args, **kwargs))  # use the free update to set keys
+
+    def get_eye(self, eye):
+        """
+        Return a subset EyeDataDict with all variables for a given eye.
+        """
+        return EyeDataDict({k:v for k,v in self.data.items() if k.startswith(eye+"_")})
+    
+    def get_variable(self, variable):
+        """
+        Return a subset EyeDataDict with all eyes for a given variable.
+        """
+        return EyeDataDict({k:v for k,v in self.data.items() if k.endswith("_"+variable)})
 
     def __getitem__(self, key):
         return self.data[key]
@@ -99,7 +116,7 @@ class GenericEyedata(ABC):
     """
     name: str  ## name of dataset
     fs: float  ## sampling rate
-    data: dict ## dictionary with data (contains ndarrays)
+    data: EyeDataDict ## dictionary with data (contains ndarrays)
     tx: np.ndarray ## time vector
     missing: np.ndarray ## missing data vector (1=missing, 0=not missing)
     event_onsets: np.ndarray ## vector with event onsets in time units
