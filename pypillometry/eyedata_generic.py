@@ -61,6 +61,20 @@ class EyeDataDict(MutableMapping):
         self.length=0
         self.update(dict(*args, **kwargs))  # use the free update to set keys
 
+    def get_available_eyes(self):
+        """
+        Return a list of available eyes.
+        """
+        eyes=[k.split("_")[0] for k in self.data.keys()]
+        return list(set(eyes))
+
+    def get_available_variables(self):
+        """
+        Return a list of available variables.
+        """
+        variables=[k.split("_")[1] for k in self.data.keys()]
+        return list(set(variables))
+
     def get_eye(self, eye):
         """
         Return a subset EyeDataDict with all variables for a given eye.

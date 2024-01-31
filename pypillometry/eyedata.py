@@ -5,11 +5,10 @@ eyedata.py
 Implement EyeData class for use with the pypillometry package.
 This class allows to store eyetracking and pupil data in a single object.
 """
-from .eyedata_generic import GenericEyedata, keephistory
+from .eyedata_generic import GenericEyedata, EyeDataDict, keephistory, _inplace
 import numpy as np
 from collections.abc import Iterable
 
-from pypillometry import GenericEyedata, EyeDataDict, keephistory
 class EyeData(GenericEyedata):
     def __init__(self, 
                     time: np.ndarray = None,
@@ -235,19 +234,40 @@ class EyeData(GenericEyedata):
     
     def plot(self, 
             plot_range: tuple=(-np.infty, +np.infty),
-            plot_data: list=["x","y","pupil"], 
-            plot_eyes: list=["left","right"],
+            plot_data: list=[], 
+            plot_eyes: list=[],
+            plot_onsets: str="line",
             units: str="sec",
             figsize: tuple=(10,5)
             ) -> None:
         """
-        Plot the EyeData.
+        Plot a part of the EyeData. Each data type is plotted in a separate subplot.
+
+        Parameters:
+        -----------
+
+        plot_range: tuple
+            The time range to plot. Default is (-np.infty, +np.infty), i.e. all data.
+        plot_data: list
+            The data to plot. Default is [], which means all available data will be plotted.
+            Available data are ["x","y","pupil"] but can be extended by the user.
+        plot_eyes: list
+            The eyes to plot. Default is [], which means all available data ("left", "right",
+            average, regression, ...)
+        plot_onsets: str
+            Whether to plot markers for the event onsets. One of "line" (vertical lines),
+            "label" (text label), "both" (both lines and labels), or "none" (no markers).
+        units: str
+            The units to plot. Default is "sec".
+        figsize: tuple
+            The figure size (per subplot). Default is (10,5).
         """
         fac=self._unit_fac(units)
         xlab=units
         tx=self.tx*fac
         evon=self.event_onsets*fac
 
+        # plot_range
         start,end=plot_range
         if start==-np.infty:
             startix=0
@@ -258,6 +278,30 @@ class EyeData(GenericEyedata):
             endix=tx.size
         else:
             endix=np.argmin(np.abs(tx-end))
+        
+        # which data to plot
+        if len(plot_data)==0:
+            plot_data=self.data.get_available_variables()
+
+        # which eyes to plot
+        if len(plot_eyes)==0:
+            plot_eyes=self.data.get_available_eyes()
+
+        # how to plot onsets
+        if plot_onsets=="line":
+            ev_line=True
+            ev_label=False
+        elif plot_onsets=="label":
+            ev_line=False
+            ev_label=True
+        elif plot_onsets=="both":
+            ev_line=True
+            ev_label=True
+        elif plot_onsets=="none":
+            ev_line=False
+            ev_label=False
+        else:
+            raise ValueError("plot_onsets must be one of 'line', 'label', 'both', or 'none'")
         
         tx=tx[startix:endix]
         ixx=np.logical_and(evon>=start, evon<end)
@@ -271,12 +315,19 @@ class EyeData(GenericEyedata):
             axs=[axs]
         fig.set_figheight(figsize[1]*nplots)
         fig.set_figwidth(figsize[0])
-        for k,ax in zip(plot_data, axs):
+        for var,ax in zip(plot_data, axs):
             for eye in plot_eyes:
-                ax.plot(tx, self.data["_".join([eye,k])][startix:endix], label=eye)
-            ax.set_title(k)
+                vname = "_".join([eye,var])
+                if vname in self.data.keys():
+                    ax.plot(tx, self.data[vname][startix:endix], label=eye)
+            if ev_line:
+                ax.vlines(evon, *ax.get_ylim(), color="grey", alpha=0.5)
+            if ev_label:
+                ll,ul=ax.get_ylim()
+                for ev,lab in zip(evon,evlab):
+                    ax.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
+            ax.set_title(var)
             ax.legend()
         
         plt.legend()
         plt.xlabel(xlab)        
-
