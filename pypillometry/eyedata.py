@@ -144,7 +144,7 @@ class EyeData(GenericEyedata):
             self.screen_ylim=(0,screen_resolution[1])
             self._screen_size_set=True
         if physical_screen_size is not None:
-            self.physical_screen_dims=physical_dims
+            self.physical_screen_dims=physical_screen_size
             self._physical_screen_dims_set=True
         if screen_eye_distance is not None:
             self._screen_eye_distance=screen_eye_distance
@@ -166,13 +166,13 @@ class EyeData(GenericEyedata):
     def physical_screen_width(self):
         if not self._physical_screen_dims_set:
             raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
-        return self.physical_dims[0]
+        return self.physical_screen_dims[0]
 
     @property
     def physical_screen_height(self):
         if not self._physical_screen_dims_set:
             raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
-        return self.physical_dims[1]
+        return self.physical_screen_dims[1]
 
     @property
     def screen_eye_distance(self):
