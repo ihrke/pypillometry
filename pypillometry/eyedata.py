@@ -27,7 +27,8 @@ class EyeData(GenericEyedata):
                     event_onsets: np.ndarray = None,
                     event_labels: np.ndarray = None,
                     sampling_rate: float = None,
-                    screen_limits: tuple = ((0,1280),(0,1024)),
+                    screen_limits: tuple = None,
+                    physical_screen_size: tuple = None,
                     name: str = None,
                     fill_time_discontinuities: bool = True,
                     keep_orig: bool = False):
@@ -47,6 +48,8 @@ class EyeData(GenericEyedata):
             sampling-rate of the pupillary signal in Hz; if None, 
         screen_limits: tuple
             ((xmin,xmax), (ymin,ymax)) for screen
+        physical_screen_size: tuple
+            (width, height) of the screen in cm; if None, the screen size is not used
         name: 
             name of the dataset or `None` (in which case a random string is selected)
         event_onsets: 
@@ -75,8 +78,7 @@ class EyeData(GenericEyedata):
             self.name=name
         
         ## screen limits
-        self.screen_xlim=screen_limits[0]
-        self.screen_ylim=screen_limits[1]
+        self.set_screen_size(screen_limits, physical_screen_size)
 
         ## set time array and sampling rate
         if time is None:
@@ -105,14 +107,61 @@ class EyeData(GenericEyedata):
         if fill_time_discontinuities:
             self.fill_time_discontinuities()
 
+    def get_available_eyes(self):
+        """
+        Return a list of available eyes in the dataset.
+        """
+        return self.data.get_available_eyes()
+
+
+    def set_screen_size(self, xlim: tuple=None, ylim: tuple=None, physical_dims: tuple=None):
+        """
+        Set the screen size (in pix and/or physical) for the dataset.
+
+        Parameters
+        ----------
+        xlim: tuple
+            (xmin, xmax) for the screen in pixels (as in the eyetracker data)
+        ylim: tuple
+            (ymin, ymax) for the screen in pixels 
+        physical_dims: tuple
+            (width, height) of the screen in cm; if None, the screen size is not used
+        """
+        if xlim is not None:
+            self.screen_xlim=xlim
+            self._screen_size_set=True
+        if ylim is not None:
+            self.screen_ylim=ylim
+            self._screen_size_set=True
+        if physical_dims is not None:
+            self.physical_screen_dims=physical_dims
+            self._physical_screen_dims_set=True
+
     @property
     def screen_width(self):
+        if not self._screen_size_set:
+            raise ValueError("Screen size not set! Use `set_screen_size()` to set it.")
         return self.screen_xlim[1]-self.screen_xlim[0]
 
     @property
     def screen_height(self):
+        if not self._screen_size_set:
+            raise ValueError("Screen size not set! Use `set_screen_size()` to set it.")
         return self.screen_ylim[1]-self.screen_ylim[0]
     
+    @property
+    def physical_screen_width(self):
+        if not self._physical_screen_dims_set:
+            raise ValueError("Physical screen size not set! Use `set_screen_size()` to set it.")
+        return self.physical_dims[0]
+
+    @property
+    def physical_screen_height(self):
+        if not self._physical_screen_dims_set:
+            raise ValueError("Physical screen size not set! Use `set_screen_size()` to set it.")
+        return self.physical_dims[1]
+
+
     @keephistory
     def fill_time_discontinuities(self, yval=0, print_info=True):
         """
@@ -251,7 +300,7 @@ class EyeData(GenericEyedata):
             Available data are ["x","y","pupil"] but can be extended by the user.
         plot_eyes: list
             The eyes to plot. Default is [], which means all available data ("left", "right",
-            average, regression, ...)
+            "average", "regression", ...)
         plot_onsets: str
             Whether to plot markers for the event onsets. One of "line" (vertical lines),
             "label" (text label), "both" (both lines and labels), or "none" (no markers).
