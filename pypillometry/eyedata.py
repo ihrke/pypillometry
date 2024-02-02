@@ -44,12 +44,11 @@ class EyeData(GenericEyedata):
             data from right eye (at least one of the eyes must be provided, both x and y)
             pupil is optional
         sampling_rate: float
-            sampling-rate of the pupillary signal in Hz
+            sampling-rate of the pupillary signal in Hz; if None, 
         screen_limits: tuple
             ((xmin,xmax), (ymin,ymax)) for screen
         name: 
             name of the dataset or `None` (in which case a random string is selected)
-
         event_onsets: 
             time-onsets of any events in the data (in ms, matched in `time` vector)
         event_labels:
@@ -106,6 +105,14 @@ class EyeData(GenericEyedata):
         if fill_time_discontinuities:
             self.fill_time_discontinuities()
 
+    @property
+    def screen_width(self):
+        return self.screen_xlim[1]-self.screen_xlim[0]
+
+    @property
+    def screen_height(self):
+        return self.screen_ylim[1]-self.screen_ylim[0]
+    
     @keephistory
     def fill_time_discontinuities(self, yval=0, print_info=True):
         """
