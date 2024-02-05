@@ -618,3 +618,49 @@ class EyeData(GenericEyedata):
                         keep_orig=False)
         return pobj        
 
+    @keephistory
+    def correct_pupil_foreshortening(self, eyes=None, midpoint=None, inplace=_inplace):
+        """
+        Correct the pupil data for foreshortening effects caused
+        by saccades/eye movements. This method is based on a simple algorithm
+        described here: 
+
+            :ref:`Correcting pupillary signal using </docs/pupil_correction_carole.rst>`
+
+        Relevant publication (not the description of the algorithm used here):    
+        https://link.springer.com/article/10.3758/s13428-015-0588-x
+
+        Parameters: 
+        -----------
+        eyes: list
+            Which eyes to correct. If None, correct all available eyes.
+        midpoint: tuple
+            The center of the screen (x,y) where it is assumed that the pupil is completely circular.
+            If None, the midpoint is taken to be the center of the screen as registered
+            in the EyeData object. 
+        inplace: bool
+            Whether to modify the object in place or return a new object.
+        """
+        obj=self if inplace else self.copy()
+        if midpoint is None:
+            midpoint=(self.screen_width/2, self.screen_height/2)
+        
+        if eyes is None:
+            eyes=self.get_available_eyes()
+
+        scaling_factor_x=self.physical_screen_width/self.screen_width
+        scaling_factor_y=self.physical_screen_height/self.screen_height
+
+        # calculate distance of x,y from midpoint
+        if not isinstance(eyes, list):
+            eyes=[eyes]
+        for eye in eyes:
+            vx="_".join([eye, "x"])
+            vy="_".join([eye, "y"])
+            xdist=np.abs(self.data[vx]-midpoint[0])*scaling_factor_x
+            ydist=np.abs(self.data[vy]-midpoint[1])*scaling_factor_y
+            dist=np.sqrt(xdist**2 + ydist**2)
+            corr=np.sqrt( (dist**2)/(self.screen_eye_distance**2) + 1)  # correction factor
+            obj.data["_".join([eye, "pupil"])]=self.data["_".join([eye, "pupil"])]*corr
+
+        return obj
