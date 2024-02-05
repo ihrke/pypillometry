@@ -27,7 +27,7 @@ class EyeData(GenericEyedata):
                     event_onsets: np.ndarray = None,
                     event_labels: np.ndarray = None,
                     sampling_rate: float = None,
-                    screen_limits: tuple = None,
+                    screen_resolution: tuple = None,
                     physical_screen_size: tuple = None,
                     screen_eye_distance: float = None,
                     name: str = None,
@@ -47,8 +47,8 @@ class EyeData(GenericEyedata):
             pupil is optional
         sampling_rate: float
             sampling-rate of the pupillary signal in Hz; if None, 
-        screen_limits: tuple
-            ((xmin,xmax), (ymin,ymax)) for screen
+        screen_resolution: tuple
+            (xmax, ymax) screen resolution in pixels
         physical_screen_size: tuple
             (width, height) of the screen in cm; if None, the screen size is not used
         screen_eye_distance: float
@@ -85,7 +85,7 @@ class EyeData(GenericEyedata):
         self._screen_eye_distance_set=False
 
         ## screen limits, physical screen size, screen-eye distance
-        self.set_experiment_info(screen_resolution=screen_limits, 
+        self.set_experiment_info(screen_resolution=screen_resolution, 
                                  physical_screen_size=physical_screen_size,
                                  screen_eye_distance=screen_eye_distance)
 
@@ -110,7 +110,7 @@ class EyeData(GenericEyedata):
 
         self.original=None
         if keep_orig: 
-            self.original=self.copy()
+            self.original=self.copy()30
 
         ## fill in time discontinuities
         if fill_time_discontinuities:
@@ -142,7 +142,6 @@ class EyeData(GenericEyedata):
         if screen_resolution is not None:
             self.screen_xlim=(0,screen_resolution[0])
             self.screen_ylim=(0,screen_resolution[1])
-            self._screen_size_set=True
         if physical_screen_size is not None:
             self.physical_screen_dims=physical_screen_size
             self._physical_screen_dims_set=True
@@ -151,15 +150,38 @@ class EyeData(GenericEyedata):
             self._screen_eye_distance_set=True
 
     @property
-    def screen_width(self):
+    def screen_xlim(self):
         if not self._screen_size_set:
             raise ValueError("Screen size not set! Use `set_experiment_info()` to set it.")
+        return self._screen_xlim
+
+    @screen_xlim.setter
+    def screen_xlim(self, value):
+        if not isinstance(value, tuple):
+            raise ValueError("Screen limits must be a tuple (xmin, xmax)")
+        self._screen_xlim=value
+        self._screen_size_set=True
+    
+    @property
+    def screen_ylim(self):
+        if not self._screen_size_set:
+            raise ValueError("Screen size not set! Use `set_experiment_info()` to set it.")
+        return self._screen_ylim
+    
+    @screen_ylim.setter
+    def screen_ylim(self, value):
+        if not isinstance(value, tuple):
+            raise ValueError("Screen limits must be a tuple (ymin, ymax)")
+        self._screen_ylim=value
+        self._screen_size_set=True
+
+
+    @property
+    def screen_width(self):
         return self.screen_xlim[1]-self.screen_xlim[0]
 
     @property
     def screen_height(self):
-        if not self._screen_size_set:
-            raise ValueError("Screen size not set! Use `set_experiment_info()` to set it.")
         return self.screen_ylim[1]-self.screen_ylim[0]
     
     @property
