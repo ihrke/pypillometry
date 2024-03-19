@@ -110,7 +110,7 @@ class EyeData(GenericEyedata):
 
         self.original=None
         if keep_orig: 
-            self.original=self.copy()30
+            self.original=self.copy()
 
         ## fill in time discontinuities
         if fill_time_discontinuities:
