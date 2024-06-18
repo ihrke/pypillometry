@@ -5,9 +5,10 @@ eyedata.py
 Implement EyeData class for use with the pypillometry package.
 This class allows to store eyetracking and pupil data in a single object.
 """
-from .generic import GenericEyeData, keephistory
+from .generic import keephistory
 from .gazedata import GazeData
 from .eyedatadict import EyeDataDict
+from ..plot import EyePlotter
 import numpy as np
 
 from .pupildata import PupilData
@@ -116,172 +117,19 @@ class EyeData(GazeData):
         if fill_time_discontinuities:
             self.fill_time_discontinuities()
 
-    def get_available_eyes(self):
-        """
-        Return a list of available eyes in the dataset.
-        """
-        return self.data.get_available_eyes()
+        ## init whether or not to do operations in place
+        self.inplace=inplace 
 
-
-    def set_experiment_info(self, 
-                            screen_eye_distance: float=None,
-                            screen_resolution: tuple=None,
-                            physical_screen_size: tuple=None):
-        """
-        Set some experimental information for the dataset.
-
-        Parameters
-        ----------
-        screen_eye_distance: float
-            distance from the screen to the eye in cm
-        screen_resolution: tuple
-            (width, height) of the screen in pixels
-        physical_screen_size: tuple
-            (width, height) of the screen in cm
-        """
-        if screen_resolution is not None:
-            self.screen_xlim=(0,screen_resolution[0])
-            self.screen_ylim=(0,screen_resolution[1])
-        if physical_screen_size is not None:
-            self.physical_screen_dims=physical_screen_size
-            self._physical_screen_dims_set=True
-        if screen_eye_distance is not None:
-            self._screen_eye_distance=screen_eye_distance
-            self._screen_eye_distance_set=True
-
-    @property
-    def screen_xlim(self):
-        if not self._screen_size_set:
-            raise ValueError("Screen size not set! Use `set_experiment_info()` to set it.")
-        return self._screen_xlim
-
-    @screen_xlim.setter
-    def screen_xlim(self, value):
-        if not isinstance(value, tuple):
-            raise ValueError("Screen limits must be a tuple (xmin, xmax)")
-        self._screen_xlim=value
-        self._screen_size_set=True
-    
-    @property
-    def screen_ylim(self):
-        if not self._screen_size_set:
-            raise ValueError("Screen size not set! Use `set_experiment_info()` to set it.")
-        return self._screen_ylim
-    
-    @screen_ylim.setter
-    def screen_ylim(self, value):
-        if not isinstance(value, tuple):
-            raise ValueError("Screen limits must be a tuple (ymin, ymax)")
-        self._screen_ylim=value
-        self._screen_size_set=True
-
-
-    @property
-    def screen_width(self):
-        return self.screen_xlim[1]-self.screen_xlim[0]
-
-    @property
-    def screen_height(self):
-        return self.screen_ylim[1]-self.screen_ylim[0]
-    
-    @property
-    def physical_screen_width(self):
-        if not self._physical_screen_dims_set:
-            raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
-        return self.physical_screen_dims[0]
-
-    @property
-    def physical_screen_height(self):
-        if not self._physical_screen_dims_set:
-            raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
-        return self.physical_screen_dims[1]
-
-    @property
-    def screen_eye_distance(self):
-        if not self._screen_eye_distance_set:
-            raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
-        return self._screen_eye_distance
-
+        ## set plotter 
+        self.plot=EyePlotter(self)
 
 
     def summary(self):
         """
         Return a summary of the dataset as a dictionary.
         """
-        if self._screen_size_set:
-            screen_limits=(self.screen_xlim, self.screen_ylim)
-        else:
-            screen_limits="not set"
-        if self._physical_screen_dims_set:
-            phys_dims=self.physical_screen_dims
-        else:
-            phys_dims="not set"
 
-        summary=dict(
-            name=self.name, 
-            n=len(self.data),
-            sampling_rate=self.fs,
-            data=list(self.data.keys()),
-            nevents=self.nevents(), 
-            screen_limits=screen_limits,
-            physical_screen_size=phys_dims,
-            screen_eye_distance="not set",
-            nmiss=np.sum(self.missing),
-            perc_miss=np.sum(self.missing)/len(self)*100.,
-            duration_minutes=self.get_duration("min"),
-            start_min=self.tx.min()/1000./60.,
-            end_min=self.tx.max()/1000./60.,
-            glimpse=repr(self.data)
-        )
-           
-        return summary
-    
-    @keephistory
-    def sub_slice(self, 
-                start: float=-np.inf, 
-                end: float=np.inf, 
-                units: str=None, inplace=_inplace):
-        """
-        Return a new `EyeData` object that is a shortened version
-        of the current one (contains all data between `start` and
-        `end` in units given by `units` (one of "ms", "sec", "min", "h").
-        If units is `None`, use the units in the time vector.
-
-        Parameters
-        ----------
-        
-        start: float
-            start for new dataset
-        end: float
-            end of new dataset
-        units: str
-            time units in which `start` and `end` are provided.
-            (one of "ms", "sec", "min", "h").
-            If units is `None`, use the units in the time vector.
-        """
-        obj=self if inplace else self.copy()
-        if units is not None: 
-            fac=self._unit_fac(units)
-            tx = self.tx*fac
-            evon=obj.event_onsets*fac
-        else: 
-            tx = self.tx.copy()
-            evon=obj.event_onsets.copy()
-        keepix=np.where(np.logical_and(tx>=start, tx<=end))
-
-        ndata={}
-        for k,v in obj.data.items():
-            ndata[k]=v[keepix]
-        obj.data=EyeDataDict(ndata)
-        obj.tx=obj.tx[keepix]
-
-        
-        keepev=np.logical_and(evon>=start, evon<=end)
-        obj.event_onsets=obj.event_onsets[keepev]
-        obj.event_labels=obj.event_labels[keepev]
-        
-        return obj
-
+        return GazeData.summary(self)
 
     def get_pupildata(self, eye):
         """
@@ -304,7 +152,7 @@ class EyeData(GazeData):
         return pobj        
 
     @keephistory
-    def correct_pupil_foreshortening(self, eyes=None, midpoint=None, inplace=_inplace):
+    def correct_pupil_foreshortening(self, eyes=None, midpoint=None, inplace=None):
         """
         Correct the pupil data for foreshortening effects caused
         by saccades/eye movements. This method is based on a simple algorithm
@@ -325,7 +173,12 @@ class EyeData(GazeData):
             in the EyeData object. 
         inplace: bool
             Whether to modify the object in place or return a new object.
+            `true`: modify in place
+            `false`: return a new object
+            `None`: use the object's default setting (initialized in __init__)
         """
+        if inplace is None:
+            inplace=self.inplace
         obj=self if inplace else self.copy()
         if midpoint is None:
             midpoint=(self.screen_width/2, self.screen_height/2)

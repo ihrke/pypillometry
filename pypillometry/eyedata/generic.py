@@ -82,6 +82,14 @@ class GenericEyeData(ABC):
         """Return number of events in data."""
         return self.event_onsets.size
 
+
+    def get_available_eyes(self):
+        """
+        Return a list of available eyes in the dataset.
+        """
+        return self.data.get_available_eyes()
+
+
     def get_duration(self, units="min"):
         fac=self._unit_fac(units)
         return (len(self)/self.fs*1000)*fac
@@ -170,6 +178,58 @@ class GenericEyeData(ABC):
         obj=self if inplace else self.copy()            
         obj.tx=(self.tx-tmin)+t0
         obj.event_onsets=(self.event_onsets-tmin)+t0
+        return obj
+
+    @keephistory
+    def sub_slice(self, 
+                start: float=-np.inf, 
+                end: float=np.inf, 
+                units: str=None, inplace=None):
+        """
+        Return a new `EyeData` object that is a shortened version
+        of the current one (contains all data between `start` and
+        `end` in units given by `units` (one of "ms", "sec", "min", "h").
+        If units is `None`, use the units in the time vector.
+
+        Parameters
+        ----------
+        
+        start: float
+            start for new dataset
+        end: float
+            end of new dataset
+        units: str
+            time units in which `start` and `end` are provided.
+            (one of "ms", "sec", "min", "h").
+            If units is `None`, use the units in the time vector.
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes
+            if `None`, use the setting of the object (specified in constructor)
+        """
+        if inplace is None:
+            inplace=self.inplace
+        obj=self if inplace else self.copy()
+        if units is not None: 
+            fac=self._unit_fac(units)
+            tx = self.tx*fac
+            evon=obj.event_onsets*fac
+        else: 
+            tx = self.tx.copy()
+            evon=obj.event_onsets.copy()
+        keepix=np.where(np.logical_and(tx>=start, tx<=end))
+
+        ndata={}
+        for k,v in obj.data.items():
+            ndata[k]=v[keepix]
+        obj.data=EyeDataDict(ndata)
+        obj.tx=obj.tx[keepix]
+
+        
+        keepev=np.logical_and(evon>=start, evon<=end)
+        obj.event_onsets=obj.event_onsets[keepev]
+        obj.event_labels=obj.event_labels[keepev]
+        
         return obj
     
     def size_bytes(self):

@@ -1,3 +1,4 @@
+from ..plot.gazeplotter import GazePlotter
 
-class EyePlotter:
+class EyePlotter(GazePlotter):
     pass
