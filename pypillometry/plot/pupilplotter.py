@@ -1,2 +1,285 @@
+from ..eyedata import GenericEyeData
+import numpy as np
+from collections.abc import Iterable
+
+import pylab as plt
+import matplotlib.patches as patches
+from matplotlib import cm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 class PupilPlotter:
-    pass
+    """
+    Class for plotting pupil data. The class is initialized with a GenericEyeData object
+    and provides methods to plot the data in various ways.
+    """
+    obj: GenericEyeData # link to the data object
+
+    def __init__(self, obj: GenericEyeData):
+        self.obj = obj
+    
+
+    def _plot(self, plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated):
+        fac=self._unit_fac(units)
+        if units=="sec":
+            xlab="seconds"
+        elif units=="min":
+            xlab="minutes"
+        elif units=="h":
+            xlab="hours"
+        else:
+            xlab="ms"
+        tx=self.tx*fac
+        evon=self.event_onsets*fac
+        
+        start,end=plot_range
+        if start==-np.infty:
+            startix=0
+        else:
+            startix=np.argmin(np.abs(tx-start))
+            
+        if end==np.infty:
+            endix=tx.size
+        else:
+            endix=np.argmin(np.abs(tx-end))
+        
+        tx=tx[startix:endix]
+        
+        ixx=np.logical_and(evon>=start, evon<end)
+        evlab=self.event_labels[ixx]
+        evon=evon[ixx]
+        overlays=(ov[startix:endix] for ov in overlays)
+        
+        if interactive:
+            blinks=np.empty((0,2), dtype=int)
+            interpolated=np.empty((0,2), dtype=int)
+            if highlight_blinks:
+                blinks=[]
+                for sblink,eblink in self.blinks:
+                    if eblink<startix or sblink>endix:
+                        continue
+                    else:
+                        sblink=max(0,sblink-startix)
+                        eblink=min(endix,eblink-startix)
+                    blinks.append([sblink,eblink])
+                blinks=np.array(blinks)
+            if highlight_interpolated:
+                a=np.diff(np.r_[0, self.interpolated_mask[startix:endix], 0])[:-1]
+                istarts=np.where(a>0)[0]
+                iends=np.where(a<0)[0]
+                interpolated=[]
+                for istart,iend in zip(istarts,iends):
+                    interpolated.append([istart,iend])
+            plot_pupil_ipy(tx, self.sy[startix:endix], evon,
+                           overlays=overlays, overlay_labels=overlay_labels,
+                           blinks=blinks, interpolated=interpolated,
+                          xlab=xlab)
+        else:
+            plt.plot(tx, self.sy[startix:endix], label="signal")
+            for i,ov in enumerate(overlays):
+                plt.plot(tx, ov, label=overlay_labels[i])
+            plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)
+            ll,ul=plt.ylim()
+            for ev,lab in zip(evon,evlab):
+                plt.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
+            if highlight_interpolated:
+                a=np.diff(np.r_[0, self.interpolated_mask[startix:endix], 0])[:-1]
+                istarts=np.where(a>0)[0]
+                iends=np.where(a<0)[0]
+                for istart,iend in zip(istarts,iends):
+                    plt.gca().axvspan(tx[istart],tx[iend],color="green", alpha=0.1)
+            if highlight_blinks:
+                for sblink,eblink in self.blinks:
+                    if eblink<startix or sblink>endix:
+                        continue
+                    else:
+                        sblink=min(tx.size-1, max(0,sblink-startix))
+                        eblink=min(endix-startix-1,eblink-startix)
+                    
+                    plt.gca().axvspan(tx[sblink],tx[eblink],color="red", alpha=0.2)
+                
+                
+            plt.legend()
+            plt.xlabel(xlab)        
+    
+    def plot(self, plot_range: Tuple[float,float]=(-np.infty, +np.infty),
+             interactive: bool=False, 
+             baseline: bool=True, 
+             response: bool=False,
+             model: bool=True,
+             highlight_blinks: bool=True,
+             highlight_interpolated: bool=True,
+             units: str="sec"
+            ) -> None:
+        """
+        Make a plot of the pupil data using `matplotlib` or :py:func:`pypillometry.convenience.plot_pupil_ipy()`
+        if `interactive=True`.
+
+        Parameters
+        ----------
+        plot_range: tuple (start,end)
+            plot from start to end (in units of `units`)
+        baseline: bool
+            plot baseline if estimated
+        response: bool
+            plot response if estimated
+        model: bool
+            plot full model if baseline and response have been estimated
+        interactive: bool
+            if True, plot with sliders to adjust range
+        units: str
+            one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours
+        """
+
+        overlays=tuple()
+        overlay_labels=tuple()
+        if baseline and self.baseline_estimated:
+            overlays+=(self.baseline,)                
+            overlay_labels+=("baseline",)
+        if response and self.response_estimated:
+            overlays+=(self.response,)
+            overlay_labels+=("response",)             
+        if model and self.baseline_estimated and self.response_estimated:
+            overlays+=(self.baseline+self.response,)
+            overlay_labels+=("model",)
+        self._plot(plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated)
+
+    def plot_segments(self, overlay=None, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
+        """
+        Plot the whole dataset chunked up into segments (usually to a PDF file).
+
+        Parameters
+        ----------
+
+        pdffile: str or None
+            file name to store the PDF; if None, no PDF is written 
+        interv: float
+            duration of each of the segments to be plotted (in minutes)
+        figsize: Tuple[int,int]
+            dimensions of the figures
+        kwargs: 
+            arguments passed to :func:`.PupilData.plot()`
+
+        Returns
+        -------
+
+        figs: list of :class:`matplotlib.Figure` objects
+        """
+
+        # start and end in minutes
+        smins,emins=self.tx.min()/1000./60., self.tx.max()/1000./60.
+        segments=[]
+        cstart=smins
+        cend=smins
+        while cend<emins:
+            cend=min(emins, cstart+interv)
+            segments.append( (cstart,cend) )
+            cstart=cend
+
+        figs=[]
+        _backend=mpl.get_backend()
+        mpl.use("pdf")
+        plt.ioff() ## avoid showing plots when saving to PDF 
+
+        for start,end in segments:
+            plt.figure(figsize=figsize)
+            self.plot( (start,end), units="min", **kwargs)
+            if overlay is not None:
+                overlay.plot( (start, end), units="min", **kwargs)  
+            if ylim is not None:
+                plt.ylim(*ylim)
+            figs.append(plt.gcf())
+
+
+        if isinstance(pdffile, str):
+            print("> Writing PDF file '%s'"%pdffile)
+            with PdfPages(pdffile) as pdf:
+                for fig in figs:
+                    pdf.savefig(fig)         
+
+        ## switch back to original backend and interactive mode                        
+        mpl.use(_backend) 
+        plt.ion()
+
+        return figs        
+
+    def plot_blinks(self, pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
+                    figsize: Tuple[int,int]=(10,10), 
+                    pre_blink: float=500, post_blink: float=500, units: str="ms", 
+                    plot_index: bool=True):
+        """
+        Plot the detected blinks into separate figures each with nrow x ncol subplots. 
+
+        Parameters
+        ----------
+        pdf_file: str or None
+            if the name of a file is given, the figures are saved into a multi-page PDF file
+        ncol: int
+            number of columns for the blink-plots
+        pre_blink: float
+            extend plot a certain time before each blink (in ms)
+        post_blink: float
+            extend plot a certain time after each blink (in ms)
+        units: str
+            units in which the signal is plotted
+        plot_index: bool
+            plot a number with the blinks' index (e.g., for identifying abnormal blinks)
+
+        Returns
+        -------
+
+        list of plt.Figure objects each with nrow*ncol subplots
+        in Jupyter Notebook, those are displayed inline one after the other
+        """
+        fac=self._unit_fac(units)
+        pre_blink_ix=int((pre_blink/1000.)*self.fs)
+        post_blink_ix=int((post_blink/1000.)*self.fs)
+
+        nblinks=self.blinks.shape[0]
+        nsubplots=nrow*ncol # number of subplots per figure
+        nfig=int(np.ceil(nblinks/nsubplots))
+
+        figs=[]
+        if isinstance(pdf_file,str):
+            _backend=mpl.get_backend()
+            mpl.use("pdf")
+            plt.ioff() ## avoid showing plots when saving to PDF 
+        
+        iblink=0
+        for i in range(nfig):
+            fig=plt.figure(figsize=figsize)
+            axs = fig.subplots(nrow, ncol).flatten()
+
+            for ix,(start,end) in enumerate(self.blinks[(i*nsubplots):(i+1)*nsubplots]):
+                iblink+=1
+                slic=slice(start-pre_blink_ix,end+post_blink_ix)
+                ax=axs[ix]
+                ax.plot(self.tx[slic]*fac,self.sy[slic])
+
+                ## highlight interpolated data
+                a=np.diff(np.r_[0,self.interpolated_mask[slic],0])[:-1]
+                istarts=start-pre_blink_ix+np.where(a>0)[0]
+                iends=start-pre_blink_ix+np.where(a<0)[0]
+                for istart,iend in zip(istarts,iends):
+                    ax.axvspan(self.tx[istart]*fac,self.tx[iend]*fac,color="green", alpha=0.1)
+
+                ## highlight blink
+                ax.axvspan(self.tx[start]*fac,self.tx[end]*fac,color="red", alpha=0.2)
+
+                if plot_index: 
+                    ax.text(0.5, 0.5, '%i'%(iblink), fontsize=12, horizontalalignment='center',     
+                            verticalalignment='center', transform=ax.transAxes)
+            figs.append(fig)
+
+        if pdf_file is not None:
+            print("> Saving file '%s'"%pdf_file)
+            with PdfPages(pdf_file) as pdf:
+                for fig in figs:
+                    pdf.savefig(fig)
+            ## switch back to original backend and interactive mode                
+            mpl.use(_backend) 
+            plt.ion()
+            
+        return figs    
+
+
+    

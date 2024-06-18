@@ -103,6 +103,12 @@ class GazeData(GenericEyeData):
             ## start with empty history    
             self.history=[]            
 
+            ## init whether or not to do operations in place
+            self.inplace=inplace 
+
+            ## set plotter 
+            self.plot=GazePlotter(self)
+
             self.original=None
             if keep_orig: 
                 self.original=self.copy()
@@ -111,11 +117,6 @@ class GazeData(GenericEyeData):
             if fill_time_discontinuities:
                 self.fill_time_discontinuities()   
 
-            ## init whether or not to do operations in place
-            self.inplace=inplace 
-
-            ## set plotter 
-            self.plot=GazePlotter(self)
 
     def summary(self):
             """

@@ -2,138 +2,107 @@
 pupildata.py
 ============
 
-Main object-oriented entry point
+Class representing pupillometric data.
 """
 
-from pypillometry import _inplace
-from .convenience import *
-from .baseline import *
-from .fakedata import *
-from .preproc import *
-from .io import *
-from .erpd import *
-from .eyedata_generic import *
+from .generic import GenericEyeData, keephistory
+from ..signal import convenience, baseline, pupil, preproc
+from .. import io
+from ..plot import PupilPlotter
 
-import pylab as plt
-import matplotlib as mpl
-from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
-import scipy.signal as signal
 from scipy.interpolate import interp1d
 from scipy import interpolate
 import scipy
 
-import pickle
-
-import collections.abc
-
-import math
-
-
-import inspect
-import functools
-
-             
-
-#@typechecked
 class PupilData(GenericEyedata):
     """
     Class representing pupillometric data. 
+
+    The class is a subclass of :class:`.GenericEyedata` and inherits all its methods.
+
+    If eye-tracking data is available in addition to pupillometry, use the :class:`.EyeData` class.
     """    
     def __init__(self,
-                 pupil: PupilArray, 
-                 sampling_rate: Optional[float]=None,
-                 time: Optional[PupilArray]=None,
-                 event_onsets: Optional[PupilArray]=None,
-                 event_labels: Optional[PupilArray]=None,
-                 name: Optional[str]=None,
-                 keep_orig: bool=True,
-                 fill_time_discontinuities: bool=True):
+                 time: np.ndarray = None,
+                 left_pupil: np.ndarray=None,
+                 right_pupil: np.ndarray=None, 
+                 event_onsets: np.ndarray = None,
+                 event_labels: np.ndarray = None,
+                 sampling_rate: float = None,
+                 name: str = None,
+                 fill_time_discontinuities: bool = True,
+                 keep_orig: bool = False,
+                 inplace: bool = False):
         """
         Parameters
         ----------
-        
-        name: 
-            name of the dataset or `None` (in which case a random string is selected)
         time: 
             timing array or `None`, in which case the time-array goes from [0,maxT]
             using `sampling_rate` (in ms)
-        pupil:
-            pupillary data at times `time` assumed to be in ms
+        left_pupil:
+            data from left eye (at least one of the eyes must be provided)
+        right_pupil:
+            data from right eye (at least one of the eyes must be provided)
+        sampling_rate: float
+            sampling-rate of the signal in Hz; if None, 
+        name: 
+            name of the dataset or `None` (in which case a random string is selected)
         event_onsets: 
-            time-onsets of any events that are to be modelled in the pupil
+            time-onsets of any events in the data (in ms, matched in `time` vector)
         event_labels:
             for each event in `event_onsets`, provide a label
-        sampling_rate: float
-            sampling-rate of the pupillary signal in Hz
         keep_orig: bool
-            keep a copy of the original dataset? If `True`, a copy of the :class:`.PupilData` object
-            as initiated in the constructor is stored in member `PupilData.original`
+            keep a copy of the original dataset? If `True`, a copy of the object
+            as initiated in the constructor is stored in member `original`
         fill_time_discontinuities: bool
             sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
             when this option is True, such entries will be made and the signal set to 0 there
+            (or do it later using `fill_time_discontinuities()`)
+        inplace: bool
+            if True, the object is modified in place; if False, a new object is returned
+            this object-level property can be overwritten by the method-level `inplace` argument
+            default is "False"
         """
-        self.sy=np.array(pupil, dtype=float)
-        if sampling_rate is None and time is None:
-            raise ValueError("you have to specify either sampling_rate or time-vector (or both)")
-        
+
+        if time is None and sampling_rate is None:
+            raise ValueError("Either `time` or `sampling_rate` must be provided")
+
+        if (left_pupil is None and right_pupil is None):
+            raise ValueError("At least one of the eyes, left_pupil or right_pupil, must be provided")
+        self.data=EyeDataDict(left_pupil=left_pupil, right_pupil=right_pupil)
+
+        ## name
+        if name is None:
+            self.name = self._random_id()
+        else:
+            self.name=name
+
+        ## set time array and sampling rate
         if time is None:
-            maxT=len(self)/sampling_rate*1000.
-            self.tx=np.linspace(0,maxT, num=len(self))
+            maxT=len(self.data)/sampling_rate*1000.
+            self.tx=np.linspace(0,maxT, num=len(self.data))
         else:
             self.tx=np.array(time, dtype=float)
-        
+
+        self.missing=np.zeros_like(self.tx, dtype=bool)
+
         if sampling_rate is None:
             self.fs=np.round(1000./np.median(np.diff(self.tx)))
         else:
             self.fs=sampling_rate
             
-        if fill_time_discontinuities:
-            ## find gaps in the time-vector
-            tx=self.tx
-            sy=self.sy
-            stepsize=np.median(np.diff(tx))
-            n=tx.size
-            gaps_end_ix=np.where(np.r_[stepsize,np.diff(tx)]>2*stepsize)[0]
-            ngaps=gaps_end_ix.size
-            if ngaps!=0:
-                ## at least one gap here
-                print("> Filling in %i gaps"%ngaps)
-                gaps_start_ix=gaps_end_ix-1
-                print( ((tx[gaps_end_ix]-tx[gaps_start_ix])/1000), "seconds" )
-                
-                ntx=[tx[0:gaps_start_ix[0]]] # initial
-                nsy=[sy[0:gaps_start_ix[0]]]
-                for i in range(ngaps):
-                    start,end=gaps_start_ix[i], gaps_end_ix[i]
-                    # fill in the gap
-                    ntx.append( np.linspace(tx[start],tx[end], int((tx[end]-tx[start])/stepsize), endpoint=False) )
-                    nsy.append( np.zeros(ntx[-1].size) )
-
-                    # append valid signal
-                    if i==ngaps-1:
-                        nstart=n
-                    else:
-                        nstart=gaps_start_ix[i+1]
-                    ntx.append( tx[end:nstart] )
-                    nsy.append( sy[end:nstart] )
-
-                ntx=np.concatenate(ntx)
-                nsy=np.concatenate(nsy) 
-                self.tx=ntx
-                self.sy=nsy
-            
         self.set_event_onsets(event_onsets, event_labels)
 
-        if self.tx.size != self.sy.size:
-            raise ValueError("time and pupil-array must have same length, found {} vs {}".format(
-                self.tx.size,self.sy.size))
-        
-        if name is None:
-            self.name = self._random_id()
-        else:
-            self.name=name
-        
+        ## start with empty history    
+        self.history=[]            
+
+        ## init whether or not to do operations in place
+        self.inplace=inplace 
+
+        ## set plotter 
+        self.plot=pupilPlotter(self)
+
         ## initialize baseline signal
         self.scale_params={"mean":0, "sd":1}
         self.baseline=np.zeros(len(self))
@@ -150,15 +119,15 @@ class PupilData(GenericEyedata):
         
         ## interpolated mask
         self.interpolated_mask=np.zeros(len(self), dtype=int)
-        self.missing=np.zeros(len(self), dtype=int)
-        self.missing[self.sy==0]=1
-        
+
+        # store original
         self.original=None
         if keep_orig: 
             self.original=self.copy()
-            
-        ## start with empty history    
-        self.history=[]
+
+        ## fill in time discontinuities
+        if fill_time_discontinuities:
+            self.fill_time_discontinuities()   
        
     def nblinks(self) -> int:
         """
@@ -221,7 +190,7 @@ class PupilData(GenericEyedata):
     
     
     @keephistory    
-    def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace):
+    def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=None):
         """
         Scale back to original values using either values provided as arguments
         or the values stored in `scale_params`.
@@ -250,7 +219,7 @@ class PupilData(GenericEyedata):
         return obj
     
     @keephistory
-    def scale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace):
+    def scale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=None):
         """
         Scale the pupillary signal by subtracting `mean` and dividing by `sd`.
         If these variables are not provided, use the signal's mean and std.
@@ -283,7 +252,7 @@ class PupilData(GenericEyedata):
         return obj
     
     @keephistory
-    def lowpass_filter(self, cutoff: float, order: int=2, inplace=_inplace):
+    def lowpass_filter(self, cutoff: float, order: int=2, inplace=None):
         """
         Lowpass-filter signal using a Butterworth-filter, 
         see :py:func:`pypillometry.baseline.butter_lowpass_filter()`.
@@ -304,7 +273,7 @@ class PupilData(GenericEyedata):
         return obj
 
     @keephistory
-    def smooth_window(self, window: str="hanning", winsize: float=11, inplace=_inplace):
+    def smooth_window(self, window: str="hanning", winsize: float=11, inplace=None):
         """
         Apply smoothing of the signal using a moving window. See :func:`.smooth_window()`.
         
@@ -325,7 +294,7 @@ class PupilData(GenericEyedata):
         return obj
     
     @keephistory
-    def downsample(self, fsd: float, dsfac: bool=False, inplace=_inplace):
+    def downsample(self, fsd: float, dsfac: bool=False, inplace=None):
         """
         Simple downsampling scheme using mean within the downsampling window.
         See :py:func:`pypillometry.baseline.downsample()`.
@@ -361,192 +330,8 @@ class PupilData(GenericEyedata):
         return obj
 
 
-    def _plot(self, plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated):
-        fac=self._unit_fac(units)
-        if units=="sec":
-            xlab="seconds"
-        elif units=="min":
-            xlab="minutes"
-        elif units=="h":
-            xlab="hours"
-        else:
-            xlab="ms"
-        tx=self.tx*fac
-        evon=self.event_onsets*fac
-        
-        start,end=plot_range
-        if start==-np.infty:
-            startix=0
-        else:
-            startix=np.argmin(np.abs(tx-start))
-            
-        if end==np.infty:
-            endix=tx.size
-        else:
-            endix=np.argmin(np.abs(tx-end))
-        
-        tx=tx[startix:endix]
-        
-        ixx=np.logical_and(evon>=start, evon<end)
-        evlab=self.event_labels[ixx]
-        evon=evon[ixx]
-        overlays=(ov[startix:endix] for ov in overlays)
-        
-        if interactive:
-            blinks=np.empty((0,2), dtype=int)
-            interpolated=np.empty((0,2), dtype=int)
-            if highlight_blinks:
-                blinks=[]
-                for sblink,eblink in self.blinks:
-                    if eblink<startix or sblink>endix:
-                        continue
-                    else:
-                        sblink=max(0,sblink-startix)
-                        eblink=min(endix,eblink-startix)
-                    blinks.append([sblink,eblink])
-                blinks=np.array(blinks)
-            if highlight_interpolated:
-                a=np.diff(np.r_[0, self.interpolated_mask[startix:endix], 0])[:-1]
-                istarts=np.where(a>0)[0]
-                iends=np.where(a<0)[0]
-                interpolated=[]
-                for istart,iend in zip(istarts,iends):
-                    interpolated.append([istart,iend])
-            plot_pupil_ipy(tx, self.sy[startix:endix], evon,
-                           overlays=overlays, overlay_labels=overlay_labels,
-                           blinks=blinks, interpolated=interpolated,
-                          xlab=xlab)
-        else:
-            plt.plot(tx, self.sy[startix:endix], label="signal")
-            for i,ov in enumerate(overlays):
-                plt.plot(tx, ov, label=overlay_labels[i])
-            plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)
-            ll,ul=plt.ylim()
-            for ev,lab in zip(evon,evlab):
-                plt.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
-            if highlight_interpolated:
-                a=np.diff(np.r_[0, self.interpolated_mask[startix:endix], 0])[:-1]
-                istarts=np.where(a>0)[0]
-                iends=np.where(a<0)[0]
-                for istart,iend in zip(istarts,iends):
-                    plt.gca().axvspan(tx[istart],tx[iend],color="green", alpha=0.1)
-            if highlight_blinks:
-                for sblink,eblink in self.blinks:
-                    if eblink<startix or sblink>endix:
-                        continue
-                    else:
-                        sblink=min(tx.size-1, max(0,sblink-startix))
-                        eblink=min(endix-startix-1,eblink-startix)
-                    
-                    plt.gca().axvspan(tx[sblink],tx[eblink],color="red", alpha=0.2)
-                
-                
-            plt.legend()
-            plt.xlabel(xlab)        
-    
-    def plot(self, plot_range: Tuple[float,float]=(-np.infty, +np.infty),
-             interactive: bool=False, 
-             baseline: bool=True, 
-             response: bool=False,
-             model: bool=True,
-             highlight_blinks: bool=True,
-             highlight_interpolated: bool=True,
-             units: str="sec"
-            ) -> None:
-        """
-        Make a plot of the pupil data using `matplotlib` or :py:func:`pypillometry.convenience.plot_pupil_ipy()`
-        if `interactive=True`.
-
-        Parameters
-        ----------
-        plot_range: tuple (start,end)
-            plot from start to end (in units of `units`)
-        baseline: bool
-            plot baseline if estimated
-        response: bool
-            plot response if estimated
-        model: bool
-            plot full model if baseline and response have been estimated
-        interactive: bool
-            if True, plot with sliders to adjust range
-        units: str
-            one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours
-        """
-
-        overlays=tuple()
-        overlay_labels=tuple()
-        if baseline and self.baseline_estimated:
-            overlays+=(self.baseline,)                
-            overlay_labels+=("baseline",)
-        if response and self.response_estimated:
-            overlays+=(self.response,)
-            overlay_labels+=("response",)             
-        if model and self.baseline_estimated and self.response_estimated:
-            overlays+=(self.baseline+self.response,)
-            overlay_labels+=("model",)
-        self._plot(plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated)
-
-    def plot_segments(self, overlay=None, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
-        """
-        Plot the whole dataset chunked up into segments (usually to a PDF file).
-
-        Parameters
-        ----------
-
-        pdffile: str or None
-            file name to store the PDF; if None, no PDF is written 
-        interv: float
-            duration of each of the segments to be plotted (in minutes)
-        figsize: Tuple[int,int]
-            dimensions of the figures
-        kwargs: 
-            arguments passed to :func:`.PupilData.plot()`
-
-        Returns
-        -------
-
-        figs: list of :class:`matplotlib.Figure` objects
-        """
-
-        # start and end in minutes
-        smins,emins=self.tx.min()/1000./60., self.tx.max()/1000./60.
-        segments=[]
-        cstart=smins
-        cend=smins
-        while cend<emins:
-            cend=min(emins, cstart+interv)
-            segments.append( (cstart,cend) )
-            cstart=cend
-
-        figs=[]
-        _backend=mpl.get_backend()
-        mpl.use("pdf")
-        plt.ioff() ## avoid showing plots when saving to PDF 
-
-        for start,end in segments:
-            plt.figure(figsize=figsize)
-            self.plot( (start,end), units="min", **kwargs)
-            if overlay is not None:
-                overlay.plot( (start, end), units="min", **kwargs)  
-            if ylim is not None:
-                plt.ylim(*ylim)
-            figs.append(plt.gcf())
-
-
-        if isinstance(pdffile, str):
-            print("> Writing PDF file '%s'"%pdffile)
-            with PdfPages(pdffile) as pdf:
-                for fig in figs:
-                    pdf.savefig(fig)         
-
-        ## switch back to original backend and interactive mode                        
-        mpl.use(_backend) 
-        plt.ion()
-
-        return figs        
-    
     @keephistory
-    def estimate_baseline(self, method: str="envelope_iter_bspline_2", inplace=_inplace, **kwargs):
+    def estimate_baseline(self, method: str="envelope_iter_bspline_2", inplace=None, **kwargs):
         """
         Apply one of the baseline-estimation methods.
         
@@ -640,7 +425,7 @@ class PupilData(GenericEyedata):
     def estimate_response(self, npar: Union[str,float]="free", tmax: Union[str,float]="free", 
                           verbose: int=50,
                           bounds: dict={"npar":(1,20), "tmax":(100,2000)},
-                          inplace=_inplace):
+                          inplace=None):
         """
         Estimate pupil-response based on event-onsets, see
         :py:func:`pypillometry.pupil.pupil_response()`.
@@ -692,7 +477,7 @@ class PupilData(GenericEyedata):
                       winsize: float=11, vel_onset: float=-5, vel_offset: float=5, 
                       min_onset_len: int=5, min_offset_len: int=5,
                       strategies: List[str]=["zero","velocity"],
-                      units="ms", inplace=_inplace):
+                      units="ms", inplace=None):
         """
         Detect blinks in the pupillary signal using several strategies.
         First, blinks are detected as consecutive sequence of `blink_val` 
@@ -769,87 +554,9 @@ class PupilData(GenericEyedata):
             obj.blink_mask[start:end]=1
         return obj    
     
-    def blinks_plot(self, pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
-                    figsize: Tuple[int,int]=(10,10), 
-                    pre_blink: float=500, post_blink: float=500, units: str="ms", 
-                    plot_index: bool=True):
-        """
-        Plot the detected blinks into separate figures each with nrow x ncol subplots. 
-
-        Parameters
-        ----------
-        pdf_file: str or None
-            if the name of a file is given, the figures are saved into a multi-page PDF file
-        ncol: int
-            number of columns for the blink-plots
-        pre_blink: float
-            extend plot a certain time before each blink (in ms)
-        post_blink: float
-            extend plot a certain time after each blink (in ms)
-        units: str
-            units in which the signal is plotted
-        plot_index: bool
-            plot a number with the blinks' index (e.g., for identifying abnormal blinks)
-
-        Returns
-        -------
-
-        list of plt.Figure objects each with nrow*ncol subplots
-        in Jupyter Notebook, those are displayed inline one after the other
-        """
-        fac=self._unit_fac(units)
-        pre_blink_ix=int((pre_blink/1000.)*self.fs)
-        post_blink_ix=int((post_blink/1000.)*self.fs)
-
-        nblinks=self.blinks.shape[0]
-        nsubplots=nrow*ncol # number of subplots per figure
-        nfig=int(np.ceil(nblinks/nsubplots))
-
-        figs=[]
-        if isinstance(pdf_file,str):
-            _backend=mpl.get_backend()
-            mpl.use("pdf")
-            plt.ioff() ## avoid showing plots when saving to PDF 
-        
-        iblink=0
-        for i in range(nfig):
-            fig=plt.figure(figsize=figsize)
-            axs = fig.subplots(nrow, ncol).flatten()
-
-            for ix,(start,end) in enumerate(self.blinks[(i*nsubplots):(i+1)*nsubplots]):
-                iblink+=1
-                slic=slice(start-pre_blink_ix,end+post_blink_ix)
-                ax=axs[ix]
-                ax.plot(self.tx[slic]*fac,self.sy[slic])
-
-                ## highlight interpolated data
-                a=np.diff(np.r_[0,self.interpolated_mask[slic],0])[:-1]
-                istarts=start-pre_blink_ix+np.where(a>0)[0]
-                iends=start-pre_blink_ix+np.where(a<0)[0]
-                for istart,iend in zip(istarts,iends):
-                    ax.axvspan(self.tx[istart]*fac,self.tx[iend]*fac,color="green", alpha=0.1)
-
-                ## highlight blink
-                ax.axvspan(self.tx[start]*fac,self.tx[end]*fac,color="red", alpha=0.2)
-
-                if plot_index: 
-                    ax.text(0.5, 0.5, '%i'%(iblink), fontsize=12, horizontalalignment='center',     
-                            verticalalignment='center', transform=ax.transAxes)
-            figs.append(fig)
-
-        if pdf_file is not None:
-            print("> Saving file '%s'"%pdf_file)
-            with PdfPages(pdf_file) as pdf:
-                for fig in figs:
-                    pdf.savefig(fig)
-            ## switch back to original backend and interactive mode                
-            mpl.use(_backend) 
-            plt.ion()
-            
-        return figs    
 
     @keephistory
-    def blinks_merge(self, distance: float=100, remove_signal: bool=False, inplace=_inplace):
+    def blinks_merge(self, distance: float=100, remove_signal: bool=False, inplace=None):
         """
         Merge together blinks that are close together. 
         Some subjects blink repeatedly and standard detection/interpolation can result in weird results.
@@ -898,7 +605,7 @@ class PupilData(GenericEyedata):
     def blinks_interpolate(self, winsize: float=11, 
                            vel_onset: float=-5, vel_offset: float=5, 
                            margin: Tuple[float,float]=(10,30), 
-                           interp_type: str="cubic", inplace=_inplace):
+                           interp_type: str="cubic", inplace=None):
         """
         Interpolation of missing data "in one go".
         Detection of blinks happens using Mahot (2013), see :func:`.blink_onsets_mahot()`.
@@ -952,7 +659,7 @@ class PupilData(GenericEyedata):
                            plot: Optional[str]=None, 
                            plot_dim: Tuple[int,int]=(5,3),
                            plot_figsize: Tuple[int,int]=(10,8),
-                           inplace=_inplace):
+                           inplace=None):
         """
         Implements the blink-interpolation method by Mahot (2013).
         
@@ -1193,7 +900,7 @@ class FakePupilData(PupilData):
         self.sim_response_coef=real_response_coef
 
     @keephistory    
-    def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace):
+    def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=None):
         """
         Scale back to original values using either values provided as arguments
         or the values stored in `scale_params`.
@@ -1213,7 +920,7 @@ class FakePupilData(PupilData):
         return obj
     
     @keephistory
-    def scale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace) -> None:
+    def scale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=None) -> None:
         """
         Scale the pupillary signal by subtracting `mean` and dividing by `sd`.
         If these variables are not provided, use the signal's mean and std.
