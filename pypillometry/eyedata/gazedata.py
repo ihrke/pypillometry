@@ -1,5 +1,5 @@
 
-from .generic import GenericEyeData
+from .generic import GenericEyeData, keephistory
 from .eyedatadict import EyeDataDict
 import numpy as np
 
