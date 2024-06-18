@@ -2,8 +2,8 @@ import unittest
 import sys
 import numpy as np
 #sys.path.insert(0,"..")
-#import pypillometry as pp
-from .. import *
+import pypillometry as pp
+from pypillometry import EyeDataDict
 
 class TestEyeDataDict(unittest.TestCase):
     def setUp(self):

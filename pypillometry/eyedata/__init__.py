@@ -1,1 +1,1 @@
-__all__ = ["eyedatadict", "eyedata_generic","eyedata","fakedata","pupildata"]
+__all__ = ["eyedatadict", "generic","eyedata","fakedata","pupildata"]

@@ -1,0 +1,2 @@
+class PupilPlotter:
+    pass

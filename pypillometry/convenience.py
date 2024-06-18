@@ -177,3 +177,38 @@ def sizeof_fmt(num, suffix='B'):
             return "%3.1f%s%s" % (num, unit, suffix)
         num /= 1024.0
     return "%.1f%s%s" % (num, 'Yi', suffix)
+
+def test_selector(obj, selfun, **kwargs):
+    """
+    Function to help test the output of a selector function.
+
+    Parameters
+    -----------
+    obj: GenericEyeData object
+        object to test the selector function on
+    selfun: function
+        function that takes a single event label as input and returns True/False
+        to indicate whether the event should be included or not
+    kwargs: dict
+        arguments to pass onto the selector function
+
+    Examples
+    --------
+    # here, events are coded as F_1, S_1, R_1, F_2, S_2, R_2, ...
+    # to indicate fixation cross, stimulus, response for each trial
+    # we build selector functions to extract all fixation crosses etc
+    def fix_selector(evlab):
+        return evlab.startswith("F")
+    def stim_selector(evlab):
+        return evlab.startswith("S")
+    obj.test_selector(fix_selector)
+
+    # we can do use kwargs to pass on arguments to the selector function
+    # for example, we can restrict to only a single trial
+    def fix_selector(evlab, trial=None):
+        return evlag.startswith("F") and evlab.endswith("_{}".format(trial))
+    obj.test_selector(fix_selector, trial=1)
+    """
+    if not callable(selfun):
+        raise ValueError("selfun must be a function")
+    return obj.event_labels[np.array([selfun(evlab, **kwargs) for evlab in self.event_labels])]
