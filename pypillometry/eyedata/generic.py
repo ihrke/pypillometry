@@ -7,13 +7,11 @@ All other eyedata classes should inherit from this class.
 """
 
 import numpy as np
-from pypillometry import _inplace
-from .io import *
-from .convenience import sizeof_fmt
+import ..io as io
+from ..convenience import sizeof_fmt
 
 #from pytypes import typechecked
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
-PupilArray=Union[np.ndarray, List[float]]
 import functools
 from random import choice
 import copy
@@ -55,6 +53,7 @@ class GenericEyedata(ABC):
     tx: np.ndarray ## time vector
     missing: np.ndarray ## missing data vector (1=missing, 0=not missing)
     event_onsets: np.ndarray ## vector with event onsets in time units
+    inplace: bool ## whether to make changes in-place
 
     @abstractmethod
     def __init__():
@@ -134,9 +133,16 @@ class GenericEyedata(ABC):
 
 
     @keephistory
-    def drop_original(self, inplace=_inplace):
+    def drop_original(self, inplace=None):
         """
         Drop original dataset from record (e.g., to save space).
+
+        Parameters
+        ----------
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes
+            if `None`, use the setting of the object (specified in constructor)
         """
         obj=self if inplace else self.copy()
         obj.original=None
@@ -144,7 +150,7 @@ class GenericEyedata(ABC):
     
 
     @keephistory
-    def reset_time(self, t0: float=0, inplace=_inplace):
+    def reset_time(self, t0: float=0, inplace=None):
         """
         Resets time so that the time-array starts at time zero (t0).
         Resets onsets etc.
@@ -156,6 +162,7 @@ class GenericEyedata(ABC):
         inplace: bool
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes
+            if `None`, use the setting of the object (specified in constructor)
         """
         tmin=self.tx.min()
         obj=self if inplace else self.copy()            
@@ -180,7 +187,7 @@ class GenericEyedata(ABC):
         fname: str
             filename
         """
-        pd_write_pickle(self, fname)
+        io.eyedata_write_pickle(self, fname)
        
     @classmethod
     def from_file(cls, fname:str):
@@ -194,7 +201,7 @@ class GenericEyedata(ABC):
         fname: str
             filename
         """
-        r=pd_read_pickle(fname)
+        r=io.eyedata_read_pickle(fname)
         return r
 
     @abstractmethod
