@@ -10,7 +10,8 @@ class EyeDataDict(MutableMapping):
     Keys stored in this dictionary have the following shape:
     (eye)_(variable) where eye is either "left" or "right" or a 
     statistical combination (e.g., "mean" or "median" or "regress") and
-    variable is one of "x", "y", "pupil" (or other calculated entities).
+    variable is one of "x", "y", "pupil" (or other calculated entities,
+    for example "baseline" or "response" for the pupil).
     """
 
     def __init__(self, *args, **kwargs):

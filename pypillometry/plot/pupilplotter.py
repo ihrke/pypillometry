@@ -1,6 +1,8 @@
 from ..eyedata import GenericEyeData
 import numpy as np
 from collections.abc import Iterable
+from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
+
 
 import pylab as plt
 import matplotlib.patches as patches
