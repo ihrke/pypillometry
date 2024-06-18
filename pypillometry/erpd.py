@@ -31,18 +31,25 @@ class ERPD:
         self.baselines=baselines
         self.tx=tx
         self.erpd=erpd
-        self.missing=missing
+        if missing is None:
+            self.missing=np.zeros(erpd.shape)
+        else: 
+            self.missing=missing
 
     @property
     def nevents(self):
         return self.erpd.shape[0]
+
+    @property
+    def n(self):
+        return self.erpd.shape[1]
 
     def summary(self) -> dict:
         """Return a summary of the :class:`.PupilData`-object."""
         summary=dict(
             name=self.name,
             nevents=self.nevents, #self.erpd.shape[0],
-            n=self.erpd.shape[1],
+            n=self.n, #self.erpd.shape[1],
             window=(self.tx.min(), self.tx.max())
         )
         return summary
