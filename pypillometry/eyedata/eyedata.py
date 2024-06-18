@@ -202,58 +202,7 @@ class EyeData(GenericEyedata):
             raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
         return self._screen_eye_distance
 
-    @keephistory
-    def fill_time_discontinuities(self, yval=0, print_info=True):
-        """
-        find gaps in the time-vector and fill them in
-        (add zeros to the signal)
-        """
-        tx=self.tx
-        stepsize=np.median(np.diff(tx))
-        n=len(self)
-        gaps_end_ix=np.where(np.r_[stepsize,np.diff(tx)]>2*stepsize)[0]
-        ngaps=gaps_end_ix.size
-        if ngaps!=0:
-            ## at least one gap here
-            if print_info:
-                print("> Filling in %i gaps"%ngaps)
-            gaps_start_ix=gaps_end_ix-1
-            print( ((tx[gaps_end_ix]-tx[gaps_start_ix])/1000), "seconds" )
-            
-            ## build new time-vector
-            ntx=[tx[0:gaps_start_ix[0]]] # initial
-            for i in range(ngaps):
-                start,end=gaps_start_ix[i], gaps_end_ix[i]
-                # fill in the gap
-                ntx.append( np.linspace(tx[start],tx[end], int((tx[end]-tx[start])/stepsize), endpoint=False) )
 
-                # append valid signal
-                if i==ngaps-1:
-                    nstart=n
-                else:
-                    nstart=gaps_start_ix[i+1]
-                ntx.append( tx[end:nstart] )
-            ntx=np.concatenate(ntx)
-
-            ## fill in missing data
-            newd = {}
-            for k,v in self.data.items():
-                nv = np.zeros_like(ntx)
-                nv=[v[0:gaps_start_ix[0]]]
-                for i in range(ngaps):
-                    start,end=gaps_start_ix[i], gaps_end_ix[i]
-                    nv.append( yval*np.ones_like(ntx[start:end], dtype=float) )
-                # append valid signal
-                if i==ngaps-1:
-                    nstart=n
-                else:
-                    nstart=gaps_start_ix[i+1]                    
-                nv.append( v[end:nstart] )
-                newd[k]=np.concatenate(nv)
-            
-            self.data=EyeDataDict(newd)
-            self.tx=ntx
-        return self
 
     def summary(self):
         """
