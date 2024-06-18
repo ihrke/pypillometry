@@ -5,7 +5,7 @@ eyedata.py
 Implement EyeData class for use with the pypillometry package.
 This class allows to store eyetracking and pupil data in a single object.
 """
-from .eyedata_generic import GenericEyedata, EyeDataDict, keephistory, _inplace
+from .eyedata_generic import GenericEyeData, EyeDataDict, keephistory, _inplace
 from .pupildata import PupilData
 import numpy as np
 from collections.abc import Iterable
@@ -15,7 +15,7 @@ from matplotlib import cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
-class EyeData(GenericEyedata):
+class EyeData(GenericEyeData):
     def __init__(self, 
                     time: np.ndarray = None,
                     left_x: np.ndarray = None,

@@ -16,6 +16,7 @@ from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
 import functools
 from random import choice
 import copy
+import pickle
 
 ## abstract base class to enforce implementation of some functions for all classes
 from abc import ABC, abstractmethod 
@@ -42,7 +43,7 @@ def keephistory(func):
     return wrapper
         
 
-class GenericEyedata(ABC):
+class GenericEyeData(ABC):
     """
     Generic class for eyedata. 
     Defines the basic structure of an eyedata object and 
