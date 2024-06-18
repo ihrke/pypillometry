@@ -1,6 +1,6 @@
-
 from .generic import GenericEyeData, keephistory
 from .eyedatadict import EyeDataDict
+from ..plot import GazePlotter
 import numpy as np
 
 class GazeData(GenericEyeData):
@@ -111,7 +111,11 @@ class GazeData(GenericEyeData):
             if fill_time_discontinuities:
                 self.fill_time_discontinuities()   
 
+            ## init whether or not to do operations in place
             self.inplace=inplace 
+
+            ## set plotter 
+            self.plot=GazePlotter(self)
 
     def summary(self):
             """
@@ -172,56 +176,56 @@ class GazeData(GenericEyeData):
             self._screen_eye_distance=screen_eye_distance
             self._screen_eye_distance_set=True
 
-        @property
-        def screen_xlim(self):
-            if not self._screen_size_set:
-                raise ValueError("Screen size not set! Use `set_experiment_info()` to set it.")
-            return self._screen_xlim
+    @property
+    def screen_xlim(self):
+        if not self._screen_size_set:
+            raise ValueError("Screen size not set! Use `set_experiment_info()` to set it.")
+        return self._screen_xlim
 
-        @screen_xlim.setter
-        def screen_xlim(self, value):
-            if not isinstance(value, tuple):
-                raise ValueError("Screen limits must be a tuple (xmin, xmax)")
-            self._screen_xlim=value
-            self._screen_size_set=True
-        
-        @property
-        def screen_ylim(self):
-            if not self._screen_size_set:
-                raise ValueError("Screen size not set! Use `set_experiment_info()` to set it.")
-            return self._screen_ylim
-        
-        @screen_ylim.setter
-        def screen_ylim(self, value):
-            if not isinstance(value, tuple):
-                raise ValueError("Screen limits must be a tuple (ymin, ymax)")
-            self._screen_ylim=value
-            self._screen_size_set=True
+    @screen_xlim.setter
+    def screen_xlim(self, value):
+        if not isinstance(value, tuple):
+            raise ValueError("Screen limits must be a tuple (xmin, xmax)")
+        self._screen_xlim=value
+        self._screen_size_set=True
+    
+    @property
+    def screen_ylim(self):
+        if not self._screen_size_set:
+            raise ValueError("Screen size not set! Use `set_experiment_info()` to set it.")
+        return self._screen_ylim
+    
+    @screen_ylim.setter
+    def screen_ylim(self, value):
+        if not isinstance(value, tuple):
+            raise ValueError("Screen limits must be a tuple (ymin, ymax)")
+        self._screen_ylim=value
+        self._screen_size_set=True
 
 
-        @property
-        def screen_width(self):
-            return self.screen_xlim[1]-self.screen_xlim[0]
+    @property
+    def screen_width(self):
+        return self.screen_xlim[1]-self.screen_xlim[0]
 
-        @property
-        def screen_height(self):
-            return self.screen_ylim[1]-self.screen_ylim[0]
-        
-        @property
-        def physical_screen_width(self):
-            if not self._physical_screen_dims_set:
-                raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
-            return self.physical_screen_dims[0]
+    @property
+    def screen_height(self):
+        return self.screen_ylim[1]-self.screen_ylim[0]
+    
+    @property
+    def physical_screen_width(self):
+        if not self._physical_screen_dims_set:
+            raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
+        return self.physical_screen_dims[0]
 
-        @property
-        def physical_screen_height(self):
-            if not self._physical_screen_dims_set:
-                raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
-            return self.physical_screen_dims[1]
+    @property
+    def physical_screen_height(self):
+        if not self._physical_screen_dims_set:
+            raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
+        return self.physical_screen_dims[1]
 
-        @property
-        def screen_eye_distance(self):
-            if not self._screen_eye_distance_set:
-                raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
-            return self._screen_eye_distance
+    @property
+    def screen_eye_distance(self):
+        if not self._screen_eye_distance_set:
+            raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
+        return self._screen_eye_distance
 

@@ -1,3 +1,7 @@
+from ..eyedata import GenericEyeData
+import numpy as np
+from collections.abc import Iterable
+
 import pylab as plt
 import matplotlib.patches as patches
 from matplotlib import cm
