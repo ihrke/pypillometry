@@ -192,7 +192,8 @@ class PupilData(GenericEyeData):
             eyes=[eyes]
         if len(eyes)==0:
             eyes=obj.eyes
-        
+        logger.debug("Scaling variables: %s and eyes %s" %( variables, eyes))
+
         if mean is None:
             mean={eye:np.nanmean(obj.data[eye+"_pupil"]) for eye in eyes}
         elif isinstance(mean, float):

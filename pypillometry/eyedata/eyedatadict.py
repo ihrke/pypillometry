@@ -12,6 +12,9 @@ class EyeDataDict(MutableMapping):
     statistical combination (e.g., "mean" or "median" or "regress") and
     variable is one of "x", "y", "pupil" (or other calculated entities,
     for example "baseline" or "response" for the pupil).
+
+    The dictionary can be indexed by a string "eye_variable" or by a tuple
+    ("eye", "variable") like data["left","x"] or data["left_x"].
     """
 
     def __init__(self, *args, **kwargs):
@@ -46,6 +49,9 @@ class EyeDataDict(MutableMapping):
         return EyeDataDict({k:v for k,v in self.data.items() if k.endswith("_"+variable)})
 
     def __getitem__(self, key):
+        # check if key is a tuple, in that case convert to string
+        if isinstance(key, tuple):
+            key="_".join(key)
         return self.data[key]
 
     def __setitem__(self, key, value):
@@ -60,6 +66,9 @@ class EyeDataDict(MutableMapping):
             self.length=value.shape[0]
         if value.shape[0]!=self.length:
             raise ValueError("Array must have same length as existing arrays")
+        # check if key is a tuple, in that case convert to string
+        if isinstance(key, tuple):
+            key="_".join(key)
         self.data[key] = value.astype(float)
 
     def __delitem__(self, key):
