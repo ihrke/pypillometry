@@ -10,7 +10,7 @@ import numpy as np
 from .. import io
 from ..convenience import sizeof_fmt
 from .eyedatadict import EyeDataDict
-
+from loguru import logger
 #from pytypes import typechecked
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
 import functools
@@ -75,6 +75,7 @@ class GenericEyeData(ABC):
 
         Private method.
         """
+        logger.debug("Initializing common data")
         if self.data is None:
             raise ValueError("data must be available before calling _init_common()")
         
@@ -523,3 +524,4 @@ class GenericEyeData(ABC):
         intervals = [(s,e) for s,e in zip(sti,ste)]
 
         return intervals
+

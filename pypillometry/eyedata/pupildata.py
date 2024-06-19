@@ -8,6 +8,7 @@ Class representing pupillometric data.
 from .eyedatadict import EyeDataDict
 from .generic import GenericEyeData, keephistory
 from ..parameters import Parameters
+from loguru import logger
 #from .. import convenience
 #from ..signal import baseline, pupil, preproc
 #from .. import io
@@ -68,7 +69,7 @@ class PupilData(GenericEyeData):
             default is "False"
         """
 
-
+        logger.info("Creating PupilData object")
         if (left_pupil is None and right_pupil is None):
             raise ValueError("At least one of the eyes, left_pupil or right_pupil, must be provided")
         self.data=EyeDataDict(left_pupil=left_pupil, right_pupil=right_pupil)
@@ -87,7 +88,7 @@ class PupilData(GenericEyeData):
         self.baseline_estimated=False
         
         ## initialize response-signal
-        self.response_pars=Parameters()
+        self.response_params=Parameters()
         self.response_estimated=False
         
         ## initialize blinks
@@ -136,6 +137,8 @@ class PupilData(GenericEyeData):
             ninterpolated={eye:self.data[eye+"_interpolated"].sum() for eye in self.eyes},
             baseline_estimated=self.baseline_estimated,
             response_estimated=self.response_estimated,
+            scale_params=self.scale_params,
+            response_params=self.response_params,
             glimpse=repr(self.data)
         )
         
@@ -184,7 +187,6 @@ class PupilData(GenericEyeData):
             variables=[variables]
         if len(variables)==0:
             variables=obj.variables
-
 
         if isinstance(eyes, str):
             eyes=[eyes]
