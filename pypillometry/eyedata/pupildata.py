@@ -9,12 +9,13 @@ import itertools
 from .eyedatadict import EyeDataDict
 from .generic import GenericEyeData, keephistory
 from ..parameters import Parameters
-from loguru import logger
 #from .. import convenience
-#from ..signal import baseline, pupil, preproc
+from ..signal import baseline
 #from .. import io
 from ..plot import PupilPlotter
 
+
+from loguru import logger
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy import interpolate
@@ -144,3 +145,31 @@ class PupilData(GenericEyeData):
         )
         
         return summary            
+
+    @keephistory
+    def pupil_lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], inplace=None):
+        """
+        Lowpass-filter pupil signal using a Butterworth-filter, 
+        see :py:func:`pypillometry.baseline.butter_lowpass_filter()`.
+    
+        Parameters
+        -----------
+        cutoff: float
+            lowpass-filter cutoff
+        order: int
+            filter order
+        eyes: list
+            list of eyes to filter; if empty, all available eyes are filtered
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes           
+            if `None`, use the object-level setting         
+        """
+        if inplace is None:
+            inplace=self.inplace
+        obj=self if inplace else self.copy()
+        if len(eyes)==0:
+            eyes=obj.eyes
+        for eye in eyes:
+            obj.data[eye,"pupil"]=baseline.butter_lowpass_filter(obj.data[eye,"pupil"], cutoff, obj.fs, order)
+        return obj

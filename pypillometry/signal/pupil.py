@@ -7,7 +7,7 @@ functions related to pupillary responses.
 import numpy as np
 import scipy.optimize
 import pylab as plt
-from .convenience import *
+from ..convenience import *
 
 def pupil_kernel_t(t,npar,tmax):
     """
