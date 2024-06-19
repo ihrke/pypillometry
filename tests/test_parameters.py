@@ -26,6 +26,14 @@ class TestParameters(unittest.TestCase):
     def test_wrongkey(self):
         p = Parameters()
         self.assertRaises(ValueError, p.__setitem__, 10, 10)
+    def test_haskey(self):
+        p = Parameters()
+        p["mean","right"]=10
+        self.assertTrue(p.has_key("right","mean"))
+        self.assertTrue(p.has_key("mean","right"))
+        self.assertTrue(p.has_key( ("right","mean") ))
+        self.assertFalse(p.has_key("right","mean","pupil","sd"))
+        self.assertFalse(p.has_key("right","mean","pupil","sd","baseline"))
 
 if __name__ == '__main__':
     unittest.main()

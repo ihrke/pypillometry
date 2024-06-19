@@ -5,6 +5,7 @@ pupildata.py
 Class representing pupillometric data.
 """
 
+import itertools
 from .eyedatadict import EyeDataDict
 from .generic import GenericEyeData, keephistory
 from ..parameters import Parameters
@@ -143,77 +144,3 @@ class PupilData(GenericEyeData):
         )
         
         return summary            
-
-    @keephistory
-    def scale(self, variables, mean: float=None, sd: float=None, eyes=[], inplace=None):
-        """
-        Scale the signal by subtracting `mean` and dividing by `sd`.
-        If these variables are not provided, use the signal's mean and std.
-        Specify whether to scale `x`, `y`, `pupil` or other variables.
-        
-        Parameters
-        ----------
-        
-        variables: str or list
-            variables to scale; can be "pupil", "x","y", "baseline", "response" or any other variable
-            that is available in the dataset; either a string or a list of strings;
-            available variables can be checked with `obj.variables`
-        mean: float or dict
-            mean to subtract from signal; if `None`, use the signal's mean
-            if dict, provide mean for each eye
-        sd: float or dict
-            sd to scale with; if `None`, use the signal's std
-            if dict, provide sd for each eye
-        eyes: str or list
-            list of eyes to consider; if empty, all available eyes are considered
-        variables: list
-            list of variables to consider; if empty, all available variables are considered;
-            variables can be "pupil", "baseline", "response" and all other variables that
-            are available in the dataset (check with `obj.get_available_variables()`)
-        inplace: bool
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes    
-            if `None`, use the object's default setting    
-        
-        Note
-        ----
-        Scaling-parameters are being saved in the `scale_params` argument. 
-        """
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
-
-        if isinstance(variables, str):
-            variables=[variables]
-        if len(variables)==0:
-            variables=obj.variables
-
-        if isinstance(eyes, str):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
-        logger.debug("Scaling variables: %s and eyes %s" %( variables, eyes))
-
-        if mean is None:
-            mean={eye:np.nanmean(obj.data[eye+"_pupil"]) for eye in eyes}
-        elif isinstance(mean, float):
-            mean={eye:mean for eye in eyes}
-        elif not isinstance(mean, dict):
-            raise ValueError("mean must be None, float or dict")
-
-        if sd is None:
-            sd={eye:np.nanstd(obj.data[eye+"_pupil"]) for eye in eyes}
-        elif isinstance(sd, float):
-            sd={eye:sd for eye in eyes}
-        elif not isinstance(sd, dict):
-            raise ValueError("sd must be None, float or dict")
-
-        for eye in eyes:
-            if eye not in mean.keys() or eye not in sd.keys():
-                raise ValueError("mean and sd must be provided for each eye")
-            if eye not in obj.eyes:
-                raise ValueError("No data for eye %s available" % eye)
-            obj.scale_params={eye:{"mean":mean, "sd":sd} for eye in eyes}
-            obj.data[eye+"_pupil"]=(obj.data[eye+"_pupil"]-mean[eye])/sd[eye]
-            return obj
-        

@@ -40,6 +40,12 @@ class Parameters(MutableMapping):
         self.default_value = default_value
         self.update(dict(*args, **kwargs))  # use the free update to set keys
 
+    def has_key(self,key, *args):
+        if len(args)>0 and isinstance(key, str):
+            key=(key,)+args
+        key=keys_to_string(key)
+        return key in self.data.keys()
+
     def __setitem__(self, key, value):
         key=keys_to_string(key)
         self.data[key]=value

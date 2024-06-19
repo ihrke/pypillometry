@@ -6,10 +6,13 @@ Generic Eyedata class for use with the pypillometry package.
 All other eyedata classes should inherit from this class.
 """
 
-import numpy as np
 from .. import io
+from ..parameters import Parameters
 from ..convenience import sizeof_fmt
 from .eyedatadict import EyeDataDict
+
+import numpy as np
+import itertools
 from loguru import logger
 #from pytypes import typechecked
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
@@ -525,3 +528,85 @@ class GenericEyeData(ABC):
 
         return intervals
 
+    @keephistory
+    def scale(self, variables, mean: float=None, sd: float=None, eyes=[], inplace=None):
+        """
+        Scale the signal by subtracting `mean` and dividing by `sd`.
+        If these variables are not provided, use the signal's mean and std.
+        Specify whether to scale `x`, `y`, `pupil` or other variables.
+        
+        Parameters
+        ----------
+        
+        variables: str or list
+            variables to scale; can be "pupil", "x","y", "baseline", "response" or any other variable
+            that is available in the dataset; either a string or a list of strings;
+            available variables can be checked with `obj.variables`
+        mean: None, float or Parameters 
+            mean to subtract from signal; if `None`, use the signal's mean
+            if dict, provide mean for each eye and variable configuration
+            (use Parameters() dictionary)
+        sd: None, float or Parameters
+            sd to scale with; if `None`, use the signal's std
+            if dict, provide sd for each eye and variable configuration
+            (use Parameters() dictionary)
+        eyes: str or list
+            list of eyes to consider; if empty, all available eyes are considered
+        variables: list
+            list of variables to consider; if empty, all available variables are considered;
+            variables can be "pupil", "baseline", "response" and all other variables that
+            are available in the dataset (check with `obj.get_available_variables()`)
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes    
+            if `None`, use the object's default setting    
+        
+        Note
+        ----
+        Scaling-parameters are being saved in the `scale_params` argument. 
+        """
+        if inplace is None:
+            inplace=self.inplace
+        obj=self if inplace else self.copy()
+
+        if isinstance(variables, str):
+            variables=[variables]
+        if len(variables)==0:
+            variables=obj.variables
+
+        if isinstance(eyes, str):
+            eyes=[eyes]
+        if len(eyes)==0:
+            eyes=obj.eyes
+        logger.debug("Scaling variables: %s and eyes %s" %( variables, eyes))
+
+        if mean is None:
+            mean=Parameters({(eye,var):np.nanmean(obj.data[eye,var]) for eye,var in itertools.product(eyes, variables)})
+        elif isinstance(mean, float):
+            mean=Parameters({(eye,var):mean for eye,var in itertools.product(eyes, variables)})
+        elif not isinstance(mean, Parameters):
+            raise ValueError("mean must be None, float or Parameters")
+
+        if sd is None:
+            sd=Parameters({(eye,var):np.nanstd(obj.data[eye,var]) for eye,var in itertools.product(eyes, variables)})
+        elif isinstance(sd, float):
+            sd=Parameters({(eye,var):sd for eye,var in itertools.product(eyes, variables)})
+        elif not isinstance(sd, Parameters):
+            raise ValueError("sd must be None, float or Parameters")
+        logger.debug("Mean: %s" % mean)
+        logger.debug("SD: %s" % sd)
+
+        obj.scale_params=Parameters()
+        for var in variables:
+            for eye in eyes:
+                if not mean.has_key(eye,var) or not sd.has_key(eye,var):
+                    raise ValueError("mean and sd must be provided for each eye")
+                if eye not in obj.eyes:
+                    raise ValueError("No data for eye %s available" % eye)
+                if var not in obj.variables:
+                    raise ValueError("No data for variable %s available" % var)
+                obj.scale_params[var,eye,"mean"]=mean[eye,var]
+                obj.scale_params[var,eye,"sd"]=sd[eye,var]
+                obj.data[eye, var]=(obj.data[eye, var]-mean[eye,var])/sd[eye,var]
+        return obj
+        
