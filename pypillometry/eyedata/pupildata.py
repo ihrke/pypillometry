@@ -106,7 +106,7 @@ class PupilData(GenericEyeData):
         self.plot=PupilPlotter(self)
 
         ## default parameters for scaling signal
-        self.scale_params={"mean":0, "sd":1}
+        self.scale_params={eye:{"mean":0, "sd":1} for eye in self.eyes}
 
         ## initialize baseline signal
         self.baseline_estimated=False
@@ -116,10 +116,10 @@ class PupilData(GenericEyeData):
         self.response_estimated=False
         
         ## initialize blinks
-        self.blinks={eye:np.empty((0,2), dtype=int) for eye in self.get_available_eyes()}
+        self.blinks={eye:np.empty((0,2), dtype=int) for eye in self.eyes}
         
         ## masks for blinks and interpolated segments of the data
-        for eye in self.get_available_eyes():
+        for eye in self.eyes:
             self.data[eye+"_blinkmask"]=np.zeros(len(self), dtype=int)
             self.data[eye+"_interpolated"]=np.zeros(len(self), dtype=int)
 
@@ -140,7 +140,7 @@ class PupilData(GenericEyeData):
             list of eyes to consider; if empty, all eyes are considered
         """
         if len(eyes)==0:
-            eyes=self.get_available_eyes()
+            eyes=self.eyes
         return {eye:self.blinks[eye].shape[0] for eye in eyes}
 
     def summary(self):
@@ -148,12 +148,11 @@ class PupilData(GenericEyeData):
         Return a summary of the dataset as a dictionary.
         """
 
-        eyes=self.get_available_eyes()
         summary=dict(
             name=self.name, 
             n=len(self),
             sampling_rate=self.fs,
-            eyes=eyes,
+            eyes=self.eyes,
             data=list(self.data.keys()),
             nevents=self.nevents(), 
             nblinks=self.nblinks(), 
@@ -163,7 +162,7 @@ class PupilData(GenericEyeData):
             duration_minutes=self.get_duration("min"),
             start_min=self.tx.min()/1000./60.,
             end_min=self.tx.max()/1000./60.,
-            ninterpolated={eye:self.data[eye+"_interpolated"].sum() for eye in eyes},
+            ninterpolated={eye:self.data[eye+"_interpolated"].sum() for eye in self.eyes},
             baseline_estimated=self.baseline_estimated,
             response_estimated=self.response_estimated,
             glimpse=repr(self.data)
@@ -171,4 +170,66 @@ class PupilData(GenericEyeData):
         
         return summary            
 
-    
+    @keephistory
+    def pupil_scale(self, mean: float=None, sd: float=None, 
+                    eyes=[], variables=["pupil"], inplace=None):
+        """
+        Scale the pupillary signal by subtracting `mean` and dividing by `sd`.
+        If these variables are not provided, use the signal's mean and std.
+        
+        Parameters
+        ----------
+        
+        mean: float or dict
+            mean to subtract from signal; if `None`, use the signal's mean
+            if dict, provide mean for each eye
+        sd: float or dict
+            sd to scale with; if `None`, use the signal's std
+            if dict, provide sd for each eye
+        eyes: list
+            list of eyes to consider; if empty, all available eyes are considered
+        variables: list
+            list of variables to consider; if empty, all available variables are considered;
+            variables can be "pupil", "baseline", "response" and all other variables that
+            are available in the dataset (check with `obj.get_available_variables()`)
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes    
+            if `None`, use the object's default setting    
+        
+        Note
+        ----
+        Scaling-parameters are being saved in the `scale_params` argument. 
+        """
+        if inplace is None:
+            inplace=self.inplace
+        obj=self if inplace else self.copy()
+
+        if len(eyes)==0:
+            eyes=self.eyes
+        
+        if mean is None:
+            mean={eye:np.nanmean(obj.data[eye+"_pupil"]) for eye in eyes}
+        elif isinstance(mean, float):
+            mean={eye:mean for eye in eyes}
+        elif not isinstance(mean, dict):
+            raise ValueError("mean must be None, float or dict")
+
+        if sd is None:
+            sd={eye:np.nanstd(obj.data[eye+"_pupil"]) for eye in eyes}
+        elif isinstance(sd, float):
+            sd={eye:sd for eye in eyes}
+        elif not isinstance(sd, dict):
+            raise ValueError("sd must be None, float or dict")
+
+        for eye in eyes:
+            if eye not in mean.keys() or eye not in sd.keys():
+                raise ValueError("mean and sd must be provided for each eye")
+            if eye not in obj.eyes:
+                raise ValueError("No data for eye %s available" % eye)
+            obj.scale_params={eye:{"mean":mean, "sd":sd} for eye in eyes}
+            obj.data[eye+"_pupil"]=(self.data[eye+"_pupil"]-mean[eye])/sd[eye]
+            obj.baseline=(self.baseline-mean)/sd
+            obj.response=(self.response)/sd
+            return obj
+        

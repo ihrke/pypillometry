@@ -1,3 +1,34 @@
+## Thoughts and TODO after meeting 2024-06-18
+
+- multiple inheritance scheme:
+  - `GenericEyeData` implements bookkeeping, history, etc like now
+  - `PupilData` inherits from `GenericEyeData` and implements pupil-specific methods working on the `EyeDataDict` fields `left_pupil` and `right_pupil` etc
+  - `GazeData` inherits from `GenericEyeData` and implements gaze-specific methods working on the `EyeDataDict` fields `left_x` and `right_y` etc
+  - `EyeData` inherits from `PupilData` and `GazeData` and implements methods that work on both pupil and gaze data (e.g., the correction of the pupil by foreshortening)
+  - the beauty of it is that they all work on the `self.data` field which is `EyeDataDict`, just assuming different fields are present
+  - the plotting could mirror that approach: separate `GazePlotter` and `PupilPlotter` that are then merged in a `EyePlotter` class that inherits both
+  - then it the interface would simply be `d.plotting.plot_xx()` for all three classes
+  - what about the events? can they go into the `GenericEyeData` class?
+- Problem with the scheme: When `EyeData` inherits from both classes, it is not clear whether a given function belongs to the gaze- or the pupil-data (this is even worse for the plotting functions)
+  - one solution would be consistent naming of the methods but that kind of defeats the whole purpose of the inheritance
+  - another solution would be to have `EyeData` not inherit but keep copies of the `PupilData` and `GazeData` objects and delegate the calls to them. But that is even worse.
+  - consistent naming having "pupil" or "gaze" go first so that TAB-completion works:
+    - scale()/unscale() - scale can be moved to generic, featuring an "eyes" and "variables" argument that specifies which timeseries should be scaled; 
+    - pupil_lowpass_filter()
+    - pupil_smooth_window()
+    - pupil_downsample()  - or can this be for everything? - yeah, think so
+    - pupil_estimate_baseline() 
+    - pupil_estimate_response()
+    - pupil_blinks_detect() - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names
+    - pupil_blinks_merge()
+    - pupil_blinks_interpolate() - merge with Mahot function and make one an option for the other; remove plotting from Mahot function but add a function to the `PupilPlotter` that can visualize this
+    - pupil_stat_per_event() - should this be based on the `get_intervals()` function instead? yeah! Then it can be `get_stat_per_interval()` and it can accept `eye` and `variable` as arguments to determine which timeseries should be used; but then it has to be implemented in both child classes; perhaps implement at the `GenericEyeData` level and then add a thin wrapper on the child classes that calls the generic function preventing it from using the wrong arguments
+    - get_erpd() should also be reworked: based on the `get_intervals()` function and allow to select variables and eyes; has to be called something else like `EyeDataSegments` or so? Then get_segments() can return one segment-object per eye and variable for further processing
+      - or I build another class that works like `EyeDataDict` but with the segments
+- what about the `FakePupilData`? The difference is that it has additional timeseries corresponding to the simulated components of the signal; I can inherit from `PupilData` and implement those on top pretty easily; but I need also a `FakePupilPlotter` that can visualize those components
+  - as long as I am clever about implementing the other methods, I can just send a "sim" variable into as 'variable' name so that I don't need to completely reimplement them
+
+
 ## Notes meeting 2024-06-18
 
 - `pint` package: for unit conversion
@@ -10,15 +41,6 @@
 - it seems best to drop the old `PupilData` class and implement everything as `EyeData` with the `EyeDataDict` for the data 
   - what happens if someone only has x/y data or only pupil data? 
   - would be nice if those would be somehow separate and only implement a subset of methods
-- multiple inheritance scheme:
-  - `GenericEyeData` implements bookkeeping, history, etc like now
-  - `PupilData` inherits from `GenericEyeData` and implements pupil-specific methods working on the `EyeDataDict` fields `left_pupil` and `right_pupil` etc
-  - `GazeData` inherits from `GenericEyeData` and implements gaze-specific methods working on the `EyeDataDict` fields `left_x` and `right_y` etc
-  - `EyeData` inherits from `PupilData` and `GazeData` and implements methods that work on both pupil and gaze data (e.g., the correction of the pupil by foreshortening)
-  - the beauty of it is that they all work on the `self.data` field which is `EyeDataDict`, just assuming different fields are present
-  - the plotting could mirror that approach: separate `GazePlotter` and `PupilPlotter` that are then merged in a `EyePlotter` class that inherits both
-  - then it the interface would simply be `d.plotting.plot_xx()` for all three classes
-  - what about the events? can they go into the `GenericEyeData` class?
 
 ## Notes from Radovan 2024-04-19
 

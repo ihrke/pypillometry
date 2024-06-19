@@ -184,7 +184,7 @@ class EyeData(GazeData):
             midpoint=(self.screen_width/2, self.screen_height/2)
         
         if eyes is None:
-            eyes=self.get_available_eyes()
+            eyes=self.eyes
 
         scaling_factor_x=self.physical_screen_width/self.screen_width
         scaling_factor_y=self.physical_screen_height/self.screen_height

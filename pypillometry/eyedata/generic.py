@@ -83,12 +83,19 @@ class GenericEyeData(ABC):
         return self.event_onsets.size
 
 
-    def get_available_eyes(self):
+    @property
+    def eyes(self) -> List[str]:
         """
         Return a list of available eyes in the dataset.
         """
         return self.data.get_available_eyes()
-
+    
+    @property
+    def variables(self) -> List[str]:
+        """
+        Return a list of available variables in the dataset.
+        """
+        return self.data.get_available_variables()
 
     def get_duration(self, units="min"):
         fac=self._unit_fac(units)
