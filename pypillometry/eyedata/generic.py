@@ -552,10 +552,6 @@ class GenericEyeData(ABC):
             (use Parameters() dictionary)
         eyes: str or list
             list of eyes to consider; if empty, all available eyes are considered
-        variables: list
-            list of variables to consider; if empty, all available variables are considered;
-            variables can be "pupil", "baseline", "response" and all other variables that
-            are available in the dataset (check with `obj.get_available_variables()`)
         inplace: bool
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes    
@@ -610,3 +606,63 @@ class GenericEyeData(ABC):
                 obj.data[eye, var]=(obj.data[eye, var]-mean[eye,var])/sd[eye,var]
         return obj
         
+    @keephistory    
+    def unscale(self, variables, mean=None, sd=None, eyes=[], inplace=None):
+        """
+        Scale back to original values using either values provided as arguments
+        or the values stored in `scale_params`.
+        
+        Parameters
+        ----------
+        variables: str or list
+            variables to scale; can be "pupil", "x","y", "baseline", "response" or any other variable
+            that is available in the dataset; either a string or a list of strings;
+            available variables can be checked with `obj.variables`
+        mean: None, float or Parameters 
+            mean to subtract from signal; if `None`, use the signal's mean
+            if dict, provide mean for each eye and variable configuration
+            (use Parameters() dictionary)
+        sd: None, float or Parameters
+            sd to scale with; if `None`, use the signal's std
+            if dict, provide sd for each eye and variable configuration
+            (use Parameters() dictionary)
+        eyes: str or list
+            list of eyes to consider; if empty, all available eyes are considered
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes    
+            if `None`, use the object's default setting            
+        """
+        if inplace is None:
+            inplace=self.inplace
+        obj=self if inplace else self.copy()
+
+        if isinstance(variables, str):
+            variables=[variables]
+        if len(variables)==0:
+            variables=obj.variables
+
+        if isinstance(eyes, str):
+            eyes=[eyes]
+        if len(eyes)==0:
+            eyes=obj.eyes
+        logger.debug("Unscaling variables: %s and eyes %s" %( variables, eyes))
+
+        # if no parameters are provided, use the stored ones (normal)
+        if mean is None:
+            mean=obj.scale_params["mean"]
+        if sd is None:
+            sd=obj.scale_params["sd"]
+        
+        for var in variables:
+            for eye in eyes:
+                if not mean.has_key(eye,var) or not sd.has_key(eye,var):
+                    raise ValueError("mean and sd must be provided for each eye")
+                if eye not in obj.eyes:
+                    raise ValueError("No data for eye %s available" % eye)
+                if var not in obj.variables:
+                    raise ValueError("No data for variable %s available" % var)
+                del obj.scale_params[var,eye,"mean"]
+                del obj.scale_params[var,eye,"sd"]
+                obj.data[eye, var]=(obj.data[eye, var]*sd[eye,var])+mean[eye,var]
+        return obj    

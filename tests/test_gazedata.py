@@ -31,7 +31,12 @@ class TestGazeData(unittest.TestCase):
         self.assertEqual(d.scale_params["left","x","sd"], 0.5)
     
         #pytest.set_trace()
-        
+    def test_unscale(self):
+        d = pp.GazeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
+        d2=d.scale(["x",'y'])
+        d3=d2.unscale(["x",'y'])
+        self.assertEqual(np.sum(d3.data["left","x"]-d.data["left","x"]), 0)
+        self.assertEqual(np.sum(d3.data["left","y"]-d.data["left","y"]), 0)
 
 if __name__ == '__main__':
     unittest.main()
