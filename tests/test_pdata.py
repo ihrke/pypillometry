@@ -28,7 +28,13 @@ class TestPupilData(unittest.TestCase):
                                    ("mean","right","pupil"):3, 
                                    ("sd","left","pupil"):0.5, 
                                    ("sd","right","pupil"):0.5})
-        d=d.scale("pupil", mean=scalepars)
+        d=d.scale("pupil", mean=scalepars["mean"], sd=scalepars["sd"])
+        self.assertEqual(d.scale_params["left","pupil","mean"], 1)
+        self.assertEqual(d.scale_params["right","pupil","mean"], 3)
+        self.assertEqual(d.scale_params["left","pupil","sd"], 0.5)
+        self.assertEqual(d.scale_params["right","pupil","sd"], 0.5)
+    
+        #pytest.set_trace()
         
 
 if __name__ == '__main__':
