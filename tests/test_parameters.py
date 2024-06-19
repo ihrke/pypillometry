@@ -34,6 +34,22 @@ class TestParameters(unittest.TestCase):
         self.assertTrue(p.has_key( ("right","mean") ))
         self.assertFalse(p.has_key("right","mean","pupil","sd"))
         self.assertFalse(p.has_key("right","mean","pupil","sd","baseline"))
+    def test_subset(self):
+        p = Parameters({("mean","right"):10, ("mean","left"):0.1})
+        p2 = p["mean"]
+        self.assertEqual(p2["left"], 0.1)
+        self.assertEqual(p2["right"], 10)
+        p = Parameters({("mean","right","pupil"):10, 
+                        ("mean","left","pupil"):0.1,
+                        ("mean","right","x"):1,
+                        ("mean","left","x"):2})
+        p2 = p["right"]
+        self.assertEqual(p2["pupil","mean"], 10)
+        self.assertEqual(p2["x","mean"], 1)
+        p3 = p["pupil","mean"]
+        self.assertEqual(p3["right"], 10)
+        self.assertEqual(p3["left"], 0.1)
+
 
 if __name__ == '__main__':
     unittest.main()

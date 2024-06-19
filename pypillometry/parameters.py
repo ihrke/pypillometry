@@ -20,6 +20,11 @@ class Parameters(MutableMapping):
     can be saved as p["mean","right","pupil"]=10. Access is independent of
     order, so p["right","mean","pupil"] will return the same value.
 
+    In addition, the dictionary will return a subset of itself if a key is 
+    given that matches some of the stored keys. For example, p["right"] will
+    return a `Parameters()` dictionary with all keys that contain a "right" 
+    (with "right" removed from the key).
+
     In case a key is not found, a default value is returned. 
 
     """
@@ -41,6 +46,10 @@ class Parameters(MutableMapping):
         self.update(dict(*args, **kwargs))  # use the free update to set keys
 
     def has_key(self,key, *args):
+        """
+        Check if a key is present in the dictionary. It only checks for 
+        an exact match, i.e., there is a value for the key and not a subset.
+        """
         if len(args)>0 and isinstance(key, str):
             key=(key,)+args
         key=keys_to_string(key)
@@ -52,10 +61,18 @@ class Parameters(MutableMapping):
 
     def __getitem__(self, key):
         key=keys_to_string(key)
-        if key not in self.data:
+        matches=[set(key.split(",")).issubset(set(k.split(","))) for k in self.data.keys()]
+        if(sum(matches)==0): # no match -> return default
             return self.default_value
-        else:
+        elif sum(matches)==1: # exact match -> return parameter
             return self.data[key]
+        else: # multiple matches -> return subset as Parameters dict
+            r = Parameters(default_value=self.default_value)
+            for k,v in self.data.items():
+                nkey = tuple(set(k.split(",")).difference(set(key.split(","))))
+                if set(key.split(",")).issubset(set(k.split(","))):
+                    r[nkey]=v
+            return r
 
     def __delitem__(self, key):
         key=keys_to_string(key)
