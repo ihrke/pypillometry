@@ -62,6 +62,57 @@ class GenericEyeData(ABC):
         """Constructor"""
         pass
 
+    def _init_common(self, time: np.ndarray,
+                    sampling_rate: float,
+                    event_onsets: np.ndarray,
+                    event_labels: np.ndarray,
+                    name: str,
+                    fill_time_discontinuities: bool,
+                    inplace: bool):
+        """
+        Common code for the child-classes of GenericEyeData.
+        Assumes that self.data is already set and filled.
+
+        Private method.
+        """
+        if self.data is None:
+            raise ValueError("data must be available before calling _init_common()")
+        
+        if time is None and sampling_rate is None:
+            raise ValueError("Either `time` or `sampling_rate` must be provided")
+
+        ## name
+        if name is None:
+            self.name = self._random_id()
+        else:
+            self.name=name
+
+        ## set time array and sampling rate
+        if time is None:
+            maxT=len(self.data)/sampling_rate*1000.
+            self.tx=np.linspace(0,maxT, num=len(self.data))
+        else:
+            self.tx=np.array(time, dtype=float)
+
+        self.missing=np.zeros_like(self.tx, dtype=bool)
+
+        if sampling_rate is None:
+            self.fs=np.round(1000./np.median(np.diff(self.tx)))
+        else:
+            self.fs=sampling_rate
+            
+        self.set_event_onsets(event_onsets, event_labels)
+
+        ## start with empty history    
+        self.history=[]            
+
+        ## init whether or not to do operations in place
+        self.inplace=inplace 
+
+        ## fill in time discontinuities
+        if fill_time_discontinuities:
+            self.fill_time_discontinuities()   
+
     def _unit_fac(self, units):
         """for converting units"""
         if units=="sec":

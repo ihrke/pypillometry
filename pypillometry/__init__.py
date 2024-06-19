@@ -12,6 +12,7 @@ from .eyedata.eyedata import EyeData
 from .eyedata.gazedata import GazeData
 from .eyedata.pupildata import PupilData
 from .convenience import *
+from .parameters import Parameters
 
 import os.path
 __package_path__ = os.path.abspath(os.path.dirname(__file__))

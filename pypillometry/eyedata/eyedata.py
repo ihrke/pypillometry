@@ -33,7 +33,8 @@ class EyeData(GazeData):
                     screen_eye_distance: float = None,
                     name: str = None,
                     fill_time_discontinuities: bool = True,
-                    keep_orig: bool = False):
+                    keep_orig: bool = False, 
+                    inplace: bool = False):
         """
         Parameters
         ----------
@@ -68,18 +69,14 @@ class EyeData(GazeData):
             when this option is True, such entries will be made and the signal set to 0 there
             (or do it later using `fill_time_discontinuities()`)
         """
-        if time is None and sampling_rate is None:
-            raise ValueError("Either `time` or `sampling_rate` must be provided")
-
         if (left_x is None or left_y is None) and (right_x is None or right_y is None):
             raise ValueError("At least one of the eye-traces must be provided (both x and y)")
         self.data=EyeDataDict(left_x=left_x, left_y=left_y, left_pupil=left_pupil,
                                 right_x=right_x, right_y=right_y, right_pupil=right_pupil)
-        ## name
-        if name is None:
-            self.name = self._random_id()
-        else:
-            self.name=name
+        
+        self._init_common(time, sampling_rate, 
+                          event_onsets, event_labels, 
+                          name, fill_time_discontinuities, inplace)
         
         self._screen_size_set=False
         self._physical_screen_dims_set=False
@@ -89,39 +86,13 @@ class EyeData(GazeData):
         self.set_experiment_info(screen_resolution=screen_resolution, 
                                  physical_screen_size=physical_screen_size,
                                  screen_eye_distance=screen_eye_distance)
-
-        ## set time array and sampling rate
-        if time is None:
-            maxT=len(self.data)/sampling_rate*1000.
-            self.tx=np.linspace(0,maxT, num=len(self.data))
-        else:
-            self.tx=np.array(time, dtype=float)
-
-        self.missing=np.zeros_like(self.tx, dtype=bool)
-
-        if sampling_rate is None:
-            self.fs=np.round(1000./np.median(np.diff(self.tx)))
-        else:
-            self.fs=sampling_rate
-            
-        self.set_event_onsets(event_onsets, event_labels)
-
-        ## start with empty history    
-        self.history=[]            
+        ## set plotter 
+        self.plot=EyePlotter(self)
 
         self.original=None
         if keep_orig: 
             self.original=self.copy()
 
-        ## fill in time discontinuities
-        if fill_time_discontinuities:
-            self.fill_time_discontinuities()
-
-        ## init whether or not to do operations in place
-        self.inplace=inplace 
-
-        ## set plotter 
-        self.plot=EyePlotter(self)
 
 
     def summary(self):

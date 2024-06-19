@@ -7,6 +7,7 @@ Class representing pupillometric data.
 
 from .eyedatadict import EyeDataDict
 from .generic import GenericEyeData, keephistory
+from ..parameters import Parameters
 #from .. import convenience
 #from ..signal import baseline, pupil, preproc
 #from .. import io
@@ -67,52 +68,26 @@ class PupilData(GenericEyeData):
             default is "False"
         """
 
-        if time is None and sampling_rate is None:
-            raise ValueError("Either `time` or `sampling_rate` must be provided")
 
         if (left_pupil is None and right_pupil is None):
             raise ValueError("At least one of the eyes, left_pupil or right_pupil, must be provided")
         self.data=EyeDataDict(left_pupil=left_pupil, right_pupil=right_pupil)
 
-        ## name
-        if name is None:
-            self.name = self._random_id()
-        else:
-            self.name=name
-
-        ## set time array and sampling rate
-        if time is None:
-            maxT=len(self.data)/sampling_rate*1000.
-            self.tx=np.linspace(0,maxT, num=len(self.data))
-        else:
-            self.tx=np.array(time, dtype=float)
-
-        self.missing=np.zeros_like(self.tx, dtype=bool)
-
-        if sampling_rate is None:
-            self.fs=np.round(1000./np.median(np.diff(self.tx)))
-        else:
-            self.fs=sampling_rate
-            
-        self.set_event_onsets(event_onsets, event_labels)
-
-        ## start with empty history    
-        self.history=[]            
-
-        ## init whether or not to do operations in place
-        self.inplace=inplace 
+        self._init_common(time, sampling_rate, 
+                          event_onsets, event_labels, 
+                          name, fill_time_discontinuities, inplace)
 
         ## set plotter 
         self.plot=PupilPlotter(self)
 
         ## default parameters for scaling signal
-        self.scale_params={eye:{"mean":0, "sd":1} for eye in self.eyes}
+        self.scale_params=Parameters()
 
         ## initialize baseline signal
         self.baseline_estimated=False
         
         ## initialize response-signal
-        self.response_pars=None
+        self.response_pars=Parameters()
         self.response_estimated=False
         
         ## initialize blinks
@@ -127,10 +102,6 @@ class PupilData(GenericEyeData):
         self.original=None
         if keep_orig: 
             self.original=self.copy()
-
-        ## fill in time discontinuities
-        if fill_time_discontinuities:
-            self.fill_time_discontinuities()   
        
     def nblinks(self, eyes=[]) -> int:
         """
@@ -171,22 +142,26 @@ class PupilData(GenericEyeData):
         return summary            
 
     @keephistory
-    def pupil_scale(self, mean: float=None, sd: float=None, 
-                    eyes=[], variables=["pupil"], inplace=None):
+    def scale(self, variables, mean: float=None, sd: float=None, eyes=[], inplace=None):
         """
-        Scale the pupillary signal by subtracting `mean` and dividing by `sd`.
+        Scale the signal by subtracting `mean` and dividing by `sd`.
         If these variables are not provided, use the signal's mean and std.
+        Specify whether to scale `x`, `y`, `pupil` or other variables.
         
         Parameters
         ----------
         
+        variables: str or list
+            variables to scale; can be "pupil", "x","y", "baseline", "response" or any other variable
+            that is available in the dataset; either a string or a list of strings;
+            available variables can be checked with `obj.variables`
         mean: float or dict
             mean to subtract from signal; if `None`, use the signal's mean
             if dict, provide mean for each eye
         sd: float or dict
             sd to scale with; if `None`, use the signal's std
             if dict, provide sd for each eye
-        eyes: list
+        eyes: str or list
             list of eyes to consider; if empty, all available eyes are considered
         variables: list
             list of variables to consider; if empty, all available variables are considered;
@@ -205,8 +180,16 @@ class PupilData(GenericEyeData):
             inplace=self.inplace
         obj=self if inplace else self.copy()
 
+        if isinstance(variables, str):
+            variables=[variables]
+        if len(variables)==0:
+            variables=obj.variables
+
+
+        if isinstance(eyes, str):
+            eyes=[eyes]
         if len(eyes)==0:
-            eyes=self.eyes
+            eyes=obj.eyes
         
         if mean is None:
             mean={eye:np.nanmean(obj.data[eye+"_pupil"]) for eye in eyes}
@@ -228,8 +211,6 @@ class PupilData(GenericEyeData):
             if eye not in obj.eyes:
                 raise ValueError("No data for eye %s available" % eye)
             obj.scale_params={eye:{"mean":mean, "sd":sd} for eye in eyes}
-            obj.data[eye+"_pupil"]=(self.data[eye+"_pupil"]-mean[eye])/sd[eye]
-            obj.baseline=(self.baseline-mean)/sd
-            obj.response=(self.response)/sd
+            obj.data[eye+"_pupil"]=(obj.data[eye+"_pupil"]-mean[eye])/sd[eye]
             return obj
         
