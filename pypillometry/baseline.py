@@ -202,7 +202,7 @@ def downsample(y,R):
     """
     pad_size = int(math.ceil(float(y.size)/R)*R - y.size)
     y_padded = np.append(y, np.zeros(pad_size)*np.NaN)
-    y2=scipy.nanmean(y_padded.reshape(-1,R), axis=1)
+    y2=np.nanmean(y_padded.reshape(-1,R), axis=1)
     return y2
 
 
