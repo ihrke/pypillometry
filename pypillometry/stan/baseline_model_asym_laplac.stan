@@ -22,7 +22,7 @@ data{
   matrix[n,ncol] B;  // spline basis functions
     
   int<lower=1> npeaks;          // number of lower peaks in the signal
-  int<lower=1> peakix[npeaks];  // index of the lower peaks in sy
+  array[npeaks] int<lower=1> peakix;  // index of the lower peaks in sy
   vector<lower=0>[npeaks] lam_prominences; // lambda-converted prominence values
     
   real<lower=0> lam_sig;    // lambda for the signal where there is no peak

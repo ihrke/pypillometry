@@ -10,9 +10,10 @@ from .baseline import *
 from .pupil import *
 
 def generate_pupil_data(event_onsets, fs=1000, pad=5000, baseline_lowpass=0.2, 
+                        scale_signal=(0,1), scale_evoked=(0.2,0.05),
                         evoked_response_perc=0.02, response_fluct_sd=1,
                         prf_npar=(10.35,0), prf_tmax=(917.0,0),
-                        prop_spurious_events=0.2, noise_amp=0.0005):
+                        num_spurious_events=0, noise_amp=0.01):
     """
     Generate artificial pupil data as a sum of slow baseline-fluctuations
     on which event-evoked responses are "riding". 
@@ -30,16 +31,12 @@ def generate_pupil_data(event_onsets, fs=1000, pad=5000, baseline_lowpass=0.2,
     baseline_lowpass: float
         cutoff for the lowpass-filter that defines the baseline
         (highest allowed frequency in the baseline fluctuations)
-        
-    evoked_response_perc: float
-        amplitude of the pupil-response as proportion of the baseline 
-    
-    response_fluct_sd: float
-        How much do the amplitudes of the individual events fluctuate?
-        This is determined by drawing each individual pupil-response to 
-        a single event from a (positive) normal distribution with mean as determined
-        by `evoked_response_perc` and sd `response_fluct_sd` (in units of 
-        `evoked_response_perc`).
+    scale_signal: (float,float)
+        scale of the final signal (mean and SD); default is (0,1), i.e.,
+        Z-scored data    
+    scale_evoked: (float,float)
+        amplitude of the pupil-response (mean and SD) in Z-score units;
+        responses<0 will be set to zero (truncated)
     prf_npar: tuple (float,float)
         (mean,std) of the npar parameter from :py:func:`pypillometry.pupil.pupil_kernel()`. 
         If the std is exactly zero, then the mean is used for all pupil-responses.
@@ -48,13 +45,12 @@ def generate_pupil_data(event_onsets, fs=1000, pad=5000, baseline_lowpass=0.2,
         (mean,std) of the tmax parameter from :py:func:`pypillometry.pupil.pupil_kernel()`. 
         If the std is exactly zero, then the mean is used for all pupil-responses.
         If the std is positive, tmax is taken i.i.d. from ~ normal(mean,std) for each event.
-    prop_spurious_events: float
-        Add random events to the pupil signal. `prop_spurious_events` is expressed
-        as proportion of the number of real events. 
-        
+    num_spurious_events: float
+        Add random events to the pupil signal. These are placed at random locations 
+        throughout the dataset.
     noise_amp: float
         Amplitude of random gaussian noise that sits on top of the simulated signal.
-        Expressed in units of mean baseline pupil diameter.
+        Expressed in SD-units before scaling up the signal
         
     
     Returns
@@ -96,14 +92,15 @@ def generate_pupil_data(event_onsets, fs=1000, pad=5000, baseline_lowpass=0.2,
     # create baseline-signal 
     slack=int(0.50*n) # add slack to avoid edge effects of the filter
     x0=butter_lowpass_filter(np.random.rand(n+slack), baseline_lowpass, fs, 2)[slack:(n+slack)]
-    x0=x0*1000+5000 # scale it up to a scale as usually obtained from eyetracker
-
+    x0 = (x0-np.mean(x0))/np.std(x0) # Z-score
 
     ### real events regressor
     ## scaling
     event_ix=(np.array(event_onsets)/1000.*fs).astype(int)
     #a, b = (myclip_a - my_mean) / my_std, (myclip_b - my_mean) / my_std
-    delta_weights=stats.truncnorm.rvs(-1/response_fluct_sd,np.inf, loc=1, scale=response_fluct_sd, size=event_ix.size)
+    a = (0-scale_evoked[0])/scale_evoked[1]
+    b = np.inf
+    delta_weights=stats.truncnorm.rvs(a,b, loc=scale_evoked[0], scale=scale_evoked[1], size=event_ix.size)
     x1=np.zeros_like(sy)
 
     for i,ev in enumerate(event_onsets):
@@ -113,9 +110,9 @@ def generate_pupil_data(event_onsets, fs=1000, pad=5000, baseline_lowpass=0.2,
 
     ## spurious events regressor
 
-    sp_event_ix=np.random.randint(low=0,high=np.ceil((T-maxdur-pad)/1000.*fs),size=int( nevents*prop_spurious_events ))
+    sp_event_ix=np.random.randint(low=0,high=np.ceil((T-maxdur-pad)/1000.*fs),size=int( num_spurious_events ))
     sp_events=tx[ sp_event_ix ]
-    n_sp_events=sp_events.size
+    n_sp_events=num_spurious_events
 
     ## npar
     if prf_npar[1]==0: # deterministic parameter
@@ -131,7 +128,7 @@ def generate_pupil_data(event_onsets, fs=1000, pad=5000, baseline_lowpass=0.2,
 
 
     ## scaling
-    sp_delta_weights=stats.truncnorm.rvs(-1/response_fluct_sd,np.inf, loc=1, scale=response_fluct_sd, size=sp_event_ix.size)
+    sp_delta_weights=stats.truncnorm.rvs(a,b, loc=scale_evoked[0], scale=scale_evoked[1], size=sp_event_ix.size)
     x2=np.zeros_like(sy)
 
     for i,ev in enumerate(sp_events):
@@ -139,12 +136,11 @@ def generate_pupil_data(event_onsets, fs=1000, pad=5000, baseline_lowpass=0.2,
         kernel=pupil_kernel(duration=maxdur,fs=fs,npar=npars[i], tmax=tmaxs[i])
         x2[sp_event_ix[i]:(sp_event_ix[i]+kernel.size)]=x2[sp_event_ix[i]:(sp_event_ix[i]+kernel.size)]+kernel*sp_delta_weights[i]
 
-    amp=np.mean(x0)*evoked_response_perc # mean amplitude for the evoked response
-    noise=noise_amp*np.mean(x0)*np.random.randn(n)
+    sy = x0 + x1 + x2 + noise_amp*np.random.randn(n)
+    sy = (sy * scale_signal[1])+scale_signal[0] # scale to desired range
+    x0s = (x0*scale_signal[1])+scale_signal[0]
 
-    sy = x0 + amp*x1 + amp*x2 + noise
-
-    return (tx,sy,x0,delta_weights)
+    return (tx,sy,x0s,delta_weights)
 
 
 def get_dataset(ntrials=100, isi=2000, rtdist=(1000,500),fs=1000,pad=5000, **kwargs):

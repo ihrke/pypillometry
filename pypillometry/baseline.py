@@ -295,7 +295,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     fname="stan/baseline_model_asym_laplac.stan"
     fpath=os.path.join(os.path.split(__file__)[0], fname)
     sm = cmdstanpy.CmdStanModel(stan_file=fpath)
-    sm.compile()
+    #sm.compile()
     #sm = StanModel_cache(stan_code_baseline_model_asym_laplac)
     
     ## put the data for the model together
@@ -314,7 +314,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     ## variational optimization
     vprint(10, "Optimizing Stan model")
     opt=sm.variational(data=data)
-    vbc=opt.stan_variable("coef")
+    vbc=opt.stan_variable("coef")#, mean=True)
     meansigvb=np.dot(B, vbc)
     vprint(10, "Done optimizing Stan model")
     
@@ -357,7 +357,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     ##  variational optimization
     vprint(10, "2nd Optimizing Stan model")
     opt=sm.variational(data=data2)
-    vbc2=opt.stan_variable("coef")
+    vbc2=opt.stan_variable("coef")#, mean=True)
     meansigvb2=np.dot(B2, vbc2)  
     vprint(10, "Done 2nd Optimizing Stan model")
     

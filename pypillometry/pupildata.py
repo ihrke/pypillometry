@@ -1389,7 +1389,7 @@ class FakePupilData(PupilData):
         ## OBS: not the real model but a simplification (npar/tmax may be different per event)
         x1=pupil_build_design_matrix(self.tx, self.event_onsets, self.fs, 
                                      sim_params["prf_npar"][0], sim_params["prf_tmax"][0], 6000)
-        amp=np.mean(real_baseline)*sim_params["evoked_response_perc"]
+        amp=np.mean(real_baseline)*sim_params["scale_evoked"][1]
         real_response=amp*np.dot(x1.T, real_response_coef)  ## predicted signal
         
         self.sim_response=real_response
@@ -1399,7 +1399,7 @@ class FakePupilData(PupilData):
     def unscale(self, mean: Optional[float]=None, sd: Optional[float]=None, inplace=_inplace):
         """
         Scale back to original values using either values provided as arguments
-        or the values stored in `scale_params`.
+        or the values stored in `scale_params`.n
         
         Parameters
         ----------
@@ -1594,56 +1594,23 @@ def create_fake_pupildata(**kwargs):
     Parameters
     -----------
     
-    ntrials:int
-        number of trials
-    isi: float
-        inter-stimulus interval in seconds
-    rtdist: tuple (float,float)
-        mean and std of a (truncated at zero) normal distribution to generate response times
-    pad: float
-        padding before the first and after the last event in seconds        
-    fs: float
-        sampling rate in Hz
-    baseline_lowpass: float
-        cutoff for the lowpass-filter that defines the baseline
-        (highest allowed frequency in the baseline fluctuations)        
-    evoked_response_perc: float
-        amplitude of the pupil-response as proportion of the baseline     
-    response_fluct_sd: float
-        How much do the amplitudes of the individual events fluctuate?
-        This is determined by drawing each individual pupil-response to 
-        a single event from a (positive) normal distribution with mean as determined
-        by `evoked_response_perc` and sd `response_fluct_sd` (in units of 
-        `evoked_response_perc`).
-    prf_npar: tuple (float,float)
-        (mean,std) of the npar parameter from :py:func:`pypillometry.pupil.pupil_kernel()`. 
-        If the std is exactly zero, then the mean is used for all pupil-responses.
-        If the std is positive, npar is taken i.i.d. from ~ normal(mean,std) for each event.
-    prf_tmax: tuple (float,float)
-        (mean,std) of the tmax parameter from :py:func:`pypillometry.pupil.pupil_kernel()`. 
-        If the std is exactly zero, then the mean is used for all pupil-responses.
-        If the std is positive, tmax is taken i.i.d. from ~ normal(mean,std) for each event.
-    prop_spurious_events: float
-        Add random events to the pupil signal. `prop_spurious_events` is expressed
-        as proportion of the number of real events. 
-    noise_amp: float
-        Amplitude of random gaussian noise that sits on top of the simulated signal.
-        Expressed in units of mean baseline pupil diameter.
+    Same parameters as :py:func:`pypillometry.fakedata.get_dataset()`.
     """
     sim_params={
         "ntrials":100,
         "isi":1000.0,
         "rtdist":(1000.0,500.0),
+        "scale_signal":(0,1),
+        "scale_evoked":(0.2, 0.1),
         "pad":5000.0,
         "fs":1000.0,
         "baseline_lowpass":0.1,
-        "evoked_response_perc":0.001,
-        "response_fluct_sd":1,
         "prf_npar":(10.35,0),
         "prf_tmax":(917.0,0),
-        "prop_spurious_events":0.1,
+        "num_spurious_events":0,
         "noise_amp":0.0001
     }
+
     sim_params.update(kwargs)
     #print(sim_params)
     tx,sy,baseline,event_onsets,response_coef=get_dataset(**sim_params)
