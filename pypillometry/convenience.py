@@ -51,18 +51,18 @@ def trans_logistic_vec(x, a, b, inverse=False):
     eps=1e-15
     if inverse==False:
         # variables from [a,inf]
-        x=np.where( (a>-np.infty) & (b==np.infty), np.log(np.maximum(x-a, eps)), x)
+        x=np.where( (a>-np.inf) & (b==np.inf), np.log(np.maximum(x-a, eps)), x)
         # variables from [-inf, b]
-        x=np.where( (a==-np.infty) & (b<np.infty), np.log(np.maximum(b-x, eps)), x)
+        x=np.where( (a==-np.inf) & (b<np.inf), np.log(np.maximum(b-x, eps)), x)
         # variables from [a, b]
-        x=np.where( (a>-np.infty) & (b<np.infty), -np.log( (b-a)/(x-a)-1 ), x)
+        x=np.where( (a>-np.inf) & (b<np.inf), -np.log( (b-a)/(x-a)-1 ), x)
     elif inverse==True:
         # variables from [-inf,inf] -> [a,inf]
-        x=np.where( (a>-np.infty) & (b==np.infty), np.exp(x)+a, x)
+        x=np.where( (a>-np.inf) & (b==np.inf), np.exp(x)+a, x)
         # variables from [-inf, inf] -> [-inf, b]
-        x=np.where( (a==-np.infty) & (b<np.infty), b-np.exp(x), x)
+        x=np.where( (a==-np.inf) & (b<np.inf), b-np.exp(x), x)
         # variables from [-inf,inf] -> [a, b]
-        x=np.where( (a>-np.infty) & (b<np.infty), (1./(1.+np.exp(-x)))*(b-a)+a, x)
+        x=np.where( (a>-np.inf) & (b<np.inf), (1./(1.+np.exp(-x)))*(b-a)+a, x)
     
     return x
 

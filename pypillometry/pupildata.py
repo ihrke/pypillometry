@@ -578,12 +578,12 @@ class PupilData:
         evon=self.event_onsets*fac
         
         start,end=plot_range
-        if start==-np.infty:
+        if start==-np.inf:
             startix=0
         else:
             startix=np.argmin(np.abs(tx-start))
             
-        if end==np.infty:
+        if end==np.inf:
             endix=tx.size
         else:
             endix=np.argmin(np.abs(tx-end))
@@ -647,7 +647,7 @@ class PupilData:
             plt.legend()
             plt.xlabel(xlab)        
     
-    def plot(self, plot_range: Tuple[float,float]=(-np.infty, +np.infty),
+    def plot(self, plot_range: Tuple[float,float]=(-np.inf, +np.inf),
              interactive: bool=False, 
              baseline: bool=True, 
              response: bool=False,
@@ -1455,7 +1455,7 @@ class FakePupilData(PupilData):
             
     
     def plot(self,
-             plot_range: Tuple[float,float]=(-np.infty, +np.infty),             
+             plot_range: Tuple[float,float]=(-np.inf, +np.inf),             
              interactive: bool=False, 
              baseline: bool=True, 
              response: bool=False,
