@@ -29,7 +29,7 @@ author = 'Matthias Mittner'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions=['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon', 
-            'sphinx_math_dollar', 'sphinx.ext.mathjax', 'sphinx_autodoc_typehints', "m2r",
+            'sphinx_math_dollar', 'sphinx.ext.mathjax', 'sphinx_autodoc_typehints', "sphinx_mdinclude",
             'sphinx.ext.intersphinx', 'sphinx.ext.autosummary', "nbsphinx"]
 
 nbsphinx_epilog = """
@@ -50,7 +50,7 @@ nbsphinx_prolog=nbsphinx_epilog
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints', 'notebooks', "**nbsphinx", "docs/html", "src"]
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints', 'notebooks', "**nbsphinx", "docs/html", "src", "docs/v1"]
 
 
 # Add mappings

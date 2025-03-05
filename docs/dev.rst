@@ -8,6 +8,12 @@ Developers
 
 This package is developed and maintained by the `Cognitive Neuroscience Research Group <http://uit.no/research/cognitive-neuroscience>`_ at the `University of Tromsø <http://uit.no>`_. We encourage everyone to become a member of the team and to contribute to the package's development, either by `reporting bugs  <https://github.com/ihrke/pypillometry/issues>`_, `providing enhancements <https://github.com/ihrke/pypillometry/pulls>`_ or otherwise.
 
+Major versions
+--------------
+
+Pypillometry switched to version 2 in March 2025. This introduces breaking changes to the API. 
+
+
 How to contribute
 -----------------
 
@@ -45,7 +51,7 @@ To compile the documentation, sphinx must be installed. In addition, a couple of
 
 .. code-block:: python
 
-    ['sphinx_math_dollar',  "m2r",'sphinx_autodoc_typehints', 'nbsphinx']
+    ['sphinx_math_dollar',  "sphinx-mdinclude",'sphinx_autodoc_typehints', 'nbsphinx']
 
 
 These can be installed by using the following commands:
@@ -58,7 +64,7 @@ These can be installed by using the following commands:
     # math
     conda install -c conda-forge sphinx-math-dollar
     # markdown 2 rst (for README)
-    pip install m2r
+    pip install sphinx-mdinclude
     # for the typehints
     conda install -c conda-forge sphinx-autodoc-typehints
 
