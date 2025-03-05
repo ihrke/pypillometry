@@ -49,6 +49,11 @@ class EyeData(GazeData):
         sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
         when this option is True, such entries will be made and the signal set to 0 there
         (or do it later using `fill_time_discontinuities()`)
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pypillometry.eyedata import EyeData
     """
     def __init__(self, 
                     time: np.ndarray = None,
