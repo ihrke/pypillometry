@@ -50,6 +50,14 @@ as users can easily find and chain commands together (see the following page mor
 
 The implementation of the functionality, however, is coded in submodules using "stateless" functions that take :mod:`numpy`-arrays as arguments. So, in order to create a new function that changes a :class:`PupilData`-object, you will first want to implement a function working purely on :mod:`numpy`-arrays and then create a thin wrapper function below :class:`PupilData` that calls this low-level function with the correct arguments.
 
+Documenting code
+----------------
+
+We use the `NumPy style for the docstrings <https://numpydoc.readthedocs.io/en/latest/format.html>`_. 
+
+Every class or function should have a docstring that explains what it does, what the arguments are and what the return value is. See the code for examples.
+
+
 Unit-testing
 ------------
 

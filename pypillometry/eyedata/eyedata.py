@@ -16,7 +16,47 @@ import numpy as np
 from collections.abc import Iterable
 
 
+
 class EyeData(GazeData):
+    """
+    Class for handling eye-tracking data. This class is a subclass of GazeData
+    and inherits all its methods and attributes. In addition to the methods
+    in GazeData which implement functions for eye-tracking data, `EyeData` 
+    provides methods for handling pupillometric data.
+
+    Parameters
+    ----------
+    time: 
+        timing array or `None`, in which case the time-array goes from [0,maxT]
+        using `sampling_rate` (in ms)
+    left_x, left_y, left_pupil:
+        data from left eye (at least one of the eyes must be provided, both x and y)
+        pupil is optional
+    right_x, right_y, right_pupil:
+        data from right eye (at least one of the eyes must be provided, both x and y)
+        pupil is optional
+    sampling_rate: float
+        sampling-rate of the pupillary signal in Hz; if None, 
+    screen_resolution: tuple
+        (xmax, ymax) screen resolution in pixels
+    physical_screen_size: tuple
+        (width, height) of the screen in cm; if None, the screen size is not used
+    screen_eye_distance: float
+        distance from the screen to the eye in cm
+    name: 
+        name of the dataset or `None` (in which case a random string is selected)
+    event_onsets: 
+        time-onsets of any events in the data (in ms, matched in `time` vector)
+    event_labels:
+        for each event in `event_onsets`, provide a label
+    keep_orig: bool
+        keep a copy of the original dataset? If `True`, a copy of the object
+        as initiated in the constructor is stored in member `original`
+    fill_time_discontinuities: bool
+        sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
+        when this option is True, such entries will be made and the signal set to 0 there
+        (or do it later using `fill_time_discontinuities()`)
+    """
     def __init__(self, 
                     time: np.ndarray = None,
                     left_x: np.ndarray = None,
@@ -35,39 +75,7 @@ class EyeData(GazeData):
                     fill_time_discontinuities: bool = True,
                     keep_orig: bool = False, 
                     inplace: bool = False):
-        """
-        Parameters
-        ----------
-        time: 
-            timing array or `None`, in which case the time-array goes from [0,maxT]
-            using `sampling_rate` (in ms)
-        left_x, left_y, left_pupil:
-            data from left eye (at least one of the eyes must be provided, both x and y)
-            pupil is optional
-        right_x, right_y, right_pupil:
-            data from right eye (at least one of the eyes must be provided, both x and y)
-            pupil is optional
-        sampling_rate: float
-            sampling-rate of the pupillary signal in Hz; if None, 
-        screen_resolution: tuple
-            (xmax, ymax) screen resolution in pixels
-        physical_screen_size: tuple
-            (width, height) of the screen in cm; if None, the screen size is not used
-        screen_eye_distance: float
-            distance from the screen to the eye in cm
-        name: 
-            name of the dataset or `None` (in which case a random string is selected)
-        event_onsets: 
-            time-onsets of any events in the data (in ms, matched in `time` vector)
-        event_labels:
-            for each event in `event_onsets`, provide a label
-        keep_orig: bool
-            keep a copy of the original dataset? If `True`, a copy of the object
-            as initiated in the constructor is stored in member `original`
-        fill_time_discontinuities: bool
-            sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
-            when this option is True, such entries will be made and the signal set to 0 there
-            (or do it later using `fill_time_discontinuities()`)
+        """Constructor for the EyeData class.
         """
         if (left_x is None or left_y is None) and (right_x is None or right_y is None):
             raise ValueError("At least one of the eye-traces must be provided (both x and y)")
@@ -130,6 +138,7 @@ class EyeData(GazeData):
         }
         pobj = PupilData(**kwargs)
         return pobj        
+    
 
     @keephistory
     def correct_pupil_foreshortening(self, eyes=None, midpoint=None, inplace=None):
@@ -143,8 +152,8 @@ class EyeData(GazeData):
         Relevant publication (not the description of the algorithm used here):    
         https://link.springer.com/article/10.3758/s13428-015-0588-x
 
-        Parameters: 
-        -----------
+        Parameters 
+        ----------
         eyes: list
             Which eyes to correct. If None, correct all available eyes.
         midpoint: tuple

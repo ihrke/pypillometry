@@ -14,6 +14,7 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Future Plans/Todo" href="future.html" />
     <link rel="prev" title="API documentation" href="api.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="Related">
@@ -25,6 +26,9 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="future.html" title="Future Plans/Todo"
+             accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="api.html" title="API documentation"
              accesskey="P">previous</a> |</li>
@@ -76,6 +80,11 @@ The log-level can be set by the user using the <a class="reference internal" hre
 <p>We chose to put most functionality directly below <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a>’s main class <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code>. This is mostly for convenience,
 as users can easily find and chain commands together (see the following page more on this: <a class="reference internal" href="pipes.html"><span class="std std-ref">Pipeline-based processing in pypillometry</span></a>).</p>
 <p>The implementation of the functionality, however, is coded in submodules using “stateless” functions that take <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v2.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays as arguments. So, in order to create a new function that changes a <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code>-object, you will first want to implement a function working purely on <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v2.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays and then create a thin wrapper function below <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code> that calls this low-level function with the correct arguments.</p>
+</section>
+<section id="documenting-code">
+<h2>Documenting code<a class="headerlink" href="#documenting-code" title="Link to this heading">¶</a></h2>
+<p>We use the <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">NumPy style for the docstrings</a>.</p>
+<p>Every class or function should have a docstring that explains what it does, what the arguments are and what the return value is. See the code for examples.</p>
 </section>
 <section id="unit-testing">
 <h2>Unit-testing<a class="headerlink" href="#unit-testing" title="Link to this heading">¶</a></h2>
@@ -144,6 +153,7 @@ and a <a class="reference external" href="https://pypi.org/">PyPI</a> release is
 <li><a class="reference internal" href="#logging">Logging</a></li>
 <li><a class="reference internal" href="#how-to-contribute">How to contribute</a></li>
 <li><a class="reference internal" href="#coding-style-package-architecture">Coding style/package architecture</a></li>
+<li><a class="reference internal" href="#documenting-code">Documenting code</a></li>
 <li><a class="reference internal" href="#unit-testing">Unit-testing</a></li>
 <li><a class="reference internal" href="#building-the-packages-documentation">Building the packages documentation</a></li>
 <li><a class="reference internal" href="#creating-releases">Creating Releases</a></li>
@@ -156,6 +166,11 @@ and a <a class="reference external" href="https://pypi.org/">PyPI</a> release is
     <h4>Previous topic</h4>
     <p class="topless"><a href="api.html"
                           title="previous chapter">API documentation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="future.html"
+                          title="next chapter">Future Plans/Todo</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -187,6 +202,9 @@ and a <a class="reference external" href="https://pypi.org/">PyPI</a> release is
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="future.html" title="Future Plans/Todo"
+             >next</a> |</li>
         <li class="right" >
           <a href="api.html" title="API documentation"
              >previous</a> |</li>

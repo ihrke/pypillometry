@@ -1,9 +1,18 @@
-.. currentmodule:: pypillometry.pupildata
+.. currentmodule:: pypillometry
 
 Overview
 ========
    
 The package is divided into separate sub-modules that solve specific subtasks (pre-processing, baseline estimation etc). The functions in these modules operate on plain :py:mod:`numpy.array`'s or standard Python-structures. While these functions can be used directly, an easier approach is to use the class :py:class:`~pypillometry.pupildata.PupilData` which wraps these functions in a convenient way. Each object of class :py:class:`~pypillometry.pupildata.PupilData` represents one dataset of pupillometric data, including time, signal and external events (trial onsets, stimulus presentations, responses, etc). By calling the member functions of such an object, the corresponding function from one of the sub-modules is called using the appropriate arguments.
+
+.. currentmodule:: pypillometry.eyedata
+
+.. autosummary::
+
+    EyeDataDict
+    GenericEyeData
+
+
 
 .. toctree::
    :maxdepth: 2

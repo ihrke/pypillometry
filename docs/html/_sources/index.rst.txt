@@ -8,10 +8,6 @@ Documentation
    :maxdepth: 2
    :caption: Contents:
 
-   docs/api
-   docs/dev
-
-..
    docs/installation
    docs/usage
    docs/notebooks

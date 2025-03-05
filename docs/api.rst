@@ -5,6 +5,9 @@ API documentation
 .. automodule:: pypillometry
     :members:
 
+.. automodule:: pypillometry.eyedata
+    :members:
+
 .. automodule:: pypillometry.convenience
     :members:
 

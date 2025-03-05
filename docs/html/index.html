@@ -14,7 +14,7 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API documentation" href="docs/api.html" /> 
+    <link rel="next" title="Installation" href="docs/installation.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
@@ -26,7 +26,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="docs/api.html" title="API documentation"
+          <a href="docs/installation.html" title="Installation"
              accesskey="N">next</a> |</li>
         <li class="nav-item nav-item-0"><a href="#">pypillometry  documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Welcome to pypillometry (v2)!</a></li> 
@@ -54,14 +54,14 @@
 </a>
 <blockquote>
 <div><p>[!NOTE]
-This is <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> version 2 that contains a major restructuring of the code. Scripts written for version 1 will not continue to work.
-The documentation for v2 is currently incomplete and broken as we focus on developing the new API.</p>
+This is <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> version 2 that contains a major restructuring of the code. Scripts written for version 1 will not continue to work. The reason for the update is that the new version will be able to handle eyetracking-data in addition to pupillometry data (and it will be able to handle more than one eye and other data sources at the same time).</p>
+<p>The documentation for v2 is currently incomplete and broken as we focus on developing the new API.</p>
 <ul class="simple">
 <li><p>Version 1 is here: <a class="reference external" href="https://github.com/ihrke/pypillometry/tree/v1">pypillometry version 1</a></p></li>
 <li><p>Documentation for Version 1 is here: <a class="reference external" href="https://ihrke.github.io/pypillometry/v1/html/index.html">pypillometry docs v1</a></p></li>
 </ul>
 </div></blockquote>
-<p>This package implements functions for the analysis of pupillometric data. Features include preprocessing, blink handling, event-related pupil-dilation, plotting and signal modeling.</p>
+<p>This package implements functions for the analysis of pupillometric and eyetracking data. Features include preprocessing, blink handling, event-related pupil-dilation, plotting and signal modeling.</p>
 <ul class="simple">
 <li><p>Github-repository: <a class="reference external" href="https://github.com/ihrke/pypillometry">https://github.com/ihrke/pypillometry</a></p></li>
 <li><p>Homepage/Documentation: <a class="reference external" href="https://ihrke.github.io/pypillometry/html/index.html">https://ihrke.github.io/pypillometry/html/index.html</a></p></li>
@@ -76,8 +76,35 @@ The documentation for v2 is currently incomplete and broken as we focus on devel
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="docs/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs/installation.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/installation.html#virtual-environments">Virtual environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/installation.html#cmdstanpy">CmdStanPy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="docs/usage.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs/usage.html#reading-writing-pupillometric-data">Reading/writing pupillometric data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/usage.html#pipeline-based-processing">Pipeline-based processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/usage.html#pre-processing-data">Pre-processing data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/usage.html#plotting-summarizing-data">Plotting/Summarizing Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/usage.html#modeling-the-pupillometric-signal">Modeling the pupillometric signal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/usage.html#artificial-data">Artificial Data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="docs/notebooks.html">Tutorials/Example Notebooks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="docs/importdata.html">Importing Data Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/pipes.html">Pipeline-based processing in pypillometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/plotting.html">Plotting pupillometric data for exploration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/summary.html">Summarizing pupillometric data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/erpds.html">Event-Related Pupil Dilations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/modeling.html">Modeling the pupillometric signal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/preproc_example_pavlov.html">Example: Preprocessing of a full dataset with multiple subjects</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="docs/api.html">API documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="docs/api.html#pypillometry">Pypillometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/api.html#eyedata-py">eyedata.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/api.html#convenience-py">convenience.py</a></li>
 </ul>
 </li>
@@ -87,11 +114,13 @@ The documentation for v2 is currently incomplete and broken as we focus on devel
 <li class="toctree-l2"><a class="reference internal" href="docs/dev.html#logging">Logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/dev.html#how-to-contribute">How to contribute</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/dev.html#coding-style-package-architecture">Coding style/package architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="docs/dev.html#documenting-code">Documenting code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/dev.html#unit-testing">Unit-testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/dev.html#building-the-packages-documentation">Building the packages documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="docs/dev.html#creating-releases">Creating Releases</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="docs/future.html">Future Plans/Todo</a></li>
 </ul>
 </div>
 </section>
@@ -125,8 +154,8 @@ The documentation for v2 is currently incomplete and broken as we focus on devel
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="docs/api.html"
-                          title="next chapter">API documentation</a></p>
+    <p class="topless"><a href="docs/installation.html"
+                          title="next chapter">Installation</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -159,7 +188,7 @@ The documentation for v2 is currently incomplete and broken as we focus on devel
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="docs/api.html" title="API documentation"
+          <a href="docs/installation.html" title="Installation"
              >next</a> |</li>
         <li class="nav-item nav-item-0"><a href="#">pypillometry  documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Welcome to pypillometry (v2)!</a></li> 

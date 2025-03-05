@@ -13,7 +13,9 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Overview" href="usage.html" />
+    <link rel="prev" title="Welcome to pypillometry (v2)!" href="../index.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
@@ -24,6 +26,12 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="usage.html" title="Overview"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Welcome to pypillometry (v2)!"
+             accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
       </ul>
@@ -57,7 +65,7 @@ $<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> 
 <p><a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> requires Python3 and a range of standard numerical computing packages (all of which listed in the file <cite>requirements.txt</cite>)</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v2.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/scipy/index.html#module-scipy" title="(in SciPy v1.15.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy</span></code></a> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">matplotlib</span></code></p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code></p></li>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmdstanpy</span></code></p></li>
 </ul>
 <p>It is useful to access <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> through Jupyter or Jupyter Notebook, so installing those packages is also useful but not necessary.</p>
 <p>All requirements can be installed by running <cite>pip install -r requirements.txt</cite>.</p>
@@ -70,32 +78,15 @@ $<span class="w"> </span>conda<span class="w"> </span>activate<span class="w"> <
 $<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>anaconda
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">anaconda</span></code> package contains all the requirements except <code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code> which can be installed from <a class="reference external" href="https://anaconda.org/conda-forge/pystan">conda-forge</a></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>pystan
+<p>The <code class="docutils literal notranslate"><span class="pre">anaconda</span></code> package contains all the requirements except <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmdstanpy</span></code> which can be installed from <a class="reference external" href="https://anaconda.org/conda-forge/pystan">conda-forge</a></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>cmdstanpy
 </pre></div>
 </div>
 </section>
-<section id="pystan">
-<h2>Pystan<a class="headerlink" href="#pystan" title="Link to this heading">¶</a></h2>
-<p>Note that the installation of <code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code> may cause trouble on Windows-systems (you may need to install a compiler). Please follow the instructions on <a class="reference external" href="https://pystan.readthedocs.io/en/latest/getting_started.html">the Pystan-webpage</a> should you encounter any trouble.</p>
-</section>
-<section id="notes-potential-problems">
-<h2>Notes/Potential Problems<a class="headerlink" href="#notes-potential-problems" title="Link to this heading">¶</a></h2>
-<p>Under Linux, I encountered a problem where <code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code> crashed the <a class="reference external" href="https://jupyter.org/">Jupyter kernel</a>.
-To circumvent this issue, I needed to install <code class="xref py py-mod docutils literal notranslate"><span class="pre">pystan</span></code> using</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pystan
-$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>gcc_linux-64
-$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>gxx_linux-64
-</pre></div>
-</div>
-<p>otherwise, there were random crashes of the jupyter kernel for some reason.</p>
-<p>On Mac OS X, I had some trouble getting the compiler to work with PyStan. See <a class="reference external" href="https://github.com/stan-dev/pystan/issues/622#issuecomment-518825883">this issue</a> for a solution that worked for me.</p>
-<p>To enable interactive plotting widgets in jupyter notebook and jupyter lab, widgets need to be enabled in the notebook.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>ipywidgets<span class="w"> </span>nodejs
-$<span class="w"> </span>jupyter<span class="w"> </span>nbextension<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>--py<span class="w"> </span>widgetsnbextension
-$<span class="w"> </span>jupyter<span class="w"> </span>labextension<span class="w"> </span>install<span class="w"> </span>@jupyter-widgets/jupyterlab-manager
-</pre></div>
-</div>
+<section id="cmdstanpy">
+<h2>CmdStanPy<a class="headerlink" href="#cmdstanpy" title="Link to this heading">¶</a></h2>
+<p><a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> uses <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmdstanpy</span></code> to interface with the <a class="reference external" href="https://mc-stan.org/">Stan</a> probabilistic programming language. <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmdstanpy</span></code> is a Python interface to the <a class="reference external" href="https://mc-stan.org/users/interfaces/cmdstan">CmdStan</a> command-line interface to Stan.</p>
+<p>Please refer to the <a class="reference external" href="https://mc-stan.org/cmdstanpy/installation.html">CmdStanPy documentation</a> for more information on how to install and use it.</p>
 </section>
 </section>
 
@@ -115,12 +106,21 @@ $<span class="w"> </span>jupyter<span class="w"> </span>labextension<span class=
 <li><a class="reference internal" href="#">Installation</a><ul>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#virtual-environments">Virtual environments</a></li>
-<li><a class="reference internal" href="#pystan">Pystan</a></li>
-<li><a class="reference internal" href="#notes-potential-problems">Notes/Potential Problems</a></li>
+<li><a class="reference internal" href="#cmdstanpy">CmdStanPy</a></li>
 </ul>
 </li>
 </ul>
 
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../index.html"
+                          title="previous chapter">Welcome to pypillometry (v2)!</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="usage.html"
+                          title="next chapter">Overview</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -152,6 +152,12 @@ $<span class="w"> </span>jupyter<span class="w"> </span>labextension<span class=
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="usage.html" title="Overview"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Welcome to pypillometry (v2)!"
+             >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Installation</a></li> 
       </ul>

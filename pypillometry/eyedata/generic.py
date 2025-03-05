@@ -178,15 +178,13 @@ class GenericEyeData(ABC):
         """
         Apply history of operations done on `self` to `obj`.
         
-        Parameters:
-        -----------
-        
-        obj: :class:`.GenericEyedata`
-            object of class :class:`.GenericEyedata` to which the operations are to be transferred
+        Parameters
+        ----------
+        obj: :class:`pypillometry.eyedata.GenericEyedata`
+            object of class :class:`pypillometry.eyedata.GenericEyedata` to which the operations are to be transferred
             
-        Returns:
-        --------
-        
+        Returns
+        -------
         copy of the :class:`.GenericEyedata`-object to which the operations in `self` were applied
         """
         for ev in self.history:
