@@ -1,10 +1,3 @@
-"""
-eyedata.py
-============
-
-Implement EyeData class for use with the pypillometry package.
-This class allows to store eyetracking and pupil data in a single object.
-"""
 from .generic import keephistory
 from .gazedata import GazeData
 from .eyedatadict import EyeDataDict
@@ -101,13 +94,14 @@ class EyeData(GazeData):
         if keep_orig: 
             self.original=self.copy()
 
-
-
     def summary(self):
-        """
-        Return a summary of the dataset as a dictionary.
-        """
+        """Return a summary of the dataset as a dictionary.
 
+        Returns
+        -------
+        : dict
+            A dictionary summarizing the dataset.
+        """        
         return GazeData.summary(self)
 
     def get_pupildata(self, eye=None):
@@ -117,7 +111,12 @@ class EyeData(GazeData):
         Parameters
         ----------
         eye : str, optional
-            Which eye to return data for. 
+            Which eye to return data for.
+
+        Returns
+        -------
+        : :class:`PupilData`
+            A PupilData object containing the pupil data. 
         """
         if eye is None:
             if len(self.eyes)==1:
@@ -142,12 +141,13 @@ class EyeData(GazeData):
 
     @keephistory
     def correct_pupil_foreshortening(self, eyes=None, midpoint=None, inplace=None):
-        """
+        """Correct pupil data using a simple algorithm to correct for foreshortening effects.
+
         Correct the pupil data for foreshortening effects caused
         by saccades/eye movements. This method is based on a simple algorithm
         described here: 
 
-            :ref:`Correcting pupillary signal using </docs/pupil_correction_carole.rst>`
+        :ref:`Correcting pupillary signal using a simple Foreshortening Algorithm </docs/pupil_correction_carole.rst>`
 
         Relevant publication (not the description of the algorithm used here):    
         https://link.springer.com/article/10.3758/s13428-015-0588-x
@@ -165,6 +165,11 @@ class EyeData(GazeData):
             `true`: modify in place
             `false`: return a new object
             `None`: use the object's default setting (initialized in __init__)
+
+        Returns
+        -------
+        : :class:`EyeData`
+            An EyeData object with the corrected pupil
         """
         if inplace is None:
             inplace=self.inplace

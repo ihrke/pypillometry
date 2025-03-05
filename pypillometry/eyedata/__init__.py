@@ -2,11 +2,12 @@
 eyedata.py
 ==========
 
-Module containing classes for handling eye data.
+Module containing classes for handling eye data. The following classes are available for handling
+different types of eye data:
 
-- :class:`pypillometry.eyedata.EyeDataDict`: A dictionary-like object for storing eye data.
-- :class:`pypillometry.eyedata.GenericEyeData`: A generic class for handling eye data.
-- :class:`pypillometry.eyedata.GazeData`: A class for handling gaze data.
+- :class:`EyeDataDict`: A dictionary-like object for storing eye data.
+- :class:`GenericEyeData`: A generic class for handling eye data.
+- :class:`GazeData`: A class for handling gaze data.
 """
 
 __all__ = ["EyeDataDict", "GenericEyeData","GazeData","PupilData", "EyeData"]

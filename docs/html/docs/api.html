@@ -75,9 +75,9 @@
 <span id="module-pypillometry.eyedata"></span><h2>eyedata.py<a class="headerlink" href="#eyedata-py" title="Link to this heading">¶</a></h2>
 <p>Module containing classes for handling eye data.</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#pypillometry.eyedata.EyeDataDict" title="pypillometry.eyedata.EyeDataDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.eyedata.EyeDataDict</span></code></a>: A dictionary-like object for storing eye data.</p></li>
-<li><p><a class="reference internal" href="#pypillometry.eyedata.GenericEyeData" title="pypillometry.eyedata.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.eyedata.GenericEyeData</span></code></a>: A generic class for handling eye data.</p></li>
-<li><p><a class="reference internal" href="#pypillometry.eyedata.GazeData" title="pypillometry.eyedata.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.eyedata.GazeData</span></code></a>: A class for handling gaze data.</p></li>
+<li><p><a class="reference internal" href="#pypillometry.eyedata.EyeDataDict" title="pypillometry.eyedata.EyeDataDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeDataDict</span></code></a>: A dictionary-like object for storing eye data.</p></li>
+<li><p><a class="reference internal" href="#pypillometry.eyedata.GenericEyeData" title="pypillometry.eyedata.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a>: A generic class for handling eye data.</p></li>
+<li><p><a class="reference internal" href="#pypillometry.eyedata.GazeData" title="pypillometry.eyedata.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GazeData</span></code></a>: A class for handling gaze data.</p></li>
 </ul>
 </section>
 <dl class="py class">
@@ -147,7 +147,7 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <td><p>Make and return a deep-copy of the pupil data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.eyedata.EyeData.correct_pupil_foreshortening" title="pypillometry.eyedata.EyeData.correct_pupil_foreshortening"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_pupil_foreshortening</span></code></a>([eyes, ...])</p></td>
-<td><p>Correct the pupil data for foreshortening effects caused by saccades/eye movements.</p></td>
+<td><p>Correct pupil data using a simple algorithm to correct for foreshortening effects.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_original</span></code>([inplace])</p></td>
 <td><p>Drop original dataset from record (e.g., to save space).</p></td>
@@ -209,12 +209,11 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.eyedata.EyeData.correct_pupil_foreshortening">
 <span class="sig-name descname"><span class="pre">correct_pupil_foreshortening</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.eyedata.EyeData.correct_pupil_foreshortening" title="Link to this definition">¶</a></dt>
-<dd><p>Correct the pupil data for foreshortening effects caused
+<dd><p>Correct pupil data using a simple algorithm to correct for foreshortening effects.</p>
+<p>Correct the pupil data for foreshortening effects caused
 by saccades/eye movements. This method is based on a simple algorithm
 described here:</p>
-<blockquote>
-<div><p><a class="reference internal" href="pupil_correction_carole.html"><span class="std std-ref">Correcting pupillary signal using</span></a></p>
-</div></blockquote>
+<p><a class="reference internal" href="pupil_correction_carole.html"><span class="std std-ref">Correcting pupillary signal using a simple Foreshortening Algorithm</span></a></p>
 <p>Relevant publication (not the description of the algorithm used here):
 <a class="reference external" href="https://link.springer.com/article/10.3758/s13428-015-0588-x">https://link.springer.com/article/10.3758/s13428-015-0588-x</a></p>
 <dl class="field-list simple">
@@ -230,6 +229,12 @@ in the EyeData object.</p></li>
 <cite>None</cite>: use the object’s default setting (initialized in __init__)</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An EyeData object with the corrected pupil</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pypillometry.eyedata.EyeData" title="pypillometry.eyedata.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a></p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -241,6 +246,12 @@ in the EyeData object.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>eye</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – Which eye to return data for.</p>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A PupilData object containing the pupil data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pypillometry.eyedata.PupilData" title="pypillometry.eyedata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a></p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -248,6 +259,14 @@ in the EyeData object.</p></li>
 <dt class="sig sig-object py" id="pypillometry.eyedata.EyeData.summary">
 <span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.eyedata.EyeData.summary" title="Link to this definition">¶</a></dt>
 <dd><p>Return a summary of the dataset as a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary summarizing the dataset.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
