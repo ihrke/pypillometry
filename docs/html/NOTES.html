@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Thoughts and TODO after meeting 2024-06-18 &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Thoughts and TODO after meeting 2024-06-18</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="thoughts-and-todo-after-meeting-2024-06-18">
+<h1>Thoughts and TODO after meeting 2024-06-18<a class="headerlink" href="#thoughts-and-todo-after-meeting-2024-06-18" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p>multiple inheritance scheme:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> implements bookkeeping, history, etc like now</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PupilData</span></code> inherits from <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> and implements pupil-specific methods working on the <code class="docutils literal notranslate"><span class="pre">EyeDataDict</span></code> fields <code class="docutils literal notranslate"><span class="pre">left_pupil</span></code> and <code class="docutils literal notranslate"><span class="pre">right_pupil</span></code> etc</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GazeData</span></code> inherits from <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> and implements gaze-specific methods working on the <code class="docutils literal notranslate"><span class="pre">EyeDataDict</span></code> fields <code class="docutils literal notranslate"><span class="pre">left_x</span></code> and <code class="docutils literal notranslate"><span class="pre">right_y</span></code> etc</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">EyeData</span></code> inherits from <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> and <code class="docutils literal notranslate"><span class="pre">GazeData</span></code> and implements methods that work on both pupil and gaze data (e.g., the correction of the pupil by foreshortening)</p></li>
+<li><p>the beauty of it is that they all work on the <code class="docutils literal notranslate"><span class="pre">self.data</span></code> field which is <code class="docutils literal notranslate"><span class="pre">EyeDataDict</span></code>, just assuming different fields are present</p></li>
+<li><p>the plotting could mirror that approach: separate <code class="docutils literal notranslate"><span class="pre">GazePlotter</span></code> and <code class="docutils literal notranslate"><span class="pre">PupilPlotter</span></code> that are then merged in a <code class="docutils literal notranslate"><span class="pre">EyePlotter</span></code> class that inherits both</p></li>
+<li><p>then it the interface would simply be <code class="docutils literal notranslate"><span class="pre">d.plotting.plot_xx()</span></code> for all three classes</p></li>
+<li><p>what about the events? can they go into the <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> class?</p></li>
+</ul>
+</li>
+<li><p>Problem with the scheme: When <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> inherits from both classes, it is not clear whether a given function belongs to the gaze- or the pupil-data (this is even worse for the plotting functions)</p>
+<ul>
+<li><p>one solution would be consistent naming of the methods but that kind of defeats the whole purpose of the inheritance</p></li>
+<li><p>another solution would be to have <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> not inherit but keep copies of the <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> and <code class="docutils literal notranslate"><span class="pre">GazeData</span></code> objects and delegate the calls to them. But that is even worse.</p></li>
+<li><p>consistent naming having “pupil” or “gaze” go first so that TAB-completion works:</p>
+<ul>
+<li><p>scale()/unscale() - scale can be moved to generic, featuring an “eyes” and “variables” argument that specifies which timeseries should be scaled;</p></li>
+<li><p>pupil_lowpass_filter()</p></li>
+<li><p>pupil_smooth_window()</p></li>
+<li><p>pupil_downsample()  - or can this be for everything? - yeah, think so</p></li>
+<li><p>pupil_estimate_baseline()</p></li>
+<li><p>pupil_estimate_response()</p></li>
+<li><p>pupil_blinks_detect() - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names</p></li>
+<li><p>pupil_blinks_merge()</p></li>
+<li><p>pupil_blinks_interpolate() - merge with Mahot function and make one an option for the other; remove plotting from Mahot function but add a function to the <code class="docutils literal notranslate"><span class="pre">PupilPlotter</span></code> that can visualize this</p></li>
+<li><p>pupil_stat_per_event() - should this be based on the <code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> function instead? yeah! Then it can be <code class="docutils literal notranslate"><span class="pre">get_stat_per_interval()</span></code> and it can accept <code class="docutils literal notranslate"><span class="pre">eye</span></code> and <code class="docutils literal notranslate"><span class="pre">variable</span></code> as arguments to determine which timeseries should be used; but then it has to be implemented in both child classes; perhaps implement at the <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> level and then add a thin wrapper on the child classes that calls the generic function preventing it from using the wrong arguments</p></li>
+<li><p>get_erpd() should also be reworked: based on the <code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> function and allow to select variables and eyes; has to be called something else like <code class="docutils literal notranslate"><span class="pre">EyeDataSegments</span></code> or so? Then get_segments() can return one segment-object per eye and variable for further processing</p>
+<ul>
+<li><p>or I build another class that works like <code class="docutils literal notranslate"><span class="pre">EyeDataDict</span></code> but with the segments</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>what about the <code class="docutils literal notranslate"><span class="pre">FakePupilData</span></code>? The difference is that it has additional timeseries corresponding to the simulated components of the signal; I can inherit from <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> and implement those on top pretty easily; but I need also a <code class="docutils literal notranslate"><span class="pre">FakePupilPlotter</span></code> that can visualize those components</p>
+<ul>
+<li><p>as long as I am clever about implementing the other methods, I can just send a “sim” variable into as ‘variable’ name so that I don’t need to completely reimplement them</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="notes-meeting-2024-06-18">
+<h1>Notes meeting 2024-06-18<a class="headerlink" href="#notes-meeting-2024-06-18" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pint</span></code> package: for unit conversion</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">logging</span></code> module for logging and potentially for the history?</p></li>
+<li><p>use <code class="docutils literal notranslate"><span class="pre">pytest</span></code> instead of <code class="docutils literal notranslate"><span class="pre">unittest</span></code></p></li>
+<li><p>use a separate <code class="docutils literal notranslate"><span class="pre">PlotHandler</span></code> class, member of PupilData?</p>
+<ul>
+<li><p>that would enable to use <code class="docutils literal notranslate"><span class="pre">d.plotting.plot_blinks()</span></code> and everything could be implemented in <code class="docutils literal notranslate"><span class="pre">plotting</span></code> which would be a <code class="docutils literal notranslate"><span class="pre">PlotHandler</span></code></p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">self</span></code> could be stored in the <code class="docutils literal notranslate"><span class="pre">obj.plotting</span></code> object in the constructor (<code class="docutils literal notranslate"><span class="pre">self.plotting.obj</span> <span class="pre">=</span> <span class="pre">self</span></code>)</p></li>
+<li><p>or <code class="docutils literal notranslate"><span class="pre">obj.plotting.plot()</span></code> could use <code class="docutils literal notranslate"><span class="pre">super()</span></code> to get at the <code class="docutils literal notranslate"><span class="pre">self</span></code> of the <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> object</p></li>
+</ul>
+</li>
+<li><p>it seems best to drop the old <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> class and implement everything as <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> with the <code class="docutils literal notranslate"><span class="pre">EyeDataDict</span></code> for the data</p>
+<ul>
+<li><p>what happens if someone only has x/y data or only pupil data?</p></li>
+<li><p>would be nice if those would be somehow separate and only implement a subset of methods</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="notes-from-radovan-2024-04-19">
+<h1>Notes from Radovan 2024-04-19<a class="headerlink" href="#notes-from-radovan-2024-04-19" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p>Migrate from Travis CI to GitHub Actions to run tests</p></li>
+<li><p>Tests exist but are possible out of date.</p></li>
+<li><p>Is efficiency/ code optimization an issue at all?</p></li>
+<li><p>One could add type annotations</p></li>
+<li><p>Installation instructions: move the <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pypillometry</span></code> to the top.
+This is what most users will want.</p></li>
+<li><p>We could help publishing on conda-forge.</p></li>
+<li><p>Consider using logging instead of writing own logging functions for verbose prints.</p></li>
+<li><p>Code duplication (example: <code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">objective</span></code>)</p></li>
+<li><p>Possible discussion point: functional programming vs. object-oriented programming (many methods could be just functions and the class could be a Python dataclass)</p>
+<ul>
+<li><p>pros of using methods: implicit type checking</p></li>
+<li><p>pros of using functions: many methods are without side-effects but bundling them with attributes makes them stateful and maybe more difficult to test</p></li>
+</ul>
+</li>
+<li><p>the history attribute is created in a surprising and hard to read way</p></li>
+<li><p>keephistory decorator is used for debugging/logging</p></li>
+<li><p>let’s discuss what you mean with extend class structure and we can discuss strategies and pros and cons</p></li>
+<li><p>why is PupilArray needed instead of a standard data structure?</p></li>
+<li><p>lots of scrolling is needed to get an understanding of the class/functions</p></li>
+</ul>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Thoughts and TODO after meeting 2024-06-18</a></li>
+<li><a class="reference internal" href="#notes-meeting-2024-06-18">Notes meeting 2024-06-18</a></li>
+<li><a class="reference internal" href="#notes-from-radovan-2024-04-19">Notes from Radovan 2024-04-19</a></li>
+</ul>
+
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/NOTES.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Thoughts and TODO after meeting 2024-06-18</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>
