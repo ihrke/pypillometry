@@ -1,27 +1,23 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>Overview &#8212; pypillometry  documentation</title>
-    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Tutorials/Example Notebooks" href="notebooks.html" />
     <link rel="prev" title="Installation" href="installation.html" /> 
   </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -46,29 +42,17 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+  <section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h1>
 <p>The package is divided into separate sub-modules that solve specific subtasks (pre-processing, baseline estimation etc). The functions in these modules operate on plain <code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy.array</span></code>’s or standard Python-structures. While these functions can be used directly, an easier approach is to use the class <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> which wraps these functions in a convenient way. Each object of class <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> represents one dataset of pupillometric data, including time, signal and external events (trial onsets, stimulus presentations, responses, etc). By calling the member functions of such an object, the corresponding function from one of the sub-modules is called using the appropriate arguments.</p>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#reading-writing-pupillometric-data">Reading/writing pupillometric data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pipeline-based-processing">Pipeline-based processing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pre-processing-data">Pre-processing data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#plotting-summarizing-data">Plotting/Summarizing Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#modeling-the-pupillometric-signal">Modeling the pupillometric signal</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#artificial-data">Artificial Data</a></li>
-</ul>
-</li>
-</ul>
 </div>
-<div class="section" id="reading-writing-pupillometric-data">
-<h2>Reading/writing pupillometric data<a class="headerlink" href="#reading-writing-pupillometric-data" title="Permalink to this headline">¶</a></h2>
+<section id="reading-writing-pupillometric-data">
+<h2>Reading/writing pupillometric data<a class="headerlink" href="#reading-writing-pupillometric-data" title="Link to this heading">¶</a></h2>
 <p>So far, reading in data is not part of the <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code>-package. This is because the format of the eyetracker-files will vary depending on the setup of the eyetracker (there are many ways to represent event-triggers) and the actual model of the eyetracker. Python provides excellent functionality to parse text-based datafiles and we therefore give guidance how to use these tools rather than trying to implement that functionality in our package.</p>
 <p>There are many ways in which pupillometric data can be read into Python. For example, Eyelink’s <a class="reference external" href="http://download.sr-support.com/dispdoc/page25.html">ASC-format</a> generated by the EDF2ASC conversion tool outputs space-separated data that can be easily loaded using the <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/io.html">I/O functionality of the pandas package</a> .</p>
 <p>Data is input into <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> using the <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.__init__" title="pypillometry.pupildata.PupilData.__init__"><code class="xref py py-func docutils literal notranslate"><span class="pre">constructor</span></code></a> of the <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object.</p>
-<p>However, data that has been converted into <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-objects can be easily saved and restored (using <a class="reference external" href="https://docs.python.org/3/library/shelve.html#module-shelve" title="(in Python v3.8)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">shelve</span></code></a>).</p>
+<p>However, data that has been converted into <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-objects can be easily saved and restored (using <a class="reference external" href="https://docs.python.org/3/library/shelve.html#module-shelve" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">shelve</span></code></a>).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">PupilData</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="c1"># create PupilData object after manually loading data</span>
 <span class="c1"># save the dataset into a shelve-file</span>
 <span class="n">d</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="s2">&quot;dataset.pd&quot;</span><span class="p">)</span>
@@ -78,69 +62,61 @@
 </pre></div>
 </div>
 <p><a class="reference internal" href="importdata.html"><span class="std std-ref">An example for importing data from Eyelink EDF-files</span></a></p>
-</div>
-<div class="section" id="pipeline-based-processing">
-<h2>Pipeline-based processing<a class="headerlink" href="#pipeline-based-processing" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="pipeline-based-processing">
+<h2>Pipeline-based processing<a class="headerlink" href="#pipeline-based-processing" title="Link to this heading">¶</a></h2>
 <p><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> implements a pipeline-like approach where each operation executed on a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object returns a copy of the (modified) object. This enables the “chaining” of commands as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;data/test.pd&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">blinks_merge</span><span class="p">()</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This command loads a data-file (<cite>test.pd</cite>), applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object <cite>d</cite>. This object stores also the complete history of the operations applied to the dataset and allows to transfer it to a new dataset.</p>
 <p>See the following page more on this: <a class="reference internal" href="pipes.html"><span class="std std-ref">Pipeline-based processing in pypillometry</span></a></p>
-</div>
-<div class="section" id="pre-processing-data">
-<h2>Pre-processing data<a class="headerlink" href="#pre-processing-data" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="pre-processing-data">
+<h2>Pre-processing data<a class="headerlink" href="#pre-processing-data" title="Link to this heading">¶</a></h2>
 <p>Assuming you have generated a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object, a range of pre-processing functions are available. The main pre-processing issues with pupillometric data are:</p>
 <ul class="simple">
 <li><p>artifacts and missing data due to blinks (these can usually be corrected/interpolated)</p></li>
 <li><p>missing data/artifacts from other sources (e.g., looking away, eyetracker losing pupil for other reasons)</p></li>
 <li><p>smoothing/downsampling to get rid of high-freq low-amp noise</p></li>
 </ul>
-<div class="section" id="handling-blinks">
-<h3>Handling Blinks<a class="headerlink" href="#handling-blinks" title="Permalink to this headline">¶</a></h3>
+<section id="handling-blinks">
+<h3>Handling Blinks<a class="headerlink" href="#handling-blinks" title="Link to this heading">¶</a></h3>
 <p>Pupillometric data usually contain blinks which show up as missing data in the signal where the eyetracker is unable to record the size of the pupil.
 A range of functions are available for detecting and interpolating blinks.</p>
 <p>More details and an example can be found in the notebook: <a class="reference internal" href="blinks.html"><span class="std std-ref">An example for how to handle blinks</span></a></p>
 <p>A fully worked-out example of a real study can be found in this notebook: <a class="reference internal" href="preproc_example_pavlov.html"><span class="std std-ref">Preprocessing of a full dataset with multiple subjects</span></a></p>
 <p>The following is a list of functions for that purpose. Note that the functions take multiple arguments that control the algorithms behaviour. It is often crucial to adjust the parameters on an individual level since the artifacts tend to be quite dissimilar between subjects (but usually stable within-subject). All arguments are documented in the <a class="reference internal" href="api.html"><span class="std std-ref">API-docs</span></a>.</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_detect" title="pypillometry.pupildata.PupilData.blinks_detect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_detect</span></code></a>([min_duration, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_detect" title="pypillometry.pupildata.PupilData.blinks_detect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_detect</span></code></a>([min_duration, ...])</p></td>
 <td><p>Detect blinks in the pupillary signal using several strategies.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_interpolate" title="pypillometry.pupildata.PupilData.blinks_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_interpolate</span></code></a>([winsize, …])</p></td>
-<td><p>Interpolation of missing data “in one go”.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_interpolate" title="pypillometry.pupildata.PupilData.blinks_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_interpolate</span></code></a>([winsize, ...])</p></td>
+<td><p>Interpolation of missing data &quot;in one go&quot;.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_interp_mahot" title="pypillometry.pupildata.PupilData.blinks_interp_mahot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_interp_mahot</span></code></a>([winsize, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_interp_mahot" title="pypillometry.pupildata.PupilData.blinks_interp_mahot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_interp_mahot</span></code></a>([winsize, ...])</p></td>
 <td><p>Implements the blink-interpolation method by Mahot (2013).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_merge" title="pypillometry.pupildata.PupilData.blinks_merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_merge</span></code></a>([distance, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_merge" title="pypillometry.pupildata.PupilData.blinks_merge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_merge</span></code></a>([distance, ...])</p></td>
 <td><p>Merge together blinks that are close together.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_plot" title="pypillometry.pupildata.PupilData.blinks_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_plot</span></code></a>([pdf_file, nrow, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_plot" title="pypillometry.pupildata.PupilData.blinks_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_plot</span></code></a>([pdf_file, nrow, ...])</p></td>
 <td><p>Plot the detected blinks into separate figures each with nrow x ncol subplots.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="smoothing-low-pass-filtering">
-<h3>Smoothing/low-pass filtering<a class="headerlink" href="#smoothing-low-pass-filtering" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="smoothing-low-pass-filtering">
+<h3>Smoothing/low-pass filtering<a class="headerlink" href="#smoothing-low-pass-filtering" title="Link to this heading">¶</a></h3>
 <p>In most cases, pupillometric data should be low-pass filtered (e.g., using a cutoff of 4 Hz <a class="reference external" href="https://doi.org/10.1111/j.1467-7687.2008.00805.x">Jackson &amp; Sirois, 2009</a>) or smoothed in other ways (e.g., with a running-window).</p>
 <p>Tge following is a list of functions for smoothing:</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.lowpass_filter" title="pypillometry.pupildata.PupilData.lowpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.lowpass_filter</span></code></a>(cutoff[, order, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.lowpass_filter" title="pypillometry.pupildata.PupilData.lowpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.lowpass_filter</span></code></a>(cutoff[, order, ...])</p></td>
 <td><p>Lowpass-filter signal using a Butterworth-filter, see <a class="reference internal" href="api.html#pypillometry.baseline.butter_lowpass_filter" title="pypillometry.baseline.butter_lowpass_filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.baseline.butter_lowpass_filter()</span></code></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.smooth_window" title="pypillometry.pupildata.PupilData.smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.smooth_window</span></code></a>([window, winsize, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.smooth_window" title="pypillometry.pupildata.PupilData.smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.smooth_window</span></code></a>([window, winsize, ...])</p></td>
 <td><p>Apply smoothing of the signal using a moving window.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.downsample" title="pypillometry.pupildata.PupilData.downsample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.downsample</span></code></a>(fsd[, dsfac, inplace])</p></td>
@@ -148,19 +124,15 @@ A range of functions are available for detecting and interpolating blinks.</p>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="changing-slicing-data">
-<h3>Changing/Slicing data<a class="headerlink" href="#changing-slicing-data" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="changing-slicing-data">
+<h3>Changing/Slicing data<a class="headerlink" href="#changing-slicing-data" title="Link to this heading">¶</a></h3>
 <p>Often, pupillometric data needs to be trimmed, e.g., to remove pre-experiment recordings or to remove unusable parts of the data (<a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.sub_slice" title="pypillometry.pupildata.PupilData.sub_slice"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.sub_slice()</span></code></a>). The timing should usually be realigned to the start of the experiment (<a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.reset_time" title="pypillometry.pupildata.PupilData.reset_time"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.reset_time()</span></code></a>). Furthermore, a scaling (e.g., Z-transform) of the pupil-data can be useful for comparing multiple subjects (<a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.scale" title="pypillometry.pupildata.PupilData.scale"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.scale()</span></code></a>).</p>
 <p>The following is a list of available functions for these purposes:</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.sub_slice" title="pypillometry.pupildata.PupilData.sub_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.sub_slice</span></code></a>([start, end, units])</p></td>
-<td><p>Return a new <cite>PupilData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of “ms”, “sec”, “min”, “h”).</p></td>
+<td><p>Return a new <cite>PupilData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.copy" title="pypillometry.pupildata.PupilData.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.copy</span></code></a>([new_name])</p></td>
 <td><p>Make and return a deep-copy of the pupil data.</p></td>
@@ -176,27 +148,23 @@ A range of functions are available for detecting and interpolating blinks.</p>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-<div class="section" id="plotting-summarizing-data">
-<h2>Plotting/Summarizing Data<a class="headerlink" href="#plotting-summarizing-data" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="plotting">
-<h3>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="plotting-summarizing-data">
+<h2>Plotting/Summarizing Data<a class="headerlink" href="#plotting-summarizing-data" title="Link to this heading">¶</a></h2>
+<section id="plotting">
+<h3>Plotting<a class="headerlink" href="#plotting" title="Link to this heading">¶</a></h3>
 <p>It is crucial to validate preprocessing steps by visually inspecting the results using plots. Therefore, <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> implements several plotting facilities that encourage active exploration of the dataset.</p>
 <p>Please see the tutorial <a class="reference internal" href="plotting.html"><span class="std std-ref">Plotting of pupillometric data</span></a> for more details.</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot" title="pypillometry.pupildata.PupilData.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot</span></code></a>([plot_range, interactive, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot" title="pypillometry.pupildata.PupilData.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot</span></code></a>([plot_range, interactive, ...])</p></td>
 <td><p>Make a plot of the pupil data using <cite>matplotlib</cite> or <a class="reference internal" href="api.html#pypillometry.convenience.plot_pupil_ipy" title="pypillometry.convenience.plot_pupil_ipy"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.convenience.plot_pupil_ipy()</span></code></a> if <cite>interactive=True</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot_segments" title="pypillometry.pupildata.PupilData.plot_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot_segments</span></code></a>([overlay, pdffile, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.plot_segments" title="pypillometry.pupildata.PupilData.plot_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot_segments</span></code></a>([overlay, pdffile, ...])</p></td>
 <td><p>Plot the whole dataset chunked up into segments (usually to a PDF file).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_plot" title="pypillometry.pupildata.PupilData.blinks_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_plot</span></code></a>([pdf_file, nrow, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.blinks_plot" title="pypillometry.pupildata.PupilData.blinks_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_plot</span></code></a>([pdf_file, nrow, ...])</p></td>
 <td><p>Plot the detected blinks into separate figures each with nrow x ncol subplots.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.plotpd" title="pypillometry.pupildata.plotpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plotpd</span></code></a>(*args[, subplots, baseline])</p></td>
@@ -210,21 +178,17 @@ A range of functions are available for detecting and interpolating blinks.</p>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="inspecting-summarizing">
-<h3>Inspecting/Summarizing<a class="headerlink" href="#inspecting-summarizing" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="inspecting-summarizing">
+<h3>Inspecting/Summarizing<a class="headerlink" href="#inspecting-summarizing" title="Link to this heading">¶</a></h3>
 <p>The package also provides several functions for summarizing datasets. Simply <cite>print()`ing a :class:`PupilData</cite> object gives a readable summary of the main properties of the dataset and also prints the complete history of the results. By calling <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.summary" title="pypillometry.pupildata.PupilData.summary"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.summary()</span></code></a>, summary data can be arranged and summarized in tabular form.</p>
 <p>See the notebook <a class="reference internal" href="summary.html"><span class="std std-ref">Summarizing pupillometric data</span></a> for more details.</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.summary" title="pypillometry.pupildata.PupilData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.summary</span></code></a>()</p></td>
 <td><p>Return a summary of the <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.stat_per_event" title="pypillometry.pupildata.PupilData.stat_per_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.stat_per_event</span></code></a>(interval[, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.stat_per_event" title="pypillometry.pupildata.PupilData.stat_per_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.stat_per_event</span></code></a>(interval[, ...])</p></td>
 <td><p>Return result of applying a statistical function to pupillometric data in a given interval relative to event-onsets.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
@@ -232,28 +196,20 @@ A range of functions are available for detecting and interpolating blinks.</p>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="event-related-pupil-dilation">
-<h3>Event-Related Pupil Dilation<a class="headerlink" href="#event-related-pupil-dilation" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="event-related-pupil-dilation">
+<h3>Event-Related Pupil Dilation<a class="headerlink" href="#event-related-pupil-dilation" title="Link to this heading">¶</a></h3>
 <p>The average pupillometric signal, timelocked to repeating events during the experiment, is referred to as “Event-related pupil dilation” or ERPD. In <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code>, the functionality for this is implemented in the class <a class="reference internal" href="api.html#pypillometry.erpd.ERPD" title="pypillometry.erpd.ERPD"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.erpd.ERPD</span></code></a>.</p>
 <p>Running <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.get_erpd()</span></code></a> returns an Object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code>. This object has functions for plotting and summarising the event-related pupillary dilation.</p>
 <p><a class="reference internal" href="erpds.html"><span class="std std-ref">Here is an example notebook for for how to work with ERPDs</span></a>.</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.get_erpd" title="pypillometry.pupildata.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
 <td><p>Extract event-related pupil dilation (ERPD).</p></td>
 </tr>
 </tbody>
 </table>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.erpd.group_erpd" title="pypillometry.erpd.group_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">group_erpd</span></code></a>(datasets, erpd_name, event_select)</p></td>
 <td><p>Calculate group-level ERPDs by applying <cite>subj_meanfct</cite> to each subj-level ERPD.</p></td>
@@ -261,47 +217,39 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.erpd.ERPD.summary" title="pypillometry.erpd.ERPD.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPD.summary</span></code></a>()</p></td>
 <td><p>Return a summary of the <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.erpd.ERPD.plot" title="pypillometry.erpd.ERPD.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPD.plot</span></code></a>([overlays, meanfct, varfct, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.erpd.ERPD.plot" title="pypillometry.erpd.ERPD.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPD.plot</span></code></a>([overlays, meanfct, varfct, ...])</p></td>
 <td><p>Plot mean and error-ribbons using <cite>varct</cite>.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-<div class="section" id="modeling-the-pupillometric-signal">
-<h2>Modeling the pupillometric signal<a class="headerlink" href="#modeling-the-pupillometric-signal" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="modeling-the-pupillometric-signal">
+<h2>Modeling the pupillometric signal<a class="headerlink" href="#modeling-the-pupillometric-signal" title="Link to this heading">¶</a></h2>
 <p>For some applications, it is interesting to model the full pupillometric signal as consisting of a (tonic) baseline and a (phasic) response component.
 The package implements novel algorithms developed in our lab and documentation will become available here.</p>
 <p>More details are availabel in this notebook: <a class="reference internal" href="modeling.html"><span class="std std-ref">Modeling the pupillometric signal</span></a>.</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.estimate_baseline" title="pypillometry.pupildata.PupilData.estimate_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.estimate_baseline</span></code></a>([method, inplace])</p></td>
 <td><p>Apply one of the baseline-estimation methods.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.estimate_response" title="pypillometry.pupildata.PupilData.estimate_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.estimate_response</span></code></a>([npar, tmax, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.estimate_response" title="pypillometry.pupildata.PupilData.estimate_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.estimate_response</span></code></a>([npar, tmax, ...])</p></td>
 <td><p>Estimate pupil-response based on event-onsets, see <a class="reference internal" href="api.html#pypillometry.pupil.pupil_response" title="pypillometry.pupil.pupil_response"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_response()</span></code></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.stat_per_event" title="pypillometry.pupildata.PupilData.stat_per_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.stat_per_event</span></code></a>(interval[, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.PupilData.stat_per_event" title="pypillometry.pupildata.PupilData.stat_per_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.stat_per_event</span></code></a>(interval[, ...])</p></td>
 <td><p>Return result of applying a statistical function to pupillometric data in a given interval relative to event-onsets.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="artificial-data">
-<h2>Artificial Data<a class="headerlink" href="#artificial-data" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="artificial-data">
+<h2>Artificial Data<a class="headerlink" href="#artificial-data" title="Link to this heading">¶</a></h2>
 <p>For validation and testing purposes, it can be useful to generate artificial datasets. The package implements a <a class="reference internal" href="api.html#pypillometry.pupildata.FakePupilData" title="pypillometry.pupildata.FakePupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FakePupilData</span></code></a> as inheriting from regular <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> and therefore shares all its functionality. In addition to that, <a class="reference internal" href="api.html#pypillometry.pupildata.FakePupilData" title="pypillometry.pupildata.FakePupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FakePupilData</span></code></a> stores “ground-truth” data and parameters that was used while creating the artificial data.</p>
 <p>The function <a class="reference internal" href="api.html#pypillometry.pupildata.create_fake_pupildata" title="pypillometry.pupildata.create_fake_pupildata"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_fake_pupildata()</span></code></a> allows to quickly create datasets generating according to a provided experimental structure (see the functions documentation for an overview over the many available options).</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.FakePupilData" title="pypillometry.pupildata.FakePupilData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FakePupilData</span></code></a>(pupil[, sampling_rate, time, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.FakePupilData" title="pypillometry.pupildata.FakePupilData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FakePupilData</span></code></a>(pupil[, sampling_rate, time, ...])</p></td>
 <td><p>Simulated pupil data for validation purposes.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.pupildata.create_fake_pupildata" title="pypillometry.pupildata.create_fake_pupildata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_fake_pupildata</span></code></a>(**kwargs)</p></td>
@@ -309,21 +257,22 @@ The package implements novel algorithms developed in our lab and documentation w
 </tr>
 </tbody>
 </table>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
-              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo"/>
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
             </a></p>
-  <h3><a href="../index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#reading-writing-pupillometric-data">Reading/writing pupillometric data</a></li>
 <li><a class="reference internal" href="#pipeline-based-processing">Pipeline-based processing</a></li>
@@ -345,12 +294,17 @@ The package implements novel algorithms developed in our lab and documentation w
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="installation.html"
-                        title="previous chapter">Installation</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="notebooks.html"
-                        title="next chapter">Tutorials/Example Notebooks</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="installation.html"
+                          title="previous chapter">Installation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="notebooks.html"
+                          title="next chapter">Tutorials/Example Notebooks</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -358,21 +312,21 @@ The package implements novel algorithms developed in our lab and documentation w
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
-<script>$('#searchbox').show(0);</script>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
+    <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -392,8 +346,8 @@ The package implements novel algorithms developed in our lab and documentation w
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.1.
+    &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>
 </html>

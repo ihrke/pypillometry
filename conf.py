@@ -29,7 +29,7 @@ author = 'Matthias Mittner'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions=['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon', 
-            'sphinx_math_dollar', 'sphinx.ext.mathjax', 'sphinx_autodoc_typehints', "m2r",
+            'sphinx_math_dollar', 'sphinx.ext.mathjax', 'sphinx_autodoc_typehints', "sphinx_mdinclude",
             'sphinx.ext.intersphinx', 'sphinx.ext.autosummary', "nbsphinx"]
 
 nbsphinx_epilog = """
