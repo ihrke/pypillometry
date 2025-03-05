@@ -1,17 +1,32 @@
-.. currentmodule:: pypillometry.pupildata
+.. currentmodule:: pypillometry
 
 Developers
 ==========
 
-.. image:: https://travis-ci.com/ihrke/pypillometry.svg?branch=master
-    :target: https://travis-ci.com/ihrke/pypillometry
-
-This package is developed and maintained by the `Cognitive Neuroscience Research Group <http://uit.no/research/cognitive-neuroscience>`_ at the `University of Tromsø <http://uit.no>`_. We encourage everyone to become a member of the team and to contribute to the package's development, either by `reporting bugs  <https://github.com/ihrke/pypillometry/issues>`_, `providing enhancements <https://github.com/ihrke/pypillometry/pulls>`_ or otherwise.
+This package is developed and maintained by the `Cognitive Neuroscience Research Group <http://uit.no/research/cognitive-neuroscience>`_ at the `University of Tromsø <http://uit.no>`_. 
+We encourage everyone to become a member of the team and to contribute to the package's development, either by `reporting bugs  <https://github.com/ihrke/pypillometry/issues>`_, `providing enhancements <https://github.com/ihrke/pypillometry/pulls>`_ or otherwise.
 
 Major versions
 --------------
 
 Pypillometry switched to version 2 in March 2025. This introduces breaking changes to the API. 
+
+- The latest updates for version 1 will be at the `v1` branck of the repository:  https://github.com/ihrke/pypillometry/tree/v1.
+- The documentation for version 1 can be found at: https://ihrke.github.io/pypillometry/v1/ but is not updated.
+
+Logging
+-------
+
+The package uses the `loguru <https://loguru.readthedocs.io/en/stable/>`_ package for logging. 
+The log-level can be set by the user using the :func:`pypillometry.logging_set_level`-function. By default, the log-level is set to `INFO`.
+
+For more detailed logging of specific sub-modules, use 
+
+.. code-block:: python
+
+    import pypillometry as pp
+    pp.disable_logging()
+    pp.logger.enable("pypillometry.submodule")
 
 
 How to contribute

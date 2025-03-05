@@ -102,7 +102,7 @@ class EyeData(GazeData):
 
         return GazeData.summary(self)
 
-    def get_pupildata(self, eye):
+    def get_pupildata(self, eye=None):
         """
         Return the pupil data as a PupilData object.
 
@@ -111,15 +111,24 @@ class EyeData(GazeData):
         eye : str, optional
             Which eye to return data for. 
         """
+        if eye is None:
+            if len(self.eyes)==1:
+                eye=self.eyes[0]
+            else:
+                raise ValueError("More than one eye in the dataset. Please specify which eye to use.")
         if eye not in [k.split("_")[0] for k in self.data.keys()]:
             raise ValueError("No pupil data for eye: %s" % eye)
-        pobj = PupilData(self.data[eye+"_pupil"],
-                        sampling_rate=self.fs,
-                        time=self.tx, 
-                        event_onsets=self.event_onsets,
-                        event_labels=self.event_labels,
-                        name=self.name+"_pd",
-                        keep_orig=False)
+        kwargs = {
+            "time": self.tx,
+            eye+"_pupil": self.data[eye+"_pupil"],
+            "sampling_rate": self.fs,
+            "event_onsets": self.event_onsets,
+            "event_labels": self.event_labels,
+            "name": self.name+"_pd",
+            "keep_orig": False,
+            "inplace": False
+        }
+        pobj = PupilData(**kwargs)
         return pobj        
 
     @keephistory

@@ -14,8 +14,11 @@
 
 > [!NOTE]
 > This is `pypillometry` version 2 that contains a major restructuring of the code. Scripts written for version 1 will not continue to work.
-> Version 1 is here: [pypillometry version 1](https://github.com/ihrke/pypillometry/tree/v1)
-
+> The documentation for v2 is currently incomplete and broken as we focus on developing the new API.  
+>
+> - Version 1 is here: [pypillometry version 1](https://github.com/ihrke/pypillometry/tree/v1)
+> - Documentation for Version 1 is here: [pypillometry docs v1](https://ihrke.github.io/pypillometry/v1/html/index.html)
+> 
 
 
 This package implements functions for the analysis of pupillometric data. Features include preprocessing, blink handling, event-related pupil-dilation, plotting and signal modeling.

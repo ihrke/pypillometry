@@ -12,8 +12,9 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('..'))
+from pathlib import Path
+
+sys.path.insert(0, str(Path('.').resolve()))
 
 
 # -- Project information -----------------------------------------------------
@@ -44,6 +45,9 @@ nbsphinx_epilog = """
     </div>
 
 """
+
+# do not create TOC entries for each function/class
+toc_object_entries = False
 
 nbsphinx_prolog=nbsphinx_epilog
 

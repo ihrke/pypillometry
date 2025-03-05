@@ -63,7 +63,7 @@ Interactive version:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-/Users/mmi041/Dropbox/work/projects/pupil/pypillometry/pypillometry
+/home/mmi041/Dropbox/work/projects/pupil/pypillometry/pypillometry
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -145,7 +145,70 @@ Interactive version:
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s2">&quot;pypillometry&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">read_subject</span><span class="p">(</span><span class="n">subjects</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">d</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_141347/1578194772.py:4: ParserWarning: Length of header or names does not match length of data. This leads to a loss of data with index_col=False.
+  df=pd.read_table(fname_samples, index_col=False,
+<span class="ansi-green-fg">2025-03-05 20:15:44.929</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">pypillometry.eyedata.generic</span>:<span class="ansi-cyan-fg">_init_common</span>:<span class="ansi-cyan-fg">81</span> - <span class="ansi-blue-intense-fg ansi-bold">Initializing common data</span>
+<span class="ansi-green-fg">2025-03-05 20:15:45.270</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">pypillometry.eyedata.pupildata</span>:<span class="ansi-cyan-fg">__init__</span>:<span class="ansi-cyan-fg">74</span> - <span class="ansi-bold">Creating PupilData object</span>
+<span class="ansi-green-fg">2025-03-05 20:15:45.272</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">pypillometry.eyedata.generic</span>:<span class="ansi-cyan-fg">_init_common</span>:<span class="ansi-cyan-fg">81</span> - <span class="ansi-blue-intense-fg ansi-bold">Initializing common data</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PupilData(001_ceylin_li_pd, 19.0MiB):
+ n                 : 601616
+ sampling_rate     : 500.0
+ eyes              : [&#39;left&#39;]
+ data              : [&#39;left_pupil&#39;, &#39;left_blinkmask&#39;, &#39;left_interpolated&#39;]
+ nevents           : 1320
+ nblinks           : {&#39;left&#39;: 0}
+ blinks_per_min    : {&#39;left&#39;: 0.0}
+ nmiss             : 0
+ perc_miss         : 0.0
+ duration_minutes  : 20.053866666666668
+ start_min         : 0.0
+ end_min           : 20.053833333333333
+ ninterpolated     : {&#39;left&#39;: 0.0}
+ baseline_estimated: False
+ response_estimated: False
+ scale_params      : {}
+ response_params   : {}
+ glimpse           : EyeDataDict(vars=3,n=601616):
+  left_pupil (float64): 763.0, 761.0, 760.0, 761.0, 760.0...
+  left_blinkmask (float64): 0.0, 0.0, 0.0, 0.0, 0.0...
+  left_interpolated (float64): 0.0, 0.0, 0.0, 0.0, 0.0...
+
+ History:
+ *
+ └ fill_time_discontinuities()
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Pupil analysis for Ceylin, 19.3.2024</span>
@@ -223,6 +286,52 @@ Interactive version:
         <span class="n">pupil</span><span class="o">.</span><span class="n">plot_segments</span><span class="p">(</span><span class="n">overlay</span><span class="o">=</span><span class="n">pupil_pp</span><span class="p">,</span> <span class="n">interv</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">pdffile</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">plot_dir</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.pdf&quot;</span><span class="o">%</span><span class="k">pupil_pp</span>.name), ylim=(pupil_pp.sy.min(), pupil_pp.sy.max()))
 <br/></pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Processing subject 001
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_137992/1578194772.py:4: ParserWarning: Length of header or names does not match length of data. This leads to a loss of data with index_col=False.
+  df=pd.read_table(fname_samples, index_col=False,
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[5], line 10</span>
+<span class="ansi-green-intense-fg ansi-bold">      7</span> d <span style="color: rgb(98,98,98)">=</span> read_subject(subject)
+<span class="ansi-green-intense-fg ansi-bold">      9</span> <span style="color: rgb(95,135,135)"># which eye has most missing data?</span>
+<span class="ansi-green-fg">---&gt; 10</span> lpupil<span style="color: rgb(98,98,98)">=</span>d<span style="color: rgb(98,98,98)">.</span>get_pupildata(eye<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">left</span><span style="color: rgb(175,0,0)">&#34;</span>)
+<span class="ansi-green-intense-fg ansi-bold">     11</span> rpupil<span style="color: rgb(98,98,98)">=</span>d<span style="color: rgb(98,98,98)">.</span>get_pupildata(eye<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">right</span><span style="color: rgb(175,0,0)">&#34;</span>)
+<span class="ansi-green-intense-fg ansi-bold">     13</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> lpupil<span style="color: rgb(98,98,98)">.</span>summary()[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">nmiss</span><span style="color: rgb(175,0,0)">&#34;</span>]<span style="color: rgb(98,98,98)">&gt;</span>rpupil<span style="color: rgb(98,98,98)">.</span>summary()[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">nmiss</span><span style="color: rgb(175,0,0)">&#34;</span>]:
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata/eyedata.py:116</span>, in <span class="ansi-cyan-fg">EyeData.get_pupildata</span><span class="ansi-blue-fg">(self, eye)</span>
+<span class="ansi-green-intense-fg ansi-bold">    114</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> eye <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> [k<span style="color: rgb(98,98,98)">.</span>split(<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">_</span><span style="color: rgb(175,0,0)">&#34;</span>)[<span style="color: rgb(98,98,98)">0</span>] <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> k <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>data<span style="color: rgb(98,98,98)">.</span>keys()]:
+<span class="ansi-green-intense-fg ansi-bold">    115</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">No pupil data for eye: </span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span style="color: rgb(175,0,0)">&#34;</span> <span style="color: rgb(98,98,98)">%</span> eye)
+<span class="ansi-green-fg">--&gt; 116</span> pobj <span style="color: rgb(98,98,98)">=</span> PupilData(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>data[eye<span style="color: rgb(98,98,98)">+</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">_pupil</span><span style="color: rgb(175,0,0)">&#34;</span>],
+<span class="ansi-green-intense-fg ansi-bold">    117</span>                 sampling_rate<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>fs,
+<span class="ansi-green-intense-fg ansi-bold">    118</span>                 time<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx,
+<span class="ansi-green-intense-fg ansi-bold">    119</span>                 event_onsets<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>event_onsets,
+<span class="ansi-green-intense-fg ansi-bold">    120</span>                 event_labels<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>event_labels,
+<span class="ansi-green-intense-fg ansi-bold">    121</span>                 name<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>name<span style="color: rgb(98,98,98)">+</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">_pd</span><span style="color: rgb(175,0,0)">&#34;</span>,
+<span class="ansi-green-intense-fg ansi-bold">    122</span>                 keep_orig<span style="color: rgb(98,98,98)">=</span><span class="ansi-bold" style="color: rgb(0,135,0)">False</span>)
+<span class="ansi-green-intense-fg ansi-bold">    123</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> pobj
+
+<span class="ansi-red-fg">TypeError</span>: PupilData.__init__() got multiple values for argument &#39;time&#39;
+</pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
@@ -307,7 +416,7 @@ Interactive version:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_ceylin_eyedata_8_0.png" src="../_images/docs_ceylin_eyedata_8_0.png" />
+<img alt="../_images/docs_ceylin_eyedata_10_0.png" src="../_images/docs_ceylin_eyedata_10_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -322,7 +431,7 @@ Interactive version:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_ceylin_eyedata_9_0.png" src="../_images/docs_ceylin_eyedata_9_0.png" />
+<img alt="../_images/docs_ceylin_eyedata_11_0.png" src="../_images/docs_ceylin_eyedata_11_0.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -492,7 +601,7 @@ Interactive version:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_ceylin_eyedata_12_0.png" src="../_images/docs_ceylin_eyedata_12_0.png" />
+<img alt="../_images/docs_ceylin_eyedata_14_0.png" src="../_images/docs_ceylin_eyedata_14_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -603,7 +712,7 @@ Processing subject 050
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_ceylin_eyedata_14_1.png" src="../_images/docs_ceylin_eyedata_14_1.png" />
+<img alt="../_images/docs_ceylin_eyedata_16_1.png" src="../_images/docs_ceylin_eyedata_16_1.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -633,7 +742,7 @@ Processing subject 050
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_ceylin_eyedata_15_1.png" src="../_images/docs_ceylin_eyedata_15_1.png" />
+<img alt="../_images/docs_ceylin_eyedata_17_1.png" src="../_images/docs_ceylin_eyedata_17_1.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -671,7 +780,7 @@ Processing subject 050
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_ceylin_eyedata_17_0.png" src="../_images/docs_ceylin_eyedata_17_0.png" />
+<img alt="../_images/docs_ceylin_eyedata_19_0.png" src="../_images/docs_ceylin_eyedata_19_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -688,7 +797,7 @@ Processing subject 050
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/docs_ceylin_eyedata_18_0.png" src="../_images/docs_ceylin_eyedata_18_0.png" />
+<img alt="../_images/docs_ceylin_eyedata_20_0.png" src="../_images/docs_ceylin_eyedata_20_0.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">

@@ -1,30 +1,38 @@
 API documentation
 ==================
 
-.. automodule:: pypillometry.pupildata
-    :members:
-    :special-members:
 
-.. automodule:: pypillometry.erpd
-    :members:
-
-.. automodule:: pypillometry.io
-    :members:
-
-.. automodule:: pypillometry.preproc
-    :members:
-
-.. automodule:: pypillometry.fakedata
-    :members:
-
-.. automodule:: pypillometry.baseline
-    :members:
-
-.. automodule:: pypillometry.pupil
+.. automodule:: pypillometry
     :members:
 
 .. automodule:: pypillometry.convenience
     :members:
+
+..
+    .. automodule:: pypillometry.pupildata
+        :members:
+        :special-members:
+
+    .. automodule:: pypillometry.erpd
+        :members:
+
+    .. automodule:: pypillometry.io
+        :members:
+
+    .. automodule:: pypillometry.preproc
+        :members:
+
+    .. automodule:: pypillometry.fakedata
+        :members:
+
+    .. automodule:: pypillometry.baseline
+        :members:
+
+    .. automodule:: pypillometry.pupil
+        :members:
+
+    .. automodule:: pypillometry.convenience
+        :members:
 
 Indices and tables
 ==================

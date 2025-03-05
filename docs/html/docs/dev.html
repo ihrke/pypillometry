@@ -14,7 +14,6 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Future Plans/Todo" href="future.html" />
     <link rel="prev" title="API documentation" href="api.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="Related">
@@ -26,9 +25,6 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="future.html" title="Future Plans/Todo"
-             accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="api.html" title="API documentation"
              accesskey="P">previous</a> |</li>
@@ -44,12 +40,26 @@
             
   <section id="developers">
 <h1>Developers<a class="headerlink" href="#developers" title="Link to this heading">¶</a></h1>
-<a class="reference external image-reference" href="https://travis-ci.com/ihrke/pypillometry"><img alt="https://travis-ci.com/ihrke/pypillometry.svg?branch=master" src="https://travis-ci.com/ihrke/pypillometry.svg?branch=master" />
-</a>
-<p>This package is developed and maintained by the <a class="reference external" href="http://uit.no/research/cognitive-neuroscience">Cognitive Neuroscience Research Group</a> at the <a class="reference external" href="http://uit.no">University of Tromsø</a>. We encourage everyone to become a member of the team and to contribute to the package’s development, either by <a class="reference external" href="https://github.com/ihrke/pypillometry/issues">reporting bugs</a>, <a class="reference external" href="https://github.com/ihrke/pypillometry/pulls">providing enhancements</a> or otherwise.</p>
+<p>This package is developed and maintained by the <a class="reference external" href="http://uit.no/research/cognitive-neuroscience">Cognitive Neuroscience Research Group</a> at the <a class="reference external" href="http://uit.no">University of Tromsø</a>.
+We encourage everyone to become a member of the team and to contribute to the package’s development, either by <a class="reference external" href="https://github.com/ihrke/pypillometry/issues">reporting bugs</a>, <a class="reference external" href="https://github.com/ihrke/pypillometry/pulls">providing enhancements</a> or otherwise.</p>
 <section id="major-versions">
 <h2>Major versions<a class="headerlink" href="#major-versions" title="Link to this heading">¶</a></h2>
 <p>Pypillometry switched to version 2 in March 2025. This introduces breaking changes to the API.</p>
+<ul class="simple">
+<li><p>The latest updates for version 1 will be at the <cite>v1</cite> branck of the repository:  <a class="reference external" href="https://github.com/ihrke/pypillometry/tree/v1">https://github.com/ihrke/pypillometry/tree/v1</a>.</p></li>
+<li><p>The documentation for version 1 can be found at: <a class="reference external" href="https://ihrke.github.io/pypillometry/v1/">https://ihrke.github.io/pypillometry/v1/</a> but is not updated.</p></li>
+</ul>
+</section>
+<section id="logging">
+<h2>Logging<a class="headerlink" href="#logging" title="Link to this heading">¶</a></h2>
+<p>The package uses the <a class="reference external" href="https://loguru.readthedocs.io/en/stable/">loguru</a> package for logging.
+The log-level can be set by the user using the <a class="reference internal" href="api.html#pypillometry.logging_set_level" title="pypillometry.logging_set_level"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.logging_set_level()</span></code></a>-function. By default, the log-level is set to <cite>INFO</cite>.</p>
+<p>For more detailed logging of specific sub-modules, use</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">disable_logging</span><span class="p">()</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s2">&quot;pypillometry.submodule&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="how-to-contribute">
 <h2>How to contribute<a class="headerlink" href="#how-to-contribute" title="Link to this heading">¶</a></h2>
@@ -63,7 +73,7 @@
 </section>
 <section id="coding-style-package-architecture">
 <h2>Coding style/package architecture<a class="headerlink" href="#coding-style-package-architecture" title="Link to this heading">¶</a></h2>
-<p>We chose to put most functionality directly below <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code>’s main class <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code>. This is mostly for convenience,
+<p>We chose to put most functionality directly below <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a>’s main class <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code>. This is mostly for convenience,
 as users can easily find and chain commands together (see the following page more on this: <a class="reference internal" href="pipes.html"><span class="std std-ref">Pipeline-based processing in pypillometry</span></a>).</p>
 <p>The implementation of the functionality, however, is coded in submodules using “stateless” functions that take <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v2.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays as arguments. So, in order to create a new function that changes a <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code>-object, you will first want to implement a function working purely on <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v2.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays and then create a thin wrapper function below <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code> that calls this low-level function with the correct arguments.</p>
 </section>
@@ -103,7 +113,7 @@ conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> <
 <section id="creating-releases">
 <h2>Creating Releases<a class="headerlink" href="#creating-releases" title="Link to this heading">¶</a></h2>
 <p>A release should be created whenever crucial bugs have been fixed or new functionality has been added.
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> goes with version numbers <cite>x.y.z</cite>. Increment <cite>z</cite> for bug-fixes, <cite>y</cite> for new features and
+<a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> goes with version numbers <cite>x.y.z</cite>. Increment <cite>z</cite> for bug-fixes, <cite>y</cite> for new features and
 <cite>x</cite> for releases that break backward-compatibility.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -131,6 +141,7 @@ and a <a class="reference external" href="https://pypi.org/">PyPI</a> release is
     <ul>
 <li><a class="reference internal" href="#">Developers</a><ul>
 <li><a class="reference internal" href="#major-versions">Major versions</a></li>
+<li><a class="reference internal" href="#logging">Logging</a></li>
 <li><a class="reference internal" href="#how-to-contribute">How to contribute</a></li>
 <li><a class="reference internal" href="#coding-style-package-architecture">Coding style/package architecture</a></li>
 <li><a class="reference internal" href="#unit-testing">Unit-testing</a></li>
@@ -145,11 +156,6 @@ and a <a class="reference external" href="https://pypi.org/">PyPI</a> release is
     <h4>Previous topic</h4>
     <p class="topless"><a href="api.html"
                           title="previous chapter">API documentation</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="future.html"
-                          title="next chapter">Future Plans/Todo</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -181,9 +187,6 @@ and a <a class="reference external" href="https://pypi.org/">PyPI</a> release is
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="future.html" title="Future Plans/Todo"
-             >next</a> |</li>
         <li class="right" >
           <a href="api.html" title="API documentation"
              >previous</a> |</li>

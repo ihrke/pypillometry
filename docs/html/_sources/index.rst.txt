@@ -8,6 +8,10 @@ Documentation
    :maxdepth: 2
    :caption: Contents:
 
+   docs/api
+   docs/dev
+
+..
    docs/installation
    docs/usage
    docs/notebooks
@@ -15,7 +19,8 @@ Documentation
    docs/dev
    docs/future
 
-.. include:: /docs/notebooks.rst
+..
+   .. include:: /docs/notebooks.rst
 
 
 Indices and tables
