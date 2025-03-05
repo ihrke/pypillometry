@@ -31,14 +31,25 @@ class ERPD:
         self.baselines=baselines
         self.tx=tx
         self.erpd=erpd
-        self.missing=missing
+        if missing is None:
+            self.missing=np.zeros(erpd.shape)
+        else: 
+            self.missing=missing
+
+    @property
+    def nevents(self):
+        return self.erpd.shape[0]
+
+    @property
+    def n(self):
+        return self.erpd.shape[1]
 
     def summary(self) -> dict:
         """Return a summary of the :class:`.PupilData`-object."""
         summary=dict(
             name=self.name,
-            nevents=self.erpd.shape[0],
-            n=self.erpd.shape[1],
+            nevents=self.nevents, #self.erpd.shape[0],
+            n=self.n, #self.erpd.shape[1],
             window=(self.tx.min(), self.tx.max())
         )
         return summary
@@ -80,7 +91,8 @@ class ERPD:
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
         return s
                 
-    def plot(self, overlays=None, meanfct=np.mean, varfct=scipy.stats.sem, plot_missing: bool=True): 
+    def plot(self, overlays=None, meanfct=np.mean, varfct=scipy.stats.sem, plot_missing: bool=True,
+             title: str=None): 
         """
         Plot mean and error-ribbons using `varct`.
         
@@ -99,6 +111,8 @@ class ERPD:
             
         plot_missing: bool
             plot percentage interpolated/missing data per time-point?
+        title: str
+            title of the plot or None (in which case the name of the ERPD is used as title)
         """
         merpd=meanfct(self.erpd, axis=0)
         sderpd=varfct(self.erpd, axis=0) if callable(varfct) else None
@@ -110,7 +124,10 @@ class ERPD:
         ax1.axvline(x=0, color="red")        
         ax1.set_ylabel("mean PD")
         ax1.set_xlabel("time (ms)")
-        ax1.set_title(self.name)
+        if title is not None:
+            ax1.set_title(title)
+        else:
+            ax1.set_title(self.name)
         if plot_missing:
             ax2=ax1.twinx()
             ax2.plot(self.tx, percmiss, alpha=0.3)

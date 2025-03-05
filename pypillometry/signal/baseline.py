@@ -15,7 +15,7 @@ import scipy.interpolate
 from scipy.interpolate import interp1d, splrep, splev
 
 from .pupil import *
-from .convenience import *
+from ..convenience import *
 
 stan_code_baseline_model_asym_laplac="""
 // Stan model for pupil-baseline estimation
