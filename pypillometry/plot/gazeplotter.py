@@ -75,6 +75,8 @@ class GazePlotter:
             endix=np.argmin(np.abs(tx-end))
         
         # which data to plot
+        if not isinstance(variables, list):
+            variables=[variables]
         if len(variables)==0:
             variables=obj.variables
         variables = [v for v in variables if v not in self.ignore_vars]
