@@ -752,9 +752,13 @@ class GenericEyeData(ABC):
             inplace=self.inplace
         obj=self if inplace else self.copy()
 
+        if isinstance(eyes, str):
+            eyes=[eyes]
         if len(eyes)==0:
             eyes=obj.eyes
 
+        if isinstance(variables, str):
+            variables=[variables]
         if len(variables)==0:
             variables=obj.variables
 
@@ -772,6 +776,10 @@ class GenericEyeData(ABC):
                 if not keep_eyes:
                     for eye in eyes:
                         del obj.data[eye+"_"+var]
+            if not keep_eyes:
+                for eye in eyes:
+                    logger.debug("Dropping blinks from eye %s" % eye)
+                    obj.set_blinks(eye, None)
         else:
             raise ValueError("Method %s not implemented" % method)
 

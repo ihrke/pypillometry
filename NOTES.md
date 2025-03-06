@@ -9,9 +9,13 @@ Porting all things from old `PupilData` to either `GenericEyeData` (for function
 - [x] `pupil_lowpass_filter()` is now in `PupilData`
 - [x] `pupil_smooth_window()`
 - [x] `downsample()`  - implement in `GenericEyeData`
-- [ ] `merge_eyes()` - implement in `GenericEyeData` to combine left/right eyes into a single variable
+- [x] `merge_eyes()` - implement in `GenericEyeData` to combine left/right eyes into a single variable
+  - [ ] perhaps implement regression merging?
+
+- NOTE: make the `blinks` field a property so that the blinkmask can be kept in sync?
+
 - [ ] blinks
-  - [ ] `pupil_blinks_detect()` - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names
+  - [x] `pupil_blinks_detect()` - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names
   - [ ] `pupil_blinks_merge()`
   - [ ] `pupil_blinks_interpolate()` - merge with Mahot function and make one an option for the other
 - [ ] baseline/response estimation
@@ -20,9 +24,6 @@ Porting all things from old `PupilData` to either `GenericEyeData` (for function
 - [ ] statistics per events
 - [ ] plotting
 
-- PupilData gets a property `parameters` that has a single `Parameters` object  
-  - this stores all the parameters for the different methods, variables and eyes
-  - e.g., param["scale", "pupil", "left", "mean"] = 0.5
 
 
 ## Thoughts and TODO after meeting 2024-06-18

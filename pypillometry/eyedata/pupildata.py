@@ -93,6 +93,69 @@ class PupilData(GenericEyeData):
     def plot(self):
         return PupilPlotter(self)
 
+
+    @property
+    def blinks(self):
+        """Return blinks (intervals) for all eyes.
+
+        Returns
+        -------
+        dict
+            dictionary with blinks for each eye
+        """
+        return self._blinks
+    
+    @blinks.setter
+    def blinks(self, value):
+        """Set blinks for all eyes.
+
+        Updates the blinkmask arrays in the data.
+
+        Parameters
+        ----------
+        value: dict
+            dictionary with blinks for each eye
+        """
+        logger.debug("Setting blinks and updating blinkmask")
+        self._blinks=value
+        for eye in value.keys():
+            self.data[eye+"_blinkmask"]=np.zeros(len(self), dtype=int)
+            for start,end in value[eye]:
+                self.data[eye+"_blinkmask"][start:end]=1
+
+
+    def set_blinks(self, eyes, blinks):
+        """
+        Set blinks for the given eyes.
+
+        Parameters
+        ----------
+        eye: list or str
+            list of eyes to set blinks for (or a single eye)
+        blinks: dict of ndarrays or ndarray or None
+            ndarrays of blinks (nblinks x 2); if None, the eye is deleted from the blinks
+        """
+        if not isinstance(eyes, list):
+            eyes=[eyes]
+        if len(eyes)==0:
+            eyes=self.eyes
+
+        if isinstance(blinks, np.ndarray) or blinks is None:
+            blinks={eye:blinks for eye in eyes}           
+        elif not isinstance(blinks, dict):
+            raise ValueError("Blinks must be a dictionary or a numpy.ndarray")
+        bl = self.blinks
+
+        for eye in eyes:
+            if blinks[eye] is not None:
+                bl[eye]=blinks[eye]
+            else:
+                del bl[eye]
+        
+        self.blinks=bl
+
+
+
     def _init_blinks(self, eyes=[]):
         """Initialize mask/interpolation arrays for the blinks
         """        
@@ -122,6 +185,8 @@ class PupilData(GenericEyeData):
         int
             number of detected blinks
         """
+        if not isinstance(eyes, list):
+            eyes=[eyes]
         if len(eyes)==0:
             eyes=self.eyes
         return {eye:self.blinks[eye].shape[0] for eye in eyes if eye in self.blinks}
@@ -279,7 +344,7 @@ class PupilData(GenericEyeData):
         if not isinstance(eyes, list):
             eyes=[eyes]
         if len(eyes)==0:
-            eyes=self.eyes
+            eyes=self.data.get_available_eyes(variable="pupil")
 
         fac=self._unit_fac(units)
         winsize_ms=winsize*fac
@@ -311,11 +376,54 @@ class PupilData(GenericEyeData):
 
             ## merge the two blinks
             blinks=preproc.helper_merge_blinks(blinks_vel, blinks_zero)
-            obj.blinks[eye]=np.array([[on,off] for (on,off) in blinks if off-on>=min_duration_ix])
+            obj.set_blinks(eye, np.array([[on,off] for (on,off) in blinks if off-on>=min_duration_ix]))
             
-            obj.data[eye,"blinkmask"]=np.zeros(self.tx.size, dtype=int)
-            
-            for start,end in obj.blinks[eye]:
-                obj.data[eye,"blinkmask"][start:end]=1
+        return obj    
+    
+    @keephistory
+    def blinks_merge(self, eyes=[], distance: float=100, inplace=None):
+        """
+        Merge together blinks that are close together. 
+        Some subjects blink repeatedly and standard detection/interpolation can result in weird results.
+        This function simply treats repeated blinks as one long blink.
+
+        Parameters
+        ----------
+
+        distance: float
+            merge together blinks that are closer together than `distance` in ms
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                                    
+        """
+        if inplace is None:
+            inplace=self.inplace
+        obj=self if inplace else self.copy()
+
+        if not isinstance(eyes, list):
+            eyes=[eyes]
+        if len(eyes)==0:
+            eyes=obj.blinks.keys()
+
+        distance_ix=distance/self.fs*1000.
+
+        for eye in eyes:
+            newblinks=[] 
+            i=1
+            cblink=self.blinks[eye][0,:] ## start with first blink
+            while(i<self.nblinks()[eye]):
+                if (self.blinks[eye][i,0]-cblink[1])<=distance_ix:
+                    # merge
+                    cblink[1]=self.blinks[eye][i,1]
+                else:
+                    newblinks.append(cblink)
+                    cblink=self.blinks[eye][i,:]
+                i+=1            
+            newblinks.append(cblink)
+            newblinks=np.array(newblinks)       
+
+            obj.set_blinks(eye,newblinks)
+
+
         return obj    
     

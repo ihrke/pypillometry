@@ -22,11 +22,19 @@ class EyeDataDict(MutableMapping):
         self.length=0
         self.update(dict(*args, **kwargs))  # use the free update to set keys
 
-    def get_available_eyes(self):
+    def get_available_eyes(self, variable=None):
         """
         Return a list of available eyes.
+        
+        Parameters
+        ----------
+        variable : str, optional
+            If specified, return only eyes for this variable.
         """
-        eyes=[k.split("_")[0] for k in self.data.keys()]
+        if variable is not None:
+            eyes=[k.split("_")[0] for k in self.data.keys() if k.endswith("_"+variable)]
+        else:
+            eyes=[k.split("_")[0] for k in self.data.keys()]
         return list(set(eyes))
 
     def get_available_variables(self):

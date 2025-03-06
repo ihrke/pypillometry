@@ -53,7 +53,7 @@ class PupilPlotter:
         if not isinstance(eyes, list):
             eyes=[eyes]
         if len(eyes)==0:
-            eyes=self.obj.eyes
+            eyes=self.obj.data.get_available_eyes(variable="pupil")
         logger.debug("Plotting eyes %s"%eyes)
 
         fac=self.obj._unit_fac(units)
