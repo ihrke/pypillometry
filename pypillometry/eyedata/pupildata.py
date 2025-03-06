@@ -28,6 +28,35 @@ class PupilData(GenericEyeData):
     The class is a subclass of :class:`.GenericEyedata` and inherits all its methods.
 
     If eye-tracking data is available in addition to pupillometry, use the :class:`.EyeData` class.
+
+    Parameters
+    ----------
+    time: 
+        timing array or `None`, in which case the time-array goes from [0,maxT]
+        using `sampling_rate` (in ms)
+    left_pupil:
+        data from left eye (at least one of the eyes must be provided)
+    right_pupil:
+        data from right eye (at least one of the eyes must be provided)
+    sampling_rate: float
+        sampling-rate of the signal in Hz; if None, 
+    name: 
+        name of the dataset or `None` (in which case a random string is selected)
+    event_onsets: 
+        time-onsets of any events in the data (in ms, matched in `time` vector)
+    event_labels:
+        for each event in `event_onsets`, provide a label
+    keep_orig: bool
+        keep a copy of the original dataset? If `True`, a copy of the object
+        as initiated in the constructor is stored in member `original`
+    fill_time_discontinuities: bool
+        sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
+        when this option is True, such entries will be made and the signal set to 0 there
+        (or do it later using `fill_time_discontinuities()`)
+    inplace: bool
+        if True, the object is modified in place; if False, a new object is returned
+        this object-level property can be overwritten by the method-level `inplace` argument
+        default is "False"
     """    
     def __init__(self,
                  time: np.ndarray = None,
@@ -40,35 +69,7 @@ class PupilData(GenericEyeData):
                  fill_time_discontinuities: bool = True,
                  keep_orig: bool = False,
                  inplace: bool = False):
-        """
-        Parameters
-        ----------
-        time: 
-            timing array or `None`, in which case the time-array goes from [0,maxT]
-            using `sampling_rate` (in ms)
-        left_pupil:
-            data from left eye (at least one of the eyes must be provided)
-        right_pupil:
-            data from right eye (at least one of the eyes must be provided)
-        sampling_rate: float
-            sampling-rate of the signal in Hz; if None, 
-        name: 
-            name of the dataset or `None` (in which case a random string is selected)
-        event_onsets: 
-            time-onsets of any events in the data (in ms, matched in `time` vector)
-        event_labels:
-            for each event in `event_onsets`, provide a label
-        keep_orig: bool
-            keep a copy of the original dataset? If `True`, a copy of the object
-            as initiated in the constructor is stored in member `original`
-        fill_time_discontinuities: bool
-            sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
-            when this option is True, such entries will be made and the signal set to 0 there
-            (or do it later using `fill_time_discontinuities()`)
-        inplace: bool
-            if True, the object is modified in place; if False, a new object is returned
-            this object-level property can be overwritten by the method-level `inplace` argument
-            default is "False"
+        """Constructor for PupilData object.
         """
 
         logger.info("Creating PupilData object")
@@ -110,8 +111,15 @@ class PupilData(GenericEyeData):
         """
         Return number of detected blinks. Should be run after `detect_blinks()`.
 
+        Parameters
+        ----------
         eyes: list
             list of eyes to consider; if empty, all eyes are considered
+
+        Returns
+        -------
+        int
+            number of detected blinks
         """
         if len(eyes)==0:
             eyes=self.eyes
@@ -120,6 +128,11 @@ class PupilData(GenericEyeData):
     def summary(self):
         """
         Return a summary of the dataset as a dictionary.
+
+        Returns
+        -------
+        dict
+            dictionary containing description of dataset
         """
 
         summary=dict(
