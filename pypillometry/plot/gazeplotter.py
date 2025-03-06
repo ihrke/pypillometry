@@ -6,6 +6,8 @@ import pylab as plt
 import matplotlib.patches as patches
 from matplotlib import cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib as mpl
+from matplotlib.backends.backend_pdf import PdfPages
 
 class GazePlotter:
     """
@@ -125,6 +127,65 @@ class GazePlotter:
         
         plt.legend()
         plt.xlabel(xlab)        
+
+    def plot_timeseries_segments(self, pdffile: str=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
+        """
+        Plot the whole dataset chunked up into segments (usually to a PDF file).
+
+        Parameters
+        ----------
+
+        pdffile: str or None
+            file name to store the PDF; if None, no PDF is written 
+        interv: float
+            duration of each of the segments to be plotted (in minutes)
+        figsize: Tuple[int,int]
+            dimensions of the figures
+        kwargs: 
+            arguments passed to :func:`PupilData.pupil_plot()`
+
+        Returns
+        -------
+
+        figs: list of :class:`matplotlib.Figure` objects
+        """
+
+        # start and end in minutes
+        obj=self.obj
+        smins,emins=obj.tx.min()/1000./60., obj.tx.max()/1000./60.
+        segments=[]
+        cstart=smins
+        cend=smins
+        while cend<emins:
+            cend=min(emins, cstart+interv)
+            segments.append( (cstart,cend) )
+            cstart=cend
+
+        figs=[]
+        _backend=mpl.get_backend()
+        mpl.use("pdf")
+        plt.ioff() ## avoid showing plots when saving to PDF 
+
+        for start,end in segments:
+            plt.figure(figsize=figsize)
+            self.plot_timeseries( plot_range=(start,end), units="min", **kwargs)
+            if ylim is not None:
+                plt.ylim(*ylim)
+            figs.append(plt.gcf())
+
+
+        if isinstance(pdffile, str):
+            print("> Writing PDF file '%s'"%pdffile)
+            with PdfPages(pdffile) as pdf:
+                for fig in figs:
+                    pdf.savefig(fig)         
+
+        ## switch back to original backend and interactive mode                        
+        mpl.use(_backend) 
+        plt.ion()
+
+        return figs        
+
 
     def plot_heatmap(self, 
             plot_range: tuple=(-np.infty, +np.infty), 
