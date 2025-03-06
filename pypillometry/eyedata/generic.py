@@ -769,6 +769,9 @@ class GenericEyeData(ABC):
                     meanval += obj.data[eye,var]
                 meanval /= len(eyes)
                 obj.data["mean",var]=meanval
+                if not keep_eyes:
+                    for eye in eyes:
+                        del obj.data[eye+"_"+var]
         else:
             raise ValueError("Method %s not implemented" % method)
 

@@ -15,6 +15,7 @@ class GazePlotter:
     obj: GenericEyeData # link to the data object
 
     def __init__(self, obj: GenericEyeData):
+        self.ignore_vars = ["blinkmask", "pupilinterpolated"]
         self.obj = obj
     
     def plot_timeseries(self, 
@@ -74,6 +75,7 @@ class GazePlotter:
         # which data to plot
         if len(variables)==0:
             variables=obj.variables
+        variables = [v for v in variables if v not in self.ignore_vars]
 
         # which eyes to plot
         if len(eyes)==0:
