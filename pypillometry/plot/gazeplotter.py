@@ -19,8 +19,8 @@ class GazePlotter:
     
     def plot_timeseries(self, 
             plot_range: tuple=(-np.infty, +np.infty),
-            plot_data: list=[], 
-            plot_eyes: list=[],
+            variables: list=[], 
+            eyes: list=[],
             plot_onsets: str="line",
             units: str=None,
             figsize: tuple=(10,5)
@@ -33,10 +33,10 @@ class GazePlotter:
 
         plot_range: tuple
             The time range to plot. Default is (-np.infty, +np.infty), i.e. all data.
-        plot_data: list
+        variables: list
             The data to plot. Default is [], which means all available data will be plotted.
             Available data are ["x","y","pupil"] but can be extended by the user.
-        plot_eyes: list
+        eyes: list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             "average", "regression", ...)
         plot_onsets: str
@@ -72,12 +72,12 @@ class GazePlotter:
             endix=np.argmin(np.abs(tx-end))
         
         # which data to plot
-        if len(plot_data)==0:
-            plot_data=obj.data.get_available_variables()
+        if len(variables)==0:
+            variables=obj.variables
 
         # which eyes to plot
-        if len(plot_eyes)==0:
-            plot_eyes=obj.data.get_available_eyes()
+        if len(eyes)==0:
+            eyes=obj.eyes
 
         # how to plot onsets
         if plot_onsets=="line":
@@ -100,15 +100,15 @@ class GazePlotter:
         evlab=obj.event_labels[ixx]
         evon=evon[ixx]
 
-        nplots = len(plot_data)
+        nplots = len(variables)
         fig, axs = plt.subplots(nplots,1)
         # for the case when nplots=1, make axs iterable
         if not isinstance(axs, Iterable):
             axs=[axs]
         fig.set_figheight(figsize[1]*nplots)
         fig.set_figwidth(figsize[0])
-        for var,ax in zip(plot_data, axs):
-            for eye in plot_eyes:
+        for var,ax in zip(variables, axs):
+            for eye in eyes:
                 vname = "_".join([eye,var])
                 if vname in obj.data.keys():
                     ax.plot(tx, obj.data[vname][startix:endix], label=eye)
@@ -126,7 +126,7 @@ class GazePlotter:
 
     def plot_heatmap(self, 
             plot_range: tuple=(-np.infty, +np.infty), 
-            plot_eyes: list=[],
+            eyes: list=[],
             plot_screen: bool=True,
             units: str="sec",
             figsize: tuple=(10,10),
@@ -144,7 +144,7 @@ class GazePlotter:
 
         plot_range: tuple
             The time range to plot. Default is (-np.infty, +np.infty), i.e. all data.
-        plot_eyes: list
+        eyes: list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
         plot_screen: bool
@@ -176,23 +176,23 @@ class GazePlotter:
             endix=np.argmin(np.abs(tx-end))    
         
         # which eyes to plot
-        if len(plot_eyes)==0:
-            plot_eyes=obj.data.get_available_eyes()
-        if not isinstance(plot_eyes, list):
-            plot_eyes=[plot_eyes]
+        if len(eyes)==0:
+            eyes=obj.eyes
+        if not isinstance(eyes, list):
+            plot_eyes=[eyes]
 
         # choose gridsize
         if gridsize=="auto":
             gridsize=int(np.sqrt(endix-startix))
 
-        nplots = len(plot_eyes)
+        nplots = len(eyes)
         fig, axs = plt.subplots(1,nplots)
         # for the case when nplots=1, make axs iterable
         if not isinstance(axs, Iterable):
             axs=[axs]
         fig.set_figheight(figsize[1])
         fig.set_figwidth(figsize[0]*nplots)
-        for eye,ax in zip(plot_eyes, axs):
+        for eye,ax in zip(eyes, axs):
             vx = "_".join([eye,"x"])
             vy = "_".join([eye,"y"])
             if vx in obj.data.keys() and vy in obj.data.keys():
@@ -212,7 +212,7 @@ class GazePlotter:
 
     def plot_scanpath(self, 
             plot_range: tuple=(-np.infty, +np.infty), 
-            plot_eyes: list=[],
+            eyes: list=[],
             plot_screen: bool=True,
             plot_onsets: bool=True,
             title: str="",
@@ -233,7 +233,7 @@ class GazePlotter:
 
         plot_range: tuple
             The time range to plot. Default is (-np.infty, +np.infty), i.e. all data.
-        plot_eyes: list
+        eyes: list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
         plot_screen: bool
@@ -277,8 +277,8 @@ class GazePlotter:
         evontix=np.argmin(np.abs(tx-evon[:,np.newaxis]), axis=1).astype(int)
 
         # which eyes to plot
-        if len(plot_eyes)==0:
-            plot_eyes=obj.data.get_available_eyes()
+        if len(eyes)==0:
+            eyes=obj.eyes
 
         fig, ax = plt.subplots(1,1)
         fig.set_figheight(figsize[1])
@@ -286,14 +286,14 @@ class GazePlotter:
 
         tnorm = tx[startix:endix].copy()
         tnorm = (tnorm - tnorm.min()) / (tnorm.max() - tnorm.min())
-        for eye in plot_eyes:
+        for eye in eyes:
             vx = "_".join([eye,"x"])
             vy = "_".join([eye,"y"])
             if vx in obj.data.keys() and vy in obj.data.keys():
                 ax.plot(obj.data[vx][startix:endix], obj.data[vy][startix:endix], alpha=0.3, label=eye)
                 ax.scatter(obj.data[vx][startix:endix], obj.data[vy][startix:endix], 
                         s=1, c=cm.jet(tnorm))
-            if plot_onsets and eye==plot_eyes[0]:
+            if plot_onsets and eye==eyes[0]:
                 for ix, lab in zip(evontix, evlab):
                     ax.text(obj.data[vx][ix], obj.data[vy][ix], lab, 
                             fontsize=12, ha="center", va="center")

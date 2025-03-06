@@ -20,91 +20,6 @@ class PupilPlotter:
     def __init__(self, obj: GenericEyeData):
         self.obj = obj
     
-
-    def _plot(self, plot_range, overlays, overlay_labels, units, interactive, 
-              highlight_blinks, highlight_interpolated):
-        fac=self.obj._unit_fac(units)
-        if units=="sec":
-            xlab="seconds"
-        elif units=="min":
-            xlab="minutes"
-        elif units=="h":
-            xlab="hours"
-        else:
-            xlab="ms"
-        tx=self.tx*fac
-        evon=self.event_onsets*fac
-        
-        start,end=plot_range
-        if start==-np.infty:
-            startix=0
-        else:
-            startix=np.argmin(np.abs(tx-start))
-            
-        if end==np.infty:
-            endix=tx.size
-        else:
-            endix=np.argmin(np.abs(tx-end))
-        
-        tx=tx[startix:endix]
-        
-        ixx=np.logical_and(evon>=start, evon<end)
-        evlab=self.event_labels[ixx]
-        evon=evon[ixx]
-        overlays=(ov[startix:endix] for ov in overlays)
-        
-        if interactive:
-            blinks=np.empty((0,2), dtype=int)
-            interpolated=np.empty((0,2), dtype=int)
-            if highlight_blinks:
-                blinks=[]
-                for sblink,eblink in self.blinks:
-                    if eblink<startix or sblink>endix:
-                        continue
-                    else:
-                        sblink=max(0,sblink-startix)
-                        eblink=min(endix,eblink-startix)
-                    blinks.append([sblink,eblink])
-                blinks=np.array(blinks)
-            if highlight_interpolated:
-                a=np.diff(np.r_[0, self.interpolated_mask[startix:endix], 0])[:-1]
-                istarts=np.where(a>0)[0]
-                iends=np.where(a<0)[0]
-                interpolated=[]
-                for istart,iend in zip(istarts,iends):
-                    interpolated.append([istart,iend])
-            plot_pupil_ipy(tx, self.sy[startix:endix], evon,
-                           overlays=overlays, overlay_labels=overlay_labels,
-                           blinks=blinks, interpolated=interpolated,
-                          xlab=xlab)
-        else:
-            plt.plot(tx, self.sy[startix:endix], label="signal")
-            for i,ov in enumerate(overlays):
-                plt.plot(tx, ov, label=overlay_labels[i])
-            plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)
-            ll,ul=plt.ylim()
-            for ev,lab in zip(evon,evlab):
-                plt.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
-            if highlight_interpolated:
-                a=np.diff(np.r_[0, self.interpolated_mask[startix:endix], 0])[:-1]
-                istarts=np.where(a>0)[0]
-                iends=np.where(a<0)[0]
-                for istart,iend in zip(istarts,iends):
-                    plt.gca().axvspan(tx[istart],tx[iend],color="green", alpha=0.1)
-            if highlight_blinks:
-                for sblink,eblink in self.blinks:
-                    if eblink<startix or sblink>endix:
-                        continue
-                    else:
-                        sblink=min(tx.size-1, max(0,sblink-startix))
-                        eblink=min(endix-startix-1,eblink-startix)
-                    
-                    plt.gca().axvspan(tx[sblink],tx[eblink],color="red", alpha=0.2)
-                
-                
-            plt.legend()
-            plt.xlabel(xlab)        
-    
     def pupil_plot(self, 
                    eyes: list=[],
                    plot_range: Tuple[float,float]=(-np.infty, +np.infty),
@@ -208,6 +123,7 @@ class PupilPlotter:
 
     def pupil_plot_segments(self, overlay=None, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
         """
+        TODO
         Plot the whole dataset chunked up into segments (usually to a PDF file).
 
         Parameters
@@ -270,6 +186,7 @@ class PupilPlotter:
                     pre_blink: float=500, post_blink: float=500, units: str="ms", 
                     plot_index: bool=True):
         """
+        TODO
         Plot the detected blinks into separate figures each with nrow x ncol subplots. 
 
         Parameters
