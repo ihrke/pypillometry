@@ -7,6 +7,64 @@ Some convenience functions.
 
 
 import numpy as np
+import pandas as pd
+
+def get_example_data():
+    ## loading the raw samples from the asc file
+    from .eyedata import EyeData
+
+    from importlib.resources import files
+    fname_samples = files('pypillometry.data').joinpath('002_rlmw_samples_short.asc')
+    fname_events = files('pypillometry.data').joinpath('002_rlmw_events_short.asc')
+    df=pd.read_table(fname_samples, index_col=False,
+                    names=["time", "left_x", "left_y", "left_p",
+                            "right_x", "right_y", "right_p"])
+
+    ## Eyelink tracker puts "   ." when no data is available for x/y coordinates
+    left_x=df.left_x.values
+    left_x[left_x=="   ."] = np.nan
+    left_x = left_x.astype(float)
+
+    left_y=df.left_y.values
+    left_y[left_y=="   ."] = np.nan
+    left_y = left_y.astype(float)
+
+    right_x=df.right_x.values
+    right_x[right_x=="   ."] = np.nan
+    right_x = right_x.astype(float)
+
+    right_y=df.right_y.values
+    right_y[right_y=="   ."] = np.nan
+    right_y = right_y.astype(float)
+
+    ## Loading the events from the events file
+    # read the whole file into variable `events` (list with one entry per line)
+    with open(fname_events) as f:
+        events=f.readlines()
+
+    # keep only lines starting with "MSG"
+    events=[ev for ev in events if ev.startswith("MSG")]
+    experiment_start_index=np.where(["experiment_start" in ev for ev in events])[0][0]
+    events=events[experiment_start_index+1:]
+    df_ev=pd.DataFrame([ev.split() for ev in events])
+    df_ev=df_ev[[1,2]]
+    df_ev.columns=["time", "event"]
+
+    # Creating EyeData object that contains both X-Y coordinates
+    # and pupil data
+    d = EyeData(time=df.time, name="test short",
+                screen_resolution=(1280,1024), physical_screen_size=(33.75,27),
+                screen_eye_distance=60,
+                left_x=left_x, left_y=left_y, left_pupil=df.left_p,
+                right_x=right_x, right_y=right_y, right_pupil=df.right_p,
+                event_onsets=df_ev.time, event_labels=df_ev.event,
+                keep_orig=True)\
+                .reset_time()
+    d.set_experiment_info(screen_eye_distance=60, 
+                        screen_resolution=(1280,1024), 
+                        physical_screen_size=(30, 20))
+    return d
+    
 
 def nprange(ar):
     return (ar.min(),ar.max())

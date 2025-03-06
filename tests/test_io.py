@@ -2,11 +2,18 @@ import unittest
 import tempfile
 import os, pickle, hashlib
 import sys
-#sys.path.insert(0,"..")
-#import pypillometry as pp
-from .. import *
+import pandas as pd
+import numpy as np
+sys.path.insert(0,"..")
+import pypillometry as pp
+
+
 
 class TestIO(unittest.TestCase):
+    def test_read_asc(self):
+        d=pp.get_example_data()
+        print(d)
+
     def test_pd_read_pickle_file(self):
         d=pd_read_pickle("data/test.pd")
         self.assertEqual(d.fs, 500.0)

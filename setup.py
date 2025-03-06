@@ -28,8 +28,7 @@ setuptools.setup(
     package_dir={"pypillometry": "pypillometry"},
     package_data={
         "pypillometry": [],
-        "pypillometry.stan": ['*.stan'],
-        "pypillometry.tests": []
+        "pypillometry.data": ["*.asc"],
         },
     install_requires=requirements,
     python_requires='>=3.10',
