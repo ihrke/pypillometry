@@ -8,7 +8,9 @@ from loguru import logger
 import pylab as plt
 import matplotlib.patches as patches
 from matplotlib import cm
+import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.backends.backend_pdf import PdfPages
 
 class PupilPlotter:
     """
@@ -28,9 +30,10 @@ class PupilPlotter:
                    highlight_interpolated: bool=True,
                    units: str="sec"
             ) -> None:
-        """
-        Make a plot of the pupil data using `matplotlib` or :py:func:`pypillometry.convenience.plot_pupil_ipy()`
-        if `interactive=True`.
+        """Make a plot of the pupil data using `matplotlib`.
+
+        Has pupil-specific options which makes it different from 
+        :func:`GazePlotter.plot_timeseries()`.
 
         Parameters
         ----------
@@ -47,9 +50,12 @@ class PupilPlotter:
         highlight_interpolated: bool
             highlight interpolated data
         """
+        if not isinstance(eyes, list):
+            eyes=[eyes]
         if len(eyes)==0:
             eyes=self.obj.eyes
-        
+        logger.debug("Plotting eyes %s"%eyes)
+
         fac=self.obj._unit_fac(units)
         logger.debug("Plotting in units %s (fac=%f)"%(units, fac))
         if units=="sec":
@@ -121,9 +127,8 @@ class PupilPlotter:
         plt.xlabel(xlab)        
 
 
-    def pupil_plot_segments(self, overlay=None, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
+    def pupil_plot_segments(self, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
         """
-        TODO
         Plot the whole dataset chunked up into segments (usually to a PDF file).
 
         Parameters
@@ -136,7 +141,7 @@ class PupilPlotter:
         figsize: Tuple[int,int]
             dimensions of the figures
         kwargs: 
-            arguments passed to :func:`.PupilData.plot()`
+            arguments passed to :func:`PupilData.pupil_plot()`
 
         Returns
         -------
@@ -145,7 +150,8 @@ class PupilPlotter:
         """
 
         # start and end in minutes
-        smins,emins=self.tx.min()/1000./60., self.tx.max()/1000./60.
+        obj=self.obj
+        smins,emins=obj.tx.min()/1000./60., obj.tx.max()/1000./60.
         segments=[]
         cstart=smins
         cend=smins
@@ -161,9 +167,7 @@ class PupilPlotter:
 
         for start,end in segments:
             plt.figure(figsize=figsize)
-            self.plot( (start,end), units="min", **kwargs)
-            if overlay is not None:
-                overlay.plot( (start, end), units="min", **kwargs)  
+            self.pupil_plot( plot_range=(start,end), units="min", **kwargs)
             if ylim is not None:
                 plt.ylim(*ylim)
             figs.append(plt.gcf())
