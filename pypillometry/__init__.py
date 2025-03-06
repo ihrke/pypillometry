@@ -1,14 +1,20 @@
-"""
-Pypillometry
-============
+"""Python-package to help with processing of pupillometric and eyetracking data.
 
-This is a python-package to help with processing of pupillometric data.
+This package provides classes for handling pupillometric and eyetracking data
+as well as tools for plotting and analyzing these data.
+
+- Github: https://github.com/ihrke/pypillometry
+- Documentation: https://ihrke.github.io/pypillometry
+
 """
 
 __all__ = ["eyedata","plot","signal","convenience","io","erpd", "parameters", 
-           "logging_set_level", "logging_disable", "logging_enable"]
+           "logging_set_level", "logging_disable", "logging_enable",
+           "EyeDataDict", "EyeData", "GazeData", "PupilData", "GenericEyeData", 
+           "Parameters"]
 
 from .eyedata.eyedatadict import EyeDataDict
+from .eyedata.generic import GenericEyeData
 from .eyedata.eyedata import EyeData
 from .eyedata.gazedata import GazeData
 from .eyedata.pupildata import PupilData

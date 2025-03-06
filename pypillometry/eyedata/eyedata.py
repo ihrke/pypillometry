@@ -10,7 +10,7 @@ from collections.abc import Iterable
 
 
 
-class EyeData(GazeData):
+class EyeData(GazeData,PupilData):
     """
     Class for handling eye-tracking data. This class is a subclass of GazeData
     and inherits all its methods and attributes. In addition to the methods
@@ -54,6 +54,10 @@ class EyeData(GazeData):
     --------
     >>> import numpy as np
     >>> from pypillometry.eyedata import EyeData
+    >>> d=EyeData(time=np.arange(0, 1000, 1),
+    ...         left_x=np.random.randn(1000),
+    ...         left_y=np.random.randn(1000))
+    >>> print(d)
     """
     def __init__(self, 
                     time: np.ndarray = None,

@@ -16,6 +16,7 @@ The package is divided into separate sub-modules that solve specific subtasks (p
 
 .. toctree::
    :maxdepth: 2
+   :local:
    :caption: Contents:
 
    usage
