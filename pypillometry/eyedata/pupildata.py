@@ -11,6 +11,7 @@ from .generic import GenericEyeData, keephistory
 from ..parameters import Parameters
 #from .. import convenience
 from ..signal import baseline
+from ..signal import preproc
 #from .. import io
 from ..plot import PupilPlotter
 
@@ -181,6 +182,8 @@ class PupilData(GenericEyeData):
         if inplace is None:
             inplace=self.inplace
         obj=self if inplace else self.copy()
+        if not isinstance(eyes, list):
+            eyes=[eyes]
         if len(eyes)==0:
             eyes=obj.eyes
         for eye in eyes:
@@ -208,6 +211,9 @@ class PupilData(GenericEyeData):
         if inplace is None:
             inplace=self.inplace
         obj=self if inplace else self.copy()
+
+        if not isinstance(eyes, list):
+            eyes=[eyes]
         if len(eyes)==0:
             eyes=obj.eyes
 
@@ -216,6 +222,6 @@ class PupilData(GenericEyeData):
 
         # process requested eyes
         for eye in eyes:
-            obj.data[eye,"pupil"]=baseline.smooth_window(obj.data[eye,"pupil"], winsize_ix, window )
+            obj.data[eye,"pupil"]=preproc.smooth_window(obj.data[eye,"pupil"], winsize_ix, window )
 
         return obj

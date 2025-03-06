@@ -8,7 +8,7 @@ import numpy as np
 import scipy.optimize
 import pylab as plt
 
-from .convenience import *
+from ..convenience import *
 
 
 def smooth_window(x,window_len=11,window='hanning'):

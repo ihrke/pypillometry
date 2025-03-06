@@ -8,8 +8,7 @@ as well as tools for plotting and analyzing these data.
 
 """
 
-__all__ = ["eyedata","plot","signal","convenience","io","erpd", "parameters", 
-           "logging_set_level", "logging_disable", "logging_enable",
+__all__ = ["logging_set_level", "logging_disable", "logging_enable",
            "EyeDataDict", "EyeData", "GazeData", "PupilData", "GenericEyeData", 
            "Parameters"]
 
