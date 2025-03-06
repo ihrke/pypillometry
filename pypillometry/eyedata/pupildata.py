@@ -102,7 +102,7 @@ class PupilData(GenericEyeData):
         ## masks for blinks and interpolated segments of the data
         for eye in self.eyes:
             self.data[eye+"_blinkmask"]=np.zeros(len(self), dtype=int)
-            self.data[eye+"_interpolated"]=np.zeros(len(self), dtype=int)
+            self.data[eye+"_pupilinterpolated"]=np.zeros(len(self), dtype=int)
 
     def nblinks(self, eyes=[]) -> int:
         """
@@ -120,7 +120,7 @@ class PupilData(GenericEyeData):
         """
         if len(eyes)==0:
             eyes=self.eyes
-        return {eye:self.blinks[eye].shape[0] for eye in eyes}
+        return {eye:self.blinks[eye].shape[0] for eye in eyes if eye in self.blinks}
 
     def summary(self):
         """
@@ -146,7 +146,7 @@ class PupilData(GenericEyeData):
             duration_minutes=self.get_duration("min"),
             start_min=self.tx.min()/1000./60.,
             end_min=self.tx.max()/1000./60.,
-            ninterpolated={eye:self.data[eye+"_interpolated"].sum() for eye in self.eyes},
+            ninterpolated={eye:self.data[eye+"_interpolated"].sum() for eye in self.eyes if eye+"_interpolated" in self.data},
             params=json.dumps(self.params, indent=2),
             glimpse=repr(self.data)
         )

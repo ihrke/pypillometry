@@ -108,6 +108,7 @@ class PupilPlotter:
     def pupil_plot(self, 
                    eyes: list=[],
                    plot_range: Tuple[float,float]=(-np.infty, +np.infty),
+                   plot_events: bool=True,
                    highlight_blinks: bool=True,
                    highlight_interpolated: bool=True,
                    units: str="sec"
@@ -124,6 +125,8 @@ class PupilPlotter:
             plot from start to end (in units of `units`)
         units: str
             one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours
+        plot_events: bool
+            plot events as vertical lines with labels
         highlight_blinks: bool
             highlight detected blinks
         highlight_interpolated: bool
@@ -144,7 +147,7 @@ class PupilPlotter:
             xlab="ms"
         tx=self.obj.tx*fac
         evon=self.obj.event_onsets*fac
-        
+
         start,end=plot_range
         if start==-np.infty:
             startix=0
@@ -155,13 +158,50 @@ class PupilPlotter:
             endix=tx.size
         else:
             endix=np.argmin(np.abs(tx-end))
-        
+                
+        ixx=np.logical_and(evon>=start, evon<end)
+        evlab=self.obj.event_labels[ixx]
+        evon=evon[ixx]
+
         logger.debug("Plotting from %.2f to %.2f %s, (%i to %i)"%(start,end,units,startix,endix))
 
         tx=tx[startix:endix]
 
+        # plot timeseries
         for eye in eyes:
             plt.plot(tx, self.obj.data[eye,"pupil"][startix:endix], label=eye)
+
+        # plot grey lines for events
+        if plot_events:
+            plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)
+            ll,ul=plt.ylim()
+            for ev,lab in zip(evon,evlab):
+                plt.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
+
+        # highlight if interpolated in any of the eyes
+        if highlight_interpolated:
+            ieyes = [eye for eye in eyes if eye+"_pupilinterpolated" in self.obj.data]
+            interp = np.any([self.obj.data[eye,"pupilinterpolated"] for eye in ieyes], axis=0)
+            a=np.diff(np.r_[0, interp[startix:endix], 0])[:-1]
+            istarts=np.where(a>0)[0]
+            iends=np.where(a<0)[0]
+            for istart,iend in zip(istarts,iends):
+                plt.gca().axvspan(tx[istart],tx[iend],color="green", alpha=0.1)
+        
+        # highlight if a blink in any of the eyes
+        if highlight_blinks:
+            blinkeyes = self.obj.blinks.keys()
+            for eye in blinkeyes:
+                for sblink,eblink in self.obj.blinks[eye]:
+                    if eblink<startix or sblink>endix:
+                        continue
+                    else:
+                        sblink=min(tx.size-1, max(0,sblink-startix))
+                        eblink=min(endix-startix-1,eblink-startix)
+                    
+                    plt.gca().axvspan(tx[sblink],tx[eblink],color="red", alpha=0.2)
+
+
         plt.legend()
         plt.xlabel(xlab)        
 
