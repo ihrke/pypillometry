@@ -194,6 +194,8 @@ class PupilData(GenericEyeData):
         
         Parameters
         ----------
+        eyes: list
+            list of eyes to smooth; if empty, all available eyes are smoothed
         window: str
             (the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'); 
              flat window will produce a moving average smoothing.
@@ -203,7 +205,17 @@ class PupilData(GenericEyeData):
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                            
         """
+        if inplace is None:
+            inplace=self.inplace
+        obj=self if inplace else self.copy()
+        if len(eyes)==0:
+            eyes=obj.eyes
+
+        # convert winsize to index based on sampling rate
         winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
-        obj=self if inplace else self.copy()                            
-        obj.sy=smooth_window(self.sy, winsize_ix, window )
+
+        # process requested eyes
+        for eye in eyes:
+            obj.data[eye,"pupil"]=baseline.smooth_window(obj.data[eye,"pupil"], winsize_ix, window )
+
         return obj
