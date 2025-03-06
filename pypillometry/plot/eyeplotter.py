@@ -1,4 +1,5 @@
 from ..plot.gazeplotter import GazePlotter
+from ..plot.pupilplotter import PupilPlotter
 
-class EyePlotter(GazePlotter):
+class EyePlotter(GazePlotter,PupilPlotter):
     pass

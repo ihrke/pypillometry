@@ -103,7 +103,7 @@ class PupilPlotter:
             plt.legend()
             plt.xlabel(xlab)        
     
-    def plot(self, plot_range: Tuple[float,float]=(-np.infty, +np.infty),
+    def pupil_plot(self, plot_range: Tuple[float,float]=(-np.infty, +np.infty),
              interactive: bool=False, 
              baseline: bool=True, 
              response: bool=False,
@@ -134,18 +134,18 @@ class PupilPlotter:
 
         overlays=tuple()
         overlay_labels=tuple()
-        if baseline and self.baseline_estimated:
-            overlays+=(self.baseline,)                
+        if baseline and self.obj.baseline_estimated:
+            overlays+=(self.obj.baseline,)                
             overlay_labels+=("baseline",)
-        if response and self.response_estimated:
-            overlays+=(self.response,)
+        if response and self.obj.response_estimated:
+            overlays+=(self.obj.response,)
             overlay_labels+=("response",)             
-        if model and self.baseline_estimated and self.response_estimated:
-            overlays+=(self.baseline+self.response,)
+        if model and self.obj.baseline_estimated and self.obj.response_estimated:
+            overlays+=(self.obj.baseline+self.response,)
             overlay_labels+=("model",)
         self._plot(plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated)
 
-    def plot_segments(self, overlay=None, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
+    def pupil_plot_segments(self, overlay=None, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
         """
         Plot the whole dataset chunked up into segments (usually to a PDF file).
 
@@ -204,7 +204,7 @@ class PupilPlotter:
 
         return figs        
 
-    def plot_blinks(self, pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
+    def pupil_plot_blinks(self, pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
                     figsize: Tuple[int,int]=(10,10), 
                     pre_blink: float=500, post_blink: float=500, units: str="ms", 
                     plot_index: bool=True):

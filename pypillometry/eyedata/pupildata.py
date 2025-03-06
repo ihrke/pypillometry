@@ -95,6 +95,16 @@ class PupilData(GenericEyeData):
         self.response_params=Parameters()
         self.response_estimated=False
         
+        self._init_blinks()
+
+        # store original
+        self.original=None
+        if keep_orig: 
+            self.original=self.copy()
+
+    def _init_blinks(self):
+        """Initialize mask/interpolation arrays for the blinks
+        """        
         ## initialize blinks
         self.blinks={eye:np.empty((0,2), dtype=int) for eye in self.eyes}
         
@@ -103,11 +113,6 @@ class PupilData(GenericEyeData):
             self.data[eye+"_blinkmask"]=np.zeros(len(self), dtype=int)
             self.data[eye+"_interpolated"]=np.zeros(len(self), dtype=int)
 
-        # store original
-        self.original=None
-        if keep_orig: 
-            self.original=self.copy()
-       
     def nblinks(self, eyes=[]) -> int:
         """
         Return number of detected blinks. Should be run after `detect_blinks()`.

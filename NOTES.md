@@ -8,12 +8,21 @@ Porting all things from old `PupilData` to either `GenericEyeData` (for function
 - [x] `sub_slice()` is now in `GenericEyeData` (operates on all variables simultaneously)
 - [x] `pupil_lowpass_filter()` is now in `PupilData`
 - [x] `pupil_smooth_window()`
-- [ ] `downsample()`  - implement in `GenericEyeData`
-- [ ] `pupil_estimate_baseline()`
-- [ ] `pupil_estimate_response()`
-- [ ] `pupil_blinks_detect()` - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names
-- [ ] `pupil_blinks_merge()`
-- [ ] `pupil_blinks_interpolate()` - merge with Mahot function and make one an option for the other
+- [x] `downsample()`  - implement in `GenericEyeData`
+- [ ] blinks
+  - [ ] `pupil_blinks_detect()` - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names
+  - [ ] `pupil_blinks_merge()`
+  - [ ] `pupil_blinks_interpolate()` - merge with Mahot function and make one an option for the other
+- [ ] baseline/response estimation
+  - [ ] `pupil_estimate_baseline()`
+  - [ ] `pupil_estimate_response()`
+- [ ] statistics per events
+- [ ] plotting
+
+- PupilData gets a property `parameters` that has a single `Parameters` object  
+  - this stores all the parameters for the different methods, variables and eyes
+  - e.g., param["scale", "pupil", "left", "mean"] = 0.5
+
 
 ## Thoughts and TODO after meeting 2024-06-18
 
