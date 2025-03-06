@@ -84,16 +84,6 @@ class PupilData(GenericEyeData):
 
         ## set plotter 
         self.plot=PupilPlotter(self)
-
-        ## default parameters for scaling signal
-        self.scale_params=Parameters()
-
-        ## initialize baseline signal
-        self.baseline_estimated=False
-        
-        ## initialize response-signal
-        self.response_params=Parameters()
-        self.response_estimated=False
         
         self._init_blinks()
 
@@ -156,10 +146,7 @@ class PupilData(GenericEyeData):
             start_min=self.tx.min()/1000./60.,
             end_min=self.tx.max()/1000./60.,
             ninterpolated={eye:self.data[eye+"_interpolated"].sum() for eye in self.eyes},
-            baseline_estimated=self.baseline_estimated,
-            response_estimated=self.response_estimated,
-            scale_params=self.scale_params,
-            response_params=self.response_params,
+            parameters=self.parameters,
             glimpse=repr(self.data)
         )
         

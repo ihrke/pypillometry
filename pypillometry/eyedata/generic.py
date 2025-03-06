@@ -108,6 +108,9 @@ class GenericEyeData(ABC):
             
         self.set_event_onsets(event_onsets, event_labels)
 
+        ## empty Parameter
+        self.parameters = Parameters()
+
         ## start with empty history    
         self.history=[]            
 
@@ -540,7 +543,7 @@ class GenericEyeData(ABC):
         return intervals
 
     @keephistory
-    def scale(self, variables, mean: float=None, sd: float=None, eyes=[], inplace=None):
+    def scale(self, variables=[], mean: float=None, sd: float=None, eyes=[], inplace=None):
         """
         Scale the signal by subtracting `mean` and dividing by `sd`.
         If these variables are not provided, use the signal's mean and std.
@@ -552,7 +555,7 @@ class GenericEyeData(ABC):
         variables: str or list
             variables to scale; can be "pupil", "x","y", "baseline", "response" or any other variable
             that is available in the dataset; either a string or a list of strings;
-            available variables can be checked with `obj.variables`
+            available variables can be checked with `obj.variables`; empty list means all variables
         mean: None, float or Parameters 
             mean to subtract from signal; if `None`, use the signal's mean
             if dict, provide mean for each eye and variable configuration
@@ -603,7 +606,7 @@ class GenericEyeData(ABC):
         logger.debug("Mean: %s" % mean)
         logger.debug("SD: %s" % sd)
 
-        obj.scale_params=Parameters()
+        obj.parameters["scale"]=Parameters()
         for var in variables:
             for eye in eyes:
                 if not mean.has_key(eye,var) or not sd.has_key(eye,var):
@@ -612,8 +615,8 @@ class GenericEyeData(ABC):
                     raise ValueError("No data for eye %s available" % eye)
                 if var not in obj.variables:
                     raise ValueError("No data for variable %s available" % var)
-                obj.scale_params[var,eye,"mean"]=mean[eye,var]
-                obj.scale_params[var,eye,"sd"]=sd[eye,var]
+                obj.parameters["scale",var,eye,"mean"]=mean[eye,var]
+                obj.parameters["scale",var,eye,"sd"]=sd[eye,var]
                 obj.data[eye, var]=(obj.data[eye, var]-mean[eye,var])/sd[eye,var]
         return obj
         
@@ -661,9 +664,9 @@ class GenericEyeData(ABC):
 
         # if no parameters are provided, use the stored ones (normal)
         if mean is None:
-            mean=obj.scale_params["mean"]
+            mean=obj.parameters["scale","mean"]
         if sd is None:
-            sd=obj.scale_params["sd"]
+            sd=obj.parameters["scale","sd"]
         
         for var in variables:
             for eye in eyes:
@@ -673,8 +676,8 @@ class GenericEyeData(ABC):
                     raise ValueError("No data for eye %s available" % eye)
                 if var not in obj.variables:
                     raise ValueError("No data for variable %s available" % var)
-                del obj.scale_params[var,eye,"mean"]
-                del obj.scale_params[var,eye,"sd"]
+                del obj.parameters["scale",var,eye,"mean"]
+                del obj.parameters["scale", var,eye,"sd"]
                 obj.data[eye, var]=(obj.data[eye, var]*sd[eye,var])+mean[eye,var]
         return obj    
 
