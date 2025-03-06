@@ -2,6 +2,7 @@ from .generic import GenericEyeData, keephistory
 from .eyedatadict import EyeDataDict
 from ..plot import GazePlotter
 import numpy as np
+import json
 
 class GazeData(GenericEyeData):
     """
@@ -119,7 +120,7 @@ class GazeData(GenericEyeData):
                 duration_minutes=self.get_duration("min"),
                 start_min=self.tx.min()/1000./60.,
                 end_min=self.tx.max()/1000./60.,
-                parameters=repr(self.parameters),
+                parameters=json.dumps(self.params, indent=2),
                 glimpse=repr(self.data)
             )
             

@@ -146,7 +146,7 @@ class PupilData(GenericEyeData):
             start_min=self.tx.min()/1000./60.,
             end_min=self.tx.max()/1000./60.,
             ninterpolated={eye:self.data[eye+"_interpolated"].sum() for eye in self.eyes},
-            parameters=self.parameters,
+            params=self.params,
             glimpse=repr(self.data)
         )
         
