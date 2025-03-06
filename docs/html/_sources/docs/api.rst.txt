@@ -60,6 +60,7 @@ PupilData
 ^^^^^^^^^
 
 .. autoclass:: pypillometry.PupilData
+    :members:
 
 GazeData
 ^^^^^^^^
@@ -86,6 +87,14 @@ EyeDataDict
 ^^^^^^^^^^^
 
 .. autoclass:: pypillometry.EyeDataDict
+
+Stateless signal-processing functions
+--------------------------------------
+
+These functions are used by the main classes to process the data. They are stateless, meaning that they do not store any state between calls.
+
+.. automodule:: pypillometry.signal.baseline
+    :members:
 
 
 Logging

@@ -163,7 +163,7 @@ class PupilData(GenericEyeData):
     def pupil_lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], inplace=None):
         """
         Lowpass-filter pupil signal using a Butterworth-filter, 
-        see :py:func:`pypillometry.baseline.butter_lowpass_filter()`.
+        see :func:`baseline.butter_lowpass_filter()`.
     
         Parameters
         -----------
@@ -185,4 +185,25 @@ class PupilData(GenericEyeData):
             eyes=obj.eyes
         for eye in eyes:
             obj.data[eye,"pupil"]=baseline.butter_lowpass_filter(obj.data[eye,"pupil"], cutoff, obj.fs, order)
+        return obj
+
+    @keephistory
+    def pupil_smooth_window(self, eyes=[], window: str="hanning", winsize: float=11, inplace=None):
+        """
+        Apply smoothing of the signal using a moving window. See :func:`baseline.smooth_window()`.
+        
+        Parameters
+        ----------
+        window: str
+            (the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'); 
+             flat window will produce a moving average smoothing.
+        winsize: float
+            the length of the window in ms 
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                            
+        """
+        winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
+        obj=self if inplace else self.copy()                            
+        obj.sy=smooth_window(self.sy, winsize_ix, window )
         return obj

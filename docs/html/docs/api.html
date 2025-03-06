@@ -77,7 +77,12 @@ as well as tools for plotting and analyzing these data.</p>
 <li><p><a class="reference internal" href="#eyedatadict" id="id9">EyeDataDict</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#logging" id="id10">Logging</a></p></li>
+<li><p><a class="reference internal" href="#stateless-signal-processing-functions" id="id10">Stateless signal-processing functions</a></p>
+<ul>
+<li><p><a class="reference internal" href="#baseline-py" id="id11">baseline.py</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#logging" id="id12">Logging</a></p></li>
 </ul>
 </nav>
 <section id="overview">
@@ -178,13 +183,20 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <dd class="field-odd"><dl class="simple">
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyes</span></code></dt><dd><p>Return a list of available eyes in the dataset.</p>
 </dd>
-<dt><strong>physical_screen_height</strong></dt><dd></dd>
-<dt><strong>physical_screen_width</strong></dt><dd></dd>
-<dt><strong>screen_eye_distance</strong></dt><dd></dd>
-<dt><strong>screen_height</strong></dt><dd></dd>
-<dt><strong>screen_width</strong></dt><dd></dd>
-<dt><strong>screen_xlim</strong></dt><dd></dd>
-<dt><strong>screen_ylim</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_screen_height</span></code></dt><dd><p>Physical height of screen (cm).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_screen_width</span></code></dt><dd><p>Physical width of screen (cm).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_eye_distance</span></code></dt><dd><p>Distance from screen to eye (cm).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_height</span></code></dt><dd><p>Height of the screen (pixels).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_width</span></code></dt><dd><p>Width of the screen (pixels).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_xlim</span></code></dt><dd><p>Limits of the screen in x-direction (pixels).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_ylim</span></code></dt><dd><p>Y-limits of the screen (pixels).</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></dt><dd><p>Return a list of available variables in the dataset.</p>
 </dd>
 </dl>
@@ -214,23 +226,29 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from a pickle-file.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, padding, units])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code>([units])</p></td>
+<td><p>Return duration of the dataset in units specified.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, padding, units])</p></td>
 <td><p>Return a list of intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pupildata</span></code>([eye])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pupildata</span></code>([eye])</p></td>
 <td><p>Return the pupil data as a PupilData object.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code>([eyes])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code>([eyes])</p></td>
 <td><p>Return number of detected blinks.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
 <td><p>Return number of events in data.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
 <td><p>Pretty-print the history of the current dataset (which manipulations where done on it).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_lowpass_filter</span></code>(cutoff[, order, eyes, ...])</p></td>
-<td><p>Lowpass-filter pupil signal using a Butterworth-filter, see <code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.baseline.butter_lowpass_filter()</span></code>.</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_lowpass_filter</span></code>(cutoff[, order, eyes, ...])</p></td>
+<td><p>Lowpass-filter pupil signal using a Butterworth-filter, see <code class="xref py py-func docutils literal notranslate"><span class="pre">baseline.butter_lowpass_filter()</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_smooth_window</span></code>([eyes, window, winsize, ...])</p></td>
+<td><p>Apply smoothing of the signal using a moving window.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
 <td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
@@ -261,13 +279,6 @@ when this option is True, such entries will be made and the signal set to 0 ther
 </tr>
 </tbody>
 </table>
-<table class="docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><strong>get_duration</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 </section>
@@ -280,8 +291,28 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <p>The class is a subclass of <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> and inherits all its methods.</p>
 <p>If eye-tracking data is available in addition to pupillometry, use the <a class="reference internal" href="#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a> class.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
+using <cite>sampling_rate</cite> (in ms)</p></li>
+<li><p><strong>left_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from left eye (at least one of the eyes must be provided)</p></li>
+<li><p><strong>right_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from right eye (at least one of the eyes must be provided)</p></li>
+<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling-rate of the signal in Hz; if None,</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
+<li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
+<li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
+<li><p><strong>keep_orig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
+as initiated in the constructor is stored in member <cite>original</cite></p></li>
+<li><p><strong>fill_time_discontinuities</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
+when this option is True, such entries will be made and the signal set to 0 there
+(or do it later using <cite>fill_time_discontinuities()</cite>)</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if True, the object is modified in place; if False, a new object is returned
+this object-level property can be overwritten by the method-level <cite>inplace</cite> argument
+default is “False”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyes</span></code></dt><dd><p>Return a list of available eyes in the dataset.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></dt><dd><p>Return a list of available variables in the dataset.</p>
@@ -310,20 +341,26 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from a pickle-file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, padding, units])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code>([units])</p></td>
+<td><p>Return duration of the dataset in units specified.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, padding, units])</p></td>
 <td><p>Return a list of intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code>([eyes])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.nblinks" title="pypillometry.PupilData.nblinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code></a>([eyes])</p></td>
 <td><p>Return number of detected blinks.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
 <td><p>Return number of events in data.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
 <td><p>Pretty-print the history of the current dataset (which manipulations where done on it).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_lowpass_filter</span></code>(cutoff[, order, eyes, ...])</p></td>
-<td><p>Lowpass-filter pupil signal using a Butterworth-filter, see <code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.baseline.butter_lowpass_filter()</span></code>.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_lowpass_filter" title="pypillometry.PupilData.pupil_lowpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_lowpass_filter</span></code></a>(cutoff[, order, eyes, ...])</p></td>
+<td><p>Lowpass-filter pupil signal using a Butterworth-filter, see <code class="xref py py-func docutils literal notranslate"><span class="pre">baseline.butter_lowpass_filter()</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_smooth_window" title="pypillometry.PupilData.pupil_smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_smooth_window</span></code></a>([eyes, window, winsize, ...])</p></td>
+<td><p>Apply smoothing of the signal using a moving window.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
 <td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
@@ -340,7 +377,7 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
 <td><p>Return a new <cite>EyeData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
 <td><p>Return a summary of the dataset as a dictionary.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>(variables[, mean, sd, eyes, inplace])</p></td>
@@ -351,13 +388,76 @@ when this option is True, such entries will be made and the signal set to 0 ther
 </tr>
 </tbody>
 </table>
-<table class="docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><strong>get_duration</strong></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.PupilData.nblinks">
+<span class="sig-name descname"><span class="pre">nblinks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pypillometry/eyedata/pupildata.html#PupilData.nblinks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilData.nblinks" title="Link to this definition">¶</a></dt>
+<dd><p>Return number of detected blinks. Should be run after <cite>detect_blinks()</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of eyes to consider; if empty, all eyes are considered</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>number of detected blinks</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.PupilData.pupil_lowpass_filter">
+<span class="sig-name descname"><span class="pre">pupil_lowpass_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pypillometry/eyedata/pupildata.html#PupilData.pupil_lowpass_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilData.pupil_lowpass_filter" title="Link to this definition">¶</a></dt>
+<dd><p>Lowpass-filter pupil signal using a Butterworth-filter,
+see <code class="xref py py-func docutils literal notranslate"><span class="pre">baseline.butter_lowpass_filter()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – lowpass-filter cutoff</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – filter order</p></li>
+<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of eyes to filter; if empty, all available eyes are filtered</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes
+if <cite>None</cite>, use the object-level setting</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.PupilData.pupil_smooth_window">
+<span class="sig-name descname"><span class="pre">pupil_smooth_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hanning'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pypillometry/eyedata/pupildata.html#PupilData.pupil_smooth_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilData.pupil_smooth_window" title="Link to this definition">¶</a></dt>
+<dd><p>Apply smoothing of the signal using a moving window. See <code class="xref py py-func docutils literal notranslate"><span class="pre">baseline.smooth_window()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – <dl class="simple">
+<dt>(the type of window from ‘flat’, ‘hanning’, ‘hamming’, ‘bartlett’, ‘blackman’);</dt><dd><p>flat window will produce a moving average smoothing.</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>winsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – the length of the window in ms</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+if <cite>False</cite>, make and return copy before making changes</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.PupilData.summary">
+<span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pypillometry/eyedata/pupildata.html#PupilData.summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilData.summary" title="Link to this definition">¶</a></dt>
+<dd><p>Return a summary of the dataset as a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary containing description of dataset</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -370,17 +470,49 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <p>If you also want to store pupil-size, use the <cite>EyeData</cite> class.
 If you only want to store pupil-size, use the <cite>PupilData</cite> class.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
+using <cite>sampling_rate</cite> (in ms)</p></li>
+<li><p><strong>left_x</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from left eye (at least one of the eyes must be provided, both x and y)</p></li>
+<li><p><strong>left_y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from left eye (at least one of the eyes must be provided, both x and y)</p></li>
+<li><p><strong>right_x</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from right eye (at least one of the eyes must be provided, both x and y)</p></li>
+<li><p><strong>right_y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from right eye (at least one of the eyes must be provided, both x and y)</p></li>
+<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling-rate of the signal in Hz; if None,</p></li>
+<li><p><strong>screen_resolution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – (xmax, ymax) screen resolution in pixels</p></li>
+<li><p><strong>physical_screen_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – (width, height) of the screen in cm; if None, the screen size is not used</p></li>
+<li><p><strong>screen_eye_distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – distance from the screen to the eye in cm</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
+<li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
+<li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
+<li><p><strong>keep_orig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
+as initiated in the constructor is stored in member <cite>original</cite></p></li>
+<li><p><strong>fill_time_discontinuities</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
+when this option is True, such entries will be made and the signal set to 0 there
+(or do it later using <cite>fill_time_discontinuities()</cite>)</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if True, the object is modified in place; if False, a new object is returned
+this object-level property can be overwritten by the method-level <cite>inplace</cite> argument
+default is “False”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyes</span></code></dt><dd><p>Return a list of available eyes in the dataset.</p>
 </dd>
-<dt><strong>physical_screen_height</strong></dt><dd></dd>
-<dt><strong>physical_screen_width</strong></dt><dd></dd>
-<dt><strong>screen_eye_distance</strong></dt><dd></dd>
-<dt><strong>screen_height</strong></dt><dd></dd>
-<dt><strong>screen_width</strong></dt><dd></dd>
-<dt><strong>screen_xlim</strong></dt><dd></dd>
-<dt><strong>screen_ylim</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_screen_height</span></code></dt><dd><p>Physical height of screen (cm).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_screen_width</span></code></dt><dd><p>Physical width of screen (cm).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_eye_distance</span></code></dt><dd><p>Distance from screen to eye (cm).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_height</span></code></dt><dd><p>Height of the screen (pixels).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_width</span></code></dt><dd><p>Width of the screen (pixels).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_xlim</span></code></dt><dd><p>Limits of the screen in x-direction (pixels).</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_ylim</span></code></dt><dd><p>Y-limits of the screen (pixels).</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></dt><dd><p>Return a list of available variables in the dataset.</p>
 </dd>
 </dl>
@@ -407,48 +539,44 @@ If you only want to store pupil-size, use the <cite>PupilData</cite> class.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from a pickle-file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, padding, units])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code>([units])</p></td>
+<td><p>Return duration of the dataset in units specified.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, padding, units])</p></td>
 <td><p>Return a list of intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
 <td><p>Return number of events in data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
 <td><p>Pretty-print the history of the current dataset (which manipulations where done on it).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
 <td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>(variables[, mean, sd, eyes, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>(variables[, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale the signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
 <td><p>Set onsets of events in the data</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experiment_info</span></code>([screen_eye_distance, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experiment_info</span></code>([screen_eye_distance, ...])</p></td>
 <td><p>Set some experimental information for the dataset.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">size_bytes</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">size_bytes</span></code>()</p></td>
 <td><p>Return size of current dataset in bytes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
 <td><p>Return a new <cite>EyeData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code>()</p></td>
 <td><p>Return a summary of the dataset as a dictionary.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>(variables[, mean, sd, eyes, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>(variables[, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
 <td><p>Save to file (using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>).</p></td>
-</tr>
-</tbody>
-</table>
-<table class="docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><strong>get_duration</strong></p></td>
-<td></td>
 </tr>
 </tbody>
 </table>
@@ -501,45 +629,41 @@ implements some basic functions.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from a pickle-file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, padding, units])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code>([units])</p></td>
+<td><p>Return duration of the dataset in units specified.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, padding, units])</p></td>
 <td><p>Return a list of intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
 <td><p>Return number of events in data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
 <td><p>Pretty-print the history of the current dataset (which manipulations where done on it).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
 <td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>(variables[, mean, sd, eyes, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>(variables[, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale the signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
 <td><p>Set onsets of events in the data</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">size_bytes</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">size_bytes</span></code>()</p></td>
 <td><p>Return size of current dataset in bytes.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
 <td><p>Return a new <cite>EyeData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code>()</p></td>
 <td><p>Return a summary of the <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code>-object.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>(variables[, mean, sd, eyes, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>(variables[, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
 <td><p>Save to file (using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>).</p></td>
-</tr>
-</tbody>
-</table>
-<table class="docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><strong>get_duration</strong></p></td>
-<td></td>
 </tr>
 </tbody>
 </table>
@@ -609,8 +733,211 @@ for example “baseline” or “response” for the pupil).</p>
 
 </section>
 </section>
+<section id="stateless-signal-processing-functions">
+<h2><a class="toc-backref" href="#id10" role="doc-backlink">Stateless signal-processing functions</a><a class="headerlink" href="#stateless-signal-processing-functions" title="Link to this heading">¶</a></h2>
+<p>These functions are used by the main classes to process the data. They are stateless, meaning that they do not store any state between calls.</p>
+<section id="baseline-py">
+<span id="module-pypillometry.signal.baseline"></span><h3><a class="toc-backref" href="#id11" role="doc-backlink">baseline.py</a><a class="headerlink" href="#baseline-py" title="Link to this heading">¶</a></h3>
+<p>Functions for estimating tonic pupillary fluctuations (baseline).</p>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.signal.baseline.baseline_envelope">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.signal.baseline.</span></span><span class="sig-name descname"><span class="pre">baseline_envelope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_onsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prominence_thr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">80</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pypillometry/signal/baseline.html#baseline_envelope"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.signal.baseline.baseline_envelope" title="Link to this definition">¶</a></dt>
+<dd><p>Extract baseline based on the lower envelope of the (filtered) signal.</p>
+<p>Steps:</p>
+<ul class="simple">
+<li><p>filter away noise</p></li>
+<li><p>detect high-prominence throughs in the signal</p></li>
+<li><p>calculate lower envelope based on these peaks</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
+<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
+<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling rate in Hz</p></li>
+<li><p><strong>lp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – low-pass filter cutoff for removing random noise</p></li>
+<li><p><strong>prominence_thr</strong> (<em>float in</em><em> [</em><em>0</em><em>,</em><em>100</em><em>]</em>) – percentile of the prominence distribution (of the peaks) to
+use for determining prominent peaks (see <cite>scipy.stats.peak_prominences()</cite>)</p></li>
+<li><p><strong>interp_method</strong> (<em>string</em><em>, </em><em>one</em><em> of </em><em>[</em><em>&quot;linear&quot;</em><em>, </em><em>&quot;cubic&quot;</em><em>, </em><em>&quot;spline&quot;</em><em>]</em>) – <p>“linear” - linear interpolation between the high-prominence peaks
+“cubic”  - cubic interpolation through all high-prominence peaks
+“spline” - a smoothing spline that is guaranteed to go through all</p>
+<blockquote>
+<div><p>high-prominence peaks and smoothes through all the other
+(lower-prominence) peaks</p>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li></li>
+<li><p><strong>base</strong> (<em>np.array</em>) – baseline estimate</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.signal.baseline.baseline_envelope_iter_bspline">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.signal.baseline.</span></span><span class="sig-name descname"><span class="pre">baseline_envelope_iter_bspline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_onsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lam_sig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lam_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lam_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pypillometry/signal/baseline.html#baseline_envelope_iter_bspline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.signal.baseline.baseline_envelope_iter_bspline" title="Link to this definition">¶</a></dt>
+<dd><p>Extract baseline based (re-)estimating the lower envelope using B-splines.
+See notebook <cite>baseline_interp.ipynb</cite> for details.
+The signal is downsampled (to <cite>fsd</cite> Hz) for speed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
+<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
+<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – onsets of events (stimuli/responses) in milliseconds</p></li>
+<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling rate in Hz</p></li>
+<li><p><strong>fsd</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – downsampled sampling rate (if too slow, decrease)</p></li>
+<li><p><strong>lp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – lowpass-filter cutoff (Hz)</p></li>
+<li><p><strong>lam_sig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – parameter steering how much the baseline is shaped by the non-peaks of the signal</p></li>
+<li><p><strong>lam_min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – parameters mapping how much low- and high-prominence peaks influence the baseline</p></li>
+<li><p><strong>lam_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – parameters mapping how much low- and high-prominence peaks influence the baseline</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> [</em><em>0</em><em>, </em><em>100</em><em>]</em>) – how much information to print (0 nothing, 100 everything)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li></li>
+<li><p><strong>(txd,syd,base2,base1)</strong> (<em>tuple</em>) – txd: downsampled time-array
+syd: downsampled and lowpass-filtered pupil signal
+base1: is the estimated base after the first round
+base2: is the final baseline estimate</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.signal.baseline.baseline_pupil_model">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.signal.baseline.</span></span><span class="sig-name descname"><span class="pre">baseline_pupil_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_onsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lp1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lp2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pypillometry/signal/baseline.html#baseline_pupil_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.signal.baseline.baseline_pupil_model" title="Link to this definition">¶</a></dt>
+<dd><p>Extract baseline based on filtering after removing stim-locked activity.</p>
+<p>Steps:</p>
+<ul class="simple">
+<li><p>filter away noise</p></li>
+<li><p>regress out event-locked activity from the filtered signal using NNLS</p></li>
+<li><p>remove modeled signal from filtered data</p></li>
+<li><p>run another lowpass-filter to get rid of spurious signals</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
+<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
+<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling rate in Hz</p></li>
+<li><p><strong>lp1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – low-pass filter cutoff for removing random noise</p></li>
+<li><p><strong>lp2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – low-pass filter cutoff for removing spurious peaks from the baseline-signal</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li></li>
+<li><p><strong>base</strong> (<em>np.array</em>) – baseline estimate</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.signal.baseline.bspline">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.signal.baseline.</span></span><span class="sig-name descname"><span class="pre">bspline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_degree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pypillometry/signal/baseline.html#bspline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.signal.baseline.bspline" title="Link to this definition">¶</a></dt>
+<dd><p>Re-implementation from <a class="reference external" href="https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html">https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html</a>.
+Similar behaviour as R’s bs() function from the splines-library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>txd</strong> (<em>np.array</em>) – time-vector</p></li>
+<li><p><strong>knots</strong> (<em>np.array</em>) – location of the knots</p></li>
+<li><p><strong>spline_degree</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – degree of the spline</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li></li>
+<li><p><strong>B</strong> (<em>np.array</em>) – matrix of basis functions</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.signal.baseline.butter_lowpass">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.signal.baseline.</span></span><span class="sig-name descname"><span class="pre">butter_lowpass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pypillometry/signal/baseline.html#butter_lowpass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.signal.baseline.butter_lowpass" title="Link to this definition">¶</a></dt>
+<dd><p>Get lowpass-filter coefficients for Butterworth-filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – lowpass-filter cutoff</p></li>
+<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling rate</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – filter order</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li></li>
+<li><p><strong>(b,a)</strong> (<em>tuple (float,float)</em>) – filter coefficients</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.signal.baseline.butter_lowpass_filter">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.signal.baseline.</span></span><span class="sig-name descname"><span class="pre">butter_lowpass_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pypillometry/signal/baseline.html#butter_lowpass_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.signal.baseline.butter_lowpass_filter" title="Link to this definition">¶</a></dt>
+<dd><p>Lowpass-filter signal using a Butterworth-filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>np.array</em>) – data to lowpass-filter</p></li>
+<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – lowpass-filter cutoff</p></li>
+<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling rate</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – filter order</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li></li>
+<li><p><strong>y</strong> (<em>np.array</em>) – filtered data</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.signal.baseline.downsample">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.signal.baseline.</span></span><span class="sig-name descname"><span class="pre">downsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pypillometry/signal/baseline.html#downsample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.signal.baseline.downsample" title="Link to this definition">¶</a></dt>
+<dd><p>Simple downsampling scheme using mean within the downsampling window.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> (<em>np.array</em>) – signal to downsample</p></li>
+<li><p><strong>R</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – decimate-factor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li></li>
+<li><p><strong>y</strong> (<em>np.array</em>) – downsampled data</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="logging">
-<h2><a class="toc-backref" href="#id10" role="doc-backlink">Logging</a><a class="headerlink" href="#logging" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id12" role="doc-backlink">Logging</a><a class="headerlink" href="#logging" title="Link to this heading">¶</a></h2>
 <p>By default, the log-level is set to <cite>INFO</cite> which results in a moderate amount of logging information.
 The logging can be turned off by running <a class="reference internal" href="#pypillometry.logging_disable" title="pypillometry.logging_disable"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.logging_disable()</span></code></a> and turned back on by running <a class="reference internal" href="#pypillometry.logging_enable" title="pypillometry.logging_enable"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.logging_enable()</span></code></a>.
 You can also set the log-level to <cite>DEBUG</cite> or <cite>WARN</cite> by running <a class="reference internal" href="#pypillometry.logging_set_level" title="pypillometry.logging_set_level"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.logging_set_level()</span></code></a>.</p>
@@ -673,6 +1000,10 @@ You can also set the log-level to <cite>DEBUG</cite> or <cite>WARN</cite> by run
 <li><a class="reference internal" href="#supporting-classes">Supporting classes</a><ul>
 <li><a class="reference internal" href="#genericeyedata">GenericEyeData</a></li>
 <li><a class="reference internal" href="#eyedatadict">EyeDataDict</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#stateless-signal-processing-functions">Stateless signal-processing functions</a><ul>
+<li><a class="reference internal" href="#baseline-py">baseline.py</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#logging">Logging</a></li>
