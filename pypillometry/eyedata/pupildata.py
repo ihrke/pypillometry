@@ -81,9 +81,6 @@ class PupilData(GenericEyeData):
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
                           name, fill_time_discontinuities, inplace)
-
-        ## set plotter 
-        self.plot=PupilPlotter(self)
         
         self._init_blinks()
 
@@ -91,6 +88,10 @@ class PupilData(GenericEyeData):
         self.original=None
         if keep_orig: 
             self.original=self.copy()
+
+    @property
+    def plot(self):
+        return PupilPlotter(self)
 
     def _init_blinks(self):
         """Initialize mask/interpolation arrays for the blinks

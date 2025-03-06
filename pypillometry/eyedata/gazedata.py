@@ -81,12 +81,15 @@ class GazeData(GenericEyeData):
             self.set_experiment_info(screen_resolution=screen_resolution, 
                                     physical_screen_size=physical_screen_size,
                                     screen_eye_distance=screen_eye_distance)
-            ## set plotter 
-            self.plot=GazePlotter(self)
 
             self.original=None
             if keep_orig: 
                 self.original=self.copy()
+
+    @property
+    def plot(self):
+        return GazePlotter(self)
+
 
     def summary(self):
             """

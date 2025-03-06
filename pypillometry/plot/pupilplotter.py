@@ -3,6 +3,7 @@ import numpy as np
 from collections.abc import Iterable
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
 
+from loguru import logger
 
 import pylab as plt
 import matplotlib.patches as patches
@@ -20,8 +21,9 @@ class PupilPlotter:
         self.obj = obj
     
 
-    def _plot(self, plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated):
-        fac=self._unit_fac(units)
+    def _plot(self, plot_range, overlays, overlay_labels, units, interactive, 
+              highlight_blinks, highlight_interpolated):
+        fac=self.obj._unit_fac(units)
         if units=="sec":
             xlab="seconds"
         elif units=="min":
@@ -103,14 +105,12 @@ class PupilPlotter:
             plt.legend()
             plt.xlabel(xlab)        
     
-    def pupil_plot(self, plot_range: Tuple[float,float]=(-np.infty, +np.infty),
-             interactive: bool=False, 
-             baseline: bool=True, 
-             response: bool=False,
-             model: bool=True,
-             highlight_blinks: bool=True,
-             highlight_interpolated: bool=True,
-             units: str="sec"
+    def pupil_plot(self, 
+                   eyes: list=[],
+                   plot_range: Tuple[float,float]=(-np.infty, +np.infty),
+                   highlight_blinks: bool=True,
+                   highlight_interpolated: bool=True,
+                   units: str="sec"
             ) -> None:
         """
         Make a plot of the pupil data using `matplotlib` or :py:func:`pypillometry.convenience.plot_pupil_ipy()`
@@ -118,32 +118,53 @@ class PupilPlotter:
 
         Parameters
         ----------
+        eyes: list  
+            list of eyes to plot; if empty, all available eyes are plotted            
         plot_range: tuple (start,end)
             plot from start to end (in units of `units`)
-        baseline: bool
-            plot baseline if estimated
-        response: bool
-            plot response if estimated
-        model: bool
-            plot full model if baseline and response have been estimated
-        interactive: bool
-            if True, plot with sliders to adjust range
         units: str
             one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours
+        highlight_blinks: bool
+            highlight detected blinks
+        highlight_interpolated: bool
+            highlight interpolated data
         """
+        if len(eyes)==0:
+            eyes=self.obj.eyes
+        
+        fac=self.obj._unit_fac(units)
+        logger.debug("Plotting in units %s (fac=%f)"%(units, fac))
+        if units=="sec":
+            xlab="seconds"
+        elif units=="min":
+            xlab="minutes"
+        elif units=="h":
+            xlab="hours"
+        else:
+            xlab="ms"
+        tx=self.obj.tx*fac
+        evon=self.obj.event_onsets*fac
+        
+        start,end=plot_range
+        if start==-np.infty:
+            startix=0
+        else:
+            startix=np.argmin(np.abs(tx-start))
+            
+        if end==np.infty:
+            endix=tx.size
+        else:
+            endix=np.argmin(np.abs(tx-end))
+        
+        logger.debug("Plotting from %.2f to %.2f %s, (%i to %i)"%(start,end,units,startix,endix))
 
-        overlays=tuple()
-        overlay_labels=tuple()
-        if baseline and self.obj.baseline_estimated:
-            overlays+=(self.obj.baseline,)                
-            overlay_labels+=("baseline",)
-        if response and self.obj.response_estimated:
-            overlays+=(self.obj.response,)
-            overlay_labels+=("response",)             
-        if model and self.obj.baseline_estimated and self.obj.response_estimated:
-            overlays+=(self.obj.baseline+self.response,)
-            overlay_labels+=("model",)
-        self._plot(plot_range, overlays, overlay_labels, units, interactive, highlight_blinks, highlight_interpolated)
+        tx=tx[startix:endix]
+
+        for eye in eyes:
+            plt.plot(tx, self.obj.data[eye,"pupil"][startix:endix], label=eye)
+        plt.legend()
+        plt.xlabel(xlab)        
+
 
     def pupil_plot_segments(self, overlay=None, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
         """
