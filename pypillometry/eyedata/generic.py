@@ -7,7 +7,6 @@ All other eyedata classes should inherit from this class.
 """
 
 from .. import io
-from ..parameters import Parameters
 from ..convenience import sizeof_fmt
 from .eyedatadict import EyeDataDict
 from ..signal import baseline
@@ -732,3 +731,45 @@ class GenericEyeData(ABC):
         obj.fs=fsd
         return obj
 
+    @keephistory
+    def merge_eyes(self, eyes=[], variables=[], method="mean", keep_eyes=True, inplace=None):
+        """Merge data from both eyes into a single variable.
+
+        Parameters
+        ----------
+        eyes : list, optional
+            list of eyes to merge, by default [] meaning all eyes
+        variables : list, optional
+            list of variables to merge, by default [] meaning all variables
+        method : str, optional
+            which method to use for merging (one of "mean", "regress"), by default "mean"
+        keep_eyes : bool, optional
+            keep original eye data or drop?, by default True
+        inplace : make change inplace, optional
+            if None, use default value in class, by default None
+        """        
+        if inplace is None:
+            inplace=self.inplace
+        obj=self if inplace else self.copy()
+
+        if len(eyes)==0:
+            eyes=obj.eyes
+
+        if len(variables)==0:
+            variables=obj.variables
+
+        if method=="mean":            
+            for var in variables:
+                meanval = np.zeros(len(obj.tx))
+                for eye in eyes:
+                    if var not in obj.variables:
+                        raise ValueError("No data for variable %s available" % var)
+                    if eye not in obj.eyes:
+                        raise ValueError("No data for eye %s available" % eye)
+                    meanval += obj.data[eye,var]
+                meanval /= len(eyes)
+                obj.data["mean",var]=meanval
+        else:
+            raise ValueError("Method %s not implemented" % method)
+
+        return obj

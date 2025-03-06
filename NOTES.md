@@ -3,12 +3,13 @@
 Porting all things from old `PupilData` to either `GenericEyeData` (for functions that operate on all variables) or `PupilData` for pupil-specific functions.
 
 - [x] `scale()` and `unscale()` are now in `GenericEyeData` and can be called on any variable
-   - they use new `Parameters` class to store separate scaling parameters for each variable/eye
+   - they use dicts to store separate scaling parameters for each variable/eye
 - [x] `get_intervals()` is now in `GenericEyeData` (only depends on events)
 - [x] `sub_slice()` is now in `GenericEyeData` (operates on all variables simultaneously)
 - [x] `pupil_lowpass_filter()` is now in `PupilData`
 - [x] `pupil_smooth_window()`
 - [x] `downsample()`  - implement in `GenericEyeData`
+- [ ] `merge_eyes()` - implement in `GenericEyeData` to combine left/right eyes into a single variable
 - [ ] blinks
   - [ ] `pupil_blinks_detect()` - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names
   - [ ] `pupil_blinks_merge()`

@@ -8,7 +8,6 @@ Class representing pupillometric data.
 import itertools
 from .eyedatadict import EyeDataDict
 from .generic import GenericEyeData, keephistory
-from ..parameters import Parameters
 #from .. import convenience
 from ..signal import baseline
 from ..signal import preproc
@@ -16,6 +15,7 @@ from ..signal import preproc
 from ..plot import PupilPlotter
 
 
+import json
 from loguru import logger
 import numpy as np
 from scipy.interpolate import interp1d
@@ -146,7 +146,7 @@ class PupilData(GenericEyeData):
             start_min=self.tx.min()/1000./60.,
             end_min=self.tx.max()/1000./60.,
             ninterpolated={eye:self.data[eye+"_interpolated"].sum() for eye in self.eyes},
-            params=self.params,
+            params=json.dumps(self.params, indent=2),
             glimpse=repr(self.data)
         )
         
