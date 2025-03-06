@@ -10,6 +10,7 @@ from .. import io
 from ..parameters import Parameters
 from ..convenience import sizeof_fmt
 from .eyedatadict import EyeDataDict
+from ..signal import baseline
 
 import numpy as np
 import itertools
@@ -676,3 +677,48 @@ class GenericEyeData(ABC):
                 del obj.scale_params[var,eye,"sd"]
                 obj.data[eye, var]=(obj.data[eye, var]*sd[eye,var])+mean[eye,var]
         return obj    
+
+    
+    @keephistory
+    def downsample(self, fsd: float, dsfac: bool=False, inplace=None):
+        """
+        Simple downsampling scheme using mean within the downsampling window.
+
+        All data fields are downsampled simultaneously.
+        See :func:`baseline.downsample()`.
+
+        Parameters
+        -----------
+
+        fsd: 
+            new sampling-rate or decimate-factor
+        dsfac:
+            if False, `fsd` is the new sampling rate;
+            if True, `fsd` is the decimate factor
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                        
+        """
+        if inplace is None:
+            inplace=self.inplace
+        obj=self if inplace else self.copy()
+
+        if dsfac:
+            dsfac=fsd
+            fsd=float(obj.fs/dsfac)
+        else:
+            dsfac=int(obj.fs/fsd) # calculate downsampling factor
+            
+        # downsample all of the variables/eyes in the data
+        ndata={}
+        for k,v in obj.data.items():
+            ndata[k]=baseline.downsample(v, dsfac)
+        obj.data=EyeDataDict(ndata)
+
+        # also downsample the time-vector
+        obj.tx=baseline.downsample(obj.tx, dsfac)
+
+        # set new sampling rate            
+        obj.fs=fsd
+        return obj
+

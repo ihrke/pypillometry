@@ -7,7 +7,7 @@ Porting all things from old `PupilData` to either `GenericEyeData` (for function
 - [x] `get_intervals()` is now in `GenericEyeData` (only depends on events)
 - [x] `sub_slice()` is now in `GenericEyeData` (operates on all variables simultaneously)
 - [x] `pupil_lowpass_filter()` is now in `PupilData`
-- [ ] `pupil_smooth_window()`
+- [x] `pupil_smooth_window()`
 - [ ] `downsample()`  - implement in `GenericEyeData`
 - [ ] `pupil_estimate_baseline()`
 - [ ] `pupil_estimate_response()`
