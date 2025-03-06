@@ -202,29 +202,6 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
     interact(draw_plot, plotxrange=wid_range)
     
 
-def helper_merge_blinks(b1,b2):
-    if b1.size==0:
-        return b2
-    elif b2.size==0:
-        return b1
-    on=np.sort(np.concatenate( (b1[:,0], b2[:,0]) ))
-    off=np.sort(np.concatenate( (b1[:,1], b2[:,1]) ))
-    b=np.vstack((on,off)).T
-
-    newb=[]
-    on,off=b[0,:]
-    for i in range(1,b.shape[0]):
-        if b[i,0]<=off:
-            # absorb onset from next 
-            off=max(off,b[i,1])
-        else:
-            newb.append([on,off])
-            on,off=b[i,:]
-    off=b[-1,1]
-    newb.append([on,off])
-    return np.array(newb)
-
-
 def sizeof_fmt(num, suffix='B'):
     """
     Convert number of bytes in `num` into human-readable string representation.

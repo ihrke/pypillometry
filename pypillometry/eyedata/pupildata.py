@@ -93,14 +93,18 @@ class PupilData(GenericEyeData):
     def plot(self):
         return PupilPlotter(self)
 
-    def _init_blinks(self):
+    def _init_blinks(self, eyes=[]):
         """Initialize mask/interpolation arrays for the blinks
         """        
+        if not isinstance(eyes, list):
+            eyes=[eyes]
+        if len(eyes)==0:
+            eyes=self.eyes
         ## initialize blinks
-        self.blinks={eye:np.empty((0,2), dtype=int) for eye in self.eyes}
+        self.blinks={eye:np.empty((0,2), dtype=int) for eye in eyes}
         
         ## masks for blinks and interpolated segments of the data
-        for eye in self.eyes:
+        for eye in eyes:
             self.data[eye+"_blinkmask"]=np.zeros(len(self), dtype=int)
             self.data[eye+"_pupilinterpolated"]=np.zeros(len(self), dtype=int)
 
@@ -218,3 +222,100 @@ class PupilData(GenericEyeData):
             obj.data[eye,"pupil"]=preproc.smooth_window(obj.data[eye,"pupil"], winsize_ix, window )
 
         return obj
+
+
+    @keephistory
+    def pupil_blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
+                      winsize: float=11, vel_onset: float=-5, vel_offset: float=5, 
+                      min_onset_len: int=5, min_offset_len: int=5,
+                      strategies: list=["zero","velocity"],
+                      units="ms", inplace=None):
+        """
+        Detect blinks in the pupillary signal using several strategies.
+        First, blinks are detected as consecutive sequence of `blink_val` 
+        (f.eks., 0 or NaN). Second, blinks are defined as everything between
+        two crossings of the velocity profile (from negative to positive).
+        
+        Detected blinks are put into member `blinks` (matrix 2 x nblinks where start and end
+        are stored as indexes) and member `blink_mask` which codes for each sampling point
+        whether there is a blink (1) or not (0).
+
+        Finally, detected blinks have to be at least `min_duration` duration (in `units`).
+        
+        Parameters
+        ----------
+        eyes: list
+            list of eyes to process; if empty, all available eyes are processed
+        min_duration: float
+            minimum duration for a sequence of missing numbers to be treated as blink
+        blink_val: float
+            "missing value" code
+        winsize:
+            window-size for smoothing for velocity profile (in units)
+        vel_onset:
+            negative velocity that needs to be crossed; arbitrary units that depend on
+            sampling rate etc
+        vel_offset:
+            positive velocity that needs to be exceeded; arbitrary units that depend on
+            sampling rate etc
+        min_onset_len: int
+            minimum number of consecutive samples that crossed threshold in the velocity
+            profile to detect as onset (to avoid noise-induced changes)
+        min_offset_len: int
+            minimum number of consecutive samples that crossed threshold in the velocity
+            profile to detect as offset (to avoid noise-induced changes)            
+        strategies: list of strategies to use
+            so far, use a list containing any combination of "zero" and "velocity"
+        units: str
+            one of "ms", "sec", "min", "h"
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                                    
+        """
+        if inplace is None:
+            inplace=self.inplace
+        obj=self if inplace else self.copy()
+
+        if not isinstance(eyes, list):
+            eyes=[eyes]
+        if len(eyes)==0:
+            eyes=self.eyes
+
+        fac=self._unit_fac(units)
+        winsize_ms=winsize*fac
+        winsize_ix=int(winsize_ms/1000.*self.fs)
+        if winsize_ix % 2==0:
+            winsize += 1
+        min_duration_ms=min_duration*fac
+        min_duration_ix=int(min_duration_ms/1000.*self.fs)        
+
+        
+        # check for unknown strategies
+        for strat in strategies:
+            if strat not in ["zero", "velocity"]:
+                logger.warning("Strategy '%s' unknown"%strat)
+        
+        self._init_blinks(eyes=eyes)
+
+        for eye in eyes:
+            ## detect blinks with the different strategies
+            if "velocity" in strategies:
+                blinks_vel=preproc.detect_blinks_velocity(self.data[eye,"pupil"], winsize_ix, vel_onset, vel_offset, min_onset_len, min_offset_len)
+            else: 
+                blinks_vel=np.array([])
+                
+            if "zero" in strategies:
+                blinks_zero=preproc.detect_blinks_zero(self.data[eye,"pupil"], 1, blink_val)
+            else:
+                blinks_zero=np.array([])
+
+            ## merge the two blinks
+            blinks=preproc.helper_merge_blinks(blinks_vel, blinks_zero)
+            obj.blinks[eye]=np.array([[on,off] for (on,off) in blinks if off-on>=min_duration_ix])
+            
+            obj.data[eye,"blinkmask"]=np.zeros(self.tx.size, dtype=int)
+            
+            for start,end in obj.blinks[eye]:
+                obj.data[eye,"blinkmask"][start:end]=1
+        return obj    
+    

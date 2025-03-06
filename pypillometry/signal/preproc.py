@@ -57,6 +57,29 @@ def smooth_window(x,window_len=11,window='hanning'):
     y=np.convolve(w/w.sum(),s,mode='same')
     return y[(window_len-1):(-window_len+1)]
 
+def helper_merge_blinks(b1,b2):
+    if b1.size==0:
+        return b2
+    elif b2.size==0:
+        return b1
+    on=np.sort(np.concatenate( (b1[:,0], b2[:,0]) ))
+    off=np.sort(np.concatenate( (b1[:,1], b2[:,1]) ))
+    b=np.vstack((on,off)).T
+
+    newb=[]
+    on,off=b[0,:]
+    for i in range(1,b.shape[0]):
+        if b[i,0]<=off:
+            # absorb onset from next 
+            off=max(off,b[i,1])
+        else:
+            newb.append([on,off])
+            on,off=b[i,:]
+    off=b[-1,1]
+    newb.append([on,off])
+    return np.array(newb)
+
+
 
 def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_len=5, min_offset_len=5):
     """
