@@ -153,6 +153,18 @@ class GenericEyeData(ABC):
         return self.data.get_available_variables()
 
     def get_duration(self, units="min"):
+        """Return duration of the dataset in units specified.
+
+        Parameters
+        ----------
+        units : str, optional
+            unit one of "min", "sec", "h", by default "min"
+
+        Returns
+        -------
+        float
+            duration of dataset in specified units
+        """        
         fac=self._unit_fac(units)
         return (len(self)/self.fs*1000)*fac
 
@@ -180,12 +192,12 @@ class GenericEyeData(ABC):
         
         Parameters
         ----------
-        obj: :class:`pypillometry.eyedata.GenericEyedata`
-            object of class :class:`pypillometry.eyedata.GenericEyedata` to which the operations are to be transferred
+        obj: :class:`GenericEyedata`
+            object of class :class:`GenericEyedata` to which the operations are to be transferred
             
         Returns
         -------
-        copy of the :class:`.GenericEyedata`-object to which the operations in `self` were applied
+        copy of the :class:`GenericEyedata`-object to which the operations in `self` were applied
         """
         for ev in self.history:
             obj=getattr(obj, ev["funcname"])(*ev["args"], **ev["kwargs"])

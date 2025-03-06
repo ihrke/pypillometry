@@ -9,6 +9,41 @@ class GazeData(GenericEyeData):
 
     If you also want to store pupil-size, use the `EyeData` class.
     If you only want to store pupil-size, use the `PupilData` class.
+
+    Parameters
+    ----------
+    time: 
+        timing array or `None`, in which case the time-array goes from [0,maxT]
+        using `sampling_rate` (in ms)
+    left_x, left_y:
+        data from left eye (at least one of the eyes must be provided, both x and y)
+    right_x, right_y:
+        data from right eye (at least one of the eyes must be provided, both x and y)
+    sampling_rate: float
+        sampling-rate of the signal in Hz; if None, 
+    screen_resolution: tuple
+        (xmax, ymax) screen resolution in pixels
+    physical_screen_size: tuple
+        (width, height) of the screen in cm; if None, the screen size is not used
+    screen_eye_distance: float
+        distance from the screen to the eye in cm
+    name: 
+        name of the dataset or `None` (in which case a random string is selected)
+    event_onsets: 
+        time-onsets of any events in the data (in ms, matched in `time` vector)
+    event_labels:
+        for each event in `event_onsets`, provide a label
+    keep_orig: bool
+        keep a copy of the original dataset? If `True`, a copy of the object
+        as initiated in the constructor is stored in member `original`
+    fill_time_discontinuities: bool
+        sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
+        when this option is True, such entries will be made and the signal set to 0 there
+        (or do it later using `fill_time_discontinuities()`)
+    inplace: bool
+        if True, the object is modified in place; if False, a new object is returned
+        this object-level property can be overwritten by the method-level `inplace` argument
+        default is "False"
     """
     def __init__(self, 
                     time: np.ndarray = None,
@@ -26,41 +61,7 @@ class GazeData(GenericEyeData):
                     fill_time_discontinuities: bool = True,
                     keep_orig: bool = False,
                     inplace: bool = False):
-            """
-            Parameters
-            ----------
-            time: 
-                timing array or `None`, in which case the time-array goes from [0,maxT]
-                using `sampling_rate` (in ms)
-            left_x, left_y:
-                data from left eye (at least one of the eyes must be provided, both x and y)
-            right_x, right_y:
-                data from right eye (at least one of the eyes must be provided, both x and y)
-            sampling_rate: float
-                sampling-rate of the signal in Hz; if None, 
-            screen_resolution: tuple
-                (xmax, ymax) screen resolution in pixels
-            physical_screen_size: tuple
-                (width, height) of the screen in cm; if None, the screen size is not used
-            screen_eye_distance: float
-                distance from the screen to the eye in cm
-            name: 
-                name of the dataset or `None` (in which case a random string is selected)
-            event_onsets: 
-                time-onsets of any events in the data (in ms, matched in `time` vector)
-            event_labels:
-                for each event in `event_onsets`, provide a label
-            keep_orig: bool
-                keep a copy of the original dataset? If `True`, a copy of the object
-                as initiated in the constructor is stored in member `original`
-            fill_time_discontinuities: bool
-                sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
-                when this option is True, such entries will be made and the signal set to 0 there
-                (or do it later using `fill_time_discontinuities()`)
-            inplace: bool
-                if True, the object is modified in place; if False, a new object is returned
-                this object-level property can be overwritten by the method-level `inplace` argument
-                default is "False"
+            """Constructor
             """
             if (left_x is None or left_y is None) and (right_x is None or right_y is None):
                 raise ValueError("At least one of the eye-traces must be provided (both x and y)")
@@ -89,6 +90,11 @@ class GazeData(GenericEyeData):
     def summary(self):
             """
             Return a summary of the dataset as a dictionary.
+
+            Returns
+            -------
+            dict
+                dictionary containing description of dataset
             """
             if self._screen_size_set:
                 screen_limits=(self.screen_xlim, self.screen_ylim)
@@ -147,12 +153,26 @@ class GazeData(GenericEyeData):
 
     @property
     def screen_xlim(self):
+        """Limits of the screen in x-direction (pixels).
+
+        Returns
+        -------
+        tuple
+            xmin,xmax of the screen
+        """        
         if not self._screen_size_set:
             raise ValueError("Screen size not set! Use `set_experiment_info()` to set it.")
         return self._screen_xlim
 
     @screen_xlim.setter
     def screen_xlim(self, value):
+        """Set x limits of the screen (pixels).
+
+        Parameters
+        ----------
+        value : tuple (xmin, xmax)
+            new limits of the screen
+        """        
         if not isinstance(value, tuple):
             raise ValueError("Screen limits must be a tuple (xmin, xmax)")
         self._screen_xlim=value
@@ -160,12 +180,26 @@ class GazeData(GenericEyeData):
     
     @property
     def screen_ylim(self):
+        """Y-limits of the screen (pixels).
+
+        Returns
+        -------
+        typle
+            ymin,ymax of the screen
+        """        
         if not self._screen_size_set:
             raise ValueError("Screen size not set! Use `set_experiment_info()` to set it.")
         return self._screen_ylim
     
     @screen_ylim.setter
     def screen_ylim(self, value):
+        """Set y-limits of the screen (pixels).
+
+        Parameters
+        ----------
+        value : tuple (ymin,ymax)
+            new y-limits of the screen
+        """        
         if not isinstance(value, tuple):
             raise ValueError("Screen limits must be a tuple (ymin, ymax)")
         self._screen_ylim=value
@@ -174,26 +208,61 @@ class GazeData(GenericEyeData):
 
     @property
     def screen_width(self):
+        """Width of the screen (pixels).
+
+        Returns
+        -------
+        float
+            xmax-xmin
+        """        
         return self.screen_xlim[1]-self.screen_xlim[0]
 
     @property
     def screen_height(self):
+        """Height of the screen (pixels).
+
+        Returns
+        -------
+        float
+            ymax-ymin
+        """        
         return self.screen_ylim[1]-self.screen_ylim[0]
     
     @property
     def physical_screen_width(self):
+        """Physical width of screen (cm).
+
+        Returns
+        -------
+        float
+            width of screen in cm
+        """        
         if not self._physical_screen_dims_set:
             raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
         return self.physical_screen_dims[0]
 
     @property
     def physical_screen_height(self):
+        """Physical height of screen (cm).
+
+        Returns
+        -------
+        float
+            height of screen in cm
+        """
         if not self._physical_screen_dims_set:
             raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
         return self.physical_screen_dims[1]
 
     @property
     def screen_eye_distance(self):
+        """Distance from screen to eye (cm).
+
+        Returns
+        -------
+        float
+            distance from screen to eye in cm
+        """
         if not self._screen_eye_distance_set:
             raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
         return self._screen_eye_distance

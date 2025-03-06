@@ -1,3 +1,14 @@
+## Status of implementation 2025-03-06
+
+Porting all things from old `PupilData` to either `GenericEyeData` (for functions that operate on all variables) or `PupilData` for pupil-specific functions.
+
+- [x] `scale()` and `unscale()` are now in `GenericEyeData` and can be called on any variable
+   - they use new `Parameters` class to store separate scaling parameters for each variable/eye
+- [x] `get_intervals()` is now in `GenericEyeData` (only depends on events)
+- [x] `sub_slice()` is now in `GenericEyeData` (operates on all variables simultaneously)
+- [x] `pupil_lowpass_filter()` is now in `PupilData`
+
+
 ## Thoughts and TODO after meeting 2024-06-18
 
 - multiple inheritance scheme:
