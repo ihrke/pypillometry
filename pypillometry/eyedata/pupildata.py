@@ -81,8 +81,6 @@ class PupilData(GenericEyeData):
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
                           name, fill_time_discontinuities, inplace)
-        
-        self._init_blinks()
 
         # store original
         self.original=None
@@ -93,103 +91,6 @@ class PupilData(GenericEyeData):
     def plot(self):
         return PupilPlotter(self)
 
-
-    @property
-    def blinks(self):
-        """Return blinks (intervals) for all eyes.
-
-        Returns
-        -------
-        dict
-            dictionary with blinks for each eye
-        """
-        return self._blinks
-    
-    @blinks.setter
-    def blinks(self, value):
-        """Set blinks for all eyes.
-
-        Updates the blinkmask arrays in the data.
-
-        Parameters
-        ----------
-        value: dict
-            dictionary with blinks for each eye
-        """
-        logger.debug("Setting blinks and updating blinkmask")
-        self._blinks=value
-        for eye in value.keys():
-            self.data[eye+"_blinkmask"]=np.zeros(len(self), dtype=int)
-            for start,end in value[eye]:
-                self.data[eye+"_blinkmask"][start:end]=1
-
-
-    def set_blinks(self, eyes, blinks):
-        """
-        Set blinks for the given eyes.
-
-        Parameters
-        ----------
-        eye: list or str
-            list of eyes to set blinks for (or a single eye)
-        blinks: dict of ndarrays or ndarray or None
-            ndarrays of blinks (nblinks x 2); if None, the eye is deleted from the blinks
-        """
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=self.eyes
-
-        if isinstance(blinks, np.ndarray) or blinks is None:
-            blinks={eye:blinks for eye in eyes}           
-        elif not isinstance(blinks, dict):
-            raise ValueError("Blinks must be a dictionary or a numpy.ndarray")
-        bl = self.blinks
-
-        for eye in eyes:
-            if blinks[eye] is not None:
-                bl[eye]=blinks[eye]
-            else:
-                del bl[eye]
-        
-        self.blinks=bl
-
-
-
-    def _init_blinks(self, eyes=[]):
-        """Initialize mask/interpolation arrays for the blinks
-        """        
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=self.eyes
-        ## initialize blinks
-        self.blinks={eye:np.empty((0,2), dtype=int) for eye in eyes}
-        
-        ## masks for blinks and interpolated segments of the data
-        for eye in eyes:
-            self.data[eye+"_blinkmask"]=np.zeros(len(self), dtype=int)
-            self.data[eye+"_pupilinterpolated"]=np.zeros(len(self), dtype=int)
-
-    def nblinks(self, eyes=[]) -> int:
-        """
-        Return number of detected blinks. Should be run after `detect_blinks()`.
-
-        Parameters
-        ----------
-        eyes: list
-            list of eyes to consider; if empty, all eyes are considered
-
-        Returns
-        -------
-        int
-            number of detected blinks
-        """
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=self.eyes
-        return {eye:self.blinks[eye].shape[0] for eye in eyes if eye in self.blinks}
 
     def summary(self):
         """
@@ -360,8 +261,6 @@ class PupilData(GenericEyeData):
             if strat not in ["zero", "velocity"]:
                 logger.warning("Strategy '%s' unknown"%strat)
         
-        self._init_blinks(eyes=eyes)
-
         for eye in eyes:
             ## detect blinks with the different strategies
             if "velocity" in strategies:
@@ -376,54 +275,8 @@ class PupilData(GenericEyeData):
 
             ## merge the two blinks
             blinks=preproc.helper_merge_blinks(blinks_vel, blinks_zero)
-            obj.set_blinks(eye, np.array([[on,off] for (on,off) in blinks if off-on>=min_duration_ix]))
+            obj.set_blinks(eye, "pupil", np.array([[on,off] for (on,off) in blinks if off-on>=min_duration_ix]))
             
         return obj    
     
-    @keephistory
-    def blinks_merge(self, eyes=[], distance: float=100, inplace=None):
-        """
-        Merge together blinks that are close together. 
-        Some subjects blink repeatedly and standard detection/interpolation can result in weird results.
-        This function simply treats repeated blinks as one long blink.
-
-        Parameters
-        ----------
-
-        distance: float
-            merge together blinks that are closer together than `distance` in ms
-        inplace: bool
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes                                                    
-        """
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
-
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.blinks.keys()
-
-        distance_ix=distance/self.fs*1000.
-
-        for eye in eyes:
-            newblinks=[] 
-            i=1
-            cblink=self.blinks[eye][0,:] ## start with first blink
-            while(i<self.nblinks()[eye]):
-                if (self.blinks[eye][i,0]-cblink[1])<=distance_ix:
-                    # merge
-                    cblink[1]=self.blinks[eye][i,1]
-                else:
-                    newblinks.append(cblink)
-                    cblink=self.blinks[eye][i,:]
-                i+=1            
-            newblinks.append(cblink)
-            newblinks=np.array(newblinks)       
-
-            obj.set_blinks(eye,newblinks)
-
-
-        return obj    
     

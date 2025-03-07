@@ -27,7 +27,7 @@ class PupilPlotter:
                    plot_range: Tuple[float,float]=(-np.infty, +np.infty),
                    plot_events: bool=True,
                    highlight_blinks: bool=True,
-                   highlight_interpolated: bool=True,
+                   highlight_interpolated: bool=False,
                    units: str="sec"
             ) -> None:
         """Make a plot of the pupil data using `matplotlib`.
@@ -111,16 +111,15 @@ class PupilPlotter:
         
         # highlight if a blink in any of the eyes
         if highlight_blinks:
-            blinkeyes = self.obj.blinks.keys()
-            for eye in blinkeyes:
-                for sblink,eblink in self.obj.blinks[eye]:
-                    if eblink<startix or sblink>endix:
-                        continue
-                    else:
-                        sblink=min(tx.size-1, max(0,sblink-startix))
-                        eblink=min(endix-startix-1,eblink-startix)
-                    
-                    plt.gca().axvspan(tx[sblink],tx[eblink],color="red", alpha=0.2)
+            blinks = self.obj.get_blinks_merged(eyes, "pupil")
+            for sblink,eblink in blinks:
+                if eblink<startix or sblink>endix:
+                    continue
+                else:
+                    sblink=min(tx.size-1, max(0,sblink-startix))
+                    eblink=min(endix-startix-1,eblink-startix)
+                
+                plt.gca().axvspan(tx[sblink],tx[eblink],color="red", alpha=0.2)
 
 
         plt.legend()

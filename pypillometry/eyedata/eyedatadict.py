@@ -19,6 +19,7 @@ class EyeDataDict(MutableMapping):
 
     def __init__(self, *args, **kwargs):
         self.data = dict()
+        self.mask = dict() # mask for missing/artifactual values
         self.length=0
         self.update(dict(*args, **kwargs))  # use the free update to set keys
 
@@ -78,15 +79,18 @@ class EyeDataDict(MutableMapping):
         if isinstance(key, tuple):
             key="_".join(key)
         self.data[key] = value.astype(float)
+        self.mask[key] = np.zeros(self.length, dtype=int)
 
     def __delitem__(self, key):
         del self.data[key]
+        del self.mask[key]
 
     def __iter__(self):
         return iter(self.data)
     
     def __len__(self):
         return self.length
+    
     def __repr__(self) -> str:
         r="EyeDataDict(vars=%i,n=%i): \n"%(len(self.data), self.length)
         for k,v in self.data.items():

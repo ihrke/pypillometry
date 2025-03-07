@@ -107,7 +107,9 @@ class GenericEyeData(ABC):
             
         self.set_event_onsets(event_onsets, event_labels)
 
-        ## empty Parameter
+        self._init_blinks()
+
+        ## empty parameter dict
         self.params = dict()
 
         ## start with empty history    
@@ -139,6 +141,145 @@ class GenericEyeData(ABC):
     def nevents(self) -> int:
         """Return number of events in data."""
         return self.event_onsets.size
+
+
+    @property
+    def blinks(self):
+        """Return blinks (intervals) for all eyes.
+
+        Returns
+        -------
+        dict
+            dictionary with blinks for each eye
+        """
+        return self._blinks
+    
+    def set_blinks(self, eye:str, variable:str, blinks):
+        """
+        Set blinks for a given eye and variable.
+
+        Parameters
+        ----------
+        eye: str
+            a single eye to set the blinks for
+        variable: str
+            a single variable to set the blinks for
+        blinks: ndarray or None
+            ndarrays of blinks (nblinks x 2); 
+        """
+        if not ( isinstance(blinks, np.ndarray) or blinks is None ):
+            raise ValueError("Blinks must be a numpy.ndarray or None")
+        
+        self._blinks[eye+"_"+variable]=blinks
+        # update mask in EyeDataDict
+        if blinks is None:
+            self.data.mask[eye+"_"+variable]=np.zeros(len(self), dtype=int)
+        else:
+            for bstart,bend in blinks:
+                self.data.mask[eye+"_"+variable][bstart:bend]=1
+
+    def get_blinks(self, eye:str, variable:str):
+        """Get blinks for a given eye and variable.
+
+        Parameters
+        ----------
+        eye : str
+            a single eye to get blinks for
+        variable : str
+            a single variable to get blinks for
+        """
+        key = eye+"_"+variable
+        if key in self._blinks.keys():
+            return self._blinks[eye+"_"+variable]
+        else: 
+            return None
+
+    def get_blinks_merged(self, eyes=[], variables=[]) -> np.ndarray:
+        """Get blinks merged over given eyes and variables.
+
+        Parameters
+        ----------
+        eyes : list or str
+            list of eyes to consider; if empty, all eyes are considered
+        variables : list or str
+            list of variables to consider; if empty, all variables are considered
+        """
+        eyes = [eyes] if not isinstance(eyes, list) else eyes
+        eyes = eyes if len(eyes)>0 else self.eyes
+
+        variables = [variables] if not isinstance(variables, list) else variables
+        variables = variables if len(variables)>0 else self.variables
+
+        bmask=np.any([self.data.mask[eye+"_"+variable] 
+                for eye,variable in itertools.product(eyes,variables)], 
+               axis=0)
+        
+        a=np.diff(np.r_[0, bmask, 0])[:-1]
+        bstarts=np.where(a>0)[0]
+        bends=np.where(a<0)[0]
+
+        #z = np.concatenate(([0], bmask, [0]))
+        #start = np.flatnonzero(~z[:-1] & z[1:])   
+        #end = np.flatnonzero(z[:-1] & ~z[1:])
+        blinks = np.column_stack((bstarts, bends))  
+        return blinks      
+
+
+    def _init_blinks(self, eyes=[], variables=[]):
+        """Initialize blink-arrays for selected eyes and variables.
+
+        All by default
+
+        Parameters
+        ----------
+        eyes: str or list
+            list of eyes to initialize blinks for; if empty, initialize for all
+        variables: str or list
+            list of variables to initialize blinks for; if empty, initialize for all
+        """        
+        if not isinstance(eyes, list):
+            eyes=[eyes]
+        if len(eyes)==0:
+            eyes=self.eyes
+
+        if not isinstance(variables, list):
+            variables=[variables]
+        if len(variables)==0:
+            variables=self.variables
+
+        ## initialize blinks
+        self._blinks={}
+        for eye,variable in itertools.product(eyes, variables):
+            self.set_blinks(eye,variable, None)        
+
+    def nblinks(self, eyes=[], variables=[]) -> int:
+        """
+        Return number of detected blinks. Should be run after `detect_blinks()`.
+
+        By default, all eyes and variables are considered.
+
+        Parameters
+        ----------
+        eyes: list
+            list of eyes to consider; if empty, all eyes are considered
+
+        Returns
+        -------
+        int
+            number of detected blinks
+        """
+        if not isinstance(eyes, list):
+            eyes=[eyes]
+        if len(eyes)==0:
+            eyes=self.eyes
+
+        if not isinstance(variables, list):
+            variables=[variables]
+        if len(variables)==0:
+            variables=self.variables
+        
+        return {eye+"_"+var:self.get_blinks(eye,var).shape[0] 
+                for eye,var in itertools.product(eyes,variables)}
 
 
     @property
@@ -776,11 +917,68 @@ class GenericEyeData(ABC):
                 if not keep_eyes:
                     for eye in eyes:
                         del obj.data[eye+"_"+var]
-            if not keep_eyes:
-                for eye in eyes:
-                    logger.debug("Dropping blinks from eye %s" % eye)
-                    obj.set_blinks(eye, None)
+                        obj.set_blinks(eye,var,None)
         else:
             raise ValueError("Method %s not implemented" % method)
 
         return obj
+        
+    @keephistory
+    def blinks_merge(self, eyes=[], variables=[], distance: float=100, inplace=None):
+        """Merge together blinks that are close together. 
+
+        Some subjects blink repeatedly and standard detection/interpolation can result in weird results.
+        This function simply treats repeated blinks as one long blink.
+
+        Parameters
+        ----------
+
+        eyes: str or list
+            list of eyes to consider; if empty, consider all
+        variables: str or list
+            list of variables to consider; if empty, consider all
+        distance: float
+            merge together blinks that are closer together than `distance` in ms
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                                    
+        """
+        if inplace is None:
+            inplace=self.inplace
+        obj=self if inplace else self.copy()
+
+        if not isinstance(eyes, list):
+            eyes=[eyes]
+        if len(eyes)==0:
+            eyes=obj.eyes
+        
+        if not isinstance(variables, list):
+            variables=[variables]
+        if len(variables)==0:
+            variables=obj.variables
+
+        distance_ix=distance/self.fs*1000.
+
+        for eye,var in itertools.product(eyes, variables):
+            blinks = obj.get_blinks(eye, var)
+            if blinks is None:
+                continue
+
+            newblinks=[] 
+            i=1
+            cblink=blinks[0,:] ## start with first blink
+            while(i<blinks.shape[0]):
+                if (blinks[i,0]-cblink[1])<=distance_ix:
+                    # merge
+                    cblink[1]=blinks[i,1]
+                else:
+                    newblinks.append(cblink)
+                    cblink=blinks[i,:]
+                i+=1            
+            newblinks.append(cblink)
+            newblinks=np.array(newblinks)       
+
+            obj.set_blinks(eye,var,newblinks)
+
+        return obj    
+            

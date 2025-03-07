@@ -92,8 +92,6 @@ class EyeData(GazeData,PupilData):
         self._physical_screen_dims_set=False
         self._screen_eye_distance_set=False
 
-        self._init_blinks()
-
 
         ## screen limits, physical screen size, screen-eye distance
         self.set_experiment_info(screen_resolution=screen_resolution, 

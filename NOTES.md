@@ -11,12 +11,11 @@ Porting all things from old `PupilData` to either `GenericEyeData` (for function
 - [x] `downsample()`  - implement in `GenericEyeData`
 - [x] `merge_eyes()` - implement in `GenericEyeData` to combine left/right eyes into a single variable
   - [ ] perhaps implement regression merging?
-
-- NOTE: make the `blinks` field a property so that the blinkmask can be kept in sync?
-
 - [ ] blinks
+  - [x] make the `blinks` field a property so that the blinkmask can be kept in sync
   - [x] `pupil_blinks_detect()` - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names
-  - [ ] `pupil_blinks_merge()`
+  - [x] `blinks_merge()` - for is a `PupilData` method but if there will be blinks in the gaze data at some point, the whole `blink` functionality should be moved to `GenericEyeData`
+  - [ ] make a "mask" field for the `EyeDataDict` that is a dict of boolean arrays that can be used to mask out parts of the data for blinks/interpolation?
   - [ ] `pupil_blinks_interpolate()` - merge with Mahot function and make one an option for the other
 - [ ] baseline/response estimation
   - [ ] `pupil_estimate_baseline()`
