@@ -279,7 +279,8 @@ class GenericEyeData(ABC):
             variables=self.variables
         
         return {eye+"_"+var:self.get_blinks(eye,var).shape[0] 
-                for eye,var in itertools.product(eyes,variables)}
+                for eye,var in itertools.product(eyes,variables)
+                if self.get_blinks(eye,var) is not None}
 
 
     @property
@@ -916,6 +917,7 @@ class GenericEyeData(ABC):
                 obj.data["mean",var]=meanval
                 if not keep_eyes:
                     for eye in eyes:
+                        logger.debug("Dropping eye %s for variable %s" % (eye, var))
                         del obj.data[eye+"_"+var]
                         obj.set_blinks(eye,var,None)
         else:
