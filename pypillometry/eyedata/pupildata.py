@@ -11,6 +11,7 @@ from .generic import GenericEyeData, keephistory
 #from .. import convenience
 from ..signal import baseline
 from ..signal import preproc
+from ..signal import pupil
 #from .. import io
 from ..plot import PupilPlotter
 
@@ -117,7 +118,7 @@ class PupilData(GenericEyeData):
             start_min=self.tx.min()/1000./60.,
             end_min=self.tx.max()/1000./60.,
             ninterpolated={eye:self.data[eye+"_interpolated"].sum() for eye in self.eyes if eye+"_interpolated" in self.data},
-            params=json.dumps(self.params, indent=2),
+            params=self._strfy_params(),
             glimpse=repr(self.data)
         )
         
@@ -311,5 +312,70 @@ class PupilData(GenericEyeData):
             else:
                 raise ValueError("Undefined method for baseline estimation: %s"%method)         
             
+        return obj
+        
+    @keephistory
+    def pupil_estimate_response(self, 
+                          eyes=[], 
+                          npar: str|float="free", tmax: str|float="free", 
+                          verbose: int=50,
+                          bounds: dict={"npar":(1,20), "tmax":(100,2000)},
+                          inplace=None):
+        """
+        Estimate pupil-response based on event-onsets, see
+        :py:func:`pypillometry.pupil.pupil_response()`.
+        
+
+        Parameters
+        ----------
+        eyes: list or str
+            str or list of eyes to process; if empty, all available eyes are processed
+        npar: float
+            npar-parameter for the canonical response-function or "free";
+            in case of "free", the function optimizes for this parameter
+        tmax: float
+            tmax-parameter for the canonical response-function or "free";
+            in case of "free", the function optimizes for this parameter
+        bounds: dict
+            in case that one or both parameters are estimated, give the lower
+            and upper bounds for the parameters        
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes                                        
+        
+        Note
+        ----
+        the results of the estimation is stored in members `response`, `response_x` (design matrix) 
+        and `response_pars`
+
+        """
+        obj = self._get_inplace(inplace)
+        eyes,_=self._get_eye_var(eyes,[])
+
+        obj.params["response"]=dict()
+        for eye in eyes:
+            logger.info("Estimating response for eye %s"%eye)
+            if not eye+"_baseline" in obj.data.keys():
+                logger.warning("Eye %s: no baseline estimated yet, using zero as baseline"%eye)
+                base=np.zeros(len(obj.tx))
+            else:
+                base=obj.data[eye,"baseline"]
+        
+            syd = obj.data[eye,"pupil"]-base
+            pred, coef, npar_est, tmax_est, x1=pupil.pupil_response(obj.tx, syd, 
+                                                            obj.event_onsets, obj.fs, 
+                                                            npar=npar, tmax=tmax, verbose=verbose,
+                                                            bounds=bounds)
+            
+            obj.data[eye+"_response"]=pred
+
+            obj.params["response"][eye]={"npar":npar_est,
+                                "npar_free":True if npar=="free" else False,
+                                "tmax":tmax_est,
+                                "tmax_free":True if tmax=="free" else False,
+                                "coef":coef,
+                                "bounds":bounds
+                            }
+        
         return obj
     

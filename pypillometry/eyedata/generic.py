@@ -135,6 +135,15 @@ class GenericEyeData(ABC):
             fac=1.
         return fac
 
+    def _strfy_params(self):
+        """
+        Return a shortened string representation of the parameters.
+        """
+        ks = self.params.keys()
+        r="{"+",".join(["%s: {...}"%k for k in ks])
+        r+="}"
+        return r
+
     def __len__(self):
         """Return number of sampling points"""
         return len(self.tx)
