@@ -7,7 +7,7 @@ Class representing pupillometric data.
 
 import itertools
 from .eyedatadict import EyeDataDict
-from .generic import GenericEyeData, keephistory
+from .generic import GenericEyeData, keephistory, IntervalStats
 #from .. import convenience
 from ..signal import baseline
 from ..signal import preproc
@@ -93,6 +93,34 @@ class PupilData(GenericEyeData):
         return PupilPlotter(self)
 
 
+    def blink_stats(self, eyes=[], units: str="ms"):
+        """
+        Return statistics on blinks.
+
+        Parameters
+        ----------
+        eyes: list
+            list of eyes to process; if empty, all available eyes are processed
+        units: str
+            one of "ms", "sec", "min", "h"
+        """
+        eyes,_=self._get_eye_var(eyes,[])
+        fac=self._unit_fac(units)
+
+        stats=dict()
+        for eye in eyes:
+            blinks=self.get_blinks(eye, "pupil")
+            blink_durations=[(off-on)/self.fs*1000*fac for on,off in blinks]
+            stats[eye]=IntervalStats(
+                n=len(blink_durations),
+                mean=np.mean(blink_durations),
+                median=np.median(blink_durations),
+                min=np.min(blink_durations),
+                max=np.max(blink_durations),
+                sd=np.std(blink_durations)
+            )
+        return stats
+
     def summary(self):
         """
         Return a summary of the dataset as a dictionary.
@@ -111,7 +139,7 @@ class PupilData(GenericEyeData):
             data=list(self.data.keys()),
             nevents=self.nevents(), 
             nblinks=self.nblinks(), 
-            blinks_per_min={k:v/(len(self)/self.fs/60.) for k,v in self.nblinks().items()},
+            blinks=self.blink_stats(),
             nmiss=np.sum(self.missing),
             perc_miss=np.sum(self.missing)/len(self)*100.,
             duration_minutes=self.get_duration("min"),
