@@ -320,49 +320,4 @@ def pupilresponse_nnls(tx, sy, event_onsets, fs, npar=10.1, tmax=930):
     return coef,pred,resid
     
 
-def stat_event_interval(tx,sy,event_onsets,interval,statfct=np.mean):
-    """
-    Return result of applying a statistical function to pupillometric data in a
-    given interval relative to event-onsets. For example, extract mean 
-    pupil-size in interval before trial onset.
-        
-    Parameters
-    -----------
-    
-    tx : np.ndarray
-        time-vector in milliseconds
-        
-    sy : np.ndarray
-        (baseline-corrected) pupil signal
-        
-    event_onsets : list
-        onsets of events (stimuli/responses) in seconds
-        
-    interval : tuple (min,max)
-        time-window in ms relative to event-onset (0 is event-onset)
-    
-    statfct : function
-        function mapping np.array to a single number
-    
-    Returns
-    --------
-    
-    result: np.array
-        number of event-onsets long result array
-    """
-    event_onsets=np.array(event_onsets)
-    starts=event_onsets+interval[0]
-    ends  =event_onsets+interval[1]
-
-    res=np.zeros(event_onsets.size)
-
-    for i,interv in enumerate(zip(starts,ends)):
-        start_ix=np.argmin(np.abs(interv[0]-tx))
-        end_ix=np.argmin(np.abs(interv[1]-tx))
-        if start_ix==end_ix:
-            end_ix+=1
-        res[i]=statfct(sy[start_ix:end_ix])
-    return res
-    
-        
     

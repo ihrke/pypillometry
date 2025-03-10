@@ -10,6 +10,7 @@ from .. import io
 from ..convenience import sizeof_fmt
 from .eyedatadict import EyeDataDict
 from ..signal import baseline
+from ..intervals import stat_event_interval, get_interval_stats
 
 import numpy as np
 import itertools
@@ -294,6 +295,28 @@ class GenericEyeData(ABC):
         return {eye+"_"+var:self.get_blinks(eye,var).shape[0] 
                 for eye,var in itertools.product(eyes,variables)
                 if self.get_blinks(eye,var) is not None}
+
+
+    def blink_stats(self, eyes=[], units: str="ms"):
+        """
+        Return statistics on blinks.
+
+        Parameters
+        ----------
+        eyes: list
+            list of eyes to process; if empty, all available eyes are processed
+        units: str
+            one of "ms", "sec", "min", "h"
+        """
+        eyes,_=self._get_eye_var(eyes,[])
+        fac=self._unit_fac(units)
+
+        stats=dict()
+
+        for eye in eyes:
+            blinks=self.get_blinks(eye,"pupil")/self.fs*1000*fac
+            stats[eye]=get_interval_stats(blinks)            
+        return stats
 
 
     @property
@@ -615,7 +638,7 @@ class GenericEyeData(ABC):
     
     def get_intervals(self, 
                     event_select,
-                    padding: tuple=(-200,200),
+                    interval: tuple=(-200,200),
                     units: str="ms", **kwargs):
         """
         Return a list of intervals relative to event-onsets. For example, extract
@@ -635,14 +658,14 @@ class GenericEyeData(ABC):
             - if tuple: use all events between the two events specified in the tuple. 
                 Both selectors must result in identical number of events.
 
-        padding : tuple (min,max)
+        interval : tuple (min,max)
             time-window relative to event-onset (0 is event-onset); i.e., negative
             numbers are before the event, positive numbers after. Units are defined
             by the `units` parameter
 
         units : str
-            units of the padding (one of "ms", "sec", "min"); units=None means
-            that the padding is in time units taken from the data
+            units of the interval (one of "ms", "sec", "min"); units=None means
+            that the interval is in time units taken from the data
 
         kwargs : dict
             passed onto the event_select function
@@ -650,7 +673,7 @@ class GenericEyeData(ABC):
         Returns
         --------
 
-        result: dict with 3 np.arrays (label, start, end)
+        result: 
             interval on- and offsets for each match, units determined by `units`
         """
         if units is None:
@@ -658,8 +681,8 @@ class GenericEyeData(ABC):
         else:
             fac=self._unit_fac(units)
 
-        if padding[1]<=padding[0]:
-            raise ValueError("padding must be (min,max) with min<max, got {}".format(padding))
+        if interval[1]<=interval[0]:
+            raise ValueError("interval must be (min,max) with min<max, got {}".format(interval))
         if isinstance(event_select, tuple):
             # two events and interval in between
             if len(event_select)!=2:
@@ -676,8 +699,8 @@ class GenericEyeData(ABC):
                     raise ValueError("no events found matching event_select")
             if np.sum(event_ix[0])!=np.sum(event_ix[1]):
                 raise ValueError("event_select must result in same number of events for both selectors, got {} and {}".format(np.sum(event_ix[0]), np.sum(event_ix[1])))
-            sti=(self.event_onsets[event_ix[0]]*fac)+padding[0]
-            ste=(self.event_onsets[event_ix[1]]*fac)+padding[1]
+            sti=(self.event_onsets[event_ix[0]]*fac)+interval[0]
+            ste=(self.event_onsets[event_ix[1]]*fac)+interval[1]
         else:
             # one event with padding interval
             if callable(event_select):
@@ -688,8 +711,8 @@ class GenericEyeData(ABC):
                 raise ValueError("event_select must be string or function")
             if np.sum(event_ix)==0:
                 raise ValueError("no events found matching event_select")
-            sti=(self.event_onsets[event_ix]*fac)+padding[0]
-            ste=(self.event_onsets[event_ix]*fac)+padding[1]
+            sti=(self.event_onsets[event_ix]*fac)+interval[0]
+            ste=(self.event_onsets[event_ix]*fac)+interval[1]
         
         intervals = [(s,e) for s,e in zip(sti,ste)]
 
@@ -948,3 +971,45 @@ class GenericEyeData(ABC):
 
         return obj    
             
+    def stat_per_event(self, 
+                       interval: Tuple[float,float], event_select=None,                        
+                       eyes: str|list=[], variables: str|list=[],                       
+                       statfct: Callable=np.mean, units: str="ms",
+                       **kwargs):
+        """
+        Return result of applying a statistical function to data in a
+        given interval relative to event-onsets. For example, extract mean 
+        pupil-size in interval before trial onset.
+
+        Parameters
+        -----------
+
+        eyes: str or list
+            list of eyes to consider; if empty, consider all
+        variables: str or list
+            list of variables to consider; if empty, consider all
+        event_select: str or function
+            variable describing which events to select and align to
+            see :class:`GenericEyeData.get_intervals()` for details
+        interval : tuple (min,max)
+            time-window in ms relative to event-onset (0 is event-onset)
+        statfct : function
+            function mapping np.array to a single number
+        kwargs : dict
+            passed onto the event_select function
+    
+        Returns
+        --------
+
+        result: np.array or dict
+            number of event-onsets long result array; in case of multiple eyes/variables, a dict is returned
+        """
+        eyes,variables=self._get_eye_var(eyes,variables)
+        units = self._unit_fac(units)
+        intervs=self.get_intervals(event_select, interval, units=units, **kwargs)
+
+        stat={}
+        for eye,var in itertools.product(eyes, variables):
+            stat[eye+"_"+var]=stat_event_interval(self.tx, self.data[eye,var], intervs, statfct)
+
+        return stat

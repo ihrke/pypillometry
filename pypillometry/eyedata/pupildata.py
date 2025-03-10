@@ -93,27 +93,6 @@ class PupilData(GenericEyeData):
         return PupilPlotter(self)
 
 
-    def blink_stats(self, eyes=[], units: str="ms"):
-        """
-        Return statistics on blinks.
-
-        Parameters
-        ----------
-        eyes: list
-            list of eyes to process; if empty, all available eyes are processed
-        units: str
-            one of "ms", "sec", "min", "h"
-        """
-        eyes,_=self._get_eye_var(eyes,[])
-        fac=self._unit_fac(units)
-
-        stats=dict()
-
-        for eye in eyes:
-            blinks=self.get_blinks(eye,"pupil")/self.fs*1000*fac
-            stats[eye]=get_interval_stats(blinks)            
-        return stats
-
     def summary(self):
         """
         Return a summary of the dataset as a dictionary.
