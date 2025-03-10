@@ -9,7 +9,8 @@ as well as tools for plotting and analyzing these data.
 """
 
 __all__ = ["logging_set_level", "logging_disable", "logging_enable",
-           "EyeDataDict", "EyeData", "GazeData", "PupilData", "GenericEyeData"]
+           "EyeDataDict", "EyeData", "GazeData", "PupilData", "GenericEyeData",
+           "example_datasets", "get_example_data"]
 
 from .eyedata.eyedatadict import EyeDataDict
 from .eyedata.generic import GenericEyeData
@@ -17,6 +18,7 @@ from .eyedata.eyedata import EyeData
 from .eyedata.gazedata import GazeData
 from .eyedata.pupildata import PupilData
 from .convenience import *
+from .example_data import example_datasets, get_example_data
 
 ## logging
 from loguru import logger

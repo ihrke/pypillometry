@@ -6,3 +6,4 @@ pandas
 typing
 requests
 loguru
+tqdm
