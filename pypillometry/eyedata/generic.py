@@ -20,6 +20,7 @@ import functools
 from random import choice
 import copy
 import pickle
+import inspect
 
 ## abstract base class to enforce implementation of some functions for all classes
 from abc import ABC, abstractmethod 
@@ -142,6 +143,29 @@ class GenericEyeData(ABC):
         """Return number of events in data."""
         return self.event_onsets.size
 
+    def _get_eye_var(self, eyes,variables):
+        """Private helper function"""        
+        if isinstance(eyes, str):
+            eyes=[eyes]
+        if len(eyes)==0:
+            eyes=self.eyes
+
+        if isinstance(variables, str):
+            variables=[variables]
+        if len(variables)==0:
+            variables=self.variables
+
+        funcname = inspect.stack()[1].function
+        logger.debug("%s(): eyes=%s, vars=%s" % (funcname, repr(eyes), repr(variables)))
+        return eyes, variables
+
+    def _get_inplace(self, inplace):
+        """Private helper function"""
+        if inplace is None:
+            return self
+        else:
+            return self if inplace else self.copy()
+
 
     @property
     def blinks(self):
@@ -204,11 +228,7 @@ class GenericEyeData(ABC):
         variables : list or str
             list of variables to consider; if empty, all variables are considered
         """
-        eyes = [eyes] if not isinstance(eyes, list) else eyes
-        eyes = eyes if len(eyes)>0 else self.eyes
-
-        variables = [variables] if not isinstance(variables, list) else variables
-        variables = variables if len(variables)>0 else self.variables
+        eyes,variables=self._get_eye_var(eyes,variables)
 
         bmask=np.any([self.data.mask[eye+"_"+variable] 
                 for eye,variable in itertools.product(eyes,variables)], 
@@ -237,15 +257,7 @@ class GenericEyeData(ABC):
         variables: str or list
             list of variables to initialize blinks for; if empty, initialize for all
         """        
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=self.eyes
-
-        if not isinstance(variables, list):
-            variables=[variables]
-        if len(variables)==0:
-            variables=self.variables
+        eyes,variables=self._get_eye_var(eyes,variables)
 
         ## initialize blinks
         self._blinks={}
@@ -268,15 +280,7 @@ class GenericEyeData(ABC):
         int
             number of detected blinks
         """
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=self.eyes
-
-        if not isinstance(variables, list):
-            variables=[variables]
-        if len(variables)==0:
-            variables=self.variables
+        eyes,variables=self._get_eye_var(eyes,variables)
         
         return {eye+"_"+var:self.get_blinks(eye,var).shape[0] 
                 for eye,var in itertools.product(eyes,variables)
@@ -371,7 +375,7 @@ class GenericEyeData(ABC):
             if `False`, make and return copy before making changes
             if `None`, use the setting of the object (specified in constructor)
         """
-        obj=self if inplace else self.copy()
+        obj = self._get_inplace(inplace)
         obj.original=None
         return obj
     
@@ -391,8 +395,8 @@ class GenericEyeData(ABC):
             if `False`, make and return copy before making changes
             if `None`, use the setting of the object (specified in constructor)
         """
+        obj = self._get_inplace(inplace)
         tmin=self.tx.min()
-        obj=self if inplace else self.copy()            
         obj.tx=(self.tx-tmin)+t0
         obj.event_onsets=(self.event_onsets-tmin)+t0
         return obj
@@ -424,9 +428,8 @@ class GenericEyeData(ABC):
             if `False`, make and return copy before making changes
             if `None`, use the setting of the object (specified in constructor)
         """
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
+        obj = self._get_inplace(inplace)
+
         if units is not None: 
             fac=self._unit_fac(units)
             tx = self.tx*fac
@@ -714,20 +717,8 @@ class GenericEyeData(ABC):
         ----
         Scaling-parameters are being saved in the `params["scale"]` argument. 
         """
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
-
-        if isinstance(variables, str):
-            variables=[variables]
-        if len(variables)==0:
-            variables=obj.variables
-
-        if isinstance(eyes, str):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
-        logger.debug("Scaling variables: %s and eyes %s" %( variables, eyes))
+        obj = self._get_inplace(inplace)
+        eyes,variables=self._get_eye_var(eyes,variables)
 
         if mean is None:
             mean={eye:{var:np.nanmean(obj.data[eye,var]) for var in variables} for eye in eyes}
@@ -793,20 +784,8 @@ class GenericEyeData(ABC):
             if `False`, make and return copy before making changes    
             if `None`, use the object's default setting            
         """
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
-
-        if isinstance(variables, str):
-            variables=[variables]
-        if len(variables)==0:
-            variables=obj.variables
-
-        if isinstance(eyes, str):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
-        logger.debug("Unscaling variables: %s and eyes %s" %( variables, eyes))
+        obj = self._get_inplace(inplace)
+        eyes,variables=self._get_eye_var(eyes,variables)
 
         # if no parameters are provided, use the stored ones (normal)
         if mean is None:
@@ -850,9 +829,7 @@ class GenericEyeData(ABC):
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                        
         """
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
+        obj = self._get_inplace(inplace)
 
         if dsfac:
             dsfac=fsd
@@ -890,19 +867,8 @@ class GenericEyeData(ABC):
         inplace : make change inplace, optional
             if None, use default value in class, by default None
         """        
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
-
-        if isinstance(eyes, str):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
-
-        if isinstance(variables, str):
-            variables=[variables]
-        if len(variables)==0:
-            variables=obj.variables
+        obj = self._get_inplace(inplace)
+        eyes,variables=self._get_eye_var(eyes,variables)
 
         if method=="mean":            
             for var in variables:
@@ -945,19 +911,8 @@ class GenericEyeData(ABC):
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
         """
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
-
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
-        
-        if not isinstance(variables, list):
-            variables=[variables]
-        if len(variables)==0:
-            variables=obj.variables
+        obj = self._get_inplace(inplace)
+        eyes,variables=self._get_eye_var(eyes,variables)
 
         distance_ix=distance/self.fs*1000.
 

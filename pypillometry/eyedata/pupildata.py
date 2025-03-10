@@ -142,13 +142,9 @@ class PupilData(GenericEyeData):
             if `False`, make and return copy before making changes           
             if `None`, use the object-level setting         
         """
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
+        obj = self._get_inplace(inplace)
+        eyes,_=self._get_eye_var(eyes,[])
+
         for eye in eyes:
             obj.data[eye,"pupil"]=baseline.butter_lowpass_filter(obj.data[eye,"pupil"], cutoff, obj.fs, order)
         return obj
@@ -171,14 +167,8 @@ class PupilData(GenericEyeData):
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                            
         """
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
-
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=obj.eyes
+        obj = self._get_inplace(inplace)
+        eyes,_=self._get_eye_var(eyes,[])
 
         # convert winsize to index based on sampling rate
         winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
@@ -238,14 +228,8 @@ class PupilData(GenericEyeData):
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
         """
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
-
-        if not isinstance(eyes, list):
-            eyes=[eyes]
-        if len(eyes)==0:
-            eyes=self.data.get_available_eyes(variable="pupil")
+        obj = self._get_inplace(inplace)
+        eyes,_=self._get_eye_var(eyes,[])
 
         fac=self._unit_fac(units)
         winsize_ms=winsize*fac
@@ -278,5 +262,4 @@ class PupilData(GenericEyeData):
             obj.set_blinks(eye, "pupil", np.array([[on,off] for (on,off) in blinks if off-on>=min_duration_ix]))
             
         return obj    
-    
     
