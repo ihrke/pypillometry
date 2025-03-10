@@ -194,12 +194,8 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
         base2: is the final baseline estimate
         
     """
-    def vprint(v, s):
-        if v<=verbose:
-            print(">",s)
-
     dsfac=int(fs/fsd) # calculate downsampling factor
-    vprint(100, "Downsampling factor is %i"%dsfac)
+    logger.debug("Downsampling factor is %i"%dsfac)
     
     # downsampling
     syc=butter_lowpass_filter(sy, lp, fs, order=2)
@@ -209,17 +205,16 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     symean,sysd=np.mean(syd),np.std(syd)
     syd=(syd-symean)/sysd
     txd=downsample(tx, dsfac)
-    vprint(100, "Downsampling done")
+    logger.debug("Downsampling done")
 
     # peak finding and spline-building
     peaks_ix=signal.find_peaks(-syd)[0]
     prominences=signal.peak_prominences(-syd, peaks_ix)[0]
     peaks=txd[peaks_ix]
-    vprint(100, "Peak-detection done, %i peaks detected"%peaks.shape[0])
+    logger.debug("Peak-detection done, %i peaks detected"%peaks.shape[0])
     knots=np.concatenate( ([txd.min()], peaks, [txd.max()]) ) ## peaks as knots
     B=bspline(txd, knots, 3)
-    vprint(100, "B-spline matrix built, dims=%s"%str(B.shape))
-    
+    logger.debug("B-spline matrix built, dims=%s"%str(B.shape))    
 
     # convert
     def prominence_to_lambda(w, lam_min=1, lam_max=100):
@@ -229,9 +224,9 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     w=prominence_to_lambda(prominences, lam_min=lam_min, lam_max=lam_max)
     
     # load or compile model
-    vprint(10, "Compiling Stan model")
     fpath=files('pypillometry.stan').joinpath('baseline_model_asym_laplac.stan')
-    logger.info(fpath)
+    logger.info("Compiling Stan model: %s"%fpath)
+
     #fname="stan/baseline_model_asym_laplac.stan"
     #fpath=os.path.join(os.path.split(__file__)[0], fname)
     sm = cmdstanpy.CmdStanModel(stan_file=fpath)
@@ -252,21 +247,19 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     }
     
     ## variational optimization
-    vprint(10, "Optimizing Stan model")
+    logger.info("Optimizing Stan model")    
     opt=sm.variational(data=data)
     vbc=opt.stan_variable("coef")#, mean=True)
     meansigvb=np.dot(B, vbc)
-    vprint(10, "Done optimizing Stan model")
     
     ## PRF model
     # new "signal"
     syd2=syd-meansigvb
 
-    vprint(10, "Estimating PRF model (NNLS)")    
+    logger.info("Estimating PRF model (NNLS)")    
     #coef,pred,resid=pupilresponse_nnls(txd,syd2,event_onsets,fs=fsd)
     pred, coef, _, _, _=pupil_response(txd, syd2, event_onsets, fsd, npar=10, tmax=917)
     resid=syd-pred
-    vprint(10, "Done Estimating PRF model (NNLS)")
     
     ### 2nd iteration
     ## get new peaks
@@ -274,11 +267,11 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     peaks2_ix=signal.find_peaks(-syd3)[0]
     prominences2=signal.peak_prominences(-syd3, peaks2_ix)[0]
     peaks2=txd[peaks2_ix]
-    vprint(100, "2nd Peak-detection done, %i peaks detected"%peaks2.shape[0])
+    logger.debug("2nd Peak-detection done, %i peaks detected"%peaks2.shape[0])
 
     knots2=np.concatenate( ([txd.min()], peaks2, [txd.max()]) ) ## peaks as knots
     B2=bspline(txd, knots2, 3)
-    vprint(100, "2nd B-spline matrix built, dims=%s"%str(B2.shape))
+    logger.debug("2nd B-spline matrix built, dims=%s"%str(B2.shape))
 
     w2=prominence_to_lambda(prominences2, lam_min=lam_min, lam_max=lam_max)
 
@@ -295,11 +288,10 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     }
     
     ##  variational optimization
-    vprint(10, "2nd Optimizing Stan model")
+    logger.info("Optimizing 2nd Stan model")
     opt=sm.variational(data=data2)
     vbc2=opt.stan_variable("coef")#, mean=True)
     meansigvb2=np.dot(B2, vbc2)  
-    vprint(10, "Done 2nd Optimizing Stan model")
     
     return txd,(syd*sysd)+symean,(meansigvb2*sysd)+symean, (meansigvb*sysd)+symean
 

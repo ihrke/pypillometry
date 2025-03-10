@@ -210,20 +210,15 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         in case that one or both parameters are estimated, give the lower
         and upper bounds for the parameters
     """
-    def vprint(v, s):
-        if v<=verbose:
-            print(s,end="")
-     
     if npar=="free" and tmax=="free":
-        print("MSG: optimizing both npar and tmax, might take a while...")
+        logger.info("optimizing both npar and tmax, might take a while...")
         def objective(x, event_onsets, tx,sy,fs):
-            vprint(50,".")
             npar_t,tmax_t=x
             npar,tmax=x
             #npar=trans_logistic_vec(npar_t, a=bounds["npar"][0], b=bounds["npar"][1], inverse=True)
             #tmax=trans_logistic_vec(tmax_t, a=bounds["tmax"][0], b=bounds["tmax"][1], inverse=True)
             maxdur=pupil_get_max_duration(npar,tmax)
-            vprint(100, "\nnpar,tmax,maxdur=(%.2f,%.2f,%i)"%(npar,tmax,maxdur))            
+            logger.debug("npar,tmax,maxdur=(%.2f,%.2f,%i)"%(npar,tmax,maxdur))
             x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, maxdur)
             coef=scipy.optimize.nnls(x1.T, sy)[0]    
             pred=np.dot(x1.T, coef)  ## predicted signal
@@ -244,12 +239,11 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         #tmax=trans_logistic_vec(r.x[1], a=bounds["tmax"][0], b=bounds["tmax"][1], inverse=False)
         npar,tmax=r.x[0],r.x[1]
     elif npar=="free":
-        print("MSG: optimizing npar only, might take a while...")
+        logger.info("optimizing npar only, might take a while...")
         def objective(x, tmax, event_onsets, tx,sy,fs):
-            vprint(50,".")
             npar=x
             maxdur=pupil_get_max_duration(npar,tmax)
-            vprint(100, "\nnpar,maxdur=(%.2f,%i)"%(npar,maxdur))            
+            logger.debug("npar,maxdur=(%.2f,%i)"%(npar,maxdur))
             x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, maxdur)            
             coef=scipy.optimize.nnls(x1.T, sy)[0]    
             pred=np.dot(x1.T, coef)  ## predicted signal
@@ -260,12 +254,11 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
                                   method="bounded", options={"disp":display_progress,"xatol":.1})        
         npar=r.x
     elif tmax=="free":
-        print("MSG: optimizing tmax only, might take a while...")
+        logger.info("optimizing tmax only, might take a while...")
         def objective(x, npar, event_onsets, tx,sy,fs):
-            vprint(50,".")            
             tmax=x
-            maxdur=pupil_get_max_duration(npar,tmax)    
-            vprint(100, "\ntmax,maxdur=(%.2f,%i)"%(tmax,maxdur))            
+            maxdur=pupil_get_max_duration(npar,tmax)   
+            logger.debug("tmax,maxdur=(%.2f,%i)"%(tmax,maxdur)) 
             x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, maxdur)
             coef=scipy.optimize.nnls(x1.T, sy)[0]    
             pred=np.dot(x1.T, coef)  ## predicted signal
