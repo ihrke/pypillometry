@@ -47,21 +47,6 @@ def keephistory(func):
     return wrapper
         
 
-class IntervalStats(dict):
-    """
-    A dictionary with a specialized repr() function
-    to display summary statistics of intervals.
-    """
-    def __repr__(self):
-        n=self["n"] if "n" in self else 0
-        mean=self["mean"] if "mean" in self else np.nan
-        sd=self["sd"] if "sd" in self else np.nan
-        minv=self["min"] if "min" in self else np.nan
-        maxv=self["max"] if "max" in self else np.nan
-        r = "%i intervals, %.2f +/- %.2f, [%.2f, %.2f]" % (n, mean, sd, minv, maxv)
-        return r
-
-
 class GenericEyeData(ABC):
     """
     Generic class for eyedata. 

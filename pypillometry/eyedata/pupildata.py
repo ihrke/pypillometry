@@ -7,14 +7,14 @@ Class representing pupillometric data.
 
 import itertools
 from .eyedatadict import EyeDataDict
-from .generic import GenericEyeData, keephistory, IntervalStats
+from .generic import GenericEyeData, keephistory
 #from .. import convenience
 from ..signal import baseline
 from ..signal import preproc
 from ..signal import pupil
 #from .. import io
 from ..plot import PupilPlotter
-
+from ..intervals import IntervalStats, get_interval_stats
 
 import json
 from loguru import logger
@@ -108,17 +108,10 @@ class PupilData(GenericEyeData):
         fac=self._unit_fac(units)
 
         stats=dict()
+
         for eye in eyes:
-            blinks=self.get_blinks(eye, "pupil")
-            blink_durations=[(off-on)/self.fs*1000*fac for on,off in blinks]
-            stats[eye]=IntervalStats(
-                n=len(blink_durations),
-                mean=np.mean(blink_durations),
-                median=np.median(blink_durations),
-                min=np.min(blink_durations),
-                max=np.max(blink_durations),
-                sd=np.std(blink_durations)
-            )
+            blinks=self.get_blinks(eye,"pupil")/self.fs*1000*fac
+            stats[eye]=get_interval_stats(blinks)            
         return stats
 
     def summary(self):
