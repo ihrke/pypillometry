@@ -29,6 +29,7 @@ setuptools.setup(
     package_data={
         "pypillometry": [],
         "pypillometry.data": ["*.asc"],
+        "pypillometry.stan": ["*.stan"],
         },
     install_requires=requirements,
     python_requires='>=3.10',
