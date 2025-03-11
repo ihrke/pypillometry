@@ -6,6 +6,7 @@ Class representing pupillometric data.
 """
 
 import itertools
+from typing import Tuple
 from .eyedatadict import EyeDataDict
 from .generic import GenericEyeData, keephistory
 #from .. import convenience
@@ -264,6 +265,98 @@ class PupilData(GenericEyeData):
             
         return obj    
     
+    @keephistory
+    def pupil_blinks_interpolate(self, eyes: str|list=[],
+                                 store_as: str="pupil", 
+                                 method="mahot", winsize: float=11, 
+                                 vel_onset: float=-5, vel_offset: float=5, 
+                                 margin: Tuple[float,float]=(10,30), 
+                                 blinkwindow: float=500,
+                                 interp_type: str="cubic",
+                                 inplace=None):
+        """Interpolating blinks in the pupillary signal.
+
+        Implements the blink-interpolation method by Mahot (2013).
+        
+        Mahot, 2013:
+        https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
+
+        This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
+        so a "plot" option is provided that will plot many diagnostics (see paper linked above) that
+        can help to set good parameter values for `winsize`, `vel_onset`, `vel_offset` and `margin`.
+
+        Parameters
+        ----------
+        eyes: str or list
+            str or list of eyes to process; if empty, all available eyes are processed
+        store_as: str
+            how to store the interpolated data; either "pupil" (default) which replaces
+            the original pupil data or a string that will be used as the new variable
+            name in the data (e.g., "pupilinterp")
+        method: str
+            method to use; so far, only "mahot" is implemented
+        winsize: float
+            size of the Hanning-window in ms
+        vel_onset: float
+            velocity-threshold to detect the onset of the blink
+        vel_offset: float
+            velocity-threshold to detect the offset of the blink
+        margin: Tuple[float,float]
+            margin that is subtracted/added to onset and offset (in ms)
+        blinkwindow: float
+            how much time before and after each blink to include (in ms)
+        interp_type: str
+            type of interpolation accepted by :func:`scipy.interpolate.interp1d()`
+        inplace: bool
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes              
+        """
+        obj = self._get_inplace(inplace)
+        eyes,_=self._get_eye_var(eyes,[])
+
+        if not isinstance(store_as, str):
+            raise ValueError("store_as must be a string")
+
+        # parameters in sampling units (from ms)
+        winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
+        margin_ix=tuple(int(np.ceil(m/1000.*self.fs)) for m in margin)
+        blinkwindow_ix=int(blinkwindow/1000.*self.fs)
+        if winsize_ix % 2==0: ## ensure smoothing window is odd
+            winsize_ix+=1 
+
+        for eye in eyes:
+            syr=obj.data[eye,"pupil"].copy() ## interpolated signal
+            bls = self.get_blinks(eye, "pupil")
+            blink_onsets=preproc.blink_onsets_mahot(obj.data[eye,"pupil"], bls, 
+                                                    winsize_ix, 
+                                                    vel_onset, vel_offset,
+                                                    margin_ix, blinkwindow_ix)
+          
+            # loop through blinks
+            for ix,(onset,offset) in enumerate(blink_onsets):                
+                # calc the 4 time points
+                t2,t3=onset,offset
+                t1=max(0,t2-t3+t2)
+                t4=min(t3-t2+t3, len(self)-1)
+                if t1==t2:
+                    t2+=1
+                if t3==t4:
+                    t3-=1
+                
+                txpts=[obj.tx[pt] for pt in [t1,t2,t3,t4]]
+                sypts=[obj.data[eye,"pupil"][pt] for pt in [t1,t2,t3,t4]]
+                intfct=interp1d(txpts,sypts, kind=interp_type)
+                islic=slice(t2, t3)
+                syr[islic]=intfct(obj.tx[islic])
+
+                # store interpolated data
+                obj.data[eye,store_as]=syr
+                # record the interpolated datapoints
+                obj.data.mask[eye+"_"+store_as][islic]=1                
+
+        return obj
+            
+
 
     @keephistory
     def pupil_estimate_baseline(self, eyes=[],
