@@ -17,6 +17,41 @@ class IntervalStats(dict):
         r = "%i intervals, %.2f +/- %.2f, [%.2f, %.2f]" % (n, mean, sd, minv, maxv)
         return r
 
+
+def merge_intervals(intervals):
+    """Merge overlapping intervals.
+
+    Parameters
+    ----------
+    intervals : list of tuples
+        List of intervals to merge.
+
+    Returns
+    -------
+    list of tuples
+        Merged intervals.
+    """
+    if not intervals:
+        return []
+    
+    # Sort intervals based on the start point
+    intervals.sort(key=lambda x: x[0])
+    
+    merged = [intervals[0]]
+    
+    for current in intervals[1:]:
+        last_merged = merged[-1]
+        
+        # Check if intervals overlap
+        if current[0] <= last_merged[1]:
+            # Merge the intervals
+            merged[-1] = (last_merged[0], max(last_merged[1], current[1]))
+        else:
+            # No overlap, add the current interval
+            merged.append(current)
+    
+    return merged
+
 def get_interval_stats(intervals):
     """
     Calculate summary statistics of intervals.

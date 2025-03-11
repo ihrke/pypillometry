@@ -6,11 +6,12 @@ Generic Eyedata class for use with the pypillometry package.
 All other eyedata classes should inherit from this class.
 """
 
+from collections.abc import Iterable
 from .. import io
 from ..convenience import sizeof_fmt
 from .eyedatadict import EyeDataDict
 from ..signal import baseline
-from ..intervals import stat_event_interval, get_interval_stats
+from ..intervals import stat_event_interval, get_interval_stats, merge_intervals
 
 import numpy as np
 import itertools
@@ -240,19 +241,30 @@ class GenericEyeData(ABC):
         """
         eyes,variables=self._get_eye_var(eyes,variables)
 
-        bmask=np.any([self.data.mask[eye+"_"+variable] 
-                for eye,variable in itertools.product(eyes,variables)], 
-               axis=0)
-        
-        a=np.diff(np.r_[0, bmask, 0])[:-1]
-        bstarts=np.where(a>0)[0]
-        bends=np.where(a<0)[0]
+        blinks=[]
+        for eye,var in itertools.product(eyes,variables):
+            cblinks=self.get_blinks(eye,var)
+            if cblinks is None: 
+                continue
+            elif isinstance(cblinks, np.ndarray):
+                blinks += cblinks.tolist()
+            elif isinstance(blinks, Iterable):
+                blinks += cblinks
+        mblinks = merge_intervals(blinks)
+        return mblinks
 
-        #z = np.concatenate(([0], bmask, [0]))
-        #start = np.flatnonzero(~z[:-1] & z[1:])   
-        #end = np.flatnonzero(z[:-1] & ~z[1:])
-        blinks = np.column_stack((bstarts, bends))  
-        return blinks      
+        #bmask=np.any([self.data.mask[eye+"_"+variable] 
+        #        for eye,variable in itertools.product(eyes,variables)], 
+        #       axis=0)
+        #
+        #a=np.diff(np.r_[0, bmask, 0])[:-1]
+        #bstarts=np.where(a>0)[0]
+        #bends=np.where(a<0)[0]
+#
+        ##z = np.concatenate(([0], bmask, [0]))
+        ##start = np.flatnonzero(~z[:-1] & z[1:])   
+        ##end = np.flatnonzero(z[:-1] & ~z[1:])
+        #blinks = np.column_stack((bstarts, bends))  
 
 
     def _init_blinks(self, eyes=[], variables=[]):
