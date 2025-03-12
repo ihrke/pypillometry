@@ -48,7 +48,14 @@ def logging_set_level(level="INFO"):
         The logging level. Can be one of "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL".
     """
     logger.remove()
-    logger.add(sys.stderr, level=level)
+    logger_format = (
+        "<green>pp: {time:HH:mm:ss}</green> | "
+        "<level>{level: <8}</level> | "
+        #"<cyan>{name}</cyan>:"
+        "<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+        "<level>{message}</level>"
+    )    
+    logger.add(sys.stderr, format=logger_format, level=level)
     logging_enable()
 
 
