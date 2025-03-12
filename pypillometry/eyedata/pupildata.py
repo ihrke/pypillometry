@@ -6,8 +6,9 @@ Class representing pupillometric data.
 """
 
 import itertools
-from typing import Tuple
+from typing import Optional, Tuple
 from .eyedatadict import EyeDataDict
+from ..erpd import ERPD
 from .generic import GenericEyeData, keephistory
 #from .. import convenience
 from ..signal import baseline
@@ -478,3 +479,96 @@ class PupilData(GenericEyeData):
         
         return obj
     
+
+    def get_erpd(self, erpd_name: str, event_select, 
+                 eyes: list=[], variable: str="pupil",
+                 baseline_win: Optional[Tuple[float,float]]=None, 
+                 interval: Tuple[float,float]=(-500, 2000), 
+                 **kwargs):
+        """
+        Extract event-related pupil dilation (ERPD).
+        No attempt is being made to exclude overlaps of the time-windows.
+
+        Parameters
+        ----------
+        erpd_name: str
+            identifier for the result (e.g., "cue-locked" or "conflict-trials")
+        eyes: list or str
+            str or list of eyes to process; if empty, all available eyes are processed
+        variable: str
+            default is to use the "pupil" but it could be used to process, e.g.,
+            interpolated pupil data stored in a different variables, e.g., "pupilinterp"
+        baseline_win: tuple (float,float) or None
+            if None, no baseline-correction is applied
+            if tuple, the mean value in the window in milliseconds (relative to `time_win`) is 
+                subtracted from the single-trial ERPDs (baseline-correction)
+        event_select: str or function
+            variable describing which events to select and align to
+            - if str: use all events whose label contains the string
+            - if function: apply function to all labels, use those where the function returns True
+            see :class:`GenericEyeData.get_intervals()` for details
+        interval: Tuple[float, float]
+            time before and after event to include (in ms)
+        kwargs:
+            additional arguments passed to the `event_select` function
+        """
+        eyes,_=self._get_eye_var(eyes,[])
+        if not isinstance(variable, str):
+            logger.warning("variable must be a string; using default 'pupil'")
+            variable="pupil"
+
+        # units=None means, we get indices into self.tx back from self.get_intervals()
+        intervals = self.get_intervals(event_select, interval, units=None, **kwargs)
+        nintv=len(intervals)
+
+        time_win_ix=tuple(( int(np.ceil(tw/1000.*self.fs)) for tw in interval ))
+        duration_ix=time_win_ix[1]-time_win_ix[0]
+        txw=np.linspace(interval[0], interval[1], num=duration_ix)
+
+        data = EyeDataDict()
+
+        for eye in eyes:
+            # matrix/mask for the ERPDs for each eye
+            erpd=np.zeros((duration_ix,nintv))
+            mask=np.ones((duration_ix,nintv))
+
+            for i,(on,off) in enumerate(intervals):
+                onl,offl=0,duration_ix # "local" window indices
+            
+                if on<0: ## pad with zeros in case timewindow starts before data
+                    onl=np.abs(on)
+                    on=0
+                if off>=self.tx.size-1:
+                    offl=(off-on)+1
+                    off=self.tx.size
+                erpd[onl:offl,i]=self.data[eye,variable][on:off]
+                mask[onl:offl,i]=self.data.mask[eye+"_"+variable][on:off]
+
+            data[eye,"erpd"]=erpd
+            data.mask[eye+"_erpd"]=mask
+        
+        erpd = ERPD(erpd_name, txw, data)
+        if baseline_win is not None:
+            blwin=np.array(baseline_win)
+            if np.any(blwin<interval[0]) or np.any(blwin>=interval[1]):
+                logger.warning("Baseline window misspecified %s vs. %s; "
+                               "NOT doing baseline correction"%(baseline_win, interval))
+            else:
+                erpd.baseline_correct(baseline_win=baseline_win) 
+
+        return ERPD(erpd_name, txw, data)
+
+
+#        baselines=[None for _ in range(nev)]
+#        if baseline_win is not None:
+#            if baseline_win[0]<time_win[0] or baseline_win[0]>time_win[1] or baseline_win[1]<time_win[0] or baseline_win[1]>time_win[1]:
+#                print("WARNING: baseline-window misspecified %s vs. %s; NOT doing baseline correction"%(baseline_win, time_win))
+#            else:
+#                blwin_ix=tuple(( np.argmin(np.abs(bw-txw)) for bw in baseline_win ))
+#
+#                for i in range(nev):
+#                    baselines[i]=np.mean(erpd[i,blwin_ix[0]:blwin_ix[1]])
+#                    erpd[i,:]-=baselines[i]
+#
+#        return ERPD(erpd_name, txw, erpd, missing, baselines)
+#    

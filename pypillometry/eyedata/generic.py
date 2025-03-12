@@ -677,7 +677,7 @@ class GenericEyeData(ABC):
 
         units : str
             units of the interval (one of "ms", "sec", "min"); units=None means
-            that the interval is in time units taken from the data
+            that the interval in sampling units (i.e., indices into the time-array)
 
         kwargs : dict
             passed onto the event_select function
@@ -688,11 +688,10 @@ class GenericEyeData(ABC):
         result: 
             interval on- and offsets for each match, units determined by `units`
         """
-        if units is None:
-            fac=1.0
-        else:
-            fac=self._unit_fac(units)
+        fac=self._unit_fac(units)
 
+        if not isinstance(interval, Iterable):
+            raise ValueError("interval must be iterable")
         if interval[1]<=interval[0]:
             raise ValueError("interval must be (min,max) with min<max, got {}".format(interval))
         if isinstance(event_select, tuple):
@@ -702,7 +701,8 @@ class GenericEyeData(ABC):
             event_ix=[None,None]
             for i,evsel in enumerate(event_select):
                 if callable(evsel):
-                    event_ix[i]=np.array([bool(evsel(evlab, **kwargs)) for evlab in self.event_labels])
+                    event_ix[i]=np.array([bool(evsel(evlab, **kwargs)) 
+                                          for evlab in self.event_labels])
                 elif isinstance(evsel, str):
                     event_ix[i]=np.array([evsel in evlab for evlab in self.event_labels])
                 else:
@@ -710,13 +710,15 @@ class GenericEyeData(ABC):
                 if np.sum(event_ix[i])==0:
                     raise ValueError("no events found matching event_select")
             if np.sum(event_ix[0])!=np.sum(event_ix[1]):
-                raise ValueError("event_select must result in same number of events for both selectors, got {} and {}".format(np.sum(event_ix[0]), np.sum(event_ix[1])))
+                raise ValueError("event_select must result in same number of events for both "
+                "selectors, got {} and {}".format(np.sum(event_ix[0]), np.sum(event_ix[1])))
             sti=(self.event_onsets[event_ix[0]]*fac)+interval[0]
             ste=(self.event_onsets[event_ix[1]]*fac)+interval[1]
         else:
             # one event with padding interval
             if callable(event_select):
-                event_ix=np.array([bool(event_select(evlab, **kwargs)) for evlab in self.event_labels])
+                event_ix=np.array([bool(event_select(evlab, **kwargs)) 
+                                   for evlab in self.event_labels])
             elif isinstance(event_select, str):
                 event_ix=np.array([event_select in evlab for evlab in self.event_labels])
             else:
@@ -727,6 +729,10 @@ class GenericEyeData(ABC):
             ste=(self.event_onsets[event_ix]*fac)+interval[1]
         
         intervals = [(s,e) for s,e in zip(sti,ste)]
+        if units is None:
+            intervals = [(np.argmin(np.abs(self.tx-s)),
+                          np.argmin(np.abs(self.tx-e))) 
+                          for s,e in intervals]
 
         return intervals
 

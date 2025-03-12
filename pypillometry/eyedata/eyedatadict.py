@@ -21,6 +21,7 @@ class EyeDataDict(MutableMapping):
         self.data = dict()
         self.mask = dict() # mask for missing/artifactual values
         self.length=0
+        self.shape=None
         self.update(dict(*args, **kwargs))  # use the free update to set keys
 
     def get_available_eyes(self, variable=None):
@@ -63,23 +64,25 @@ class EyeDataDict(MutableMapping):
             key="_".join(key)
         return self.data[key]
 
+
     def __setitem__(self, key, value):
         if value is None or len(value)==0:
             return
         value=np.array(value)
         if not isinstance(value, np.ndarray):
             raise ValueError("Value must be numpy.ndarray")
-        if len(value.shape)>1:
-            raise ValueError("Array must be 1-dimensional")
-        if self.length==0:
+        #if len(value.shape)>1:
+        #    raise ValueError("Array must be 1-dimensional")
+        if self.length==0 or self.shape is None:
             self.length=value.shape[0]
-        if value.shape[0]!=self.length:
-            raise ValueError("Array must have same length as existing arrays")
+            self.shape=value.shape
+        if np.any(np.array(self.shape)!=np.array(value.shape)):
+            raise ValueError("Array must have same dimensions as existing arrays")
         # check if key is a tuple, in that case convert to string
         if isinstance(key, tuple):
             key="_".join(key)
         self.data[key] = value.astype(float)
-        self.mask[key] = np.zeros(self.length, dtype=int)
+        self.mask[key] = np.zeros(self.shape, dtype=int)
 
     def __delitem__(self, key):
         del self.data[key]
@@ -92,10 +95,10 @@ class EyeDataDict(MutableMapping):
         return self.length
     
     def __repr__(self) -> str:
-        r="EyeDataDict(vars=%i,n=%i): \n"%(len(self.data), self.length)
+        r="EyeDataDict(vars=%i,n=%i,shape=%s): \n"%(len(self.data), self.length, str(self.shape))
         for k,v in self.data.items():
             r+="  %s (%s): "%(k,v.dtype)
-            r+=", ".join(v[0:(min(5,self.length))].astype(str))
+            r+=", ".join(v.flat[0:(min(5,self.length))].astype(str).tolist())
             if self.length>5:
                 r+="..."
             r+="\n"

@@ -5,8 +5,10 @@ erpd.py
 Event-related pupil dilation.
 
 """
+from types import NoneType
 from .io import *
-
+from .eyedata import EyeDataDict
+from loguru import logger
 import pylab as plt
 import matplotlib as mpl
 from matplotlib.backends.backend_pdf import PdfPages
@@ -17,7 +19,7 @@ from scipy import interpolate
 import scipy
 
 
-from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
+from typing import Iterable, Sequence, Union, List, TypeVar, Optional, Tuple, Callable
 PupilArray=Union[np.ndarray, List[float]]
 import collections.abc
 
@@ -25,32 +27,39 @@ import collections.abc
 class ERPD:
     """
     Class representing a event-related pupillary dilation (ERPD) for one subject.
+
+    Parameters
+    ----------
+    name: str
+        name of the ERPD (e.g., "cue-locked" or "conflict-trials")
+    tx: np.ndarray
+        time-axis (in ms)
+    erpd: EyeDataDict
+        dictionary containing the ERPD (2D-array with shape (nevents, ntimepoints))
     """
-    def __init__(self, name, tx, erpd, missing, baselines):
+    def __init__(self, name: str, tx: np.array, erpd: EyeDataDict):
         self.name=name
-        self.baselines=baselines
         self.tx=tx
         self.erpd=erpd
-        if missing is None:
-            self.missing=np.zeros(erpd.shape)
-        else: 
-            self.missing=missing
-
-    @property
-    def nevents(self):
-        return self.erpd.shape[0]
 
     @property
     def n(self):
+        return self.erpd.shape[0]
+
+    @property
+    def nevents(self):
         return self.erpd.shape[1]
 
     def summary(self) -> dict:
         """Return a summary of the :class:`.PupilData`-object."""
         summary=dict(
             name=self.name,
-            nevents=self.nevents, #self.erpd.shape[0],
-            n=self.n, #self.erpd.shape[1],
-            window=(self.tx.min(), self.tx.max())
+            eyes=self.erpd.get_available_eyes(),
+            variables=self.erpd.get_available_variables(),
+            nevents=self.nevents, 
+            n=self.n, 
+            window=(self.tx.min(), self.tx.max()),
+            glimpse=repr(self.erpd)
         )
         return summary
 
@@ -91,7 +100,53 @@ class ERPD:
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
         return s
                 
-    def plot(self, overlays=None, meanfct=np.mean, varfct=scipy.stats.sem, plot_missing: bool=True,
+    def baseline_correct(self, 
+                         baseline_win: Tuple[float,float]|float|NoneType=0,
+                         eyes: list|str=[]):
+        """
+        Apply baseline-correction to the ERPD.
+        
+        Parameters
+        ----------
+        
+        eyes: list of str
+            list of eyes to apply baseline-correction to
+            if empty, all eyes are baseline-corrected
+        
+        baseline_win: tuple (float,float) or float (default 0) or None
+            if None, no baseline-correction is applied
+            if tuple, the mean value in the window in milliseconds (relative to `time_win`) is 
+            subtracted from the single-trial ERPDs (baseline-correction)
+            if float, the value where the time-array is closest to this value is used as baseline
+        """
+        if baseline_win is None:
+            logger.warning("No baseline-correction applied")
+            return           
+        if isinstance(eyes, str):
+            eyes=[eyes]        
+        if isinstance(eyes, Iterable) and len(eyes)==0:
+            eyes=self.erpd.get_available_eyes()
+        
+        for eye in eyes:
+            if not isinstance(baseline_win, Iterable):
+                blwin_ix=np.argmin(np.abs(self.tx-baseline_win))
+            else:
+                blwin_ix=tuple(( np.argmin(np.abs(bw-self.tx)) for bw in baseline_win ))
+            logger.info("Baseline-correction for eye {eye} using window {blwin_ix}".format(
+                eye=eye, blwin_ix=blwin_ix))
+            for i in range(self.nevents):
+                if blwin_ix.size==2:
+                    baseline = np.mean(self.erpd[eye,"erpd"][blwin_ix[0]:blwin_ix[1],i])
+                else:
+                    baseline = self.erpd[eye,"erpd"][blwin_ix,i]
+                self.erpd[eye,"erpd"][:,i] -= baseline
+
+        
+    
+    def plot(self, 
+             eyes: str|list=[],
+             overlays=None, meanfct=np.mean, varfct=scipy.stats.sem, 
+             plot_missing: bool=True,
              title: str=None): 
         """
         Plot mean and error-ribbons using `varct`.
@@ -99,62 +154,49 @@ class ERPD:
         Parameters
         ----------
         
+        eyes: str or list of str
+            list of eyes to plot
         overlays: single or sequence of :class:`.ERPDSingleSubject`-objects 
             the overlays will be added to the same plot
-        
         meanfct: callable
             mean-function to apply to the single-trial ERPDs for plotting
         varfct: callable or None
             function to calculate error-bands (e.g., :func:`numpy.std` for standard-deviation 
             or :func:`scipy.stats.sem` for standard-error)
             if None, no error bands are plotted
-            
         plot_missing: bool
             plot percentage interpolated/missing data per time-point?
         title: str
             title of the plot or None (in which case the name of the ERPD is used as title)
         """
-        merpd=meanfct(self.erpd, axis=0)
-        sderpd=varfct(self.erpd, axis=0) if callable(varfct) else None
-        percmiss=np.mean(self.missing, axis=0)*100.
-        ax1=plt.gca()        
-        if sderpd is not None:
-            ax1.fill_between(self.tx, merpd-sderpd, merpd+sderpd, color="grey", alpha=0.3)
-        ax1.plot(self.tx, merpd, label=self.name)        
-        ax1.axvline(x=0, color="red")        
-        ax1.set_ylabel("mean PD")
-        ax1.set_xlabel("time (ms)")
-        if title is not None:
-            ax1.set_title(title)
-        else:
-            ax1.set_title(self.name)
+        if isinstance(eyes, str):
+            eyes=[eyes]
+        if len(eyes)==0:
+            eyes=self.erpd.get_available_eyes()
+        
+        ax1=plt.gca()
         if plot_missing:
             ax2=ax1.twinx()
-            ax2.plot(self.tx, percmiss, alpha=0.3)
-            ax2.set_ylim(0,100)
-            ax2.set_ylabel("% missing")
-            
-        if overlays is not None:
-            if not isinstance(overlays, collections.abc.Sequence):
-                overlays=[overlays]
-            for ov in overlays:
-                merpd=meanfct(ov.erpd, axis=0)
-                sderpd=varfct(ov.erpd, axis=0) if callable(varfct) else None
-                percmiss=np.mean(ov.missing, axis=0)*100.
-                if sderpd is not None:
-                    ax1.fill_between(self.tx, merpd-sderpd, merpd+sderpd, color="grey", alpha=0.3)
-                ax1.plot(self.tx, merpd, label=ov.name)        
-                if plot_missing:
-                    ax2.plot(ov.tx, percmiss, alpha=0.3)
+        for eye in eyes:
+            merpd=meanfct(self.erpd[eye,"erpd"], axis=1)
+            sderpd=varfct(self.erpd[eye,"erpd"], axis=1) if callable(varfct) else None
+            percmiss=np.mean(self.erpd.mask[eye+"_erpd"], axis=1)*100.
+            if sderpd is not None:
+                ax1.fill_between(self.tx, merpd-sderpd, merpd+sderpd, color="grey", alpha=0.3)
+            ax1.plot(self.tx, merpd, label=eye)        
+            ax1.axvline(x=0, color="red")        
+            ax1.set_ylabel("mean PD")
+            ax1.set_xlabel("time (ms)")
+            if title is not None:
+                ax1.set_title(title)
+            else:
+                ax1.set_title(self.name)
+            if plot_missing:
+                ax2.plot(self.tx, percmiss, alpha=0.3)
+                ax2.set_ylim(0,100)
+                ax2.set_ylabel("% missing")
         ax1.legend()
         
-
-def plot_erpds(erpds):
-    """
-    Plot a list of ERPD objects.
-    """
-    erpds[0].plot(erpds[1:len(erpds)])
-    
 
 def group_erpd(datasets: List, erpd_name: str, event_select, 
                baseline_win: Optional[Tuple[float,float]]=None, 
