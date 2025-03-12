@@ -1,4 +1,5 @@
 from ..eyedata import GenericEyeData
+from .genplotter import GenericPlotter
 import numpy as np
 from collections.abc import Iterable
 
@@ -9,7 +10,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib as mpl
 from matplotlib.backends.backend_pdf import PdfPages
 
-class GazePlotter:
+class GazePlotter(GenericPlotter):
     """
     Class for plotting eye data. The class is initialized with an EyeData object
     and provides methods to plot the data in various ways.

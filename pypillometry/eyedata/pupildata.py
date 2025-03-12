@@ -359,7 +359,7 @@ class PupilData(GenericEyeData):
 
 
     @keephistory
-    def pupil_estimate_baseline(self, eyes=[],
+    def pupil_estimate_baseline(self, eyes=[], variable="pupil",
                                 method: str="envelope_iter_bspline_2", inplace=None, **kwargs):
         """
         Apply one of the baseline-estimation methods.
@@ -369,6 +369,9 @@ class PupilData(GenericEyeData):
         
         eyes: list or str
             str or list of eyes to process; if empty, all available eyes are processed
+        variable: str
+            default is to use the "pupil" but it could be used to process, e.g., 
+            interpolated pupil data stored in a different variables, e.g., "pupilinterp"
         method: 
             "envelope_iter_bspline_1": :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` 
                                         with one iteration
@@ -388,17 +391,20 @@ class PupilData(GenericEyeData):
         """
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
+        if not isinstance(variable, str):
+            logger.warning("variable must be a string; using default 'pupil'")
+            variable="pupil"
 
         for eye in eyes:
             logger.info("Estimating baseline for eye %s"%eye)
 
             if method=="envelope_iter_bspline_2":
-                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,"pupil"],
+                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],
                                                                             self.event_onsets,self.fs,**kwargs)
                 f=interpolate.interp1d(txd, base2, kind="cubic", bounds_error=False, fill_value="extrapolate")
                 obj.data[eye,"baseline"]=f(self.tx)
             elif method=="envelope_iter_bspline_1": 
-                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,"pupil"],
+                txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],
                                                                             self.event_onsets,self.fs,**kwargs)
                 f=interpolate.interp1d(txd, base1, kind="cubic", bounds_error=False, fill_value="extrapolate")
                 obj.data[eye,"baseline"]=f(self.tx)

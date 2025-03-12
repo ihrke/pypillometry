@@ -1,5 +1,6 @@
 import itertools
 from ..eyedata import GenericEyeData
+from .genplotter import GenericPlotter
 import numpy as np
 from collections.abc import Iterable
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
@@ -13,7 +14,7 @@ import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.backends.backend_pdf import PdfPages
 
-class PupilPlotter:
+class PupilPlotter(GenericPlotter):
     """
     Class for plotting pupil data. The class is initialized with a GenericEyeData object
     and provides methods to plot the data in various ways.
@@ -28,7 +29,6 @@ class PupilPlotter:
                    plot_range: Tuple[float,float]=(-np.infty, +np.infty),
                    plot_events: bool=True,
                    highlight_blinks: bool=True,
-                   highlight_interpolated: bool=False,
                    units: str="sec"
             ) -> None:
         """Make a plot of the pupil data using `matplotlib`.
@@ -48,8 +48,6 @@ class PupilPlotter:
             plot events as vertical lines with labels
         highlight_blinks: bool
             highlight detected blinks
-        highlight_interpolated: bool
-            highlight interpolated data
         """
         if not isinstance(eyes, list):
             eyes=[eyes]
@@ -99,16 +97,6 @@ class PupilPlotter:
             ll,ul=plt.ylim()
             for ev,lab in zip(evon,evlab):
                 plt.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
-
-        # highlight if interpolated in any of the eyes
-        if highlight_interpolated:
-            ieyes = [eye for eye in eyes if eye+"_pupilinterpolated" in self.obj.data]
-            interp = np.any([self.obj.data[eye,"pupilinterpolated"] for eye in ieyes], axis=0)
-            a=np.diff(np.r_[0, interp[startix:endix], 0])[:-1]
-            istarts=np.where(a>0)[0]
-            iends=np.where(a<0)[0]
-            for istart,iend in zip(istarts,iends):
-                plt.gca().axvspan(tx[istart],tx[iend],color="green", alpha=0.1)
         
         # highlight if a blink in any of the eyes
         if highlight_blinks:
@@ -223,84 +211,3 @@ class PupilPlotter:
         intervals=[(max(0,int(s-pre_blink)),min(self.obj.tx.size,int(e+post_blink))) for s,e in blinks]
         return self.plot_intervals(intervals, eyes, variables, pdf_file, nrow, ncol, figsize, units, plot_index)
 
-    def plot_intervals(self, intervals: list|np.ndarray,
-                       eyes: str|list=[], variables: str|list=[],
-                       pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
-                       figsize: Tuple[int,int]=(10,10), 
-                       units: str="ms", 
-                       plot_index: bool=True):
-        """"
-        Plotting data around intervals.
-
-        Each interval gets a separate subplot. 
-        The data is plotted for each eye and variable in different colors.
-        
-        Parameters
-        ----------
-        eyes: str or list
-            eyes to plot
-        variables: str or list
-            variables to plot
-        intervals: list of tuples
-            intervals to plot
-        pdf_file: str or None
-            if the name of a file is given, the figures are saved into a 
-            multi-page PDF file
-        ncol: int
-            number of columns for the subplots for the intervals
-        nrow: int
-            number of rows for the subplots for the intervals
-        units: str
-            units in which the signal is plotted
-        plot_index: bool
-            plot a number with the blinks' index (e.g., for identifying abnormal blinks)
-            
-        """
-        obj=self.obj # PupilData object
-        fac=obj._unit_fac(units)
-        nsubplots=nrow*ncol # number of subplots per figure
-
-        eyes,variables=obj._get_eye_var(eyes, variables)
-        if isinstance(intervals, np.ndarray):
-            if intervals.ndim!=2 or intervals.shape[1]!=2:
-                raise ValueError("intervals must be a list of tuples or a 2D array with 2 columns")
-            intervals=intervals.tolist()
-        if isinstance(intervals, Iterable):
-            intervals=[tuple(i) for i in intervals]
-            
-        nfig=int(np.ceil(len(intervals)/nsubplots))
-
-        figs=[]
-        if isinstance(pdf_file,str):
-            _backend=mpl.get_backend()
-            mpl.use("pdf")
-            plt.ioff() ## avoid showing plots when saving to PDF 
-        
-        iinterv=0
-        for i in range(nfig):
-            fig=plt.figure(figsize=figsize)
-            axs = fig.subplots(nrow, ncol).flatten()
-
-            for ix,(start,end) in enumerate(intervals[(i*nsubplots):(i+1)*nsubplots]):
-                iinterv+=1
-                slic=slice(start,end)
-                ax=axs[ix]
-                for eye,var in itertools.product(eyes,variables):
-                    ax.plot(obj.tx[slic]*fac,obj.data[eye,var][slic], label="%s_%s"%(eye,var))
-
-                if plot_index: 
-                    ax.text(0.5, 0.5, '%i'%(iinterv), fontsize=12, horizontalalignment='center',     
-                            verticalalignment='center', transform=ax.transAxes)
-            figs.append(fig)
-
-        if pdf_file is not None:
-            print("> Saving file '%s'"%pdf_file)
-            with PdfPages(pdf_file) as pdf:
-                for fig in figs:
-                    pdf.savefig(fig)
-            ## switch back to original backend and interactive mode                
-            mpl.use(_backend) 
-            plt.ion()
-            
-        return figs    
-        

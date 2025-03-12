@@ -11,17 +11,19 @@ Porting all things from old `PupilData` to either `GenericEyeData` (for function
 - [x] `downsample()`  - implement in `GenericEyeData`
 - [x] `merge_eyes()` - implement in `GenericEyeData` to combine left/right eyes into a single variable
   - [ ] perhaps implement regression merging?
-- [ ] blinks
+- [x] blinks
   - [x] make the `blinks` field a property so that the blinkmask can be kept in sync
   - [x] `pupil_blinks_detect()` - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names
   - [x] `blinks_merge()` - for is a `PupilData` method but if there will be blinks in the gaze data at some point, the whole `blink` functionality should be moved to `GenericEyeData`
-  - [ ] make a "mask" field for the `EyeDataDict` that is a dict of boolean arrays that can be used to mask out parts of the data for blinks/interpolation?
-  - [ ] `pupil_blinks_interpolate()` - merge with Mahot function and make one an option for the other
-- [ ] baseline/response estimation
-  - [ ] `pupil_estimate_baseline()`
-  - [ ] `pupil_estimate_response()`
-- [ ] statistics per events
-- [ ] plotting
+  - [x] make a "mask" field for the `EyeDataDict` that is a dict of boolean arrays that can be used to mask out parts of the data for blinks/interpolation?
+  - [x] `pupil_blinks_interpolate()` - merge with Mahot function and make one an option for the other
+- [x] baseline/response estimation
+  - [x] `pupil_estimate_baseline()`
+  - [x] `pupil_estimate_response()`
+- [x] statistics per events
+- [x] some more general interval processing
+- [x] plotting
+- [ ] rework ERPD class: make it use the EyeDataDict but so that each entry is a 2D np.array that stores all the windows for a given event (have to match all dims)
 
 
 
