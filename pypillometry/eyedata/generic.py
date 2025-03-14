@@ -101,8 +101,6 @@ class GenericEyeData(ABC):
         else:
             self.tx=np.array(time, dtype=float)
 
-        self.missing=np.zeros_like(self.tx, dtype=bool)
-
         if sampling_rate is None:
             self.fs=np.round(1000./np.median(np.diff(self.tx)))
         else:
@@ -326,8 +324,12 @@ class GenericEyeData(ABC):
         stats=dict()
 
         for eye in eyes:
-            blinks=self.get_blinks(eye,"pupil")/self.fs*1000*fac
-            stats[eye]=get_interval_stats(blinks)            
+            blinks=self.get_blinks(eye,"pupil")
+            if blinks is not None:
+                blinks=blinks/self.fs*1000*fac
+                stats[eye]=get_interval_stats(blinks)            
+            else:
+                stats[eye]=None
         return stats
 
 
@@ -712,8 +714,15 @@ class GenericEyeData(ABC):
             if np.sum(event_ix[0])!=np.sum(event_ix[1]):
                 raise ValueError("event_select must result in same number of events for both "
                 "selectors, got {} and {}".format(np.sum(event_ix[0]), np.sum(event_ix[1])))
-            sti=(self.event_onsets[event_ix[0]]*fac)+interval[0]
-            ste=(self.event_onsets[event_ix[1]]*fac)+interval[1]
+            
+            if units is None:
+                eix1=np.argmin(np.abs(self.tx-self.event_onsets[event_ix[0]]))
+                eix2=np.argmin(np.abs(self.tx-self.event_onsets[event_ix[1]]))
+                sti=min(eix1+interval[0], 0)
+                ste=max(eix2+interval[1], len(self.tx))
+            else:
+                sti=(self.event_onsets[event_ix[0]]*fac)+interval[0]
+                ste=(self.event_onsets[event_ix[1]]*fac)+interval[1]
         else:
             # one event with padding interval
             if callable(event_select):
@@ -725,14 +734,16 @@ class GenericEyeData(ABC):
                 raise ValueError("event_select must be string or function")
             if np.sum(event_ix)==0:
                 raise ValueError("no events found matching event_select")
-            sti=(self.event_onsets[event_ix]*fac)+interval[0]
-            ste=(self.event_onsets[event_ix]*fac)+interval[1]
+            if units is None:
+                eix=np.array([np.argmin(np.abs(self.tx-ev)) 
+                              for ev in self.event_onsets[event_ix]])
+                sti=np.maximum(eix+interval[0], 0)
+                ste=np.minimum(eix+interval[1], len(self.tx))
+            else:
+                sti=(self.event_onsets[event_ix]*fac)+interval[0]
+                ste=(self.event_onsets[event_ix]*fac)+interval[1]
         
         intervals = [(s,e) for s,e in zip(sti,ste)]
-        if units is None:
-            intervals = [(np.argmin(np.abs(self.tx-s)),
-                          np.argmin(np.abs(self.tx-e))) 
-                          for s,e in intervals]
 
         return intervals
 

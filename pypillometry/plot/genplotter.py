@@ -1,6 +1,7 @@
 import itertools
 from typing import Iterable, Optional, Tuple
 from ..eyedata import GenericEyeData
+from ..convenience import mask_to_intervals
 import numpy as np
 from loguru import logger
 
@@ -21,7 +22,7 @@ class GenericPlotter:
                        eyes: str|list=[], variables: str|list=[],
                        pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
                        figsize: Tuple[int,int]=(10,10), 
-                       units: str="ms", 
+                       units: str="ms", plot_mask: bool=False,
                        plot_index: bool=True):
         """"
         Plotting data around intervals.
@@ -48,7 +49,8 @@ class GenericPlotter:
             units in which the signal is plotted
         plot_index: bool
             plot a number with the blinks' index (e.g., for identifying abnormal blinks)
-            
+        plot_mask: bool
+            plot the "mask" array of the underlying data object
         """
         obj=self.obj # PupilData object
         fac=obj._unit_fac(units)
@@ -82,6 +84,12 @@ class GenericPlotter:
                 for eye,var in itertools.product(eyes,variables):
                     ax.plot(obj.tx[slic]*fac,obj.data[eye,var][slic], label="%s_%s"%(eye,var))
 
+                if plot_mask:
+                    mask = obj.data.mask[eye+"_"+var][slic]
+                    txm = obj.tx[slic]
+                    mint = mask_to_intervals(mask)
+                    for sm,em in mint:
+                        ax.axvspan(txm[sm]*fac,txm[em]*fac, color="grey", alpha=0.3)
                 if plot_index: 
                     ax.text(0.5, 0.5, '%i'%(iinterv), fontsize=12, horizontalalignment='center',     
                             verticalalignment='center', transform=ax.transAxes)

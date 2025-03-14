@@ -517,13 +517,16 @@ class PupilData(GenericEyeData):
             logger.warning("variable must be a string; using default 'pupil'")
             variable="pupil"
 
+        # convert interval into sampling units
+        interval_ix=tuple(( int(np.ceil(tw/1000.*self.fs)) for tw in interval ))
+        duration_ix=interval_ix[1]-interval_ix[0]
+        txw=np.linspace(interval[0], interval[1], num=duration_ix)
+
         # units=None means, we get indices into self.tx back from self.get_intervals()
-        intervals = self.get_intervals(event_select, interval, units=None, **kwargs)
+        # use inter in sampling units with units=None to find closest points in tx
+        intervals = self.get_intervals(event_select, interval_ix, units=None, **kwargs)
         nintv=len(intervals)
 
-        time_win_ix=tuple(( int(np.ceil(tw/1000.*self.fs)) for tw in interval ))
-        duration_ix=time_win_ix[1]-time_win_ix[0]
-        txw=np.linspace(interval[0], interval[1], num=duration_ix)
 
         data = EyeDataDict()
 
@@ -539,36 +542,22 @@ class PupilData(GenericEyeData):
                     onl=np.abs(on)
                     on=0
                 if off>=self.tx.size-1:
-                    offl=(off-on)+1
+                    offl=(off-on)
                     off=self.tx.size
+                #print(on,off,onl,offl)
                 erpd[onl:offl,i]=self.data[eye,variable][on:off]
                 mask[onl:offl,i]=self.data.mask[eye+"_"+variable][on:off]
 
             data[eye,"erpd"]=erpd
             data.mask[eye+"_erpd"]=mask
         
-        erpd = ERPD(erpd_name, txw, data)
+        rerpd = ERPD(erpd_name, txw, data)
         if baseline_win is not None:
             blwin=np.array(baseline_win)
             if np.any(blwin<interval[0]) or np.any(blwin>=interval[1]):
                 logger.warning("Baseline window misspecified %s vs. %s; "
                                "NOT doing baseline correction"%(baseline_win, interval))
             else:
-                erpd.baseline_correct(baseline_win=baseline_win) 
+                rerpd.baseline_correct(baseline_win=baseline_win) 
 
-        return ERPD(erpd_name, txw, data)
-
-
-#        baselines=[None for _ in range(nev)]
-#        if baseline_win is not None:
-#            if baseline_win[0]<time_win[0] or baseline_win[0]>time_win[1] or baseline_win[1]<time_win[0] or baseline_win[1]>time_win[1]:
-#                print("WARNING: baseline-window misspecified %s vs. %s; NOT doing baseline correction"%(baseline_win, time_win))
-#            else:
-#                blwin_ix=tuple(( np.argmin(np.abs(bw-txw)) for bw in baseline_win ))
-#
-#                for i in range(nev):
-#                    baselines[i]=np.mean(erpd[i,blwin_ix[0]:blwin_ix[1]])
-#                    erpd[i,:]-=baselines[i]
-#
-#        return ERPD(erpd_name, txw, erpd, missing, baselines)
-#    
+        return rerpd

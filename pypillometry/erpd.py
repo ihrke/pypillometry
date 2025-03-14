@@ -13,10 +13,12 @@ import pylab as plt
 import matplotlib as mpl
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
+import numpy.ma as ma
 import scipy.signal as signal
 from scipy.interpolate import interp1d
 from scipy import interpolate
 import scipy
+
 
 
 from typing import Iterable, Sequence, Union, List, TypeVar, Optional, Tuple, Callable
@@ -135,7 +137,7 @@ class ERPD:
             logger.info("Baseline-correction for eye {eye} using window {blwin_ix}".format(
                 eye=eye, blwin_ix=blwin_ix))
             for i in range(self.nevents):
-                if blwin_ix.size==2:
+                if isinstance(blwin_ix, Iterable) and len(blwin_ix)==2:
                     baseline = np.mean(self.erpd[eye,"erpd"][blwin_ix[0]:blwin_ix[1],i])
                 else:
                     baseline = self.erpd[eye,"erpd"][blwin_ix,i]
@@ -178,8 +180,9 @@ class ERPD:
         if plot_missing:
             ax2=ax1.twinx()
         for eye in eyes:
-            merpd=meanfct(self.erpd[eye,"erpd"], axis=1)
-            sderpd=varfct(self.erpd[eye,"erpd"], axis=1) if callable(varfct) else None
+            erpd = ma.masked_array(self.erpd[eye,"erpd"], mask=self.erpd.mask[eye+"_erpd"])
+            merpd=meanfct(erpd, axis=1)
+            sderpd=varfct(erpd, axis=1) if callable(varfct) else None
             percmiss=np.mean(self.erpd.mask[eye+"_erpd"], axis=1)*100.
             if sderpd is not None:
                 ax1.fill_between(self.tx, merpd-sderpd, merpd+sderpd, color="grey", alpha=0.3)

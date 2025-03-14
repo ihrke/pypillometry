@@ -9,6 +9,38 @@ Some convenience functions.
 import numpy as np
 import pandas as pd
 
+
+def mask_to_intervals(mask):
+    """
+    Convert a boolean mask to a list of intervals.
+    
+    Parameters
+    ----------
+    mask : np.ndarray
+        boolean mask
+    
+    Returns
+    -------
+    list of tuples
+        list of intervals
+    """
+    if not isinstance(mask, np.ndarray):
+        mask=np.array(mask)
+    if mask.ndim>1:
+        raise ValueError("mask must be 1D")
+    if mask.dtype not in (bool,int):
+        raise ValueError("mask must be int or boolean")
+    if mask.size==0:
+        return []
+    m=np.concatenate(([0], mask, [0]))
+    idxs = np.flatnonzero(m[1:] != m[:-1])
+    ivs = list(zip(idxs[::2], idxs[1::2]))
+    ivs = [(max(start,0), min(end,mask.size-1)) 
+           for start, end in ivs]
+    return ivs
+
+
+
 def nprange(ar):
     return (ar.min(),ar.max())
 
