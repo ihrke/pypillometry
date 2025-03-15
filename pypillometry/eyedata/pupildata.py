@@ -114,12 +114,9 @@ class PupilData(GenericEyeData):
             nevents=self.nevents(), 
             nblinks=self.nblinks(), 
             blinks=self.blink_stats(),
-            nmiss=np.sum(self.missing),
-            perc_miss=np.sum(self.missing)/len(self)*100.,
             duration_minutes=self.get_duration("min"),
             start_min=self.tx.min()/1000./60.,
             end_min=self.tx.max()/1000./60.,
-            ninterpolated={eye:self.data[eye+"_interpolated"].sum() for eye in self.eyes if eye+"_interpolated" in self.data},
             params=self._strfy_params(),
             glimpse=repr(self.data)
         )
@@ -327,6 +324,7 @@ class PupilData(GenericEyeData):
 
         for eye in eyes:
             syr=obj.data[eye,"pupil"].copy() ## interpolated signal
+            mask=obj.data.mask[eye+"_pupil"].copy() # copy of mask
             bls = self.get_blinks(eye, "pupil")
             blink_onsets=preproc.blink_onsets_mahot(obj.data[eye,"pupil"], bls, 
                                                     winsize_ix, 
@@ -353,6 +351,7 @@ class PupilData(GenericEyeData):
                 # store interpolated data
                 obj.data[eye,store_as]=syr
                 # record the interpolated datapoints
+                obj.data.mask[eye+"_"+store_as]=mask
                 obj.data.mask[eye+"_"+store_as][islic]=1                
 
         return obj

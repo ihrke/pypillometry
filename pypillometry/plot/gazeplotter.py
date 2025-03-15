@@ -52,6 +52,7 @@ class GazePlotter(GenericPlotter):
             The figure size (per subplot). Default is (10,5).
         """
         obj = self.obj
+        eyes,variables=obj._get_eye_var(eyes, variables)
         if units is not None: 
             fac=obj._unit_fac(units)
             tx = obj.tx*fac
@@ -76,15 +77,7 @@ class GazePlotter(GenericPlotter):
             endix=np.argmin(np.abs(tx-end))
         
         # which data to plot
-        if not isinstance(variables, list):
-            variables=[variables]
-        if len(variables)==0:
-            variables=obj.variables
         variables = [v for v in variables if v not in self.ignore_vars]
-
-        # which eyes to plot
-        if len(eyes)==0:
-            eyes=obj.eyes
 
         # how to plot onsets
         if plot_onsets=="line":

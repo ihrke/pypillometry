@@ -118,8 +118,6 @@ class GazeData(GenericEyeData):
                 screen_limits=screen_limits,
                 physical_screen_size=phys_dims,
                 screen_eye_distance="not set",
-                nmiss=np.sum(self.missing),
-                perc_miss=np.sum(self.missing)/len(self)*100.,
                 duration_minutes=self.get_duration("min"),
                 start_min=self.tx.min()/1000./60.,
                 end_min=self.tx.max()/1000./60.,

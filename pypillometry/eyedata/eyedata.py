@@ -3,6 +3,7 @@ from .gazedata import GazeData
 from .eyedatadict import EyeDataDict
 from ..plot import EyePlotter
 import numpy as np
+from loguru import logger
 
 from .pupildata import PupilData
 import numpy as np
@@ -155,7 +156,7 @@ class EyeData(GazeData,PupilData):
     
 
     @keephistory
-    def correct_pupil_foreshortening(self, eyes=None, midpoint=None, inplace=None):
+    def correct_pupil_foreshortening(self, eyes=[], midpoint=None, store_as="pupil", inplace=None):
         """Correct pupil data using a simple algorithm to correct for foreshortening effects.
 
         Correct the pupil data for foreshortening effects caused
@@ -166,6 +167,10 @@ class EyeData(GazeData,PupilData):
 
         Relevant publication (not the description of the algorithm used here):    
         https://link.springer.com/article/10.3758/s13428-015-0588-x
+
+        - [ ] TODO: when using interpolated pupil data, x/y data may still be missing. Make sure that the 
+          pupil data is not touched where x/y is missing
+        
 
         Parameters 
         ----------
@@ -186,21 +191,20 @@ class EyeData(GazeData,PupilData):
         : :class:`EyeData`
             An EyeData object with the corrected pupil
         """
-        if inplace is None:
-            inplace=self.inplace
-        obj=self if inplace else self.copy()
+        obj=self._get_inplace(inplace)
+        eyes,_=self._get_eye_var(eyes, [])
+
+        if not isinstance(store_as, str):
+            logger.warning("store_as must be a string; using 'pupil' instead")
+            store_as="pupil"
+
         if midpoint is None:
             midpoint=(self.screen_width/2, self.screen_height/2)
         
-        if eyes is None:
-            eyes=self.eyes
-
         scaling_factor_x=self.physical_screen_width/self.screen_width
         scaling_factor_y=self.physical_screen_height/self.screen_height
 
         # calculate distance of x,y from midpoint
-        if not isinstance(eyes, list):
-            eyes=[eyes]
         for eye in eyes:
             vx="_".join([eye, "x"])
             vy="_".join([eye, "y"])
@@ -208,6 +212,6 @@ class EyeData(GazeData,PupilData):
             ydist=np.abs(self.data[vy]-midpoint[1])*scaling_factor_y
             dist=np.sqrt(xdist**2 + ydist**2)
             corr=np.sqrt( (dist**2)/(self.screen_eye_distance**2) + 1)  # correction factor
-            obj.data["_".join([eye, "pupil"])]=self.data["_".join([eye, "pupil"])]*corr
+            obj.data["_".join([eye, store_as])]=self.data["_".join([eye, "pupil"])]*corr
 
         return obj
