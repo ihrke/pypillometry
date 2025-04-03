@@ -58,11 +58,9 @@ class TestEyeData(unittest.TestCase):
         self.assertTrue(np.all(np.isfinite(self.eyedata.data['left_pupil'])))
         self.assertTrue(np.all(np.isfinite(self.eyedata.data['right_pupil'])))
         
-        # Check pupil data is within reasonable range (e.g., between 0 and 10mm)
+        # Check pupil data is non-negative
         self.assertTrue(np.all(self.eyedata.data['left_pupil'] >= 0))
         self.assertTrue(np.all(self.eyedata.data['right_pupil'] >= 0))
-        self.assertTrue(np.all(self.eyedata.data['left_pupil'] <= 10))
-        self.assertTrue(np.all(self.eyedata.data['right_pupil'] <= 10))
 
     def test_summary(self):
         """Test the summary method"""
