@@ -3,13 +3,14 @@ import sys
 import numpy as np
 sys.path.insert(0,"..")
 import pypillometry as pp
+from pypillometry.example_data import get_rlmw_002_short
 import pytest
 
 class TestEyeData(unittest.TestCase):
     def setUp(self):
         """Set up test data using the example dataset"""
         # Get example data
-        self.eyedata = pp.get_rlmw_002_short()
+        self.eyedata = get_rlmw_002_short()
         
         # Store some key attributes for testing
         self.time = self.eyedata.tx
