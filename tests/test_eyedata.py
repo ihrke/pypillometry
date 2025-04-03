@@ -27,8 +27,10 @@ class TestEyeData(unittest.TestCase):
     def test_initialization(self):
         """Test basic initialization of EyeData"""
         # Test with minimal required data
-        d = pp.EyeData(left_x=[1,2], left_y=[3,4], sampling_rate=1000)
+        d = pp.EyeData(left_x=[1,2], left_y=[3,4], left_pupil=[5,6], sampling_rate=1000)
         self.assertEqual(d.__class__, pp.EyeData)
+        self.assertIn('left_pupil', d.data)
+        np.testing.assert_array_equal(d.data['left_pupil'], [5,6])
         
         # Test with invalid data (missing y coordinate)
         with self.assertRaises(ValueError):
@@ -42,6 +44,25 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(self.eyedata.physical_screen_width, 30.0)  # Updated to match actual physical size
         self.assertEqual(self.eyedata.physical_screen_height, 20.0)
         self.assertEqual(self.eyedata.screen_eye_distance, 60.0)
+
+        # Test pupil data initialization
+        # Check that pupil data exists for both eyes
+        self.assertIn('left_pupil', self.eyedata.data)
+        self.assertIn('right_pupil', self.eyedata.data)
+        
+        # Check pupil data shape matches time array
+        self.assertEqual(len(self.eyedata.data['left_pupil']), len(self.eyedata.tx))
+        self.assertEqual(len(self.eyedata.data['right_pupil']), len(self.eyedata.tx))
+        
+        # Check pupil data contains valid values (not NaN or infinite)
+        self.assertTrue(np.all(np.isfinite(self.eyedata.data['left_pupil'])))
+        self.assertTrue(np.all(np.isfinite(self.eyedata.data['right_pupil'])))
+        
+        # Check pupil data is within reasonable range (e.g., between 0 and 10mm)
+        self.assertTrue(np.all(self.eyedata.data['left_pupil'] >= 0))
+        self.assertTrue(np.all(self.eyedata.data['right_pupil'] >= 0))
+        self.assertTrue(np.all(self.eyedata.data['left_pupil'] <= 10))
+        self.assertTrue(np.all(self.eyedata.data['right_pupil'] <= 10))
 
     def test_summary(self):
         """Test the summary method"""
