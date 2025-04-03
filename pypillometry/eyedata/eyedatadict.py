@@ -77,12 +77,13 @@ class EyeDataDict(MutableMapping):
         """
         return EyeDataDict({k:v for k,v in self.data.items() if k.endswith("_"+variable)})
 
-    def __getitem__(self, key):
-        # check if key is a tuple, in that case convert to string
-        if isinstance(key, tuple):
-            key="_".join(key)
-        return self.data[key]
+    def __contains__(self, key):
+        return key in self.data
 
+    def __getitem__(self, key):
+        if isinstance(key, tuple):
+            key = "_".join(key)
+        return self.data[key]
 
     def __setitem__(self, key: str, value: NDArray) -> None:
         if value is None or len(value) == 0:
@@ -100,13 +101,13 @@ class EyeDataDict(MutableMapping):
             self.shape=value.shape
         if np.any(np.array(self.shape)!=np.array(value.shape)):
             raise ValueError("Array must have same dimensions as existing arrays")
-        # check if key is a tuple, in that case convert to string
-        if isinstance(key, tuple):
-            key="_".join(key)
+        key = self._validate_key(key)  # Only validate key when setting values
         self.data[key] = value.astype(float)
         self.mask[key] = np.zeros(self.shape, dtype=int)
 
     def __delitem__(self, key):
+        if isinstance(key, tuple):
+            key = "_".join(key)
         del self.data[key]
         del self.mask[key]
 
@@ -128,12 +129,12 @@ class EyeDataDict(MutableMapping):
 
     def _validate_key(self, key: Union[str, Tuple[str, str]]) -> str:
         """Validate and normalize key format."""
+        if not isinstance(key, (str, tuple)):
+            raise TypeError("Key must be string or tuple")
         if isinstance(key, tuple):
             if len(key) != 2:
                 raise ValueError("Tuple key must have exactly 2 elements (eye, variable)")
             key = "_".join(key)
-        if not isinstance(key, str):
-            raise TypeError("Key must be string or tuple")
         if "_" not in key:
             raise ValueError("Key must be in format 'eye_variable'")
         return key
