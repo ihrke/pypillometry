@@ -49,7 +49,7 @@ class TestEyeData(unittest.TestCase):
         self.assertIsInstance(summary, dict)
         self.assertIn('sampling_rate', summary)
         self.assertIn('duration_minutes', summary)  # Updated to match actual key
-        self.assertIn('n_events', summary)  # Updated to match actual key
+        self.assertIn('nevents', summary)  # Updated to match actual key
 
     def test_get_pupildata(self):
         """Test the get_pupildata method"""
