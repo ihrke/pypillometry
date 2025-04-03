@@ -76,9 +76,10 @@ class TestEyeData(unittest.TestCase):
     def test_correct_pupil_foreshortening(self):
         """Test the correct_pupil_foreshortening method"""
         # Test correction for both eyes
+
         corrected = self.eyedata.correct_pupil_foreshortening(eyes=['left', 'right'])
         self.assertEqual(corrected.__class__, pp.EyeData)
-        
+        self.assertEqual(corrected.data['left_pupil'].shape, self.left_pupil.shape)
         # Test correction for single eye
         corrected_left = self.eyedata.correct_pupil_foreshortening(eyes=['left'])
         self.assertEqual(corrected_left.__class__, pp.EyeData)
@@ -100,6 +101,129 @@ class TestEyeData(unittest.TestCase):
         plotter = self.eyedata.plot
         self.assertEqual(plotter.__class__, EyePlotter)
         self.assertEqual(plotter.obj, self.eyedata)  # Updated to use obj instead of data
+
+    def test_scale_and_unscale(self):
+        """Test scaling and unscaling of data"""
+        # Create artificial data with known mean and std
+        original_data = np.random.normal(5.0, 2.0, len(self.eyedata))
+        self.eyedata.data['left_pupil'] = original_data.copy()  # Make a copy to ensure no modifications
+        
+        # Test scaling with default parameters (using data's mean and std)
+        scaled = self.eyedata.scale(variables=['pupil'], eyes=['left'])
+        self.assertNotEqual(np.mean(scaled.data['left_pupil']), np.mean(original_data))
+        self.assertAlmostEqual(np.mean(scaled.data['left_pupil']), 0.0, places=6)
+        self.assertAlmostEqual(np.std(scaled.data['left_pupil']), 1.0, places=6)
+        
+        # Test unscaling
+        unscaled = scaled.unscale(variables=['pupil'], eyes=['left'])
+        np.testing.assert_array_almost_equal(unscaled.data['left_pupil'], original_data)
+        
+        # Test that original data is unchanged
+        np.testing.assert_array_almost_equal(self.eyedata.data['left_pupil'], original_data)
+
+    def test_downsample(self):
+        """Test downsampling of data"""
+        # Test downsampling to half the original sampling rate
+        original_fs = self.eyedata.fs
+        original_len = len(self.eyedata)
+        downsampled = self.eyedata.downsample(fsd=original_fs/2)
+        self.assertEqual(downsampled.fs, original_fs/2)
+        # Allow for small differences in length due to rounding
+        self.assertAlmostEqual(len(downsampled), original_len/2, delta=1)
+        
+        # Test downsampling with decimate factor
+        # When dsfac=True, fsd is the decimate factor itself
+        # Use a fresh object for this test
+        fresh_eyedata = get_rlmw_002_short()
+        original_fs = fresh_eyedata.fs
+        original_len = len(fresh_eyedata)
+        dsfac = 4  # Use a factor of 4 to get 125 Hz
+        downsampled_factor = fresh_eyedata.downsample(fsd=dsfac, dsfac=True)
+        self.assertEqual(downsampled_factor.fs, 125.0)  # fs should be 125 Hz (500/4)
+        self.assertAlmostEqual(len(downsampled_factor), original_len/dsfac, delta=1)  # length should be original_len/dsfac
+
+    def test_merge_eyes(self):
+        """Test merging data from both eyes"""
+        # Test merging with mean method
+        merged = self.eyedata.merge_eyes(eyes=['left', 'right'], variables=['pupil'])
+        self.assertIn('mean_pupil', merged.data)
+        np.testing.assert_array_almost_equal(
+            merged.data['mean_pupil'],
+            (self.eyedata.data['left_pupil'] + self.eyedata.data['right_pupil']) / 2
+        )
+        
+        # Test merging without keeping original eyes
+        merged_no_keep = self.eyedata.merge_eyes(eyes=['left', 'right'], 
+                                                variables=['pupil'], keep_eyes=False)
+        self.assertNotIn('left_pupil', merged_no_keep.data)
+        self.assertNotIn('right_pupil', merged_no_keep.data)
+        self.assertIn('mean_pupil', merged_no_keep.data)
+
+    def test_blinks_merge(self):
+        """Test merging of close blinks"""
+        # First create some artificial blinks
+        self.eyedata.set_blinks('left', 'pupil', np.array([[100, 200], [250, 350]]))
+        
+        # Merge blinks that are within 100ms of each other
+        merged = self.eyedata.blinks_merge(eyes=['left'], variables=['pupil'], distance=100)
+        blinks = merged.get_blinks('left', 'pupil')
+        self.assertEqual(len(blinks), 1)  # Should merge into one blink
+        self.assertEqual(blinks[0][0], 100)  # Start of first blink
+        self.assertEqual(blinks[0][1], 350)  # End of last blink
+
+    def test_stat_per_event(self):
+        """Test statistical analysis per event"""
+        # Create some test events
+        self.eyedata.event_onsets = np.array([1000, 2000, 3000])
+        self.eyedata.event_labels = np.array(['stim1', 'stim2', 'stim3'])
+        
+        # Test mean pupil size in interval around events
+        stats = self.eyedata.stat_per_event(
+            interval=(-100, 100),
+            event_select='stim',
+            eyes=['left'],
+            variables=['pupil'],
+            statfct=np.mean
+        )
+        self.assertIn('left_pupil', stats)
+        self.assertEqual(len(stats['left_pupil']), 3)  # One value per event
+
+    def test_get_duration(self):
+        """Test getting duration in different units"""
+        duration_min = self.eyedata.get_duration(units='min')
+        duration_sec = self.eyedata.get_duration(units='sec')
+        duration_h = self.eyedata.get_duration(units='h')
+        
+        # Check relationships between different units
+        self.assertAlmostEqual(duration_min * 60, duration_sec)
+        self.assertAlmostEqual(duration_h * 60, duration_min)
+
+    def test_size_bytes(self):
+        """Test getting size of dataset in bytes"""
+        size = self.eyedata.size_bytes()
+        self.assertIsInstance(size, int)
+        self.assertGreater(size, 0)
+
+    def test_write_and_read_file(self):
+        """Test writing and reading dataset to/from file"""
+        import tempfile
+        import os
+        
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(suffix='.pkl', delete=False) as tmp:
+            # Write dataset
+            self.eyedata.write_file(tmp.name)
+            
+            # Read dataset back
+            loaded = pp.EyeData.from_file(tmp.name)
+            
+            # Compare key attributes
+            np.testing.assert_array_equal(loaded.tx, self.eyedata.tx)
+            np.testing.assert_array_equal(loaded.data['left_pupil'], self.eyedata.data['left_pupil'])
+            self.assertEqual(loaded.fs, self.eyedata.fs)
+            
+            # Clean up
+            os.unlink(tmp.name)
 
 if __name__ == '__main__':
     unittest.main() 
