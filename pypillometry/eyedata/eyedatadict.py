@@ -1,5 +1,7 @@
 from collections.abc import MutableMapping
 import numpy as np
+from typing import Optional, Dict, List, Union, Tuple
+from numpy.typing import NDArray
 
 class EyeDataDict(MutableMapping):
     """
@@ -8,20 +10,20 @@ class EyeDataDict(MutableMapping):
     Drops empty entries (None or length-0 ndarrays).
 
     Keys stored in this dictionary have the following shape:
-    (eye)_(variable) where eye is either "left" or "right" or a 
-    statistical combination (e.g., "mean" or "median" or "regress") and
-    variable is one of "x", "y", "pupil" (or other calculated entities,
-    for example "baseline" or "response" for the pupil).
+    (eye)_(variable) where eye can be any string identifier (e.g., "left", "right", 
+    "mean", "median", "regress", or any other custom identifier) and variable is any 
+    string identifier (e.g., "x", "y", "pupil", "baseline", "response", or any other 
+    custom identifier).
 
     The dictionary can be indexed by a string "eye_variable" or by a tuple
     ("eye", "variable") like data["left","x"] or data["left_x"].
     """
 
-    def __init__(self, *args, **kwargs):
-        self.data = dict()
-        self.mask = dict() # mask for missing/artifactual values
-        self.length=0
-        self.shape=None
+    def __init__(self, *args, **kwargs) -> None:
+        self.data: Dict[str, NDArray] = dict()
+        self.mask: Dict[str, NDArray] = dict() # mask for missing/artifactual values
+        self.length: int = 0
+        self.shape: Optional[Tuple[int, ...]] = None
         self.update(dict(*args, **kwargs))  # use the free update to set keys
 
     def get_available_eyes(self, variable=None):
@@ -46,9 +48,26 @@ class EyeDataDict(MutableMapping):
         variables=[k.split("_")[1] for k in self.data.keys()]
         return list(set(variables))
 
-    def get_eye(self, eye):
+    def get_eye(self, eye: str) -> 'EyeDataDict':
         """
         Return a subset EyeDataDict with all variables for a given eye.
+        
+        Parameters
+        ----------
+        eye : str
+            The eye to get data for ('left', 'right', 'mean', etc.)
+        
+        Returns
+        -------
+        EyeDataDict
+            A new EyeDataDict containing only data for the specified eye
+        
+        Examples
+        --------
+        >>> d = EyeDataDict(left_x=[1,2], left_y=[3,4], right_x=[5,6])
+        >>> left_data = d.get_eye('left')
+        >>> print(left_data.data.keys())
+        dict_keys(['left_x', 'left_y'])
         """
         return EyeDataDict({k:v for k,v in self.data.items() if k.startswith(eye+"_")})
     
@@ -65,14 +84,17 @@ class EyeDataDict(MutableMapping):
         return self.data[key]
 
 
-    def __setitem__(self, key, value):
-        if value is None or len(value)==0:
+    def __setitem__(self, key: str, value: NDArray) -> None:
+        if value is None or len(value) == 0:
             return
-        value=np.array(value)
+        value = np.array(value)
         if not isinstance(value, np.ndarray):
-            raise ValueError("Value must be numpy.ndarray")
-        #if len(value.shape)>1:
-        #    raise ValueError("Array must be 1-dimensional")
+            raise ValueError(f"Value must be numpy.ndarray, got {type(value)}")
+        if self.length > 0 and self.shape is not None:
+            if value.shape != self.shape:
+                raise ValueError(
+                    f"Array must have shape {self.shape}, got {value.shape}"
+                )
         if self.length==0 or self.shape is None:
             self.length=value.shape[0]
             self.shape=value.shape
@@ -103,3 +125,44 @@ class EyeDataDict(MutableMapping):
                 r+="..."
             r+="\n"
         return r
+
+    def _validate_key(self, key: Union[str, Tuple[str, str]]) -> str:
+        """Validate and normalize key format."""
+        if isinstance(key, tuple):
+            if len(key) != 2:
+                raise ValueError("Tuple key must have exactly 2 elements (eye, variable)")
+            key = "_".join(key)
+        if not isinstance(key, str):
+            raise TypeError("Key must be string or tuple")
+        if "_" not in key:
+            raise ValueError("Key must be in format 'eye_variable'")
+        return key
+
+    def copy(self) -> 'EyeDataDict':
+        """Create a deep copy of the dictionary."""
+        new_dict = EyeDataDict()
+        for key, value in self.data.items():
+            new_dict[key] = value.copy()
+        return new_dict
+
+    def set_mask(self, key: str, mask: NDArray) -> None:
+        """Set mask for a specific key."""
+        if key not in self.data:
+            raise KeyError(f"No data for key {key}")
+        if mask.shape != self.shape:
+            raise ValueError(f"Mask must have shape {self.shape}")
+        self.mask[key] = mask.astype(int)
+
+    def get_mask(self, key: str) -> NDArray:
+        """Get mask for a specific key."""
+        return self.mask[key]
+
+    @property
+    def variables(self) -> List[str]:
+        """List of all available variables."""
+        return self.get_available_variables()
+
+    @property
+    def eyes(self) -> List[str]:
+        """List of all available eyes."""
+        return self.get_available_eyes()
