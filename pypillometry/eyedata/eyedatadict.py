@@ -89,8 +89,6 @@ class EyeDataDict(MutableMapping):
         if value is None or len(value) == 0:
             return
         value = np.array(value)
-        if not isinstance(value, np.ndarray):
-            raise ValueError(f"Value must be numpy.ndarray, got {type(value)}")
         if self.length > 0 and self.shape is not None:
             if value.shape != self.shape:
                 raise ValueError(
