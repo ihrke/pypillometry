@@ -62,6 +62,69 @@ class TestEyeData(unittest.TestCase):
         self.assertTrue(np.all(self.eyedata.data['left_pupil'] >= 0))
         self.assertTrue(np.all(self.eyedata.data['right_pupil'] >= 0))
 
+    def test_initialization_combinations(self):
+        """Test initialization with different combinations of eye data"""
+        # Test with only left eye data (x, y, pupil)
+        d_left = pp.EyeData(left_x=[1,2], left_y=[3,4], left_pupil=[5,6], sampling_rate=1000)
+        self.assertIn('left_x', d_left.data)
+        self.assertIn('left_y', d_left.data)
+        self.assertIn('left_pupil', d_left.data)
+        self.assertNotIn('right_x', d_left.data)
+        self.assertNotIn('right_y', d_left.data)
+        self.assertNotIn('right_pupil', d_left.data)
+        
+        # Test with only right eye data (x, y, pupil)
+        d_right = pp.EyeData(right_x=[1,2], right_y=[3,4], right_pupil=[5,6], sampling_rate=1000)
+        self.assertNotIn('left_x', d_right.data)
+        self.assertNotIn('left_y', d_right.data)
+        self.assertNotIn('left_pupil', d_right.data)
+        self.assertIn('right_x', d_right.data)
+        self.assertIn('right_y', d_right.data)
+        self.assertIn('right_pupil', d_right.data)
+        
+        # Test with both eyes (x, y, pupil)
+        d_both = pp.EyeData(left_x=[1,2], left_y=[3,4], left_pupil=[5,6],
+                           right_x=[7,8], right_y=[9,10], right_pupil=[11,12],
+                           sampling_rate=1000)
+        self.assertIn('left_x', d_both.data)
+        self.assertIn('left_y', d_both.data)
+        self.assertIn('left_pupil', d_both.data)
+        self.assertIn('right_x', d_both.data)
+        self.assertIn('right_y', d_both.data)
+        self.assertIn('right_pupil', d_both.data)
+        
+        # Test with left eye (x, y) but no pupil
+        d_left_no_pupil = pp.EyeData(left_x=[1,2], left_y=[3,4], sampling_rate=1000)
+        self.assertIn('left_x', d_left_no_pupil.data)
+        self.assertIn('left_y', d_left_no_pupil.data)
+        self.assertNotIn('left_pupil', d_left_no_pupil.data)
+        
+        # Test with right eye (x, y) but no pupil
+        d_right_no_pupil = pp.EyeData(right_x=[1,2], right_y=[3,4], sampling_rate=1000)
+        self.assertIn('right_x', d_right_no_pupil.data)
+        self.assertIn('right_y', d_right_no_pupil.data)
+        self.assertNotIn('right_pupil', d_right_no_pupil.data)
+        
+        # Test with left eye (x, pupil) but no y - should raise ValueError
+        with self.assertRaises(ValueError):
+            pp.EyeData(left_x=[1,2], left_pupil=[5,6], sampling_rate=1000)
+            
+        # Test with right eye (y, pupil) but no x - should raise ValueError
+        with self.assertRaises(ValueError):
+            pp.EyeData(right_y=[3,4], right_pupil=[5,6], sampling_rate=1000)
+            
+        # Test with no eye data at all - should raise ValueError
+        with self.assertRaises(ValueError):
+            pp.EyeData(sampling_rate=1000)
+            
+        # Test with left eye (x) but no y - should raise ValueError
+        with self.assertRaises(ValueError):
+            pp.EyeData(left_x=[1,2], sampling_rate=1000)
+            
+        # Test with right eye (y) but no x - should raise ValueError
+        with self.assertRaises(ValueError):
+            pp.EyeData(right_y=[3,4], sampling_rate=1000)
+
     def test_summary(self):
         """Test the summary method"""
         summary = self.eyedata.summary()
