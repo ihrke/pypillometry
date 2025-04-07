@@ -1,9 +1,0 @@
-numpy
-scipy
-cmdstanpy
-matplotlib
-pandas
-typing
-requests
-loguru
-tqdm
