@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Estimation of tonic and phasic pupillometric signals &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Estimation of tonic and phasic pupillometric signals</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/docs/symp_talk_uit2019.ipynb">docs/symp_talk_uit2019.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/symp_talk_uit2019.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;../&quot;</span><span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">signal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">pearsonr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotnine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gg</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+</pre></div>
+</div>
+</div>
+<section id="Estimation-of-tonic-and-phasic-pupillometric-signals">
+<h1>Estimation of tonic and phasic pupillometric signals<a class="headerlink" href="#Estimation-of-tonic-and-phasic-pupillometric-signals" title="Link to this heading">¶</a></h1>
+<p><img alt="image1" src="../_images/pypillometry_logo_200x200.png" /></p>
+<p>Matthias Mittner</p>
+<p>pupil-symposium, 6.2.2020</p>
+<p>Universitetet i Tromsø</p>
+</section>
+<section id="Data-model">
+<h1>Data model<a class="headerlink" href="#Data-model" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p>pupil signal is made up of a slowly (&lt;.1 Hz) fluctuating process</p></li>
+<li><p>and stereotypic responses to (internal or external):</p>
+<ul>
+<li><p>Pupil-response function (PRF)</p></li>
+</ul>
+</li>
+<li><p>the amplitude of the events is variable over time</p></li>
+<li><p>the shape of the PRF is fixed per subject or can vary over time</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">plot_prf</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_4_0.png" src="../_images/docs_symp_talk_uit2019_4_0.png" />
+</div>
+</div>
+<section id="Simulated-(fake)-data">
+<h2>Simulated (fake) data<a class="headerlink" href="#Simulated-(fake)-data" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dd</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">create_fake_pupildata</span><span class="p">(</span><span class="n">ntrials</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">isi</span><span class="o">=</span><span class="mf">1100.0</span><span class="p">,</span> <span class="n">rtdist</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span><span class="mi">100</span><span class="p">))</span>
+<span class="n">d</span><span class="o">=</span><span class="n">dd</span><span class="o">.</span><span class="n">sub_slice</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+
+<span class="n">fac</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">311</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="o">*</span><span class="n">fac</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">sim_baseline</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;baseline&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">sim_baseline</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">312</span><span class="p">)</span>
+<span class="n">x1</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">pupil_build_design_matrix</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">sim_params</span><span class="p">[</span><span class="s2">&quot;prf_npar&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">d</span><span class="o">.</span><span class="n">sim_params</span><span class="p">[</span><span class="s2">&quot;prf_tmax&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="mi">6000</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="o">*</span><span class="n">fac</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">sim_response_coef</span><span class="o">*</span><span class="n">x1</span><span class="o">.</span><span class="n">T</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;events&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">313</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">interactive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_6_0.png" src="../_images/docs_symp_talk_uit2019_6_0.png" />
+</div>
+</div>
+</section>
+<section id="Estimate-tonic-and-phasic-components">
+<h2>Estimate tonic and phasic components<a class="headerlink" href="#Estimate-tonic-and-phasic-components" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>per-trial estimates of tonic/phasic pupillary responses</p></li>
+</ul>
+<p><em>Traditionally:</em></p>
+<ul class="simple">
+<li><p>tonic (baseline): mean signal in interval [-200,0] ms before stimulus</p></li>
+<li><p>phasic (response):</p>
+<ul>
+<li><p>difference peak/max in interval [0,2000] ms post-stimulus to baseline</p></li>
+<li><p>difference mean in time-range of expected peak, e.g., [800,1200] ms post-stim to baseline</p></li>
+</ul>
+</li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d2</span><span class="o">=</span><span class="n">dd</span><span class="o">.</span><span class="n">sub_slice</span><span class="p">(</span><span class="mi">4500</span><span class="p">,</span> <span class="mi">13000</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span> <span class="c1"># take a small part for visualization</span>
+
+
+<span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">capture_output</span><span class="p">()</span> <span class="k">as</span> <span class="n">cap</span><span class="p">:</span>
+    <span class="n">tonic_est</span> <span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">((</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">statfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+    <span class="n">phasic_est</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">((</span><span class="o">-</span><span class="mi">0</span><span class="p">,</span><span class="mi">2000</span><span class="p">),</span> <span class="n">statfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">)</span><span class="o">-</span><span class="n">tonic_est</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="n">d2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="o">*</span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">tonic_est</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">phasic_est</span><span class="o">+</span><span class="n">tonic_est</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Traditional tonic/phasic estimates&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_8_0.png" src="../_images/docs_symp_talk_uit2019_8_0.png" />
+</div>
+</div>
+<ul class="simple">
+<li><p>traditional method can mistake build-up of responses for baseline fluctuations</p></li>
+</ul>
+</section>
+<section id="Novel-Algorithm-for-baseline-extraction">
+<h2>Novel Algorithm for baseline extraction<a class="headerlink" href="#Novel-Algorithm-for-baseline-extraction" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>in the absence of events, the pupil goes back to baseline</p></li>
+<li><p>therefore: throughs in the the curve are indicative of baseline</p></li>
+</ul>
+<p><strong>Algorithm:</strong></p>
+<ul class="simple">
+<li><p>detect throughs</p></li>
+<li><p>find the most “prominent” ones</p></li>
+<li><p>create smooth curve through these points that stays below signal</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">create_fake_pupildata</span><span class="p">(</span><span class="n">ntrials</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">isi</span><span class="o">=</span><span class="mf">1500.0</span><span class="p">,</span> <span class="n">rtdist</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span>
+                           <span class="n">prop_spurious_events</span><span class="o">=</span><span class="mf">0.02</span> <span class="p">)</span>\
+    <span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>\
+    <span class="o">.</span><span class="n">scale</span><span class="p">()</span>\
+    <span class="o">.</span><span class="n">sub_slice</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span> <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">interactive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_11_0.png" src="../_images/docs_symp_talk_uit2019_11_0.png" />
+</div>
+</div>
+<ul class="simple">
+<li><p>lowest throughs are prioritized</p></li>
+<li><p>account for build-up of responses that look like baseline fluctuations</p></li>
+</ul>
+</section>
+<section id="Extract-peaks/throughs-and-rate-their-prominence">
+<h2>Extract peaks/throughs and rate their prominence<a class="headerlink" href="#Extract-peaks/throughs-and-rate-their-prominence" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">peaks_ix</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">prominences</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">peak_prominences</span><span class="p">(</span><span class="o">-</span><span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="p">,</span> <span class="n">peaks_ix</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">peaks</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">peaks_ix</span><span class="p">]</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">peaks</span><span class="o">/</span><span class="mf">1000.</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="p">[</span><span class="n">peaks_ix</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">prominences</span><span class="p">),</span> <span class="n">prominences</span><span class="p">)),</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_14_0.png" src="../_images/docs_symp_talk_uit2019_14_0.png" />
+</div>
+</div>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Topographic_prominence">https://en.wikipedia.org/wiki/Topographic_prominence</a></p>
+</section>
+<section id="Smooth-curve-through-peaks...">
+<h2>Smooth curve through peaks…<a class="headerlink" href="#Smooth-curve-through-peaks..." title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">interp_methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span><span class="s2">&quot;quadratic&quot;</span><span class="p">,</span><span class="s2">&quot;cubic&quot;</span><span class="p">]</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">met</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">interp_methods</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="p">[</span><span class="n">peaks_ix</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="n">met</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">baseline</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">f</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">sim_baseline</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">met</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_17_0.png" src="../_images/docs_symp_talk_uit2019_17_0.png" />
+</div>
+</div>
+<ul class="simple">
+<li><p>simple interpolate between lower peaks?</p></li>
+</ul>
+</section>
+<section id="Better-Solution:-B-Spline-basis-functions">
+<h2>Better Solution: B-Spline basis functions<a class="headerlink" href="#Better-Solution:-B-Spline-basis-functions" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>weighted sum of B-spline basis functions (knots peaks): guarantees smoothness</p></li>
+<li><p>customized fit to go through peaks and stay below signal</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">knots</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">min</span><span class="p">()],</span> <span class="n">peaks</span><span class="p">,</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span> <span class="p">)</span> <span class="c1">## peaks as knots</span>
+<span class="n">B</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">bspline</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">B</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span> <span class="mf">0.8</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">peaks</span><span class="p">),</span> <span class="s2">&quot;.&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">coef</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">sig</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">coef</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="p">[</span><span class="n">peaks_ix</span><span class="p">],</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">simulated</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_20_0.png" src="../_images/docs_symp_talk_uit2019_20_0.png" />
+</div>
+</div>
+</section>
+<section id="Staying-%22below-the-signal%22">
+<h2>Staying “below the signal”<a class="headerlink" href="#Staying-%22below-the-signal%22" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ny</span><span class="o">=</span><span class="mi">800</span>
+<span class="n">x</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span>
+<span class="n">pad</span><span class="o">=</span><span class="mf">0.5</span>
+<span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">-</span><span class="n">pad</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="n">pad</span><span class="p">,</span> <span class="n">ny</span><span class="p">)</span>
+<span class="p">[</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+
+<span class="n">SY</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">sy</span><span class="p">,</span> <span class="p">(</span><span class="n">ny</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">py</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">p_asym_laplac_kappa</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="p">(</span><span class="n">Y</span><span class="o">-</span><span class="n">SY</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">prominence_to_lambda</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+        <span class="n">w2</span><span class="o">=</span><span class="n">lam_min</span><span class="o">+</span><span class="p">((</span><span class="n">w</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">w</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">w</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">w</span><span class="p">))))</span><span class="o">*</span><span class="p">(</span><span class="n">lam_max</span><span class="o">-</span><span class="n">lam_min</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">w2</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">d2</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">start</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">d2</span><span class="o">.</span><span class="n">tx</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="o">-</span><span class="n">start</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">py</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;jet&quot;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">d2</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span><span class="n">d2</span><span class="o">.</span><span class="n">sy</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">-</span><span class="n">pad</span><span class="p">,</span> <span class="n">d2</span><span class="o">.</span><span class="n">sy</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="n">pad</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">d2</span><span class="o">.</span><span class="n">sy</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">peaks</span><span class="o">-</span><span class="n">start</span><span class="p">,</span> <span class="n">d2</span><span class="o">.</span><span class="n">sy</span><span class="p">[</span><span class="n">peaks_ix</span><span class="p">],</span> <span class="n">yerr</span><span class="o">=</span><span class="n">prominence_to_lambda</span><span class="p">(</span><span class="n">prominences</span><span class="p">)</span><span class="o">/</span><span class="mf">200.</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">elinewidth</span><span class="o">=</span><span class="mi">5</span><span class="p">);</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_22_0.png" src="../_images/docs_symp_talk_uit2019_22_0.png" />
+</div>
+</div>
+<ul class="simple">
+<li><p>estimate coefficients B-spline</p></li>
+<li><p>criteria:</p>
+<ol class="arabic simple">
+<li><p>the curve has to be (almost) completely below the pupil-signal</p></li>
+<li><p>it should go through the high-prominence peaks with high probability</p></li>
+<li><p>it should go through the lower-prominence peaks with lower probability</p></li>
+</ol>
+</li>
+<li><p>use: Asymmetric Laplace distribution</p></li>
+<li><p>parameters:</p>
+<ul>
+<li><p><span class="math notranslate nohighlight">\(\mu\)</span> (peak location)</p></li>
+<li><p><span class="math notranslate nohighlight">\(\lambda\)</span> (inverse variance, “wideness”)</p></li>
+<li><p><span class="math notranslate nohighlight">\(\kappa\)</span> (assymetry parameter)</p></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>distribution centered at signal <span class="math notranslate nohighlight">\(\rightarrow\)</span> <span class="math notranslate nohighlight">\(\mu=0\)</span></p></li>
+<li><p>set asymmetry parameter <span class="math notranslate nohighlight">\(\kappa\)</span> as follows:</p>
+<ol class="arabic">
+<li><p>specify the probability <span class="math notranslate nohighlight">\(p_a\)</span> that the baseline-curve can take on values above the pupil signal, e.g., <span class="math notranslate nohighlight">\(p_a=0.05\)</span></p></li>
+<li><p>using the properties of the distribution determine</p>
+<div class="math notranslate nohighlight">
+\[\kappa=\frac{\sqrt{p_a}}{\sqrt{1-p_a}}\]</div>
+</li>
+</ol>
+</li>
+<li><p>no matter what <span class="math notranslate nohighlight">\(\lambda\)</span> is chosen, the negative part of the distribution will integrate to <span class="math notranslate nohighlight">\(p_a\)</span></p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mu</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">lam</span><span class="o">=</span><span class="mi">5</span>
+<span class="n">pa</span><span class="o">=</span><span class="mf">0.05</span>
+<span class="n">kappa</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">pa</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">pa</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;kappa=&quot;</span><span class="p">,</span><span class="n">kappa</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">py</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">p_asym_laplac_kappa</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="n">kappa</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">py</span><span class="p">)</span>
+<span class="n">propneg</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">py</span><span class="p">[</span><span class="n">y</span><span class="o">&lt;=</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">py</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Proportion negative=&quot;</span><span class="p">,</span><span class="n">propneg</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+kappa= 0.22941573387056177
+Proportion negative= 0.052898137321281825
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_25_1.png" src="../_images/docs_symp_talk_uit2019_25_1.png" />
+</div>
+</div>
+<section id="prominence-of-the-peaks">
+<h3>prominence of the peaks<a class="headerlink" href="#prominence-of-the-peaks" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>map the prominence of the peaks to the width of this distribution:</p>
+<ul>
+<li><p>mapping prominence <span class="math notranslate nohighlight">\(\rightarrow\)</span> <span class="math notranslate nohighlight">\(\lambda\)</span></p></li>
+</ul>
+</li>
+<li><p>how far below the signal can the baseline go? parameter: <span class="math notranslate nohighlight">\(\lambda_{sig}\)</span></p></li>
+<li><p>assume z-transformed PD, so 1 unit is pretty large: <span class="math notranslate nohighlight">\(\lambda_{sig}=1\)</span></p></li>
+<li><p>for the highest-prominence peaks, the baseline-curve “snuggles” tightly against the signal</p></li>
+<li><p><span class="math notranslate nohighlight">\(\lambda_{max}=100\)</span></p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">lam_sig</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="n">lam_max</span><span class="o">=</span><span class="mf">100.0</span>
+<span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">py1</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">p_asym_laplac_kappa</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">lam_sig</span><span class="p">,</span><span class="n">kappa</span><span class="p">)</span>
+<span class="n">py2</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">p_asym_laplac_kappa</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">lam_max</span><span class="p">,</span><span class="n">kappa</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">py1</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\lambda_</span><span class="si">{sig}</span><span class="s2">=$</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">lam_sig</span>);
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">py2</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\lambda_</span><span class="si">{max}</span><span class="s2">=$</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">lam_max</span>);
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_27_0.png" src="../_images/docs_symp_talk_uit2019_27_0.png" />
+</div>
+</div>
+<ul>
+<li><p>the signal should be closer to the lower peaks than to the rest of the signal but can still go away if the prominence is very low</p></li>
+<li><p>we therefore set the lower boundary for <span class="math notranslate nohighlight">\(\lambda\)</span> for any peak to be the same as for the rest of the signal <span class="math notranslate nohighlight">\(\lambda_{min}=\lambda_{sig}\)</span></p></li>
+<li><p>define mapping</p>
+<div class="math notranslate nohighlight">
+\[\text{prominence}\rightarrow \lambda\]</div>
+</li>
+<li><p>such that <span class="math notranslate nohighlight">\(\lambda \in [\lambda_{min},\lambda_{max}]\)</span> and higher prominence is associated with higher <span class="math notranslate nohighlight">\(\lambda\)</span></p></li>
+<li><p>we start by mapping the (strictly positive) prominence <span class="math notranslate nohighlight">\(\rho_i\)</span> into the interval [0,1] and then map it linearly into <span class="math notranslate nohighlight">\([\lambda_{min},\lambda_{max}]\)</span></p>
+<div class="math notranslate nohighlight">
+\[\lambda_i=\lambda_{min}+\frac{\rho_i-\min_i\rho_i}{\max_i(\rho_i-\min_i\rho_i)}\left(\lambda_{max}-\lambda_{min}\right)\]</div>
+</li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># convert</span>
+<span class="n">w</span><span class="o">=</span><span class="n">prominence_to_lambda</span><span class="p">(</span><span class="n">prominences</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">w</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Distribution of the $\lambda$ values&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+<span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">500</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">cw</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+    <span class="n">py</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">p_asym_laplac_kappa</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cw</span><span class="p">,</span> <span class="n">kappa</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">py</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Distributions for these $\lambda$ values&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_29_0.png" src="../_images/docs_symp_talk_uit2019_29_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Estimate-baseline">
+<h2>Estimate baseline<a class="headerlink" href="#Estimate-baseline" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>implemented as Bayesian model (Stan)</p></li>
+<li><p>free parameters are the spline-coefficients</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">estimate_baseline</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;envelope_iter_bspline_1&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span> <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span> <span class="mi">22</span><span class="p">),</span><span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING:pystan:Automatic Differentiation Variational Inference (ADVI) is an EXPERIMENTAL ALGORITHM.
+WARNING:pystan:ADVI samples may be found on the filesystem in the file `/var/folders/28/_ftmv1_n41n48znrymwflm940000gp/T/tmphamv9sz1/output.csv`
+WARNING:pystan:Automatic Differentiation Variational Inference (ADVI) is an EXPERIMENTAL ALGORITHM.
+WARNING:pystan:ADVI samples may be found on the filesystem in the file `/var/folders/28/_ftmv1_n41n48znrymwflm940000gp/T/tmp6hpwu7k6/output.csv`
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Using cached StanModel
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_31_2.png" src="../_images/docs_symp_talk_uit2019_31_2.png" />
+</div>
+</div>
+<ul class="simple">
+<li><p>baseline seems to “high”</p></li>
+<li><p>because of accumulation of pupil-responses to stimuli</p></li>
+<li><p><strong>solution:</strong></p>
+<ol class="arabic simple">
+<li><p>estimate responses riding on top of signal</p></li>
+<li><p>remove them</p></li>
+<li><p>repeat baseline estimation</p></li>
+</ol>
+</li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base1</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">baseline</span>
+<span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">estimate_baseline</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;envelope_iter_bspline_2&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span> <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">6</span><span class="p">,</span><span class="mi">22</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING:pystan:Automatic Differentiation Variational Inference (ADVI) is an EXPERIMENTAL ALGORITHM.
+WARNING:pystan:ADVI samples may be found on the filesystem in the file `/var/folders/28/_ftmv1_n41n48znrymwflm940000gp/T/tmp_d5qeetp/output.csv`
+WARNING:pystan:Automatic Differentiation Variational Inference (ADVI) is an EXPERIMENTAL ALGORITHM.
+WARNING:pystan:ADVI samples may be found on the filesystem in the file `/var/folders/28/_ftmv1_n41n48znrymwflm940000gp/T/tmp59y5ghp7/output.csv`
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Using cached StanModel
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_33_2.png" src="../_images/docs_symp_talk_uit2019_33_2.png" />
+</div>
+</div>
+</section>
+<section id="Summary-Algorithm-baseline-extraction">
+<h2>Summary Algorithm baseline-extraction<a class="headerlink" href="#Summary-Algorithm-baseline-extraction" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>find throughs in signal</p></li>
+<li><p>rate them by prominence</p></li>
+<li><p>create B-spline basis-functions at location of throughs</p></li>
+<li><p>estimate B-coefficients using Bayesian model <span class="math notranslate nohighlight">\(\rightarrow\)</span> first estimate for baseline</p></li>
+<li><p>subtract baseline from signal</p></li>
+<li><p>estimate response-model using default PRF and subtract from data</p></li>
+<li><p>repeat steps 1. - 4. to get final baseline estimate</p></li>
+</ol>
+</section>
+<section id="Pupil-response-function-(PRF)">
+<h2>Pupil-response function (PRF)<a class="headerlink" href="#Pupil-response-function-(PRF)" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Hoeks + Levelt, 1993 measured resonse to attentional stimulus</p></li>
+</ul>
+<p><img alt="huhu" src="../_images/hoeks_levelt_fig.png" /></p>
+<ul>
+<li><p>model:</p>
+<div class="math notranslate nohighlight">
+\[h(t)=t^{n}e^{-nt/t_{max}}\]</div>
+</li>
+</ul>
+<section id="pupil-response-function-model:-h(t)=t^{n}e^{-nt/t_{max}}">
+<h3>pupil-response function model: <span class="math notranslate nohighlight">\(h(t)=t^{n}e^{-nt/t_{max}}\)</span><a class="headerlink" href="#pupil-response-function-model:-h(t)=t^{n}e^{-nt/t_{max}}" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>parameters: location (<span class="math notranslate nohighlight">\(t_{max}\)</span>) and spread (<span class="math notranslate nohighlight">\(n\)</span>)</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;tmax=500&quot;</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;tmax=900&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;n=5&quot;</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;n=20&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_37_0.png" src="../_images/docs_symp_talk_uit2019_37_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## data extract from original paper and saved in a CSV file</span>
+<span class="n">hl_data</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;../data/stuff/tabula-Hoeks-Levelt1993_Article_PupillaryDilationAsAMeasureOfA.csv&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+<span class="n">hl_data</span><span class="p">[</span><span class="s2">&quot;tmax&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">hl_data</span><span class="p">[</span><span class="s2">&quot;tmax&quot;</span><span class="p">]</span><span class="o">*</span><span class="mf">1000.</span> <span class="c1">## our implementation uses ms, HL use seconds</span>
+<span class="c1">## between-subject variability</span>
+<span class="n">hl_per_subj</span><span class="o">=</span><span class="n">hl_data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;subj&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">])[[</span><span class="s2">&quot;n&quot;</span><span class="p">,</span><span class="s2">&quot;tmax&quot;</span><span class="p">]]</span>
+<span class="n">hl_between</span><span class="o">=</span><span class="n">hl_per_subj</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">])</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">like</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">hl_between</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead tr th {
+        text-align: left;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th colspan="2" halign="left">n</th>
+      <th colspan="2" halign="left">tmax</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>mean</th>
+      <th>std</th>
+      <th>mean</th>
+      <th>std</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>mean</th>
+      <td>10.340833</td>
+      <td>3.349051</td>
+      <td>917.0</td>
+      <td>135.357865</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.gridspec</span><span class="w"> </span><span class="kn">import</span> <span class="n">GridSpec</span>
+
+
+<span class="n">fig</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">gs</span> <span class="o">=</span> <span class="n">GridSpec</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="n">fig</span><span class="p">)</span>
+<span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">ax3</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+
+<span class="c1">#plt.subplot(131)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">hl_data</span><span class="o">.</span><span class="n">n</span><span class="p">[</span><span class="n">hl_data</span><span class="o">.</span><span class="n">n</span><span class="o">.</span><span class="n">notnull</span><span class="p">()])</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;n&quot;</span><span class="p">)</span>
+<span class="c1">#plt.subplot(132)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">hl_data</span><span class="o">.</span><span class="n">tmax</span><span class="p">[</span><span class="n">hl_data</span><span class="o">.</span><span class="n">tmax</span><span class="o">.</span><span class="n">notnull</span><span class="p">()]);</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;tmax&quot;</span><span class="p">);</span>
+<span class="c1">#plt.subplot(133)</span>
+
+<span class="n">mn</span><span class="p">,</span><span class="n">sdn</span><span class="p">,</span><span class="n">mtmax</span><span class="p">,</span><span class="n">sdtmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">hl_between</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">nrep</span><span class="o">=</span><span class="mi">100</span>
+<span class="n">duration</span><span class="o">=</span><span class="mi">4000</span>
+<span class="n">fs</span><span class="o">=</span><span class="mf">1000.</span>
+<span class="n">n</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">duration</span><span class="o">/</span><span class="mi">1000</span><span class="o">*</span><span class="n">fs</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">duration</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span> <span class="c1"># in ms</span>
+
+<span class="n">ns</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">nrep</span><span class="p">)</span><span class="o">*</span><span class="n">sdn</span><span class="o">+</span><span class="n">mn</span>
+<span class="n">tmaxs</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">nrep</span><span class="p">)</span><span class="o">*</span><span class="n">sdtmax</span><span class="o">+</span><span class="n">mtmax</span>
+
+<span class="c1">#plt.figure(figsize=(10,5))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrep</span><span class="p">):</span>
+    <span class="n">h</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">pupil_kernel</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="n">ns</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmaxs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">h</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">pupil_kernel</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="n">mn</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">mtmax</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Between-subject variation in PRF&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_39_0.png" src="../_images/docs_symp_talk_uit2019_39_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Signal-modeled-as-sequence-of-responses-(PRFs)">
+<h2>Signal modeled as sequence of responses (PRFs)<a class="headerlink" href="#Signal-modeled-as-sequence-of-responses-(PRFs)" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d3</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">create_fake_pupildata</span><span class="p">(</span><span class="n">ntrials</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">isi</span><span class="o">=</span><span class="mf">5000.0</span><span class="p">,</span> <span class="n">rtdist</span><span class="o">=</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span><span class="mi">100</span><span class="p">))</span>
+<span class="n">X</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">pupil_build_design_matrix</span><span class="p">(</span><span class="n">d3</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">d3</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">d3</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">900</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d3</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">d3</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="o">*</span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;slow paradigm&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d3</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">));</span> <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">d3</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="o">*</span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_41_0.png" src="../_images/docs_symp_talk_uit2019_41_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d4</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">create_fake_pupildata</span><span class="p">(</span><span class="n">ntrials</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">isi</span><span class="o">=</span><span class="mf">750.0</span><span class="p">,</span> <span class="n">rtdist</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="mi">100</span><span class="p">))</span>
+<span class="n">d4</span><span class="o">=</span><span class="n">d4</span><span class="o">.</span><span class="n">sub_slice</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">15000</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="n">X</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">pupil_build_design_matrix</span><span class="p">(</span><span class="n">d4</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">d4</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">d4</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">900</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d4</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">d4</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="o">*</span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;fast paradigm&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d4</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">));</span> <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">d4</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="o">*</span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_42_0.png" src="../_images/docs_symp_talk_uit2019_42_0.png" />
+</div>
+</div>
+</section>
+<section id="Assumptions">
+<h2>Assumptions<a class="headerlink" href="#Assumptions" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>shape of PRF constant for each person</p></li>
+<li><p>magnitude of the PRF varies by trial <span class="math notranslate nohighlight">\(\rightarrow\)</span> target of this analysis</p></li>
+</ul>
+<p><span class="math notranslate nohighlight">\(\Rightarrow\)</span> can we recover the magnitudes?</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">coef</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">d4</span><span class="o">.</span><span class="n">nevents</span><span class="p">())</span> <span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d4</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">*</span><span class="n">coef</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">d4</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="o">*</span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;fast paradigm&quot;</span><span class="p">);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d4</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">*</span><span class="n">coef</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">));</span> <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">d4</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="o">*</span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_44_0.png" src="../_images/docs_symp_talk_uit2019_44_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d5</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">create_fake_pupildata</span><span class="p">(</span><span class="n">ntrials</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">isi</span><span class="o">=</span><span class="mf">750.0</span><span class="p">,</span> <span class="n">rtdist</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span> <span class="n">prop_spurious_events</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1">#d5=d5.sub_slice(5,12,units=&quot;sec&quot;)</span>
+<span class="n">d5</span><span class="o">=</span><span class="n">d5</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">d5</span><span class="o">.</span><span class="n">sy</span><span class="o">=</span><span class="n">d5</span><span class="o">.</span><span class="n">sy</span><span class="o">-</span><span class="n">d5</span><span class="o">.</span><span class="n">sim_baseline</span> <span class="c1">## remove baseline for now</span>
+<span class="n">coef</span><span class="o">=</span><span class="n">d5</span><span class="o">.</span><span class="n">sim_response_coef</span>   <span class="c1">## these are the simulated magnitudes</span>
+
+<span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">capture_output</span><span class="p">()</span> <span class="k">as</span> <span class="n">cap</span><span class="p">:</span>
+    <span class="n">d5</span><span class="o">=</span><span class="n">d5</span><span class="o">.</span><span class="n">estimate_response</span><span class="p">()</span>
+    <span class="n">naive_response</span><span class="o">=</span><span class="n">d5</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">([</span><span class="mi">800</span><span class="p">,</span><span class="mi">1200</span><span class="p">])</span><span class="o">-</span><span class="n">d5</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">([</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Algorithm-for-estimating-response">
+<h2>Algorithm for estimating response<a class="headerlink" href="#Algorithm-for-estimating-response" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>build regressors by “putting” a PRF at each “event”</p></li>
+</ul>
+<center><p><img alt="5b8c61b2178b4811be6d671dfefbad74" class="no-scaled-link" src="../_images/eyeglm_st.svg" style="width: 90%;" /></p>
+</center></section>
+<section id="id1">
+<h2>Algorithm for estimating response<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>fit linear model (non-negative least-squares algorithm, NNLS)</p></li>
+</ul>
+<center><p><img alt="b779e5e726c94495a67f0f76bd95aaeb" class="no-scaled-link" src="../_images/eyeglm2_st.svg" style="width: 80%;" /></p>
+</center><div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
+<span class="n">d5</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span><span class="n">simulated</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">response</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Near-perfect recovery of the simulated responses&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_50_0.png" src="../_images/docs_symp_talk_uit2019_50_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Correlation(real, new method) = </span><span class="si">%.2f</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">pearsonr</span>(coef, d5.response_pars[&quot;coef&quot;])[0])
+
+<span class="c1"># compared to naive estimates</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Correlation(real, traditional)= </span><span class="si">%.2f</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">pearsonr</span>(coef, naive_response)[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Correlation(real, new method) = 1.00
+Correlation(real, traditional)= 0.45
+</pre></div></div>
+</div>
+</section>
+<section id="Baseline+Response-estimation-together...">
+<h2>Baseline+Response estimation together…<a class="headerlink" href="#Baseline+Response-estimation-together..." title="Link to this heading">¶</a></h2>
+<p>for the naive estimator</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d6</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">create_fake_pupildata</span><span class="p">(</span><span class="n">ntrials</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">isi</span><span class="o">=</span><span class="mf">750.0</span><span class="p">,</span> <span class="n">rtdist</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">100</span><span class="p">),</span> <span class="n">prop_spurious_events</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>\
+    <span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="n">fsd</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span>
+
+<span class="n">real_baseline</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">stat_event_interval</span><span class="p">(</span><span class="n">d6</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">d6</span><span class="o">.</span><span class="n">sim_baseline</span><span class="p">,</span> <span class="n">d6</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">real_response</span><span class="o">=</span><span class="n">d6</span><span class="o">.</span><span class="n">sim_response_coef</span>
+<span class="n">naive_baseline</span><span class="o">=</span><span class="n">d6</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">([</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">naive_response</span><span class="o">=</span><span class="n">d6</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">([</span><span class="mi">800</span><span class="p">,</span><span class="mi">1200</span><span class="p">])</span><span class="o">-</span><span class="n">naive_baseline</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;BL      : Correlation(real, traditional) = </span><span class="si">%.2f</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">pearsonr</span>(real_baseline, naive_baseline)[0])
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Response: Correlation(real, traditional) = </span><span class="si">%.2f</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">pearsonr</span>(real_response, naive_response)[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+BL      : Correlation(real, traditional) = 0.61
+Response: Correlation(real, traditional) = 0.48
+</pre></div></div>
+</div>
+<p>for the new method</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">capture_output</span><span class="p">()</span> <span class="k">as</span> <span class="n">cap</span><span class="p">:</span>
+    <span class="n">d6</span><span class="o">=</span><span class="n">d6</span><span class="o">.</span><span class="n">estimate_baseline</span><span class="p">()</span>\
+        <span class="o">.</span><span class="n">estimate_response</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mf">10.35</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">917</span><span class="p">)</span>
+
+    <span class="n">est_baseline</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">stat_event_interval</span><span class="p">(</span><span class="n">d6</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">d6</span><span class="o">.</span><span class="n">baseline</span><span class="p">,</span> <span class="n">d6</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">est_response</span><span class="o">=</span><span class="n">d6</span><span class="o">.</span><span class="n">response_pars</span><span class="p">[</span><span class="s2">&quot;coef&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;BL      : Correlation(real, new method) = </span><span class="si">%.2f</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">pearsonr</span>(real_baseline, est_baseline)[0])
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Response: Correlation(real, new method) = </span><span class="si">%.2f</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">pearsonr</span>(real_response, est_response)[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING:pystan:Automatic Differentiation Variational Inference (ADVI) is an EXPERIMENTAL ALGORITHM.
+WARNING:pystan:ADVI samples may be found on the filesystem in the file `/var/folders/28/_ftmv1_n41n48znrymwflm940000gp/T/tmpzi6u8bjn/output.csv`
+WARNING:pystan:Automatic Differentiation Variational Inference (ADVI) is an EXPERIMENTAL ALGORITHM.
+WARNING:pystan:ADVI samples may be found on the filesystem in the file `/var/folders/28/_ftmv1_n41n48znrymwflm940000gp/T/tmpdml_2tz7/output.csv`
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+BL      : Correlation(real, new method) = 0.78
+Response: Correlation(real, new method) = 0.84
+</pre></div></div>
+</div>
+</section>
+<section id="Simulated-data-example">
+<h2>Simulated data example<a class="headerlink" href="#Simulated-data-example" title="Link to this heading">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+<span class="n">d6</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">15</span><span class="p">,</span><span class="mi">70</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">,</span><span class="n">interactive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">simulated</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_57_0.png" src="../_images/docs_symp_talk_uit2019_57_0.png" />
+</div>
+</div>
+</section>
+<section id="Validation-of-the-method">
+<h2>Validation of the method<a class="headerlink" href="#Validation-of-the-method" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>dependence of tonic/phasic recovery as a function of the tuning parameters of the algorithm</p></li>
+<li><p>robustness of method</p>
+<ul>
+<li><p>against noise-level</p></li>
+<li><p>against mis-specification (PRF pars)</p></li>
+<li><p>against unknown “events”</p></li>
+</ul>
+</li>
+<li><p>performance for different designs (ISI/RT)</p></li>
+</ul>
+<p><strong>Outcome variable</strong>: Correlation with “true” baseline/response coefficients</p>
+</section>
+<section id="Validation">
+<h2>Validation<a class="headerlink" href="#Validation" title="Link to this heading">¶</a></h2>
+<section id="setting-tuning-parameters">
+<h3>setting tuning parameters<a class="headerlink" href="#setting-tuning-parameters" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>scanning the tuning parameters for the B-Spline based baseline estimation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lam_sig</span></code> (float) - parameter steering how much the baseline is shaped by the non-peaks of the signal</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lam_min</span></code>,<code class="docutils literal notranslate"><span class="pre">lam_max</span></code> (float) – parameters mapping how much low- and high-prominence peaks influence the baseline</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">niter</span></code> (1 or 2) - use 1 or two iterations of the procedure</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nbname</span><span class="o">=</span><span class="s2">&quot;tonic_phasic_validation&quot;</span>
+<span class="n">path</span><span class="o">=</span><span class="s2">&quot;stuff/results/&quot;</span>
+<span class="n">sim_label</span><span class="o">=</span><span class="s2">&quot;tonic_phasic5&quot;</span>
+<span class="n">fname</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s2">&quot;</span><span class="si">{nb}</span><span class="s2">_</span><span class="si">{sim}</span><span class="s2">.ft&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nb</span><span class="o">=</span><span class="n">nbname</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="n">sim_label</span><span class="p">))</span>
+<span class="n">res</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_feather</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">colnames</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">columns</span><span class="p">)[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">id_vars</span><span class="o">=</span><span class="n">colnames</span><span class="p">,</span> <span class="n">value_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;est_bl&quot;</span><span class="p">,</span><span class="s2">&quot;naive_bl&quot;</span><span class="p">])</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;estimate&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;new&quot;</span> <span class="k">if</span> <span class="s2">&quot;est&quot;</span> <span class="ow">in</span> <span class="n">v</span> <span class="k">else</span> <span class="s2">&quot;naive&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;method&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;estimate&#39;</span><span class="p">,</span> <span class="s1">&#39;niter&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;lam_sig&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;method&quot;</span><span class="p">))</span><span class="o">+</span>
+     <span class="n">gg</span><span class="o">.</span><span class="n">stat_summary</span><span class="p">(</span><span class="n">fun_y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span>
+                     <span class="n">fun_ymin</span><span class="o">=</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y</span><span class="p">),</span><span class="c1">#np.quantile(y,0.05),</span>
+                     <span class="n">fun_ymax</span><span class="o">=</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y</span><span class="p">),</span><span class="c1">#np.quantile(y,0.95),</span>
+                     <span class="n">geom</span><span class="o">=</span><span class="s2">&quot;pointrange&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">gg</span><span class="o">.</span><span class="n">position_dodge</span><span class="p">(</span><span class="mf">.02</span><span class="p">))</span><span class="o">+</span>
+     <span class="n">gg</span><span class="o">.</span><span class="n">stat_summary</span><span class="p">(</span><span class="n">fun_y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">gg</span><span class="o">.</span><span class="n">position_dodge</span><span class="p">(</span><span class="mf">.02</span><span class="p">))</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">theme_bw</span><span class="p">()</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span><span class="mf">.8</span><span class="p">)</span><span class="o">+</span><span class="n">gg</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s2">&quot;Correlation&quot;</span><span class="p">)</span><span class="o">+</span><span class="n">gg</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="s2">&quot;~lam_max&quot;</span><span class="p">)</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span><span class="o">+</span><span class="n">gg</span><span class="o">.</span><span class="n">scale_x_log10</span><span class="p">()</span>
+<span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_60_0.png" src="../_images/docs_symp_talk_uit2019_60_0.png" />
+</div>
+</div>
+<ul class="simple">
+<li><p>using 2 iterations generally better</p></li>
+<li><p>method works for a broad range of parameter-values</p></li>
+<li><p>getting <code class="docutils literal notranslate"><span class="pre">lam_sig</span></code> right is more important than <code class="docutils literal notranslate"><span class="pre">lam_max</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h2>Validation<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<section id="influence-of-design-on-performance">
+<h3>influence of design on performance<a class="headerlink" href="#influence-of-design-on-performance" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>manipulate experimental design parameters</p>
+<ul>
+<li><p>proportion of “unknown” events</p></li>
+<li><p>inter-stimulus interval (ISI)</p></li>
+</ul>
+</li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sim_label</span><span class="o">=</span><span class="s2">&quot;tonic_phasic1&quot;</span>
+<span class="n">fname</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s2">&quot;</span><span class="si">{nb}</span><span class="s2">_</span><span class="si">{sim}</span><span class="s2">.ft&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nb</span><span class="o">=</span><span class="n">nbname</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="n">sim_label</span><span class="p">))</span>
+<span class="n">res</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_feather</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">colnames</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">columns</span><span class="p">)[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+<span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">id_vars</span><span class="o">=</span><span class="n">colnames</span><span class="p">,</span> <span class="n">value_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;est_bl&quot;</span><span class="p">,</span><span class="s2">&quot;est_resp&quot;</span><span class="p">,</span><span class="s2">&quot;naive_bl&quot;</span><span class="p">,</span><span class="s2">&quot;naive_resp&quot;</span><span class="p">])</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;tonic_phasic&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tonic&quot;</span> <span class="k">if</span> <span class="s2">&quot;bl&quot;</span> <span class="ow">in</span> <span class="n">v</span> <span class="k">else</span> <span class="s2">&quot;phasic&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;estimate&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;new&quot;</span> <span class="k">if</span> <span class="s2">&quot;est&quot;</span> <span class="ow">in</span> <span class="n">v</span> <span class="k">else</span> <span class="s2">&quot;naive&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span>
+<span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;prop_spurious&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;estimate&quot;</span><span class="p">))</span><span class="o">+</span>
+     <span class="n">gg</span><span class="o">.</span><span class="n">stat_summary</span><span class="p">(</span><span class="n">fun_y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span>
+                     <span class="n">fun_ymin</span><span class="o">=</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y</span><span class="p">),</span><span class="c1">#np.quantile(y,0.05),</span>
+                     <span class="n">fun_ymax</span><span class="o">=</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="c1">#np.quantile(y,0.95),</span>
+                     <span class="n">geom</span><span class="o">=</span><span class="s2">&quot;pointrange&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">gg</span><span class="o">.</span><span class="n">position_dodge</span><span class="p">(</span><span class="mf">.02</span><span class="p">))</span><span class="o">+</span>
+     <span class="n">gg</span><span class="o">.</span><span class="n">stat_summary</span><span class="p">(</span><span class="n">fun_y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">gg</span><span class="o">.</span><span class="n">position_dodge</span><span class="p">(</span><span class="mf">.02</span><span class="p">))</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">theme_bw</span><span class="p">()</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">gg</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s2">&quot;Correlation&quot;</span><span class="p">)</span><span class="o">+</span><span class="n">gg</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="s2">&quot;tonic_phasic~isi&quot;</span><span class="p">)</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mf">4.5</span><span class="p">))</span>
+<span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_63_0.png" src="../_images/docs_symp_talk_uit2019_63_0.png" />
+</div>
+</div>
+<ul class="simple">
+<li><p>new method always better</p></li>
+<li><p>fast-paced designs harder to estimate</p></li>
+<li><p>more unmodelled events (mind-wandering?) <span class="math notranslate nohighlight">\(\rightarrow\)</span> worse performance</p></li>
+<li><p>tonic levels more difficult to estimate than phasic response</p></li>
+</ul>
+</section>
+</section>
+<section id="id3">
+<h2>Validation<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<section id="influence-of-misspecification">
+<h3>influence of misspecification<a class="headerlink" href="#influence-of-misspecification" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>simulate data with a set of <code class="docutils literal notranslate"><span class="pre">npar</span></code>/<code class="docutils literal notranslate"><span class="pre">tmax</span></code> parameters (this is what is being manipulated)</p></li>
+<li><p>recover using standard “wrong” pars (those are fixed, i.e., using the mean only)</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[80]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sim_label</span><span class="o">=</span><span class="s2">&quot;tonic_phasic2&quot;</span>
+<span class="n">fname</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s2">&quot;</span><span class="si">{nb}</span><span class="s2">_</span><span class="si">{sim}</span><span class="s2">.ft&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nb</span><span class="o">=</span><span class="n">nbname</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="n">sim_label</span><span class="p">))</span>
+<span class="n">res</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_feather</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">colnames</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">columns</span><span class="p">)[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+<span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">id_vars</span><span class="o">=</span><span class="n">colnames</span><span class="p">,</span> <span class="n">value_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;est_bl&quot;</span><span class="p">,</span><span class="s2">&quot;est_resp&quot;</span><span class="p">,</span><span class="s2">&quot;naive_bl&quot;</span><span class="p">,</span><span class="s2">&quot;naive_resp&quot;</span><span class="p">])</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;tonic_phasic&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tonic&quot;</span> <span class="k">if</span> <span class="s2">&quot;bl&quot;</span> <span class="ow">in</span> <span class="n">v</span> <span class="k">else</span> <span class="s2">&quot;phasic&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;estimate&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;new&quot;</span> <span class="k">if</span> <span class="s2">&quot;est&quot;</span> <span class="ow">in</span> <span class="n">v</span> <span class="k">else</span> <span class="s2">&quot;naive&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span>
+<span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;tmax_diff&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;estimate&quot;</span><span class="p">))</span><span class="o">+</span>
+     <span class="n">gg</span><span class="o">.</span><span class="n">stat_summary</span><span class="p">(</span><span class="n">fun_y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span>
+                     <span class="n">fun_ymin</span><span class="o">=</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mf">0.05</span><span class="p">),</span>
+                     <span class="n">fun_ymax</span><span class="o">=</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mf">0.95</span><span class="p">),</span> <span class="n">geom</span><span class="o">=</span><span class="s2">&quot;pointrange&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">gg</span><span class="o">.</span><span class="n">position_dodge</span><span class="p">(</span><span class="mf">.02</span><span class="p">))</span><span class="o">+</span>
+     <span class="n">gg</span><span class="o">.</span><span class="n">stat_summary</span><span class="p">(</span><span class="n">fun_y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">gg</span><span class="o">.</span><span class="n">position_dodge</span><span class="p">(</span><span class="mf">.02</span><span class="p">))</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">theme_bw</span><span class="p">()</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">gg</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s2">&quot;Correlation&quot;</span><span class="p">)</span><span class="o">+</span><span class="n">gg</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="s2">&quot;tonic_phasic~npar_diff&quot;</span><span class="p">)</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_66_0.png" src="../_images/docs_symp_talk_uit2019_66_0.png" />
+</div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">npar</span></code> - misspecification does not matter much</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tmax</span></code> important to get right, both for traditional and new method</p></li>
+<li><p>shorter pulses (low <code class="docutils literal notranslate"><span class="pre">tmax</span></code>) beneficial for baseline-estimation (less build-up)</p></li>
+</ul>
+</section>
+</section>
+<section id="id4">
+<h2>Validation<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<section id="compensate-for-misspecation">
+<h3>compensate for misspecation<a class="headerlink" href="#compensate-for-misspecation" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>is it possible to compensate for <code class="docutils literal notranslate"><span class="pre">tmax</span></code>-misspecification by estimating <code class="docutils literal notranslate"><span class="pre">tmax</span></code> from data?</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[85]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sim_label</span><span class="o">=</span><span class="s2">&quot;tonic_phasic4&quot;</span>
+<span class="n">fname</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s2">&quot;</span><span class="si">{nb}</span><span class="s2">_</span><span class="si">{sim}</span><span class="s2">.ft&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nb</span><span class="o">=</span><span class="n">nbname</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="n">sim_label</span><span class="p">))</span>
+<span class="n">res</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_feather</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">colnames</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">columns</span><span class="p">)[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span>
+<span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">id_vars</span><span class="o">=</span><span class="n">colnames</span><span class="p">,</span> <span class="n">value_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;est_bl&quot;</span><span class="p">,</span><span class="s2">&quot;est_resp&quot;</span><span class="p">,</span><span class="s2">&quot;naive_bl&quot;</span><span class="p">,</span><span class="s2">&quot;naive_resp&quot;</span><span class="p">])</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;tonic_phasic&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tonic&quot;</span> <span class="k">if</span> <span class="s2">&quot;bl&quot;</span> <span class="ow">in</span> <span class="n">v</span> <span class="k">else</span> <span class="s2">&quot;phasic&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;estimate&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;new&quot;</span> <span class="k">if</span> <span class="s2">&quot;est&quot;</span> <span class="ow">in</span> <span class="n">v</span> <span class="k">else</span> <span class="s2">&quot;naive&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span>
+<span class="p">(</span><span class="n">gg</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">gg</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s2">&quot;tmax_diff&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;estimate&quot;</span><span class="p">))</span><span class="o">+</span>
+     <span class="n">gg</span><span class="o">.</span><span class="n">stat_summary</span><span class="p">(</span><span class="n">fun_y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span>
+                     <span class="n">fun_ymin</span><span class="o">=</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mf">0.05</span><span class="p">),</span>
+                     <span class="n">fun_ymax</span><span class="o">=</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mf">0.95</span><span class="p">),</span> <span class="n">geom</span><span class="o">=</span><span class="s2">&quot;pointrange&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">gg</span><span class="o">.</span><span class="n">position_dodge</span><span class="p">(</span><span class="mf">.02</span><span class="p">))</span><span class="o">+</span>
+     <span class="n">gg</span><span class="o">.</span><span class="n">stat_summary</span><span class="p">(</span><span class="n">fun_y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">gg</span><span class="o">.</span><span class="n">position_dodge</span><span class="p">(</span><span class="mf">.02</span><span class="p">))</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">theme_bw</span><span class="p">()</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">gg</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s2">&quot;Correlation&quot;</span><span class="p">)</span><span class="o">+</span><span class="n">gg</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="s2">&quot;tmax_fit~tonic_phasic&quot;</span><span class="p">)</span><span class="o">+</span>
+ <span class="n">gg</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mf">4.5</span><span class="p">))</span>
+<span class="p">)</span><span class="o">.</span><span class="n">draw</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_symp_talk_uit2019_69_0.png" src="../_images/docs_symp_talk_uit2019_69_0.png" />
+</div>
+</div>
+<ul class="simple">
+<li><p>estimating <code class="docutils literal notranslate"><span class="pre">tmax</span></code> allows broader range of misspecification</p></li>
+<li><p>SD for <code class="docutils literal notranslate"><span class="pre">tmax</span></code> from Hoeks &amp; Levelt (1997) was 135 ms, so feasible range should cover most subjects</p></li>
+</ul>
+</section>
+<section id="Future-directions">
+<h3>Future directions<a class="headerlink" href="#Future-directions" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>validate method on real data</p></li>
+<li><p>include auto-correlation for response-estimation?</p></li>
+<li><p>trial-by-trial variations for the PRF-parameters?</p></li>
+<li><p>include pupillary hippus (stronger tonic fluctuations at low baseline levels)</p></li>
+</ul>
+</section>
+</section>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/docs/symp_talk_uit2019.ipynb">docs/symp_talk_uit2019.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/symp_talk_uit2019.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Estimation of tonic and phasic pupillometric signals</a></li>
+<li><a class="reference internal" href="#Data-model">Data model</a><ul>
+<li><a class="reference internal" href="#Simulated-(fake)-data">Simulated (fake) data</a></li>
+<li><a class="reference internal" href="#Estimate-tonic-and-phasic-components">Estimate tonic and phasic components</a></li>
+<li><a class="reference internal" href="#Novel-Algorithm-for-baseline-extraction">Novel Algorithm for baseline extraction</a></li>
+<li><a class="reference internal" href="#Extract-peaks/throughs-and-rate-their-prominence">Extract peaks/throughs and rate their prominence</a></li>
+<li><a class="reference internal" href="#Smooth-curve-through-peaks...">Smooth curve through peaks…</a></li>
+<li><a class="reference internal" href="#Better-Solution:-B-Spline-basis-functions">Better Solution: B-Spline basis functions</a></li>
+<li><a class="reference internal" href="#Staying-%22below-the-signal%22">Staying “below the signal”</a><ul>
+<li><a class="reference internal" href="#prominence-of-the-peaks">prominence of the peaks</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Estimate-baseline">Estimate baseline</a></li>
+<li><a class="reference internal" href="#Summary-Algorithm-baseline-extraction">Summary Algorithm baseline-extraction</a></li>
+<li><a class="reference internal" href="#Pupil-response-function-(PRF)">Pupil-response function (PRF)</a><ul>
+<li><a class="reference internal" href="#pupil-response-function-model:-h(t)=t^{n}e^{-nt/t_{max}}">pupil-response function model: <span class="math notranslate nohighlight">\(h(t)=t^{n}e^{-nt/t_{max}}\)</span></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Signal-modeled-as-sequence-of-responses-(PRFs)">Signal modeled as sequence of responses (PRFs)</a></li>
+<li><a class="reference internal" href="#Assumptions">Assumptions</a></li>
+<li><a class="reference internal" href="#Algorithm-for-estimating-response">Algorithm for estimating response</a></li>
+<li><a class="reference internal" href="#id1">Algorithm for estimating response</a></li>
+<li><a class="reference internal" href="#Baseline+Response-estimation-together...">Baseline+Response estimation together…</a></li>
+<li><a class="reference internal" href="#Simulated-data-example">Simulated data example</a></li>
+<li><a class="reference internal" href="#Validation-of-the-method">Validation of the method</a></li>
+<li><a class="reference internal" href="#Validation">Validation</a><ul>
+<li><a class="reference internal" href="#setting-tuning-parameters">setting tuning parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id2">Validation</a><ul>
+<li><a class="reference internal" href="#influence-of-design-on-performance">influence of design on performance</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id3">Validation</a><ul>
+<li><a class="reference internal" href="#influence-of-misspecification">influence of misspecification</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id4">Validation</a><ul>
+<li><a class="reference internal" href="#compensate-for-misspecation">compensate for misspecation</a></li>
+<li><a class="reference internal" href="#Future-directions">Future directions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/docs/symp_talk_uit2019.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Estimation of tonic and phasic pupillometric signals</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>
