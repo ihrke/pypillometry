@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Status of implementation 2025-03-06 &#8212; pypillometry  documentation</title>
+    <title>TODOs &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
     <script src="_static/documentation_options.js?v=5929fcd5"></script>
@@ -25,7 +25,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Status of implementation 2025-03-06</a></li> 
+        <li class="nav-item nav-item-this"><a href="">TODOs</a></li> 
       </ul>
     </div>  
 
@@ -34,25 +34,50 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="status-of-implementation-2025-03-06">
+  <section id="todos">
+<h1>TODOs<a class="headerlink" href="#todos" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p>[ ] <a class="reference external" href="https://github.com/psychoinformatics-de/remodnav">https://github.com/psychoinformatics-de/remodnav</a></p></li>
+</ul>
+</section>
+<section id="status-of-implementation-2025-03-06">
 <h1>Status of implementation 2025-03-06<a class="headerlink" href="#status-of-implementation-2025-03-06" title="Link to this heading">¶</a></h1>
 <p>Porting all things from old <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> to either <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> (for functions that operate on all variables) or <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> for pupil-specific functions.</p>
 <ul class="simple">
 <li><p>[x] <code class="docutils literal notranslate"><span class="pre">scale()</span></code> and <code class="docutils literal notranslate"><span class="pre">unscale()</span></code> are now in <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> and can be called on any variable</p>
 <ul>
-<li><p>they use new <code class="docutils literal notranslate"><span class="pre">Parameters</span></code> class to store separate scaling parameters for each variable/eye</p></li>
+<li><p>they use dicts to store separate scaling parameters for each variable/eye</p></li>
 </ul>
 </li>
 <li><p>[x] <code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> is now in <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> (only depends on events)</p></li>
 <li><p>[x] <code class="docutils literal notranslate"><span class="pre">sub_slice()</span></code> is now in <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> (operates on all variables simultaneously)</p></li>
 <li><p>[x] <code class="docutils literal notranslate"><span class="pre">pupil_lowpass_filter()</span></code> is now in <code class="docutils literal notranslate"><span class="pre">PupilData</span></code></p></li>
-<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">pupil_smooth_window()</span></code></p></li>
-<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">downsample()</span></code>  - implement in <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code></p></li>
-<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">pupil_estimate_baseline()</span></code></p></li>
-<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">pupil_estimate_response()</span></code></p></li>
-<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">pupil_blinks_detect()</span></code> - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names</p></li>
-<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">pupil_blinks_merge()</span></code></p></li>
-<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">pupil_blinks_interpolate()</span></code> - merge with Mahot function and make one an option for the other</p></li>
+<li><p>[x] <code class="docutils literal notranslate"><span class="pre">pupil_smooth_window()</span></code></p></li>
+<li><p>[x] <code class="docutils literal notranslate"><span class="pre">downsample()</span></code>  - implement in <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code></p></li>
+<li><p>[x] <code class="docutils literal notranslate"><span class="pre">merge_eyes()</span></code> - implement in <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> to combine left/right eyes into a single variable</p>
+<ul>
+<li><p>[ ] perhaps implement regression merging?</p></li>
+</ul>
+</li>
+<li><p>[x] blinks</p>
+<ul>
+<li><p>[x] make the <code class="docutils literal notranslate"><span class="pre">blinks</span></code> field a property so that the blinkmask can be kept in sync</p></li>
+<li><p>[x] <code class="docutils literal notranslate"><span class="pre">pupil_blinks_detect()</span></code> - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names</p></li>
+<li><p>[x] <code class="docutils literal notranslate"><span class="pre">blinks_merge()</span></code> - for is a <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> method but if there will be blinks in the gaze data at some point, the whole <code class="docutils literal notranslate"><span class="pre">blink</span></code> functionality should be moved to <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code></p></li>
+<li><p>[x] make a “mask” field for the <code class="docutils literal notranslate"><span class="pre">EyeDataDict</span></code> that is a dict of boolean arrays that can be used to mask out parts of the data for blinks/interpolation?</p></li>
+<li><p>[x] <code class="docutils literal notranslate"><span class="pre">pupil_blinks_interpolate()</span></code> - merge with Mahot function and make one an option for the other</p></li>
+</ul>
+</li>
+<li><p>[x] baseline/response estimation</p>
+<ul>
+<li><p>[x] <code class="docutils literal notranslate"><span class="pre">pupil_estimate_baseline()</span></code></p></li>
+<li><p>[x] <code class="docutils literal notranslate"><span class="pre">pupil_estimate_response()</span></code></p></li>
+</ul>
+</li>
+<li><p>[x] statistics per events</p></li>
+<li><p>[x] some more general interval processing</p></li>
+<li><p>[x] plotting</p></li>
+<li><p>[ ] rework ERPD class: make it use the EyeDataDict but so that each entry is a 2D np.array that stores all the windows for a given event (have to match all dims)</p></li>
 </ul>
 </section>
 <section id="thoughts-and-todo-after-meeting-2024-06-18">
@@ -162,7 +187,8 @@ This is what most users will want.</p></li>
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">Status of implementation 2025-03-06</a></li>
+<li><a class="reference internal" href="#">TODOs</a></li>
+<li><a class="reference internal" href="#status-of-implementation-2025-03-06">Status of implementation 2025-03-06</a></li>
 <li><a class="reference internal" href="#thoughts-and-todo-after-meeting-2024-06-18">Thoughts and TODO after meeting 2024-06-18</a></li>
 <li><a class="reference internal" href="#notes-meeting-2024-06-18">Notes meeting 2024-06-18</a></li>
 <li><a class="reference internal" href="#notes-from-radovan-2024-04-19">Notes from Radovan 2024-04-19</a></li>
@@ -200,7 +226,7 @@ This is what most users will want.</p></li>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Status of implementation 2025-03-06</a></li> 
+        <li class="nav-item nav-item-this"><a href="">TODOs</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

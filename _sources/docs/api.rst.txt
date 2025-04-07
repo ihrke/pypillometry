@@ -55,6 +55,7 @@ EyeData
 ^^^^^^^
 
 .. autoclass:: pypillometry.EyeData
+    :members:
 
 PupilData
 ^^^^^^^^^
@@ -66,6 +67,7 @@ GazeData
 ^^^^^^^^
 
 .. autoclass:: pypillometry.GazeData
+    :members:
 
 Plotting
 --------
@@ -82,11 +84,13 @@ GenericEyeData
 ^^^^^^^^^^^^^^
 
 .. autoclass:: pypillometry.GenericEyeData
+    :members:
 
 EyeDataDict
 ^^^^^^^^^^^
 
 .. autoclass:: pypillometry.EyeDataDict
+    :members:
 
 Stateless signal-processing functions
 --------------------------------------

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.signal.baseline &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/nature.css?v=279e0f84" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.signal.baseline</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pypillometry.signal.baseline</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">baseline.py</span>
+<span class="sd">===========</span>
+
+<span class="sd">Functions for estimating tonic pupillary fluctuations (baseline).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">signal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cmdstanpy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">importlib.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">files</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.interpolate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span><span class="p">,</span> <span class="n">splrep</span><span class="p">,</span> <span class="n">splev</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.pupil</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="bspline">
+<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.bspline">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">bspline</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">spline_degree</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Re-implementation from https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html.</span>
+<span class="sd">    Similar behaviour as R&#39;s bs() function from the splines-library.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    </span>
+<span class="sd">    txd: np.array</span>
+<span class="sd">        time-vector</span>
+<span class="sd">    knots: np.array</span>
+<span class="sd">        location of the knots</span>
+<span class="sd">    spline_degree: int</span>
+<span class="sd">        degree of the spline</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    </span>
+<span class="sd">    B: np.array</span>
+<span class="sd">        matrix of basis functions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span><span class="o">=</span><span class="n">txd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">num_knots</span><span class="o">=</span><span class="n">knots</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_b_spline</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ext_knots</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+        <span class="n">n</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">b_spline</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">w1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">w2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">order</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">b_spline</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">b_spline</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">t</span><span class="o">&gt;=</span><span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span> <span class="n">t</span><span class="o">&lt;</span><span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">!=</span> <span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">w1</span><span class="o">=</span><span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="p">]]</span><span class="o">*</span><span class="n">n</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">!=</span><span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="n">order</span><span class="p">]:</span>
+                <span class="n">w2</span><span class="o">=</span><span class="mi">1</span><span class="o">-</span><span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">]]</span><span class="o">*</span><span class="n">n</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="n">order</span><span class="p">]</span><span class="o">-</span><span class="n">ext_knots</span><span class="p">[</span><span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">b_spline</span><span class="o">=</span><span class="n">w1</span><span class="o">*</span><span class="n">build_b_spline</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">ext_knots</span><span class="p">,</span><span class="n">ind</span><span class="p">,</span><span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">w2</span><span class="o">*</span><span class="n">build_b_spline</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">ext_knots</span><span class="p">,</span><span class="n">ind</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">order</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">b_spline</span>
+
+    <span class="n">num_basis</span> <span class="o">=</span> <span class="n">num_knots</span> <span class="o">+</span> <span class="n">spline_degree</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span> <span class="c1"># total number of B-splines</span>
+    <span class="n">B</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="n">num_basis</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">ext_knots</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">knots</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">*</span><span class="n">spline_degree</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> 
+                              <span class="p">[</span><span class="n">knots</span><span class="p">[</span><span class="n">num_knots</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">*</span><span class="n">spline_degree</span><span class="p">)</span> <span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_basis</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">build_b_spline</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">ext_knots</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">spline_degree</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">B</span><span class="p">[</span><span class="n">num_basis</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    <span class="k">return</span> <span class="n">B</span><span class="o">.</span><span class="n">T</span></div>
+
+
+<div class="viewcode-block" id="butter_lowpass">
+<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.butter_lowpass">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">butter_lowpass</span><span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get lowpass-filter coefficients for Butterworth-filter.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    </span>
+<span class="sd">    cutoff: float</span>
+<span class="sd">        lowpass-filter cutoff</span>
+<span class="sd">    fs: float</span>
+<span class="sd">        sampling rate</span>
+<span class="sd">    order: int</span>
+<span class="sd">        filter order</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    </span>
+<span class="sd">    (b,a): tuple (float,float)</span>
+<span class="sd">        filter coefficients</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nyq</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">fs</span>
+    <span class="n">normal_cutoff</span> <span class="o">=</span> <span class="n">cutoff</span> <span class="o">/</span> <span class="n">nyq</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">normal_cutoff</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s1">&#39;low&#39;</span><span class="p">,</span> <span class="n">analog</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span></div>
+
+
+<div class="viewcode-block" id="butter_lowpass_filter">
+<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.butter_lowpass_filter">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">butter_lowpass_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lowpass-filter signal using a Butterworth-filter.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    </span>
+<span class="sd">    data: np.array</span>
+<span class="sd">        data to lowpass-filter</span>
+<span class="sd">    cutoff: float</span>
+<span class="sd">        lowpass-filter cutoff</span>
+<span class="sd">    fs: float</span>
+<span class="sd">        sampling rate</span>
+<span class="sd">    order: int</span>
+<span class="sd">        filter order</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    </span>
+<span class="sd">    y: np.array</span>
+<span class="sd">        filtered data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">butter_lowpass</span><span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="downsample">
+<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.downsample">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">downsample</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">R</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple downsampling scheme using mean within the downsampling window.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    </span>
+<span class="sd">    y: np.array</span>
+<span class="sd">        signal to downsample</span>
+<span class="sd">        </span>
+<span class="sd">    R: int</span>
+<span class="sd">        decimate-factor</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    </span>
+<span class="sd">    y: np.array</span>
+<span class="sd">        downsampled data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pad_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">/</span><span class="n">R</span><span class="p">)</span><span class="o">*</span><span class="n">R</span> <span class="o">-</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">y_padded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">pad_size</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">)</span>
+    <span class="n">y2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">y_padded</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">R</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y2</span></div>
+
+
+
+    
+<div class="viewcode-block" id="baseline_envelope_iter_bspline">
+<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.baseline_envelope_iter_bspline">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">baseline_envelope_iter_bspline</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span> <span class="n">fsd</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
+                                   <span class="n">lam_sig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                                   <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract baseline based (re-)estimating the lower envelope using B-splines.</span>
+<span class="sd">    See notebook `baseline_interp.ipynb` for details.</span>
+<span class="sd">    The signal is downsampled (to `fsd` Hz) for speed.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    </span>
+<span class="sd">    tx : np.ndarray</span>
+<span class="sd">        time-vector in seconds</span>
+<span class="sd">        </span>
+<span class="sd">    sy : np.ndarray</span>
+<span class="sd">        raw pupil signal</span>
+<span class="sd">        </span>
+<span class="sd">    event_onsets : list</span>
+<span class="sd">        onsets of events (stimuli/responses) in milliseconds</span>
+<span class="sd">        </span>
+<span class="sd">    fs : float</span>
+<span class="sd">        sampling rate in Hz</span>
+<span class="sd">    </span>
+<span class="sd">    fsd : float</span>
+<span class="sd">        downsampled sampling rate (if too slow, decrease)</span>
+<span class="sd">       </span>
+<span class="sd">    lp : float</span>
+<span class="sd">        lowpass-filter cutoff (Hz)</span>
+<span class="sd">    </span>
+<span class="sd">    lam_sig: float</span>
+<span class="sd">        parameter steering how much the baseline is shaped by the non-peaks of the signal</span>
+<span class="sd">    </span>
+<span class="sd">    lam_min,lam_max: float</span>
+<span class="sd">        parameters mapping how much low- and high-prominence peaks influence the baseline</span>
+<span class="sd">        </span>
+<span class="sd">    verbose: int [0, 100]</span>
+<span class="sd">        how much information to print (0 nothing, 100 everything)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    </span>
+<span class="sd">    (txd,syd,base2,base1) : tuple</span>
+<span class="sd">        txd: downsampled time-array</span>
+<span class="sd">        syd: downsampled and lowpass-filtered pupil signal</span>
+<span class="sd">        base1: is the estimated base after the first round</span>
+<span class="sd">        base2: is the final baseline estimate</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dsfac</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">fs</span><span class="o">/</span><span class="n">fsd</span><span class="p">)</span> <span class="c1"># calculate downsampling factor</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Downsampling factor is </span><span class="si">%i</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">dsfac</span><span class="p">)</span>
+    
+    <span class="c1"># downsampling</span>
+    <span class="n">syc</span><span class="o">=</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">lp</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">syd</span><span class="o">=</span><span class="n">downsample</span><span class="p">(</span><span class="n">syc</span><span class="p">,</span> <span class="n">dsfac</span><span class="p">)</span>
+
+    <span class="c1"># z-scale for easier model-fitting</span>
+    <span class="n">symean</span><span class="p">,</span><span class="n">sysd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">syd</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">syd</span><span class="p">)</span>
+    <span class="n">syd</span><span class="o">=</span><span class="p">(</span><span class="n">syd</span><span class="o">-</span><span class="n">symean</span><span class="p">)</span><span class="o">/</span><span class="n">sysd</span>
+    <span class="n">txd</span><span class="o">=</span><span class="n">downsample</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">dsfac</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Downsampling done&quot;</span><span class="p">)</span>
+
+    <span class="c1"># peak finding and spline-building</span>
+    <span class="n">peaks_ix</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">syd</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">prominences</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">peak_prominences</span><span class="p">(</span><span class="o">-</span><span class="n">syd</span><span class="p">,</span> <span class="n">peaks_ix</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">peaks</span><span class="o">=</span><span class="n">txd</span><span class="p">[</span><span class="n">peaks_ix</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Peak-detection done, </span><span class="si">%i</span><span class="s2"> peaks detected&quot;</span><span class="o">%</span><span class="n">peaks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">knots</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">txd</span><span class="o">.</span><span class="n">min</span><span class="p">()],</span> <span class="n">peaks</span><span class="p">,</span> <span class="p">[</span><span class="n">txd</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span> <span class="p">)</span> <span class="c1">## peaks as knots</span>
+    <span class="n">B</span><span class="o">=</span><span class="n">bspline</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;B-spline matrix built, dims=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>    
+
+    <span class="c1"># convert</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prominence_to_lambda</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+        <span class="n">w2</span><span class="o">=</span><span class="n">lam_min</span><span class="o">+</span><span class="p">((</span><span class="n">w</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">w</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">w</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">w</span><span class="p">))))</span><span class="o">*</span><span class="p">(</span><span class="n">lam_max</span><span class="o">-</span><span class="n">lam_min</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">w2</span>
+    
+    <span class="n">w</span><span class="o">=</span><span class="n">prominence_to_lambda</span><span class="p">(</span><span class="n">prominences</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="n">lam_min</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="n">lam_max</span><span class="p">)</span>
+    
+    <span class="c1"># load or compile model</span>
+    <span class="n">fpath</span><span class="o">=</span><span class="n">files</span><span class="p">(</span><span class="s1">&#39;pypillometry.stan&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;baseline_model_asym_laplac.stan&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Compiling Stan model: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">fpath</span><span class="p">)</span>
+
+    <span class="c1">#fname=&quot;stan/baseline_model_asym_laplac.stan&quot;</span>
+    <span class="c1">#fpath=os.path.join(os.path.split(__file__)[0], fname)</span>
+    <span class="n">sm</span> <span class="o">=</span> <span class="n">cmdstanpy</span><span class="o">.</span><span class="n">CmdStanModel</span><span class="p">(</span><span class="n">stan_file</span><span class="o">=</span><span class="n">fpath</span><span class="p">)</span>
+    <span class="c1">#sm.compile()</span>
+    <span class="c1">#sm = StanModel_cache(stan_code_baseline_model_asym_laplac)</span>
+    
+    <span class="c1">## put the data for the model together</span>
+    <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;n&#39;</span><span class="p">:</span><span class="n">syd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="s1">&#39;sy&#39;</span><span class="p">:</span><span class="n">syd</span><span class="p">,</span>
+        <span class="s1">&#39;ncol&#39;</span><span class="p">:</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="s1">&#39;B&#39;</span><span class="p">:</span><span class="n">B</span><span class="p">,</span>
+        <span class="s1">&#39;npeaks&#39;</span><span class="p">:</span><span class="n">peaks_ix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="s1">&#39;peakix&#39;</span><span class="p">:</span><span class="n">peaks_ix</span><span class="p">,</span>
+        <span class="s1">&#39;lam_sig&#39;</span><span class="p">:</span><span class="n">lam_sig</span><span class="p">,</span>
+        <span class="s1">&#39;pa&#39;</span><span class="p">:</span><span class="mf">0.05</span><span class="p">,</span>
+        <span class="s1">&#39;lam_prominences&#39;</span><span class="p">:</span><span class="n">w</span>
+    <span class="p">}</span>
+    
+    <span class="c1">## variational optimization</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Optimizing Stan model&quot;</span><span class="p">)</span>    
+    <span class="n">opt</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">variational</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">vbc</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">stan_variable</span><span class="p">(</span><span class="s2">&quot;coef&quot;</span><span class="p">)</span><span class="c1">#, mean=True)</span>
+    <span class="n">meansigvb</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">vbc</span><span class="p">)</span>
+    
+    <span class="c1">## PRF model</span>
+    <span class="c1"># new &quot;signal&quot;</span>
+    <span class="n">syd2</span><span class="o">=</span><span class="n">syd</span><span class="o">-</span><span class="n">meansigvb</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Estimating PRF model (NNLS)&quot;</span><span class="p">)</span>    
+    <span class="c1">#coef,pred,resid=pupilresponse_nnls(txd,syd2,event_onsets,fs=fsd)</span>
+    <span class="n">pred</span><span class="p">,</span> <span class="n">coef</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="o">=</span><span class="n">pupil_response</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">syd2</span><span class="p">,</span> <span class="n">event_onsets</span><span class="p">,</span> <span class="n">fsd</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">917</span><span class="p">)</span>
+    <span class="n">resid</span><span class="o">=</span><span class="n">syd</span><span class="o">-</span><span class="n">pred</span>
+    
+    <span class="c1">### 2nd iteration</span>
+    <span class="c1">## get new peaks</span>
+    <span class="n">syd3</span><span class="o">=</span><span class="n">syd</span><span class="o">-</span><span class="n">pred</span>
+    <span class="n">peaks2_ix</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">syd3</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">prominences2</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">peak_prominences</span><span class="p">(</span><span class="o">-</span><span class="n">syd3</span><span class="p">,</span> <span class="n">peaks2_ix</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">peaks2</span><span class="o">=</span><span class="n">txd</span><span class="p">[</span><span class="n">peaks2_ix</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;2nd Peak-detection done, </span><span class="si">%i</span><span class="s2"> peaks detected&quot;</span><span class="o">%</span><span class="n">peaks2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">knots2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">txd</span><span class="o">.</span><span class="n">min</span><span class="p">()],</span> <span class="n">peaks2</span><span class="p">,</span> <span class="p">[</span><span class="n">txd</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span> <span class="p">)</span> <span class="c1">## peaks as knots</span>
+    <span class="n">B2</span><span class="o">=</span><span class="n">bspline</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">knots2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;2nd B-spline matrix built, dims=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">B2</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="n">w2</span><span class="o">=</span><span class="n">prominence_to_lambda</span><span class="p">(</span><span class="n">prominences2</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="n">lam_min</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="n">lam_max</span><span class="p">)</span>
+
+    <span class="n">data2</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;n&#39;</span><span class="p">:</span><span class="n">syd3</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="s1">&#39;sy&#39;</span><span class="p">:</span><span class="n">syd3</span><span class="p">,</span>
+        <span class="s1">&#39;ncol&#39;</span><span class="p">:</span><span class="n">B2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="s1">&#39;B&#39;</span><span class="p">:</span><span class="n">B2</span><span class="p">,</span>
+        <span class="s1">&#39;npeaks&#39;</span><span class="p">:</span><span class="n">peaks2_ix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="s1">&#39;peakix&#39;</span><span class="p">:</span><span class="n">peaks2_ix</span><span class="p">,</span>
+        <span class="s1">&#39;lam_sig&#39;</span><span class="p">:</span><span class="n">lam_sig</span><span class="p">,</span>
+        <span class="s1">&#39;pa&#39;</span><span class="p">:</span><span class="mf">0.05</span><span class="p">,</span>
+        <span class="s1">&#39;lam_prominences&#39;</span><span class="p">:</span><span class="n">w2</span>
+    <span class="p">}</span>
+    
+    <span class="c1">##  variational optimization</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Optimizing 2nd Stan model&quot;</span><span class="p">)</span>
+    <span class="n">opt</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">variational</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data2</span><span class="p">)</span>
+    <span class="n">vbc2</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">stan_variable</span><span class="p">(</span><span class="s2">&quot;coef&quot;</span><span class="p">)</span><span class="c1">#, mean=True)</span>
+    <span class="n">meansigvb2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B2</span><span class="p">,</span> <span class="n">vbc2</span><span class="p">)</span>  
+    
+    <span class="k">return</span> <span class="n">txd</span><span class="p">,(</span><span class="n">syd</span><span class="o">*</span><span class="n">sysd</span><span class="p">)</span><span class="o">+</span><span class="n">symean</span><span class="p">,(</span><span class="n">meansigvb2</span><span class="o">*</span><span class="n">sysd</span><span class="p">)</span><span class="o">+</span><span class="n">symean</span><span class="p">,</span> <span class="p">(</span><span class="n">meansigvb</span><span class="o">*</span><span class="n">sysd</span><span class="p">)</span><span class="o">+</span><span class="n">symean</span></div>
+
+
+<div class="viewcode-block" id="baseline_envelope">
+<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.baseline_envelope">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">baseline_envelope</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">prominence_thr</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">interp_method</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract baseline based on the lower envelope of the (filtered) signal.</span>
+
+<span class="sd">    Steps: </span>
+<span class="sd">    </span>
+<span class="sd">    - filter away noise</span>
+<span class="sd">    - detect high-prominence throughs in the signal </span>
+<span class="sd">    - calculate lower envelope based on these peaks</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    </span>
+<span class="sd">    tx : np.ndarray</span>
+<span class="sd">        time-vector in seconds</span>
+<span class="sd">        </span>
+<span class="sd">    sy : np.ndarray</span>
+<span class="sd">        raw pupil signal</span>
+<span class="sd">        </span>
+<span class="sd">    event_onsets : list</span>
+<span class="sd">        onsets of events (stimuli/responses) in seconds</span>
+<span class="sd">        </span>
+<span class="sd">    fs : float</span>
+<span class="sd">        sampling rate in Hz</span>
+<span class="sd">    </span>
+<span class="sd">    lp : float</span>
+<span class="sd">        low-pass filter cutoff for removing random noise</span>
+<span class="sd">        </span>
+<span class="sd">    prominence_thr : float in [0,100]</span>
+<span class="sd">        percentile of the prominence distribution (of the peaks) to </span>
+<span class="sd">        use for determining prominent peaks (see `scipy.stats.peak_prominences()`)</span>
+<span class="sd">        </span>
+<span class="sd">    interp_method : string, one of [&quot;linear&quot;, &quot;cubic&quot;, &quot;spline&quot;]</span>
+<span class="sd">        &quot;linear&quot; - linear interpolation between the high-prominence peaks</span>
+<span class="sd">        &quot;cubic&quot;  - cubic interpolation through all high-prominence peaks</span>
+<span class="sd">        &quot;spline&quot; - a smoothing spline that is guaranteed to go through all</span>
+<span class="sd">                   high-prominence peaks and smoothes through all the other</span>
+<span class="sd">                   (lower-prominence) peaks</span>
+<span class="sd">                   </span>
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    </span>
+<span class="sd">    base: np.array</span>
+<span class="sd">        baseline estimate</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">syc</span><span class="o">=</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">lp</span><span class="p">)</span>
+    <span class="n">peaks_ix</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">syc</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">prominences</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">peak_prominences</span><span class="p">(</span><span class="o">-</span><span class="n">syc</span><span class="p">,</span> <span class="n">peaks_ix</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">res</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">peak_widths</span><span class="p">(</span><span class="o">-</span><span class="n">syc</span><span class="p">,</span> <span class="n">peaks_ix</span><span class="p">)</span>
+    <span class="n">width_locs</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">res</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="n">fs</span><span class="p">,</span><span class="n">res</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">/</span><span class="n">fs</span><span class="p">)</span>
+    <span class="n">widths</span><span class="o">=</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">peaks</span><span class="o">=</span><span class="n">tx</span><span class="p">[</span><span class="n">peaks_ix</span><span class="p">]</span>
+    <span class="n">widths</span><span class="o">=</span><span class="n">widths</span><span class="o">/</span><span class="n">fs</span> <span class="c1"># in seconds</span>
+    <span class="n">prominence_cutoff</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">prominences</span><span class="p">,</span><span class="n">prominence_thr</span><span class="p">)</span>
+    <span class="n">real_peaks</span><span class="o">=</span><span class="n">peaks</span><span class="p">[</span><span class="n">prominences</span><span class="o">&gt;</span><span class="n">prominence_cutoff</span><span class="p">]</span>
+    <span class="n">real_peaks_ix</span><span class="o">=</span><span class="n">peaks_ix</span><span class="p">[</span><span class="n">prominences</span><span class="o">&gt;</span><span class="n">prominence_cutoff</span><span class="p">]</span>
+    
+    <span class="k">if</span> <span class="n">interp_method</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span><span class="s2">&quot;cubic&quot;</span><span class="p">]:</span>
+        <span class="c1">## interpolate only most prominent peaks</span>
+        <span class="n">xinterp</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">tx</span><span class="o">.</span><span class="n">min</span><span class="p">()],</span><span class="n">real_peaks</span><span class="p">,[</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span> <span class="p">)</span>
+        <span class="n">yinterp</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">syc</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">syc</span><span class="p">[</span><span class="n">real_peaks_ix</span><span class="p">],</span> <span class="p">[</span><span class="n">syc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span> <span class="p">)</span>
+        <span class="n">f</span><span class="o">=</span><span class="n">interp1d</span><span class="p">(</span><span class="n">xinterp</span><span class="p">,</span><span class="n">yinterp</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">interp_method</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">interp_method</span><span class="o">==</span><span class="s2">&quot;spline&quot;</span><span class="p">:</span>
+        <span class="c1">## use all peaks for interpolation and use &quot;real&quot; peaks as inner knots</span>
+        <span class="n">xinterp</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">tx</span><span class="o">.</span><span class="n">min</span><span class="p">()],</span><span class="n">peaks</span><span class="p">,[</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span> <span class="p">)</span>
+        <span class="n">yinterp</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">syc</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">syc</span><span class="p">[</span><span class="n">peaks_ix</span><span class="p">],</span> <span class="p">[</span><span class="n">syc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span> <span class="p">)</span>
+        <span class="n">f</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">LSQUnivariateSpline</span><span class="p">(</span><span class="n">xinterp</span><span class="p">,</span><span class="n">yinterp</span><span class="p">,</span><span class="n">real_peaks</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;interp_method must be one of &#39;linear&#39;,&#39;cubic&#39;,&#39;spline&#39;&quot;</span><span class="p">)</span>
+    <span class="n">x0</span><span class="o">=</span><span class="n">f</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">x0</span></div>
+
+
+
+<div class="viewcode-block" id="baseline_pupil_model">
+<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.baseline_pupil_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">baseline_pupil_model</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">lp1</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lp2</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract baseline based on filtering after removing stim-locked activity.</span>
+<span class="sd">    </span>
+<span class="sd">    Steps:</span>
+<span class="sd">    </span>
+<span class="sd">    - filter away noise</span>
+<span class="sd">    - regress out event-locked activity from the filtered signal using NNLS</span>
+<span class="sd">    - remove modeled signal from filtered data</span>
+<span class="sd">    - run another lowpass-filter to get rid of spurious signals</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    </span>
+<span class="sd">    tx : np.ndarray</span>
+<span class="sd">        time-vector in seconds</span>
+<span class="sd">        </span>
+<span class="sd">    sy : np.ndarray</span>
+<span class="sd">        raw pupil signal</span>
+<span class="sd">        </span>
+<span class="sd">    event_onsets : list</span>
+<span class="sd">        onsets of events (stimuli/responses) in seconds</span>
+<span class="sd">        </span>
+<span class="sd">    fs : float</span>
+<span class="sd">        sampling rate in Hz</span>
+<span class="sd">    </span>
+<span class="sd">    lp1 : float</span>
+<span class="sd">        low-pass filter cutoff for removing random noise</span>
+<span class="sd">        </span>
+<span class="sd">    lp2 : float</span>
+<span class="sd">        low-pass filter cutoff for removing spurious peaks from the baseline-signal        </span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    </span>
+<span class="sd">    base: np.array</span>
+<span class="sd">        baseline estimate        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">syc</span><span class="o">=</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">lp1</span><span class="p">)</span>
+    
+    <span class="c1"># calculate indices for event-onsets</span>
+    <span class="n">event_onsets_ix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">event_onsets</span><span class="p">,</span> <span class="p">(</span><span class="n">sy</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="o">-</span><span class="n">tx</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># set up a single regressor</span>
+    <span class="n">x1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">sy</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">x1</span><span class="p">[</span><span class="n">event_onsets_ix</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="n">pupil_kernel</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">)</span>
+    <span class="n">x1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="n">x1</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+
+    <span class="c1"># solve with non-negative least-squares</span>
+    <span class="n">X</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x1</span><span class="o">.</span><span class="n">size</span><span class="p">)))</span>
+    <span class="n">coef</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">nnls</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">syc</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">pred</span><span class="o">=</span><span class="n">coef</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">coef</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">x1</span>
+    <span class="n">resid</span><span class="o">=</span><span class="n">syc</span><span class="o">-</span><span class="n">pred</span><span class="o">+</span><span class="n">coef</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">resid_lp</span><span class="o">=</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">lp2</span><span class="p">)</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">resid_lp</span>
+    
+    <span class="k">return</span> <span class="n">x0</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.signal.baseline</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

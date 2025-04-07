@@ -1,19 +1,36 @@
+## TODOs
+
+- [ ] https://github.com/psychoinformatics-de/remodnav 
+
+
 ## Status of implementation 2025-03-06
 
 Porting all things from old `PupilData` to either `GenericEyeData` (for functions that operate on all variables) or `PupilData` for pupil-specific functions.
 
 - [x] `scale()` and `unscale()` are now in `GenericEyeData` and can be called on any variable
-   - they use new `Parameters` class to store separate scaling parameters for each variable/eye
+   - they use dicts to store separate scaling parameters for each variable/eye
 - [x] `get_intervals()` is now in `GenericEyeData` (only depends on events)
 - [x] `sub_slice()` is now in `GenericEyeData` (operates on all variables simultaneously)
 - [x] `pupil_lowpass_filter()` is now in `PupilData`
-- [ ] `pupil_smooth_window()`
-- [ ] `downsample()`  - implement in `GenericEyeData`
-- [ ] `pupil_estimate_baseline()`
-- [ ] `pupil_estimate_response()`
-- [ ] `pupil_blinks_detect()` - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names
-- [ ] `pupil_blinks_merge()`
-- [ ] `pupil_blinks_interpolate()` - merge with Mahot function and make one an option for the other
+- [x] `pupil_smooth_window()`
+- [x] `downsample()`  - implement in `GenericEyeData`
+- [x] `merge_eyes()` - implement in `GenericEyeData` to combine left/right eyes into a single variable
+  - [ ] perhaps implement regression merging?
+- [x] blinks
+  - [x] make the `blinks` field a property so that the blinkmask can be kept in sync
+  - [x] `pupil_blinks_detect()` - or can this be also for gaze? Will definitely need different algorithms. So should stick with different names
+  - [x] `blinks_merge()` - for is a `PupilData` method but if there will be blinks in the gaze data at some point, the whole `blink` functionality should be moved to `GenericEyeData`
+  - [x] make a "mask" field for the `EyeDataDict` that is a dict of boolean arrays that can be used to mask out parts of the data for blinks/interpolation?
+  - [x] `pupil_blinks_interpolate()` - merge with Mahot function and make one an option for the other
+- [x] baseline/response estimation
+  - [x] `pupil_estimate_baseline()`
+  - [x] `pupil_estimate_response()`
+- [x] statistics per events
+- [x] some more general interval processing
+- [x] plotting
+- [ ] rework ERPD class: make it use the EyeDataDict but so that each entry is a 2D np.array that stores all the windows for a given event (have to match all dims)
+
+
 
 ## Thoughts and TODO after meeting 2024-06-18
 
