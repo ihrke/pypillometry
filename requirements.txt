@@ -7,3 +7,5 @@ typing
 requests
 loguru
 tqdm
+pytest
+pytest-cov
