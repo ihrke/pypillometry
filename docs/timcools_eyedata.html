@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Tim Cools Eye data &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Tim Cools Eye data</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/docs/timcools_eyedata.ipynb">docs/timcools_eyedata.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/timcools_eyedata.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Tim-Cools-Eye-data">
+<h1>Tim Cools Eye data<a class="headerlink" href="#Tim-Cools-Eye-data" title="Link to this heading">¶</a></h1>
+<section id="Create-datafile">
+<h2>Create datafile<a class="headerlink" href="#Create-datafile" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>subj</p></li>
+<li><p>trial</p></li>
+<li><p>value left</p></li>
+<li><p>value right</p></li>
+<li><p>maybe Qv left</p></li>
+<li><p>maybe Qv right</p></li>
+<li><p>prop viewing time left</p></li>
+<li><p>prop viewing time right</p></li>
+<li><p>first saccade (quantified as left/right) - which ROI was first “hit”; value will be “left”, “right”, “none”</p></li>
+<li><p>task-focus: 1 - if 5 trials before MW probe; 2 - if 5 trials before OT probe; 0 otherwise</p></li>
+</ul>
+</section>
+<section id="Hyp-1:-first-saccade-to-higher-valued-object?">
+<h2>Hyp 1: first saccade to higher valued object?<a class="headerlink" href="#Hyp-1:-first-saccade-to-higher-valued-object?" title="Link to this heading">¶</a></h2>
+<p>Analysis:</p>
+<ul class="simple">
+<li><p>var1: if(first-saccade=left) left value, if(first-saccade=right), right value</p></li>
+<li><p>var2: the opposite (i.e., the value of the object that did NOT receive the first saccade)</p></li>
+<li><p>calculate diff=var1-var2</p></li>
+<li><p>mean(diff) per subject</p></li>
+<li><p>one-sample t-test with expect t&gt;0</p></li>
+</ul>
+</section>
+<section id="Hyp-2:-relationship-viewing-time-vs.-value">
+<h2>Hyp 2: relationship viewing time vs. value<a class="headerlink" href="#Hyp-2:-relationship-viewing-time-vs.-value" title="Link to this heading">¶</a></h2>
+<p>Analysis:</p>
+<ul class="simple">
+<li><p>var1: proportion viewing time to higher valued object (if left val&gt;right val: left-viewing-time; if right val&gt;left val: right-viewing-time)</p></li>
+<li><p>var2: abs(left value - right value)</p></li>
+<li><p>Correlation(var1,var2) per subject</p></li>
+<li><p>Fisher z-transform of the correlation coefficient for each subj</p></li>
+<li><p>one-sided t-test on all the z-transformed correlations (expect t&gt;0)</p></li>
+</ul>
+</section>
+<section id="Hyp-3:-stimuli-will-receive-more-equal-viewing-time-during-periods-of-mind-wandering-than-during-periods-of-attention">
+<h2>Hyp 3: stimuli will receive more equal viewing time during periods of mind wandering than during periods of attention<a class="headerlink" href="#Hyp-3:-stimuli-will-receive-more-equal-viewing-time-during-periods-of-mind-wandering-than-during-periods-of-attention" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>use var1 and var2 from Hyp2</p></li>
+<li><p>filter out, var1 and var2 where task-focus==MW or OT</p></li>
+<li><p>gets you OT_var1, MW_var1, OT_var2, MW_var2</p></li>
+<li><p>ANOVA: with factors OT vs. MW and var1 vs. var2</p></li>
+<li><p>hypothesis: IA is significant</p></li>
+<li><p>be prepared for lower power, because some people don’t have MW trials</p></li>
+</ul>
+<p>Hypotheses: value and viewing time Hypotheses involving MW: filter by task-focus</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">__package_path__</span><span class="p">)</span> <span class="c1"># check that correct version is being used</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/Users/mmi041/Dropbox/work/projects/pupil/pypillometry/pypillometry
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">parent_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~/work/projects/mw/mw-learning/mwlearning_analysis/eyedata/&quot;</span><span class="p">)</span>
+<span class="n">data_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="s2">&quot;asc/&quot;</span><span class="p">)</span>
+<span class="n">plot_dir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="s2">&quot;plots/&quot;</span><span class="p">)</span>
+<span class="n">subjects</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%03i</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">i</span> for i in range(1,51)]
+<span class="n">exclude_preproc</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;018&quot;</span><span class="p">,</span> <span class="s2">&quot;029&quot;</span><span class="p">,</span> <span class="s2">&quot;032&quot;</span><span class="p">,</span> <span class="s2">&quot;039&quot;</span><span class="p">,</span> <span class="s2">&quot;044&quot;</span><span class="p">,</span> <span class="s2">&quot;047&quot;</span><span class="p">,</span> <span class="s2">&quot;049&quot;</span><span class="p">]</span>
+<span class="n">subjs</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">subjects</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">exclude_preproc</span><span class="p">))</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">read_subject</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">data_path</span><span class="o">=</span><span class="n">data_path</span><span class="p">):</span>
+    <span class="c1">## loading the raw samples from the asc file</span>
+    <span class="n">fname_samples</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{subj}</span><span class="s2">_rlmw_samples.asc&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subj</span><span class="o">=</span><span class="n">subject</span><span class="p">))</span>
+    <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="s2">&quot;left_p&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;right_x&quot;</span><span class="p">,</span> <span class="s2">&quot;right_y&quot;</span><span class="p">,</span> <span class="s2">&quot;right_p&quot;</span><span class="p">])</span>
+
+    <span class="c1">## Eyelink tracker puts &quot;   .&quot; when no data is available for x/y coordinates</span>
+    <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="c1">## Loading the events from the events file</span>
+    <span class="n">fname_events</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{subj}</span><span class="s2">_rlmw_events.asc&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subj</span><span class="o">=</span><span class="n">subject</span><span class="p">))</span>
+    <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">events</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="c1"># keep only lines starting with &quot;MSG&quot;</span>
+    <span class="n">events</span><span class="o">=</span><span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MSG&quot;</span><span class="p">)]</span>
+    <span class="n">experiment_start_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">&quot;experiment_start&quot;</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">[</span><span class="n">experiment_start_index</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">df_ev</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
+    <span class="n">df_ev</span><span class="o">=</span><span class="n">df_ev</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
+    <span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;event&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Creating EyeData object that contains both X-Y coordinates</span>
+    <span class="c1"># and pupil data</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{subj}</span><span class="s2">_ceylin&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subj</span><span class="o">=</span><span class="n">subject</span><span class="p">),</span>
+                <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span> <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="mf">33.75</span><span class="p">,</span><span class="mi">27</span><span class="p">),</span>
+                <span class="n">screen_eye_distance</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+                <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span>
+                <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span>
+                <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
+                <span class="n">keep_orig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
+                <span class="o">.</span><span class="n">reset_time</span><span class="p">()</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_experiment_info</span><span class="p">(</span><span class="n">screen_eye_distance</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+                        <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span>
+                        <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load pre-processed pupil data from Ceylin</span>
+<span class="n">pdata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">pd_read_pickle</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="s2">&quot;pupildata_2024_03_19.pkl&quot;</span><span class="p">))</span>
+<span class="n">pdata</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">pdata</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">subjs</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">edata</span><span class="o">=</span><span class="p">{}</span>
+<span class="k">for</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">subjs</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing subject </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">subject</span>)
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">read_subject</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span>
+    <span class="c1"># remove the interpolated points from the pupil processing from saccade data</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">pdata</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">interpolated_mask</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">edata</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">=</span><span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## prop_viewing time left and right</span>
+<span class="c1">#  - operationalize as proportion of time spent looking at left and right side of screen</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[129]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">trial_stim_choice</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">tup</span><span class="o">=</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="n">ev</span><span class="o">=</span><span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span> <span class="n">ctrial</span><span class="o">=</span><span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">ev</span><span class="o">==</span><span class="s2">&quot;S&quot;</span> <span class="ow">or</span> <span class="n">ev</span><span class="o">==</span><span class="s2">&quot;C&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ctrial</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span>
+
+<span class="n">d</span><span class="o">.</span><span class="n">test_selector</span><span class="p">(</span><span class="n">trial_stim_choice</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_stim_choice_interval</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;get interval between stimulus onset and choice&quot;&quot;&quot;</span>
+    <span class="n">ntrials</span><span class="o">=</span><span class="mi">300</span>
+    <span class="n">ivs</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ntrials</span><span class="p">):</span>
+        <span class="n">iv</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">trial_stim_choice</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">trial</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ivs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">iv</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">iv</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ivs</span>
+
+<span class="n">outdata</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">subj</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">subjs</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> &quot;</span><span class="o">%</span><span class="k">subj</span>, end=&quot;&quot;)
+    <span class="n">ivs</span><span class="o">=</span><span class="n">get_stim_choice_interval</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">screenmid</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="n">propleft</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">propright</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">firstsacc</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">start</span><span class="p">,</span><span class="n">end</span> <span class="ow">in</span> <span class="n">ivs</span><span class="p">:</span>
+        <span class="n">startix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="o">-</span><span class="n">start</span><span class="p">))</span>
+        <span class="n">endix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="o">-</span><span class="n">end</span><span class="p">))</span>
+
+        <span class="c1">## proportion left and right</span>
+        <span class="n">nleft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;left_x&quot;</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">screenmid</span><span class="p">)</span>
+        <span class="n">nright</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;left_x&quot;</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">screenmid</span><span class="p">)</span>
+        <span class="n">propleft</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nleft</span><span class="o">/</span><span class="p">(</span><span class="n">nleft</span><span class="o">+</span><span class="n">nright</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">propright</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nright</span><span class="o">/</span><span class="p">(</span><span class="n">nleft</span><span class="o">+</span><span class="n">nright</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+
+        <span class="c1">## first saccade left or right</span>
+        <span class="c1"># when x-coord of first sample comes closes to leftstim/rightstim</span>
+        <span class="n">leftstim</span><span class="o">=</span><span class="n">screenmid</span><span class="o">-</span><span class="p">(</span><span class="n">screenmid</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">rightstim</span><span class="o">=</span><span class="n">screenmid</span><span class="o">+</span><span class="p">(</span><span class="n">screenmid</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">fsacc</span><span class="o">=</span><span class="s2">&quot;none&quot;</span>
+        <span class="n">ixleft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;left_x&quot;</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span><span class="o">&lt;</span><span class="n">leftstim</span><span class="o">+</span><span class="mi">200</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ixleft</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">ixleft</span><span class="o">=</span><span class="n">ixleft</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ixleft</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">ixright</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;left_x&quot;</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span><span class="o">&gt;</span><span class="n">rightstim</span><span class="o">-</span><span class="mi">200</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ixright</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">ixright</span><span class="o">=</span><span class="n">ixright</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ixright</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ixleft</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">ixright</span><span class="p">)):</span>
+            <span class="n">fsacc</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;left&quot;</span><span class="p">,</span><span class="s2">&quot;right&quot;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">nanargmin</span><span class="p">([</span><span class="n">ixleft</span><span class="p">,</span><span class="n">ixright</span><span class="p">])]</span>
+        <span class="n">firstsacc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fsacc</span><span class="p">)</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;subj&quot;</span><span class="p">:</span><span class="n">subj</span><span class="p">,</span><span class="s2">&quot;trial&quot;</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+           <span class="s2">&quot;propleft&quot;</span><span class="p">:</span><span class="n">propleft</span><span class="p">,</span> <span class="s2">&quot;propright&quot;</span><span class="p">:</span><span class="n">propright</span><span class="p">,</span>
+           <span class="s2">&quot;firstsaccade&quot;</span><span class="p">:</span><span class="n">firstsacc</span><span class="p">}</span>
+    <span class="n">outdata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<br/><br/><br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 019 020 021 022 023 024 025 026 027 028 030 031 033 034 035 036 037 038 040 041 042 043 045 046 048 050
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[130]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">odata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="k">for</span> <span class="n">out</span> <span class="ow">in</span> <span class="n">outdata</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[128]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">odata</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="s2">&quot;tim_prop_viewing_time.csv&quot;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/docs/timcools_eyedata.ipynb">docs/timcools_eyedata.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/timcools_eyedata.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Tim Cools Eye data</a><ul>
+<li><a class="reference internal" href="#Create-datafile">Create datafile</a></li>
+<li><a class="reference internal" href="#Hyp-1:-first-saccade-to-higher-valued-object?">Hyp 1: first saccade to higher valued object?</a></li>
+<li><a class="reference internal" href="#Hyp-2:-relationship-viewing-time-vs.-value">Hyp 2: relationship viewing time vs. value</a></li>
+<li><a class="reference internal" href="#Hyp-3:-stimuli-will-receive-more-equal-viewing-time-during-periods-of-mind-wandering-than-during-periods-of-attention">Hyp 3: stimuli will receive more equal viewing time during periods of mind wandering than during periods of attention</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/docs/timcools_eyedata.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Tim Cools Eye data</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

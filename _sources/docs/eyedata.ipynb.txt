@@ -1,0 +1,514 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Importing Eye data\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "- [ ] get_pupildata() or the like\n",
+    "- [ ] re-implement PupilData to use EyeDataDict (use \"switch_eye\" function?)\n",
+    "- [x] plot_scanpath()\n",
+    "- [x] plot_heatmap()\n",
+    "- [ ] interpolation and preprocessing (transfer from pupil to eyetracking)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/opt/anaconda3/envs/pypil/lib/python3.12/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html\n",
+      "  from .autonotebook import tqdm as notebook_tqdm\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/home/mmi041/Dropbox/work/projects/pupil/pypillometry/pypillometry\n"
+     ]
+    }
+   ],
+   "source": [
+    "import sys, os\n",
+    "sys.path.insert(0,\"..\") # this is not needed if you have installed pypillometry\n",
+    "import pypillometry as pp\n",
+    "print(pp.__package_path__) # check that correct version is being used\n",
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import pylab as plt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/tmp/ipykernel_6074/799129609.py:3: ParserWarning: Length of header or names does not match length of data. This leads to a loss of data with index_col=False.\n",
+      "  df=pd.read_table(fname_samples, index_col=False,\n"
+     ]
+    }
+   ],
+   "source": [
+    "## loading the raw samples from the asc file\n",
+    "fname_samples=\"../data/002_rlmw_samples.asc\"\n",
+    "df=pd.read_table(fname_samples, index_col=False,\n",
+    "                  names=[\"time\", \"left_x\", \"left_y\", \"left_p\",\n",
+    "                         \"right_x\", \"right_y\", \"right_p\"])\n",
+    "\n",
+    "## Eyelink tracker puts \"   .\" when no data is available for x/y coordinates\n",
+    "left_x=df.left_x.values\n",
+    "left_x[left_x==\"   .\"] = np.nan\n",
+    "left_x = left_x.astype(float)\n",
+    "\n",
+    "left_y=df.left_y.values\n",
+    "left_y[left_y==\"   .\"] = np.nan\n",
+    "left_y = left_y.astype(float)\n",
+    "\n",
+    "right_x=df.right_x.values\n",
+    "right_x[right_x==\"   .\"] = np.nan\n",
+    "right_x = right_x.astype(float)\n",
+    "\n",
+    "right_y=df.right_y.values\n",
+    "right_y[right_y==\"   .\"] = np.nan\n",
+    "right_y = right_y.astype(float)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>time</th>\n",
+       "      <th>event</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>7269756</td>\n",
+       "      <td>F_1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>7270256</td>\n",
+       "      <td>S_1_1_5</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>7271352</td>\n",
+       "      <td>C_1_5_2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>7271589</td>\n",
+       "      <td>R_1_15</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>7273355</td>\n",
+       "      <td>F_2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1315</th>\n",
+       "      <td>8453467</td>\n",
+       "      <td>R_300_18</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1316</th>\n",
+       "      <td>8455583</td>\n",
+       "      <td>F_300</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1317</th>\n",
+       "      <td>8456083</td>\n",
+       "      <td>P_300</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1318</th>\n",
+       "      <td>8456608</td>\n",
+       "      <td>CP_300_1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1319</th>\n",
+       "      <td>8456833</td>\n",
+       "      <td>RP_300</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>1320 rows × 2 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "         time     event\n",
+       "0     7269756       F_1\n",
+       "1     7270256   S_1_1_5\n",
+       "2     7271352   C_1_5_2\n",
+       "3     7271589    R_1_15\n",
+       "4     7273355       F_2\n",
+       "...       ...       ...\n",
+       "1315  8453467  R_300_18\n",
+       "1316  8455583     F_300\n",
+       "1317  8456083     P_300\n",
+       "1318  8456608  CP_300_1\n",
+       "1319  8456833    RP_300\n",
+       "\n",
+       "[1320 rows x 2 columns]"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "## Loading the events from the events file\n",
+    "fname_events=\"../data/002_rlmw_events.asc\"\n",
+    "# read the whole file into variable `events` (list with one entry per line)\n",
+    "with open(fname_events) as f:\n",
+    "    events=f.readlines()\n",
+    "\n",
+    "# keep only lines starting with \"MSG\"\n",
+    "events=[ev for ev in events if ev.startswith(\"MSG\")]\n",
+    "experiment_start_index=np.where([\"experiment_start\" in ev for ev in events])[0][0]\n",
+    "events=events[experiment_start_index+1:]\n",
+    "df_ev=pd.DataFrame([ev.split() for ev in events])\n",
+    "df_ev=df_ev[[1,2]]\n",
+    "df_ev.columns=[\"time\", \"event\"]\n",
+    "df_ev"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from pypillometry import EyeData, EyeDataDict, keephistory, _inplace\n",
+    "from collections.abc import Iterable\n",
+    "from matplotlib import cm\n",
+    "import matplotlib.patches as patches\n",
+    "from pypillometry import PupilData\n",
+    "\n",
+    "\n",
+    "pp.EyeData.correct_pupil_foreshortening=correct_pupil_foreshortening"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "EyeData(002_ceylin_va, 65.0MiB):\n",
+       " n                   : 597301\n",
+       " sampling_rate       : 500.0\n",
+       " data                : ['left_x', 'left_y', 'left_pupil', 'right_x', 'right_y', 'right_pupil']\n",
+       " nevents             : 1320\n",
+       " screen_limits       : not set\n",
+       " physical_screen_size: not set\n",
+       " screen_eye_distance : not set\n",
+       " nmiss               : 0\n",
+       " perc_miss           : 0.0\n",
+       " duration_minutes    : 19.910033333333335\n",
+       " start_min           : 0.0\n",
+       " end_min             : 19.91\n",
+       " glimpse             : EyeDataDict(vars=6,n=597301): \n",
+       "  left_x (float64): 655.6, 655.7, 655.0, 654.5, 655.0...\n",
+       "  left_y (float64): 599.9, 598.9, 597.6, 597.8, 597.8...\n",
+       "  left_pupil (float64): 1121.0, 1122.0, 1124.0, 1126.0, 1126.0...\n",
+       "  right_x (float64): 773.1, 773.8, 774.8, 776.3, 776.7...\n",
+       "  right_y (float64): 594.2, 593.9, 596.5, 597.4, 597.3...\n",
+       "  right_pupil (float64): 949.0, 951.0, 956.0, 959.0, 960.0...\n",
+       "\n",
+       " History:\n",
+       " *\n",
+       " └ fill_time_discontinuities()\n",
+       "  └ reset_time()"
+      ]
+     },
+     "execution_count": 41,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Creating EyeData object that contains both X-Y coordinates\n",
+    "# and pupil data\n",
+    "d = pp.EyeData(time=df.time, name=\"002_ceylin\",\n",
+    "               left_x=left_x, left_y=left_y, left_pupil=df.left_p,\n",
+    "               right_x=right_x, right_y=right_y, right_pupil=df.right_p,\n",
+    "               event_onsets=df_ev.time, event_labels=df_ev.event,\n",
+    "               keep_orig=True)\\\n",
+    "            .reset_time()\n",
+    "d"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Using matplotlib backend: TkAgg\n"
+     ]
+    }
+   ],
+   "source": [
+    "%matplotlib \n",
+    "# clean pupil data using XY saccade data\n",
+    "d.set_experiment_info(screen_eye_distance=60, \n",
+    "                      screen_resolution=(1280,1024), \n",
+    "                      physical_screen_size=(30, 20))\n",
+    "pd1=d.get_pupildata(eye=\"right\")\n",
+    "d2 = d.correct_pupil_foreshortening(eyes=\"right\")\n",
+    "pd2=d2.get_pupildata(eye=\"right\")\n",
+    "\n",
+    "plt.figure(figsize=(10,5))\n",
+    "pd1.plot( (20,30), units=\"sec\")\n",
+    "pd2.plot( (20,30), units=\"sec\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 50,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "True"
+      ]
+     },
+     "execution_count": 50,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "np.any(pd1.sy==0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "IndexError",
+     "evalue": "index -1 is out of bounds for axis 0 with size 0",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mIndexError\u001b[0m                                Traceback (most recent call last)",
+      "Cell \u001b[0;32mIn[46], line 1\u001b[0m\n\u001b[0;32m----> 1\u001b[0m \u001b[43mpd2\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mblinks_detect\u001b[49m\u001b[43m(\u001b[49m\u001b[43mmin_duration\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mmin_duration\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\u001b[43mstrategies\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mstrategies\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m      2\u001b[0m \u001b[43m                     \u001b[49m\u001b[43mvel_onset\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mvel_onset\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mvel_offset\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mvel_offset\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m      3\u001b[0m \u001b[43m                     \u001b[49m\u001b[43mmin_onset_len\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mmin_onset_len\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mmin_offset_len\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mmin_offset_len\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m)\u001b[49m\n",
+      "File \u001b[0;32m~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata_generic.py:30\u001b[0m, in \u001b[0;36mkeephistory.<locals>.wrapper\u001b[0;34m(*args, **kwargs)\u001b[0m\n\u001b[1;32m     28\u001b[0m \u001b[38;5;129m@functools\u001b[39m\u001b[38;5;241m.\u001b[39mwraps(func)\n\u001b[1;32m     29\u001b[0m \u001b[38;5;28;01mdef\u001b[39;00m \u001b[38;5;21mwrapper\u001b[39m(\u001b[38;5;241m*\u001b[39margs,\u001b[38;5;241m*\u001b[39m\u001b[38;5;241m*\u001b[39mkwargs):\n\u001b[0;32m---> 30\u001b[0m     obj\u001b[38;5;241m=\u001b[39m\u001b[43mfunc\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[43margs\u001b[49m\u001b[43m,\u001b[49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[43mkwargs\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m     31\u001b[0m     funcname\u001b[38;5;241m=\u001b[39mfunc\u001b[38;5;241m.\u001b[39m\u001b[38;5;18m__name__\u001b[39m\n\u001b[1;32m     32\u001b[0m     argstr\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124m,\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;241m.\u001b[39mjoin([\u001b[38;5;124m\"\u001b[39m\u001b[38;5;132;01m%s\u001b[39;00m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;241m%\u001b[39m(v) \u001b[38;5;28;01mfor\u001b[39;00m v \u001b[38;5;129;01min\u001b[39;00m args[\u001b[38;5;241m1\u001b[39m:]])\n",
+      "File \u001b[0;32m~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/pupildata.py:758\u001b[0m, in \u001b[0;36mPupilData.blinks_detect\u001b[0;34m(self, min_duration, blink_val, winsize, vel_onset, vel_offset, min_onset_len, min_offset_len, strategies, units, inplace)\u001b[0m\n\u001b[1;32m    755\u001b[0m     blinks_vel\u001b[38;5;241m=\u001b[39mnp\u001b[38;5;241m.\u001b[39marray([])\n\u001b[1;32m    757\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mzero\u001b[39m\u001b[38;5;124m\"\u001b[39m \u001b[38;5;129;01min\u001b[39;00m strategies:\n\u001b[0;32m--> 758\u001b[0m     blinks_zero\u001b[38;5;241m=\u001b[39m\u001b[43mdetect_blinks_zero\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43msy\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m1\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mblink_val\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    759\u001b[0m \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[1;32m    760\u001b[0m     blinks_zero\u001b[38;5;241m=\u001b[39mnp\u001b[38;5;241m.\u001b[39marray([])\n",
+      "File \u001b[0;32m~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/preproc.py:153\u001b[0m, in \u001b[0;36mdetect_blinks_zero\u001b[0;34m(sy, min_duration, blink_val)\u001b[0m\n\u001b[1;32m    151\u001b[0m     \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[1;32m    152\u001b[0m         starts\u001b[38;5;241m=\u001b[39mstarts[:\u001b[38;5;241m-\u001b[39m\u001b[38;5;241m1\u001b[39m] \u001b[38;5;66;03m# drop last start\u001b[39;00m\n\u001b[0;32m--> 153\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m \u001b[43mends\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;241;43m-\u001b[39;49m\u001b[38;5;241;43m1\u001b[39;49m\u001b[43m]\u001b[49m\u001b[38;5;241m==\u001b[39mx\u001b[38;5;241m.\u001b[39msize:\n\u001b[1;32m    154\u001b[0m     ends[\u001b[38;5;241m-\u001b[39m\u001b[38;5;241m1\u001b[39m]\u001b[38;5;241m-\u001b[39m\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m1\u001b[39m\n\u001b[1;32m    155\u001b[0m blinks\u001b[38;5;241m=\u001b[39m[ [start,end] \u001b[38;5;28;01mfor\u001b[39;00m start,end \u001b[38;5;129;01min\u001b[39;00m \u001b[38;5;28mzip\u001b[39m(starts,ends) \u001b[38;5;28;01mif\u001b[39;00m end\u001b[38;5;241m-\u001b[39mstart\u001b[38;5;241m>\u001b[39m\u001b[38;5;241m=\u001b[39mmin_duration]\n",
+      "\u001b[0;31mIndexError\u001b[0m: index -1 is out of bounds for axis 0 with size 0"
+     ]
+    }
+   ],
+   "source": [
+    "pd2.blinks_detect(min_duration=pars[\"min_duration\"],strategies=pars[\"strategies\"],\n",
+    "                     vel_onset=pars[\"vel_onset\"], vel_offset=pars[\"vel_offset\"],\n",
+    "                     min_onset_len=pars[\"min_onset_len\"], min_offset_len=pars[\"min_offset_len\"])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "IndexError",
+     "evalue": "index -1 is out of bounds for axis 0 with size 0",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mIndexError\u001b[0m                                Traceback (most recent call last)",
+      "Cell \u001b[0;32mIn[43], line 13\u001b[0m\n\u001b[1;32m      3\u001b[0m default_param\u001b[38;5;241m=\u001b[39m{\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mmin_duration\u001b[39m\u001b[38;5;124m\"\u001b[39m:\u001b[38;5;241m10\u001b[39m,    \u001b[38;5;66;03m# min duration of a blink\u001b[39;00m\n\u001b[1;32m      4\u001b[0m                \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mmin_offset_len\u001b[39m\u001b[38;5;124m\"\u001b[39m:\u001b[38;5;241m2\u001b[39m,   \u001b[38;5;66;03m# offset/onset-length for blink-detection\u001b[39;00m\n\u001b[1;32m      5\u001b[0m                \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mmin_onset_len\u001b[39m\u001b[38;5;124m\"\u001b[39m:\u001b[38;5;241m3\u001b[39m,\n\u001b[0;32m   (...)\u001b[0m\n\u001b[1;32m     10\u001b[0m                \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mmargin\u001b[39m\u001b[38;5;124m\"\u001b[39m:(\u001b[38;5;241m50\u001b[39m,\u001b[38;5;241m150\u001b[39m),     \u001b[38;5;66;03m# margins for Mahot algorithm\u001b[39;00m\n\u001b[1;32m     11\u001b[0m                \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mcutoff\u001b[39m\u001b[38;5;124m\"\u001b[39m:\u001b[38;5;241m5\u001b[39m}            \u001b[38;5;66;03m# lowpass-filter cutoff (Hz)\u001b[39;00m\n\u001b[1;32m     12\u001b[0m pars\u001b[38;5;241m=\u001b[39mdefault_param\n\u001b[0;32m---> 13\u001b[0m pd3\u001b[38;5;241m=\u001b[39m\u001b[43mpd\u001b[49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43mblinks_detect\u001b[49m\u001b[43m(\u001b[49m\u001b[43mmin_duration\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mmin_duration\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\u001b[43mstrategies\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mstrategies\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m     14\u001b[0m \u001b[43m                     \u001b[49m\u001b[43mvel_onset\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mvel_onset\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mvel_offset\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mvel_offset\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\n\u001b[1;32m     15\u001b[0m \u001b[43m                     \u001b[49m\u001b[43mmin_onset_len\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mmin_onset_len\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mmin_offset_len\u001b[49m\u001b[38;5;241;43m=\u001b[39;49m\u001b[43mpars\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[38;5;124;43mmin_offset_len\u001b[39;49m\u001b[38;5;124;43m\"\u001b[39;49m\u001b[43m]\u001b[49m\u001b[43m)\u001b[49m\\\n\u001b[1;32m     16\u001b[0m             \u001b[38;5;241m.\u001b[39mblinks_merge(distance\u001b[38;5;241m=\u001b[39mpars[\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mdistance\u001b[39m\u001b[38;5;124m\"\u001b[39m])\\\n\u001b[1;32m     17\u001b[0m             \u001b[38;5;241m.\u001b[39mblinks_interp_mahot(margin\u001b[38;5;241m=\u001b[39mpars[\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mmargin\u001b[39m\u001b[38;5;124m\"\u001b[39m], vel_onset\u001b[38;5;241m=\u001b[39mpars[\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mvel_onset\u001b[39m\u001b[38;5;124m\"\u001b[39m], vel_offset\u001b[38;5;241m=\u001b[39mpars[\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mvel_offset\u001b[39m\u001b[38;5;124m\"\u001b[39m])\\\n\u001b[1;32m     18\u001b[0m             \u001b[38;5;241m.\u001b[39mlowpass_filter(cutoff\u001b[38;5;241m=\u001b[39mpars[\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mcutoff\u001b[39m\u001b[38;5;124m\"\u001b[39m])\n\u001b[1;32m     19\u001b[0m pd\u001b[38;5;241m.\u001b[39mplot_segments(overlay\u001b[38;5;241m=\u001b[39mpd2, pdffile\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;132;01m%s\u001b[39;00m\u001b[38;5;124m.pdf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;241m%\u001b[39mpd\u001b[38;5;241m.\u001b[39mname, ylim\u001b[38;5;241m=\u001b[39m(pd2\u001b[38;5;241m.\u001b[39msy\u001b[38;5;241m.\u001b[39mmin(), pd2\u001b[38;5;241m.\u001b[39msy\u001b[38;5;241m.\u001b[39mmax()))\n",
+      "File \u001b[0;32m~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata_generic.py:30\u001b[0m, in \u001b[0;36mkeephistory.<locals>.wrapper\u001b[0;34m(*args, **kwargs)\u001b[0m\n\u001b[1;32m     28\u001b[0m \u001b[38;5;129m@functools\u001b[39m\u001b[38;5;241m.\u001b[39mwraps(func)\n\u001b[1;32m     29\u001b[0m \u001b[38;5;28;01mdef\u001b[39;00m \u001b[38;5;21mwrapper\u001b[39m(\u001b[38;5;241m*\u001b[39margs,\u001b[38;5;241m*\u001b[39m\u001b[38;5;241m*\u001b[39mkwargs):\n\u001b[0;32m---> 30\u001b[0m     obj\u001b[38;5;241m=\u001b[39m\u001b[43mfunc\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[43margs\u001b[49m\u001b[43m,\u001b[49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[38;5;241;43m*\u001b[39;49m\u001b[43mkwargs\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m     31\u001b[0m     funcname\u001b[38;5;241m=\u001b[39mfunc\u001b[38;5;241m.\u001b[39m\u001b[38;5;18m__name__\u001b[39m\n\u001b[1;32m     32\u001b[0m     argstr\u001b[38;5;241m=\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124m,\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;241m.\u001b[39mjoin([\u001b[38;5;124m\"\u001b[39m\u001b[38;5;132;01m%s\u001b[39;00m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;241m%\u001b[39m(v) \u001b[38;5;28;01mfor\u001b[39;00m v \u001b[38;5;129;01min\u001b[39;00m args[\u001b[38;5;241m1\u001b[39m:]])\n",
+      "File \u001b[0;32m~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/pupildata.py:758\u001b[0m, in \u001b[0;36mPupilData.blinks_detect\u001b[0;34m(self, min_duration, blink_val, winsize, vel_onset, vel_offset, min_onset_len, min_offset_len, strategies, units, inplace)\u001b[0m\n\u001b[1;32m    755\u001b[0m     blinks_vel\u001b[38;5;241m=\u001b[39mnp\u001b[38;5;241m.\u001b[39marray([])\n\u001b[1;32m    757\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mzero\u001b[39m\u001b[38;5;124m\"\u001b[39m \u001b[38;5;129;01min\u001b[39;00m strategies:\n\u001b[0;32m--> 758\u001b[0m     blinks_zero\u001b[38;5;241m=\u001b[39m\u001b[43mdetect_blinks_zero\u001b[49m\u001b[43m(\u001b[49m\u001b[38;5;28;43mself\u001b[39;49m\u001b[38;5;241;43m.\u001b[39;49m\u001b[43msy\u001b[49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[38;5;241;43m1\u001b[39;49m\u001b[43m,\u001b[49m\u001b[43m \u001b[49m\u001b[43mblink_val\u001b[49m\u001b[43m)\u001b[49m\n\u001b[1;32m    759\u001b[0m \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[1;32m    760\u001b[0m     blinks_zero\u001b[38;5;241m=\u001b[39mnp\u001b[38;5;241m.\u001b[39marray([])\n",
+      "File \u001b[0;32m~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/preproc.py:153\u001b[0m, in \u001b[0;36mdetect_blinks_zero\u001b[0;34m(sy, min_duration, blink_val)\u001b[0m\n\u001b[1;32m    151\u001b[0m     \u001b[38;5;28;01melse\u001b[39;00m:\n\u001b[1;32m    152\u001b[0m         starts\u001b[38;5;241m=\u001b[39mstarts[:\u001b[38;5;241m-\u001b[39m\u001b[38;5;241m1\u001b[39m] \u001b[38;5;66;03m# drop last start\u001b[39;00m\n\u001b[0;32m--> 153\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m \u001b[43mends\u001b[49m\u001b[43m[\u001b[49m\u001b[38;5;241;43m-\u001b[39;49m\u001b[38;5;241;43m1\u001b[39;49m\u001b[43m]\u001b[49m\u001b[38;5;241m==\u001b[39mx\u001b[38;5;241m.\u001b[39msize:\n\u001b[1;32m    154\u001b[0m     ends[\u001b[38;5;241m-\u001b[39m\u001b[38;5;241m1\u001b[39m]\u001b[38;5;241m-\u001b[39m\u001b[38;5;241m=\u001b[39m\u001b[38;5;241m1\u001b[39m\n\u001b[1;32m    155\u001b[0m blinks\u001b[38;5;241m=\u001b[39m[ [start,end] \u001b[38;5;28;01mfor\u001b[39;00m start,end \u001b[38;5;129;01min\u001b[39;00m \u001b[38;5;28mzip\u001b[39m(starts,ends) \u001b[38;5;28;01mif\u001b[39;00m end\u001b[38;5;241m-\u001b[39mstart\u001b[38;5;241m>\u001b[39m\u001b[38;5;241m=\u001b[39mmin_duration]\n",
+      "\u001b[0;31mIndexError\u001b[0m: index -1 is out of bounds for axis 0 with size 0"
+     ]
+    }
+   ],
+   "source": [
+    "#pd = d.get_pupildata(\"left\")\n",
+    "pd=pd2\n",
+    "default_param={\"min_duration\":10,    # min duration of a blink\n",
+    "               \"min_offset_len\":2,   # offset/onset-length for blink-detection\n",
+    "               \"min_onset_len\":3,\n",
+    "               \"vel_onset\":-5,       # velocity thresholds for onset and offset\n",
+    "               \"vel_offset\":5,\n",
+    "               \"strategies\":[\"zero\",\"velocity\"],  # strategies for blink-detection\n",
+    "               \"distance\":100,        # minimum distance between two blinks\n",
+    "               \"margin\":(50,150),     # margins for Mahot algorithm\n",
+    "               \"cutoff\":5}            # lowpass-filter cutoff (Hz)\n",
+    "pars=default_param\n",
+    "pd3=pd.blinks_detect(min_duration=pars[\"min_duration\"],strategies=pars[\"strategies\"],\n",
+    "                     vel_onset=pars[\"vel_onset\"], vel_offset=pars[\"vel_offset\"],\n",
+    "                     min_onset_len=pars[\"min_onset_len\"], min_offset_len=pars[\"min_offset_len\"])\\\n",
+    "            .blinks_merge(distance=pars[\"distance\"])\\\n",
+    "            .blinks_interp_mahot(margin=pars[\"margin\"], vel_onset=pars[\"vel_onset\"], vel_offset=pars[\"vel_offset\"])\\\n",
+    "            .lowpass_filter(cutoff=pars[\"cutoff\"])\n",
+    "pd.plot_segments(overlay=pd2, pdffile=\"%s.pdf\"%pd.name, ylim=(pd2.sy.min(), pd2.sy.max()))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array(['F_10'], dtype=object)"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "def fixcross(key, trial=None):\n",
+    "    ttype,trialnum,*rest = key.split(\"_\")\n",
+    "    if trial is not None:\n",
+    "        return ttype==\"F\" and trialnum==str(trial)\n",
+    "    else:\n",
+    "        return ttype==\"F\"\n",
+    "def response(key, trial=None):\n",
+    "    ttype,trialnum,*rest = key.split(\"_\")\n",
+    "    if trial is not None:\n",
+    "        return (ttype==\"R\" or ttype==\"RP\") and trialnum==str(trial)\n",
+    "    else:\n",
+    "        return (ttype==\"R\" or ttype==\"RP\")\n",
+    "def trialno(key, trialno=None):\n",
+    "    return key.split(\"_\")[1]==str(trialno)\n",
+    "\n",
+    "d.test_selector(fixcross, trial=10)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\n",
+    "d.get_intervals(\"F_1\", padding=(-200,200), units=\"ms\")\n",
+    "ints = d.get_intervals(fixcross, padding=(-200,200), units=\"ms\")\n",
+    "ints = d.get_intervals(trialno, padding=(-200,200), units=\"ms\", trialno=10)\n",
+    "ints = d.get_intervals( (fixcross, response), padding=(-200,200), units=\"ms\")\n",
+    "ints\n",
+    "\n",
+    "d.plot_scanpath( ints[20], units=\"ms\")\n",
+    "d.plot( ints[20], units=\"ms\", plot_onsets=\"both\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\n",
+    "d.plot_scanpath((0,10), units=\"sec\", title=\"blub\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "d.plot_heatmap(plot_eyes=\"left\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "d.plot((3,14), units=\"sec\", plot_onsets=\"both\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "pypil",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Ceylin Eye data &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Ceylin Eye data</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/docs/ceylin_eyedata.ipynb">docs/ceylin_eyedata.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/ceylin_eyedata.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Ceylin-Eye-data">
+<h1>Ceylin Eye data<a class="headerlink" href="#Ceylin-Eye-data" title="Link to this heading">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">__package_path__</span><span class="p">)</span> <span class="c1"># check that correct version is being used</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/home/mmi041/Dropbox/work/projects/pupil/pypillometry/pypillometry
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">parent_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~/work/projects/mw/mw-learning/mwlearning_analysis/eyedata/&quot;</span><span class="p">)</span>
+<span class="n">data_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="s2">&quot;asc/&quot;</span><span class="p">)</span>
+<span class="n">plot_dir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="s2">&quot;plots/&quot;</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">read_subject</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span> <span class="n">data_path</span><span class="o">=</span><span class="n">data_path</span><span class="p">):</span>
+    <span class="c1">## loading the raw samples from the asc file</span>
+    <span class="n">fname_samples</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{subj}</span><span class="s2">_rlmw_samples.asc&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subj</span><span class="o">=</span><span class="n">subject</span><span class="p">))</span>
+    <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="s2">&quot;left_p&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;right_x&quot;</span><span class="p">,</span> <span class="s2">&quot;right_y&quot;</span><span class="p">,</span> <span class="s2">&quot;right_p&quot;</span><span class="p">])</span>
+
+    <span class="c1">## Eyelink tracker puts &quot;   .&quot; when no data is available for x/y coordinates</span>
+    <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="c1">## Loading the events from the events file</span>
+    <span class="n">fname_events</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{subj}</span><span class="s2">_rlmw_events.asc&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subj</span><span class="o">=</span><span class="n">subject</span><span class="p">))</span>
+    <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">events</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="c1"># keep only lines starting with &quot;MSG&quot;</span>
+    <span class="n">events</span><span class="o">=</span><span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MSG&quot;</span><span class="p">)]</span>
+    <span class="n">experiment_start_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">&quot;experiment_start&quot;</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">[</span><span class="n">experiment_start_index</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">df_ev</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
+    <span class="n">df_ev</span><span class="o">=</span><span class="n">df_ev</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
+    <span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;event&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Creating EyeData object that contains both X-Y coordinates</span>
+    <span class="c1"># and pupil data</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{subj}</span><span class="s2">_ceylin&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subj</span><span class="o">=</span><span class="n">subject</span><span class="p">),</span>
+                <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span> <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="mf">33.75</span><span class="p">,</span><span class="mi">27</span><span class="p">),</span>
+                <span class="n">screen_eye_distance</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+                <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span>
+                <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span>
+                <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
+                <span class="n">keep_orig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
+                <span class="o">.</span><span class="n">reset_time</span><span class="p">()</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_experiment_info</span><span class="p">(</span><span class="n">screen_eye_distance</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+                        <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span>
+                        <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">subjects</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%03i</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">i</span> for i in range(1,51)]
+<span class="n">plotit</span><span class="o">=</span><span class="kc">False</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">logging_set_level</span><span class="p">(</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">read_subject</span><span class="p">(</span><span class="n">subjects</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">param</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;min_duration&quot;</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span>    <span class="c1"># min duration of a blink</span>
+        <span class="s2">&quot;min_offset_len&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>   <span class="c1"># offset/onset-length for blink-detection</span>
+        <span class="s2">&quot;min_onset_len&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;vel_onset&quot;</span><span class="p">:</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span>       <span class="c1"># velocity thresholds for onset and offset</span>
+        <span class="s2">&quot;vel_offset&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span>
+        <span class="s2">&quot;strategies&quot;</span><span class="p">:[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span><span class="s2">&quot;velocity&quot;</span><span class="p">],</span>  <span class="c1"># strategies for blink-detection</span>
+        <span class="s2">&quot;distance&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span>        <span class="c1"># minimum distance between two blinks</span>
+        <span class="s2">&quot;margin&quot;</span><span class="p">:(</span><span class="mi">50</span><span class="p">,</span><span class="mi">150</span><span class="p">),</span>     <span class="c1"># margins for Mahot algorithm</span>
+        <span class="s2">&quot;cutoff&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">}</span>
+
+<span class="c1">#d.get_pupildata(eye=&quot;left&quot;)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_152208/1578194772.py:4: ParserWarning: Length of header or names does not match length of data. This leads to a loss of data with index_col=False.
+  df=pd.read_table(fname_samples, index_col=False,
+<span class="ansi-green-fg">2025-03-06 09:56:03.976</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">pypillometry.eyedata.generic</span>:<span class="ansi-cyan-fg">_init_common</span>:<span class="ansi-cyan-fg">81</span> - <span class="ansi-blue-intense-fg ansi-bold">Initializing common data</span>
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Pupil analysis for Ceylin, 19.3.2024</span>
+
+<span class="n">pdata</span><span class="o">=</span><span class="p">{}</span>
+<span class="k">for</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">subjects</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing subject </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">subject</span>)
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">read_subject</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span>
+
+    <span class="c1"># which eye has most missing data?</span>
+    <span class="n">lpupil</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+    <span class="n">rpupil</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">lpupil</span><span class="o">.</span><span class="n">summary</span><span class="p">()[</span><span class="s2">&quot;nmiss&quot;</span><span class="p">]</span><span class="o">&gt;</span><span class="n">rpupil</span><span class="o">.</span><span class="n">summary</span><span class="p">()[</span><span class="s2">&quot;nmiss&quot;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Left pupil has more missing data, using right pupil&quot;</span><span class="p">)</span>
+        <span class="n">pupil</span><span class="o">=</span><span class="n">rpupil</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Right pupil has more missing data, using left pupil&quot;</span><span class="p">)</span>
+        <span class="n">pupil</span><span class="o">=</span><span class="n">lpupil</span>
+
+    <span class="n">default_param</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;min_duration&quot;</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span>    <span class="c1"># min duration of a blink</span>
+                <span class="s2">&quot;min_offset_len&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>   <span class="c1"># offset/onset-length for blink-detection</span>
+                <span class="s2">&quot;min_onset_len&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span>
+                <span class="s2">&quot;vel_onset&quot;</span><span class="p">:</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span>       <span class="c1"># velocity thresholds for onset and offset</span>
+                <span class="s2">&quot;vel_offset&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span>
+                <span class="s2">&quot;strategies&quot;</span><span class="p">:[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span><span class="s2">&quot;velocity&quot;</span><span class="p">],</span>  <span class="c1"># strategies for blink-detection</span>
+                <span class="s2">&quot;distance&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span>        <span class="c1"># minimum distance between two blinks</span>
+                <span class="s2">&quot;margin&quot;</span><span class="p">:(</span><span class="mi">50</span><span class="p">,</span><span class="mi">150</span><span class="p">),</span>     <span class="c1"># margins for Mahot algorithm</span>
+                <span class="s2">&quot;cutoff&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">}</span>            <span class="c1"># lowpass-filter cutoff (Hz)</span>
+
+    <span class="c1"># create dict with parameters per subject</span>
+    <span class="c1"># all subjects get the same set of default parameters initially</span>
+    <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="n">subj</span><span class="p">:</span><span class="n">default_param</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">subj</span> <span class="ow">in</span> <span class="n">subjects</span><span class="p">}</span>
+
+    <span class="c1">## fine-tuning of the parameters per subject (this is done iteratively by</span>
+    <span class="c1">## inspecting the per-subject PDF-files generated below and changing parameters)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;001&quot;</span><span class="p">][</span><span class="s2">&quot;min_onset_len&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">3</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;001&quot;</span><span class="p">][</span><span class="s2">&quot;min_duration&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">5</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;003&quot;</span><span class="p">][</span><span class="s2">&quot;margin&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;003&quot;</span><span class="p">][</span><span class="s2">&quot;distance&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">80</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;004&quot;</span><span class="p">][</span><span class="s2">&quot;min_duration&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">5</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;004&quot;</span><span class="p">][</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">]</span><span class="o">=-</span><span class="mi">5</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;005&quot;</span><span class="p">][</span><span class="s2">&quot;min_duration&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">5</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;007&quot;</span><span class="p">][</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">]</span><span class="o">=-</span><span class="mi">15</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;007&quot;</span><span class="p">][</span><span class="s2">&quot;min_duration&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">5</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;008&quot;</span><span class="p">][</span><span class="s2">&quot;margin&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;008&quot;</span><span class="p">][</span><span class="s2">&quot;min_duration&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">5</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;010&quot;</span><span class="p">][</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;010&quot;</span><span class="p">][</span><span class="s2">&quot;margin&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">250</span><span class="p">)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;012&quot;</span><span class="p">][</span><span class="s2">&quot;margin&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;014&quot;</span><span class="p">][</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">]</span><span class="o">=-</span><span class="mi">5</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;016&quot;</span><span class="p">][</span><span class="s2">&quot;min_duration&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">5</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;018&quot;</span><span class="p">][</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">2</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;018&quot;</span><span class="p">][</span><span class="s2">&quot;margin&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">250</span><span class="p">)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;020&quot;</span><span class="p">][</span><span class="s2">&quot;margin&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">150</span><span class="p">)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;025&quot;</span><span class="p">][</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">]</span><span class="o">=-</span><span class="mi">6</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;025&quot;</span><span class="p">][</span><span class="s2">&quot;margin&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">150</span><span class="p">)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;025&quot;</span><span class="p">][</span><span class="s2">&quot;min_duration&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">2</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;032&quot;</span><span class="p">][</span><span class="s2">&quot;margin&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span><span class="mi">250</span><span class="p">)</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;039&quot;</span><span class="p">][</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">]</span><span class="o">=-</span><span class="mi">15</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;048&quot;</span><span class="p">][</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">params</span><span class="p">[</span><span class="s2">&quot;048&quot;</span><span class="p">][</span><span class="s2">&quot;margin&quot;</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">250</span><span class="p">)</span>
+
+    <span class="n">pars</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span>
+
+    <span class="n">pupil_pp</span><span class="o">=</span><span class="n">pupil</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_duration&quot;</span><span class="p">],</span><span class="n">strategies</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;strategies&quot;</span><span class="p">],</span>
+                        <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">],</span>
+                        <span class="n">min_onset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_onset_len&quot;</span><span class="p">],</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_offset_len&quot;</span><span class="p">])</span>\
+                <span class="o">.</span><span class="n">blinks_merge</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">])</span>\
+                <span class="o">.</span><span class="n">blinks_interp_mahot</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;margin&quot;</span><span class="p">],</span> <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">])</span>\
+                <span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;cutoff&quot;</span><span class="p">])</span>
+    <span class="n">pdata</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">=</span><span class="n">pupil_pp</span>
+    <span class="k">if</span> <span class="n">plotit</span><span class="p">:</span>
+        <span class="n">pupil</span><span class="o">.</span><span class="n">plot_segments</span><span class="p">(</span><span class="n">overlay</span><span class="o">=</span><span class="n">pupil_pp</span><span class="p">,</span> <span class="n">interv</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">pdffile</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">plot_dir</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.pdf&quot;</span><span class="o">%</span><span class="k">pupil_pp</span>.name), ylim=(pupil_pp.sy.min(), pupil_pp.sy.max()))
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Processing subject 001
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_137992/1578194772.py:4: ParserWarning: Length of header or names does not match length of data. This leads to a loss of data with index_col=False.
+  df=pd.read_table(fname_samples, index_col=False,
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[5], line 10</span>
+<span class="ansi-green-intense-fg ansi-bold">      7</span> d <span style="color: rgb(98,98,98)">=</span> read_subject(subject)
+<span class="ansi-green-intense-fg ansi-bold">      9</span> <span style="color: rgb(95,135,135)"># which eye has most missing data?</span>
+<span class="ansi-green-fg">---&gt; 10</span> lpupil<span style="color: rgb(98,98,98)">=</span>d<span style="color: rgb(98,98,98)">.</span>get_pupildata(eye<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">left</span><span style="color: rgb(175,0,0)">&#34;</span>)
+<span class="ansi-green-intense-fg ansi-bold">     11</span> rpupil<span style="color: rgb(98,98,98)">=</span>d<span style="color: rgb(98,98,98)">.</span>get_pupildata(eye<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">right</span><span style="color: rgb(175,0,0)">&#34;</span>)
+<span class="ansi-green-intense-fg ansi-bold">     13</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> lpupil<span style="color: rgb(98,98,98)">.</span>summary()[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">nmiss</span><span style="color: rgb(175,0,0)">&#34;</span>]<span style="color: rgb(98,98,98)">&gt;</span>rpupil<span style="color: rgb(98,98,98)">.</span>summary()[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">nmiss</span><span style="color: rgb(175,0,0)">&#34;</span>]:
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata/eyedata.py:116</span>, in <span class="ansi-cyan-fg">EyeData.get_pupildata</span><span class="ansi-blue-fg">(self, eye)</span>
+<span class="ansi-green-intense-fg ansi-bold">    114</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> eye <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> [k<span style="color: rgb(98,98,98)">.</span>split(<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">_</span><span style="color: rgb(175,0,0)">&#34;</span>)[<span style="color: rgb(98,98,98)">0</span>] <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> k <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>data<span style="color: rgb(98,98,98)">.</span>keys()]:
+<span class="ansi-green-intense-fg ansi-bold">    115</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">raise</span> <span class="ansi-bold" style="color: rgb(215,95,95)">ValueError</span>(<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">No pupil data for eye: </span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span style="color: rgb(175,0,0)">&#34;</span> <span style="color: rgb(98,98,98)">%</span> eye)
+<span class="ansi-green-fg">--&gt; 116</span> pobj <span style="color: rgb(98,98,98)">=</span> PupilData(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>data[eye<span style="color: rgb(98,98,98)">+</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">_pupil</span><span style="color: rgb(175,0,0)">&#34;</span>],
+<span class="ansi-green-intense-fg ansi-bold">    117</span>                 sampling_rate<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>fs,
+<span class="ansi-green-intense-fg ansi-bold">    118</span>                 time<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx,
+<span class="ansi-green-intense-fg ansi-bold">    119</span>                 event_onsets<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>event_onsets,
+<span class="ansi-green-intense-fg ansi-bold">    120</span>                 event_labels<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>event_labels,
+<span class="ansi-green-intense-fg ansi-bold">    121</span>                 name<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>name<span style="color: rgb(98,98,98)">+</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">_pd</span><span style="color: rgb(175,0,0)">&#34;</span>,
+<span class="ansi-green-intense-fg ansi-bold">    122</span>                 keep_orig<span style="color: rgb(98,98,98)">=</span><span class="ansi-bold" style="color: rgb(0,135,0)">False</span>)
+<span class="ansi-green-intense-fg ansi-bold">    123</span> <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> pobj
+
+<span class="ansi-red-fg">TypeError</span>: PupilData.__init__() got multiple values for argument &#39;time&#39;
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># write down notes about each subject when going through the preprocs</span>
+<span class="n">notes</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">&quot;001&quot;</span><span class="p">:</span><span class="s2">&quot;good&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;002&quot;</span><span class="p">:</span><span class="s2">&quot;good but many blinks&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;003&quot;</span><span class="p">:</span><span class="s2">&quot;ok, but some segments with many blinks (min 8, 12, ...)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;004&quot;</span><span class="p">:</span><span class="s2">&quot;ok, beginning is crap, many &#39;double blinks&#39;, a few &#39;dip blinks&#39; which don&#39;t go all the way to zero but filter is ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;005&quot;</span><span class="p">:</span><span class="s2">&quot;ok, some pretty long blinks and some dips but recovery mostly ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;006&quot;</span><span class="p">:</span><span class="s2">&quot;ok, near ideal in the beginning, more blinks later&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;007&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;008&quot;</span><span class="p">:</span><span class="s2">&quot;ok but problems around 8.7-14 mins&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;009&quot;</span><span class="p">:</span><span class="s2">&quot;ok, many multi-blinks but good recovery&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;010&quot;</span><span class="p">:</span><span class="s2">&quot;ok, very slow opening of eye, difficult to correct - used rather large margin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;011&quot;</span><span class="p">:</span><span class="s2">&quot;very nice and regular blinking&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;012&quot;</span><span class="p">:</span><span class="s2">&quot;ok, there are some weird &#39;spikes&#39; upwards in the data, saccades? filter seems ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;013&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;014&quot;</span><span class="p">:</span><span class="s2">&quot;nice and regular&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;015&quot;</span><span class="p">:</span><span class="s2">&quot;ok but not great, especially later parts&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;016&quot;</span><span class="p">:</span><span class="s2">&quot;ok but not great&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;017&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;018&quot;</span><span class="p">:</span><span class="s2">&quot;consider exclusion, another one with slow opening of eye, used large margin, lots of missings&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;019&quot;</span><span class="p">:</span><span class="s2">&quot;amazing, almost no blinks. Some spikes but filtered out ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;020&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;021&quot;</span><span class="p">:</span><span class="s2">&quot;ok, somewhat more messy during second half&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;022&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;023&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;024&quot;</span><span class="p">:</span><span class="s2">&quot;ok but not great, some double-blinks&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;025&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;026&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;027&quot;</span><span class="p">:</span><span class="s2">&quot;ok but data quality in last part is getting worse&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;028&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;029&quot;</span><span class="p">:</span><span class="s2">&quot;consider exclusion, pretty bad&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;030&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;031&quot;</span><span class="p">:</span><span class="s2">&quot;ok but not great&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;032&quot;</span><span class="p">:</span><span class="s2">&quot;consider exclusion, but not super bad&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;033&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;034&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;035&quot;</span><span class="p">:</span><span class="s2">&quot;ok but not great&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;036&quot;</span><span class="p">:</span><span class="s2">&quot;ok; very many but very short blinks... signal looks ok, though&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;037&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;038&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;039&quot;</span><span class="p">:</span><span class="s2">&quot;exclude: ok quality but saccades are super prominent in this subject&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;040&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;041&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;042&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;043&quot;</span><span class="p">:</span><span class="s2">&quot;ok, many blinks but ok recovery&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;044&quot;</span><span class="p">:</span><span class="s2">&quot;exclude: not great qual and saccades are prominent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;045&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;046&quot;</span><span class="p">:</span><span class="s2">&quot;ok; qual not great but preproc seems to deal with it&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;047&quot;</span><span class="p">:</span><span class="s2">&quot;exclude: getting a lot worse at the end&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;048&quot;</span><span class="p">:</span><span class="s2">&quot;ok, slow opening of eye, used large margin, but signal looks ok&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;049&quot;</span><span class="p">:</span><span class="s2">&quot;exclude: huge saccades&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;050&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span>
+<span class="p">}</span>
+<span class="n">exclude_preproc</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;018&quot;</span><span class="p">,</span> <span class="s2">&quot;029&quot;</span><span class="p">,</span> <span class="s2">&quot;032&quot;</span><span class="p">,</span> <span class="s2">&quot;039&quot;</span><span class="p">,</span> <span class="s2">&quot;044&quot;</span><span class="p">,</span> <span class="s2">&quot;047&quot;</span><span class="p">,</span> <span class="s2">&quot;049&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#pp.pd_write_pickle(pdata, os.path.join(parent_path, &quot;pupildata_2024_03_19.pkl&quot;))</span>
+<span class="n">pdata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">pd_read_pickle</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="s2">&quot;pupildata_2024_03_19.pkl&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#pdata[&quot;006&quot;].scale().get_erpd(&quot;cue&quot;, event_select=&quot;S_&quot;, time_win=(-500, 5000), baseline_win=(-200,0)).plot()</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">group_erpd</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">pdata</span><span class="o">.</span><span class="n">values</span><span class="p">()],</span> <span class="s2">&quot;stimulus&quot;</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">&quot;S_&quot;</span><span class="p">,</span> <span class="n">time_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_ceylin_eyedata_11_0.png" src="../_images/docs_ceylin_eyedata_11_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">group_erpd</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">pdata</span><span class="o">.</span><span class="n">values</span><span class="p">()],</span> <span class="s2">&quot;reward&quot;</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">&quot;R_&quot;</span><span class="p">,</span> <span class="n">time_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_ceylin_eyedata_12_0.png" src="../_images/docs_ceylin_eyedata_12_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## selector functions to get on-task and off-task trials</span>
+<span class="n">beh_data_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~/work/projects/mw/mw-learning/mwlearning_analysis/data/raw&quot;</span><span class="p">)</span>
+<span class="n">trials</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">beh_data_path</span><span class="p">,</span> <span class="s2">&quot;RLMW-eye-ceylin*.csv&quot;</span><span class="p">)):</span>
+    <span class="n">subject</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;#&quot;</span><span class="p">)</span>
+    <span class="n">dd</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">probetrial</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">trials</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">trials</span><span class="p">[</span><span class="n">subject</span><span class="p">][</span><span class="s2">&quot;OT&quot;</span><span class="p">]</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dd</span><span class="o">.</span><span class="n">trial</span><span class="p">[</span><span class="n">dd</span><span class="o">.</span><span class="n">choice</span><span class="o">==</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">trials</span><span class="p">[</span><span class="n">subject</span><span class="p">][</span><span class="s2">&quot;MW&quot;</span><span class="p">]</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dd</span><span class="o">.</span><span class="n">trial</span><span class="p">[</span><span class="n">dd</span><span class="o">.</span><span class="n">choice</span><span class="o">==</span><span class="mi">2</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_ot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="n">nback</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">!=</span><span class="n">event</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">trial</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">trials</span><span class="p">[</span><span class="n">subject</span><span class="p">][</span><span class="s2">&quot;OT&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="n">nback</span><span class="p">)</span><span class="o">&lt;=</span><span class="n">trial</span><span class="o">&lt;=</span><span class="n">t</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_mw</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="n">nback</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">!=</span><span class="n">event</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">trial</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">trials</span><span class="p">[</span><span class="n">subject</span><span class="p">][</span><span class="s2">&quot;MW&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="n">nback</span><span class="p">)</span><span class="o">&lt;=</span><span class="n">trial</span><span class="o">&lt;=</span><span class="n">t</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_highrew</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="c1"># check whether received reward is &gt;=split for a certain trial</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;R&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">rew</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">rew</span><span class="o">&gt;=</span><span class="n">split</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_lowrew</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="c1"># check whether received reward is &lt;split for a certain trial</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;R&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">rew</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">rew</span><span class="o">&lt;</span><span class="n">split</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">ot_factory</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span><span class="n">event</span><span class="p">,</span><span class="n">nback</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">is_ot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span><span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span><span class="n">nback</span><span class="o">=</span><span class="n">nback</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mw_factory</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span><span class="n">event</span><span class="p">,</span><span class="n">nback</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">is_mw</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span><span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span><span class="n">nback</span><span class="o">=</span><span class="n">nback</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">get_erpd_event</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">time_win</span><span class="p">,</span> <span class="n">baseline_win</span><span class="p">):</span>
+    <span class="n">ot_erpd</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">mw_erpd</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">diff_erpd</span><span class="o">=</span><span class="p">{}</span>
+    <span class="k">for</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">subjects</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">exclude_preproc</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">ot_erpd</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">=</span><span class="n">pdata</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">&quot;OT&quot;</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="n">ot_factory</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span><span class="n">event</span><span class="p">),</span> <span class="n">time_win</span><span class="o">=</span><span class="n">time_win</span><span class="p">,</span> <span class="n">baseline_win</span><span class="o">=</span><span class="n">baseline_win</span><span class="p">)</span>
+        <span class="n">mw_erpd</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">=</span><span class="n">pdata</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">&quot;MW&quot;</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="n">mw_factory</span><span class="p">(</span><span class="n">subject</span><span class="p">,</span><span class="n">event</span><span class="p">),</span> <span class="n">time_win</span><span class="o">=</span><span class="n">time_win</span><span class="p">,</span> <span class="n">baseline_win</span><span class="o">=</span><span class="n">baseline_win</span><span class="p">)</span>
+        <span class="n">diff_erpd</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ot_erpd</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mw_erpd</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">merpd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">mw_erpd</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">nevents</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">mmissing</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">missing</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">mw_erpd</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">nevents</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">derpd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">diff_erpd</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">v</span><span class="p">))])</span>
+
+    <span class="n">tx</span><span class="o">=</span><span class="n">mw_erpd</span><span class="p">[</span><span class="s2">&quot;014&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span>
+    <span class="n">mw_merpd</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">ERPD</span><span class="p">(</span><span class="s2">&quot;MW&quot;</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">merpd</span><span class="p">,</span> <span class="n">mmissing</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">merpd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">ot_erpd</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">nevents</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">mmissing</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">missing</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">ot_erpd</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">nevents</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">tx</span><span class="o">=</span><span class="n">ot_erpd</span><span class="p">[</span><span class="s2">&quot;014&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span>
+    <span class="n">ot_merpd</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">ERPD</span><span class="p">(</span><span class="s2">&quot;OT&quot;</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">merpd</span><span class="p">,</span> <span class="n">mmissing</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">diff_merpd</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">ERPD</span><span class="p">(</span><span class="s2">&quot;Diff&quot;</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">derpd</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;OT&quot;</span><span class="p">:</span><span class="n">ot_merpd</span><span class="p">,</span> <span class="s2">&quot;MW&quot;</span><span class="p">:</span><span class="n">mw_merpd</span><span class="p">,</span> <span class="s2">&quot;Diff&quot;</span><span class="p">:</span><span class="n">diff_merpd</span><span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_erpd_rew</span><span class="p">(</span><span class="n">time_win</span><span class="p">,</span> <span class="n">baseline_win</span><span class="p">):</span>
+    <span class="n">highrew_erpd</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">lowrew_erpd</span><span class="o">=</span><span class="p">{}</span>
+    <span class="n">diff_erpd</span><span class="o">=</span><span class="p">{}</span>
+    <span class="k">for</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">subjects</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">exclude_preproc</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">highrew_erpd</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">=</span><span class="n">pdata</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">&quot;highrew&quot;</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="n">is_highrew</span><span class="p">,</span> <span class="n">time_win</span><span class="o">=</span><span class="n">time_win</span><span class="p">,</span> <span class="n">baseline_win</span><span class="o">=</span><span class="n">baseline_win</span><span class="p">)</span>
+        <span class="n">lowrew_erpd</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">=</span><span class="n">pdata</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">&quot;lowrew&quot;</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="n">is_lowrew</span><span class="p">,</span> <span class="n">time_win</span><span class="o">=</span><span class="n">time_win</span><span class="p">,</span> <span class="n">baseline_win</span><span class="o">=</span><span class="n">baseline_win</span><span class="p">)</span>
+        <span class="n">diff_erpd</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">highrew_erpd</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">lowrew_erpd</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">merpd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">highrew_erpd</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">nevents</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">mmissing</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">missing</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">highrew_erpd</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">nevents</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">derpd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">diff_erpd</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">v</span><span class="p">))])</span>
+
+    <span class="n">tx</span><span class="o">=</span><span class="n">highrew_erpd</span><span class="p">[</span><span class="s2">&quot;014&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span>
+    <span class="n">highrew_merpd</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">ERPD</span><span class="p">(</span><span class="s2">&quot;highrew&quot;</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">merpd</span><span class="p">,</span> <span class="n">mmissing</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">merpd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">lowrew_erpd</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">nevents</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">mmissing</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">missing</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">lowrew_erpd</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">nevents</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">tx</span><span class="o">=</span><span class="n">lowrew_erpd</span><span class="p">[</span><span class="s2">&quot;014&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span>
+    <span class="n">lowrew_merpd</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">ERPD</span><span class="p">(</span><span class="s2">&quot;lowrew&quot;</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">merpd</span><span class="p">,</span> <span class="n">mmissing</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">diff_merpd</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">ERPD</span><span class="p">(</span><span class="s2">&quot;Diff&quot;</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">derpd</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;highrew&quot;</span><span class="p">:</span><span class="n">highrew_merpd</span><span class="p">,</span> <span class="s2">&quot;lowrew&quot;</span><span class="p">:</span><span class="n">lowrew_merpd</span><span class="p">,</span> <span class="s2">&quot;Diff&quot;</span><span class="p">:</span><span class="n">diff_merpd</span><span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_erpd_mw</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">res</span><span class="p">[</span><span class="s2">&quot;MW&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;OT&quot;</span><span class="p">],</span> <span class="n">varfct</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">plot_missing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">get_axes</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># difference curve</span>
+    <span class="n">derpd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">sem</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sem</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">derpd</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Difference&quot;</span><span class="p">)</span>
+    <span class="c1"># with error ribbons</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">derpd</span><span class="o">-</span><span class="n">sem</span><span class="p">,</span> <span class="n">derpd</span><span class="o">+</span><span class="n">sem</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+    <span class="c1"># highlight significant regions</span>
+    <span class="n">sig</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">pvalue</span><span class="o">&lt;</span><span class="mf">0.05</span>
+    <span class="n">sigdiff</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))])</span>
+    <span class="n">xstart</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sigdiff</span><span class="o">==</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">xend</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sigdiff</span><span class="o">==-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">xmin</span><span class="p">,</span><span class="nb">max</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xstart</span><span class="p">,</span> <span class="n">xend</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvspan</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">xmin</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="nb">max</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;lightblue&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+    <span class="c1"># line at zero</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">*</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_erpd_rew</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">pthresh</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
+    <span class="n">res</span><span class="p">[</span><span class="s2">&quot;highrew&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;lowrew&quot;</span><span class="p">],</span> <span class="n">varfct</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">plot_missing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">get_axes</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># difference curve</span>
+    <span class="n">derpd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">sem</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sem</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">derpd</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Difference&quot;</span><span class="p">)</span>
+    <span class="c1"># with error ribbons</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">derpd</span><span class="o">-</span><span class="n">sem</span><span class="p">,</span> <span class="n">derpd</span><span class="o">+</span><span class="n">sem</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+    <span class="c1"># highlight significant regions</span>
+    <span class="n">sig</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">erpd</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">pvalue</span><span class="o">&lt;</span><span class="n">pthresh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">sigdiff</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="n">sig</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">sig</span><span class="p">)])</span>
+    <span class="n">xstart</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sigdiff</span><span class="o">==</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">xend</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sigdiff</span><span class="o">==-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">xmin</span><span class="p">,</span><span class="nb">max</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xstart</span><span class="p">,</span> <span class="n">xend</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvspan</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">xmin</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;Diff&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="nb">max</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;lightblue&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+    <span class="c1"># line at zero</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">*</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[76]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## ERPDs for low vs. high-reward trials</span>
+<span class="n">res_rew</span><span class="o">=</span><span class="n">get_erpd_rew</span><span class="p">(</span><span class="n">time_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">plot_erpd_rew</span><span class="p">(</span><span class="n">res_rew</span><span class="p">,</span> <span class="s2">&quot;Reward ERPD&quot;</span><span class="p">,</span> <span class="n">pthresh</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_ceylin_eyedata_15_0.png" src="../_images/docs_ceylin_eyedata_15_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## plot correlation coefficient (point-wise) for reward magnitude vs. PD</span>
+<span class="n">valid_subjects</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">subjects</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_preproc</span><span class="p">]</span>
+<span class="n">nsubj</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">valid_subjects</span><span class="p">)</span>
+<span class="n">time_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+<span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">erpd</span> <span class="o">=</span> <span class="n">pdata</span><span class="p">[</span><span class="n">valid_subjects</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">&quot;allrew&quot;</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">&quot;R_&quot;</span><span class="p">,</span> <span class="n">time_win</span><span class="o">=</span><span class="n">time_win</span><span class="p">,</span> <span class="n">baseline_win</span><span class="o">=</span><span class="n">baseline_win</span><span class="p">)</span>
+<span class="n">tx</span><span class="o">=</span><span class="n">erpd</span><span class="o">.</span><span class="n">tx</span>
+<span class="n">n</span><span class="o">=</span><span class="n">erpd</span><span class="o">.</span><span class="n">erpd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nsubj</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">isubj</span><span class="p">,</span><span class="n">subject</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">valid_subjects</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">exclude_preproc</span><span class="p">:</span>
+        <span class="k">continue</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing subject </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="k">subject</span>)
+    <span class="n">erpd</span> <span class="o">=</span> <span class="n">pdata</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">&quot;allrew&quot;</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">&quot;R_&quot;</span><span class="p">,</span> <span class="n">time_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">rews</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">lab</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">pdata</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">event_labels</span> <span class="k">if</span> <span class="n">lab</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;R_&quot;</span><span class="p">)])</span>
+    <span class="n">n</span><span class="o">=</span><span class="n">erpd</span><span class="o">.</span><span class="n">erpd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="n">r</span><span class="p">[</span><span class="n">isubj</span><span class="p">,</span><span class="n">t</span><span class="p">]</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">rews</span><span class="p">,</span> <span class="n">erpd</span><span class="o">.</span><span class="n">erpd</span><span class="p">[:,</span><span class="n">t</span><span class="p">])</span><span class="o">.</span><span class="n">statistic</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Processing subject 001
+Processing subject 002
+Processing subject 003
+Processing subject 004
+Processing subject 005
+Processing subject 006
+Processing subject 007
+Processing subject 008
+Processing subject 009
+Processing subject 010
+Processing subject 011
+Processing subject 012
+Processing subject 013
+Processing subject 014
+Processing subject 015
+Processing subject 016
+Processing subject 017
+Processing subject 019
+Processing subject 020
+Processing subject 021
+Processing subject 022
+Processing subject 023
+Processing subject 024
+Processing subject 025
+Processing subject 026
+Processing subject 027
+Processing subject 028
+Processing subject 030
+Processing subject 031
+Processing subject 033
+Processing subject 034
+Processing subject 035
+Processing subject 036
+Processing subject 037
+Processing subject 038
+Processing subject 040
+Processing subject 041
+Processing subject 042
+Processing subject 043
+Processing subject 045
+Processing subject 046
+Processing subject 048
+Processing subject 050
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tx</span><span class="o">=</span><span class="n">erpd</span><span class="o">.</span><span class="n">tx</span>
+<span class="n">zr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctanh</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+<span class="n">cor_erpd</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">ERPD</span><span class="p">(</span><span class="s2">&quot;Correlation&quot;</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">zr</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">cor_erpd</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">get_axes</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="n">zr</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">pvalue</span><span class="o">&lt;</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">sigdiff</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="n">sig</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">sig</span><span class="p">)])</span>
+<span class="n">xstart</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sigdiff</span><span class="o">==</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">xend</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sigdiff</span><span class="o">==-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">xmin</span><span class="p">,</span><span class="nb">max</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xstart</span><span class="p">,</span> <span class="n">xend</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvspan</span><span class="p">(</span><span class="n">cor_erpd</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">xmin</span><span class="p">],</span> <span class="n">cor_erpd</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="nb">max</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;lightblue&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Correlation with reward&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">*</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.collections.LineCollection at 0x13ec78c10&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_ceylin_eyedata_17_1.png" src="../_images/docs_ceylin_eyedata_17_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">### Stimulus-locked</span>
+<span class="n">res_stim</span> <span class="o">=</span> <span class="n">get_erpd_event</span><span class="p">(</span><span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="n">time_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">3600</span><span class="p">),</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">plot_erpd_mw</span><span class="p">(</span><span class="n">res_stim</span><span class="p">,</span> <span class="s2">&quot;Stimulus-locked ERPD&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/mmi041/miniconda3/envs/pypil/lib/python3.11/site-packages/numpy/core/fromnumeric.py:3504: RuntimeWarning: Mean of empty slice.
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/Users/mmi041/miniconda3/envs/pypil/lib/python3.11/site-packages/numpy/core/_methods.py:121: RuntimeWarning: divide by zero encountered in divide
+  ret = um.true_divide(
+/Users/mmi041/miniconda3/envs/pypil/lib/python3.11/site-packages/numpy/core/_methods.py:121: RuntimeWarning: invalid value encountered in divide
+  ret = um.true_divide(
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_ceylin_eyedata_18_1.png" src="../_images/docs_ceylin_eyedata_18_1.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Figure for Ceylin&#39;s MSc thesis</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">res_erpd_stim</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span> <span class="k">for</span> <span class="n">subj</span><span class="p">,</span><span class="n">d</span> <span class="ow">in</span> <span class="n">pdata</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">subj</span> <span class="ow">in</span> <span class="n">exclude_preproc</span><span class="p">]</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">group_erpd</span><span class="p">(</span><span class="n">res_erpd_stim</span><span class="p">,</span> <span class="s2">&quot;stimulus&quot;</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">&quot;S_&quot;</span><span class="p">,</span>
+              <span class="n">time_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">3600</span><span class="p">),</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_missing</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">*</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span><span class="mi">3600</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plot_erpd_mw</span><span class="p">(</span><span class="n">res_stim</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span><span class="mi">3600</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[77]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Choice-locked</span>
+<span class="n">res_choice</span> <span class="o">=</span> <span class="n">get_erpd_event</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="n">time_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">))</span>
+<span class="n">plot_erpd_mw</span><span class="p">(</span><span class="n">res_choice</span><span class="p">,</span> <span class="s2">&quot;Choice-locked ERPD&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_ceylin_eyedata_20_0.png" src="../_images/docs_ceylin_eyedata_20_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[78]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Reward-locked</span>
+<span class="n">res_reward</span> <span class="o">=</span> <span class="n">get_erpd_event</span><span class="p">(</span><span class="s2">&quot;R&quot;</span><span class="p">,</span> <span class="n">time_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">))</span>
+<span class="n">plot_erpd_mw</span><span class="p">(</span><span class="n">res_reward</span><span class="p">,</span> <span class="s2">&quot;Reward-locked ERPD&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/docs_ceylin_eyedata_21_0.png" src="../_images/docs_ceylin_eyedata_21_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span>
+<span class="c1"># clean pupil data using XY saccade data</span>
+
+<span class="n">pupil1</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+<span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">correct_pupil_foreshortening</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+<span class="n">pupil2</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">pupil1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="n">pupil2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#pd = d.get_pupildata(&quot;left&quot;)</span>
+
+<span class="n">pars</span><span class="o">=</span><span class="n">default_param</span>
+<span class="n">pupil3</span><span class="o">=</span><span class="n">pupil1</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_duration&quot;</span><span class="p">],</span><span class="n">strategies</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;strategies&quot;</span><span class="p">],</span>
+                     <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">],</span>
+                     <span class="n">min_onset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_onset_len&quot;</span><span class="p">],</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_offset_len&quot;</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">blinks_merge</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">blinks_interp_mahot</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;margin&quot;</span><span class="p">],</span> <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;cutoff&quot;</span><span class="p">])</span>
+<span class="n">pupil1</span><span class="o">.</span><span class="n">plot_segments</span><span class="p">(</span><span class="n">overlay</span><span class="o">=</span><span class="n">pupil3</span><span class="p">,</span> <span class="n">pdffile</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">plot_dir</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.pdf&quot;</span><span class="o">%</span><span class="k">pupil3</span>.name), ylim=(pupil3.sy.min(), pupil3.sy.max()))
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fixcross</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">ttype</span><span class="p">,</span><span class="n">trialnum</span><span class="p">,</span><span class="o">*</span><span class="n">rest</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">trial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;F&quot;</span> <span class="ow">and</span> <span class="n">trialnum</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;F&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">response</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">ttype</span><span class="p">,</span><span class="n">trialnum</span><span class="p">,</span><span class="o">*</span><span class="n">rest</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">trial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;R&quot;</span> <span class="ow">or</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;RP&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">trialnum</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;R&quot;</span> <span class="ow">or</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;RP&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">trialno</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">trialno</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trialno</span><span class="p">)</span>
+
+<span class="n">d</span><span class="o">.</span><span class="n">test_selector</span><span class="p">(</span><span class="n">fixcross</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">&quot;F_1&quot;</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1200</span><span class="p">,</span><span class="mi">800</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">fixcross</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">trialno</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">trialno</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span> <span class="p">(</span><span class="n">fixcross</span><span class="p">,</span> <span class="n">response</span><span class="p">),</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1900</span><span class="p">,</span><span class="mi">1900</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="n">ints</span>
+
+<span class="n">d</span><span class="o">.</span><span class="n">plot_scanpath</span><span class="p">(</span> <span class="n">ints</span><span class="p">[</span><span class="mi">200</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="n">ints</span><span class="p">[</span><span class="mi">120</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">plot_onsets</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot_scanpath</span><span class="p">((</span><span class="mi">20</span><span class="p">,</span><span class="mi">25</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;blub&quot;</span><span class="p">,</span> <span class="n">plot_eyes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;left&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot_heatmap</span><span class="p">(</span><span class="n">plot_eyes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;right&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">120</span><span class="p">,</span><span class="mi">130</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">,</span> <span class="n">plot_onsets</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/docs/ceylin_eyedata.ipynb">docs/ceylin_eyedata.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/ceylin_eyedata.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/docs/ceylin_eyedata.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Ceylin Eye data</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>
