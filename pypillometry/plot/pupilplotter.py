@@ -26,7 +26,7 @@ class PupilPlotter(GenericPlotter):
     
     def pupil_plot(self, 
                    eyes: list=[],
-                   plot_range: Tuple[float,float]=(-np.infty, +np.infty),
+                   plot_range: Tuple[float,float]=(-np.inf, +np.inf),
                    plot_events: bool=True,
                    highlight_blinks: bool=True,
                    units: str="sec"
@@ -69,12 +69,12 @@ class PupilPlotter(GenericPlotter):
         evon=self.obj.event_onsets*fac
 
         start,end=plot_range
-        if start==-np.infty:
+        if start==-np.inf:
             startix=0
         else:
             startix=np.argmin(np.abs(tx-start))
             
-        if end==np.infty:
+        if end==np.inf:
             endix=tx.size
         else:
             endix=np.argmin(np.abs(tx-end))

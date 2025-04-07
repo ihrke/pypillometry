@@ -22,7 +22,7 @@ class GazePlotter(GenericPlotter):
         self.obj = obj
     
     def plot_timeseries(self, 
-            plot_range: tuple=(-np.infty, +np.infty),
+            plot_range: tuple=(-np.inf, +np.inf),
             variables: list=[], 
             eyes: list=[],
             plot_onsets: str="line",
@@ -36,7 +36,7 @@ class GazePlotter(GenericPlotter):
         -----------
 
         plot_range: tuple
-            The time range to plot. Default is (-np.infty, +np.infty), i.e. all data.
+            The time range to plot. Default is (-np.inf, +np.inf), i.e. all data.
         variables: list
             The data to plot. Default is [], which means all available data will be plotted.
             Available data are ["x","y","pupil"] but can be extended by the user.
@@ -66,12 +66,12 @@ class GazePlotter(GenericPlotter):
 
         # plot_range
         start,end=plot_range
-        if start==-np.infty:
+        if start==-np.inf:
             startix=0
         else:
             startix=np.argmin(np.abs(tx-start))
             
-        if end==np.infty:
+        if end==np.inf:
             endix=tx.size
         else:
             endix=np.argmin(np.abs(tx-end))
@@ -184,7 +184,7 @@ class GazePlotter(GenericPlotter):
 
 
     def plot_heatmap(self, 
-            plot_range: tuple=(-np.infty, +np.infty), 
+            plot_range: tuple=(-np.inf, +np.inf), 
             eyes: list=[],
             plot_screen: bool=True,
             units: str="sec",
@@ -202,7 +202,7 @@ class GazePlotter(GenericPlotter):
         -----------
 
         plot_range: tuple
-            The time range to plot. Default is (-np.infty, +np.infty), i.e. all data.
+            The time range to plot. Default is (-np.inf, +np.inf), i.e. all data.
         eyes: list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
@@ -224,12 +224,12 @@ class GazePlotter(GenericPlotter):
 
         # plot_range
         start,end=plot_range
-        if start==-np.infty:
+        if start==-np.inf:
             startix=0
         else:
             startix=np.argmin(np.abs(tx-start))
             
-        if end==np.infty:
+        if end==np.inf:
             endix=tx.size
         else:
             endix=np.argmin(np.abs(tx-end))    
@@ -270,7 +270,7 @@ class GazePlotter(GenericPlotter):
                 ax.add_patch(screenrect)
 
     def plot_scanpath(self, 
-            plot_range: tuple=(-np.infty, +np.infty), 
+            plot_range: tuple=(-np.inf, +np.inf), 
             eyes: list=[],
             plot_screen: bool=True,
             plot_onsets: bool=True,
@@ -291,7 +291,7 @@ class GazePlotter(GenericPlotter):
         -----------
 
         plot_range: tuple
-            The time range to plot. Default is (-np.infty, +np.infty), i.e. all data.
+            The time range to plot. Default is (-np.inf, +np.inf), i.e. all data.
         eyes: list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
@@ -319,12 +319,12 @@ class GazePlotter(GenericPlotter):
 
         # plot_range
         start,end=plot_range
-        if start==-np.infty:
+        if start==-np.inf:
             startix=0
         else:
             startix=np.argmin(np.abs(tx-start))
             
-        if end==np.infty:
+        if end==np.inf:
             endix=tx.size
         else:
             endix=np.argmin(np.abs(tx-end))    
