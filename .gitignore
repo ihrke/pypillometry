@@ -11,6 +11,7 @@ docs/_static/
 docs/_templates/
 docs/doctrees/
 docs/_autosummary/
+docs/v1
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
