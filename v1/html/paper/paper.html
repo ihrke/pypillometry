@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Summary</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <hr class="docutils" />
+<p>title: ‘pypillometry: A Python package for pupillometric analyses’
+tags:</p>
+<ul class="simple">
+<li><p>Python</p></li>
+<li><p>pupil</p></li>
+<li><p>pupillometry</p></li>
+<li><p>psychology</p></li>
+<li><p>neuroscience</p></li>
+<li><p>LC-NE
+authors:</p></li>
+<li><p>name: Matthias Mittner
+orcid: 0000-0003-0205-7353
+affiliation: 1
+affiliations:</p>
+<ul>
+<li><p>name: Institute for Psychology, UiT The Arctic University of Norway, Norway
+index: 1
+date: 19 May 2020
+bibliography: paper.bib</p></li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<div class="section" id="summary">
+<h1>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h1>
+<p>The size of the human pupil is controlled by pairs of constrictor and dilator muscles that allow its opening (dilation) and closing (constriction) in response to varying lighting conditions [&#64;mathot2018pupillometry]. Importantly, it has long been known that the pupil also reacts to psychological important stimuli [&#64;hess1960pupil] and has been a firmly established tool for studying “mental effort” in the research kit of psychologists for many decades [&#64;laeng2012pupillometry]. More recently, pupil-size has been linked to the norepinephrinergic (NE) system originating from area <em>locus coeruleus</em> (LC) in the brainstem [&#64;aston2005integrative], a link that has been substantiated experimentally by direct recordings in the brainstem of monkeys [&#64;joshi2016relationships]. This finding of a correlation between NE activity in the brainstem and pupil-dilation has opened the way for researchers investigating the relationship between the LC-NE system and many cognitive functions, such as cognitive control [&#64;gilzenrat2010pupil] and mind wandering [&#64;mittner2016neural]. Advancing this emerging field requires the decomposition of the pupillometric signal into tonic (baseline) and phasic (response) components that relate to different processing regimes of the LC-NE system.</p>
+<p>The Python package <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> is a comprehensive library implementing preprocessing, plotting and advanced analysis tools in a coherent and extensible, object-oriented framework. It is oriented towards researchers in psychology and neuroscience that wish to analyze data from pupillometric experiments. <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> implements an intuitive, pipeline-based processing strategy where an analysis pipeline can be dynamically chained together. All operations and parameters applied to a dataset are stored in its history. This allows (1) a transparent and comprehensive logging of the operations applied for an analysis which is valuable for reproducible analyses, (2) the ability to “roll-back” any changes made to any point in the history of the dataset and (3) to easily generalize a processing pipeline to multiple datasets. The package contains pre-processing facilities implementing algorithms for blink detection and interpolation, filtering and resampling. All parameters are clearly documented, accessible and set to sensible default-parameters. A focus of the package is to provide extensive visualization features in order to facilitate dynamic exploration of the data as well as iterative adjustment of the pre-processing parameters. As the time-series of pupillometric data can be quite long, this requires separation into several plots or dynamically adjustable plot-axes. Both strategies are implemented in this package by allowing interactive plots if run from a Jupyter-Notebook [&#64;kluyver2016jupyter] or storing a multi-page PDF document, allowing both interactive and scripted use. The <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> package also implements functions for event-related pupil-dilation (ERPD) analyses both at the individual and the group-level. Finally, the package implements novel algorithms for decomposing the pupillometric signal into tonic and phasic components. This approach allows to simultaneously quantify dynamic changes of both baseline and response-strength that can be related to the tonic and phasic processing regimes of the LC-NE system.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Pypillometry</span></code> was already used for the analyses of several pupillometric datasets in our department. Several software packages with similar goals are available in R [e.g., &#64;geller_gazer_2020; &#64;forbes2020]. However, to date, no comprehensive Python-based solution besides <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> exists. None of the other packages provides facilities to estimate tonic and phasic components of the pupillometric signal.</p>
+</div>
+<div class="section" id="acknowledgements">
+<h1>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Permalink to this headline">¶</a></h1>
+<p>I would like to thank the members of my research group for stimulating discussions and critical advice. In particular, I would like to thank Isabel Viola Kreis, Josephine Maria Groot, Gábor Csifcsák and Carole Schmidt for their input. I would also like to thank Bruno Laeng for inspiring discussions.</p>
+</div>
+<div class="section" id="references">
+<h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Summary</a></li>
+<li><a class="reference internal" href="#acknowledgements">Acknowledgements</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/paper/paper.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Summary</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.1.
+    </div>
+  </body>
+</html>

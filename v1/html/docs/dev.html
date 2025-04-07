@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developers &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Future Plans/Todo" href="future.html" />
+    <link rel="prev" title="API documentation" href="api.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="future.html" title="Future Plans/Todo"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="API documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Developers</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="developers">
+<h1>Developers<a class="headerlink" href="#developers" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://travis-ci.com/ihrke/pypillometry"><img alt="https://travis-ci.com/ihrke/pypillometry.svg?branch=master" src="https://travis-ci.com/ihrke/pypillometry.svg?branch=master" /></a>
+<p>This package is developed and maintained by the <a class="reference external" href="http://uit.no/research/cognitive-neuroscience">Cognitive Neuroscience Research Group</a> at the <a class="reference external" href="http://uit.no">University of Tromsø</a>. We encourage everyone to become a member of the team and to contribute to the package’s development, either by <a class="reference external" href="https://github.com/ihrke/pypillometry/issues">reporting bugs</a>, <a class="reference external" href="https://github.com/ihrke/pypillometry/pulls">providing enhancements</a> or otherwise.</p>
+<div class="section" id="how-to-contribute">
+<h2>How to contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this headline">¶</a></h2>
+<p>Development of this package happens on GitHub: <a class="reference external" href="https://github.com/ihrke/pypillometry">https://github.com/ihrke/pypillometry</a></p>
+<p>In order to contribute, please use</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/ihrke/pypillometry/issues">github’s issue tracker</a> for reporting bugs or proposing enhancements</p></li>
+<li><p><a class="reference external" href="https://github.com/ihrke/pypillometry/pulls">github’s pull-request (PR) feature</a> for contributing to the package and/or documentation</p></li>
+</ul>
+<p>If you are unfamiliar with Github’s system, you can read up about <a class="reference external" href="https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests">collaborating with issues and pull-requests on Github</a>.</p>
+</div>
+<div class="section" id="coding-style-package-architecture">
+<h2>Coding style/package architecture<a class="headerlink" href="#coding-style-package-architecture" title="Permalink to this headline">¶</a></h2>
+<p>We chose to put most functionality directly below <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code>’s main class <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>. This is mostly for convenience,
+as users can easily find and chain commands together (see the following page more on this: <a class="reference internal" href="pipes.html"><span class="std std-ref">Pipeline-based processing in pypillometry</span></a>).</p>
+<p>The implementation of the functionality, however, is coded in submodules using “stateless” functions that take <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.19)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays as arguments. So, in order to create a new function that changes a <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object, you will first want to implement a function working purely on <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.19)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays and then create a thin wrapper function below <a class="reference internal" href="api.html#pypillometry.pupildata.PupilData" title="pypillometry.pupildata.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> that calls this low-level function with the correct arguments.</p>
+</div>
+<div class="section" id="unit-testing">
+<h2>Unit-testing<a class="headerlink" href="#unit-testing" title="Permalink to this headline">¶</a></h2>
+<p>Every newly developed function should be provided with <a class="reference external" href="https://en.wikipedia.org/wiki/Unit_testing">Unit-testing functions</a>. As a minimum, the function should be called with some reasonable arguments to ensure that the function does not crash. Better yet, the results of the functions should be tested against the desired output within these test functions. All unit-tests are located in <cite>/pypillometry/tests/</cite> and are run automatically for every commit to Github using <a class="reference external" href="https://travis-ci.com/ihrke/pypillometry">Travis CI</a>.</p>
+</div>
+<div class="section" id="building-the-packages-documentation">
+<h2>Building the packages documentation<a class="headerlink" href="#building-the-packages-documentation" title="Permalink to this headline">¶</a></h2>
+<p>This is only necessary when extending <cite>pypillometry</cite>’s documentation (i.e., updating the website at <a class="reference external" href="https://ihrke.github.io/pypillometry">https://ihrke.github.io/pypillometry</a>).</p>
+<p>The package uses the <a class="reference external" href="https://www.sphinx-doc.org/">Sphinx documentation generator</a> to create this website. All source-files are located under <cite>/docs/</cite> (both <cite>.rst</cite> and <cite>.ipynb</cite> files are being used). In addition, the API-documentation is placed within each function or classes’ docstring.</p>
+<p>To compile the documentation, sphinx must be installed. In addition, a couple of non-standard sphinx extensions are being used:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;sphinx_math_dollar&#39;</span><span class="p">,</span>  <span class="s2">&quot;m2r&quot;</span><span class="p">,</span><span class="s1">&#39;sphinx_autodoc_typehints&#39;</span><span class="p">,</span> <span class="s1">&#39;nbsphinx&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>These can be installed by using the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># jupyter notebooks</span>
+conda install -c conda-forge nbsphinx
+<span class="c1"># math</span>
+conda install -c conda-forge sphinx-math-dollar
+<span class="c1"># markdown 2 rst (for README)</span>
+pip install m2r
+<span class="c1"># for the typehints</span>
+conda install -c conda-forge sphinx-autodoc-typehints
+</pre></div>
+</div>
+<p>Finally, the documentation can be created by running</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make html
+</pre></div>
+</div>
+<p>in the packages’ root-directory.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>don’t run <cite>make clean</cite>, it will delete the source-files from <cite>docs</cite></p>
+</div>
+</div>
+<div class="section" id="creating-releases">
+<h2>Creating Releases<a class="headerlink" href="#creating-releases" title="Permalink to this headline">¶</a></h2>
+<p>A release should be created whenever crucial bugs have been fixed or new functionality has been added.
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code> goes with version numbers <cite>x.y.z</cite>. Increment <cite>z</cite> for bug-fixes, <cite>y</cite> for new features and
+<cite>x</cite> for releases that break backward-compatibility.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>the process of uploading to PyPI has been automatized using Github actions; when a
+release is created on <a class="reference external" href="https://github.com/ihrke/pypillometry/releases">Github-releases</a>, the file
+<cite>VERSION</cite> is updated with the most recent tag
+(must be <a class="reference external" href="https://www.python.org/dev/peps/pep-0440/#version-scheme">PEP-440</a>-compliant)
+and a <a class="reference external" href="https://pypi.org/">PyPI</a> release is being issued</p>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Developers</a><ul>
+<li><a class="reference internal" href="#how-to-contribute">How to contribute</a></li>
+<li><a class="reference internal" href="#coding-style-package-architecture">Coding style/package architecture</a></li>
+<li><a class="reference internal" href="#unit-testing">Unit-testing</a></li>
+<li><a class="reference internal" href="#building-the-packages-documentation">Building the packages documentation</a></li>
+<li><a class="reference internal" href="#creating-releases">Creating Releases</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="api.html"
+                        title="previous chapter">API documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="future.html"
+                        title="next chapter">Future Plans/Todo</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/docs/dev.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="future.html" title="Future Plans/Todo"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="API documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Developers</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.1.
+    </div>
+  </body>
+</html>
