@@ -1,0 +1,14 @@
+sphinx>=4.0.0
+sphinx-autodoc-typehints
+sphinxcontrib-mermaid
+sphinx-math-dollar
+sphinx-mdinclude
+nbsphinx
+numpydoc
+ipykernel
+matplotlib
+numpy
+pandas
+pathlib
+# Note: Some extensions like autodoc, coverage, napoleon, doctest, viewcode, 
+# intersphinx, and autosummary are included in the main sphinx package
