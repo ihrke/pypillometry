@@ -1,3 +1,9 @@
+# scripts used for development but not needed in the final package
+dev
+
+# stan executable
+pypillometry/stan/baseline_model_asym_laplac
+
 # Sphinx documentation
 docs/html/
 docs/_build/
