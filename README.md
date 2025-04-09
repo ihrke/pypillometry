@@ -4,6 +4,7 @@
 [![status](https://joss.theoj.org/papers/3b06f4f3d5b703fd99c7e622b7edebe4/status.svg)](https://joss.theoj.org/papers/3b06f4f3d5b703fd99c7e622b7edebe4)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3925528.svg)](https://doi.org/10.5281/zenodo.3925528)
 [![codecov](https://codecov.io/gh/ihrke/pypillometry/graph/badge.svg?token=BFSKNGT772)](https://codecov.io/gh/ihrke/pypillometry)
+[![tests](https://github.com/ihrke/pypillometry/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ihrke/pypillometry/actions/workflows/run-tests.yml)
 
 
 
