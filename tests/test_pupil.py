@@ -1,12 +1,12 @@
 import unittest
 import sys
-#sys.path.insert(0,"..")
-#import pypillometry as pp
-from .. import *
+import pypillometry as pp
+from pypillometry.signal.pupil import pupil_kernel_t
 
 class TestPupil(unittest.TestCase):
     def setUp(self):
-        self.d=create_fake_pupildata(ntrials=100)
+        self.d = pp.get_example_data("rlmw_002_short")
+        
     def test_pupil_kernel_t(self):
         pupil_kernel_t([1,2], 10, 900)
 

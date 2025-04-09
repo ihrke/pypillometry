@@ -748,7 +748,8 @@ class GenericEyeData(ABC):
         return intervals
 
     @keephistory
-    def scale(self, variables=[], mean: float=None, sd: float=None, eyes=[], inplace=None):
+    def scale(self, variables=[], mean: Union[float,dict,None]=None, 
+              sd: Union[float,dict,None]=None, eyes=[], inplace=None):
         """
         Scale the signal by subtracting `mean` and dividing by `sd`.
         If these variables are not provided, use the signal's mean and std.

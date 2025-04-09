@@ -10,33 +10,38 @@ class TestGazeData(unittest.TestCase):
         #self.d=pp.GazeData.from_file("data/test.pd")
         pass
     def test_from_file(self):
-        pass
-        #d=pp.GazeData.from_file("data/test.pd")
-        #self.assertEqual(d.__class__, pp.GazeData)
+        d = pp.get_example_data("rlmw_002_short")
+        print(d)
     def test_scale(self):
         d = pp.GazeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
         d=d.scale(["x",'y'])
         self.assertEqual(d.data["left","x"].mean(), 0)
         self.assertEqual(d.data["left","y"].mean(), 0)
-        self.assertEqual(d.scale_params["left","x","mean"], 1.5)
-        self.assertEqual(d.scale_params["left","y","sd"], 0.5)
+        self.assertEqual(d.params["scale"]["mean"]["left"]["x"], 1.5)
+        self.assertEqual(d.params["scale"]["mean"]["left"]["y"], 3.5)
     def test_scale_fixed(self):
         d = pp.GazeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
-        scalepars = pp.Parameters({("mean","left","x"):1, 
-                                   ("mean","left","y"):3, 
-                                   ("sd","left","x"):0.5, 
-                                   ("sd","left","y"):0.5})
-        d=d.scale("x", mean=scalepars["mean"], sd=scalepars["sd"])
-        self.assertEqual(d.scale_params["left","x","mean"], 1)
-        self.assertEqual(d.scale_params["left","x","sd"], 0.5)
-    
-        #pytest.set_trace()
+        scalepars = {
+            "left": {
+                "x": 1,
+                "y": 3
+            }
+        }
+        sdpars = {
+            "left": {
+                "x": 0.5,
+                "y": 0.5
+            }
+        }
+        d=d.scale(["x",'y'], mean=scalepars, sd=sdpars)
+        self.assertEqual(d.data["left","x"].mean(), 1)
+        self.assertEqual(d.data["left","y"].mean(), 1)
     def test_unscale(self):
         d = pp.GazeData(sampling_rate=10, left_x=[1,2,1,2], left_y=[3,4,3,4])
-        d2=d.scale(["x",'y'])
-        d3=d2.unscale(["x",'y'])
-        self.assertEqual(np.sum(d3.data["left","x"]-d.data["left","x"]), 0)
-        self.assertEqual(np.sum(d3.data["left","y"]-d.data["left","y"]), 0)
+        d=d.scale(["x",'y'])
+        d=d.unscale(["x",'y'])
+        self.assertEqual(d.data["left","x"].mean(), 1.5)
+        self.assertEqual(d.data["left","y"].mean(), 3.5)
 
 if __name__ == '__main__':
     unittest.main()
