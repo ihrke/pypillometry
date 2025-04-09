@@ -3,6 +3,8 @@
 [![GitHub issues](https://img.shields.io/github/issues/ihrke/pypillometry)](https://github.com/ihrke/pypillometry/issues)
 [![status](https://joss.theoj.org/papers/3b06f4f3d5b703fd99c7e622b7edebe4/status.svg)](https://joss.theoj.org/papers/3b06f4f3d5b703fd99c7e622b7edebe4)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3925528.svg)](https://doi.org/10.5281/zenodo.3925528)
+[![codecov](https://codecov.io/gh/ihrke/pypillometry/graph/badge.svg?token=BFSKNGT772)](https://codecov.io/gh/ihrke/pypillometry)
+
 
 
 [![GitHub release](https://img.shields.io/github/release/ihrke/pypillometry.svg)](https://gitHub.com/ihrke/pypillometry/releases/)
@@ -25,7 +27,7 @@ This package implements functions for the analysis of pupillometric and eyetrack
 
 - Github-repository: <https://github.com/ihrke/pypillometry>
 
-- Homepage/Documentation: <https://ihrke.github.io/pypillometry/html/index.html>
+- Homepage/Documentation: <https://ihrke.github.io/pypillometry/>
 
 
 ---
@@ -34,4 +36,4 @@ The project is maintained by Matthias Mittner <matthias.mittner@uit.no>
 
 To report a bug or recommend a new feature, please use [github's issue tracker](https://github.com/ihrke/pypillometry/issues).
 
-For more details about how to contribute, please see the [contribution-section](https://ihrke.github.io/pypillometry/html/docs/dev.html) in the documentation.
+For more details about how to contribute, please see the [contribution-section](https://ihrke.github.io/pypillometry/docs/dev.html) in the documentation.
