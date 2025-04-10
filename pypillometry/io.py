@@ -12,9 +12,92 @@ except:
 import os
 import requests
 from tqdm import tqdm
+from typing import Dict
+from loguru import logger
 
+import requests
+def get_osf_project_files(osf_id: str) -> Dict[str, Dict[str, str]]:
+    """
+    Get all file IDs from an OSF project.
+    
+    Parameters
+    ----------
+    osf_id : str
+        The OSF project ID
+        
+    Returns
+    -------
+    Dict[str, Dict[str, str]]
+        Dictionary mapping file paths to their IDs, download URLs, and file sizes
+    """
+    files = {}
+    estimated_files = 100  # Start with estimate of 100 files
+    
+    def process_files(url: str, current_path: str = "", pbar=None) -> None:
+        """
+        Recursively process files and folders from an OSF API URL.
+        
+        Parameters
+        ----------
+        url : str
+            The OSF API URL to process
+        current_path : str
+            Current path in the project structure
+        pbar : tqdm
+            Progress bar instance
+        """
+        nonlocal estimated_files
+        
+        response = requests.get(url)
+        if response.status_code != 200:
+            raise ValueError(f"Could not access project files: {response.status_code}")
+            
+        data = response.json()
+        if 'data' not in data:
+            raise ValueError(f"Unexpected API response structure: {data}")
+            
+        for item in data['data']:
+            if 'attributes' not in item or 'links' not in item:
+                continue
+                
+            attrs = item['attributes']
+            if 'name' not in attrs or 'kind' not in attrs:
+                continue
+                
+            name = attrs['name']
+            full_path = os.path.join(current_path, name)
+            
+            if attrs['kind'] == 'file':
+                if 'download' in item['links']:
+                    # Get file size from attributes
+                    size = attrs.get('size', 0)
+                    files[full_path] = {
+                        'id': item.get('id', ''),
+                        'download_url': item['links']['download'],
+                        'size': size
+                    }
+                    pbar.update(1)
+                    # If we're close to the estimate, increase it
+                    if len(files) >= estimated_files * 0.8:
+                        estimated_files *= 2
+                        pbar.total = estimated_files
+                    pbar.set_description(f"Processing: {full_path}")
+            elif attrs['kind'] == 'folder':
+                if 'new_folder' in item['links']:
+                    folder_url = item['links']['new_folder']
+                    process_files(folder_url, full_path, pbar)
+                
+        if isinstance(data.get('links'), dict) and data['links'].get('next'):
+            process_files(data['links']['next'], current_path, pbar)
+    
+    # Process files with progress bar starting at estimated count
+    root_url = f"https://api.osf.io/v2/nodes/{osf_id}/files/osfstorage/"
+    with tqdm(total=estimated_files, desc="Processing files") as pbar:
+        process_files(root_url, "", pbar)
+    
+    return files
 
-def read_study(osf_id: str, path: str, force_download: bool = False):
+def read_study(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False):
     """
     Read a study from OSF using the configuration file.
     
@@ -24,6 +107,9 @@ def read_study(osf_id: str, path: str, force_download: bool = False):
         The OSF project ID
     path : str
         Local path where files should be downloaded/stored
+    subjects : list[str], optional
+        List of subject IDs to load. If None, all subjects will be loaded.
+        If a subject ID is provided that doesn't exist in the data, it will be skipped.
     force_download : bool, optional
         If True, force re-download even if files exist locally. Default False.
         
@@ -32,30 +118,79 @@ def read_study(osf_id: str, path: str, force_download: bool = False):
     dict
         Dictionary containing the loaded study data
     """
-    # First download/read the config file
-    config_url = f"https://osf.io/{osf_id}/files/pypillometry_conf.py" 
-    config_path = os.path.join(path, "pypillometry_conf.py")
+    # Create cache directory if it doesn't exist
+    os.makedirs(path, exist_ok=True)
+    cache_file = os.path.join(path, "info_osf.pkl")
+
+    # Try to load cached OSF file info
+    if os.path.exists(cache_file) and not force_download:
+        with open(cache_file, 'rb') as f:
+            files = pickle.load(f)
+        print("Using cached OSF file information")
+    else:
+        # Get all files in the project and estimate total download size
+        print(f"Getting info on all files in project '{osf_id}'")
+        files = get_osf_project_files(osf_id)
+        
+        # Cache the file information
+        with open(cache_file, 'wb') as f:
+            pickle.dump(files, f)
     
+    # Calculate total download size from file sizes in API response
+    total_size = sum(file_info['size'] for file_info in files.values())
+    
+    # Estimate download time (assuming ~1MB/s download speed)
+    est_minutes = round(total_size / (1024 * 1024 * 60), 1)  # Convert bytes to minutes
+    print(f"Estimated download time (assuming 1MB/s): {est_minutes} minutes")
+    
+    # Find and download config file
+    config_path = os.path.join(path, "pypillometry_conf.py")
+    config_file = next((f for f in files if f.endswith("pypillometry_conf.py")), None)
+    
+    if config_file is None:
+        raise ValueError("Could not find pypillometry_conf.py in project")
+        
     if not os.path.exists(config_path) or force_download:
-        response = requests.get(config_url)
+        response = requests.get(files[config_file]['download_url'])
         if response.status_code == 200:
             with open(config_path, 'wb') as f:
                 f.write(response.content)
         else:
-            raise ValueError(f"Could not download config file from {config_url}")
+            raise ValueError(f"Could not download config file")
             
     # Load and parse config
-    with open(config_path, 'r') as f:
-        config = eval(f.read())
-        
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("pypillometry_conf", config_path)
+    config = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(config)
+    
+    # Filter subjects if specified
+    subject_ids = list(config.raw_data.keys())
+    if subjects is not None:
+        subject_ids = [sid for sid in subjects if sid in config.raw_data]
+        if not subject_ids:
+            raise ValueError("None of the specified subjects were found in the data")
+        print(f"Loading {len(subject_ids)} specified subjects")
+    else:
+        print(f"Loading all {len(subject_ids)} subjects")
+    
     # Download and read raw data files
-    study_data = {}
-    for data_file in config['raw_data']:
-        file_url = f"https://osf.io/{osf_id}/files/{data_file}"
-        file_path = os.path.join(path, data_file)
-        
-        if not os.path.exists(file_path) or force_download:
-            response = requests.get(file_url, stream=True)
+    for subject_id in subject_ids:
+        subject_files = config.raw_data[subject_id]
+        for file_type, data_file in subject_files.items():
+            file_path = os.path.join(path, data_file)
+            matching_file = next((f for f in files if f.endswith(data_file)), None)
+            
+            if matching_file is None:
+                raise ValueError(f"Could not find {data_file} in project")
+                
+            if os.path.exists(file_path) and not force_download:
+                continue
+                
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            
+            response = requests.get(files[matching_file]['download_url'], stream=True)
             if response.status_code == 200:
                 total = int(response.headers.get('content-length', 0))
                 with open(file_path, 'wb') as f, tqdm(
@@ -71,12 +206,20 @@ def read_study(osf_id: str, path: str, force_download: bool = False):
             else:
                 raise ValueError(f"Could not download {data_file}")
                 
-        # Use the specified read function to load the data
-        read_func = eval(config['read_function'])
-        study_data[data_file] = read_func(file_path)
+    # apply the read_subject function from the config module
+    study_data = {}
+
+    for subject_id in subject_ids:
+        # Use the read_subject function from the config module
+        info = config.raw_data[subject_id]
+        # add local path to the pathes in the info dict
+        for key, value in info.items():
+            if isinstance(value, str) and os.path.exists(os.path.join(path, value)):
+                info[key] = os.path.join(path, value)
+        info["subject"] = subject_id
+        study_data[subject_id] = config.read_subject(info)
         
     return study_data
-
 
 def eyedata_write_pickle(pdobj, fname):
     """
@@ -118,3 +261,4 @@ def eyedata_read_pickle(fname):
         with open(fname, 'rb') as f:
             pdobj=pickle.load(f)
     return pdobj
+

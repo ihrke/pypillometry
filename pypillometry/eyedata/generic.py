@@ -75,7 +75,8 @@ class GenericEyeData(ABC):
                     event_labels: np.ndarray,
                     name: str,
                     fill_time_discontinuities: bool,
-                    inplace: bool):
+                    inplace: bool,
+                    notes: str = None):
         """
         Common code for the child-classes of GenericEyeData.
         Assumes that self.data is already set and filled.
