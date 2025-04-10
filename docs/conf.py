@@ -33,11 +33,14 @@ extensions=['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon',
             "sphinx.ext.doctest", 'sphinx.ext.viewcode', ## enable doctests
             "sphinxcontrib.mermaid", ## enable mermaid diagrams
             'sphinx_math_dollar', 'sphinx.ext.mathjax', 'sphinx_autodoc_typehints', 
-            "sphinx_mdinclude", ## include markdown files
+            #"sphinx_mdinclude", ## include markdown files
+            "myst_parser", ## enable myst-parser
             'sphinx.ext.intersphinx', 'sphinx.ext.autosummary', 
             "nbsphinx", ## enable jupyter notebooks
             "numpydoc" ## enable numpy-style docstrings
             ]
+
+myst_enable_extensions = ["colon_fence"]
 
 nbsphinx_epilog = """
 
@@ -85,7 +88,7 @@ pygments_style = 'sphinx'
 html_theme = 'nature'
 #alabaster'
 
-html_logo = "logo/pypillometry_logo_200x200.png"
+html_logo = "../logo/pypillometry_logo_200x200.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

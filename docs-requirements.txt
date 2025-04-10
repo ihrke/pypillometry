@@ -2,7 +2,8 @@ sphinx>=4.0.0
 sphinx-autodoc-typehints
 sphinxcontrib-mermaid
 sphinx-math-dollar
-sphinx-mdinclude
+#sphinx-mdinclude
+myst-parser
 nbsphinx
 numpydoc
 ipykernel
