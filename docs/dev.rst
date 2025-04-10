@@ -68,7 +68,7 @@ Building the packages documentation
 
 This is only necessary when extending `pypillometry`'s documentation (i.e., updating the website at https://ihrke.github.io/pypillometry).
 
-The package uses the `Sphinx documentation generator <https://www.sphinx-doc.org/>`_ to create this website. All source-files are located under `/` (both `.rst` and `.ipynb` files are being used). In addition, the API-documentation is placed within each function or classes' docstring.
+The package uses the `Sphinx documentation generator <https://www.sphinx-doc.org/>`_ to create this website. All source-files are located under `/docs` (both `.rst` and `.ipynb` files are being used). In addition, the API-documentation is placed within each function or classes' docstring.
 
 To compile the documentation, sphinx must be installed. In addition, a couple of non-standard sphinx extensions are being used:
 

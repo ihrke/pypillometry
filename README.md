@@ -14,7 +14,6 @@
 
 ![](https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW)
 
-
 > [!NOTE]
 > This is `pypillometry` version 2 that contains a major restructuring of the code. Scripts written for version 1 will not continue to work. The reason for the update is that the new version will be able to handle eyetracking-data in addition to pupillometry data (and it will be able to handle more than one eye and other data sources at the same time).
 > 

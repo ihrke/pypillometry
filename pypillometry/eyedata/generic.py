@@ -62,6 +62,7 @@ class GenericEyeData(ABC):
     missing: np.ndarray ## missing data vector (1=missing, 0=not missing)
     event_onsets: np.ndarray ## vector with event onsets in time units
     inplace: bool ## whether to make changes in-place
+    notes: str ## optional notes about the dataset
 
     @abstractmethod
     def __init__():
@@ -118,6 +119,9 @@ class GenericEyeData(ABC):
 
         ## init whether or not to do operations in place
         self.inplace=inplace 
+
+        ## set notes
+        self.notes = notes
 
         ## fill in time discontinuities
         if fill_time_discontinuities:
@@ -547,6 +551,10 @@ class GenericEyeData(ABC):
         flen=max([len(k) for k in pars.keys()])
         for k,v in pars.items():
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
+        if self.notes:
+            s+=" Notes:\n"
+            for line in self.notes.split('\n'):
+                s+="  " + line + "\n"
         s+=" History:\n *\n"
         try:
             for i,ev in enumerate(self.history):
