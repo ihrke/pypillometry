@@ -14,6 +14,7 @@ Documentation
    installation
    usage
    notebooks
+   examples/share_study
    api
    dev
    future
