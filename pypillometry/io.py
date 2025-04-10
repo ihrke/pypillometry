@@ -97,7 +97,7 @@ def get_osf_project_files(osf_id: str) -> Dict[str, Dict[str, str]]:
     
     return files
 
-def read_study(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False):
+def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False):
     """
     Read a study from OSF using the configuration file.
     
