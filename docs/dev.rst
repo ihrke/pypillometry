@@ -46,7 +46,7 @@ Coding style/package architecture
 ---------------------------------
 
 We chose to put most functionality directly below :mod:`pypillometry`'s main class :class:`PupilData`. This is mostly for convenience,
-as users can easily find and chain commands together (see the following page more on this: :ref:`Pipeline-based processing in pypillometry </docs/pipes.ipynb>`).
+as users can easily find and chain commands together (see the following page more on this: :ref:`Pipeline-based processing in pypillometry </pipes.ipynb>`).
 
 The implementation of the functionality, however, is coded in submodules using "stateless" functions that take :mod:`numpy`-arrays as arguments. So, in order to create a new function that changes a :class:`PupilData`-object, you will first want to implement a function working purely on :mod:`numpy`-arrays and then create a thin wrapper function below :class:`PupilData` that calls this low-level function with the correct arguments.
 
@@ -68,7 +68,7 @@ Building the packages documentation
 
 This is only necessary when extending `pypillometry`'s documentation (i.e., updating the website at https://ihrke.github.io/pypillometry).
 
-The package uses the `Sphinx documentation generator <https://www.sphinx-doc.org/>`_ to create this website. All source-files are located under `/docs/` (both `.rst` and `.ipynb` files are being used). In addition, the API-documentation is placed within each function or classes' docstring.
+The package uses the `Sphinx documentation generator <https://www.sphinx-doc.org/>`_ to create this website. All source-files are located under `/` (both `.rst` and `.ipynb` files are being used). In addition, the API-documentation is placed within each function or classes' docstring.
 
 To compile the documentation, sphinx must be installed. In addition, a couple of non-standard sphinx extensions are being used:
 

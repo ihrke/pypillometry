@@ -13,11 +13,11 @@ When clicking on this link, the notebook will open in an interactive session in 
    :maxdepth: 2
    :caption: List of Notebooks:
 
-   /docs/importdata
-   /docs/pipes
-   /docs/blinks
-   /docs/plotting
-   /docs/summary
-   /docs/erpds
-   /docs/modeling
-   /docs/preproc_example_pavlov
+   /importdata
+   /pipes
+   /blinks
+   /plotting
+   /summary
+   /erpds
+   /modeling
+   /preproc_example_pavlov

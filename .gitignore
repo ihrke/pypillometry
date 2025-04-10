@@ -5,6 +5,7 @@ dev
 pypillometry/stan/baseline_model_asym_laplac
 
 # Sphinx documentation
+_build
 docs/html/
 docs/_build/
 docs/_static/

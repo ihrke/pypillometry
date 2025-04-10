@@ -21,6 +21,15 @@ Overview
     PupilData <|-- GenericEyeData
     GazeData <|-- GenericEyeData
 
+    GazeData: +EyeDataDict data[left_x, left_y, right_x, right_y]
+    GazeData: +GazePlotter plot
+    GazeData: +set_experiment_info() (and other gaze-specific functions)
+    PupilData: +EyeDataDict data[left_pupil, right_pupil]
+    PupilData: +PupilPlotter plot
+    PupilData: +pupil_blinks_detect() (and other pupil-specific functions)
+    EyeData: +EyeDataDict data[left_pupil, right_pupil, left_x, left_y, right_x, right_y]
+    EyeData: +EyePlotter plot
+    EyeData: +correct_pupil_foreshortening() (and other functions needing both gaze and pupil data)
 
 .. autosummary::
 
