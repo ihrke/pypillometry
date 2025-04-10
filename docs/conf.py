@@ -105,8 +105,6 @@ _GITHUB_ADMONITIONS = {
 }
 
 def run_convert_github_admonitions_to_rst(app, filename, lines):
-    print("HI THERE!")
-    print(lines)
     # loop through lines, replace github admonitions
     for i, orig_line in enumerate(lines):
         orig_line_splits = orig_line.split("\n")

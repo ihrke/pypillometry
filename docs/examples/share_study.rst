@@ -10,6 +10,7 @@ To share your study on OSF:
 
 1. Create a new project on OSF
 2. Upload your study data files and configuration file (``pypillometry_conf.py``) to the project
+    - see 
 3. Note down your project's OSF ID (found in the project URL)
 
 The configuration file (``pypillometry_conf.py``) should define:
@@ -55,3 +56,20 @@ The function will:
 4. Return a dictionary mapping subject IDs to their processed data
 
 Files are cached locally in the specified path to avoid repeated downloads.
+
+Example configuration file
+-------------------------
+Here is an example configuration file (``pypillometry_conf.py``) that could be used to share a study:
+
+.. literalinclude:: ../examples/pypillometry_conf.py
+   :language: python
+   :linenos:
+
+This configuration file is a real study that was shared on OSF and you can download the corresponding data using the following code:
+
+.. code-block:: python
+
+    from pypillometry import load_study_osf
+    study_data = load_study_osf("ca95r", path="./data")
+
+The data will be downloaded and cached in the ``./data`` directory and `study_data` will be a dictionary mapping subject IDs to their data.
