@@ -520,7 +520,7 @@ class GenericEyeData(ABC):
         fname: str
             filename
         """
-        io.eyedata_write_pickle(self, fname)
+        io.write_pickle(self, fname)
        
     @classmethod
     def from_file(cls, fname:str):
@@ -534,7 +534,7 @@ class GenericEyeData(ABC):
         fname: str
             filename
         """
-        r=io.eyedata_read_pickle(fname)
+        r=io.read_pickle(fname)
         return r
 
     @abstractmethod
