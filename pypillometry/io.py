@@ -120,6 +120,13 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     config: module
         Module containing the configuration (pypillometry_conf.py imported as a module)
     """
+    # Check if cached data exists
+    data_cache = os.path.join(path, "pypillometry_data.pkl")
+    if os.path.exists(data_cache) and not force_download:
+        print("Loading cached study data")
+        cached_data = read_pickle(data_cache)
+        return cached_data['study_data'], cached_data['config']
+
     # Create cache directory if it doesn't exist
     os.makedirs(path, exist_ok=True)
     cache_file = os.path.join(path, "info_osf.pkl")
@@ -141,10 +148,13 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     # Calculate total download size from file sizes in API response
     total_size = sum(file_info['size'] for file_info in files.values())
     
-    # Estimate download time (assuming ~1MB/s download speed)
-    est_minutes = round(total_size / (1024 * 1024 * 60), 1)  # Convert bytes to minutes
-    print(f"Estimated download time (assuming 1MB/s): {est_minutes} minutes")
-    
+    # Only show download size/time if force_download or cache doesn't exist
+    if force_download or not os.path.exists(data_cache):
+        size_mb = round(total_size / (1024 * 1024), 1)  # Convert bytes to MB
+        est_minutes = round(total_size / (1024 * 1024 * 60), 1)  # Convert bytes to minutes
+        print(f"Total size: {size_mb} MB")
+        print(f"Estimated download time (assuming 1MB/s): {est_minutes} minutes")
+        
     # Find and download config file
     config_path = os.path.join(path, "pypillometry_conf.py")
     config_file = next((f for f in files if f.endswith("pypillometry_conf.py")), None)
@@ -220,9 +230,11 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
                 info[key] = os.path.join(path, value)
         info["subject"] = subject_id
         study_data[subject_id] = config.read_subject(info)
+
+    # Cache the study data and config
+    write_pickle({'study_data': study_data, 'config': config}, data_cache)
         
     return study_data, config
-
 def write_pickle(obj, fname):
     """
     Store any Python object in a file using :mod:`pickle`.
