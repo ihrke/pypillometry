@@ -54,64 +54,6 @@ processing = {
     }
 } 
 
-# Function to use for reading the data files
-# This should be a string that can be evaluated to get the actual function
-def read_subject(info):
-    """
-    Read the data for a single subject. Input is each element of `raw_data`.
-    """
-    ## loading the raw samples from the asc file
-    fname_samples=os.path.join(info["samples"])
-    df=pd.read_table(fname_samples, index_col=False,
-                    names=["time", "left_x", "left_y", "left_p",
-                            "right_x", "right_y", "right_p"])
-
-    ## Eyelink tracker puts "   ." when no data is available for x/y coordinates
-    left_x=df.left_x.values
-    left_x[left_x=="   ."] = np.nan
-    left_x = left_x.astype(float)
-
-    left_y=df.left_y.values
-    left_y[left_y=="   ."] = np.nan
-    left_y = left_y.astype(float)
-
-    right_x=df.right_x.values
-    right_x[right_x=="   ."] = np.nan
-    right_x = right_x.astype(float)
-
-    right_y=df.right_y.values
-    right_y[right_y=="   ."] = np.nan
-    right_y = right_y.astype(float)
-
-    ## Loading the events from the events file
-    fname_events=os.path.join(info["events"])
-    # read the whole file into variable `events` (list with one entry per line)
-    with open(fname_events) as f:
-        events=f.readlines()
-
-    # keep only lines starting with "MSG"
-    events=[ev for ev in events if ev.startswith("MSG")]
-    experiment_start_index=np.where(["experiment_start" in ev for ev in events])[0][0]
-    events=events[experiment_start_index+1:]
-    df_ev=pd.DataFrame([ev.split() for ev in events])
-    df_ev=df_ev[[1,2]]
-    df_ev.columns=["time", "event"]
-
-    # Creating EyeData object that contains both X-Y coordinates
-    # and pupil data
-    d = pp.EyeData(time=df.time, name=info["subject"],
-                screen_resolution=study_info["screen_resolution"], 
-                physical_screen_size=study_info["physical_screen_size"],
-                screen_eye_distance=study_info["screen_eye_distance"],
-                left_x=left_x, left_y=left_y, left_pupil=df.left_p,
-                right_x=right_x, right_y=right_y, right_pupil=df.right_p,
-                event_onsets=df_ev.time, event_labels=df_ev.event,
-                keep_orig=True)\
-                .reset_time()
-    d.set_experiment_info(screen_eye_distance=study_info["screen_eye_distance"], 
-                        screen_resolution=study_info["screen_resolution"], 
-                        physical_screen_size=study_info["physical_screen_size"])
-    return d    
 
 # write down notes about each subject when going through the preprocs
 notes={
@@ -167,3 +109,62 @@ notes={
     "050":"ok"
 }
 exclude = ["018", "029", "032", "039", "044", "047", "049"]
+
+# Function to use for reading the data files
+# This should be a string that can be evaluated to get the actual function
+def read_subject(info):
+    """
+    Read the data for a single subject. Input is each element of `raw_data`.
+    """
+    ## loading the raw samples from the asc file
+    fname_samples=os.path.join(info["samples"])
+    df=pd.read_table(fname_samples, index_col=False,
+                    names=["time", "left_x", "left_y", "left_p",
+                            "right_x", "right_y", "right_p"])
+
+    ## Eyelink tracker puts "   ." when no data is available for x/y coordinates
+    left_x=df.left_x.values
+    left_x[left_x=="   ."] = np.nan
+    left_x = left_x.astype(float)
+
+    left_y=df.left_y.values
+    left_y[left_y=="   ."] = np.nan
+    left_y = left_y.astype(float)
+
+    right_x=df.right_x.values
+    right_x[right_x=="   ."] = np.nan
+    right_x = right_x.astype(float)
+
+    right_y=df.right_y.values
+    right_y[right_y=="   ."] = np.nan
+    right_y = right_y.astype(float)
+
+    ## Loading the events from the events file
+    fname_events=os.path.join(info["events"])
+    # read the whole file into variable `events` (list with one entry per line)
+    with open(fname_events) as f:
+        events=f.readlines()
+
+    # keep only lines starting with "MSG"
+    events=[ev for ev in events if ev.startswith("MSG")]
+    experiment_start_index=np.where(["experiment_start" in ev for ev in events])[0][0]
+    events=events[experiment_start_index+1:]
+    df_ev=pd.DataFrame([ev.split() for ev in events])
+    df_ev=df_ev[[1,2]]
+    df_ev.columns=["time", "event"]
+
+    # Creating EyeData object that contains both X-Y coordinates
+    # and pupil data
+    d = pp.EyeData(time=df.time, name=info["subject"],
+                screen_resolution=study_info["screen_resolution"], 
+                physical_screen_size=study_info["physical_screen_size"],
+                screen_eye_distance=study_info["screen_eye_distance"],
+                left_x=left_x, left_y=left_y, left_pupil=df.left_p,
+                right_x=right_x, right_y=right_y, right_pupil=df.right_p,
+                event_onsets=df_ev.time, event_labels=df_ev.event, notes=notes[info["subject"]],
+                keep_orig=True)\
+                .reset_time()
+    d.set_experiment_info(screen_eye_distance=study_info["screen_eye_distance"], 
+                        screen_resolution=study_info["screen_resolution"], 
+                        physical_screen_size=study_info["physical_screen_size"])
+    return d    
