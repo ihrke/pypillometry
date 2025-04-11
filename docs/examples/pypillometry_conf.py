@@ -38,21 +38,196 @@ raw_data = {
     "003": {
         "events": "data/eyedata/asc/003_rlmw_events.asc",
         "samples": "data/eyedata/asc/003_rlmw_samples.asc"
+    },
+    "004": {
+        "events": "data/eyedata/asc/004_rlmw_events.asc",
+        "samples": "data/eyedata/asc/004_rlmw_samples.asc"
+    },
+    "005": {
+        "events": "data/eyedata/asc/005_rlmw_events.asc",
+        "samples": "data/eyedata/asc/005_rlmw_samples.asc"
+    },
+    "006": {
+        "events": "data/eyedata/asc/006_rlmw_events.asc",
+        "samples": "data/eyedata/asc/006_rlmw_samples.asc"
+    },
+    "007": {
+        "events": "data/eyedata/asc/007_rlmw_events.asc",
+        "samples": "data/eyedata/asc/007_rlmw_samples.asc"
+    },
+    "008": {
+        "events": "data/eyedata/asc/008_rlmw_events.asc",
+        "samples": "data/eyedata/asc/008_rlmw_samples.asc"
+    },
+    "009": {
+        "events": "data/eyedata/asc/009_rlmw_events.asc",
+        "samples": "data/eyedata/asc/009_rlmw_samples.asc"
+    },
+    "010": {
+        "events": "data/eyedata/asc/010_rlmw_events.asc",
+        "samples": "data/eyedata/asc/010_rlmw_samples.asc"
+    },
+    "011": {
+        "events": "data/eyedata/asc/011_rlmw_events.asc",
+        "samples": "data/eyedata/asc/011_rlmw_samples.asc"
+    },
+    "012": {
+        "events": "data/eyedata/asc/012_rlmw_events.asc",
+        "samples": "data/eyedata/asc/012_rlmw_samples.asc"
+    },
+    "013": {
+        "events": "data/eyedata/asc/013_rlmw_events.asc",
+        "samples": "data/eyedata/asc/013_rlmw_samples.asc"
+    },
+    "014": {
+        "events": "data/eyedata/asc/014_rlmw_events.asc",
+        "samples": "data/eyedata/asc/014_rlmw_samples.asc"
+    },
+    "015": {
+        "events": "data/eyedata/asc/015_rlmw_events.asc",
+        "samples": "data/eyedata/asc/015_rlmw_samples.asc"
+    },
+    "016": {
+        "events": "data/eyedata/asc/016_rlmw_events.asc",
+        "samples": "data/eyedata/asc/016_rlmw_samples.asc"
+    },
+    "017": {
+        "events": "data/eyedata/asc/017_rlmw_events.asc",
+        "samples": "data/eyedata/asc/017_rlmw_samples.asc"
+    },
+    "018": {
+        "events": "data/eyedata/asc/018_rlmw_events.asc",
+        "samples": "data/eyedata/asc/018_rlmw_samples.asc"
+    },
+    "019": {
+        "events": "data/eyedata/asc/019_rlmw_events.asc",
+        "samples": "data/eyedata/asc/019_rlmw_samples.asc"
+    },
+    "020": {
+        "events": "data/eyedata/asc/020_rlmw_events.asc",
+        "samples": "data/eyedata/asc/020_rlmw_samples.asc"
+    },
+    "021": {
+        "events": "data/eyedata/asc/021_rlmw_events.asc",
+        "samples": "data/eyedata/asc/021_rlmw_samples.asc"
+    },
+    "022": {
+        "events": "data/eyedata/asc/022_rlmw_events.asc",
+        "samples": "data/eyedata/asc/022_rlmw_samples.asc"
+    },
+    "023": {
+        "events": "data/eyedata/asc/023_rlmw_events.asc",
+        "samples": "data/eyedata/asc/023_rlmw_samples.asc"
+    },
+    "024": {
+        "events": "data/eyedata/asc/024_rlmw_events.asc",
+        "samples": "data/eyedata/asc/024_rlmw_samples.asc"
+    },
+    "025": {
+        "events": "data/eyedata/asc/025_rlmw_events.asc",
+        "samples": "data/eyedata/asc/025_rlmw_samples.asc"
+    },
+    "026": {
+        "events": "data/eyedata/asc/026_rlmw_events.asc",
+        "samples": "data/eyedata/asc/026_rlmw_samples.asc"
+    },
+    "027": {
+        "events": "data/eyedata/asc/027_rlmw_events.asc",
+        "samples": "data/eyedata/asc/027_rlmw_samples.asc"
+    },
+    "028": {
+        "events": "data/eyedata/asc/028_rlmw_events.asc",
+        "samples": "data/eyedata/asc/028_rlmw_samples.asc"
+    },
+    "029": {
+        "events": "data/eyedata/asc/029_rlmw_events.asc",
+        "samples": "data/eyedata/asc/029_rlmw_samples.asc"
+    },
+    "030": {
+        "events": "data/eyedata/asc/030_rlmw_events.asc",
+        "samples": "data/eyedata/asc/030_rlmw_samples.asc"
+    },
+    "031": {
+        "events": "data/eyedata/asc/031_rlmw_events.asc",
+        "samples": "data/eyedata/asc/031_rlmw_samples.asc"
+    },
+    "032": {
+        "events": "data/eyedata/asc/032_rlmw_events.asc",
+        "samples": "data/eyedata/asc/032_rlmw_samples.asc"
+    },
+    "033": {
+        "events": "data/eyedata/asc/033_rlmw_events.asc",
+        "samples": "data/eyedata/asc/033_rlmw_samples.asc"
+    },
+    "034": {
+        "events": "data/eyedata/asc/034_rlmw_events.asc",
+        "samples": "data/eyedata/asc/034_rlmw_samples.asc"
+    },
+    "035": {
+        "events": "data/eyedata/asc/035_rlmw_events.asc",
+        "samples": "data/eyedata/asc/035_rlmw_samples.asc"
+    },
+    "036": {
+        "events": "data/eyedata/asc/036_rlmw_events.asc",
+        "samples": "data/eyedata/asc/036_rlmw_samples.asc"
+    },
+    "037": {
+        "events": "data/eyedata/asc/037_rlmw_events.asc",
+        "samples": "data/eyedata/asc/037_rlmw_samples.asc"
+    },
+    "038": {
+        "events": "data/eyedata/asc/038_rlmw_events.asc",
+        "samples": "data/eyedata/asc/038_rlmw_samples.asc"
+    },
+    "039": {
+        "events": "data/eyedata/asc/039_rlmw_events.asc",
+        "samples": "data/eyedata/asc/039_rlmw_samples.asc"
+    },
+    "040": {
+        "events": "data/eyedata/asc/040_rlmw_events.asc",
+        "samples": "data/eyedata/asc/040_rlmw_samples.asc"
+    },
+    "041": {
+        "events": "data/eyedata/asc/041_rlmw_events.asc",
+        "samples": "data/eyedata/asc/041_rlmw_samples.asc"
+    },
+    "042": {
+        "events": "data/eyedata/asc/042_rlmw_events.asc",
+        "samples": "data/eyedata/asc/042_rlmw_samples.asc"
+    },
+    "043": {
+        "events": "data/eyedata/asc/043_rlmw_events.asc",
+        "samples": "data/eyedata/asc/043_rlmw_samples.asc"
+    },
+    "044": {
+        "events": "data/eyedata/asc/044_rlmw_events.asc",
+        "samples": "data/eyedata/asc/044_rlmw_samples.asc"
+    },
+    "045": {
+        "events": "data/eyedata/asc/045_rlmw_events.asc",
+        "samples": "data/eyedata/asc/045_rlmw_samples.asc"
+    },
+    "046": {
+        "events": "data/eyedata/asc/046_rlmw_events.asc",
+        "samples": "data/eyedata/asc/046_rlmw_samples.asc"
+    },
+    "047": {
+        "events": "data/eyedata/asc/047_rlmw_events.asc",
+        "samples": "data/eyedata/asc/047_rlmw_samples.asc"
+    },
+    "048": {
+        "events": "data/eyedata/asc/048_rlmw_events.asc",
+        "samples": "data/eyedata/asc/048_rlmw_samples.asc"
+    },
+    "049": {
+        "events": "data/eyedata/asc/049_rlmw_events.asc",
+        "samples": "data/eyedata/asc/049_rlmw_samples.asc"
+    },
+    "050": {
+        "events": "data/eyedata/asc/050_rlmw_events.asc",
+        "samples": "data/eyedata/asc/050_rlmw_samples.asc"
     }
 }
-
-# Data processing parameters
-processing = {
-    "blink_detection": {
-        "threshold": 0.1,
-        "min_duration": 50.0,  # ms
-        "max_duration": 400.0  # ms
-    },
-    "interpolation": {
-        "method": "linear",
-        "limit": 100.0  # ms
-    }
-} 
 
 
 # write down notes about each subject when going through the preprocs

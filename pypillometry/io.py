@@ -115,8 +115,10 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         
     Returns
     -------
-    dict
+    study_data: dict
         Dictionary containing the loaded study data
+    config: module
+        Module containing the configuration (pypillometry_conf.py imported as a module)
     """
     # Create cache directory if it doesn't exist
     os.makedirs(path, exist_ok=True)
@@ -219,46 +221,54 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         info["subject"] = subject_id
         study_data[subject_id] = config.read_subject(info)
         
-    return study_data
+    return study_data, config
 
-def eyedata_write_pickle(pdobj, fname):
+def write_pickle(obj, fname):
     """
-    Store the :class:`.GenericEyeData`-object `pdobj` in file using :mod:`pickle`.
+    Store any Python object in a file using :mod:`pickle`.
     
     Parameters
     ----------
-    
-    pdobj: :class:`.GenericEyeData`
-        dataset to save
+    obj: object
+        object to save
     fname: str
         filename to save to
     """
     with open(fname, "wb") as f:
-        pickle.dump(pdobj,f)
+        pickle.dump(obj, f)
     
-def eyedata_read_pickle(fname):
+def read_pickle(fname):
     """
-    Read the :class:`.GenericEyeData`-object `pdobj` from file using :mod:`pickle`.
+    Read a Python object from a file using :mod:`pickle`.
     
     Parameters
     ----------
-    
     fname: str
         filename or URL to load data from
         
     Returns
     -------
-    
-    pdobj: :class:`.GenericEyeData`
-        loaded dataset 
+    object
+        loaded object
     """
     if fname.startswith("http"):
         # try loading from URL
-        res=requests.get(fname)
-        if res.status_code==200:
-            pdobj=pickle.loads(res.content)
+        response = requests.get(fname, stream=True)
+        if response.status_code == 200:
+            total = int(response.headers.get('content-length', 0))
+            content = bytearray()
+            with tqdm(
+                desc=f"Downloading {fname}",
+                total=total,
+                unit='iB',
+                unit_scale=True,
+                unit_divisor=1024,
+            ) as bar:
+                for data in response.iter_content(chunk_size=1024):
+                    content.extend(data)
+                    bar.update(len(data))
+            obj = pickle.loads(content)
     else:
         with open(fname, 'rb') as f:
-            pdobj=pickle.load(f)
-    return pdobj
-
+            obj=pickle.load(f)
+    return obj

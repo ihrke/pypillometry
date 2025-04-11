@@ -77,6 +77,7 @@ class EyeData(GazeData,PupilData):
                     name: str = None,
                     fill_time_discontinuities: bool = True,
                     keep_orig: bool = False, 
+                    notes: str = None,
                     inplace: bool = False):
         """Constructor for the EyeData class.
         """
@@ -87,7 +88,8 @@ class EyeData(GazeData,PupilData):
         
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
-                          name, fill_time_discontinuities, inplace)
+                          name, fill_time_discontinuities, 
+                          notes, inplace)
         
         self._screen_size_set=False
         self._physical_screen_dims_set=False

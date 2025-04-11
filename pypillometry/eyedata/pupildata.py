@@ -72,6 +72,7 @@ class PupilData(GenericEyeData):
                  name: str = None,
                  fill_time_discontinuities: bool = True,
                  keep_orig: bool = False,
+                 notes: str = None,
                  inplace: bool = False):
         """Constructor for PupilData object.
         """
@@ -83,7 +84,7 @@ class PupilData(GenericEyeData):
 
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
-                          name, fill_time_discontinuities, inplace)
+                          name, fill_time_discontinuities, notes, inplace)
 
         # store original
         self.original=None
