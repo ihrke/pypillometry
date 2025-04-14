@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Sharing/Importing study data from OSF &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API documentation" href="../api.html" />
+    <link rel="prev" title="Example: Preprocessing of a full dataset with multiple subjects" href="../preproc_example_pavlov.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../api.html" title="API documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../preproc_example_pavlov.html" title="Example: Preprocessing of a full dataset with multiple subjects"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Sharing/Importing study data from OSF</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="sharing-importing-study-data-from-osf">
+<h1>Sharing/Importing study data from OSF<a class="headerlink" href="#sharing-importing-study-data-from-osf" title="Link to this heading">¶</a></h1>
+<p><cite>pypillometry</cite> provides functionality to share and import study data via the <a class="reference external" href="https://osf.io">Open Science Framework (OSF)</a>. The <code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_osf()</span></code> function allows you to easily download and load study data that has been shared on OSF.</p>
+<section id="sharing-your-study">
+<h2>Sharing Your Study<a class="headerlink" href="#sharing-your-study" title="Link to this heading">¶</a></h2>
+<p>To share your study on OSF:</p>
+<ol class="arabic simple">
+<li><p>Create a new project on OSF</p></li>
+<li><dl class="simple">
+<dt>Upload your study data files and configuration file (<code class="docutils literal notranslate"><span class="pre">pypillometry_conf.py</span></code>) to the project</dt><dd><ul class="simple">
+<li><p>see</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Note down your project’s OSF ID (found in the project URL)</p></li>
+</ol>
+<p>The configuration file (<code class="docutils literal notranslate"><span class="pre">pypillometry_conf.py</span></code>) should define:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">raw_data</span></code>: Dictionary mapping subject IDs to their data files</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">read_subject()</span></code> function that processes the raw data files</p></li>
+</ul>
+</section>
+<section id="loading-shared-data">
+<h2>Loading Shared Data<a class="headerlink" href="#loading-shared-data" title="Link to this heading">¶</a></h2>
+<p>To load a shared study, use <code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_osf()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_study_osf</span>
+
+<span class="c1"># Load all subjects</span>
+<span class="n">study_data</span> <span class="o">=</span> <span class="n">load_study_osf</span><span class="p">(</span>
+    <span class="n">osf_id</span><span class="o">=</span><span class="s2">&quot;your_project_id&quot;</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;local/cache/path&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Load specific subjects</span>
+<span class="n">study_data</span> <span class="o">=</span> <span class="n">load_study_osf</span><span class="p">(</span>
+    <span class="n">osf_id</span><span class="o">=</span><span class="s2">&quot;your_project_id&quot;</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;local/cache/path&quot;</span><span class="p">,</span>
+    <span class="n">subjects</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sub01&quot;</span><span class="p">,</span> <span class="s2">&quot;sub02&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">osf_id</span></code> (str): The OSF project ID</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">path</span></code> (str): Local path where files should be downloaded/stored</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">subjects</span></code> (list[str], optional): List of specific subject IDs to load</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">force_download</span></code> (bool, optional): Force re-download of files even if they exist locally</p></li>
+</ul>
+<p>The function will:</p>
+<ol class="arabic simple">
+<li><p>Download the project’s configuration file</p></li>
+<li><p>Download the required data files for each subject</p></li>
+<li><p>Process the data using the configuration’s <code class="docutils literal notranslate"><span class="pre">read_subject()</span></code> function</p></li>
+<li><p>Return a dictionary mapping subject IDs to their processed data</p></li>
+</ol>
+<p>Files are cached locally in the specified path to avoid repeated downloads.</p>
+</section>
+<section id="example-configuration-file">
+<h2>Example configuration file<a class="headerlink" href="#example-configuration-file" title="Link to this heading">¶</a></h2>
+<p>Here is an example configuration file (<code class="docutils literal notranslate"><span class="pre">pypillometry_conf.py</span></code>) that could be used to share a study:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="linenos">  2</span><span class="sd">Configuration file for the RLMW study.</span>
+<span class="linenos">  3</span><span class="sd">This file contains information about the raw data files and how to read them.</span>
+<span class="linenos">  4</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="linenos">  5</span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="linenos">  6</span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="linenos">  7</span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="linenos">  8</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos">  9</span>
+<span class="linenos"> 10</span>
+<span class="linenos"> 11</span><span class="c1"># Additional study metadata</span>
+<span class="linenos"> 12</span><span class="n">study_info</span> <span class="o">=</span> <span class="p">{</span>
+<span class="linenos"> 13</span>    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;RLMW Study&quot;</span><span class="p">,</span>
+<span class="linenos"> 14</span>    <span class="s2">&quot;osf_id&quot;</span><span class="p">:</span> <span class="s2">&quot;ca95r&quot;</span><span class="p">,</span>
+<span class="linenos"> 15</span>    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Reinforcement learning study with mind wandering probes&quot;</span><span class="p">,</span>
+<span class="linenos"> 16</span>    <span class="s2">&quot;author&quot;</span><span class="p">:</span> <span class="s2">&quot;Matthias Mittner&quot;</span><span class="p">,</span>
+<span class="linenos"> 17</span>    <span class="s2">&quot;doi&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="linenos"> 18</span>    <span class="s2">&quot;date&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-10&quot;</span><span class="p">,</span>
+<span class="linenos"> 19</span>    <span class="s2">&quot;sampling_rate&quot;</span><span class="p">:</span> <span class="mf">1000.0</span><span class="p">,</span>  <span class="c1"># Hz</span>
+<span class="linenos"> 20</span>    <span class="s2">&quot;time_unit&quot;</span><span class="p">:</span> <span class="s2">&quot;ms&quot;</span><span class="p">,</span>
+<span class="linenos"> 21</span>    <span class="s2">&quot;screen_eye_distance&quot;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span> <span class="c1"># cm (distance between screen and eye)</span>
+<span class="linenos"> 22</span>    <span class="s2">&quot;screen_resolution&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1280</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span>  <span class="c1"># pixels (width, height)</span>
+<span class="linenos"> 23</span>    <span class="s2">&quot;physical_screen_size&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="c1"># cm (width, height)</span>
+<span class="linenos"> 24</span><span class="p">}</span>
+<span class="linenos"> 25</span>
+<span class="linenos"> 26</span>
+<span class="linenos"> 27</span><span class="c1"># Dictionary of raw data files to be downloaded</span>
+<span class="linenos"> 28</span><span class="c1"># Keys are participant IDs, values are dictionaries containing paths to .asc files</span>
+<span class="linenos"> 29</span><span class="n">raw_data</span> <span class="o">=</span> <span class="p">{</span>
+<span class="linenos"> 30</span>    <span class="s2">&quot;001&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 31</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/001_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 32</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/001_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 33</span>    <span class="p">},</span>
+<span class="linenos"> 34</span>    <span class="s2">&quot;002&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 35</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/002_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 36</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/002_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 37</span>    <span class="p">},</span>
+<span class="linenos"> 38</span>    <span class="s2">&quot;003&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 39</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/003_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 40</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/003_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 41</span>    <span class="p">},</span>
+<span class="linenos"> 42</span>    <span class="s2">&quot;004&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 43</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/004_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 44</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/004_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 45</span>    <span class="p">},</span>
+<span class="linenos"> 46</span>    <span class="s2">&quot;005&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 47</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/005_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 48</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/005_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 49</span>    <span class="p">},</span>
+<span class="linenos"> 50</span>    <span class="s2">&quot;006&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 51</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/006_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 52</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/006_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 53</span>    <span class="p">},</span>
+<span class="linenos"> 54</span>    <span class="s2">&quot;007&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 55</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/007_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 56</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/007_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 57</span>    <span class="p">},</span>
+<span class="linenos"> 58</span>    <span class="s2">&quot;008&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 59</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/008_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 60</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/008_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 61</span>    <span class="p">},</span>
+<span class="linenos"> 62</span>    <span class="s2">&quot;009&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 63</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/009_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 64</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/009_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 65</span>    <span class="p">},</span>
+<span class="linenos"> 66</span>    <span class="s2">&quot;010&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 67</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/010_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 68</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/010_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 69</span>    <span class="p">},</span>
+<span class="linenos"> 70</span>    <span class="s2">&quot;011&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 71</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/011_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 72</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/011_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 73</span>    <span class="p">},</span>
+<span class="linenos"> 74</span>    <span class="s2">&quot;012&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 75</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/012_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 76</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/012_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 77</span>    <span class="p">},</span>
+<span class="linenos"> 78</span>    <span class="s2">&quot;013&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 79</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/013_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 80</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/013_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 81</span>    <span class="p">},</span>
+<span class="linenos"> 82</span>    <span class="s2">&quot;014&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 83</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/014_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 84</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/014_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 85</span>    <span class="p">},</span>
+<span class="linenos"> 86</span>    <span class="s2">&quot;015&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 87</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/015_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 88</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/015_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 89</span>    <span class="p">},</span>
+<span class="linenos"> 90</span>    <span class="s2">&quot;016&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 91</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/016_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 92</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/016_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 93</span>    <span class="p">},</span>
+<span class="linenos"> 94</span>    <span class="s2">&quot;017&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 95</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/017_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos"> 96</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/017_rlmw_samples.asc&quot;</span>
+<span class="linenos"> 97</span>    <span class="p">},</span>
+<span class="linenos"> 98</span>    <span class="s2">&quot;018&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 99</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/018_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">100</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/018_rlmw_samples.asc&quot;</span>
+<span class="linenos">101</span>    <span class="p">},</span>
+<span class="linenos">102</span>    <span class="s2">&quot;019&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">103</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/019_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">104</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/019_rlmw_samples.asc&quot;</span>
+<span class="linenos">105</span>    <span class="p">},</span>
+<span class="linenos">106</span>    <span class="s2">&quot;020&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">107</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/020_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">108</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/020_rlmw_samples.asc&quot;</span>
+<span class="linenos">109</span>    <span class="p">},</span>
+<span class="linenos">110</span>    <span class="s2">&quot;021&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">111</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/021_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">112</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/021_rlmw_samples.asc&quot;</span>
+<span class="linenos">113</span>    <span class="p">},</span>
+<span class="linenos">114</span>    <span class="s2">&quot;022&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">115</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/022_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">116</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/022_rlmw_samples.asc&quot;</span>
+<span class="linenos">117</span>    <span class="p">},</span>
+<span class="linenos">118</span>    <span class="s2">&quot;023&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">119</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/023_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">120</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/023_rlmw_samples.asc&quot;</span>
+<span class="linenos">121</span>    <span class="p">},</span>
+<span class="linenos">122</span>    <span class="s2">&quot;024&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">123</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/024_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">124</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/024_rlmw_samples.asc&quot;</span>
+<span class="linenos">125</span>    <span class="p">},</span>
+<span class="linenos">126</span>    <span class="s2">&quot;025&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">127</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/025_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">128</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/025_rlmw_samples.asc&quot;</span>
+<span class="linenos">129</span>    <span class="p">},</span>
+<span class="linenos">130</span>    <span class="s2">&quot;026&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">131</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/026_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">132</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/026_rlmw_samples.asc&quot;</span>
+<span class="linenos">133</span>    <span class="p">},</span>
+<span class="linenos">134</span>    <span class="s2">&quot;027&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">135</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/027_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">136</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/027_rlmw_samples.asc&quot;</span>
+<span class="linenos">137</span>    <span class="p">},</span>
+<span class="linenos">138</span>    <span class="s2">&quot;028&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">139</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/028_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">140</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/028_rlmw_samples.asc&quot;</span>
+<span class="linenos">141</span>    <span class="p">},</span>
+<span class="linenos">142</span>    <span class="s2">&quot;029&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">143</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/029_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">144</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/029_rlmw_samples.asc&quot;</span>
+<span class="linenos">145</span>    <span class="p">},</span>
+<span class="linenos">146</span>    <span class="s2">&quot;030&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">147</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/030_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">148</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/030_rlmw_samples.asc&quot;</span>
+<span class="linenos">149</span>    <span class="p">},</span>
+<span class="linenos">150</span>    <span class="s2">&quot;031&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">151</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/031_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">152</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/031_rlmw_samples.asc&quot;</span>
+<span class="linenos">153</span>    <span class="p">},</span>
+<span class="linenos">154</span>    <span class="s2">&quot;032&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">155</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/032_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">156</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/032_rlmw_samples.asc&quot;</span>
+<span class="linenos">157</span>    <span class="p">},</span>
+<span class="linenos">158</span>    <span class="s2">&quot;033&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">159</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/033_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">160</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/033_rlmw_samples.asc&quot;</span>
+<span class="linenos">161</span>    <span class="p">},</span>
+<span class="linenos">162</span>    <span class="s2">&quot;034&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">163</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/034_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">164</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/034_rlmw_samples.asc&quot;</span>
+<span class="linenos">165</span>    <span class="p">},</span>
+<span class="linenos">166</span>    <span class="s2">&quot;035&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">167</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/035_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">168</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/035_rlmw_samples.asc&quot;</span>
+<span class="linenos">169</span>    <span class="p">},</span>
+<span class="linenos">170</span>    <span class="s2">&quot;036&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">171</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/036_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">172</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/036_rlmw_samples.asc&quot;</span>
+<span class="linenos">173</span>    <span class="p">},</span>
+<span class="linenos">174</span>    <span class="s2">&quot;037&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">175</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/037_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">176</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/037_rlmw_samples.asc&quot;</span>
+<span class="linenos">177</span>    <span class="p">},</span>
+<span class="linenos">178</span>    <span class="s2">&quot;038&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">179</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/038_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">180</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/038_rlmw_samples.asc&quot;</span>
+<span class="linenos">181</span>    <span class="p">},</span>
+<span class="linenos">182</span>    <span class="s2">&quot;039&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">183</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/039_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">184</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/039_rlmw_samples.asc&quot;</span>
+<span class="linenos">185</span>    <span class="p">},</span>
+<span class="linenos">186</span>    <span class="s2">&quot;040&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">187</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/040_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">188</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/040_rlmw_samples.asc&quot;</span>
+<span class="linenos">189</span>    <span class="p">},</span>
+<span class="linenos">190</span>    <span class="s2">&quot;041&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">191</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/041_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">192</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/041_rlmw_samples.asc&quot;</span>
+<span class="linenos">193</span>    <span class="p">},</span>
+<span class="linenos">194</span>    <span class="s2">&quot;042&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">195</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/042_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">196</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/042_rlmw_samples.asc&quot;</span>
+<span class="linenos">197</span>    <span class="p">},</span>
+<span class="linenos">198</span>    <span class="s2">&quot;043&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">199</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/043_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">200</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/043_rlmw_samples.asc&quot;</span>
+<span class="linenos">201</span>    <span class="p">},</span>
+<span class="linenos">202</span>    <span class="s2">&quot;044&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">203</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/044_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">204</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/044_rlmw_samples.asc&quot;</span>
+<span class="linenos">205</span>    <span class="p">},</span>
+<span class="linenos">206</span>    <span class="s2">&quot;045&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">207</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/045_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">208</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/045_rlmw_samples.asc&quot;</span>
+<span class="linenos">209</span>    <span class="p">},</span>
+<span class="linenos">210</span>    <span class="s2">&quot;046&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">211</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/046_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">212</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/046_rlmw_samples.asc&quot;</span>
+<span class="linenos">213</span>    <span class="p">},</span>
+<span class="linenos">214</span>    <span class="s2">&quot;047&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">215</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/047_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">216</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/047_rlmw_samples.asc&quot;</span>
+<span class="linenos">217</span>    <span class="p">},</span>
+<span class="linenos">218</span>    <span class="s2">&quot;048&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">219</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/048_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">220</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/048_rlmw_samples.asc&quot;</span>
+<span class="linenos">221</span>    <span class="p">},</span>
+<span class="linenos">222</span>    <span class="s2">&quot;049&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">223</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/049_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">224</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/049_rlmw_samples.asc&quot;</span>
+<span class="linenos">225</span>    <span class="p">},</span>
+<span class="linenos">226</span>    <span class="s2">&quot;050&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">227</span>        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/050_rlmw_events.asc&quot;</span><span class="p">,</span>
+<span class="linenos">228</span>        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/050_rlmw_samples.asc&quot;</span>
+<span class="linenos">229</span>    <span class="p">}</span>
+<span class="linenos">230</span><span class="p">}</span>
+<span class="linenos">231</span>
+<span class="linenos">232</span>
+<span class="linenos">233</span><span class="c1"># write down notes about each subject when going through the preprocs</span>
+<span class="linenos">234</span><span class="n">notes</span><span class="o">=</span><span class="p">{</span>
+<span class="linenos">235</span>    <span class="s2">&quot;001&quot;</span><span class="p">:</span><span class="s2">&quot;good&quot;</span><span class="p">,</span>
+<span class="linenos">236</span>    <span class="s2">&quot;002&quot;</span><span class="p">:</span><span class="s2">&quot;good but many blinks&quot;</span><span class="p">,</span>
+<span class="linenos">237</span>    <span class="s2">&quot;003&quot;</span><span class="p">:</span><span class="s2">&quot;ok, but some segments with many blinks (min 8, 12, ...)&quot;</span><span class="p">,</span>
+<span class="linenos">238</span>    <span class="s2">&quot;004&quot;</span><span class="p">:</span><span class="s2">&quot;ok, beginning is crap, many &#39;double blinks&#39;, a few &#39;dip blinks&#39; which don&#39;t go all the way to zero but filter is ok&quot;</span><span class="p">,</span>
+<span class="linenos">239</span>    <span class="s2">&quot;005&quot;</span><span class="p">:</span><span class="s2">&quot;ok, some pretty long blinks and some dips but recovery mostly ok&quot;</span><span class="p">,</span>
+<span class="linenos">240</span>    <span class="s2">&quot;006&quot;</span><span class="p">:</span><span class="s2">&quot;ok, near ideal in the beginning, more blinks later&quot;</span><span class="p">,</span>
+<span class="linenos">241</span>    <span class="s2">&quot;007&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">242</span>    <span class="s2">&quot;008&quot;</span><span class="p">:</span><span class="s2">&quot;ok but problems around 8.7-14 mins&quot;</span><span class="p">,</span>
+<span class="linenos">243</span>    <span class="s2">&quot;009&quot;</span><span class="p">:</span><span class="s2">&quot;ok, many multi-blinks but good recovery&quot;</span><span class="p">,</span>
+<span class="linenos">244</span>    <span class="s2">&quot;010&quot;</span><span class="p">:</span><span class="s2">&quot;ok, very slow opening of eye, difficult to correct - used rather large margin&quot;</span><span class="p">,</span>
+<span class="linenos">245</span>    <span class="s2">&quot;011&quot;</span><span class="p">:</span><span class="s2">&quot;very nice and regular blinking&quot;</span><span class="p">,</span>
+<span class="linenos">246</span>    <span class="s2">&quot;012&quot;</span><span class="p">:</span><span class="s2">&quot;ok, there are some weird &#39;spikes&#39; upwards in the data, saccades? filter seems ok&quot;</span><span class="p">,</span>
+<span class="linenos">247</span>    <span class="s2">&quot;013&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">248</span>    <span class="s2">&quot;014&quot;</span><span class="p">:</span><span class="s2">&quot;nice and regular&quot;</span><span class="p">,</span>
+<span class="linenos">249</span>    <span class="s2">&quot;015&quot;</span><span class="p">:</span><span class="s2">&quot;ok but not great, especially later parts&quot;</span><span class="p">,</span>
+<span class="linenos">250</span>    <span class="s2">&quot;016&quot;</span><span class="p">:</span><span class="s2">&quot;ok but not great&quot;</span><span class="p">,</span>
+<span class="linenos">251</span>    <span class="s2">&quot;017&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">252</span>    <span class="s2">&quot;018&quot;</span><span class="p">:</span><span class="s2">&quot;consider exclusion, another one with slow opening of eye, used large margin, lots of missings&quot;</span><span class="p">,</span>
+<span class="linenos">253</span>    <span class="s2">&quot;019&quot;</span><span class="p">:</span><span class="s2">&quot;amazing, almost no blinks. Some spikes but filtered out ok&quot;</span><span class="p">,</span>
+<span class="linenos">254</span>    <span class="s2">&quot;020&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">255</span>    <span class="s2">&quot;021&quot;</span><span class="p">:</span><span class="s2">&quot;ok, somewhat more messy during second half&quot;</span><span class="p">,</span>
+<span class="linenos">256</span>    <span class="s2">&quot;022&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">257</span>    <span class="s2">&quot;023&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">258</span>    <span class="s2">&quot;024&quot;</span><span class="p">:</span><span class="s2">&quot;ok but not great, some double-blinks&quot;</span><span class="p">,</span>   
+<span class="linenos">259</span>    <span class="s2">&quot;025&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">260</span>    <span class="s2">&quot;026&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">261</span>    <span class="s2">&quot;027&quot;</span><span class="p">:</span><span class="s2">&quot;ok but data quality in last part is getting worse&quot;</span><span class="p">,</span>
+<span class="linenos">262</span>    <span class="s2">&quot;028&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">263</span>    <span class="s2">&quot;029&quot;</span><span class="p">:</span><span class="s2">&quot;consider exclusion, pretty bad&quot;</span><span class="p">,</span>
+<span class="linenos">264</span>    <span class="s2">&quot;030&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">265</span>    <span class="s2">&quot;031&quot;</span><span class="p">:</span><span class="s2">&quot;ok but not great&quot;</span><span class="p">,</span>
+<span class="linenos">266</span>    <span class="s2">&quot;032&quot;</span><span class="p">:</span><span class="s2">&quot;consider exclusion, but not super bad&quot;</span><span class="p">,</span>
+<span class="linenos">267</span>    <span class="s2">&quot;033&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">268</span>    <span class="s2">&quot;034&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">269</span>    <span class="s2">&quot;035&quot;</span><span class="p">:</span><span class="s2">&quot;ok but not great&quot;</span><span class="p">,</span>
+<span class="linenos">270</span>    <span class="s2">&quot;036&quot;</span><span class="p">:</span><span class="s2">&quot;ok; very many but very short blinks... signal looks ok, though&quot;</span><span class="p">,</span>
+<span class="linenos">271</span>    <span class="s2">&quot;037&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">272</span>    <span class="s2">&quot;038&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">273</span>    <span class="s2">&quot;039&quot;</span><span class="p">:</span><span class="s2">&quot;exclude: ok quality but saccades are super prominent in this subject&quot;</span><span class="p">,</span>
+<span class="linenos">274</span>    <span class="s2">&quot;040&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">275</span>    <span class="s2">&quot;041&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">276</span>    <span class="s2">&quot;042&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span> 
+<span class="linenos">277</span>    <span class="s2">&quot;043&quot;</span><span class="p">:</span><span class="s2">&quot;ok, many blinks but ok recovery&quot;</span><span class="p">,</span>
+<span class="linenos">278</span>    <span class="s2">&quot;044&quot;</span><span class="p">:</span><span class="s2">&quot;exclude: not great qual and saccades are prominent&quot;</span><span class="p">,</span>
+<span class="linenos">279</span>    <span class="s2">&quot;045&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<span class="linenos">280</span>    <span class="s2">&quot;046&quot;</span><span class="p">:</span><span class="s2">&quot;ok; qual not great but preproc seems to deal with it&quot;</span><span class="p">,</span>
+<span class="linenos">281</span>    <span class="s2">&quot;047&quot;</span><span class="p">:</span><span class="s2">&quot;exclude: getting a lot worse at the end&quot;</span><span class="p">,</span>
+<span class="linenos">282</span>    <span class="s2">&quot;048&quot;</span><span class="p">:</span><span class="s2">&quot;ok, slow opening of eye, used large margin, but signal looks ok&quot;</span><span class="p">,</span>
+<span class="linenos">283</span>    <span class="s2">&quot;049&quot;</span><span class="p">:</span><span class="s2">&quot;exclude: huge saccades&quot;</span><span class="p">,</span>
+<span class="linenos">284</span>    <span class="s2">&quot;050&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span>
+<span class="linenos">285</span><span class="p">}</span>
+<span class="linenos">286</span><span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;018&quot;</span><span class="p">,</span> <span class="s2">&quot;029&quot;</span><span class="p">,</span> <span class="s2">&quot;032&quot;</span><span class="p">,</span> <span class="s2">&quot;039&quot;</span><span class="p">,</span> <span class="s2">&quot;044&quot;</span><span class="p">,</span> <span class="s2">&quot;047&quot;</span><span class="p">,</span> <span class="s2">&quot;049&quot;</span><span class="p">]</span>
+<span class="linenos">287</span>
+<span class="linenos">288</span><span class="c1"># Function to use for reading the data files</span>
+<span class="linenos">289</span><span class="c1"># This should be a string that can be evaluated to get the actual function</span>
+<span class="linenos">290</span><span class="k">def</span><span class="w"> </span><span class="nf">read_subject</span><span class="p">(</span><span class="n">info</span><span class="p">):</span>
+<span class="linenos">291</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="linenos">292</span><span class="sd">    Read the data for a single subject. Input is each element of `raw_data`.</span>
+<span class="linenos">293</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos">294</span>    <span class="c1">## loading the raw samples from the asc file</span>
+<span class="linenos">295</span>    <span class="n">fname_samples</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;samples&quot;</span><span class="p">])</span>
+<span class="linenos">296</span>    <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="linenos">297</span>                    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="s2">&quot;left_p&quot;</span><span class="p">,</span>
+<span class="linenos">298</span>                            <span class="s2">&quot;right_x&quot;</span><span class="p">,</span> <span class="s2">&quot;right_y&quot;</span><span class="p">,</span> <span class="s2">&quot;right_p&quot;</span><span class="p">])</span>
+<span class="linenos">299</span>
+<span class="linenos">300</span>    <span class="c1">## Eyelink tracker puts &quot;   .&quot; when no data is available for x/y coordinates</span>
+<span class="linenos">301</span>    <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
+<span class="linenos">302</span>    <span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="linenos">303</span>    <span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="linenos">304</span>
+<span class="linenos">305</span>    <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="o">.</span><span class="n">values</span>
+<span class="linenos">306</span>    <span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="linenos">307</span>    <span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="linenos">308</span>
+<span class="linenos">309</span>    <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="o">.</span><span class="n">values</span>
+<span class="linenos">310</span>    <span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="linenos">311</span>    <span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="linenos">312</span>
+<span class="linenos">313</span>    <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="o">.</span><span class="n">values</span>
+<span class="linenos">314</span>    <span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="linenos">315</span>    <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="linenos">316</span>
+<span class="linenos">317</span>    <span class="c1">## Loading the events from the events file</span>
+<span class="linenos">318</span>    <span class="n">fname_events</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;events&quot;</span><span class="p">])</span>
+<span class="linenos">319</span>    <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
+<span class="linenos">320</span>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="linenos">321</span>        <span class="n">events</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+<span class="linenos">322</span>
+<span class="linenos">323</span>    <span class="c1"># keep only lines starting with &quot;MSG&quot;</span>
+<span class="linenos">324</span>    <span class="n">events</span><span class="o">=</span><span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MSG&quot;</span><span class="p">)]</span>
+<span class="linenos">325</span>    <span class="n">experiment_start_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">&quot;experiment_start&quot;</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos">326</span>    <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">[</span><span class="n">experiment_start_index</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+<span class="linenos">327</span>    <span class="n">df_ev</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
+<span class="linenos">328</span>    <span class="n">df_ev</span><span class="o">=</span><span class="n">df_ev</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
+<span class="linenos">329</span>    <span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;event&quot;</span><span class="p">]</span>
+<span class="linenos">330</span>
+<span class="linenos">331</span>    <span class="c1"># Creating EyeData object that contains both X-Y coordinates</span>
+<span class="linenos">332</span>    <span class="c1"># and pupil data</span>
+<span class="linenos">333</span>    <span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;subject&quot;</span><span class="p">],</span>
+<span class="linenos">334</span>                <span class="n">screen_resolution</span><span class="o">=</span><span class="n">study_info</span><span class="p">[</span><span class="s2">&quot;screen_resolution&quot;</span><span class="p">],</span> 
+<span class="linenos">335</span>                <span class="n">physical_screen_size</span><span class="o">=</span><span class="n">study_info</span><span class="p">[</span><span class="s2">&quot;physical_screen_size&quot;</span><span class="p">],</span>
+<span class="linenos">336</span>                <span class="n">screen_eye_distance</span><span class="o">=</span><span class="n">study_info</span><span class="p">[</span><span class="s2">&quot;screen_eye_distance&quot;</span><span class="p">],</span>
+<span class="linenos">337</span>                <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span>
+<span class="linenos">338</span>                <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span>
+<span class="linenos">339</span>                <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">notes</span><span class="o">=</span><span class="n">notes</span><span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;subject&quot;</span><span class="p">]],</span>
+<span class="linenos">340</span>                <span class="n">keep_orig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
+<span class="linenos">341</span>                <span class="o">.</span><span class="n">reset_time</span><span class="p">()</span>
+<span class="linenos">342</span>    <span class="n">d</span><span class="o">.</span><span class="n">set_experiment_info</span><span class="p">(</span><span class="n">screen_eye_distance</span><span class="o">=</span><span class="n">study_info</span><span class="p">[</span><span class="s2">&quot;screen_eye_distance&quot;</span><span class="p">],</span> 
+<span class="linenos">343</span>                        <span class="n">screen_resolution</span><span class="o">=</span><span class="n">study_info</span><span class="p">[</span><span class="s2">&quot;screen_resolution&quot;</span><span class="p">],</span> 
+<span class="linenos">344</span>                        <span class="n">physical_screen_size</span><span class="o">=</span><span class="n">study_info</span><span class="p">[</span><span class="s2">&quot;physical_screen_size&quot;</span><span class="p">])</span>
+<span class="linenos">345</span>    <span class="k">return</span> <span class="n">d</span>    
+</pre></div>
+</div>
+<p>This configuration file is a real study that was shared on OSF and you can download the corresponding data using the following code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_study_osf</span>
+<span class="n">study_data</span> <span class="o">=</span> <span class="n">load_study_osf</span><span class="p">(</span><span class="s2">&quot;ca95r&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;./data&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The data will be downloaded and cached in the <code class="docutils literal notranslate"><span class="pre">./data</span></code> directory and <cite>study_data</cite> will be a dictionary mapping subject IDs to their data.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Sharing/Importing study data from OSF</a><ul>
+<li><a class="reference internal" href="#sharing-your-study">Sharing Your Study</a></li>
+<li><a class="reference internal" href="#loading-shared-data">Loading Shared Data</a></li>
+<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#example-configuration-file">Example configuration file</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../preproc_example_pavlov.html"
+                          title="previous chapter">Example: Preprocessing of a full dataset with multiple subjects</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../api.html"
+                          title="next chapter">API documentation</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/examples/share_study.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../api.html" title="API documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../preproc_example_pavlov.html" title="Example: Preprocessing of a full dataset with multiple subjects"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Sharing/Importing study data from OSF</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

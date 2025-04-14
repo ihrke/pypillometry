@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.eyedata.pupildata &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/nature.css?v=279e0f84" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pypillometry.html" accesskey="U">pypillometry</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.eyedata.pupildata</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pypillometry.eyedata.pupildata</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">pupildata.py</span>
+<span class="sd">============</span>
+
+<span class="sd">Class representing pupillometric data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..erpd</span><span class="w"> </span><span class="kn">import</span> <span class="n">ERPD</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericEyeData</span><span class="p">,</span> <span class="n">keephistory</span>
+<span class="c1">#from .. import convenience</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">baseline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">preproc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">pupil</span>
+<span class="c1">#from .. import io</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilPlotter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntervalStats</span><span class="p">,</span> <span class="n">get_interval_stats</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">interpolate</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
+
+<div class="viewcode-block" id="PupilData">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PupilData</span><span class="p">(</span><span class="n">GenericEyeData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing pupillometric data. </span>
+
+<span class="sd">    The class is a subclass of :class:`.GenericEyedata` and inherits all its methods.</span>
+
+<span class="sd">    If eye-tracking data is available in addition to pupillometry, use the :class:`.EyeData` class.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    time: </span>
+<span class="sd">        timing array or `None`, in which case the time-array goes from [0,maxT]</span>
+<span class="sd">        using `sampling_rate` (in ms)</span>
+<span class="sd">    left_pupil:</span>
+<span class="sd">        data from left eye (at least one of the eyes must be provided)</span>
+<span class="sd">    right_pupil:</span>
+<span class="sd">        data from right eye (at least one of the eyes must be provided)</span>
+<span class="sd">    sampling_rate: float</span>
+<span class="sd">        sampling-rate of the signal in Hz; if None, </span>
+<span class="sd">    name: </span>
+<span class="sd">        name of the dataset or `None` (in which case a random string is selected)</span>
+<span class="sd">    event_onsets: </span>
+<span class="sd">        time-onsets of any events in the data (in ms, matched in `time` vector)</span>
+<span class="sd">    event_labels:</span>
+<span class="sd">        for each event in `event_onsets`, provide a label</span>
+<span class="sd">    keep_orig: bool</span>
+<span class="sd">        keep a copy of the original dataset? If `True`, a copy of the object</span>
+<span class="sd">        as initiated in the constructor is stored in member `original`</span>
+<span class="sd">    fill_time_discontinuities: bool</span>
+<span class="sd">        sometimes, when the eyetracker loses signal, no entry in the EDF is made; </span>
+<span class="sd">        when this option is True, such entries will be made and the signal set to 0 there</span>
+<span class="sd">        (or do it later using `fill_time_discontinuities()`)</span>
+<span class="sd">    inplace: bool</span>
+<span class="sd">        if True, the object is modified in place; if False, a new object is returned</span>
+<span class="sd">        this object-level property can be overwritten by the method-level `inplace` argument</span>
+<span class="sd">        default is &quot;False&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">left_pupil</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">right_pupil</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">event_onsets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">event_labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                 <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for PupilData object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating PupilData object&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">left_pupil</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">right_pupil</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one of the eyes, left_pupil or right_pupil, must be provided&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">=</span><span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_pupil</span><span class="o">=</span><span class="n">left_pupil</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_pupil</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_common</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> 
+                          <span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="p">,</span> 
+                          <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> <span class="n">notes</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span>
+
+        <span class="c1"># store original</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">if</span> <span class="n">keep_orig</span><span class="p">:</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">original</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">PupilPlotter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PupilData.summary">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a summary of the dataset as a dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            dictionary containing description of dataset</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">summary</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
+            <span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+            <span class="n">eyes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eyes</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+            <span class="n">nevents</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nevents</span><span class="p">(),</span> 
+            <span class="n">nblinks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nblinks</span><span class="p">(),</span> 
+            <span class="n">blinks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">blink_stats</span><span class="p">(),</span>
+            <span class="n">duration_minutes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">),</span>
+            <span class="n">start_min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="p">,</span>
+            <span class="n">end_min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_strfy_params</span><span class="p">(),</span>
+            <span class="n">glimpse</span><span class="o">=</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">summary</span>            </div>
+
+
+<div class="viewcode-block" id="PupilData.pupil_lowpass_filter">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_lowpass_filter">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_lowpass_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lowpass-filter pupil signal using a Butterworth-filter, </span>
+<span class="sd">        see :func:`baseline.butter_lowpass_filter()`.</span>
+<span class="sd">    </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        cutoff: float</span>
+<span class="sd">            lowpass-filter cutoff</span>
+<span class="sd">        order: int</span>
+<span class="sd">            filter order</span>
+<span class="sd">        eyes: list</span>
+<span class="sd">            list of eyes to filter; if empty, all available eyes are filtered</span>
+<span class="sd">        inplace: bool</span>
+<span class="sd">            if `True`, make change in-place and return the object</span>
+<span class="sd">            if `False`, make and return copy before making changes           </span>
+<span class="sd">            if `None`, use the object-level setting         </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
+
+        <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">baseline</span><span class="o">.</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="PupilData.pupil_smooth_window">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_smooth_window">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_smooth_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">window</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;hanning&quot;</span><span class="p">,</span> <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply smoothing of the signal using a moving window. See :func:`baseline.smooth_window()`.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes: list</span>
+<span class="sd">            list of eyes to smooth; if empty, all available eyes are smoothed</span>
+<span class="sd">        window: str</span>
+<span class="sd">            (the type of window from &#39;flat&#39;, &#39;hanning&#39;, &#39;hamming&#39;, &#39;bartlett&#39;, &#39;blackman&#39;); </span>
+<span class="sd">             flat window will produce a moving average smoothing.</span>
+<span class="sd">        winsize: float</span>
+<span class="sd">            the length of the window in ms </span>
+<span class="sd">        inplace: bool</span>
+<span class="sd">            if `True`, make change in-place and return the object</span>
+<span class="sd">            if `False`, make and return copy before making changes                            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
+
+        <span class="c1"># convert winsize to index based on sampling rate</span>
+        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">winsize</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span> 
+
+        <span class="c1"># process requested eyes</span>
+        <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">smooth_window</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">window</span> <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+
+
+<div class="viewcode-block" id="PupilData.pupil_blinks_detect">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_blinks_detect">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_blinks_detect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">min_duration</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                      <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> 
+                      <span class="n">min_onset_len</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                      <span class="n">strategies</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span><span class="s2">&quot;velocity&quot;</span><span class="p">],</span>
+                      <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Detect blinks in the pupillary signal using several strategies.</span>
+<span class="sd">        First, blinks are detected as consecutive sequence of `blink_val` </span>
+<span class="sd">        (f.eks., 0 or NaN). Second, blinks are defined as everything between</span>
+<span class="sd">        two crossings of the velocity profile (from negative to positive).</span>
+<span class="sd">        </span>
+<span class="sd">        Detected blinks are put into member `blinks` (matrix 2 x nblinks where start and end</span>
+<span class="sd">        are stored as indexes) and member `blink_mask` which codes for each sampling point</span>
+<span class="sd">        whether there is a blink (1) or not (0).</span>
+
+<span class="sd">        Finally, detected blinks have to be at least `min_duration` duration (in `units`).</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes: list</span>
+<span class="sd">            list of eyes to process; if empty, all available eyes are processed</span>
+<span class="sd">        min_duration: float</span>
+<span class="sd">            minimum duration for a sequence of missing numbers to be treated as blink</span>
+<span class="sd">        blink_val: float</span>
+<span class="sd">            &quot;missing value&quot; code</span>
+<span class="sd">        winsize:</span>
+<span class="sd">            window-size for smoothing for velocity profile (in units)</span>
+<span class="sd">        vel_onset:</span>
+<span class="sd">            negative velocity that needs to be crossed; arbitrary units that depend on</span>
+<span class="sd">            sampling rate etc</span>
+<span class="sd">        vel_offset:</span>
+<span class="sd">            positive velocity that needs to be exceeded; arbitrary units that depend on</span>
+<span class="sd">            sampling rate etc</span>
+<span class="sd">        min_onset_len: int</span>
+<span class="sd">            minimum number of consecutive samples that crossed threshold in the velocity</span>
+<span class="sd">            profile to detect as onset (to avoid noise-induced changes)</span>
+<span class="sd">        min_offset_len: int</span>
+<span class="sd">            minimum number of consecutive samples that crossed threshold in the velocity</span>
+<span class="sd">            profile to detect as offset (to avoid noise-induced changes)            </span>
+<span class="sd">        strategies: list of strategies to use</span>
+<span class="sd">            so far, use a list containing any combination of &quot;zero&quot; and &quot;velocity&quot;</span>
+<span class="sd">        units: str</span>
+<span class="sd">            one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;</span>
+<span class="sd">        inplace: bool</span>
+<span class="sd">            if `True`, make change in-place and return the object</span>
+<span class="sd">            if `False`, make and return copy before making changes                                                    </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
+
+        <span class="n">fac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+        <span class="n">winsize_ms</span><span class="o">=</span><span class="n">winsize</span><span class="o">*</span><span class="n">fac</span>
+        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">winsize_ms</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">winsize_ix</span> <span class="o">%</span> <span class="mi">2</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">winsize</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">min_duration_ms</span><span class="o">=</span><span class="n">min_duration</span><span class="o">*</span><span class="n">fac</span>
+        <span class="n">min_duration_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">min_duration_ms</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>        
+
+        
+        <span class="c1"># check for unknown strategies</span>
+        <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">strat</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Strategy &#39;</span><span class="si">%s</span><span class="s2">&#39; unknown&quot;</span><span class="o">%</span><span class="n">strat</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+            <span class="c1">## detect blinks with the different strategies</span>
+            <span class="k">if</span> <span class="s2">&quot;velocity&quot;</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
+                <span class="n">blinks_vel</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_velocity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="n">blinks_vel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+                
+            <span class="k">if</span> <span class="s2">&quot;zero&quot;</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
+                <span class="n">blinks_zero</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_zero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">blinks_zero</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+            <span class="c1">## merge the two blinks</span>
+            <span class="n">blinks</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">helper_merge_blinks</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">,</span> <span class="n">blinks_zero</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">set_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">]</span> <span class="k">for</span> <span class="p">(</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="n">blinks</span> <span class="k">if</span> <span class="n">off</span><span class="o">-</span><span class="n">on</span><span class="o">&gt;=</span><span class="n">min_duration_ix</span><span class="p">]))</span>
+            
+        <span class="k">return</span> <span class="n">obj</span>    </div>
+
+    
+<div class="viewcode-block" id="PupilData.pupil_blinks_interpolate">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_blinks_interpolate">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_blinks_interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">list</span><span class="o">=</span><span class="p">[],</span>
+                                 <span class="n">store_as</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span> 
+                                 <span class="n">method</span><span class="o">=</span><span class="s2">&quot;mahot&quot;</span><span class="p">,</span> <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> 
+                                 <span class="n">vel_onset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> 
+                                 <span class="n">margin</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> 
+                                 <span class="n">blinkwindow</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+                                 <span class="n">interp_type</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span>
+                                 <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolating blinks in the pupillary signal.</span>
+
+<span class="sd">        Implements the blink-interpolation method by Mahot (2013).</span>
+<span class="sd">        </span>
+<span class="sd">        Mahot, 2013:</span>
+<span class="sd">        https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.</span>
+
+<span class="sd">        This procedure relies heavily on eye-balling (reconstructing visually convincing signal),</span>
+<span class="sd">        so a &quot;plot&quot; option is provided that will plot many diagnostics (see paper linked above) that</span>
+<span class="sd">        can help to set good parameter values for `winsize`, `vel_onset`, `vel_offset` and `margin`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes: str or list</span>
+<span class="sd">            str or list of eyes to process; if empty, all available eyes are processed</span>
+<span class="sd">        store_as: str</span>
+<span class="sd">            how to store the interpolated data; either &quot;pupil&quot; (default) which replaces</span>
+<span class="sd">            the original pupil data or a string that will be used as the new variable</span>
+<span class="sd">            name in the data (e.g., &quot;pupilinterp&quot;)</span>
+<span class="sd">        method: str</span>
+<span class="sd">            method to use; so far, only &quot;mahot&quot; is implemented</span>
+<span class="sd">        winsize: float</span>
+<span class="sd">            size of the Hanning-window in ms</span>
+<span class="sd">        vel_onset: float</span>
+<span class="sd">            velocity-threshold to detect the onset of the blink</span>
+<span class="sd">        vel_offset: float</span>
+<span class="sd">            velocity-threshold to detect the offset of the blink</span>
+<span class="sd">        margin: Tuple[float,float]</span>
+<span class="sd">            margin that is subtracted/added to onset and offset (in ms)</span>
+<span class="sd">        blinkwindow: float</span>
+<span class="sd">            how much time before and after each blink to include (in ms)</span>
+<span class="sd">        interp_type: str</span>
+<span class="sd">            type of interpolation accepted by :func:`scipy.interpolate.interp1d()`</span>
+<span class="sd">        inplace: bool</span>
+<span class="sd">            if `True`, make change in-place and return the object</span>
+<span class="sd">            if `False`, make and return copy before making changes              </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store_as</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;store_as must be a string&quot;</span><span class="p">)</span>
+
+        <span class="c1"># parameters in sampling units (from ms)</span>
+        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">winsize</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span> 
+        <span class="n">margin_ix</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">m</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">margin</span><span class="p">)</span>
+        <span class="n">blinkwindow_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">blinkwindow</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">winsize_ix</span> <span class="o">%</span> <span class="mi">2</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span> <span class="c1">## ensure smoothing window is odd</span>
+            <span class="n">winsize_ix</span><span class="o">+=</span><span class="mi">1</span> 
+
+        <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+            <span class="n">syr</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1">## interpolated signal</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_pupil&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1"># copy of mask</span>
+            <span class="n">bls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">)</span>
+            <span class="n">blink_onsets</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">blink_onsets_mahot</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">bls</span><span class="p">,</span> 
+                                                    <span class="n">winsize_ix</span><span class="p">,</span> 
+                                                    <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span>
+                                                    <span class="n">margin_ix</span><span class="p">,</span> <span class="n">blinkwindow_ix</span><span class="p">)</span>
+          
+            <span class="c1"># loop through blinks</span>
+            <span class="k">for</span> <span class="n">ix</span><span class="p">,(</span><span class="n">onset</span><span class="p">,</span><span class="n">offset</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">blink_onsets</span><span class="p">):</span>                
+                <span class="c1"># calc the 4 time points</span>
+                <span class="n">t2</span><span class="p">,</span><span class="n">t3</span><span class="o">=</span><span class="n">onset</span><span class="p">,</span><span class="n">offset</span>
+                <span class="n">t1</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">t2</span><span class="o">-</span><span class="n">t3</span><span class="o">+</span><span class="n">t2</span><span class="p">)</span>
+                <span class="n">t4</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">t3</span><span class="o">-</span><span class="n">t2</span><span class="o">+</span><span class="n">t3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">t1</span><span class="o">==</span><span class="n">t2</span><span class="p">:</span>
+                    <span class="n">t2</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="k">if</span> <span class="n">t3</span><span class="o">==</span><span class="n">t4</span><span class="p">:</span>
+                    <span class="n">t3</span><span class="o">-=</span><span class="mi">1</span>
+                
+                <span class="n">txpts</span><span class="o">=</span><span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">pt</span><span class="p">]</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="p">[</span><span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">,</span><span class="n">t3</span><span class="p">,</span><span class="n">t4</span><span class="p">]]</span>
+                <span class="n">sypts</span><span class="o">=</span><span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">][</span><span class="n">pt</span><span class="p">]</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="p">[</span><span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">,</span><span class="n">t3</span><span class="p">,</span><span class="n">t4</span><span class="p">]]</span>
+                <span class="n">intfct</span><span class="o">=</span><span class="n">interp1d</span><span class="p">(</span><span class="n">txpts</span><span class="p">,</span><span class="n">sypts</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">interp_type</span><span class="p">)</span>
+                <span class="n">islic</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">)</span>
+                <span class="n">syr</span><span class="p">[</span><span class="n">islic</span><span class="p">]</span><span class="o">=</span><span class="n">intfct</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">islic</span><span class="p">])</span>
+
+                <span class="c1"># store interpolated data</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">store_as</span><span class="p">]</span><span class="o">=</span><span class="n">syr</span>
+                <span class="c1"># record the interpolated datapoints</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">store_as</span><span class="p">]</span><span class="o">=</span><span class="n">mask</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">store_as</span><span class="p">][</span><span class="n">islic</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>                
+
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+            
+
+
+<div class="viewcode-block" id="PupilData.pupil_estimate_baseline">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_estimate_baseline">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_estimate_baseline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span>
+                                <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;envelope_iter_bspline_2&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply one of the baseline-estimation methods.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        </span>
+<span class="sd">        eyes: list or str</span>
+<span class="sd">            str or list of eyes to process; if empty, all available eyes are processed</span>
+<span class="sd">        variable: str</span>
+<span class="sd">            default is to use the &quot;pupil&quot; but it could be used to process, e.g., </span>
+<span class="sd">            interpolated pupil data stored in a different variables, e.g., &quot;pupilinterp&quot;</span>
+<span class="sd">        method: </span>
+<span class="sd">            &quot;envelope_iter_bspline_1&quot;: :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` </span>
+<span class="sd">                                        with one iteration</span>
+<span class="sd">            &quot;envelope_iter_bspline_2&quot;: :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` </span>
+<span class="sd">                                        with two iterations</span>
+<span class="sd">        inplace: bool</span>
+<span class="sd">            if `True`, make change in-place and return the object</span>
+<span class="sd">            if `False`, make and return copy before making changes                                        </span>
+<span class="sd">            </span>
+<span class="sd">        kwargs:</span>
+<span class="sd">            named arguments passed to the low-level function in :py:mod:`pypillometry.baseline`.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PupilData</span>
+<span class="sd">            object with baseline estimated (stored in data[&quot;eye_baseline&quot;])        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;variable must be a string; using default &#39;pupil&#39;&quot;</span><span class="p">)</span>
+            <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span>
+
+        <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Estimating baseline for eye </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">eye</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">method</span><span class="o">==</span><span class="s2">&quot;envelope_iter_bspline_2&quot;</span><span class="p">:</span>
+                <span class="n">txd</span><span class="p">,</span><span class="n">syd</span><span class="p">,</span><span class="n">base2</span><span class="p">,</span><span class="n">base1</span><span class="o">=</span><span class="n">baseline</span><span class="o">.</span><span class="n">baseline_envelope_iter_bspline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">variable</span><span class="p">],</span>
+                                                                            <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">=</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">base2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;baseline&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">method</span><span class="o">==</span><span class="s2">&quot;envelope_iter_bspline_1&quot;</span><span class="p">:</span> 
+                <span class="n">txd</span><span class="p">,</span><span class="n">syd</span><span class="p">,</span><span class="n">base2</span><span class="p">,</span><span class="n">base1</span><span class="o">=</span><span class="n">baseline</span><span class="o">.</span><span class="n">baseline_envelope_iter_bspline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">variable</span><span class="p">],</span>
+                                                                            <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">=</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">base1</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;baseline&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Undefined method for baseline estimation: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">method</span><span class="p">)</span>         
+            
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+        
+<div class="viewcode-block" id="PupilData.pupil_estimate_response">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_estimate_response">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_estimate_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                          <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> 
+                          <span class="n">npar</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">float</span><span class="o">=</span><span class="s2">&quot;free&quot;</span><span class="p">,</span> <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">float</span><span class="o">=</span><span class="s2">&quot;free&quot;</span><span class="p">,</span> 
+                          <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                          <span class="n">bounds</span><span class="p">:</span> <span class="nb">dict</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;npar&quot;</span><span class="p">:(</span><span class="mi">1</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="s2">&quot;tmax&quot;</span><span class="p">:(</span><span class="mi">100</span><span class="p">,</span><span class="mi">2000</span><span class="p">)},</span>
+                          <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate pupil-response based on event-onsets, see</span>
+<span class="sd">        :py:func:`pypillometry.pupil.pupil_response()`.</span>
+<span class="sd">        </span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes: list or str</span>
+<span class="sd">            str or list of eyes to process; if empty, all available eyes are processed</span>
+<span class="sd">        npar: float</span>
+<span class="sd">            npar-parameter for the canonical response-function or &quot;free&quot;;</span>
+<span class="sd">            in case of &quot;free&quot;, the function optimizes for this parameter</span>
+<span class="sd">        tmax: float</span>
+<span class="sd">            tmax-parameter for the canonical response-function or &quot;free&quot;;</span>
+<span class="sd">            in case of &quot;free&quot;, the function optimizes for this parameter</span>
+<span class="sd">        bounds: dict</span>
+<span class="sd">            in case that one or both parameters are estimated, give the lower</span>
+<span class="sd">            and upper bounds for the parameters        </span>
+<span class="sd">        inplace: bool</span>
+<span class="sd">            if `True`, make change in-place and return the object</span>
+<span class="sd">            if `False`, make and return copy before making changes                                        </span>
+<span class="sd">        </span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        the results of the estimation is stored in members `response`, `response_x` (design matrix) </span>
+<span class="sd">        and `response_pars`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
+
+        <span class="n">obj</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;response&quot;</span><span class="p">]</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Estimating response for eye </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">eye</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_baseline&quot;</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Eye </span><span class="si">%s</span><span class="s2">: no baseline estimated yet, using zero as baseline&quot;</span><span class="o">%</span><span class="n">eye</span><span class="p">)</span>
+                <span class="n">base</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">base</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;baseline&quot;</span><span class="p">]</span>
+        
+            <span class="n">syd</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span><span class="o">-</span><span class="n">base</span>
+            <span class="n">pred</span><span class="p">,</span> <span class="n">coef</span><span class="p">,</span> <span class="n">npar_est</span><span class="p">,</span> <span class="n">tmax_est</span><span class="p">,</span> <span class="n">x1</span><span class="o">=</span><span class="n">pupil</span><span class="o">.</span><span class="n">pupil_response</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">syd</span><span class="p">,</span> 
+                                                            <span class="n">obj</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> 
+                                                            <span class="n">npar</span><span class="o">=</span><span class="n">npar</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                                            <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>
+            
+            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_response&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">pred</span>
+
+            <span class="n">obj</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;response&quot;</span><span class="p">][</span><span class="n">eye</span><span class="p">]</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;npar&quot;</span><span class="p">:</span><span class="n">npar_est</span><span class="p">,</span>
+                                <span class="s2">&quot;npar_free&quot;</span><span class="p">:</span><span class="kc">True</span> <span class="k">if</span> <span class="n">npar</span><span class="o">==</span><span class="s2">&quot;free&quot;</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
+                                <span class="s2">&quot;tmax&quot;</span><span class="p">:</span><span class="n">tmax_est</span><span class="p">,</span>
+                                <span class="s2">&quot;tmax_free&quot;</span><span class="p">:</span><span class="kc">True</span> <span class="k">if</span> <span class="n">tmax</span><span class="o">==</span><span class="s2">&quot;free&quot;</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
+                                <span class="s2">&quot;coef&quot;</span><span class="p">:</span><span class="n">coef</span><span class="p">,</span>
+                                <span class="s2">&quot;bounds&quot;</span><span class="p">:</span><span class="n">bounds</span>
+                            <span class="p">}</span>
+        
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+    
+
+<div class="viewcode-block" id="PupilData.get_erpd">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.get_erpd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_erpd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">erpd_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event_select</span><span class="p">,</span> 
+                 <span class="n">eyes</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[],</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span>
+                 <span class="n">baseline_win</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">interval</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> 
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract event-related pupil dilation (ERPD).</span>
+<span class="sd">        No attempt is being made to exclude overlaps of the time-windows.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        erpd_name: str</span>
+<span class="sd">            identifier for the result (e.g., &quot;cue-locked&quot; or &quot;conflict-trials&quot;)</span>
+<span class="sd">        eyes: list or str</span>
+<span class="sd">            str or list of eyes to process; if empty, all available eyes are processed</span>
+<span class="sd">        variable: str</span>
+<span class="sd">            default is to use the &quot;pupil&quot; but it could be used to process, e.g.,</span>
+<span class="sd">            interpolated pupil data stored in a different variables, e.g., &quot;pupilinterp&quot;</span>
+<span class="sd">        baseline_win: tuple (float,float) or None</span>
+<span class="sd">            if None, no baseline-correction is applied</span>
+<span class="sd">            if tuple, the mean value in the window in milliseconds (relative to `time_win`) is </span>
+<span class="sd">                subtracted from the single-trial ERPDs (baseline-correction)</span>
+<span class="sd">        event_select: str or function</span>
+<span class="sd">            variable describing which events to select and align to</span>
+<span class="sd">            - if str: use all events whose label contains the string</span>
+<span class="sd">            - if function: apply function to all labels, use those where the function returns True</span>
+<span class="sd">            see :class:`GenericEyeData.get_intervals()` for details</span>
+<span class="sd">        interval: Tuple[float, float]</span>
+<span class="sd">            time before and after event to include (in ms)</span>
+<span class="sd">        kwargs:</span>
+<span class="sd">            additional arguments passed to the `event_select` function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;variable must be a string; using default &#39;pupil&#39;&quot;</span><span class="p">)</span>
+            <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span>
+
+        <span class="c1"># convert interval into sampling units</span>
+        <span class="n">interval_ix</span><span class="o">=</span><span class="nb">tuple</span><span class="p">((</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">tw</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span> <span class="k">for</span> <span class="n">tw</span> <span class="ow">in</span> <span class="n">interval</span> <span class="p">))</span>
+        <span class="n">duration_ix</span><span class="o">=</span><span class="n">interval_ix</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">interval_ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">txw</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">duration_ix</span><span class="p">)</span>
+
+        <span class="c1"># units=None means, we get indices into self.tx back from self.get_intervals()</span>
+        <span class="c1"># use inter in sampling units with units=None to find closest points in tx</span>
+        <span class="n">intervals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">event_select</span><span class="p">,</span> <span class="n">interval_ix</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">nintv</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span>
+
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+            <span class="c1"># matrix/mask for the ERPDs for each eye</span>
+            <span class="n">erpd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">duration_ix</span><span class="p">,</span><span class="n">nintv</span><span class="p">))</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">duration_ix</span><span class="p">,</span><span class="n">nintv</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">intervals</span><span class="p">):</span>
+                <span class="n">onl</span><span class="p">,</span><span class="n">offl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">duration_ix</span> <span class="c1"># &quot;local&quot; window indices</span>
+            
+                <span class="k">if</span> <span class="n">on</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">:</span> <span class="c1">## pad with zeros in case timewindow starts before data</span>
+                    <span class="n">onl</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">on</span><span class="p">)</span>
+                    <span class="n">on</span><span class="o">=</span><span class="mi">0</span>
+                <span class="k">if</span> <span class="n">off</span><span class="o">&gt;=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="n">offl</span><span class="o">=</span><span class="p">(</span><span class="n">off</span><span class="o">-</span><span class="n">on</span><span class="p">)</span>
+                    <span class="n">off</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">size</span>
+                <span class="c1">#print(on,off,onl,offl)</span>
+                <span class="n">erpd</span><span class="p">[</span><span class="n">onl</span><span class="p">:</span><span class="n">offl</span><span class="p">,</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">variable</span><span class="p">][</span><span class="n">on</span><span class="p">:</span><span class="n">off</span><span class="p">]</span>
+                <span class="n">mask</span><span class="p">[</span><span class="n">onl</span><span class="p">:</span><span class="n">offl</span><span class="p">,</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">variable</span><span class="p">][</span><span class="n">on</span><span class="p">:</span><span class="n">off</span><span class="p">]</span>
+
+            <span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;erpd&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">erpd</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_erpd&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">mask</span>
+        
+        <span class="n">rerpd</span> <span class="o">=</span> <span class="n">ERPD</span><span class="p">(</span><span class="n">erpd_name</span><span class="p">,</span> <span class="n">txw</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">baseline_win</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">blwin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">baseline_win</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">blwin</span><span class="o">&lt;</span><span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">blwin</span><span class="o">&gt;=</span><span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Baseline window misspecified </span><span class="si">%s</span><span class="s2"> vs. </span><span class="si">%s</span><span class="s2">; &quot;</span>
+                               <span class="s2">&quot;NOT doing baseline correction&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">baseline_win</span><span class="p">,</span> <span class="n">interval</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rerpd</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">(</span><span class="n">baseline_win</span><span class="o">=</span><span class="n">baseline_win</span><span class="p">)</span> 
+
+        <span class="k">return</span> <span class="n">rerpd</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../../pypillometry.html" >pypillometry</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.eyedata.pupildata</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>
