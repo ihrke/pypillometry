@@ -8,7 +8,7 @@ All other eyedata classes should inherit from this class.
 
 from collections.abc import Iterable
 from .. import io
-from ..convenience import sizeof_fmt
+from ..convenience import sizeof_fmt, ByteSize
 from .eyedatadict import CachedEyeDataDict, EyeDataDict
 from ..signal import baseline
 from ..intervals import stat_event_interval, get_interval_stats, merge_intervals
@@ -52,6 +52,65 @@ def keephistory(func):
         return obj
     return wrapper
         
+
+class ByteSize:
+    """Class to represent size in bytes with human-readable formatting."""
+    def __init__(self, bytes: Union[int, Dict[str, int]]):
+        if isinstance(bytes, dict):
+            self.bytes = bytes['memory'] + bytes['disk']
+            self.cached_bytes = bytes['disk']
+        else:
+            self.bytes = bytes
+            self.cached_bytes = 0
+            
+    def __add__(self, other):
+        if isinstance(other, ByteSize):
+            return ByteSize(self.bytes + other.bytes)
+        elif isinstance(other, int):
+            return ByteSize(self.bytes + other)
+        else:
+            raise TypeError(f"Cannot add ByteSize with {type(other)}")
+            
+    def __radd__(self, other):
+        return self.__add__(other)
+        
+    def __int__(self):
+        return self.bytes
+        
+    def __repr__(self):
+        return self.__str__()
+        
+    def __str__(self):
+        if self.cached_bytes > 0:
+            return f"{sizeof_fmt(self.bytes - self.cached_bytes)} (+{sizeof_fmt(self.cached_bytes)} cached)"
+        else:
+            return sizeof_fmt(self.bytes)
+
+    def get_size(self) -> ByteSize:
+        """Return the size of the object in bytes.
+        
+        Returns
+        -------
+        ByteSize
+            Total size in bytes, with cached portion if applicable.
+        """
+        # Get size of the data dictionary
+        data_size = self.data.get_size()
+        
+        # Calculate size of other attributes
+        other_size = 0
+        other_size += self.tx.nbytes
+        other_size += self.event_onsets.nbytes if self.event_onsets is not None else 0
+        
+        if isinstance(data_size, dict):
+            # For cached objects, add other_size to memory usage
+            return ByteSize({
+                'memory': data_size['memory'] + other_size,
+                'disk': data_size['disk']
+            })
+        else:
+            # For non-cached objects, return total size
+            return ByteSize(data_size + other_size)
 
 class GenericEyeData(ABC):
     """

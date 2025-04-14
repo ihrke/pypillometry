@@ -8,6 +8,7 @@ Some convenience functions.
 
 import numpy as np
 import pandas as pd
+from typing import Union, Dict
 
 
 def mask_to_intervals(mask):
@@ -187,6 +188,27 @@ def sizeof_fmt(num, suffix='B'):
             return "%3.1f%s%s" % (num, unit, suffix)
         num /= 1024.0
     return "%.1f%s%s" % (num, 'Yi', suffix)
+
+class ByteSize(int):
+    """Class to represent size in bytes with human-readable formatting."""
+    def __new__(cls, bytes: Union[int, Dict[str, int]]):
+        if isinstance(bytes, dict):
+            total_bytes = bytes['memory'] + bytes['disk']
+            obj = super().__new__(cls, total_bytes)
+            obj.cached_bytes = bytes['disk']
+        else:
+            obj = super().__new__(cls, bytes)
+            obj.cached_bytes = 0
+        return obj
+            
+    def __str__(self):
+        if self.cached_bytes > 0:
+            return f"{sizeof_fmt(int(self) - self.cached_bytes)} (+{sizeof_fmt(self.cached_bytes)} cached)"
+        else:
+            return sizeof_fmt(int(self))
+            
+    def __repr__(self):
+        return self.__str__()
 
 def test_selector(obj, selfun, **kwargs):
     """

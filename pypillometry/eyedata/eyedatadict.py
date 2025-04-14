@@ -7,6 +7,7 @@ import tempfile
 import h5py
 from typing import Any
 from loguru import logger
+from ..convenience import ByteSize
 
 class EyeDataDict(MutableMapping):
     """
@@ -171,21 +172,20 @@ class EyeDataDict(MutableMapping):
         """List of all available eyes."""
         return self.get_available_eyes()
 
-    def get_size(self) -> Union[int, Dict[str, int]]:
+    def get_size(self) -> ByteSize:
         """Return the size of the dictionary in bytes.
         
         Returns
         -------
-        int or dict
-            For EyeDataDict, returns total size in bytes.
-            For CachedEyeDataDict, returns dict with 'memory' and 'disk' sizes.
+        ByteSize
+            Total size in bytes.
         """
         total_size = 0
         for arr in self.data.values():
             total_size += arr.nbytes
         for arr in self.mask.values():
             total_size += arr.nbytes
-        return total_size
+        return ByteSize(total_size)
 
 class CachedEyeDataDict(EyeDataDict):
     def __init__(self, *args, cache_dir: Optional[str] = None, max_memory_mb: float = 100, **kwargs):
@@ -418,15 +418,13 @@ class CachedEyeDataDict(EyeDataDict):
         if hasattr(self, '_h5_file'):
             self._h5_file.close()
 
-    def get_size(self) -> Dict[str, int]:
+    def get_size(self) -> ByteSize:
         """Return the size of the dictionary in bytes, split by storage location.
         
         Returns
         -------
-        dict
-            Dictionary with keys:
-            - 'memory': size of arrays currently in memory
-            - 'disk': size of arrays stored on disk
+        ByteSize
+            Total size in bytes, with cached portion if applicable.
         """
         memory_size = 0
         for arr in self._in_memory_data.values():
@@ -441,7 +439,7 @@ class CachedEyeDataDict(EyeDataDict):
                 if key in self._h5_file['mask']:
                     disk_size += self._h5_file['mask'][key].nbytes
                     
-        return {
+        return ByteSize({
             'memory': memory_size,
             'disk': disk_size
-        }
+        })
