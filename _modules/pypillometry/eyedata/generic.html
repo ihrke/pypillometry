@@ -63,12 +63,16 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="c1">#from pytypes import typechecked</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">random</span><span class="w"> </span><span class="kn">import</span> <span class="n">choice</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 
 <span class="c1">## abstract base class to enforce implementation of some functions for all classes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span> 
@@ -124,7 +128,10 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                     <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-                    <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Common code for the child-classes of GenericEyeData.</span>
 <span class="sd">        Assumes that self.data is already set and filled.</span>
@@ -172,9 +179,19 @@ window.addEventListener("load", () => mermaid.run());
         <span class="c1">## set notes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">notes</span> <span class="o">=</span> <span class="n">notes</span>
 
+        <span class="c1">## Initialize caching if requested</span>
+        <span class="k">if</span> <span class="n">use_cache</span><span class="p">:</span>
+            <span class="c1"># Convert to cached version</span>
+            <span class="n">old_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">CachedEyeDataDict</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">max_memory_mb</span><span class="o">=</span><span class="n">max_memory_mb</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+
         <span class="c1">## fill in time discontinuities</span>
         <span class="k">if</span> <span class="n">fill_time_discontinuities</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fill_time_discontinuities</span><span class="p">()</span>   
+            <span class="bp">self</span><span class="o">.</span><span class="n">fill_time_discontinuities</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_unit_fac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">units</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;for converting units&quot;&quot;&quot;</span>
@@ -284,7 +301,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">key</span> <span class="o">=</span> <span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">variable</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">variable</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span> 
             <span class="k">return</span> <span class="kc">None</span></div>
 
@@ -1180,6 +1197,72 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">stat</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">var</span><span class="p">]</span><span class="o">=</span><span class="n">stat_event_interval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">var</span><span class="p">],</span> <span class="n">intervs</span><span class="p">,</span> <span class="n">statfct</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">stat</span></div>
+
+
+<div class="viewcode-block" id="GenericEyeData.set_cache_options">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.set_cache_options">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_cache_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update cache settings.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        use_cache : bool, optional</span>
+<span class="sd">            Whether to use cached storage.</span>
+<span class="sd">        cache_dir : str, optional</span>
+<span class="sd">            Directory to store cache files.</span>
+<span class="sd">        max_memory_mb : float, optional</span>
+<span class="sd">            Maximum memory usage in MB.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">use_cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">use_cache</span> <span class="o">=</span> <span class="n">use_cache</span>
+        <span class="k">if</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span>
+        <span class="k">if</span> <span class="n">max_memory_mb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_memory_mb</span> <span class="o">=</span> <span class="n">max_memory_mb</span>
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cache</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">EyeDataDict</span><span class="p">):</span>
+            <span class="c1"># Convert to cached version</span>
+            <span class="n">old_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">CachedEyeDataDict</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">max_memory_mb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_memory_mb</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cache</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span><span class="p">):</span>
+            <span class="c1"># Convert to in-memory version</span>
+            <span class="n">old_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="n">old_data</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span></div>
+
+            
+<div class="viewcode-block" id="GenericEyeData.get_cache_stats">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.get_cache_stats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_cache_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get cache statistics if using cached storage.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_cache_stats</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+        
+<div class="viewcode-block" id="GenericEyeData.clear_cache">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.clear_cache">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear memory cache if using cached storage.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span></div>
+
+            
+<div class="viewcode-block" id="GenericEyeData.set_max_memory">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.set_max_memory">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_max_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set maximum memory usage in MB if using cached storage.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_max_memory</span><span class="p">(</span><span class="n">max_memory_mb</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_memory_mb</span> <span class="o">=</span> <span class="n">max_memory_mb</span></div>
 </div>
 
 </pre></div>

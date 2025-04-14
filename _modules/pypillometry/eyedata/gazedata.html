@@ -49,6 +49,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">..plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">GazePlotter</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
 <div class="viewcode-block" id="GazeData">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GazeData">[docs]</a>
@@ -93,6 +94,12 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        if True, the object is modified in place; if False, a new object is returned</span>
 <span class="sd">        this object-level property can be overwritten by the method-level `inplace` argument</span>
 <span class="sd">        default is &quot;False&quot;</span>
+<span class="sd">    use_cache: bool</span>
+<span class="sd">        Whether to use cached storage for data arrays. Default is False.</span>
+<span class="sd">    cache_dir: str</span>
+<span class="sd">        Directory to store cache files. If None, creates a temporary directory.</span>
+<span class="sd">    max_memory_mb: float</span>
+<span class="sd">        Maximum memory usage in MB when using cache. Default is 100MB.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                     <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -110,30 +117,47 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                     <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                     <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;Constructor</span>
-<span class="sd">            &quot;&quot;&quot;</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">left_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">left_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">right_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">right_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one of the eye-traces must be provided (both x and y)&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">=</span><span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span>
-                                    <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">)</span>
+                    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the GazeData class.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        use_cache : bool, optional</span>
+<span class="sd">            Whether to use cached storage for data arrays. Default is False.</span>
+<span class="sd">        cache_dir : str, optional</span>
+<span class="sd">            Directory to store cache files. If None, creates a temporary directory.</span>
+<span class="sd">        max_memory_mb : float, optional</span>
+<span class="sd">            Maximum memory usage in MB when using cache. Default is 100MB.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">left_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">left_y</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">right_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">right_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one eye-trace (both x and y coordinates) must be provided&quot;</span><span class="p">)</span>
             
-            <span class="bp">self</span><span class="o">.</span><span class="n">_init_common</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span>
-                              <span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="p">,</span> 
-                              <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> <span class="n">notes</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span>
+        <span class="c1"># Initialize data dictionary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">=</span><span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_common</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> 
+                          <span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="p">,</span> 
+                          <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> 
+                          <span class="n">notes</span><span class="p">,</span> <span class="n">inplace</span><span class="p">,</span>
+                          <span class="n">use_cache</span><span class="o">=</span><span class="n">use_cache</span><span class="p">,</span>
+                          <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
+                          <span class="n">max_memory_mb</span><span class="o">=</span><span class="n">max_memory_mb</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims_set</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance_set</span><span class="o">=</span><span class="kc">False</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="o">=</span><span class="kc">False</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims_set</span><span class="o">=</span><span class="kc">False</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance_set</span><span class="o">=</span><span class="kc">False</span>
+        <span class="c1">## screen limits, physical screen size, screen-eye distance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_experiment_info</span><span class="p">(</span><span class="n">screen_resolution</span><span class="o">=</span><span class="n">screen_resolution</span><span class="p">,</span> 
+                                <span class="n">physical_screen_size</span><span class="o">=</span><span class="n">physical_screen_size</span><span class="p">,</span>
+                                <span class="n">screen_eye_distance</span><span class="o">=</span><span class="n">screen_eye_distance</span><span class="p">)</span>
 
-            <span class="c1">## screen limits, physical screen size, screen-eye distance</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_experiment_info</span><span class="p">(</span><span class="n">screen_resolution</span><span class="o">=</span><span class="n">screen_resolution</span><span class="p">,</span> 
-                                    <span class="n">physical_screen_size</span><span class="o">=</span><span class="n">physical_screen_size</span><span class="p">,</span>
-                                    <span class="n">screen_eye_distance</span><span class="o">=</span><span class="n">screen_eye_distance</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">original</span><span class="o">=</span><span class="kc">None</span>
-            <span class="k">if</span> <span class="n">keep_orig</span><span class="p">:</span> 
-                <span class="bp">self</span><span class="o">.</span><span class="n">original</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">if</span> <span class="n">keep_orig</span><span class="p">:</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">original</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

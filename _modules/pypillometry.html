@@ -54,11 +54,11 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logging_set_level&quot;</span><span class="p">,</span> <span class="s2">&quot;logging_disable&quot;</span><span class="p">,</span> <span class="s2">&quot;logging_enable&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;EyeDataDict&quot;</span><span class="p">,</span> <span class="s2">&quot;EyeData&quot;</span><span class="p">,</span> <span class="s2">&quot;GazeData&quot;</span><span class="p">,</span> <span class="s2">&quot;PupilData&quot;</span><span class="p">,</span> <span class="s2">&quot;GenericEyeData&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;EyeDataDict&quot;</span><span class="p">,</span> <span class="s2">&quot;CachedEyeDataDict&quot;</span><span class="p">,</span> <span class="s2">&quot;EyeData&quot;</span><span class="p">,</span> <span class="s2">&quot;GazeData&quot;</span><span class="p">,</span> <span class="s2">&quot;PupilData&quot;</span><span class="p">,</span> <span class="s2">&quot;GenericEyeData&quot;</span><span class="p">,</span>
            <span class="s2">&quot;example_datasets&quot;</span><span class="p">,</span> <span class="s2">&quot;get_example_data&quot;</span><span class="p">,</span> <span class="s2">&quot;get_interval_stats&quot;</span><span class="p">,</span>
            <span class="s2">&quot;ERPD&quot;</span><span class="p">,</span> <span class="s2">&quot;load_study_osf&quot;</span><span class="p">]</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericEyeData</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.eyedata</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeData</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.gazedata</span><span class="w"> </span><span class="kn">import</span> <span class="n">GazeData</span>
