@@ -8,6 +8,7 @@ from loguru import logger
 from .pupildata import PupilData
 import numpy as np
 from collections.abc import Iterable
+from typing import Optional
 
 
 
@@ -50,6 +51,12 @@ class EyeData(GazeData,PupilData):
         sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
         when this option is True, such entries will be made and the signal set to 0 there
         (or do it later using `fill_time_discontinuities()`)
+    use_cache: bool
+        Whether to use cached storage for data arrays. Default is False.
+    cache_dir: str, optional
+        Directory to store cache files. If None, creates a temporary directory.
+    max_memory_mb: float, optional
+        Maximum memory usage in MB when using cache. Default is 100MB.
 
     Examples
     --------
@@ -78,7 +85,10 @@ class EyeData(GazeData,PupilData):
                     fill_time_discontinuities: bool = True,
                     keep_orig: bool = False, 
                     notes: str = None,
-                    inplace: bool = False):
+                    inplace: bool = False,
+                    use_cache: bool = False,
+                    cache_dir: Optional[str] = None,
+                    max_memory_mb: float = 100):
         """Constructor for the EyeData class.
         """
         if (left_x is None or left_y is None) and (right_x is None or right_y is None):
@@ -89,12 +99,14 @@ class EyeData(GazeData,PupilData):
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
                           name, fill_time_discontinuities, 
-                          notes, inplace)
+                          notes, inplace,
+                          use_cache=use_cache,
+                          cache_dir=cache_dir,
+                          max_memory_mb=max_memory_mb)
         
         self._screen_size_set=False
         self._physical_screen_dims_set=False
         self._screen_eye_distance_set=False
-
 
         ## screen limits, physical screen size, screen-eye distance
         self.set_experiment_info(screen_resolution=screen_resolution, 

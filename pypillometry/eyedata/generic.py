@@ -17,12 +17,16 @@ import numpy as np
 import itertools
 from loguru import logger
 #from pytypes import typechecked
-from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
+from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable, Dict, Any
 import functools
 from random import choice
 import copy
 import pickle
 import inspect
+import h5py
+import tempfile
+import os
+import sys
 
 ## abstract base class to enforce implementation of some functions for all classes
 from abc import ABC, abstractmethod 
@@ -76,7 +80,10 @@ class GenericEyeData(ABC):
                     name: str,
                     fill_time_discontinuities: bool,
                     inplace: bool,
-                    notes: str = None):
+                    notes: str = None,
+                    use_cache: bool = False,
+                    cache_dir: Optional[str] = None,
+                    max_memory_mb: float = 100):
         """
         Common code for the child-classes of GenericEyeData.
         Assumes that self.data is already set and filled.
@@ -124,9 +131,19 @@ class GenericEyeData(ABC):
         ## set notes
         self.notes = notes
 
+        ## Initialize caching if requested
+        if use_cache:
+            # Convert to cached version
+            old_data = self.data
+            self.data = CachedEyeDataDict(cache_dir=cache_dir, max_memory_mb=max_memory_mb)
+            for k, v in old_data.items():
+                self.data[k] = v
+                if k in old_data.mask:
+                    self.data.set_mask(k, old_data.mask[k])
+
         ## fill in time discontinuities
         if fill_time_discontinuities:
-            self.fill_time_discontinuities()   
+            self.fill_time_discontinuities()
 
     def _unit_fac(self, units):
         """for converting units"""
@@ -228,7 +245,7 @@ class GenericEyeData(ABC):
         """
         key = eye+"_"+variable
         if key in self._blinks.keys():
-            return self._blinks[eye+"_"+variable]
+            return self._blinks[key]
         else: 
             return None
 
@@ -1052,3 +1069,57 @@ class GenericEyeData(ABC):
             stat[eye+"_"+var]=stat_event_interval(self.tx, self.data[eye,var], intervs, statfct)
 
         return stat
+
+    def set_cache_options(self, use_cache: bool = None, cache_dir: Optional[str] = None, max_memory_mb: float = None):
+        """Update cache settings.
+        
+        Parameters
+        ----------
+        use_cache : bool, optional
+            Whether to use cached storage.
+        cache_dir : str, optional
+            Directory to store cache files.
+        max_memory_mb : float, optional
+            Maximum memory usage in MB.
+        """
+        if use_cache is not None:
+            self.use_cache = use_cache
+        if cache_dir is not None:
+            self.cache_dir = cache_dir
+        if max_memory_mb is not None:
+            self.max_memory_mb = max_memory_mb
+            
+        if self.use_cache and isinstance(self.data, EyeDataDict):
+            # Convert to cached version
+            old_data = self.data
+            self.data = CachedEyeDataDict(cache_dir=self.cache_dir, max_memory_mb=self.max_memory_mb)
+            for k, v in old_data.items():
+                self.data[k] = v
+                if k in old_data.mask:
+                    self.data.set_mask(k, old_data.mask[k])
+        elif not self.use_cache and isinstance(self.data, CachedEyeDataDict):
+            # Convert to in-memory version
+            old_data = self.data
+            self.data = EyeDataDict()
+            for k, v in old_data.items():
+                self.data[k] = v
+                if k in old_data.mask:
+                    self.data.set_mask(k, old_data.mask[k])
+            old_data.clear_cache()
+            
+    def get_cache_stats(self) -> Optional[Dict[str, Any]]:
+        """Get cache statistics if using cached storage."""
+        if isinstance(self.data, CachedEyeDataDict):
+            return self.data.get_cache_stats()
+        return None
+        
+    def clear_cache(self):
+        """Clear memory cache if using cached storage."""
+        if isinstance(self.data, CachedEyeDataDict):
+            self.data.clear_cache()
+            
+    def set_max_memory(self, max_memory_mb: float):
+        """Set maximum memory usage in MB if using cached storage."""
+        if isinstance(self.data, CachedEyeDataDict):
+            self.data.set_max_memory(max_memory_mb)
+            self.max_memory_mb = max_memory_mb

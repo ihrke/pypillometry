@@ -2,6 +2,10 @@ from collections.abc import MutableMapping
 import numpy as np
 from typing import Optional, Dict, List, Union, Tuple
 from numpy.typing import NDArray
+import os
+import tempfile
+import h5py
+from typing import Any
 
 class EyeDataDict(MutableMapping):
     """
@@ -165,3 +169,197 @@ class EyeDataDict(MutableMapping):
     def eyes(self) -> List[str]:
         """List of all available eyes."""
         return self.get_available_eyes()
+
+class CachedEyeDataDict(EyeDataDict):
+    def __init__(self, *args, cache_dir: Optional[str] = None, max_memory_mb: float = 100, **kwargs):
+        """Initialize a cached version of EyeDataDict.
+        
+        Parameters
+        ----------
+        cache_dir : str, optional
+            Directory to store cache files. If None, creates a temporary directory.
+        max_memory_mb : float, optional
+            Maximum memory usage in MB. Default is 100MB.
+        """
+        # Initialize base class without data
+        self.data: Dict[str, np.ndarray] = {}
+        self.mask: Dict[str, np.ndarray] = {}
+        self.length: int = 0
+        self.shape: Optional[tuple] = None
+        
+        # Cache settings
+        self._cache_dir = cache_dir or tempfile.mkdtemp()
+        self._max_memory_bytes = max_memory_mb * 1024 * 1024
+        self._current_memory_bytes = 0
+        
+        # Initialize single HDF5 file
+        self._init_h5_file()
+        
+        # Track memory usage and access patterns
+        self._in_memory_data: Dict[str, np.ndarray] = {}
+        self._in_memory_mask: Dict[str, np.ndarray] = {}
+        self._array_sizes: Dict[str, int] = {}
+        self._access_counts: Dict[str, int] = {}
+        
+        # Add any initial data
+        if args or kwargs:
+            self.update(dict(*args, **kwargs))
+
+    def _init_h5_file(self):
+        """Initialize single HDF5 file with data and mask groups."""
+        if not hasattr(self, '_h5_file'):
+            self._h5_path = os.path.join(self._cache_dir, 'eyedata_cache.h5')
+            self._h5_file = h5py.File(self._h5_path, 'a')
+            
+            # Create groups if they don't exist
+            if 'data' not in self._h5_file:
+                self._h5_file.create_group('data')
+            if 'mask' not in self._h5_file:
+                self._h5_file.create_group('mask')
+
+    def _get_array_size(self, arr: np.ndarray) -> int:
+        """Calculate size of numpy array in bytes."""
+        return arr.nbytes
+
+    def _update_cache(self, key: str, data: np.ndarray, mask: np.ndarray):
+        """Update memory cache using LRU strategy with size limits."""
+        total_size = self._get_array_size(data) + self._get_array_size(mask)
+        
+        # If arrays are too large to fit in cache, don't cache them
+        if total_size > self._max_memory_bytes:
+            return
+            
+        # Remove least recently used arrays until we have enough space
+        while (self._current_memory_bytes + total_size > self._max_memory_bytes and 
+               self._in_memory_data):
+            # Find least recently used key
+            lru_key = min(self._access_counts.items(), key=lambda x: x[1])[0]
+            self._current_memory_bytes -= self._array_sizes[lru_key]
+            del self._in_memory_data[lru_key]
+            del self._in_memory_mask[lru_key]
+            del self._array_sizes[lru_key]
+            del self._access_counts[lru_key]
+            
+        # Add new arrays to cache
+        self._in_memory_data[key] = data
+        self._in_memory_mask[key] = mask
+        self._array_sizes[key] = total_size
+        self._current_memory_bytes += total_size
+        self._access_counts[key] = 0
+
+    def __setitem__(self, key: str, value: np.ndarray):
+        """Store array in HDF5 and optionally in memory cache."""
+        key = self._validate_key(key)
+        value = np.array(value)
+        
+        # Create default mask if not exists
+        if key not in self.mask:
+            self.mask[key] = np.zeros_like(value, dtype=int)
+        
+        # Store in HDF5
+        if key in self._h5_file['data']:
+            del self._h5_file['data'][key]
+            del self._h5_file['mask'][key]
+            
+        self._h5_file['data'].create_dataset(key, data=value)
+        self._h5_file['mask'].create_dataset(key, data=self.mask[key])
+        
+        # Update memory cache if needed
+        self._update_cache(key, value, self.mask[key])
+        
+        # Update access tracking
+        self._access_counts[key] = 0
+        
+        # Update length and shape if needed
+        if self.length == 0:
+            self.length = len(value)
+            self.shape = value.shape
+
+    def __getitem__(self, key: str) -> np.ndarray:
+        """Retrieve array from cache or HDF5."""
+        key = self._validate_key(key)
+        
+        # Update access count
+        self._access_counts[key] = self._access_counts.get(key, 0) + 1
+        
+        # Try memory cache first
+        if key in self._in_memory_data:
+            return self._in_memory_data[key]
+            
+        # Load from HDF5
+        if key in self._h5_file['data']:
+            data = self._h5_file['data'][key][:]
+            mask = self._h5_file['mask'][key][:]
+            self._update_cache(key, data, mask)
+            return data
+            
+        raise KeyError(key)
+
+    def get_mask(self, key: str) -> np.ndarray:
+        """Get mask for a specific key."""
+        key = self._validate_key(key)
+        
+        # Try memory cache first
+        if key in self._in_memory_mask:
+            return self._in_memory_mask[key]
+            
+        # Load from HDF5
+        if key in self._h5_file['mask']:
+            mask = self._h5_file['mask'][key][:]
+            if key in self._h5_file['data']:
+                data = self._h5_file['data'][key][:]
+                self._update_cache(key, data, mask)
+            return mask
+            
+        raise KeyError(key)
+
+    def set_mask(self, key: str, mask: np.ndarray):
+        """Set mask for a specific key."""
+        key = self._validate_key(key)
+        mask = np.array(mask, dtype=int)
+        
+        # Store in HDF5
+        if key in self._h5_file['mask']:
+            del self._h5_file['mask'][key]
+        self._h5_file['mask'].create_dataset(key, data=mask)
+        
+        # Update memory cache if key is cached
+        if key in self._in_memory_data:
+            self._update_cache(key, self._in_memory_data[key], mask)
+
+    def set_max_memory(self, max_memory_mb: float):
+        """Set maximum memory usage in MB."""
+        self._max_memory_bytes = max_memory_mb * 1024 * 1024
+        # If new limit is lower, remove excess arrays
+        while self._current_memory_bytes > self._max_memory_bytes and self._in_memory_data:
+            lru_key = min(self._access_counts.items(), key=lambda x: x[1])[0]
+            self._current_memory_bytes -= self._array_sizes[lru_key]
+            del self._in_memory_data[lru_key]
+            del self._in_memory_mask[lru_key]
+            del self._array_sizes[lru_key]
+            del self._access_counts[lru_key]
+
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """Get detailed cache statistics."""
+        return {
+            'memory_used_mb': self._current_memory_bytes / (1024 * 1024),
+            'memory_limit_mb': self._max_memory_bytes / (1024 * 1024),
+            'arrays_in_memory': len(self._in_memory_data),
+            'arrays_on_disk': len(self._h5_file['data']),
+            'memory_usage_per_array': {
+                k: v / (1024 * 1024) for k, v in self._array_sizes.items()
+            }
+        }
+
+    def clear_cache(self):
+        """Clear memory cache."""
+        self._in_memory_data.clear()
+        self._in_memory_mask.clear()
+        self._array_sizes.clear()
+        self._access_counts.clear()
+        self._current_memory_bytes = 0
+
+    def __del__(self):
+        """Clean up HDF5 file."""
+        if hasattr(self, '_h5_file'):
+            self._h5_file.close()
