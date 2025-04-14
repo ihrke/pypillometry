@@ -54,7 +54,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">sizeof_fmt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">sizeof_fmt</span><span class="p">,</span> <span class="n">ByteSize</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">CachedEyeDataDict</span><span class="p">,</span> <span class="n">EyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">baseline</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">stat_event_interval</span><span class="p">,</span> <span class="n">get_interval_stats</span><span class="p">,</span> <span class="n">merge_intervals</span>
@@ -111,7 +111,6 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">fs</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1">## sampling rate</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">EyeDataDict</span> <span class="c1">## dictionary with data (contains ndarrays)</span>
     <span class="n">tx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="c1">## time vector</span>
-    <span class="n">missing</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="c1">## missing data vector (1=missing, 0=not missing)</span>
     <span class="n">event_onsets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="c1">## vector with event onsets in time units</span>
     <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="c1">## whether to make changes in-place</span>
     <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="c1">## optional notes about the dataset</span>
@@ -612,16 +611,6 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">return</span> <span class="n">obj</span></div>
 
     
-<div class="viewcode-block" id="GenericEyeData.size_bytes">
-<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.size_bytes">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">size_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return size of current dataset in bytes.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">nbytes</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">nbytes</span></div>
-
-
 <div class="viewcode-block" id="GenericEyeData.write_file">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.write_file">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">write_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
@@ -667,9 +656,14 @@ window.addEventListener("load", () => mermaid.run());
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a string-representation of the dataset.&quot;&quot;&quot;</span>
         <span class="n">pars</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
         <span class="k">del</span> <span class="n">pars</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_size</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">size_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sizeof_fmt</span><span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="s1">&#39;memory&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> (memory) + </span><span class="si">{</span><span class="n">sizeof_fmt</span><span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="s1">&#39;disk&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> (disk)&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">size_str</span> <span class="o">=</span> <span class="n">sizeof_fmt</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
         <span class="n">s</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{cname}</span><span class="s2">(</span><span class="si">{name}</span><span class="s2">, </span><span class="si">{size}</span><span class="s2">):</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cname</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
                                               <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
-                                              <span class="n">size</span><span class="o">=</span><span class="n">sizeof_fmt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size_bytes</span><span class="p">()))</span>
+                                              <span class="n">size</span><span class="o">=</span><span class="n">size_str</span><span class="p">)</span>
         <span class="n">flen</span><span class="o">=</span><span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">s</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot; {k:&lt;&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">flen</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;}: </span><span class="si">{v}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
@@ -1268,6 +1262,61 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_max_memory</span><span class="p">(</span><span class="n">max_memory_mb</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">max_memory_mb</span> <span class="o">=</span> <span class="n">max_memory_mb</span></div>
+
+
+<div class="viewcode-block" id="GenericEyeData.get_size">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.get_size">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ByteSize</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the size of the object in bytes.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ByteSize</span>
+<span class="sd">            Total size of the object, including data and all attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get size of the data dictionary</span>
+        <span class="n">data_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_size</span><span class="p">()</span>
+        
+        <span class="c1"># Calculate size of other attributes</span>
+        <span class="n">other_size</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1"># Time vector and event arrays</span>
+        <span class="n">other_size</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">nbytes</span>
+        <span class="n">other_size</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">.</span><span class="n">nbytes</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">other_size</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_labels</span><span class="o">.</span><span class="n">nbytes</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        
+        <span class="c1"># String attributes</span>
+        <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">notes</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        
+        <span class="c1"># Numeric attributes</span>
+        <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="p">)</span>
+        
+        <span class="c1"># Dictionary attributes</span>
+        <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            
+        <span class="c1"># History list</span>
+        <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">:</span>
+            <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                    <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_size</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># For cached objects, add other_size to memory usage</span>
+            <span class="k">return</span> <span class="n">ByteSize</span><span class="p">({</span>
+                <span class="s1">&#39;memory&#39;</span><span class="p">:</span> <span class="n">data_size</span><span class="p">[</span><span class="s1">&#39;memory&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">other_size</span><span class="p">,</span>
+                <span class="s1">&#39;disk&#39;</span><span class="p">:</span> <span class="n">data_size</span><span class="p">[</span><span class="s1">&#39;disk&#39;</span><span class="p">]</span>
+            <span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># For non-cached objects, return total size</span>
+            <span class="k">return</span> <span class="n">ByteSize</span><span class="p">(</span><span class="n">data_size</span> <span class="o">+</span> <span class="n">other_size</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
