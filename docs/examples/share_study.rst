@@ -1,10 +1,10 @@
 Sharing/Importing study data from OSF
-====================================
+=====================================
 
 `pypillometry` provides functionality to share and import study data via the `Open Science Framework (OSF) <https://osf.io>`_. The :func:`~pypillometry.load_study_osf()` function allows you to easily download and load study data that has been shared on OSF.
 
 Sharing Your Study
------------------
+------------------
 
 To share your study on OSF:
 
@@ -19,7 +19,7 @@ The configuration file (``pypillometry_conf.py``) should define:
 - A ``read_subject()`` function that processes the raw data files
 
 Loading Shared Data
-------------------
+-------------------
 
 To load a shared study, use :func:`~pypillometry.io.load_study_osf()`:
 
@@ -58,7 +58,8 @@ The function will:
 Files are cached locally in the specified path to avoid repeated downloads.
 
 Example configuration file
--------------------------
+--------------------------
+
 Here is an example configuration file (``pypillometry_conf.py``) that could be used to share a study:
 
 .. literalinclude:: ../examples/pypillometry_conf.py
