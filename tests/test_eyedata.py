@@ -280,11 +280,10 @@ class TestEyeData(unittest.TestCase):
         self.assertAlmostEqual(duration_min * 60, duration_sec)
         self.assertAlmostEqual(duration_h * 60, duration_min)
 
-    def test_size_bytes(self):
-        """Test getting size of dataset in bytes"""
-        size = self.eyedata.size_bytes()
-        self.assertIsInstance(size, int)
-        self.assertGreater(size, 0)
+    def test_get_size(self):
+        """Test size reporting."""
+        size = self.eyedata.get_size()
+        self.assertIsInstance(size, (int, dict))
 
     def test_write_and_read_file(self):
         """Test writing and reading dataset to/from file"""

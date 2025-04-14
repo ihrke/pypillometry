@@ -171,6 +171,22 @@ class EyeDataDict(MutableMapping):
         """List of all available eyes."""
         return self.get_available_eyes()
 
+    def get_size(self) -> Union[int, Dict[str, int]]:
+        """Return the size of the dictionary in bytes.
+        
+        Returns
+        -------
+        int or dict
+            For EyeDataDict, returns total size in bytes.
+            For CachedEyeDataDict, returns dict with 'memory' and 'disk' sizes.
+        """
+        total_size = 0
+        for arr in self.data.values():
+            total_size += arr.nbytes
+        for arr in self.mask.values():
+            total_size += arr.nbytes
+        return total_size
+
 class CachedEyeDataDict(EyeDataDict):
     def __init__(self, *args, cache_dir: Optional[str] = None, max_memory_mb: float = 100, **kwargs):
         """Initialize a cached version of EyeDataDict.
@@ -401,3 +417,31 @@ class CachedEyeDataDict(EyeDataDict):
         """Clean up HDF5 file."""
         if hasattr(self, '_h5_file'):
             self._h5_file.close()
+
+    def get_size(self) -> Dict[str, int]:
+        """Return the size of the dictionary in bytes, split by storage location.
+        
+        Returns
+        -------
+        dict
+            Dictionary with keys:
+            - 'memory': size of arrays currently in memory
+            - 'disk': size of arrays stored on disk
+        """
+        memory_size = 0
+        for arr in self._in_memory_data.values():
+            memory_size += arr.nbytes
+        for arr in self._in_memory_mask.values():
+            memory_size += arr.nbytes
+            
+        disk_size = 0
+        for key in self._h5_file['data'].keys():
+            if key not in self._in_memory_data:  # Only count arrays not in memory
+                disk_size += self._h5_file['data'][key].nbytes
+                if key in self._h5_file['mask']:
+                    disk_size += self._h5_file['mask'][key].nbytes
+                    
+        return {
+            'memory': memory_size,
+            'disk': disk_size
+        }

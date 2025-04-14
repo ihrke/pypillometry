@@ -525,13 +525,6 @@ class GenericEyeData(ABC):
         
         return obj
     
-    def size_bytes(self):
-        """
-        Return size of current dataset in bytes.
-        """
-        nbytes=len(pickle.dumps(self, -1))
-        return nbytes
-
     def write_file(self, fname:str):
         """
         Save to file (using :mod:`pickle`).
@@ -568,9 +561,14 @@ class GenericEyeData(ABC):
         """Return a string-representation of the dataset."""
         pars=self.summary()
         del pars["name"]
+        size = self.get_size()
+        if isinstance(size, dict):
+            size_str = f"{sizeof_fmt(size['memory'])} (memory) + {sizeof_fmt(size['disk'])} (disk)"
+        else:
+            size_str = sizeof_fmt(size)
         s="{cname}({name}, {size}):\n".format(cname=self.__class__.__name__,
                                               name=self.name, 
-                                              size=sizeof_fmt(self.size_bytes()))
+                                              size=size_str)
         flen=max([len(k) for k in pars.keys()])
         for k,v in pars.items():
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
@@ -1128,3 +1126,31 @@ class GenericEyeData(ABC):
         if isinstance(self.data, CachedEyeDataDict):
             self.data.set_max_memory(max_memory_mb)
             self.max_memory_mb = max_memory_mb
+
+    def get_size(self) -> Union[int, Dict[str, int]]:
+        """Return the size of the object in bytes.
+        
+        Returns
+        -------
+        int or dict
+            For non-cached objects, returns total size in bytes.
+            For cached objects, returns dict with 'memory' and 'disk' sizes.
+        """
+        # Get size of the data dictionary
+        data_size = self.data.get_size()
+        
+        # Calculate size of other attributes
+        other_size = 0
+        other_size += self.tx.nbytes
+        other_size += self.missing.nbytes if self.missing is not None else 0
+        other_size += self.event_onsets.nbytes if self.event_onsets is not None else 0
+        
+        if isinstance(data_size, dict):
+            # For cached objects, add other_size to memory usage
+            return {
+                'memory': data_size['memory'] + other_size,
+                'disk': data_size['disk']
+            }
+        else:
+            # For non-cached objects, return total size
+            return data_size + other_size
