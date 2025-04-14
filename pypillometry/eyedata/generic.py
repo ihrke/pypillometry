@@ -53,65 +53,6 @@ def keephistory(func):
     return wrapper
         
 
-class ByteSize:
-    """Class to represent size in bytes with human-readable formatting."""
-    def __init__(self, bytes: Union[int, Dict[str, int]]):
-        if isinstance(bytes, dict):
-            self.bytes = bytes['memory'] + bytes['disk']
-            self.cached_bytes = bytes['disk']
-        else:
-            self.bytes = bytes
-            self.cached_bytes = 0
-            
-    def __add__(self, other):
-        if isinstance(other, ByteSize):
-            return ByteSize(self.bytes + other.bytes)
-        elif isinstance(other, int):
-            return ByteSize(self.bytes + other)
-        else:
-            raise TypeError(f"Cannot add ByteSize with {type(other)}")
-            
-    def __radd__(self, other):
-        return self.__add__(other)
-        
-    def __int__(self):
-        return self.bytes
-        
-    def __repr__(self):
-        return self.__str__()
-        
-    def __str__(self):
-        if self.cached_bytes > 0:
-            return f"{sizeof_fmt(self.bytes - self.cached_bytes)} (+{sizeof_fmt(self.cached_bytes)} cached)"
-        else:
-            return sizeof_fmt(self.bytes)
-
-    def get_size(self) -> ByteSize:
-        """Return the size of the object in bytes.
-        
-        Returns
-        -------
-        ByteSize
-            Total size in bytes, with cached portion if applicable.
-        """
-        # Get size of the data dictionary
-        data_size = self.data.get_size()
-        
-        # Calculate size of other attributes
-        other_size = 0
-        other_size += self.tx.nbytes
-        other_size += self.event_onsets.nbytes if self.event_onsets is not None else 0
-        
-        if isinstance(data_size, dict):
-            # For cached objects, add other_size to memory usage
-            return ByteSize({
-                'memory': data_size['memory'] + other_size,
-                'disk': data_size['disk']
-            })
-        else:
-            # For non-cached objects, return total size
-            return ByteSize(data_size + other_size)
-
 class GenericEyeData(ABC):
     """
     Generic class for eyedata. 
@@ -1185,30 +1126,54 @@ class GenericEyeData(ABC):
             self.data.set_max_memory(max_memory_mb)
             self.max_memory_mb = max_memory_mb
 
-    def get_size(self) -> Union[int, Dict[str, int]]:
+    def get_size(self) -> ByteSize:
         """Return the size of the object in bytes.
         
         Returns
         -------
-        int or dict
-            For non-cached objects, returns total size in bytes.
-            For cached objects, returns dict with 'memory' and 'disk' sizes.
+        ByteSize
+            Total size of the object, including data and all attributes.
         """
         # Get size of the data dictionary
         data_size = self.data.get_size()
         
         # Calculate size of other attributes
         other_size = 0
+        
+        # Time vector and event arrays
         other_size += self.tx.nbytes
         other_size += self.event_onsets.nbytes if self.event_onsets is not None else 0
+        other_size += self.event_labels.nbytes if self.event_labels is not None else 0
+        
+        # String attributes
+        other_size += sys.getsizeof(self.name) if self.name is not None else 0
+        other_size += sys.getsizeof(self.notes) if self.notes is not None else 0
+        
+        # Numeric attributes
+        other_size += sys.getsizeof(self.fs)
+        other_size += sys.getsizeof(self.inplace)
+        
+        # Dictionary attributes
+        other_size += sys.getsizeof(self.params)
+        for k, v in self.params.items():
+            other_size += sys.getsizeof(k)
+            other_size += sys.getsizeof(v)
+            
+        # History list
+        other_size += sys.getsizeof(self.history)
+        for item in self.history:
+            other_size += sys.getsizeof(item)
+            if isinstance(item, dict):
+                for k, v in item.items():
+                    other_size += sys.getsizeof(k)
+                    other_size += sys.getsizeof(v)
         
         if isinstance(data_size, dict):
             # For cached objects, add other_size to memory usage
-            return {
+            return ByteSize({
                 'memory': data_size['memory'] + other_size,
                 'disk': data_size['disk']
-            }
+            })
         else:
             # For non-cached objects, return total size
-            return data_size + other_size
-
+            return ByteSize(data_size + other_size)
