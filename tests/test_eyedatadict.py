@@ -1,9 +1,12 @@
 import unittest
 import sys
 import numpy as np
+import tempfile
+import os
+import shutil
 sys.path.insert(0,"..")
 import pypillometry as pp
-from pypillometry import EyeDataDict
+from pypillometry import EyeDataDict, CachedEyeDataDict
 
 class TestEyeDataDict(unittest.TestCase):
     def setUp(self):
@@ -17,6 +20,13 @@ class TestEyeDataDict(unittest.TestCase):
             'right_y': np.array([13.0, 14.0, 15.0]),
             'right_pupil': np.array([16.0, 17.0, 18.0])
         }
+        # Create a temporary directory for cache tests
+        self.cache_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        """Clean up after tests"""
+        # Remove temporary cache directory
+        shutil.rmtree(self.cache_dir)
 
     def test_initialization(self):
         """Test basic initialization of EyeDataDict"""
@@ -136,6 +146,115 @@ class TestEyeDataDict(unittest.TestCase):
         self.assertEqual(len(pupil_data.data), 2)  # left and right
         self.assertIn('left_pupil', pupil_data)
         self.assertIn('right_pupil', pupil_data)
+
+    def test_cached_initialization(self):
+        """Test initialization of CachedEyeDataDict"""
+        # Test initialization with memory cache only
+        d = CachedEyeDataDict(max_memory_mb=1)
+        self.assertEqual(len(d), 0)
+        self.assertTrue(hasattr(d, '_in_memory_data'))
+        self.assertTrue(hasattr(d, '_h5_file'))
+        
+        # Test initialization with disk cache
+        d = CachedEyeDataDict(cache_dir=self.cache_dir, max_memory_mb=1)
+        self.assertEqual(len(d), 0)
+        self.assertEqual(d._cache_dir, self.cache_dir)
+        self.assertTrue(os.path.exists(os.path.join(self.cache_dir, 'eyedata_cache.h5')))
+
+    def test_cached_set_get(self):
+        """Test setting and getting items with caching"""
+        # Initialize with empty dictionary
+        d = CachedEyeDataDict(cache_dir=self.cache_dir, max_memory_mb=1)
+        
+        # Create a test array
+        data = np.random.rand(1000)
+        
+        # Set data
+        d['test_data'] = data
+        
+        # Verify data is accessible
+        np.testing.assert_array_equal(d['test_data'], data)
+        
+        # Verify data is in HDF5 file
+        self.assertTrue('test_data' in d._h5_file['data'])
+
+    def test_cached_lru_eviction(self):
+        """Test LRU eviction of cached items"""
+        # Initialize with very small memory limit
+        d = CachedEyeDataDict(cache_dir=self.cache_dir, max_memory_mb=0.1)
+        
+        # Add multiple arrays of the same size
+        arrays = {}
+        for i in range(5):
+            key = f'array_{i}'
+            arrays[key] = np.random.rand(1000)  # ~8KB each
+            d[key] = arrays[key]
+        
+        # Access items in specific order to test LRU
+        d['array_0']  # Most recently used
+        d['array_2']  # Second most recently used
+        
+        # Add new data to force eviction
+        d['new_array'] = np.random.rand(1000)
+        
+        # Verify most recently accessed items are still in memory
+        self.assertIn('array_0', d._in_memory_data)
+        self.assertIn('array_2', d._in_memory_data)
+        
+        # Verify other items are in HDF5 file
+        for i in range(5):
+            key = f'array_{i}'
+            if key not in d._in_memory_data:
+                self.assertTrue(key in d._h5_file['data'])
+                # Verify data integrity
+                np.testing.assert_array_equal(d[key], arrays[key])
+
+    def test_cached_update(self):
+        """Test updating cached dictionary"""
+        d = CachedEyeDataDict(cache_dir=self.cache_dir, max_memory_mb=1)
+        
+        # Initial data
+        d.update(self.test_data)
+        
+        # Verify all data is accessible
+        for key, value in self.test_data.items():
+            np.testing.assert_array_equal(d[key], value)
+        
+        # Update with new data of the same shape
+        new_data = {
+            'left_x': np.array([10.0, 20.0, 30.0]),
+            'new_key': np.array([1.0, 2.0, 3.0])
+        }
+        d.update(new_data)
+        
+        # Verify updates
+        np.testing.assert_array_equal(d['left_x'], new_data['left_x'])
+        np.testing.assert_array_equal(d['new_key'], new_data['new_key'])
+        
+        # Verify other data is unchanged
+        for key in ['left_y', 'right_x', 'right_y']:
+            np.testing.assert_array_equal(d[key], self.test_data[key])
+
+    def test_cached_clear(self):
+        """Test clearing cached dictionary"""
+        d = CachedEyeDataDict(cache_dir=self.cache_dir, max_memory_mb=1)
+        
+        # Add data
+        d.update(self.test_data)
+        d['new_data'] = np.array([4.0, 5.0, 6.0])  # Same shape as test_data
+        
+        # Clear dictionary
+        d.clear_cache()
+        
+        # Verify memory cache is empty
+        self.assertEqual(len(d._in_memory_data), 0)
+        
+        # Verify HDF5 file is empty
+        self.assertEqual(len(d._h5_file['data']), 0)
+        self.assertEqual(len(d._h5_file['mask']), 0)
+        
+        # Verify dictionary is empty
+        self.assertEqual(len(d), 0)
 
 if __name__ == '__main__':
     unittest.main()

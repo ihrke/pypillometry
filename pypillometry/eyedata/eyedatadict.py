@@ -245,51 +245,64 @@ class CachedEyeDataDict(EyeDataDict):
         self._in_memory_mask[key] = mask
         self._array_sizes[key] = total_size
         self._current_memory_bytes += total_size
-        self._access_counts[key] = 0
+        self._access_counts[key] = max(self._access_counts.values(), default=0) + 1
 
     def __setitem__(self, key: str, value: np.ndarray):
-        """Store array in HDF5 and optionally in memory cache."""
-        key = self._validate_key(key)
+        """Set item in cache and HDF5."""
+        if value is None or len(value) == 0:
+            return
+            
         value = np.array(value)
-        
-        # Create default mask if not exists
-        if key not in self.mask:
-            self.mask[key] = np.zeros_like(value, dtype=int)
+        if self.length > 0 and self.shape is not None:
+            if value.shape != self.shape:
+                raise ValueError(f"Array must have shape {self.shape}, got {value.shape}")
+        if self.length == 0 or self.shape is None:
+            self.length = value.shape[0]
+            self.shape = value.shape
+        if np.any(np.array(self.shape) != np.array(value.shape)):
+            raise ValueError("Array must have same dimensions as existing arrays")
+            
+        key = self._validate_key(key)
+        value = value.astype(float)
+        mask = np.zeros(self.shape, dtype=int)
         
         # Store in HDF5
         if key in self._h5_file['data']:
             del self._h5_file['data'][key]
+        if key in self._h5_file['mask']:
             del self._h5_file['mask'][key]
-            
         self._h5_file['data'].create_dataset(key, data=value)
-        self._h5_file['mask'].create_dataset(key, data=self.mask[key])
+        self._h5_file['mask'].create_dataset(key, data=mask)
+        self._h5_file.flush()
         
-        # Update memory cache if needed
-        self._update_cache(key, value, self.mask[key])
+        # Update memory cache
+        self._update_cache(key, value, mask)
         
-        # Update access tracking
-        self._access_counts[key] = 0
+        # Update base class data
+        self.data[key] = value
+        self.mask[key] = mask
         
-        # Update length and shape if needed
-        if self.length == 0:
-            self.length = len(value)
-            self.shape = value.shape
+        # Initialize access count for new key
+        self._access_counts[key] = max(self._access_counts.values(), default=0) + 1
 
     def __getitem__(self, key: str) -> np.ndarray:
-        """Retrieve array from cache or HDF5."""
+        """Get item from cache or disk."""
         key = self._validate_key(key)
         
-        # Update access count
-        self._access_counts[key] = self._access_counts.get(key, 0) + 1
+        # Update access count for LRU
+        if key in self._access_counts:
+            self._access_counts[key] = max(self._access_counts.values()) + 1
         
-        # Try memory cache first
+        # Try to get from memory cache first
         if key in self._in_memory_data:
             return self._in_memory_data[key]
             
-        # Load from HDF5
+        # If not in memory, try to get from HDF5
         if key in self._h5_file['data']:
             data = self._h5_file['data'][key][:]
-            mask = self._h5_file['mask'][key][:]
+            mask = self._h5_file['mask'][key][:] if key in self._h5_file['mask'] else np.zeros_like(data, dtype=int)
+            
+            # Try to cache the data in memory
             self._update_cache(key, data, mask)
             return data
             
@@ -352,12 +365,27 @@ class CachedEyeDataDict(EyeDataDict):
         }
 
     def clear_cache(self):
-        """Clear memory cache."""
+        """Clear all cached data from memory and disk."""
+        # Clear memory cache
         self._in_memory_data.clear()
         self._in_memory_mask.clear()
         self._array_sizes.clear()
         self._access_counts.clear()
         self._current_memory_bytes = 0
+        
+        # Clear HDF5 file
+        if hasattr(self, '_h5_file'):
+            del self._h5_file['data']
+            del self._h5_file['mask']
+            self._h5_file.create_group('data')
+            self._h5_file.create_group('mask')
+            self._h5_file.flush()
+        
+        # Clear base class data
+        self.data.clear()
+        self.mask.clear()
+        self.length = 0
+        self.shape = None
 
     def __del__(self):
         """Clean up HDF5 file."""

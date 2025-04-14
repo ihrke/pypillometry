@@ -9,11 +9,11 @@ as well as tools for plotting and analyzing these data.
 """
 
 __all__ = ["logging_set_level", "logging_disable", "logging_enable",
-           "EyeDataDict", "EyeData", "GazeData", "PupilData", "GenericEyeData",
+           "EyeDataDict", "CachedEyeDataDict", "EyeData", "GazeData", "PupilData", "GenericEyeData",
            "example_datasets", "get_example_data", "get_interval_stats",
            "ERPD", "load_study_osf"]
 
-from .eyedata.eyedatadict import EyeDataDict
+from .eyedata.eyedatadict import EyeDataDict, CachedEyeDataDict
 from .eyedata.generic import GenericEyeData
 from .eyedata.eyedata import EyeData
 from .eyedata.gazedata import GazeData
