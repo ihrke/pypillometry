@@ -206,6 +206,9 @@ class ByteSize(int):
             return f"{sizeof_fmt(int(self) - self.cached_bytes)} (+{sizeof_fmt(self.cached_bytes)} cached)"
         else:
             return sizeof_fmt(int(self))
+        
+    def is_cached(self):
+        return self.cached_bytes > 0
             
     def __repr__(self):
         return self.__str__()

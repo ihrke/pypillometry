@@ -561,13 +561,9 @@ class GenericEyeData(ABC):
         pars=self.summary()
         del pars["name"]
         size = self.get_size()
-        if isinstance(size, dict):
-            size_str = f"{sizeof_fmt(size['memory'])} (memory) + {sizeof_fmt(size['disk'])} (disk)"
-        else:
-            size_str = sizeof_fmt(size)
         s="{cname}({name}, {size}):\n".format(cname=self.__class__.__name__,
                                               name=self.name, 
-                                              size=size_str)
+                                              size=str(size))
         flen=max([len(k) for k in pars.keys()])
         for k,v in pars.items():
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
@@ -1168,11 +1164,11 @@ class GenericEyeData(ABC):
                     other_size += sys.getsizeof(k)
                     other_size += sys.getsizeof(v)
         
-        if isinstance(data_size, dict):
+        if data_size.is_cached():
             # For cached objects, add other_size to memory usage
             return ByteSize({
-                'memory': data_size['memory'] + other_size,
-                'disk': data_size['disk']
+                'memory': data_size-data_size.cached_bytes + other_size,
+                'disk': data_size.cached_bytes
             })
         else:
             # For non-cached objects, return total size

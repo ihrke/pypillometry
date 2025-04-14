@@ -443,3 +443,19 @@ class CachedEyeDataDict(EyeDataDict):
             'memory': memory_size,
             'disk': disk_size
         })
+
+    def __repr__(self) -> str:
+        """Return a string representation of the cached dictionary."""
+        r = "CachedEyeDataDict(vars=%i,n=%i,shape=%s): \n" % (len(self.data), self.length, str(self.shape))
+        r += f"  Cache dir: {self._cache_dir}\n"
+        r += f"  Memory limit: {self._max_memory_bytes / (1024*1024):.1f} MB\n"
+        r += f"  Current memory: {self._current_memory_bytes / (1024*1024):.1f} MB\n"
+        r += f"  Arrays in memory: {len(self._in_memory_data)}\n"
+        r += f"  Arrays on disk: {len(self._h5_file['data'])}\n"
+        for k, v in self.data.items():
+            r += "  %s (%s): " % (k, v.dtype)
+            r += ", ".join(v.flat[0:(min(5, self.length))].astype(str).tolist())
+            if self.length > 5:
+                r += "..."
+            r += "\n"
+        return r
