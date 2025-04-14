@@ -9,7 +9,7 @@ All other eyedata classes should inherit from this class.
 from collections.abc import Iterable
 from .. import io
 from ..convenience import sizeof_fmt
-from .eyedatadict import EyeDataDict
+from .eyedatadict import CachedEyeDataDict, EyeDataDict
 from ..signal import baseline
 from ..intervals import stat_event_interval, get_interval_stats, merge_intervals
 
@@ -133,6 +133,11 @@ class GenericEyeData(ABC):
 
         ## Initialize caching if requested
         if use_cache:
+            # Create cache directory if it doesn't exist
+            if cache_dir is not None:
+                os.makedirs(cache_dir, exist_ok=True)
+                logger.info(f"Created cache directory at {cache_dir}")
+            
             # Convert to cached version
             old_data = self.data
             self.data = CachedEyeDataDict(cache_dir=cache_dir, max_memory_mb=max_memory_mb)

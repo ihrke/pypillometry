@@ -6,6 +6,7 @@ import os
 import tempfile
 import h5py
 from typing import Any
+from loguru import logger
 
 class EyeDataDict(MutableMapping):
     """
@@ -189,6 +190,10 @@ class CachedEyeDataDict(EyeDataDict):
         
         # Cache settings
         self._cache_dir = cache_dir or tempfile.mkdtemp()
+        if cache_dir is not None:
+            os.makedirs(cache_dir, exist_ok=True)
+            logger.info(f"Created cache directory at {cache_dir}")
+            
         self._max_memory_bytes = max_memory_mb * 1024 * 1024
         self._current_memory_bytes = 0
         
@@ -354,13 +359,18 @@ class CachedEyeDataDict(EyeDataDict):
 
     def get_cache_stats(self) -> Dict[str, Any]:
         """Get detailed cache statistics."""
+        # Calculate actual memory usage of in-memory arrays
+        memory_used = sum(arr.nbytes for arr in self._in_memory_data.values())
+        memory_used += sum(arr.nbytes for arr in self._in_memory_mask.values())
+        
         return {
-            'memory_used_mb': self._current_memory_bytes / (1024 * 1024),
+            'memory_used_mb': memory_used / (1024 * 1024),
             'memory_limit_mb': self._max_memory_bytes / (1024 * 1024),
             'arrays_in_memory': len(self._in_memory_data),
             'arrays_on_disk': len(self._h5_file['data']),
             'memory_usage_per_array': {
-                k: v / (1024 * 1024) for k, v in self._array_sizes.items()
+                k: (self._in_memory_data[k].nbytes + self._in_memory_mask[k].nbytes) / (1024 * 1024) 
+                for k in self._in_memory_data.keys()
             }
         }
 
