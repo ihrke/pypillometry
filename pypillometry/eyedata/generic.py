@@ -63,7 +63,6 @@ class GenericEyeData(ABC):
     fs: float  ## sampling rate
     data: EyeDataDict ## dictionary with data (contains ndarrays)
     tx: np.ndarray ## time vector
-    missing: np.ndarray ## missing data vector (1=missing, 0=not missing)
     event_onsets: np.ndarray ## vector with event onsets in time units
     inplace: bool ## whether to make changes in-place
     notes: str ## optional notes about the dataset
@@ -1142,7 +1141,6 @@ class GenericEyeData(ABC):
         # Calculate size of other attributes
         other_size = 0
         other_size += self.tx.nbytes
-        other_size += self.missing.nbytes if self.missing is not None else 0
         other_size += self.event_onsets.nbytes if self.event_onsets is not None else 0
         
         if isinstance(data_size, dict):
@@ -1154,3 +1152,4 @@ class GenericEyeData(ABC):
         else:
             # For non-cached objects, return total size
             return data_size + other_size
+
