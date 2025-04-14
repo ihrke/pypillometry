@@ -50,7 +50,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
 
 <div class="viewcode-block" id="EyeDataDict">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeDataDict">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeDataDict">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EyeDataDict</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A dictionary that contains 1-dimensional ndarrays of equal length</span>
@@ -75,7 +75,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>  <span class="c1"># use the free update to set keys</span>
 
 <div class="viewcode-block" id="EyeDataDict.get_available_eyes">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeDataDict.get_available_eyes">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeDataDict.get_available_eyes">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_available_eyes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a list of available eyes.</span>
@@ -93,7 +93,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="EyeDataDict.get_available_variables">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeDataDict.get_available_variables">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeDataDict.get_available_variables">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_available_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a list of available variables.</span>
@@ -103,7 +103,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="EyeDataDict.get_eye">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeDataDict.get_eye">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeDataDict.get_eye">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_eye</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eye</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;EyeDataDict&#39;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a subset EyeDataDict with all variables for a given eye.</span>
@@ -129,7 +129,7 @@ window.addEventListener("load", () => mermaid.run());
 
     
 <div class="viewcode-block" id="EyeDataDict.get_variable">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeDataDict.get_variable">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeDataDict.get_variable">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a subset EyeDataDict with all eyes for a given variable.</span>
@@ -198,7 +198,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">return</span> <span class="n">key</span>
 
 <div class="viewcode-block" id="EyeDataDict.copy">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeDataDict.copy">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeDataDict.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;EyeDataDict&#39;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a deep copy of the dictionary.&quot;&quot;&quot;</span>
         <span class="n">new_dict</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
@@ -208,7 +208,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="EyeDataDict.set_mask">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeDataDict.set_mask">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeDataDict.set_mask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set mask for a specific key.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
@@ -219,7 +219,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="EyeDataDict.get_mask">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeDataDict.get_mask">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeDataDict.get_mask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get mask for a specific key.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>

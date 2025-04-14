@@ -51,7 +51,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
 <div class="viewcode-block" id="GazeData">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.GazeData">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.GazeData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GazeData</span><span class="p">(</span><span class="n">GenericEyeData</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class representing Eye-Tracking data (x,y) from one or two eyes.</span>
@@ -109,6 +109,7 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                     <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Constructor</span>
 <span class="sd">            &quot;&quot;&quot;</span>
@@ -119,7 +120,7 @@ window.addEventListener("load", () => mermaid.run());
             
             <span class="bp">self</span><span class="o">.</span><span class="n">_init_common</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span>
                               <span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="p">,</span> 
-                              <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span>
+                              <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> <span class="n">notes</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="o">=</span><span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims_set</span><span class="o">=</span><span class="kc">False</span>
@@ -140,7 +141,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="GazeData.summary">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.GazeData.summary">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.GazeData.summary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Return a summary of the dataset as a dictionary.</span>
@@ -180,7 +181,7 @@ window.addEventListener("load", () => mermaid.run());
     
 
 <div class="viewcode-block" id="GazeData.set_experiment_info">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.GazeData.set_experiment_info">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.GazeData.set_experiment_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_experiment_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                             <span class="n">screen_eye_distance</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                             <span class="n">screen_resolution</span><span class="p">:</span> <span class="nb">tuple</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>

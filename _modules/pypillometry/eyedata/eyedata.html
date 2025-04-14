@@ -58,7 +58,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="EyeData">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeData">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EyeData</span><span class="p">(</span><span class="n">GazeData</span><span class="p">,</span><span class="n">PupilData</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class for handling eye-tracking data. This class is a subclass of GazeData</span>
@@ -125,6 +125,7 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                     <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
+                    <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the EyeData class.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -135,7 +136,8 @@ window.addEventListener("load", () => mermaid.run());
         
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_common</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> 
                           <span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="p">,</span> 
-                          <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span>
+                          <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> 
+                          <span class="n">notes</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="o">=</span><span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims_set</span><span class="o">=</span><span class="kc">False</span>
@@ -157,7 +159,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="EyeData.summary">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeData.summary">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeData.summary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a summary of the dataset as a dictionary.</span>
 
@@ -172,7 +174,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="EyeData.get_pupildata">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeData.get_pupildata">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeData.get_pupildata">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_pupildata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eye</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the pupil data as a PupilData object.</span>
@@ -210,7 +212,7 @@ window.addEventListener("load", () => mermaid.run());
     
 
 <div class="viewcode-block" id="EyeData.correct_pupil_foreshortening">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.EyeData.correct_pupil_foreshortening">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeData.correct_pupil_foreshortening">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">correct_pupil_foreshortening</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">midpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">store_as</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Correct pupil data using a simple algorithm to correct for foreshortening effects.</span>

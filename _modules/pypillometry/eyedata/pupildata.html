@@ -72,7 +72,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
 
 <div class="viewcode-block" id="PupilData">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.PupilData">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PupilData</span><span class="p">(</span><span class="n">GenericEyeData</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class representing pupillometric data. </span>
@@ -120,6 +120,7 @@ window.addEventListener("load", () => mermaid.run());
                  <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for PupilData object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -131,7 +132,7 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_common</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> 
                           <span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="p">,</span> 
-                          <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span>
+                          <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> <span class="n">notes</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span>
 
         <span class="c1"># store original</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">original</span><span class="o">=</span><span class="kc">None</span>
@@ -144,7 +145,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="PupilData.summary">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.PupilData.summary">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.summary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a summary of the dataset as a dictionary.</span>
@@ -175,7 +176,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="PupilData.pupil_lowpass_filter">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.PupilData.pupil_lowpass_filter">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_lowpass_filter">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_lowpass_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -204,7 +205,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="PupilData.pupil_smooth_window">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.PupilData.pupil_smooth_window">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_smooth_window">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_smooth_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">window</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;hanning&quot;</span><span class="p">,</span> <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -238,7 +239,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="PupilData.pupil_blinks_detect">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.PupilData.pupil_blinks_detect">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_blinks_detect">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_blinks_detect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">min_duration</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                       <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> 
@@ -324,7 +325,7 @@ window.addEventListener("load", () => mermaid.run());
 
     
 <div class="viewcode-block" id="PupilData.pupil_blinks_interpolate">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.PupilData.pupil_blinks_interpolate">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_blinks_interpolate">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_blinks_interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">list</span><span class="o">=</span><span class="p">[],</span>
                                  <span class="n">store_as</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span> 
@@ -422,7 +423,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="PupilData.pupil_estimate_baseline">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.PupilData.pupil_estimate_baseline">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_estimate_baseline">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_estimate_baseline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span>
                                 <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;envelope_iter_bspline_2&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -480,7 +481,7 @@ window.addEventListener("load", () => mermaid.run());
 
         
 <div class="viewcode-block" id="PupilData.pupil_estimate_response">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.PupilData.pupil_estimate_response">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_estimate_response">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_estimate_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                           <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> 
@@ -549,7 +550,7 @@ window.addEventListener("load", () => mermaid.run());
     
 
 <div class="viewcode-block" id="PupilData.get_erpd">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.PupilData.get_erpd">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.get_erpd">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_erpd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">erpd_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event_select</span><span class="p">,</span> 
                  <span class="n">eyes</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[],</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span>
                  <span class="n">baseline_win</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 

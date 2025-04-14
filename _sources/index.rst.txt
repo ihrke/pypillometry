@@ -1,5 +1,8 @@
-.. mdinclude:: ./README.md
+.. include:: ../README.md
+   :parser: myst_parser.sphinx_
 
+
+test2
 
 Documentation
 =============
@@ -7,16 +10,14 @@ Documentation
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
-   docs/installation
-   docs/usage
-   docs/notebooks
-   docs/api
-   docs/dev
-   docs/future
-
-..
-   .. include:: /docs/notebooks.rst
+   
+   installation
+   usage
+   notebooks
+   examples/share_study
+   api
+   dev
+   future
 
 
 Indices and tables

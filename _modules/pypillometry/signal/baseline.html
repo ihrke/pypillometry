@@ -67,7 +67,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="bspline">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.bspline">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.bspline">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">bspline</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">spline_degree</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Re-implementation from https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html.</span>
@@ -119,7 +119,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="butter_lowpass">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.butter_lowpass">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.butter_lowpass">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">butter_lowpass</span><span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get lowpass-filter coefficients for Butterworth-filter.</span>
@@ -147,7 +147,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="butter_lowpass_filter">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.butter_lowpass_filter">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.butter_lowpass_filter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">butter_lowpass_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Lowpass-filter signal using a Butterworth-filter.</span>
@@ -176,7 +176,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="downsample">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.downsample">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.downsample">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">downsample</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">R</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Simple downsampling scheme using mean within the downsampling window.</span>
@@ -205,7 +205,7 @@ window.addEventListener("load", () => mermaid.run());
 
     
 <div class="viewcode-block" id="baseline_envelope_iter_bspline">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.baseline_envelope_iter_bspline">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.baseline_envelope_iter_bspline">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">baseline_envelope_iter_bspline</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span> <span class="n">fsd</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
                                    <span class="n">lam_sig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                                    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
@@ -357,7 +357,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="baseline_envelope">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.baseline_envelope">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.baseline_envelope">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">baseline_envelope</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">prominence_thr</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">interp_method</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Extract baseline based on the lower envelope of the (filtered) signal.</span>
@@ -434,7 +434,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="baseline_pupil_model">
-<a class="viewcode-back" href="../../../docs/api.html#pypillometry.signal.baseline.baseline_pupil_model">[docs]</a>
+<a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.baseline_pupil_model">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">baseline_pupil_model</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">lp1</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lp2</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Extract baseline based on filtering after removing stim-locked activity.</span>

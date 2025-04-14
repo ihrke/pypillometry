@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Summarizing pupillometric data &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Event-Related Pupil Dilations" href="erpds.html" />
+    <link rel="prev" title="Plotting pupillometric data for exploration" href="plotting.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="erpds.html" title="Event-Related Pupil Dilations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plotting.html" title="Plotting pupillometric data for exploration"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Summarizing pupillometric data</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/summary.ipynb">summary.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=summary.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Summarizing-pupillometric-data">
+<h1>Summarizing pupillometric data<a class="headerlink" href="#Summarizing-pupillometric-data" title="Link to this heading">¶</a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+</pre></div>
+</div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> package provides several functions for summarizing datasets. Simply <code class="docutils literal notranslate"><span class="pre">print()</span></code>ing a <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> object gives a readable summary of the main properties of the dataset and also prints the complete history of operations applied to the dataset.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">create_fake_pupildata</span><span class="p">(</span><span class="n">ntrials</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PupilData(fake_nutuheho, 13.9MiB):
+ n                 : 113453
+ nmiss             : 0
+ perc_miss         : 0.0
+ nevents           : 200
+ nblinks           : 0
+ ninterpolated     : 0
+ blinks_per_min    : 0.0
+ fs                : 1000.0
+ duration_minutes  : 1.8908833333333335
+ start_min         : 0.0
+ end_min           : 1.8908780800185903
+ baseline_estimated: False
+ response_estimated: False
+ History:
+ *
+
+</pre></div></div>
+</div>
+<p>By calling the function <code class="docutils literal notranslate"><span class="pre">summary()</span></code>, summary data is returned in <code class="docutils literal notranslate"><span class="pre">dict</span></code> form:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;name&#39;: &#39;fake_nutuheho&#39;,
+ &#39;n&#39;: 113453,
+ &#39;nmiss&#39;: 0,
+ &#39;perc_miss&#39;: 0.0,
+ &#39;nevents&#39;: 200,
+ &#39;nblinks&#39;: 0,
+ &#39;ninterpolated&#39;: 0,
+ &#39;blinks_per_min&#39;: 0.0,
+ &#39;fs&#39;: 1000.0,
+ &#39;duration_minutes&#39;: 1.8908833333333335,
+ &#39;start_min&#39;: 0.0,
+ &#39;end_min&#39;: 1.8908780800185903,
+ &#39;baseline_estimated&#39;: False,
+ &#39;response_estimated&#39;: False}
+</pre></div></div>
+</div>
+<p>Using the package <code class="docutils literal notranslate"><span class="pre">pandas</span></code>, this allows to rapidly summarize properties of many datasets in a table.</p>
+<p>To illustrate, we create a list of datasets, each corresponding to one individual subject:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nsubjs</span><span class="o">=</span><span class="mi">10</span>
+<span class="n">datasets</span><span class="o">=</span><span class="p">[</span><span class="n">pp</span><span class="o">.</span><span class="n">create_fake_pupildata</span><span class="p">(</span><span class="n">ntrials</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsubjs</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+<p>We can now call <code class="docutils literal notranslate"><span class="pre">summary()</span></code> for each of the objects and merge the resulting <code class="docutils literal notranslate"><span class="pre">dict</span></code> into a table form:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>n</th>
+      <th>nmiss</th>
+      <th>perc_miss</th>
+      <th>nevents</th>
+      <th>nblinks</th>
+      <th>ninterpolated</th>
+      <th>blinks_per_min</th>
+      <th>fs</th>
+      <th>duration_minutes</th>
+      <th>start_min</th>
+      <th>end_min</th>
+      <th>baseline_estimated</th>
+      <th>response_estimated</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>fake_tamofase</td>
+      <td>113832</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>200</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1000.0</td>
+      <td>1.897200</td>
+      <td>0.0</td>
+      <td>1.897196</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>fake_lobavifu</td>
+      <td>114425</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>200</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1000.0</td>
+      <td>1.907083</td>
+      <td>0.0</td>
+      <td>1.907083</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>fake_paketomu</td>
+      <td>112977</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>200</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1000.0</td>
+      <td>1.882950</td>
+      <td>0.0</td>
+      <td>1.882941</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>fake_hiligovi</td>
+      <td>114345</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>200</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1000.0</td>
+      <td>1.905750</td>
+      <td>0.0</td>
+      <td>1.905735</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>fake_kolavebo</td>
+      <td>113732</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>200</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1000.0</td>
+      <td>1.895533</td>
+      <td>0.0</td>
+      <td>1.895517</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>fake_ropopodi</td>
+      <td>113661</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>200</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1000.0</td>
+      <td>1.894350</td>
+      <td>0.0</td>
+      <td>1.894346</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>fake_rilimolo</td>
+      <td>114402</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>200</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1000.0</td>
+      <td>1.906700</td>
+      <td>0.0</td>
+      <td>1.906698</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>fake_gapudome</td>
+      <td>113891</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>200</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1000.0</td>
+      <td>1.898183</td>
+      <td>0.0</td>
+      <td>1.898178</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>fake_belobeva</td>
+      <td>113932</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>200</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1000.0</td>
+      <td>1.898867</td>
+      <td>0.0</td>
+      <td>1.898865</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>fake_rihatofi</td>
+      <td>113304</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>200</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1000.0</td>
+      <td>1.888400</td>
+      <td>0.0</td>
+      <td>1.888393</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/summary.ipynb">summary.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=summary.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="plotting.html"
+                          title="previous chapter">Plotting pupillometric data for exploration</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="erpds.html"
+                          title="next chapter">Event-Related Pupil Dilations</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/summary.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="erpds.html" title="Event-Related Pupil Dilations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="plotting.html" title="Plotting pupillometric data for exploration"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Summarizing pupillometric data</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

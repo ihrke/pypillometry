@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Importing Eye data &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Importing Eye data</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/eyedata.ipynb">eyedata.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=eyedata.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Importing-Eye-data">
+<h1>Importing Eye data<a class="headerlink" href="#Importing-Eye-data" title="Link to this heading">¶</a></h1>
+<ul class="simple">
+<li><p>☐ get_pupildata() or the like</p></li>
+<li><p>☐ re-implement PupilData to use EyeDataDict (use “switch_eye” function?)</p></li>
+<li><p>☒ plot_scanpath()</p></li>
+<li><p>☒ plot_heatmap()</p></li>
+<li><p>☐ interpolation and preprocessing (transfer from pupil to eyetracking)</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">__package_path__</span><span class="p">)</span> <span class="c1"># check that correct version is being used</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/opt/anaconda3/envs/pypil/lib/python3.12/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+/home/mmi041/Dropbox/work/projects/pupil/pypillometry/pypillometry
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## loading the raw samples from the asc file</span>
+<span class="n">fname_samples</span><span class="o">=</span><span class="s2">&quot;../data/002_rlmw_samples.asc&quot;</span>
+<span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="s2">&quot;left_p&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;right_x&quot;</span><span class="p">,</span> <span class="s2">&quot;right_y&quot;</span><span class="p">,</span> <span class="s2">&quot;right_p&quot;</span><span class="p">])</span>
+
+<span class="c1">## Eyelink tracker puts &quot;   .&quot; when no data is available for x/y coordinates</span>
+<span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
+<span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="o">.</span><span class="n">values</span>
+<span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="o">.</span><span class="n">values</span>
+<span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="o">.</span><span class="n">values</span>
+<span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_6074/799129609.py:3: ParserWarning: Length of header or names does not match length of data. This leads to a loss of data with index_col=False.
+  df=pd.read_table(fname_samples, index_col=False,
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Loading the events from the events file</span>
+<span class="n">fname_events</span><span class="o">=</span><span class="s2">&quot;../data/002_rlmw_events.asc&quot;</span>
+<span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">events</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+<span class="c1"># keep only lines starting with &quot;MSG&quot;</span>
+<span class="n">events</span><span class="o">=</span><span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MSG&quot;</span><span class="p">)]</span>
+<span class="n">experiment_start_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">&quot;experiment_start&quot;</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">[</span><span class="n">experiment_start_index</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+<span class="n">df_ev</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
+<span class="n">df_ev</span><span class="o">=</span><span class="n">df_ev</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
+<span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;event&quot;</span><span class="p">]</span>
+<span class="n">df_ev</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>event</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>7269756</td>
+      <td>F_1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>7270256</td>
+      <td>S_1_1_5</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>7271352</td>
+      <td>C_1_5_2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>7271589</td>
+      <td>R_1_15</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>7273355</td>
+      <td>F_2</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1315</th>
+      <td>8453467</td>
+      <td>R_300_18</td>
+    </tr>
+    <tr>
+      <th>1316</th>
+      <td>8455583</td>
+      <td>F_300</td>
+    </tr>
+    <tr>
+      <th>1317</th>
+      <td>8456083</td>
+      <td>P_300</td>
+    </tr>
+    <tr>
+      <th>1318</th>
+      <td>8456608</td>
+      <td>CP_300_1</td>
+    </tr>
+    <tr>
+      <th>1319</th>
+      <td>8456833</td>
+      <td>RP_300</td>
+    </tr>
+  </tbody>
+</table>
+<p>1320 rows × 2 columns</p>
+</div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeData</span><span class="p">,</span> <span class="n">EyeDataDict</span><span class="p">,</span> <span class="n">keephistory</span><span class="p">,</span> <span class="n">_inplace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilData</span>
+
+
+<span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">correct_pupil_foreshortening</span><span class="o">=</span><span class="n">correct_pupil_foreshortening</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Creating EyeData object that contains both X-Y coordinates</span>
+<span class="c1"># and pupil data</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;002_ceylin&quot;</span><span class="p">,</span>
+               <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span>
+               <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span>
+               <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
+               <span class="n">keep_orig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
+            <span class="o">.</span><span class="n">reset_time</span><span class="p">()</span>
+<span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EyeData(002_ceylin_va, 65.0MiB):
+ n                   : 597301
+ sampling_rate       : 500.0
+ data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;right_pupil&#39;]
+ nevents             : 1320
+ screen_limits       : not set
+ physical_screen_size: not set
+ screen_eye_distance : not set
+ nmiss               : 0
+ perc_miss           : 0.0
+ duration_minutes    : 19.910033333333335
+ start_min           : 0.0
+ end_min             : 19.91
+ glimpse             : EyeDataDict(vars=6,n=597301):
+  left_x (float64): 655.6, 655.7, 655.0, 654.5, 655.0...
+  left_y (float64): 599.9, 598.9, 597.6, 597.8, 597.8...
+  left_pupil (float64): 1121.0, 1122.0, 1124.0, 1126.0, 1126.0...
+  right_x (float64): 773.1, 773.8, 774.8, 776.3, 776.7...
+  right_y (float64): 594.2, 593.9, 596.5, 597.4, 597.3...
+  right_pupil (float64): 949.0, 951.0, 956.0, 959.0, 960.0...
+
+ History:
+ *
+ └ fill_time_discontinuities()
+  └ reset_time()
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span>
+<span class="c1"># clean pupil data using XY saccade data</span>
+<span class="n">d</span><span class="o">.</span><span class="n">set_experiment_info</span><span class="p">(</span><span class="n">screen_eye_distance</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+                      <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span>
+                      <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+<span class="n">pd1</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+<span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">correct_pupil_foreshortening</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+<span class="n">pd2</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<span class="n">pd1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="n">pd2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Using matplotlib backend: TkAgg
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">pd1</span><span class="o">.</span><span class="n">sy</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+True
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd2</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_duration&quot;</span><span class="p">],</span><span class="n">strategies</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;strategies&quot;</span><span class="p">],</span>
+                     <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">],</span>
+                     <span class="n">min_onset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_onset_len&quot;</span><span class="p">],</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_offset_len&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">IndexError</span>                                Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[46], line 1</span>
+<span class="ansi-green-fg">----&gt; 1</span> <span class="ansi-yellow-bg">pd2</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">blinks_detect</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">min_duration</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">min_duration</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg">strategies</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">strategies</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> <span class="ansi-yellow-bg">                     </span><span class="ansi-yellow-bg">vel_onset</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">vel_onset</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">vel_offset</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">vel_offset</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> <span class="ansi-yellow-bg">                     </span><span class="ansi-yellow-bg">min_onset_len</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">min_onset_len</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">min_offset_len</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">min_offset_len</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">)</span>
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata_generic.py:30</span>, in <span class="ansi-cyan-fg">keephistory.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     28</span> <span style="color: rgb(175,0,255)">@functools</span><span style="color: rgb(98,98,98)">.</span>wraps(func)
+<span class="ansi-green-intense-fg ansi-bold">     29</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span style="color: rgb(0,0,255)">wrapper</span>(<span style="color: rgb(98,98,98)">*</span>args,<span style="color: rgb(98,98,98)">*</span><span style="color: rgb(98,98,98)">*</span>kwargs):
+<span class="ansi-green-fg">---&gt; 30</span>     obj<span style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">func</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     31</span>     funcname<span style="color: rgb(98,98,98)">=</span>func<span style="color: rgb(98,98,98)">.</span><span style="color: rgb(0,0,135)">__name__</span>
+<span class="ansi-green-intense-fg ansi-bold">     32</span>     argstr<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">,</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(98,98,98)">.</span>join([<span style="color: rgb(175,0,0)">&#34;</span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(98,98,98)">%</span>(v) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> v <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> args[<span style="color: rgb(98,98,98)">1</span>:]])
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/pupildata.py:758</span>, in <span class="ansi-cyan-fg">PupilData.blinks_detect</span><span class="ansi-blue-fg">(self, min_duration, blink_val, winsize, vel_onset, vel_offset, min_onset_len, min_offset_len, strategies, units, inplace)</span>
+<span class="ansi-green-intense-fg ansi-bold">    755</span>     blinks_vel<span style="color: rgb(98,98,98)">=</span>np<span style="color: rgb(98,98,98)">.</span>array([])
+<span class="ansi-green-intense-fg ansi-bold">    757</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">zero</span><span style="color: rgb(175,0,0)">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> strategies:
+<span class="ansi-green-fg">--&gt; 758</span>     blinks_zero<span style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">detect_blinks_zero</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">sy</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">1</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">blink_val</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    759</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-intense-fg ansi-bold">    760</span>     blinks_zero<span style="color: rgb(98,98,98)">=</span>np<span style="color: rgb(98,98,98)">.</span>array([])
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/preproc.py:153</span>, in <span class="ansi-cyan-fg">detect_blinks_zero</span><span class="ansi-blue-fg">(sy, min_duration, blink_val)</span>
+<span class="ansi-green-intense-fg ansi-bold">    151</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-intense-fg ansi-bold">    152</span>         starts<span style="color: rgb(98,98,98)">=</span>starts[:<span style="color: rgb(98,98,98)">-</span><span style="color: rgb(98,98,98)">1</span>] <span style="color: rgb(95,135,135)"># drop last start</span>
+<span class="ansi-green-fg">--&gt; 153</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-yellow-bg">ends</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">-</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">1</span><span class="ansi-yellow-bg">]</span><span style="color: rgb(98,98,98)">==</span>x<span style="color: rgb(98,98,98)">.</span>size:
+<span class="ansi-green-intense-fg ansi-bold">    154</span>     ends[<span style="color: rgb(98,98,98)">-</span><span style="color: rgb(98,98,98)">1</span>]<span style="color: rgb(98,98,98)">-</span><span style="color: rgb(98,98,98)">=</span><span style="color: rgb(98,98,98)">1</span>
+<span class="ansi-green-intense-fg ansi-bold">    155</span> blinks<span style="color: rgb(98,98,98)">=</span>[ [start,end] <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> start,end <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">zip</span>(starts,ends) <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> end<span style="color: rgb(98,98,98)">-</span>start<span style="color: rgb(98,98,98)">&gt;</span><span style="color: rgb(98,98,98)">=</span>min_duration]
+
+<span class="ansi-red-fg">IndexError</span>: index -1 is out of bounds for axis 0 with size 0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#pd = d.get_pupildata(&quot;left&quot;)</span>
+<span class="n">pd</span><span class="o">=</span><span class="n">pd2</span>
+<span class="n">default_param</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;min_duration&quot;</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span>    <span class="c1"># min duration of a blink</span>
+               <span class="s2">&quot;min_offset_len&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>   <span class="c1"># offset/onset-length for blink-detection</span>
+               <span class="s2">&quot;min_onset_len&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span>
+               <span class="s2">&quot;vel_onset&quot;</span><span class="p">:</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span>       <span class="c1"># velocity thresholds for onset and offset</span>
+               <span class="s2">&quot;vel_offset&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span>
+               <span class="s2">&quot;strategies&quot;</span><span class="p">:[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span><span class="s2">&quot;velocity&quot;</span><span class="p">],</span>  <span class="c1"># strategies for blink-detection</span>
+               <span class="s2">&quot;distance&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span>        <span class="c1"># minimum distance between two blinks</span>
+               <span class="s2">&quot;margin&quot;</span><span class="p">:(</span><span class="mi">50</span><span class="p">,</span><span class="mi">150</span><span class="p">),</span>     <span class="c1"># margins for Mahot algorithm</span>
+               <span class="s2">&quot;cutoff&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">}</span>            <span class="c1"># lowpass-filter cutoff (Hz)</span>
+<span class="n">pars</span><span class="o">=</span><span class="n">default_param</span>
+<span class="n">pd3</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_duration&quot;</span><span class="p">],</span><span class="n">strategies</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;strategies&quot;</span><span class="p">],</span>
+                     <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">],</span>
+                     <span class="n">min_onset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_onset_len&quot;</span><span class="p">],</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_offset_len&quot;</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">blinks_merge</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">blinks_interp_mahot</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;margin&quot;</span><span class="p">],</span> <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;cutoff&quot;</span><span class="p">])</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">plot_segments</span><span class="p">(</span><span class="n">overlay</span><span class="o">=</span><span class="n">pd2</span><span class="p">,</span> <span class="n">pdffile</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.pdf&quot;</span><span class="o">%</span><span class="k">pd</span>.name, ylim=(pd2.sy.min(), pd2.sy.max()))
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">IndexError</span>                                Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[43], line 13</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> default_param<span style="color: rgb(98,98,98)">=</span>{<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">min_duration</span><span style="color: rgb(175,0,0)">&#34;</span>:<span style="color: rgb(98,98,98)">10</span>,    <span style="color: rgb(95,135,135)"># min duration of a blink</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span>                <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">min_offset_len</span><span style="color: rgb(175,0,0)">&#34;</span>:<span style="color: rgb(98,98,98)">2</span>,   <span style="color: rgb(95,135,135)"># offset/onset-length for blink-detection</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span>                <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">min_onset_len</span><span style="color: rgb(175,0,0)">&#34;</span>:<span style="color: rgb(98,98,98)">3</span>,
+<span class="ansi-green-fg">   (...)</span>
+<span class="ansi-green-intense-fg ansi-bold">     10</span>                <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">margin</span><span style="color: rgb(175,0,0)">&#34;</span>:(<span style="color: rgb(98,98,98)">50</span>,<span style="color: rgb(98,98,98)">150</span>),     <span style="color: rgb(95,135,135)"># margins for Mahot algorithm</span>
+<span class="ansi-green-intense-fg ansi-bold">     11</span>                <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">cutoff</span><span style="color: rgb(175,0,0)">&#34;</span>:<span style="color: rgb(98,98,98)">5</span>}            <span style="color: rgb(95,135,135)"># lowpass-filter cutoff (Hz)</span>
+<span class="ansi-green-intense-fg ansi-bold">     12</span> pars<span style="color: rgb(98,98,98)">=</span>default_param
+<span class="ansi-green-fg">---&gt; 13</span> pd3<span style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pd</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">blinks_detect</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">min_duration</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">min_duration</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg">strategies</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">strategies</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">     14</span> <span class="ansi-yellow-bg">                     </span><span class="ansi-yellow-bg">vel_onset</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">vel_onset</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">vel_offset</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">vel_offset</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">     15</span> <span class="ansi-yellow-bg">                     </span><span class="ansi-yellow-bg">min_onset_len</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">min_onset_len</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">min_offset_len</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">pars</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">min_offset_len</span><span class="ansi-yellow-bg" style="color: rgb(175,0,0)">&#34;</span><span class="ansi-yellow-bg">]</span><span class="ansi-yellow-bg">)</span>\
+<span class="ansi-green-intense-fg ansi-bold">     16</span>             <span style="color: rgb(98,98,98)">.</span>blinks_merge(distance<span style="color: rgb(98,98,98)">=</span>pars[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">distance</span><span style="color: rgb(175,0,0)">&#34;</span>])\
+<span class="ansi-green-intense-fg ansi-bold">     17</span>             <span style="color: rgb(98,98,98)">.</span>blinks_interp_mahot(margin<span style="color: rgb(98,98,98)">=</span>pars[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">margin</span><span style="color: rgb(175,0,0)">&#34;</span>], vel_onset<span style="color: rgb(98,98,98)">=</span>pars[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">vel_onset</span><span style="color: rgb(175,0,0)">&#34;</span>], vel_offset<span style="color: rgb(98,98,98)">=</span>pars[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">vel_offset</span><span style="color: rgb(175,0,0)">&#34;</span>])\
+<span class="ansi-green-intense-fg ansi-bold">     18</span>             <span style="color: rgb(98,98,98)">.</span>lowpass_filter(cutoff<span style="color: rgb(98,98,98)">=</span>pars[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">cutoff</span><span style="color: rgb(175,0,0)">&#34;</span>])
+<span class="ansi-green-intense-fg ansi-bold">     19</span> pd<span style="color: rgb(98,98,98)">.</span>plot_segments(overlay<span style="color: rgb(98,98,98)">=</span>pd2, pdffile<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(175,0,0)">&#34;</span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span style="color: rgb(175,0,0)">.pdf</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(98,98,98)">%</span>pd<span style="color: rgb(98,98,98)">.</span>name, ylim<span style="color: rgb(98,98,98)">=</span>(pd2<span style="color: rgb(98,98,98)">.</span>sy<span style="color: rgb(98,98,98)">.</span>min(), pd2<span style="color: rgb(98,98,98)">.</span>sy<span style="color: rgb(98,98,98)">.</span>max()))
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata_generic.py:30</span>, in <span class="ansi-cyan-fg">keephistory.&lt;locals&gt;.wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     28</span> <span style="color: rgb(175,0,255)">@functools</span><span style="color: rgb(98,98,98)">.</span>wraps(func)
+<span class="ansi-green-intense-fg ansi-bold">     29</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span> <span style="color: rgb(0,0,255)">wrapper</span>(<span style="color: rgb(98,98,98)">*</span>args,<span style="color: rgb(98,98,98)">*</span><span style="color: rgb(98,98,98)">*</span>kwargs):
+<span class="ansi-green-fg">---&gt; 30</span>     obj<span style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">func</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">kwargs</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     31</span>     funcname<span style="color: rgb(98,98,98)">=</span>func<span style="color: rgb(98,98,98)">.</span><span style="color: rgb(0,0,135)">__name__</span>
+<span class="ansi-green-intense-fg ansi-bold">     32</span>     argstr<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">,</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(98,98,98)">.</span>join([<span style="color: rgb(175,0,0)">&#34;</span><span class="ansi-bold" style="color: rgb(175,95,135)">%s</span><span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(98,98,98)">%</span>(v) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> v <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> args[<span style="color: rgb(98,98,98)">1</span>:]])
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/pupildata.py:758</span>, in <span class="ansi-cyan-fg">PupilData.blinks_detect</span><span class="ansi-blue-fg">(self, min_duration, blink_val, winsize, vel_onset, vel_offset, min_onset_len, min_offset_len, strategies, units, inplace)</span>
+<span class="ansi-green-intense-fg ansi-bold">    755</span>     blinks_vel<span style="color: rgb(98,98,98)">=</span>np<span style="color: rgb(98,98,98)">.</span>array([])
+<span class="ansi-green-intense-fg ansi-bold">    757</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">zero</span><span style="color: rgb(175,0,0)">&#34;</span> <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> strategies:
+<span class="ansi-green-fg">--&gt; 758</span>     blinks_zero<span style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">detect_blinks_zero</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">sy</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">1</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">blink_val</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    759</span> <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-intense-fg ansi-bold">    760</span>     blinks_zero<span style="color: rgb(98,98,98)">=</span>np<span style="color: rgb(98,98,98)">.</span>array([])
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/preproc.py:153</span>, in <span class="ansi-cyan-fg">detect_blinks_zero</span><span class="ansi-blue-fg">(sy, min_duration, blink_val)</span>
+<span class="ansi-green-intense-fg ansi-bold">    151</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-intense-fg ansi-bold">    152</span>         starts<span style="color: rgb(98,98,98)">=</span>starts[:<span style="color: rgb(98,98,98)">-</span><span style="color: rgb(98,98,98)">1</span>] <span style="color: rgb(95,135,135)"># drop last start</span>
+<span class="ansi-green-fg">--&gt; 153</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span class="ansi-yellow-bg">ends</span><span class="ansi-yellow-bg">[</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">-</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">1</span><span class="ansi-yellow-bg">]</span><span style="color: rgb(98,98,98)">==</span>x<span style="color: rgb(98,98,98)">.</span>size:
+<span class="ansi-green-intense-fg ansi-bold">    154</span>     ends[<span style="color: rgb(98,98,98)">-</span><span style="color: rgb(98,98,98)">1</span>]<span style="color: rgb(98,98,98)">-</span><span style="color: rgb(98,98,98)">=</span><span style="color: rgb(98,98,98)">1</span>
+<span class="ansi-green-intense-fg ansi-bold">    155</span> blinks<span style="color: rgb(98,98,98)">=</span>[ [start,end] <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> start,end <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> <span style="color: rgb(0,135,0)">zip</span>(starts,ends) <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> end<span style="color: rgb(98,98,98)">-</span>start<span style="color: rgb(98,98,98)">&gt;</span><span style="color: rgb(98,98,98)">=</span>min_duration]
+
+<span class="ansi-red-fg">IndexError</span>: index -1 is out of bounds for axis 0 with size 0
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fixcross</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">ttype</span><span class="p">,</span><span class="n">trialnum</span><span class="p">,</span><span class="o">*</span><span class="n">rest</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">trial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;F&quot;</span> <span class="ow">and</span> <span class="n">trialnum</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;F&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">response</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">ttype</span><span class="p">,</span><span class="n">trialnum</span><span class="p">,</span><span class="o">*</span><span class="n">rest</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">trial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;R&quot;</span> <span class="ow">or</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;RP&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">trialnum</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;R&quot;</span> <span class="ow">or</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;RP&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">trialno</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">trialno</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trialno</span><span class="p">)</span>
+
+<span class="n">d</span><span class="o">.</span><span class="n">test_selector</span><span class="p">(</span><span class="n">fixcross</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+array([&#39;F_10&#39;], dtype=object)
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">&quot;F_1&quot;</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">fixcross</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">trialno</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">trialno</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span> <span class="p">(</span><span class="n">fixcross</span><span class="p">,</span> <span class="n">response</span><span class="p">),</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="n">ints</span>
+
+<span class="n">d</span><span class="o">.</span><span class="n">plot_scanpath</span><span class="p">(</span> <span class="n">ints</span><span class="p">[</span><span class="mi">20</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="n">ints</span><span class="p">[</span><span class="mi">20</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">plot_onsets</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot_scanpath</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;blub&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot_heatmap</span><span class="p">(</span><span class="n">plot_eyes</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">14</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">,</span> <span class="n">plot_onsets</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/eyedata.ipynb">eyedata.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=eyedata.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/eyedata.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Importing Eye data</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>
