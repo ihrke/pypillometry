@@ -16,6 +16,8 @@ from typing import Dict
 from loguru import logger
 
 import requests
+
+from pypillometry.convenience import change_dir
 def get_osf_project_files(osf_id: str) -> Dict[str, Dict[str, str]]:
     """
     Get all file IDs from an OSF project.
@@ -289,16 +291,17 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
     # Load the data using the read_subject function from the config module
     study_data = {}
     logger.info("Loading subject data")
-    for subject_id in subject_ids:
-        logger.debug(f"Loading subject {subject_id}")
-        # Use the read_subject function from the config module
-        info = config.raw_data[subject_id]
-        # add local path to the paths in the info dict
-        for key, value in info.items():
-            if isinstance(value, str) and os.path.exists(os.path.join(path, value)):
-                info[key] = os.path.join(path, value)
-        info["subject"] = subject_id
-        study_data[subject_id] = config.read_subject(info)
+    with change_dir(path):
+        for subject_id in subject_ids:
+            logger.debug(f"Loading subject {subject_id}")
+            # Use the read_subject function from the config module
+            info = config.raw_data[subject_id]
+            # add local path to the paths in the info dict
+            for key, value in info.items():
+                if isinstance(value, str) and os.path.exists(value):
+                    info[key] = value
+            info["subject"] = subject_id
+            study_data[subject_id] = config.read_subject(info)
         
     return study_data, config
 

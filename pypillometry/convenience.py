@@ -9,7 +9,32 @@ Some convenience functions.
 import numpy as np
 import pandas as pd
 from typing import Union, Dict
+from pathlib import Path
+from contextlib import contextmanager
+import os
 
+@contextmanager
+def change_dir(path: Union[str, Path]):
+    """Temporarily change the current working directory.
+    
+    Parameters
+    ----------
+    path : str or Path
+        Directory to change to
+        
+    Examples
+    --------
+    >>> with change_dir("/path/to/dir"):
+    ...     # do something in that directory
+    ...     pass
+    >>> # back in original directory
+    """
+    old_dir = Path.cwd()
+    try:
+        os.chdir(Path(path))
+        yield
+    finally:
+        os.chdir(old_dir)
 
 def mask_to_intervals(mask):
     """
