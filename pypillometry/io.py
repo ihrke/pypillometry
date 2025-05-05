@@ -97,6 +97,10 @@ def get_osf_project_files(osf_id: str) -> Dict[str, Dict[str, str]]:
     
     return files
 
+
+
+
+
 def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False):
     """
     Read a study from OSF using the configuration file.
@@ -120,6 +124,7 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     config: module
         Module containing the configuration (pypillometry_conf.py imported as a module)
     """
+    logger.info(f"Loading study from OSF project '{osf_id}'")
     # Create cache directory if it doesn't exist
     os.makedirs(path, exist_ok=True)
     cache_file = os.path.join(path, "info_osf.pkl")
@@ -225,6 +230,77 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         study_data[subject_id] = config.read_subject(info)
         
     return study_data, config
+
+def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subjects: list[str] = None):
+    """
+    Read a study from a local directory using the configuration file.
+    
+    Parameters
+    ----------
+    path : str
+        Local path where the study data is stored
+    config_file : str, optional
+        Name of the configuration file. Default is "pypillometry_conf.py"
+    subjects : list[str], optional
+        List of subject IDs to load. If None, all subjects will be loaded.
+        If a subject ID is provided that doesn't exist in the data, it will be skipped.
+        
+    Returns
+    -------
+    study_data: dict
+        Dictionary containing the loaded study data
+    config: module
+        Module containing the configuration (pypillometry_conf.py imported as a module)
+    """
+    logger.info(f"Loading study from local directory '{path}'")
+    
+    # Check if path exists
+    if not os.path.exists(path):
+        raise ValueError(f"Path '{path}' does not exist")
+        
+    # Find and load config file
+    config_path = os.path.join(path, config_file)
+    if not os.path.exists(config_path):
+        raise ValueError(f"Could not find {config_file} in {path}")
+        
+    # Load and parse config
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("pypillometry_conf", config_path)
+    config = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(config)
+    
+    # Filter subjects if specified
+    subject_ids = list(config.raw_data.keys())
+    if subjects is not None:
+        subject_ids = [sid for sid in subjects if sid in config.raw_data]
+        if not subject_ids:
+            raise ValueError("None of the specified subjects were found in the data")
+        print(f"Loading {len(subject_ids)} specified subjects")
+    else:
+        print(f"Loading all {len(subject_ids)} subjects")
+    
+    # Verify all required files exist
+    for subject_id in subject_ids:
+        subject_files = config.raw_data[subject_id]
+        for file_type, data_file in subject_files.items():
+            file_path = os.path.join(path, data_file)
+            if not os.path.exists(file_path):
+                raise ValueError(f"Could not find {data_file} in {path}")
+    
+    # Load the data using the read_subject function from the config module
+    study_data = {}
+    for subject_id in subject_ids:
+        # Use the read_subject function from the config module
+        info = config.raw_data[subject_id]
+        # add local path to the paths in the info dict
+        for key, value in info.items():
+            if isinstance(value, str) and os.path.exists(os.path.join(path, value)):
+                info[key] = os.path.join(path, value)
+        info["subject"] = subject_id
+        study_data[subject_id] = config.read_subject(info)
+        
+    return study_data, config
+
 def write_pickle(obj, fname):
     """
     Store any Python object in a file using :mod:`pickle`.
