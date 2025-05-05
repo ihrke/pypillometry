@@ -9,17 +9,16 @@ Some convenience functions.
 import numpy as np
 import pandas as pd
 from typing import Union, Dict
-from pathlib import Path
 from contextlib import contextmanager
 import os
 
 @contextmanager
-def change_dir(path: Union[str, Path]):
+def change_dir(path: Union[str]):
     """Temporarily change the current working directory.
     
     Parameters
     ----------
-    path : str or Path
+    path : str
         Directory to change to
         
     Examples
@@ -29,9 +28,9 @@ def change_dir(path: Union[str, Path]):
     ...     pass
     >>> # back in original directory
     """
-    old_dir = Path.cwd()
+    old_dir = os.getcwd()
     try:
-        os.chdir(Path(path))
+        os.chdir(path)
         yield
     finally:
         os.chdir(old_dir)
