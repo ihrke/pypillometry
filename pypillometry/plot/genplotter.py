@@ -111,8 +111,9 @@ class GenericPlotter:
             variables: list=[], 
             eyes: list=[],
             plot_onsets: str="line",
-            units: str=None,
-            figsize: tuple=(10,5)
+            units: Union[str, None]=None,
+            figsize: tuple=(10,5),
+            plot_masked: bool=False
             ) -> None:
         """
         Plot a part of the EyeData. Each data type is plotted in a separate subplot.
@@ -135,6 +136,8 @@ class GenericPlotter:
             The units to plot. Default is "sec". If None, use the units in the time vector.
         figsize: tuple
             The figure size (per subplot). Default is (10,5).
+        plot_masked: bool
+            Whether to highlight masked regions with a light red background. Default is False.
         """
         obj = self.obj
         eyes,variables=obj._get_eye_var(eyes, variables)
@@ -197,6 +200,10 @@ class GenericPlotter:
                 vname = "_".join([eye,var])
                 if vname in obj.data.keys():
                     ax.plot(tx, obj.data[vname][startix:endix], label=eye)
+                    if plot_masked and vname in obj.data.mask:
+                        mask = obj.data.mask[vname][startix:endix]
+                        ax.fill_between(tx, ax.get_ylim()[0], ax.get_ylim()[1], 
+                                      where=mask, color='red', alpha=0.2)
             if ev_line:
                 ax.vlines(evon, *ax.get_ylim(), color="grey", alpha=0.5)
             if ev_label:
@@ -208,7 +215,7 @@ class GenericPlotter:
         
         plt.legend()
         plt.xlabel(xlab)
-
+        
     def plot_timeseries_segments(self, pdffile: str=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
         """
         Plot the whole dataset chunked up into segments (usually to a PDF file).
