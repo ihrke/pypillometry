@@ -1750,49 +1750,52 @@ custom identifier).</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.copy" title="pypillometry.EyeDataDict.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
 <td><p>Create a deep copy of the dictionary.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code>(k[,d])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.count_missing" title="pypillometry.EyeDataDict.count_missing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_missing</span></code></a>([per_key])</p></td>
+<td><p>Count the number of missing values based on masks.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code>(k[,d])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_available_eyes" title="pypillometry.EyeDataDict.get_available_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_available_eyes</span></code></a>([variable])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_available_eyes" title="pypillometry.EyeDataDict.get_available_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_available_eyes</span></code></a>([variable])</p></td>
 <td><p>Return a list of available eyes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_available_variables" title="pypillometry.EyeDataDict.get_available_variables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_available_variables</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_available_variables" title="pypillometry.EyeDataDict.get_available_variables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_available_variables</span></code></a>()</p></td>
 <td><p>Return a list of available variables.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_eye" title="pypillometry.EyeDataDict.get_eye"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_eye</span></code></a>(eye)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_eye" title="pypillometry.EyeDataDict.get_eye"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_eye</span></code></a>(eye)</p></td>
 <td><p>Return a subset EyeDataDict with all variables for a given eye.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_mask" title="pypillometry.EyeDataDict.get_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mask</span></code></a>(key)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_mask" title="pypillometry.EyeDataDict.get_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mask</span></code></a>(key)</p></td>
 <td><p>Get mask for a specific key.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_size" title="pypillometry.EyeDataDict.get_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_size" title="pypillometry.EyeDataDict.get_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code></a>()</p></td>
 <td><p>Return the size of the dictionary in bytes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_variable" title="pypillometry.EyeDataDict.get_variable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_variable</span></code></a>(variable)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.get_variable" title="pypillometry.EyeDataDict.get_variable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_variable</span></code></a>(variable)</p></td>
 <td><p>Return a subset EyeDataDict with all eyes for a given variable.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">items</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">items</span></code>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">keys</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">keys</span></code>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pop</span></code>(k[,d])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pop</span></code>(k[,d])</p></td>
 <td><p>If key is not found, d is returned if given, otherwise KeyError is raised.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">popitem</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">popitem</span></code>()</p></td>
 <td><p>as a 2-tuple; but raise KeyError if D is empty.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.set_mask" title="pypillometry.EyeDataDict.set_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mask</span></code></a>(key, mask)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.set_mask" title="pypillometry.EyeDataDict.set_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mask</span></code></a>(key, mask)</p></td>
 <td><p>Set mask for a specific key.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setdefault</span></code>(k[,d])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setdefault</span></code>(k[,d])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>([E, ]**F)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>([E, ]**F)</p></td>
 <td><p>If E present and has a .keys() method, does:     for k in E.keys(): D[k] = E[k] If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v In either case, this is followed by: for k, v in F.items(): D[k] = v</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">values</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">values</span></code>()</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -1806,6 +1809,36 @@ custom identifier).</p>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.EyeDataDict" title="pypillometry.eyedata.eyedatadict.EyeDataDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeDataDict</span></code></a></span></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.count_missing">
+<span class="sig-name descname"><span class="pre">count_missing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">per_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.count_missing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.count_missing" title="Link to this definition">¶</a></dt>
+<dd><p>Count the number of missing values based on masks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>per_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, return a dictionary with counts per key.
+If False, return maximum count across all keys.
+Default is False.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If per_key is False, returns maximum number of missing values across all keys.
+If per_key is True, returns a dictionary mapping keys to their missing value counts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>, Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]]</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_x</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">left_y</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># second value is missing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># first and last values are missing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">count_missing</span><span class="p">()</span>  <span class="c1"># max missing values</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">count_missing</span><span class="p">(</span><span class="n">per_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># missing values per key</span>
+<span class="go">{&#39;left_x&#39;: 1, &#39;left_y&#39;: 2}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py property">

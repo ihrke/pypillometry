@@ -257,9 +257,43 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">total_size</span> <span class="o">+=</span> <span class="n">arr</span><span class="o">.</span><span class="n">nbytes</span>
         <span class="k">return</span> <span class="n">ByteSize</span><span class="p">(</span><span class="n">total_size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EyeDataDict.count_missing">
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeDataDict.count_missing">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">count_missing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">per_key</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Count the number of missing values based on masks.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        per_key : bool, optional</span>
+<span class="sd">            If True, return a dictionary with counts per key.</span>
+<span class="sd">            If False, return maximum count across all keys.</span>
+<span class="sd">            Default is False.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Union[int, Dict[str, int]]</span>
+<span class="sd">            If per_key is False, returns maximum number of missing values across all keys.</span>
+<span class="sd">            If per_key is True, returns a dictionary mapping keys to their missing value counts.</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; d = EyeDataDict(left_x=[1,2,3], left_y=[4,5,6])</span>
+<span class="sd">        &gt;&gt;&gt; d.set_mask(&quot;left_x&quot;, [0,1,0])  # second value is missing</span>
+<span class="sd">        &gt;&gt;&gt; d.set_mask(&quot;left_y&quot;, [1,0,1])  # first and last values are missing</span>
+<span class="sd">        &gt;&gt;&gt; d.count_missing()  # max missing values</span>
+<span class="sd">        2</span>
+<span class="sd">        &gt;&gt;&gt; d.count_missing(per_key=True)  # missing values per key</span>
+<span class="sd">        {&#39;left_x&#39;: 1, &#39;left_y&#39;: 2}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">per_key</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">mask</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="k">for</span> <span class="n">mask</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
 </div>
 
-
+        
 <span class="k">class</span><span class="w"> </span><span class="nc">CachedEyeDataDict</span><span class="p">(</span><span class="n">EyeDataDict</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a cached version of EyeDataDict.</span>
