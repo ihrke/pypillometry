@@ -231,9 +231,7 @@ class GenericEyeData(ABC):
         
         self._blinks[eye+"_"+variable]=blinks
         # update mask in EyeDataDict
-        if blinks is None:
-            self.data.mask[eye+"_"+variable]=np.zeros(len(self), dtype=int)
-        else:
+        if blinks is not None:
             for bstart,bend in blinks:
                 self.data.mask[eye+"_"+variable][bstart:bend]=1
 

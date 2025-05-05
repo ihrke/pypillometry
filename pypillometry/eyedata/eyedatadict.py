@@ -108,6 +108,7 @@ class EyeDataDict(MutableMapping):
         key = self._validate_key(key)  # Only validate key when setting values
         self.data[key] = value.astype(float)
         self.mask[key] = np.zeros(self.shape, dtype=int)
+        self.mask[key][np.isnan(value)] = 1 # set mask to 1 for missing values
 
     def __delitem__(self, key):
         if isinstance(key, tuple):
@@ -187,7 +188,7 @@ class EyeDataDict(MutableMapping):
             total_size += arr.nbytes
         return ByteSize(total_size)
 
-    def count_missing(self, per_key: bool = False) -> Union[int, Dict[str, int]]:
+    def count_masked(self, per_key: bool = False) -> Union[int, Dict[str, int]]:
         """Count the number of missing values based on masks.
         
         Parameters
@@ -208,9 +209,9 @@ class EyeDataDict(MutableMapping):
         >>> d = EyeDataDict(left_x=[1,2,3], left_y=[4,5,6])
         >>> d.set_mask("left_x", [0,1,0])  # second value is missing
         >>> d.set_mask("left_y", [1,0,1])  # first and last values are missing
-        >>> d.count_missing()  # max missing values
+        >>> d.count_masked()  # max missing values
         2
-        >>> d.count_missing(per_key=True)  # missing values per key
+        >>> d.count_masked(per_key=True)  # missing values per key
         {'left_x': 1, 'left_y': 2}
         """
         if per_key:
