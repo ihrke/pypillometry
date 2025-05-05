@@ -168,6 +168,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>  <span class="c1"># Only validate key when setting values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">value</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># set mask to 1 for missing values</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
@@ -259,9 +260,9 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">return</span> <span class="n">ByteSize</span><span class="p">(</span><span class="n">total_size</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="EyeDataDict.count_missing">
-<a class="viewcode-back" href="../../../api.html#pypillometry.EyeDataDict.count_missing">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">count_missing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">per_key</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<div class="viewcode-block" id="EyeDataDict.count_masked">
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyeDataDict.count_masked">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">count_masked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">per_key</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Count the number of missing values based on masks.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -282,9 +283,9 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        &gt;&gt;&gt; d = EyeDataDict(left_x=[1,2,3], left_y=[4,5,6])</span>
 <span class="sd">        &gt;&gt;&gt; d.set_mask(&quot;left_x&quot;, [0,1,0])  # second value is missing</span>
 <span class="sd">        &gt;&gt;&gt; d.set_mask(&quot;left_y&quot;, [1,0,1])  # first and last values are missing</span>
-<span class="sd">        &gt;&gt;&gt; d.count_missing()  # max missing values</span>
+<span class="sd">        &gt;&gt;&gt; d.count_masked()  # max missing values</span>
 <span class="sd">        2</span>
-<span class="sd">        &gt;&gt;&gt; d.count_missing(per_key=True)  # missing values per key</span>
+<span class="sd">        &gt;&gt;&gt; d.count_masked(per_key=True)  # missing values per key</span>
 <span class="sd">        {&#39;left_x&#39;: 1, &#39;left_y&#39;: 2}</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">per_key</span><span class="p">:</span>

@@ -1750,7 +1750,7 @@ custom identifier).</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.copy" title="pypillometry.EyeDataDict.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
 <td><p>Create a deep copy of the dictionary.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.count_missing" title="pypillometry.EyeDataDict.count_missing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_missing</span></code></a>([per_key])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.count_masked" title="pypillometry.EyeDataDict.count_masked"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_masked</span></code></a>([per_key])</p></td>
 <td><p>Count the number of missing values based on masks.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code>(k[,d])</p></td>
@@ -1812,8 +1812,8 @@ custom identifier).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pypillometry.EyeDataDict.count_missing">
-<span class="sig-name descname"><span class="pre">count_missing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">per_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.count_missing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.count_missing" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pypillometry.EyeDataDict.count_masked">
+<span class="sig-name descname"><span class="pre">count_masked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">per_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.count_masked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.count_masked" title="Link to this definition">¶</a></dt>
 <dd><p>Count the number of missing values based on masks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1833,9 +1833,9 @@ If per_key is True, returns a dictionary mapping keys to their missing value cou
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_x</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">left_y</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># second value is missing</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># first and last values are missing</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">count_missing</span><span class="p">()</span>  <span class="c1"># max missing values</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">count_masked</span><span class="p">()</span>  <span class="c1"># max missing values</span>
 <span class="go">2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">count_missing</span><span class="p">(</span><span class="n">per_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># missing values per key</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">count_masked</span><span class="p">(</span><span class="n">per_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># missing values per key</span>
 <span class="go">{&#39;left_x&#39;: 1, &#39;left_y&#39;: 2}</span>
 </pre></div>
 </div>
