@@ -1,5 +1,5 @@
 import itertools
-from typing import Iterable, Optional, Tuple
+from typing import Iterable, Optional, Tuple, Union
 from ..eyedata import GenericEyeData
 from ..convenience import mask_to_intervals
 import numpy as np
@@ -96,7 +96,7 @@ class GenericPlotter:
             figs.append(fig)
 
         if pdf_file is not None:
-            print("> Saving file '%s'"%pdf_file)
+            logger.info("Saving file '{}'", pdf_file)
             with PdfPages(pdf_file) as pdf:
                 for fig in figs:
                     pdf.savefig(fig)
@@ -263,7 +263,7 @@ class GenericPlotter:
 
 
         if isinstance(pdffile, str):
-            print("> Writing PDF file '%s'"%pdffile)
+            logger.info("Writing PDF file '{}'", pdffile)
             with PdfPages(pdffile) as pdf:
                 for fig in figs:
                     pdf.savefig(fig)         

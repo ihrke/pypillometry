@@ -11,7 +11,8 @@ as well as tools for plotting and analyzing these data.
 __all__ = ["logging_set_level", "logging_disable", "logging_enable",
            "EyeDataDict", "CachedEyeDataDict", "EyeData", "GazeData", "PupilData", "GenericEyeData",
            "example_datasets", "get_example_data", "get_interval_stats",
-           "ERPD", "load_study_osf", "load_study_local"]
+           "ERPD", "load_study_osf", "load_study_local",
+           "loglevel", "nologging"]
 
 from .eyedata.eyedatadict import EyeDataDict, CachedEyeDataDict
 from .eyedata.generic import GenericEyeData
@@ -27,6 +28,8 @@ from .io import load_study_osf, load_study_local
 ## logging
 from loguru import logger
 import sys
+from contextlib import contextmanager
+from typing import Optional
 
 def logging_disable():
     """
@@ -60,6 +63,54 @@ def logging_set_level(level="INFO"):
     )    
     logger.add(sys.stderr, format=logger_format, level=level)
     logging_enable()
+
+
+@contextmanager
+def loglevel(level: str):
+    """
+    Temporarily set the logging level for pypillometry submodules.
+    The original level is restored when exiting the context.
+
+    Parameters
+    ----------
+    level : str
+        The temporary logging level. Can be one of "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL".
+
+    Examples
+    --------
+    >>> with loglevel("DEBUG"):
+    ...     # Code here will use DEBUG level logging
+    ...     pass
+    >>> # Back to original logging level
+    """
+    original_level = logger._core.min_level
+    logging_set_level(level)
+    try:
+        yield
+    finally:
+        logging_set_level(original_level)
+
+
+@contextmanager
+def nologging():
+    """
+    Temporarily disable logging for pypillometry submodules.
+    Logging is re-enabled when exiting the context.
+
+    Examples
+    --------
+    >>> with nologging():
+    ...     # Code here will not produce any logs
+    ...     pass
+    >>> # Logging is re-enabled
+    """
+    was_enabled = logger._core.enabled
+    logging_disable()
+    try:
+        yield
+    finally:
+        if was_enabled:
+            logging_enable()
 
 
 # this enables log-messages with INFO or above
