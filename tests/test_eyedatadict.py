@@ -256,5 +256,40 @@ class TestEyeDataDict(unittest.TestCase):
         # Verify dictionary is empty
         self.assertEqual(len(d), 0)
 
+    def test_count_missing(self):
+        """Test counting missing values from masks"""
+        d = EyeDataDict()
+        
+        # Create test data with masks
+        d['left_x'] = np.array([1.0, 2.0, 3.0, 4.0])
+        d['left_y'] = np.array([5.0, 6.0, 7.0, 8.0])
+        d['right_x'] = np.array([9.0, 10.0, 11.0, 12.0])
+        
+        # Set masks with different patterns of missing values
+        d.set_mask('left_x', np.array([0, 1, 0, 1]))  # 2 missing values
+        d.set_mask('left_y', np.array([1, 0, 1, 0]))  # 2 missing values
+        d.set_mask('right_x', np.array([0, 0, 1, 0]))  # 1 missing value
+        
+        # Test total count (max across keys)
+        self.assertEqual(d.count_missing(), 2)  # max of [2, 2, 1]
+        
+        # Test per-key counts
+        per_key_counts = d.count_missing(per_key=True)
+        self.assertEqual(per_key_counts['left_x'], 2)
+        self.assertEqual(per_key_counts['left_y'], 2)
+        self.assertEqual(per_key_counts['right_x'], 1)
+        
+        # Test with no missing values
+        d.set_mask('left_x', np.zeros(4, dtype=int))
+        self.assertEqual(d.count_missing(), 2)  # max of [0, 2, 1]
+        per_key_counts = d.count_missing(per_key=True)
+        self.assertEqual(per_key_counts['left_x'], 0)
+        
+        # Test with all values missing in one key
+        d.set_mask('left_y', np.ones(4, dtype=int))
+        self.assertEqual(d.count_missing(), 4)  # max of [0, 4, 1]
+        per_key_counts = d.count_missing(per_key=True)
+        self.assertEqual(per_key_counts['left_y'], 4)
+
 if __name__ == '__main__':
     unittest.main()

@@ -187,6 +187,37 @@ class EyeDataDict(MutableMapping):
             total_size += arr.nbytes
         return ByteSize(total_size)
 
+    def count_missing(self, per_key: bool = False) -> Union[int, Dict[str, int]]:
+        """Count the number of missing values based on masks.
+        
+        Parameters
+        ----------
+        per_key : bool, optional
+            If True, return a dictionary with counts per key.
+            If False, return maximum count across all keys.
+            Default is False.
+            
+        Returns
+        -------
+        Union[int, Dict[str, int]]
+            If per_key is False, returns maximum number of missing values across all keys.
+            If per_key is True, returns a dictionary mapping keys to their missing value counts.
+            
+        Examples
+        --------
+        >>> d = EyeDataDict(left_x=[1,2,3], left_y=[4,5,6])
+        >>> d.set_mask("left_x", [0,1,0])  # second value is missing
+        >>> d.set_mask("left_y", [1,0,1])  # first and last values are missing
+        >>> d.count_missing()  # max missing values
+        2
+        >>> d.count_missing(per_key=True)  # missing values per key
+        {'left_x': 1, 'left_y': 2}
+        """
+        if per_key:
+            return {key: np.sum(mask) for key, mask in self.mask.items()}
+        else:
+            return max(np.sum(mask) for mask in self.mask.values())
+        
 class CachedEyeDataDict(EyeDataDict):
     def __init__(self, *args, cache_dir: Optional[str] = None, max_memory_mb: float = 100, **kwargs):
         """Initialize a cached version of EyeDataDict.
