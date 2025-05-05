@@ -285,16 +285,7 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
         logger.info(f"Loading {len(subject_ids)} specified subjects")
     else:
         logger.info(f"Loading all {len(subject_ids)} subjects")
-    
-    # Verify all required files exist
-    logger.info("Verifying data files exist")
-    for subject_id in subject_ids:
-        subject_files = config.raw_data[subject_id]
-        for file_type, data_file in subject_files.items():
-            file_path = os.path.join(path, data_file)
-            if not os.path.exists(file_path):
-                raise ValueError(f"Could not find {data_file} in {path}")
-    
+        
     # Load the data using the read_subject function from the config module
     study_data = {}
     logger.info("Loading subject data")
@@ -310,6 +301,7 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
         study_data[subject_id] = config.read_subject(info)
         
     return study_data, config
+
 def write_pickle(obj, fname):
     """
     Store any Python object in a file using :mod:`pickle`.
