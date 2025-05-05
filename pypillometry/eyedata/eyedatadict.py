@@ -159,9 +159,27 @@ class EyeDataDict(MutableMapping):
             raise ValueError(f"Mask must have shape {self.shape}")
         self.mask[key] = mask.astype(int)
 
-    def get_mask(self, key: str) -> NDArray:
-        """Get mask for a specific key."""
-        return self.mask[key]
+    def get_mask(self, key: str = None) -> NDArray:
+        """Get mask for a specific key or joint mask across all keys.
+        
+        Parameters
+        ----------
+        key : str, optional
+            Key to get mask for. If None, returns logical OR of all masks.
+            
+        Returns
+        -------
+        NDArray
+            Mask array for specified key, or joint mask if no key given.
+        """
+        if key is not None:
+            return self.mask[key]
+        
+        # Get joint mask across all keys
+        joint_mask = np.zeros(self.shape, dtype=int)
+        for mask in self.mask.values():
+            joint_mask = np.logical_or(joint_mask, mask)
+        return joint_mask
 
     @property
     def variables(self) -> List[str]:
@@ -361,23 +379,41 @@ class CachedEyeDataDict(EyeDataDict):
             
         raise KeyError(key)
 
-    def get_mask(self, key: str) -> np.ndarray:
-        """Get mask for a specific key."""
-        key = self._validate_key(key)
+    def get_mask(self, key: Union[str, None] = None) -> np.ndarray:
+        """Get mask for a specific key or joint mask across all keys.
         
-        # Try memory cache first
-        if key in self._in_memory_mask:
-            return self._in_memory_mask[key]
+        Parameters
+        ----------
+        key : str, optional
+            Key to get mask for. If None, returns logical OR of all masks.
             
-        # Load from HDF5
-        if key in self._h5_file['mask']:
-            mask = self._h5_file['mask'][key][:]
-            if key in self._h5_file['data']:
-                data = self._h5_file['data'][key][:]
-                self._update_cache(key, data, mask)
-            return mask
-            
-        raise KeyError(key)
+        Returns
+        -------
+        NDArray
+            Mask array for specified key, or joint mask if no key given.
+        """
+        if key is not None:
+            key = self._validate_key(key)
+            # Try memory cache first
+            if key in self._in_memory_mask:
+                return self._in_memory_mask[key]
+                
+            # Load from HDF5
+            if key in self._h5_file['mask']:
+                mask = self._h5_file['mask'][key][:]
+                if key in self._h5_file['data']:
+                    data = self._h5_file['data'][key][:]
+                    self._update_cache(key, data, mask)
+                return mask
+                
+            raise KeyError(key)
+        
+        # Get joint mask by recursively calling get_mask for each key
+        joint_mask = np.zeros(self.shape, dtype=int)
+        for k in self.keys():
+            mask = self.get_mask(k)  # This will handle both memory and HDF5 cases
+            joint_mask = np.logical_or(joint_mask, mask)
+        return joint_mask
 
     def set_mask(self, key: str, mask: np.ndarray):
         """Set mask for a specific key."""

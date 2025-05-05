@@ -291,5 +291,86 @@ class TestEyeDataDict(unittest.TestCase):
         per_key_counts = d.count_missing(per_key=True)
         self.assertEqual(per_key_counts['left_y'], 4)
 
+    def test_get_mask(self):
+        """Test getting masks from EyeDataDict"""
+        d = EyeDataDict()
+        
+        # Create test data with masks
+        d['left_x'] = np.array([1.0, 2.0, 3.0, 4.0])
+        d['left_y'] = np.array([5.0, 6.0, 7.0, 8.0])
+        d['right_x'] = np.array([9.0, 10.0, 11.0, 12.0])
+        
+        # Set masks with different patterns
+        d.set_mask('left_x', np.array([0, 1, 0, 1]))  # second and fourth values masked
+        d.set_mask('left_y', np.array([1, 0, 1, 0]))  # first and third values masked
+        d.set_mask('right_x', np.array([0, 0, 1, 0]))  # third value masked
+        
+        # Test getting specific masks
+        np.testing.assert_array_equal(d.get_mask('left_x'), np.array([0, 1, 0, 1]))
+        np.testing.assert_array_equal(d.get_mask('left_y'), np.array([1, 0, 1, 0]))
+        np.testing.assert_array_equal(d.get_mask('right_x'), np.array([0, 0, 1, 0]))
+        
+        # Test getting joint mask (logical OR of all masks)
+        joint_mask = d.get_mask()
+        expected_joint = np.array([1, 1, 1, 1])  # Any value masked in any key is masked in joint
+        np.testing.assert_array_equal(joint_mask, expected_joint)
+        
+        # Test with invalid key
+        with self.assertRaises(KeyError):
+            d.get_mask('nonexistent')
+            
+        # Test with no masks set (should return zeros)
+        d2 = EyeDataDict()
+        d2['left_pupil'] = np.array([1.0, 2.0, 3.0])
+        np.testing.assert_array_equal(d2.get_mask('left_pupil'), np.zeros(3, dtype=int))
+        np.testing.assert_array_equal(d2.get_mask(), np.zeros(3, dtype=int))
+
+    def test_cached_get_mask(self):
+        """Test getting masks from CachedEyeDataDict"""
+        d = CachedEyeDataDict(cache_dir=self.cache_dir, max_memory_mb=1)
+        
+        # Create test data with masks
+        d['left_x'] = np.array([1.0, 2.0, 3.0, 4.0])
+        d['left_y'] = np.array([5.0, 6.0, 7.0, 8.0])
+        d['right_x'] = np.array([9.0, 10.0, 11.0, 12.0])
+        
+        # Set masks with different patterns
+        d.set_mask('left_x', np.array([0, 1, 0, 1]))  # second and fourth values masked
+        d.set_mask('left_y', np.array([1, 0, 1, 0]))  # first and third values masked
+        d.set_mask('right_x', np.array([0, 0, 1, 0]))  # third value masked
+        
+        # Test getting specific masks (from memory cache)
+        np.testing.assert_array_equal(d.get_mask('left_x'), np.array([0, 1, 0, 1]))
+        np.testing.assert_array_equal(d.get_mask('left_y'), np.array([1, 0, 1, 0]))
+        np.testing.assert_array_equal(d.get_mask('right_x'), np.array([0, 0, 1, 0]))
+        
+        # Force data to be written to HDF5
+        d._h5_file.flush()
+        
+        # Clear memory cache to test HDF5 loading
+        d._in_memory_data.clear()
+        d._in_memory_mask.clear()
+        d._current_memory_bytes = 0
+        
+        # Test getting masks from HDF5
+        np.testing.assert_array_equal(d.get_mask('left_x'), np.array([0, 1, 0, 1]))
+        np.testing.assert_array_equal(d.get_mask('left_y'), np.array([1, 0, 1, 0]))
+        np.testing.assert_array_equal(d.get_mask('right_x'), np.array([0, 0, 1, 0]))
+        
+        # Test getting joint mask (should work with both memory and HDF5 data)
+        joint_mask = d.get_mask()
+        expected_joint = np.array([1, 1, 1, 1])  # Any value masked in any key is masked in joint
+        np.testing.assert_array_equal(joint_mask, expected_joint)
+        
+        # Test with invalid key
+        with self.assertRaises(KeyError):
+            d.get_mask('left_invalid')  # Valid format but non-existent key
+            
+        # Test with no masks set (should return zeros)
+        d2 = CachedEyeDataDict(cache_dir=self.cache_dir, max_memory_mb=1)
+        d2['left_pupil'] = np.array([1.0, 2.0, 3.0])
+        np.testing.assert_array_equal(d2.get_mask('left_pupil'), np.zeros(3, dtype=int))
+        np.testing.assert_array_equal(d2.get_mask(), np.zeros(3, dtype=int))
+
 if __name__ == '__main__':
     unittest.main()
