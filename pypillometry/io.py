@@ -292,7 +292,7 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
     study_data = {}
     logger.info("Loading subject data")
     with change_dir(path):
-        for subject_id in subject_ids:
+        for subject_id in tqdm(subject_ids, desc="Loading subjects", unit="subject"):
             logger.debug(f"Loading subject {subject_id}")
             # Use the read_subject function from the config module
             info = config.raw_data[subject_id]
