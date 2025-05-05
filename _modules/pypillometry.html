@@ -56,7 +56,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logging_set_level&quot;</span><span class="p">,</span> <span class="s2">&quot;logging_disable&quot;</span><span class="p">,</span> <span class="s2">&quot;logging_enable&quot;</span><span class="p">,</span>
            <span class="s2">&quot;EyeDataDict&quot;</span><span class="p">,</span> <span class="s2">&quot;CachedEyeDataDict&quot;</span><span class="p">,</span> <span class="s2">&quot;EyeData&quot;</span><span class="p">,</span> <span class="s2">&quot;GazeData&quot;</span><span class="p">,</span> <span class="s2">&quot;PupilData&quot;</span><span class="p">,</span> <span class="s2">&quot;GenericEyeData&quot;</span><span class="p">,</span>
            <span class="s2">&quot;example_datasets&quot;</span><span class="p">,</span> <span class="s2">&quot;get_example_data&quot;</span><span class="p">,</span> <span class="s2">&quot;get_interval_stats&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;ERPD&quot;</span><span class="p">,</span> <span class="s2">&quot;load_study_osf&quot;</span><span class="p">,</span> <span class="s2">&quot;load_study_local&quot;</span><span class="p">]</span>
+           <span class="s2">&quot;ERPD&quot;</span><span class="p">,</span> <span class="s2">&quot;load_study_osf&quot;</span><span class="p">,</span> <span class="s2">&quot;load_study_local&quot;</span><span class="p">,</span>
+           <span class="s2">&quot;loglevel&quot;</span><span class="p">,</span> <span class="s2">&quot;nologging&quot;</span><span class="p">]</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericEyeData</span>
@@ -72,6 +73,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="c1">## logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
 <div class="viewcode-block" id="logging_disable">
 <a class="viewcode-back" href="../api.html#pypillometry.logging_disable">[docs]</a>
@@ -114,6 +117,54 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">logger_format</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
     <span class="n">logging_enable</span><span class="p">()</span></div>
 
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">loglevel</span><span class="p">(</span><span class="n">level</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Temporarily set the logging level for pypillometry submodules.</span>
+<span class="sd">    The original level is restored when exiting the context.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    level : str</span>
+<span class="sd">        The temporary logging level. Can be one of &quot;DEBUG&quot;, &quot;INFO&quot;, &quot;WARNING&quot;, &quot;ERROR&quot;, &quot;CRITICAL&quot;.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; with loglevel(&quot;DEBUG&quot;):</span>
+<span class="sd">    ...     # Code here will use DEBUG level logging</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; # Back to original logging level</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">original_level</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">_core</span><span class="o">.</span><span class="n">min_level</span>
+    <span class="n">logging_set_level</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">logging_set_level</span><span class="p">(</span><span class="n">original_level</span><span class="p">)</span>
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">nologging</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Temporarily disable logging for pypillometry submodules.</span>
+<span class="sd">    Logging is re-enabled when exiting the context.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; with nologging():</span>
+<span class="sd">    ...     # Code here will not produce any logs</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; # Logging is re-enabled</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">was_enabled</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">_core</span><span class="o">.</span><span class="n">enabled</span>
+    <span class="n">logging_disable</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">was_enabled</span><span class="p">:</span>
+            <span class="n">logging_enable</span><span class="p">()</span>
 
 
 <span class="c1"># this enables log-messages with INFO or above</span>
