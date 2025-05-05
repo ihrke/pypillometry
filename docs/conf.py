@@ -14,7 +14,7 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path('.').resolve()))
+#sys.path.insert(0, str(Path('.').resolve()))
 
 
 # -- Project information -----------------------------------------------------
@@ -104,7 +104,8 @@ _GITHUB_ADMONITIONS = {
     "> [!CAUTION]": "caution",
 }
 
-def run_convert_github_admonitions_to_rst(app, filename, lines):
+def run_convert_github_admonitions_to_rst(app, relative_path, parent_docname, lines):
+    print("HOOK:", relative_path, parent_docname)
     # loop through lines, replace github admonitions
     for i, orig_line in enumerate(lines):
         orig_line_splits = orig_line.split("\n")
@@ -131,4 +132,4 @@ def run_convert_github_admonitions_to_rst(app, filename, lines):
         lines[i] = "\n".join(orig_line_splits)
 
 def setup(app):
-    app.connect('source-read', run_convert_github_admonitions_to_rst)
+    app.connect('include-read', run_convert_github_admonitions_to_rst)

@@ -11,7 +11,7 @@ as well as tools for plotting and analyzing these data.
 __all__ = ["logging_set_level", "logging_disable", "logging_enable",
            "EyeDataDict", "CachedEyeDataDict", "EyeData", "GazeData", "PupilData", "GenericEyeData",
            "example_datasets", "get_example_data", "get_interval_stats",
-           "ERPD", "load_study_osf"]
+           "ERPD", "load_study_osf", "load_study_local"]
 
 from .eyedata.eyedatadict import EyeDataDict, CachedEyeDataDict
 from .eyedata.generic import GenericEyeData
@@ -22,7 +22,7 @@ from .convenience import *
 from .example_data import example_datasets, get_example_data
 from .intervals import get_interval_stats
 from .erpd import ERPD
-from .io import load_study_osf
+from .io import load_study_osf, load_study_local
 
 ## logging
 from loguru import logger
