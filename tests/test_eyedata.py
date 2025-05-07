@@ -1,6 +1,9 @@
 import unittest
 import sys
 import numpy as np
+
+from pypillometry.eyedata.eyedatadict import EyeDataDict
+from pypillometry.eyedata.generic import GenericEyeData
 sys.path.insert(0,"..")
 import pypillometry as pp
 from pypillometry.example_data import get_rlmw_002_short
@@ -305,6 +308,82 @@ class TestEyeData(unittest.TestCase):
             
             # Clean up
             os.unlink(tmp.name)
+
+    def test_merge_masks(self):
+        """Test merging masks across all variables."""
+        # Create test data with different masks
+        data = {
+            'left_pupil': np.array([1, 2, 3, 4, 5]),
+            'right_pupil': np.array([1, 2, 3, 4, 5]),
+            'left_x': np.array([1, 2, 3, 4, 5]),
+            'left_y': np.array([1, 2, 3, 4, 5]),
+            'right_x': np.array([1, 2, 3, 4, 5]),
+            'right_y': np.array([1, 2, 3, 4, 5])
+        }
+        masks = {
+            'left_pupil': np.array([0, 1, 0, 1, 0]),
+            'right_pupil': np.array([1, 0, 1, 0, 1]),
+            'left_x': np.array([0, 0, 1, 1, 0]),
+            'left_y': np.array([0, 0, 1, 1, 0]),
+            'right_x': np.array([0, 0, 1, 1, 0]),
+            'right_y': np.array([0, 0, 1, 1, 0])
+        }
+        
+        # Create EyeData object
+        obj = pp.EyeData(
+            left_x=data['left_x'],
+            left_y=data['left_y'],
+            left_pupil=data['left_pupil'],
+            right_x=data['right_x'],
+            right_y=data['right_y'],
+            right_pupil=data['right_pupil'],
+            sampling_rate=1000
+        )
+        
+        # Set masks directly on the EyeData object
+        for k, v in masks.items():
+            obj.data.set_mask(k, v)
+        
+        # Test in-place merging
+        obj.merge_masks(inplace=True)
+        
+        # Expected joint mask (logical OR of all masks)
+        expected_mask = np.array([1, 1, 1, 1, 1])
+        
+        # Check that all variables have the joint mask
+        for key in data.keys():
+            np.testing.assert_array_equal(obj.data.mask[key], expected_mask)
+            
+        # Test copy behavior
+        obj2 = obj.merge_masks(inplace=False)
+        self.assertIsNot(obj, obj2)  # Should be different objects
+        
+        # Check that original object still has joint mask
+        for key in data.keys():
+            np.testing.assert_array_equal(obj.data.mask[key], expected_mask)
+            
+        # Check that copy also has joint mask
+        for key in data.keys():
+            np.testing.assert_array_equal(obj2.data.mask[key], expected_mask)
+            
+        # Test with no masks
+        obj3 = pp.EyeData(
+            left_x=data['left_x'],
+            left_y=data['left_y'],
+            left_pupil=data['left_pupil'],
+            right_x=data['right_x'],
+            right_y=data['right_y'],
+            right_pupil=data['right_pupil'],
+            sampling_rate=1000
+        )
+        
+        # Should not raise any errors
+        obj3.merge_masks()
+        
+        # Check that all masks are empty (all zeros)
+        expected_empty_mask = np.zeros(len(data['left_pupil']))
+        for key in data.keys():
+            np.testing.assert_array_equal(obj3.data.mask[key], expected_empty_mask)
 
 if __name__ == '__main__':
     unittest.main() 

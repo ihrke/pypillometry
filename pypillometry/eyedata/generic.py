@@ -1171,3 +1171,33 @@ class GenericEyeData(ABC):
         else:
             # For non-cached objects, return total size
             return ByteSize(data_size + other_size)
+
+    @keephistory
+    def merge_masks(self, inplace=None):
+        """Merge masks of all variables into a single joint mask.
+        
+        This function creates a joint mask by taking the logical OR of all individual masks
+        using `get_mask()`, then applies this joint mask to all variables.
+        
+        Parameters
+        ----------
+        inplace : bool, optional
+            If True, make change in-place and return the object.
+            If False, make and return copy before making changes.
+            If None, use the object's default setting.
+            
+        Returns
+        -------
+        GenericEyeData
+            The object with merged masks.
+        """
+        obj = self._get_inplace(inplace)
+        
+        # Get joint mask across all variables
+        joint_mask = obj.data.get_mask()
+        
+        # Apply joint mask to all variables
+        for key in obj.data.keys():
+            obj.data.set_mask(key, joint_mask)
+            
+        return obj

@@ -1,6 +1,8 @@
 ## TODOs
 
 - [ ] https://github.com/psychoinformatics-de/remodnav 
+- [ ] `FakePupilData` (and `FakeGazeData`?)
+- [ ] update docs
 
 
 ## Status of implementation 2025-03-06
