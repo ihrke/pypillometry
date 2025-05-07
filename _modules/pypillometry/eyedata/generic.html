@@ -1311,6 +1311,39 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># For non-cached objects, return total size</span>
             <span class="k">return</span> <span class="n">ByteSize</span><span class="p">(</span><span class="n">data_size</span> <span class="o">+</span> <span class="n">other_size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GenericEyeData.merge_masks">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.merge_masks">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge masks of all variables into a single joint mask.</span>
+<span class="sd">        </span>
+<span class="sd">        This function creates a joint mask by taking the logical OR of all individual masks</span>
+<span class="sd">        using `get_mask()`, then applies this joint mask to all variables.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inplace : bool, optional</span>
+<span class="sd">            If True, make change in-place and return the object.</span>
+<span class="sd">            If False, make and return copy before making changes.</span>
+<span class="sd">            If None, use the object&#39;s default setting.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GenericEyeData</span>
+<span class="sd">            The object with merged masks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        
+        <span class="c1"># Get joint mask across all variables</span>
+        <span class="n">joint_mask</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_mask</span><span class="p">()</span>
+        
+        <span class="c1"># Apply joint mask to all variables</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">joint_mask</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">obj</span></div>
 </div>
 
 </pre></div>
