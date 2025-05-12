@@ -635,7 +635,7 @@ class GenericEyeData(ABC):
             if print_info:
                 logger.info("Filling in %i gaps"%ngaps)
             gaps_start_ix=gaps_end_ix-1
-            logger.info( ((tx[gaps_end_ix]-tx[gaps_start_ix])/1000), "seconds" )
+            logger.info( str(((tx[gaps_end_ix]-tx[gaps_start_ix])/1000))+ " seconds" )
             
             ## build new time-vector
             ntx=[tx[0:gaps_start_ix[0]]] # initial
