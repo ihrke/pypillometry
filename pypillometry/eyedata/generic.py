@@ -633,9 +633,9 @@ class GenericEyeData(ABC):
         if ngaps!=0:
             ## at least one gap here
             if print_info:
-                print("> Filling in %i gaps"%ngaps)
+                logger.info("Filling in %i gaps"%ngaps)
             gaps_start_ix=gaps_end_ix-1
-            print( ((tx[gaps_end_ix]-tx[gaps_start_ix])/1000), "seconds" )
+            logger.info( ((tx[gaps_end_ix]-tx[gaps_start_ix])/1000), "seconds" )
             
             ## build new time-vector
             ntx=[tx[0:gaps_start_ix[0]]] # initial

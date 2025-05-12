@@ -86,7 +86,7 @@ class PupilData(GenericEyeData):
         """Constructor for PupilData object.
         """
 
-        logger.info("Creating PupilData object")
+        logger.debug("Creating PupilData object")
         if (left_pupil is None and right_pupil is None):
             raise ValueError("At least one of the eyes, left_pupil or right_pupil, must be provided")
         self.data=EyeDataDict(left_pupil=left_pupil, right_pupil=right_pupil)

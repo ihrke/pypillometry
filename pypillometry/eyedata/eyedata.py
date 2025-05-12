@@ -91,6 +91,7 @@ class EyeData(GazeData,PupilData):
                     max_memory_mb: float = 100):
         """Constructor for the EyeData class.
         """
+        logger.debug("Creating EyeData object")
         if (left_x is None or left_y is None) and (right_x is None or right_y is None):
             raise ValueError("At least one of the eye-traces must be provided (both x and y)")
         self.data=EyeDataDict(left_x=left_x, left_y=left_y, left_pupil=left_pupil,

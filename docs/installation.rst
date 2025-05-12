@@ -48,6 +48,7 @@ It can sometimes be useful to install a new package in a new virtual environment
     $ conda create -n pypil python=3
     $ conda activate pypil
     $ conda install anaconda 
+    $ pip install -r requirements.txt
 
 The ``anaconda`` package contains all the requirements except :mod:`cmdstanpy` which can be installed from `conda-forge <https://anaconda.org/conda-forge/pystan>`_
 

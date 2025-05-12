@@ -2,8 +2,6 @@
    :parser: myst_parser.sphinx_
 
 
-test2
-
 Documentation
 =============
 
