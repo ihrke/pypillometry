@@ -44,13 +44,24 @@
             
   <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h1>
-<p>The package is divided into separate sub-modules that solve specific subtasks (pre-processing, baseline estimation etc). The functions in these modules operate on plain <code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy.array</span></code>’s or standard Python-structures. While these functions can be used directly, an easier approach is to use the class <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code> which wraps these functions in a convenient way. Each object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code> represents one dataset of pupillometric data, including time, signal and external events (trial onsets, stimulus presentations, responses, etc). By calling the member functions of such an object, the corresponding function from one of the sub-modules is called using the appropriate arguments.</p>
+<p><cite>pypillometry</cite> is a Python package for analyzing pupillometric data, providing a comprehensive toolkit for preprocessing, analyzing, and visualizing pupil size measurements and eye-tracking data. The package is built around the <a class="reference internal" href="api.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.EyeData</span></code></a>, <a class="reference internal" href="api.html#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.PupilData</span></code></a>, and <a class="reference internal" href="api.html#pypillometry.GazeData" title="pypillometry.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.GazeData</span></code></a> classes, which serves as the main interface for handling pupillometric/eyetracking datasets.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="api.html#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.PupilData</span></code></a>: If you have only pupillometric data, use this class.</p></li>
+<li><p><a class="reference internal" href="api.html#pypillometry.GazeData" title="pypillometry.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.GazeData</span></code></a>: If you only have gaze data, use this class.</p></li>
+<li><p><a class="reference internal" href="api.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.EyeData</span></code></a>: If you have both gaze and pupillometric data, use this class.</p></li>
+</ul>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeDataDict</span></code>(*args, **kwargs)</p></td>
-<td><p>A dictionary that contains 1-dimensional ndarrays of equal length and with the same datatype (float).</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyeData</span></code></a>([time, left_x, left_y, left_pupil, ...])</p></td>
+<td><p>Class for handling eye-tracking data.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData</span></code>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.GazeData" title="pypillometry.GazeData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GazeData</span></code></a>([time, left_x, left_y, right_x, ...])</p></td>
+<td><p>Class representing Eye-Tracking data (x,y) from one or two eyes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData</span></code></a>([time, left_pupil, right_pupil, ...])</p></td>
+<td><p>Class representing pupillometric data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a>()</p></td>
 <td><p>Generic class for eyedata.</p></td>
 </tr>
 </tbody>
@@ -59,17 +70,13 @@
 <h2>Reading/writing pupillometric data<a class="headerlink" href="#reading-writing-pupillometric-data" title="Link to this heading">¶</a></h2>
 <p>So far, reading in data is not part of the <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a>-package. This is because the format of the eyetracker-files will vary depending on the setup of the eyetracker (there are many ways to represent event-triggers) and the actual model of the eyetracker. Python provides excellent functionality to parse text-based datafiles and we therefore give guidance how to use these tools rather than trying to implement that functionality in our package.</p>
 <p>There are many ways in which pupillometric data can be read into Python. For example, Eyelink’s <a class="reference external" href="http://download.sr-support.com/dispdoc/page25.html">ASC-format</a> generated by the EDF2ASC conversion tool outputs space-separated data that can be easily loaded using the <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/io.html">I/O functionality of the pandas package</a> .</p>
-<p>Data is input into <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> using the <code class="xref py py-func docutils literal notranslate"><span class="pre">constructor</span></code> of the <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code> object.</p>
-<p>However, data that has been converted into <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code>-objects can be easily saved and restored (using <a class="reference external" href="https://docs.python.org/3/library/shelve.html#module-shelve" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">shelve</span></code></a>).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">PupilData</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="c1"># create PupilData object after manually loading data</span>
-<span class="c1"># save the dataset into a shelve-file</span>
-<span class="n">d</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="s2">&quot;dataset.pd&quot;</span><span class="p">)</span>
-
-<span class="c1"># load it from the file</span>
-<span class="n">d2</span><span class="o">=</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;dataset.pd&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><a class="reference internal" href="importdata.html"><span class="std std-ref">An example for importing data from Eyelink EDF-files</span></a></p>
+<p>Once the data has been manually parsed into <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v2.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>-arrays, it can be converted into a <a class="reference internal" href="api.html#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.PupilData</span></code></a>, <a class="reference internal" href="api.html#pypillometry.GazeData" title="pypillometry.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.GazeData</span></code></a>, or <a class="reference internal" href="api.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.EyeData</span></code></a> object.</p>
+<p><a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> provides functions to load data from local data directories (<code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.load_study_local()</span></code>) and from OSF-projects (<code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.load_study_osf()</span></code>) based on a user-provided configuration file (<span class="xref std std-ref">/examples/pypillometry_conf.py</span>).</p>
+<p>Please refer to the following notebooks for more information:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="importdata.html"><span class="std std-ref">An example for importing data from Eyelink EDF-files</span></a></p></li>
+<li><p><a class="reference internal" href="examples/share_study.html"><span class="std std-ref">Providing a configuration file for loading data from a local directory or OSF</span></a></p></li>
+</ul>
 </section>
 <section id="pipeline-based-processing">
 <h2>Pipeline-based processing<a class="headerlink" href="#pipeline-based-processing" title="Link to this heading">¶</a></h2>
@@ -151,7 +158,7 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code>(erpd_name, event_select)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
 <td><p>Extract event-related pupil dilation (ERPD).</p></td>
 </tr>
 </tbody>
@@ -159,17 +166,17 @@ A range of functions are available for detecting and interpolating blinks.</p>
 </section>
 <section id="inspecting-summarizing">
 <h3>Inspecting/Summarizing<a class="headerlink" href="#inspecting-summarizing" title="Link to this heading">¶</a></h3>
-<p>The package also provides several functions for summarizing datasets. Simply <cite>print()`ing a :class:`PupilData</cite> object gives a readable summary of the main properties of the dataset and also prints the complete history of the results. By calling <code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.summary()</span></code>, summary data can be arranged and summarized in tabular form.</p>
+<p>The package also provides several functions for summarizing datasets. Simply <cite>print()`ing a :class:`PupilData</cite> object gives a readable summary of the main properties of the dataset and also prints the complete history of the results. By calling <a class="reference internal" href="api.html#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.summary()</span></code></a>, summary data can be arranged and summarized in tabular form.</p>
 <p>See the notebook <a class="reference internal" href="summary.html"><span class="std std-ref">Summarizing pupillometric data</span></a> for more details.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.summary</span></code>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.summary</span></code></a>()</p></td>
 <td><p>Return a summary of the dataset as a dictionary.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.stat_per_event</span></code>(interval[, ...])</p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code>(erpd_name, event_select)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
 <td><p>Extract event-related pupil dilation (ERPD).</p></td>
 </tr>
 </tbody>
@@ -178,11 +185,11 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <section id="event-related-pupil-dilation">
 <h3>Event-Related Pupil Dilation<a class="headerlink" href="#event-related-pupil-dilation" title="Link to this heading">¶</a></h3>
 <p>The average pupillometric signal, timelocked to repeating events during the experiment, is referred to as “Event-related pupil dilation” or ERPD. In <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a>, the functionality for this is implemented in the class <code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.erpd.ERPD</span></code>.</p>
-<p>Running <code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.get_erpd()</span></code> returns an Object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code>. This object has functions for plotting and summarising the event-related pupillary dilation.</p>
+<p>Running <a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.get_erpd()</span></code></a> returns an Object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code>. This object has functions for plotting and summarising the event-related pupillary dilation.</p>
 <p><a class="reference internal" href="erpds.html"><span class="std std-ref">Here is an example notebook for for how to work with ERPDs</span></a>.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code>(erpd_name, event_select)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
 <td><p>Extract event-related pupil dilation (ERPD).</p></td>
 </tr>
 </tbody>

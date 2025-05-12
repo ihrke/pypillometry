@@ -64,7 +64,7 @@ $<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> 
 <h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">¶</a></h2>
 <p><a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> requires Python3 and a range of standard numerical computing packages (all of which listed in the file <cite>requirements.txt</cite>)</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v2.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/scipy/index.html#module-scipy" title="(in SciPy v1.15.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy</span></code></a> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">matplotlib</span></code></p></li>
+<li><p><a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v2.2)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/scipy/index.html#module-scipy" title="(in SciPy v1.15.3)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy</span></code></a> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">matplotlib</span></code></p></li>
 <li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmdstanpy</span></code></p></li>
 </ul>
 <p>It is useful to access <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> through Jupyter or Jupyter Notebook, so installing those packages is also useful but not necessary.</p>
@@ -76,6 +76,7 @@ $<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> 
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>pypil<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>
 $<span class="w"> </span>conda<span class="w"> </span>activate<span class="w"> </span>pypil
 $<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>anaconda
+$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">anaconda</span></code> package contains all the requirements except <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmdstanpy</span></code> which can be installed from <a class="reference external" href="https://anaconda.org/conda-forge/pystan">conda-forge</a></p>

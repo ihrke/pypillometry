@@ -44,7 +44,12 @@
             
   <section id="sharing-importing-study-data-from-osf">
 <h1>Sharing/Importing study data from OSF<a class="headerlink" href="#sharing-importing-study-data-from-osf" title="Link to this heading">¶</a></h1>
-<p><cite>pypillometry</cite> provides functionality to share and import study data via the <a class="reference external" href="https://osf.io">Open Science Framework (OSF)</a>. The <code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_osf()</span></code> function allows you to easily download and load study data that has been shared on OSF.</p>
+<p><cite>pypillometry</cite> provides functionality to easily load a complete study from a local cache directory and a user-provided configuration file. That way, scripts can avoid to include lengthy code for parsing the raw data files. Once the configuation script is in place, the user can load the data as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="n">study</span><span class="p">,</span><span class="n">conf</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">load_study_local</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./data&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="s2">&quot;pypillometry_conf.py&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>share and import study data via the <a class="reference external" href="https://osf.io">Open Science Framework (OSF)</a>. The <code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_osf()</span></code> function allows you to easily download and load study data that has been shared on OSF.</p>
 <section id="sharing-your-study">
 <h2>Sharing Your Study<a class="headerlink" href="#sharing-your-study" title="Link to this heading">¶</a></h2>
 <p>To share your study on OSF:</p>

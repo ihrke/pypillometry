@@ -55,7 +55,7 @@ Interactive version:
 <p>Here we will show and example where we translate a file recorded in Eyelinks EDF-format to a file readable by <code class="docutils literal notranslate"><span class="pre">pandas.read_table()</span></code>.</p>
 <p>First, we import the needed modules.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
@@ -71,11 +71,11 @@ Interactive version:
 platforms from the <a class="reference external" href="https://www.sr-research.com/support/">Eyelink support forum</a>. There is a GUI-based program for windows and command-line programs for linux and mac. Binaries of the command-line tools for linux and mac are included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> under <a class="reference external" href="https://github.com/ihrke/pypillometry/tree/master/external">this link</a>.</p>
 <p>On linux, we would call these programs on an example edf-file twice as follows.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>../external/edf2asc-mac<span class="w"> </span>-y<span class="w"> </span>-s<span class="w"> </span>../data/test.edf<span class="w"> </span>../data/test_samples.asc
-<span class="o">!</span>../external/edf2asc-mac<span class="w"> </span>-y<span class="w"> </span>-e<span class="w"> </span>../data/test.edf<span class="w"> </span>../data/test_events.asc
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>../external/edf2asc-linux<span class="w"> </span>-y<span class="w"> </span>-s<span class="w"> </span>../data/test.edf<span class="w"> </span>../data/test_samples.asc
+<span class="o">!</span>../external/edf2asc-linux<span class="w"> </span>-y<span class="w"> </span>-e<span class="w"> </span>../data/test.edf<span class="w"> </span>../data/test_events.asc
 </pre></div>
 </div>
 </div>
@@ -86,8 +86,8 @@ platforms from the <a class="reference external" href="https://www.sr-research.c
 <div class="highlight"><pre>
 
 EDF2ASC: EyeLink EDF file -&gt; ASCII (text) file translator
-EDF2ASC version 3.1 MacOS X Jul 13 2010
-(c)1995-2009 by SR Research, last modified Jul 13 2010
+EDF2ASC version 3.0 Linux Dec  1 2008
+(c)1995-2007 by SR Research, last modified Dec  1 2008
 
 processing file ../data/test.edf
 =======================Preamble of file ../data/test.edf=======================
@@ -105,8 +105,8 @@ processing file ../data/test.edf
 Converted successfully: 0 events, 1245363 samples, 6 blocks.
 
 EDF2ASC: EyeLink EDF file -&gt; ASCII (text) file translator
-EDF2ASC version 3.1 MacOS X Jul 13 2010
-(c)1995-2009 by SR Research, last modified Jul 13 2010
+EDF2ASC version 3.0 Linux Dec  1 2008
+(c)1995-2007 by SR Research, last modified Dec  1 2008
 
 processing file ../data/test.edf
 =======================Preamble of file ../data/test.edf=======================
@@ -121,7 +121,7 @@ processing file ../data/test.edf
 | Psychopy GC demo                                                            |
 ===============================================================================
 
-Converted successfully: 36371 events, 0 samples, 6 blocks.
+Converted successfully: 37139 events, 0 samples, 6 blocks.
 </pre></div></div>
 </div>
 <p>This results in two files, one containing all the samples and one all the recorded events.</p>
@@ -168,9 +168,39 @@ Converted successfully: 36371 events, 0 samples, 6 blocks.
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                   <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="s2">&quot;left_p&quot;</span><span class="p">,</span>
                          <span class="s2">&quot;right_x&quot;</span><span class="p">,</span> <span class="s2">&quot;right_y&quot;</span><span class="p">,</span> <span class="s2">&quot;right_p&quot;</span><span class="p">])</span>
+<span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
+<span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span>
+
+<span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="o">.</span><span class="n">values</span>
+<span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span>
+
+<span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="o">.</span><span class="n">values</span>
+<span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span>
+
+<span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="o">.</span><span class="n">values</span>
+<span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span>
+
+
 <span class="n">df</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_1346565/154614805.py:1: ParserWarning: Length of header or names does not match length of data. This leads to a loss of data with index_col=False.
+  df=pd.read_table(fname_samples, index_col=False,
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
@@ -268,51 +298,51 @@ Converted successfully: 36371 events, 0 samples, 6 blocks.
     <tr>
       <th>1245358</th>
       <td>5923060</td>
-      <td>.</td>
-      <td>.</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>0.0</td>
-      <td>.</td>
-      <td>.</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>0.0</td>
     </tr>
     <tr>
       <th>1245359</th>
       <td>5923062</td>
-      <td>.</td>
-      <td>.</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>0.0</td>
-      <td>.</td>
-      <td>.</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>0.0</td>
     </tr>
     <tr>
       <th>1245360</th>
       <td>5923064</td>
-      <td>.</td>
-      <td>.</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>0.0</td>
-      <td>.</td>
-      <td>.</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>0.0</td>
     </tr>
     <tr>
       <th>1245361</th>
       <td>5923066</td>
-      <td>.</td>
-      <td>.</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>0.0</td>
-      <td>.</td>
-      <td>.</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>0.0</td>
     </tr>
     <tr>
       <th>1245362</th>
       <td>5923068</td>
-      <td>.</td>
-      <td>.</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>0.0</td>
-      <td>.</td>
-      <td>.</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>0.0</td>
     </tr>
   </tbody>
@@ -325,17 +355,17 @@ Converted successfully: 36371 events, 0 samples, 6 blocks.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="p">(</span><span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
+<div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-&gt; Filling in 5 gaps
-[32.35   4.012  6.21   2.02   1.862] seconds
+<span class="ansi-green-fg">pp: 17:57:11</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">636</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 17:57:11</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">638</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -344,27 +374,86 @@ Converted successfully: 36371 events, 0 samples, 6 blocks.
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-PupilData(test, 135.5MiB):
- n                 : 1268585
- nmiss             : 212551
- perc_miss         : 16.75496714843704
- nevents           : 0
- nblinks           : 0
- ninterpolated     : 0
- blinks_per_min    : 0.0
- fs                : 500.0
- duration_minutes  : 42.28616666666667
- start_min         : 56.431666666666665
- end_min           : 98.7178
- baseline_estimated: False
- response_estimated: False
+PupilData(test, 19.1MiB):
+ n               : 1268585
+ sampling_rate   : 500.0
+ eyes            : [&#39;left&#39;, &#39;right&#39;]
+ data            : [&#39;left_pupil&#39;, &#39;right_pupil&#39;]
+ nevents         : 0
+ nblinks         : {}
+ blinks          : {&#39;left&#39;: None, &#39;right&#39;: None}
+ duration_minutes: 42.28616666666667
+ start_min       : 56.431666666666665
+ end_min         : 98.7178
+ params          : {}
+ glimpse         : EyeDataDict(vars=2,n=310151,shape=(310151,)):
+  left_pupil (float64): 1707.0, 1706.0, 1705.0, 1706.0, 1707.0...
+  right_pupil (float64): 1738.0, 1739.0, 1739.0, 1740.0, 1742.0...
+
  History:
  *
+ └ fill_time_discontinuities()
+</pre></div></div>
+</div>
+<p>We can also import the eye-tracking data from the same file if desired. In that case, we would use the <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> class:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span>
+             <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="p">,</span>
+             <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="p">,</span>
+             <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 17:57:15</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">636</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 17:57:15</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">638</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EyeData(test, 38.1MiB):
+ n                   : 1268585
+ sampling_rate       : 500.0
+ data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;right_pupil&#39;]
+ nevents             : 0
+ screen_limits       : not set
+ physical_screen_size: not set
+ screen_eye_distance : not set
+ duration_minutes    : 42.28616666666667
+ start_min           : 56.431666666666665
+ end_min             : 98.7178
+ parameters          : {}
+ glimpse             : EyeDataDict(vars=6,n=310151,shape=(310151,)):
+  left_x (float64): 817.3, 817.0, 816.7, 816.7, 816.7...
+  left_y (float64): 345.2, 343.5, 341.6, 340.4, 340.2...
+  left_pupil (float64): 1707.0, 1706.0, 1705.0, 1706.0, 1707.0...
+  right_x (float64): 860.6, 860.7, 861.2, 861.7, 861.6...
+  right_y (float64): 375.2, 375.9, 376.6, 376.8, 376.9...
+  right_pupil (float64): 1738.0, 1739.0, 1739.0, 1740.0, 1742.0...
+
+ eyes                : [&#39;left&#39;, &#39;right&#39;]
+ nblinks             : {}
+ blinks              : {&#39;left&#39;: None, &#39;right&#39;: None}
+ params              : {}
+ History:
+ *
+ └ fill_time_discontinuities()
 </pre></div></div>
 </div>
 <p>Of course, this dataset is still missing the important information contained in the event-file which we will use for analysing trial-related pupil-diameter data. For that, we will have to read the events-file, which has a more complicated structure than the samples-file:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>head<span class="w"> </span>-20<span class="w"> </span><span class="nv">$fname_events</span>
@@ -376,7 +465,7 @@ PupilData(test, 135.5MiB):
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-** CONVERTED FROM ../data/test.edf using edfapi 3.1 MacOS X Jul 13 2010 on Wed May 27 16:45:20 2020
+** CONVERTED FROM ../data/test.edf using edfapi 3.0 Linux Dec  1 2008 on Mon May 12 17:57:07 2025
 ** DATE: Fri Feb 14 08:48:33 2020
 ** TYPE: EDF_FILE BINARY EVENT SAMPLE TAGGED
 ** VERSION: EYELINK II 1
@@ -388,6 +477,7 @@ PupilData(test, 135.5MiB):
 ** Psychopy GC demo
 **
 
+MSG     2728855 DISPLAY_COORDS = 0 0 1919 1079
 INPUT   2767568 0
 MSG     2784000 !CAL
 &gt;&gt;&gt;&gt;&gt;&gt;&gt; CALIBRATION (HV9,P-CR) FOR LEFT: &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
@@ -395,12 +485,11 @@ MSG     2784000 !CAL Calibration points:
 MSG     2784000 !CAL -29.4, -23.5        -0,     -2
 MSG     2784000 !CAL -29.3, -35.7        -0,  -1544
 MSG     2784000 !CAL -32.9, -10.4        -0,   1559
-MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
 </pre></div></div>
 </div>
 <p>After a header (lines starting with ‘**’) containing meta-information, we get a sequence of “events” which have different formats for all rows. We are interested in lines starting with “MSG” because those contain our experimental markers. Therefore, we read the samples file and remove all rows that do not start with “MSG” first:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
@@ -414,12 +503,13 @@ MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-[&#39;MSG\t2784000 !CAL \n&#39;,
+[&#39;MSG\t2728855 DISPLAY_COORDS = 0 0 1919 1079\n&#39;,
+ &#39;MSG\t2784000 !CAL \n&#39;,
  &#39;MSG\t2784000 !CAL Calibration points:  \n&#39;,
  &#39;MSG\t2784000 !CAL -29.4, -23.5        -0,     -2   \n&#39;,
  &#39;MSG\t2784000 !CAL -29.3, -35.7        -0,  -1544   \n&#39;,
@@ -427,13 +517,12 @@ MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
  &#39;MSG\t2784000 !CAL -49.7, -23.0     -2835,     -2   \n&#39;,
  &#39;MSG\t2784000 !CAL -10.8, -27.4      2835,     -2   \n&#39;,
  &#39;MSG\t2784000 !CAL -48.3, -33.3     -2818,  -1544   \n&#39;,
- &#39;MSG\t2784000 !CAL -11.0, -34.2      2818,  -1544   \n&#39;,
- &#39;MSG\t2784000 !CAL -56.2, -9.2     -2852,   1559   \n&#39;]
+ &#39;MSG\t2784000 !CAL -11.0, -34.2      2818,  -1544   \n&#39;]
 </pre></div></div>
 </div>
 <p>Next, we added an experimental marker that was sent as the experiment was started. This marker was called <code class="docutils literal notranslate"><span class="pre">experiment_start</span></code>. Hence, we can remove all events before this marker.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">experiment_start_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">&quot;experiment_start&quot;</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
@@ -443,7 +532,7 @@ MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -462,7 +551,7 @@ MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
 </div>
 <p>This is in a format where we can convert it into a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> object for further processing.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_ev</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
@@ -471,7 +560,7 @@ MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -644,7 +733,7 @@ MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
 </div>
 <p>In this table, the second column contains the time-stamp (identical to the time-stamp in the samples file), and the third column contains our custom markers (the format like “C_GW_1_1_UD_UD” and so on is specific for our experimental design). There are many more columns which seem to contain no information in our samples. Let’s check what those columns are for by printing the rows in our data-frame where these columns are not <code class="docutils literal notranslate"><span class="pre">None</span></code>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_ev</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">df_ev</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span><span class="o">!=</span><span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -652,7 +741,7 @@ MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -752,7 +841,7 @@ MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
 </div>
 <p>Apparently, there are more eye-tracker specific markers in our files (in this case due to drift-checks during the experiments). We can safely drop those from our set of interesting events by dropping all rows in which the fourth column is not <code class="docutils literal notranslate"><span class="pre">None</span></code> and then dropping all non-interesting columns.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_ev</span><span class="o">=</span><span class="n">df_ev</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">df_ev</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span><span class="o">==</span><span class="kc">None</span><span class="p">][[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
@@ -762,7 +851,7 @@ MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -849,12 +938,12 @@ MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
 <p>1035 rows × 2 columns</p>
 </div></div>
 </div>
-<p>Finally, we can pass those event-markers into our <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>-object.</p>
+<p>Finally, we can pass those event-markers into our <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>, <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> or <code class="docutils literal notranslate"><span class="pre">GazeData</span></code>-object.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="p">(</span><span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
 <span class="n">d</span>
 </pre></div>
 </div>
@@ -862,60 +951,91 @@ MSG     2784000 !CAL -49.7, -23.0     -2835,     -2
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
+<div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-&gt; Filling in 5 gaps
-[32.35   4.012  6.21   2.02   1.862] seconds
+<span class="ansi-green-fg">pp: 17:57:21</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">636</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 17:57:21</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">638</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-PupilData(test, 135.5MiB):
- n                 : 1268585
- nmiss             : 212551
- perc_miss         : 16.75496714843704
- nevents           : 1035
- nblinks           : 0
- ninterpolated     : 0
- blinks_per_min    : 0.0
- fs                : 500.0
- duration_minutes  : 42.28616666666667
- start_min         : 56.431666666666665
- end_min           : 98.7178
- baseline_estimated: False
- response_estimated: False
+PupilData(test, 14.4MiB):
+ n               : 1268585
+ sampling_rate   : 500.0
+ eyes            : [&#39;right&#39;]
+ data            : [&#39;right_pupil&#39;]
+ nevents         : 1035
+ nblinks         : {}
+ blinks          : {&#39;right&#39;: None}
+ duration_minutes: 42.28616666666667
+ start_min       : 56.431666666666665
+ end_min         : 98.7178
+ params          : {}
+ glimpse         : EyeDataDict(vars=1,n=310151,shape=(310151,)):
+  right_pupil (float64): 1738.0, 1739.0, 1739.0, 1740.0, 1742.0...
+
  History:
  *
+ └ fill_time_discontinuities()
 </pre></div></div>
 </div>
 <p>The summary of the dataset shows us that the eyetracker started recording at time=56.4 minutes. We can reset the time index to start with 0 by using the <code class="docutils literal notranslate"><span class="pre">reset_time()</span></code> function.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">reset_time</span><span class="p">()</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">reset_time</span><span class="p">()</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <p>Now we can store away this dataset in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>-format and use all the <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>-functions on it, e.g., plot a minute of this dataset.</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">sub_slice</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">drop_original</span><span class="p">()</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="s2">&quot;../data/test.pd&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">sub_slice</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PupilData(test, 1.4MiB):
+ n               : 60001
+ sampling_rate   : 500.0
+ eyes            : [&#39;right&#39;]
+ data            : [&#39;right_pupil&#39;]
+ nevents         : 56
+ nblinks         : {&#39;right_pupil&#39;: 150}
+ blinks          : {&#39;right&#39;: 150 intervals, 1455.23 +/- 11522.47, [22.00, 141022.00]}
+ duration_minutes: 2.0000333333333336
+ start_min       : 4.0
+ end_min         : 6.0
+ params          : {}
+ glimpse         : EyeDataDict(vars=1,n=60001,shape=(60001,)):
+  right_pupil (float64): 1684.0, 1683.0, 1682.0, 1681.0, 1682.0...
+
+ History:
+ *
+ └ fill_time_discontinuities()
+  └ reset_time()
+   └ pupil_blinks_detect()
+    └ sub_slice(4,6,units=min)
+</pre></div></div>
+</div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -923,7 +1043,7 @@ PupilData(test, 135.5MiB):
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/importdata_30_0.png" src="_images/importdata_30_0.png" />
+<img alt="_images/importdata_32_0.png" src="_images/importdata_32_0.png" />
 </div>
 </div>
 <section id="Generalize-to-multiple-similar-datasets">
@@ -931,7 +1051,7 @@ PupilData(test, 135.5MiB):
 <p>Now that we have successfully found a way to create our <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> structure from the raw <code class="docutils literal notranslate"><span class="pre">.EDF</span></code> files, we can wrap the code from this notebook into an easily accessible function that creates <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> objects for a given <code class="docutils literal notranslate"><span class="pre">.EDF</span></code> file that has the same structure.</p>
 <p>We simply create a function that takes the name of an <code class="docutils literal notranslate"><span class="pre">EDF</span></code>-file as input and runs all the code above, returning the final <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> object. For convenience, we will assume that the <code class="docutils literal notranslate"><span class="pre">EDF2ASC</span></code> utility has already run such that <code class="docutils literal notranslate"><span class="pre">.asc</span></code> files are already available (see above for details).</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">datapath</span><span class="o">=</span><span class="s2">&quot;../data&quot;</span> <span class="c1">## this is where the datafiles are located</span>
@@ -946,6 +1066,25 @@ PupilData(test, 135.5MiB):
     <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                   <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="s2">&quot;left_p&quot;</span><span class="p">,</span>
                          <span class="s2">&quot;right_x&quot;</span><span class="p">,</span> <span class="s2">&quot;right_y&quot;</span><span class="p">,</span> <span class="s2">&quot;right_p&quot;</span><span class="p">])</span>
+    <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span>
+
+    <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span>
+
+    <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span>
+
+    <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span>
 
     <span class="c1">## read events-file</span>
     <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
@@ -964,17 +1103,20 @@ PupilData(test, 135.5MiB):
     <span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;event&quot;</span><span class="p">]</span>
 
     <span class="c1"># create `PupilData`-object</span>
-    <span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">edffile</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
+                   <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="p">,</span>
+                   <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="p">,</span>
+                   <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">edffile</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">d</span>
 <br/></pre></div>
 </div>
 </div>
 <p>We can test this code by simply running the function with a certain filename located in <code class="docutils literal notranslate"><span class="pre">datapath</span></code>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">read_dataset</span><span class="p">(</span><span class="s2">&quot;test.edf&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">read_dataset</span><span class="p">(</span><span class="s2">&quot;test.edf&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -984,44 +1126,27 @@ PupilData(test, 135.5MiB):
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 &gt; Attempt loading &#39;../data/test_samples.asc&#39; and &#39;../data/test_events.asc&#39;
-&gt; Filling in 5 gaps
-[32.35   4.012  6.21   2.02   1.862] seconds
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
-<div class="output_area docutils container">
+<div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-PupilData(test.edf, 135.5MiB):
- n                 : 1268585
- nmiss             : 212551
- perc_miss         : 16.75496714843704
- nevents           : 1035
- nblinks           : 0
- ninterpolated     : 0
- blinks_per_min    : 0.0
- fs                : 500.0
- duration_minutes  : 42.28616666666667
- start_min         : 56.431666666666665
- end_min           : 98.7178
- baseline_estimated: False
- response_estimated: False
- History:
- *
+/tmp/ipykernel_1346565/89281874.py:10: ParserWarning: Length of header or names does not match length of data. This leads to a loss of data with index_col=False.
+  df=pd.read_table(fname_samples, index_col=False,
+<span class="ansi-green-fg">pp: 17:57:29</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">636</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 17:57:29</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">638</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
 </pre></div></div>
 </div>
-</section>
-<section id="Storing/Loading-several-datasets">
-<h2>Storing/Loading several datasets<a class="headerlink" href="#Storing/Loading-several-datasets" title="Link to this heading">¶</a></h2>
-<p>So now it is easy to read a set of datasets into a Python <code class="docutils literal notranslate"><span class="pre">list</span></code> from the same experimental setup with a simple loop, e.g.,</p>
+<p>After that, we might want to save the final <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>/<code class="docutils literal notranslate"><span class="pre">EyeData</span></code> objects as binary files that can be readily loaded back. This can be done using <code class="docutils literal notranslate"><span class="pre">EyeData.write_file</span></code> or <code class="docutils literal notranslate"><span class="pre">pypillometry.write_pickle()</span></code>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">files</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;test.edf&quot;</span><span class="p">,</span> <span class="s2">&quot;test2.edf&quot;</span><span class="p">,</span> <span class="s2">&quot;test3.edf&quot;</span><span class="p">]</span>
-<span class="n">datasets</span><span class="o">=</span><span class="p">[</span><span class="n">read_dataset</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">files</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fname</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s2">&quot;.pd&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1030,54 +1155,53 @@ PupilData(test.edf, 135.5MiB):
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&gt; Attempt loading &#39;../data/test_samples.asc&#39; and &#39;../data/test_events.asc&#39;
-&gt; Filling in 5 gaps
-[32.35   4.012  6.21   2.02   1.862] seconds
+../data/test.edf.pd
 </pre></div></div>
 </div>
-<p>After that, we might want to save the final <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> objects as <code class="docutils literal notranslate"><span class="pre">.pd</span></code> files that can be readily loaded back. Here, we loop through the list of datasets and store each of them in separate files using the <code class="docutils literal notranslate"><span class="pre">name</span></code> attribute of the object as filename.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+<p>These datasets can be read back using the <code class="docutils literal notranslate"><span class="pre">EyeData.from_file()</span></code> method:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
-    <span class="n">fname</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">ds</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s2">&quot;.pd&quot;</span><span class="p">)</span>
-    <span class="n">ds</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<p>These datasets can be read back using the <code class="docutils literal notranslate"><span class="pre">PupilData.from_file()</span></code> method:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># all filenames in `datapath` that end with `.pd`</span>
-<span class="n">pd_files</span><span class="o">=</span><span class="p">[</span><span class="n">fname</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">datapath</span><span class="p">)</span> <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.pd&quot;</span><span class="p">)]</span>
-<span class="n">datasets</span><span class="o">=</span><span class="p">[]</span>
-<span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">pd_files</span><span class="p">:</span>
-    <span class="n">fname</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
-    <span class="n">datasets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d2</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">d2</span>
 </pre></div>
 </div>
 </div>
-<p>It is also possible to store the whole <code class="docutils literal notranslate"><span class="pre">list</span></code> as a single file by using the <code class="docutils literal notranslate"><span class="pre">pd_write_pickle()</span></code>-function:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">pd_write_pickle</span><span class="p">(</span><span class="n">datasets</span><span class="p">,</span> <span class="s2">&quot;full_dataset.pd&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<p>which can be read-back using the <code class="docutils literal notranslate"><span class="pre">pd_read_pickle()</span></code> function like so:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">datasets</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">pd_read_pickle</span><span class="p">(</span><span class="s2">&quot;full_dataset.pd&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EyeData(test.edf, 38.1MiB):
+ n                   : 1268585
+ sampling_rate       : 500.0
+ data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;right_pupil&#39;]
+ nevents             : 1035
+ screen_limits       : not set
+ physical_screen_size: not set
+ screen_eye_distance : not set
+ duration_minutes    : 42.28616666666667
+ start_min           : 56.431666666666665
+ end_min             : 98.7178
+ parameters          : {}
+ glimpse             : EyeDataDict(vars=6,n=310151,shape=(310151,)):
+  left_x (float64): 817.3, 817.0, 816.7, 816.7, 816.7...
+  left_y (float64): 345.2, 343.5, 341.6, 340.4, 340.2...
+  left_pupil (float64): 1707.0, 1706.0, 1705.0, 1706.0, 1707.0...
+  right_x (float64): 860.6, 860.7, 861.2, 861.7, 861.6...
+  right_y (float64): 375.2, 375.9, 376.6, 376.8, 376.9...
+  right_pupil (float64): 1738.0, 1739.0, 1739.0, 1740.0, 1742.0...
+
+ eyes                : [&#39;left&#39;, &#39;right&#39;]
+ nblinks             : {}
+ blinks              : {&#39;left&#39;: None, &#39;right&#39;: None}
+ params              : {}
+ History:
+ *
+ └ fill_time_discontinuities()
+</pre></div></div>
 </div>
 </section>
 </section>
@@ -1102,7 +1226,6 @@ Interactive version:
     <ul>
 <li><a class="reference internal" href="#">Importing Data Example</a><ul>
 <li><a class="reference internal" href="#Generalize-to-multiple-similar-datasets">Generalize to multiple similar datasets</a></li>
-<li><a class="reference internal" href="#Storing/Loading-several-datasets">Storing/Loading several datasets</a></li>
 </ul>
 </li>
 </ul>
