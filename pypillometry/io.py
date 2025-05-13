@@ -103,7 +103,7 @@ def get_osf_project_files(osf_id: str) -> Dict[str, Dict[str, str]]:
 
 
 
-def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False):
+def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False, config_file: str = "pypillometry_conf.py"):
     """
     Read a study from OSF using the configuration file.
     
@@ -118,6 +118,8 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         If a subject ID is provided that doesn't exist in the data, it will be skipped.
     force_download : bool, optional
         If True, force re-download even if files exist locally. Default False.
+    config_file : str, optional
+        Name of the configuration file. Default is "pypillometry_conf.py"
         
     Returns
     -------
@@ -156,14 +158,14 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         print(f"Estimated download time (assuming 1MB/s): {est_minutes} minutes")
         
     # Find and download config file
-    config_path = os.path.join(path, "pypillometry_conf.py")
-    config_file = next((f for f in files if f.endswith("pypillometry_conf.py")), None)
+    config_path = os.path.join(path, config_file)
+    config_file_osf = next((f for f in files if f.endswith(config_file)), None)
     
-    if config_file is None:
-        raise ValueError("Could not find pypillometry_conf.py in project")
+    if config_file_osf is None:
+        raise ValueError(f"Could not find {config_file} in project")
         
     if not os.path.exists(config_path) or force_download:
-        response = requests.get(files[config_file]['download_url'])
+        response = requests.get(files[config_file_osf]['download_url'])
         if response.status_code == 200:
             with open(config_path, 'wb') as f:
                 f.write(response.content)
@@ -232,7 +234,6 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         study_data[subject_id] = config.read_subject(info)
         
     return study_data, config
-
 def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subjects: list[str] = None):
     """
     Read a study from a local directory using the configuration file.
