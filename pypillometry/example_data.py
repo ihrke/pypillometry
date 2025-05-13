@@ -62,7 +62,7 @@ def download(url: str, fname: str, chunk_size=1024):
             bar.update(size)
 
 def get_example_data(key):
-    """Download example data from OSF.
+    """Load example data for a given example (see `example_datasets`).
 
     Parameters
     ----------
@@ -82,7 +82,12 @@ def get_example_data(key):
     # run the function with the same name as the key
     funcname = f"get_{key}"
     if funcname in globals():
-        return globals()[funcname]()
+        func = globals()[funcname]
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter(action='ignore') 
+            r = func()
+        return r
     else:
         raise ValueError(f"Function '{funcname}' not found in example datasets.")
 
@@ -94,6 +99,7 @@ def get_rlmw_002():
         fname_events = os.path.join(tmpdirname,"002_rlmw_events.asc")
         download(example_datasets["rlmw_002"]["samples_asc"], fname_samples)
         download(example_datasets["rlmw_002"]["events_asc"], fname_events)
+
         df=pd.read_table(fname_samples, index_col=False,
                         names=["time", "left_x", "left_y", "left_p",
                                 "right_x", "right_y", "right_p"])
