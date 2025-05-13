@@ -14,13 +14,24 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path('..').resolve()))
+# Get the absolute path to the project root directory
+project_root = Path(__file__).parent.parent.absolute()
+sys.path.insert(0, str(project_root))
+
+# Verify the package can be imported
+try:
+    import pypillometry
+    print(f"Successfully imported pypillometry from {pypillometry.__package_path__}")
+except ImportError as e:
+    print(f"Failed to import pypillometry: {e}")
+    print(f"Python path: {sys.path}")
+    print(f"Project root: {project_root}")
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'pypillometry'
-copyright = '2020, Matthias Mittner'
+copyright = '2020-2025, Matthias Mittner'
 author = 'Matthias Mittner'
 
 
