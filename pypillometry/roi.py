@@ -66,6 +66,9 @@ class ROI:
     def __str__(self) -> str:
         """String representation of the ROI."""
         return f"{self.__class__.__name__}(name={self.name})"
+    
+    def __repr__(self) -> str:
+        return str(self)
 
 
 class CircularROI(ROI):
