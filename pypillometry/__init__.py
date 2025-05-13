@@ -8,22 +8,58 @@ as well as tools for plotting and analyzing these data.
 
 """
 
-__all__ = ["logging_set_level", "logging_disable", "logging_enable",
-           "EyeDataDict", "CachedEyeDataDict", "EyeData", "GazeData", "PupilData", "GenericEyeData",
-           "example_datasets", "get_example_data", "get_interval_stats",
-           "ERPD", "load_study_osf", "load_study_local",
-           "loglevel", "nologging"]
+import os.path
+import importlib
+import inspect
+from typing import List, Set, Dict, Any
 
-from .eyedata.eyedatadict import EyeDataDict, CachedEyeDataDict
-from .eyedata.generic import GenericEyeData
-from .eyedata.eyedata import EyeData
-from .eyedata.gazedata import GazeData
-from .eyedata.pupildata import PupilData
-from .convenience import *
-from .example_data import example_datasets, get_example_data
-from .intervals import get_interval_stats
-from .erpd import ERPD
-from .io import load_study_osf, load_study_local
+def _collect_and_import_submodules() -> Dict[str, Any]:
+    """Collect all public names and import everything from submodules."""
+    public_names = set()
+    imported_objects = {}
+    
+    # List of submodules to import from
+    submodules = [
+        '.eyedata.eyedatadict',
+        '.eyedata.generic',
+        '.eyedata.eyedata',
+        '.eyedata.gazedata',
+        '.eyedata.pupildata',
+        '.convenience',
+        '.example_data',
+        '.intervals',
+        '.erpd',
+        '.io',
+        '.plot'
+    ]
+    
+    for module_name in submodules:
+        try:
+            # Import the module
+            module = importlib.import_module(module_name, package='pypillometry')
+            
+            # Get all public names (not starting with _)
+            names = [name for name in dir(module) if not name.startswith('_')]
+            public_names.update(names)
+            
+            # Import all public objects
+            for name in names:
+                try:
+                    imported_objects[name] = getattr(module, name)
+                except AttributeError:
+                    print(f"Warning: Could not import {name} from {module_name}")
+                    
+        except ImportError as e:
+            print(f"Warning: Could not import {module_name}: {e}")
+    
+    return public_names, imported_objects
+
+# Collect all public names and import everything
+__all__, _imported_objects = _collect_and_import_submodules()
+__all__ = sorted(list(__all__))
+
+# Add imported objects to the global namespace
+globals().update(_imported_objects)
 
 ## logging
 from loguru import logger
@@ -129,5 +165,4 @@ def nologging():
 # this enables log-messages with INFO or above
 logging_set_level("INFO")
 
-import os.path
 __package_path__ = os.path.abspath(os.path.dirname(__file__))
