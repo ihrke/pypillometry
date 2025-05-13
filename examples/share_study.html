@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Sharing/Importing study data from OSF &#8212; pypillometry  documentation</title>
+    <title>Sharing/Importing study data &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
@@ -33,7 +33,7 @@
           <a href="../preproc_example_pavlov.html" title="Example: Preprocessing of a full dataset with multiple subjects"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Sharing/Importing study data from OSF</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Sharing/Importing study data</a></li> 
       </ul>
     </div>  
 
@@ -42,38 +42,87 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="sharing-importing-study-data-from-osf">
-<h1>Sharing/Importing study data from OSF<a class="headerlink" href="#sharing-importing-study-data-from-osf" title="Link to this heading">¶</a></h1>
-<p><cite>pypillometry</cite> provides functionality to easily load a complete study from a local cache directory and a user-provided configuration file. That way, scripts can avoid to include lengthy code for parsing the raw data files. Once the configuation script is in place, the user can load the data as follows:</p>
+  <section id="sharing-importing-study-data">
+<h1>Sharing/Importing study data<a class="headerlink" href="#sharing-importing-study-data" title="Link to this heading">¶</a></h1>
+<p><cite>pypillometry</cite> provides functionality to easily load a complete study from a local cache directory and a user-provided configuration file. That way, scripts can avoid to include lengthy code for parsing the raw data files. Once the configuation script is in place, the user can load the data using the <code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_local()</span></code> function:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="n">study</span><span class="p">,</span><span class="n">conf</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">load_study_local</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./data&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="s2">&quot;pypillometry_conf.py&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>share and import study data via the <a class="reference external" href="https://osf.io">Open Science Framework (OSF)</a>. The <code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_osf()</span></code> function allows you to easily download and load study data that has been shared on OSF.</p>
-<section id="sharing-your-study">
-<h2>Sharing Your Study<a class="headerlink" href="#sharing-your-study" title="Link to this heading">¶</a></h2>
+<p>In addition, you can upload the data and configuration file to the <a class="reference external" href="https://osf.io">Open Science Framework (OSF)</a> and use the following function to load the data:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">study</span><span class="p">,</span><span class="n">conf</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">load_study_osf</span><span class="p">(</span><span class="n">osf_id</span><span class="o">=</span><span class="s2">&quot;your_project_id&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;./data&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(in that case, the data will be downloaded and cached in the specified path).</p>
+<section id="creating-a-configuration-file">
+<h2>Creating a configuration file<a class="headerlink" href="#creating-a-configuration-file" title="Link to this heading">¶</a></h2>
+<p>A configuration file is a Python script that defines the data files, contains meta-data about the study and implements a function to read a dataset. The standard name for the configuration file is <code class="docutils literal notranslate"><span class="pre">pypillometry_conf.py</span></code> but you can use any name you want.</p>
+<p>The configuration file (<code class="docutils literal notranslate"><span class="pre">pypillometry_conf.py</span></code>) should define:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">raw_data</span></code>: Dictionary mapping subject IDs to their data files</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">read_subject()</span></code> function that processes the raw data files</p></li>
+</ul>
+<p>Here is an template for a configuration file (<code class="docutils literal notranslate"><span class="pre">pypillometry_conf.py</span></code>), see <span class="xref std std-ref">examples/pypillometry_conf.py</span> for a complete example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Configuration file for my study.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="c1"># other relevant imports</span>
+
+<span class="c1"># study metadata (optional)</span>
+<span class="n">study_info</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My new study&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
+    <span class="o">...</span> <span class="c1"># other metadata</span>
+<span class="p">}</span>
+
+<span class="c1"># Dictionary of raw data files to be downloaded (required)</span>
+<span class="c1"># Keys are participant IDs, values are dictionaries containing paths to raw data files</span>
+<span class="n">raw_data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;001&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/001_rlmw_events.asc&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;samples&quot;</span><span class="p">:</span> <span class="s2">&quot;data/eyedata/asc/001_rlmw_samples.asc&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;002&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="o">...</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># Function to read a subject&#39;s data from the raw data files (required)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_subject</span><span class="p">(</span><span class="n">info</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a subject&#39;s data from the raw data files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># code for reading the data</span>
+    <span class="k">return</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>One you load the study data, the function <cite>read_subject()</cite> will be called each entry of the <cite>raw_data</cite> dictionary (usually one per subject but it can also be multiple entries per subject, e.g., if you have multiple tasks per subject). The way the <cite>raw_data</cite> dictionary and the <cite>read_subject()</cite> function are defined is completely up to you. Simply assure that the <cite>read_subject()</cite> function can process the data files specified in the <cite>raw_data</cite> dictionary.</p>
+<p>The configuration file will be imported as a module and returned as the second argument of the <cite>load_study_local()</cite> and <cite>load_study_osf()</cite> functions. Therefore, you can access all variables and functions defined in the configuration file:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">study</span><span class="p">,</span><span class="n">conf</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">load_study_local</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./data&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="s2">&quot;pypillometry_conf.py&quot;</span><span class="p">)</span>
+<span class="n">study</span><span class="p">[</span><span class="s2">&quot;001&quot;</span><span class="p">]</span> <span class="c1"># access data for subject 001</span>
+<span class="n">conf</span><span class="o">.</span><span class="n">study_info</span> <span class="c1"># access study metadata</span>
+<span class="n">conf</span><span class="o">.</span><span class="n">read_subject</span> <span class="c1"># access function to read data</span>
+</pre></div>
+</div>
+<p>The functions <code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_local()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_osf()</span></code> a;so allow to specify a list of subject codes that are to be loaded (default is to load all subjects).</p>
+</section>
+<section id="sharing-your-study-on-osf">
+<h2>Sharing Your Study on OSF<a class="headerlink" href="#sharing-your-study-on-osf" title="Link to this heading">¶</a></h2>
 <p>To share your study on OSF:</p>
 <ol class="arabic simple">
-<li><p>Create a new project on OSF</p></li>
+<li><p>Create a new project on [Open Science Framework](<a class="reference external" href="https://osf.io">https://osf.io</a>)</p></li>
 <li><dl class="simple">
 <dt>Upload your study data files and configuration file (<code class="docutils literal notranslate"><span class="pre">pypillometry_conf.py</span></code>) to the project</dt><dd><ul class="simple">
-<li><p>see</p></li>
+<li><p>the data files must be arranged in a folder structure that matches the one specified in the <cite>raw_data</cite> dictionary of the configuration file</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><p>Note down your project’s OSF ID (found in the project URL)</p></li>
 </ol>
-<p>The configuration file (<code class="docutils literal notranslate"><span class="pre">pypillometry_conf.py</span></code>) should define:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">raw_data</span></code>: Dictionary mapping subject IDs to their data files</p></li>
-<li><p>A <code class="docutils literal notranslate"><span class="pre">read_subject()</span></code> function that processes the raw data files</p></li>
-</ul>
-</section>
-<section id="loading-shared-data">
-<h2>Loading Shared Data<a class="headerlink" href="#loading-shared-data" title="Link to this heading">¶</a></h2>
-<p>To load a shared study, use <code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_osf()</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_study_osf</span>
+<p>To load a shared study from OSF, use <code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_osf()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_study_osf</span>
 
 <span class="c1"># Load all subjects</span>
 <span class="n">study_data</span> <span class="o">=</span> <span class="n">load_study_osf</span><span class="p">(</span>
@@ -89,15 +138,6 @@
 <span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">osf_id</span></code> (str): The OSF project ID</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">path</span></code> (str): Local path where files should be downloaded/stored</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">subjects</span></code> (list[str], optional): List of specific subject IDs to load</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">force_download</span></code> (bool, optional): Force re-download of files even if they exist locally</p></li>
-</ul>
 <p>The function will:</p>
 <ol class="arabic simple">
 <li><p>Download the project’s configuration file</p></li>
@@ -457,12 +497,12 @@
 <span class="linenos">345</span>    <span class="k">return</span> <span class="n">d</span>    
 </pre></div>
 </div>
-<p>This configuration file is a real study that was shared on OSF and you can download the corresponding data using the following code:</p>
+<p>This configuration file is a real study that was shared on OSF (&lt;<a class="reference external" href="https://osf.io/ca95r/">https://osf.io/ca95r/</a>&gt;) and you can download the corresponding data using the following code (note that the size of the dataset is 3GB or so):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_study_osf</span>
-<span class="n">study_data</span> <span class="o">=</span> <span class="n">load_study_osf</span><span class="p">(</span><span class="s2">&quot;ca95r&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;./data&quot;</span><span class="p">)</span>
+<span class="n">study_data</span><span class="p">,</span> <span class="n">config</span> <span class="o">=</span> <span class="n">load_study_osf</span><span class="p">(</span><span class="s2">&quot;ca95r&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;./data&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The data will be downloaded and cached in the <code class="docutils literal notranslate"><span class="pre">./data</span></code> directory and <cite>study_data</cite> will be a dictionary mapping subject IDs to their data.</p>
+<p>The data will be downloaded and cached in the <code class="docutils literal notranslate"><span class="pre">./data</span></code> directory and <cite>study_data</cite> will be a dictionary mapping subject IDs to their data. The <cite>config</cite> object will be a module that contains the configuration file.</p>
 </section>
 </section>
 
@@ -479,10 +519,9 @@
   <div>
     <h3><a href="../index.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">Sharing/Importing study data from OSF</a><ul>
-<li><a class="reference internal" href="#sharing-your-study">Sharing Your Study</a></li>
-<li><a class="reference internal" href="#loading-shared-data">Loading Shared Data</a></li>
-<li><a class="reference internal" href="#parameters">Parameters</a></li>
+<li><a class="reference internal" href="#">Sharing/Importing study data</a><ul>
+<li><a class="reference internal" href="#creating-a-configuration-file">Creating a configuration file</a></li>
+<li><a class="reference internal" href="#sharing-your-study-on-osf">Sharing Your Study on OSF</a></li>
 <li><a class="reference internal" href="#example-configuration-file">Example configuration file</a></li>
 </ul>
 </li>
@@ -536,7 +575,7 @@
           <a href="../preproc_example_pavlov.html" title="Example: Preprocessing of a full dataset with multiple subjects"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Sharing/Importing study data from OSF</a></li> 
+        <li class="nav-item nav-item-this"><a href="">Sharing/Importing study data</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
