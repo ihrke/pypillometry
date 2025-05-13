@@ -124,7 +124,7 @@ File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs
 </div>
 <p>Once the data is loaded, we can check which variables and eyes are available using the <code class="docutils literal notranslate"><span class="pre">.eyes</span></code> and <code class="docutils literal notranslate"><span class="pre">.variables</span></code> attribute:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deye</span><span class="o">.</span><span class="n">eyes</span><span class="p">,</span> <span class="n">deye</span><span class="o">.</span><span class="n">variables</span>
@@ -132,17 +132,16 @@ File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-([&#39;left&#39;], [&#39;y&#39;, &#39;x&#39;, &#39;pupil&#39;])
+([&#39;left&#39;], [&#39;x&#39;, &#39;pupil&#39;, &#39;y&#39;])
 </pre></div></div>
 </div>
 <p>Simply printing an object will also show what data sources are available and give a glimpse into the data structure:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">deye</span>
@@ -150,12 +149,12 @@ File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-EyeData(mohavedi, 55.6KiB):
+EyeData(petokiga, 55.6KiB):
  n                   : 1000
  sampling_rate       : 1000.0
  data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;]
@@ -168,9 +167,9 @@ EyeData(mohavedi, 55.6KiB):
  end_min             : 0.01665
  parameters          : {}
  glimpse             : EyeDataDict(vars=3,n=1000,shape=(1000,)):
-  left_x (float64): 0.8876909354995632, 0.16382869242207718, 0.3047045451052535, 0.3712526256462054, -0.671312798889201...
-  left_y (float64): 0.4534143924559185, -0.11460988667664473, 0.7994674729621215, -1.265084426172219, 0.777019688126354...
-  left_pupil (float64): -1.008303529610942, -1.7674272682382004, -1.3504472492905297, -0.8307784244907553, -0.940278451803245...
+  left_x (float64): -0.05614305080280796, -0.6414526083279584, -1.704862857943198, 1.4798705854852807, 0.8472706708383512...
+  left_y (float64): -0.7499467879300401, 0.20023206315811148, 1.2681504964811687, -0.9232746614049664, -1.6396223281209275...
+  left_pupil (float64): 0.28284068252769706, -0.4969359675178975, -1.7109730132713936, -1.024197014557436, -0.7792117291273035...
 
  eyes                : [&#39;left&#39;]
  nblinks             : {}
@@ -182,7 +181,7 @@ EyeData(mohavedi, 55.6KiB):
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
@@ -191,17 +190,18 @@ EyeData(mohavedi, 55.6KiB):
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-([&#39;y&#39;, &#39;x&#39;, &#39;pupil&#39;], [&#39;left&#39;, &#39;right&#39;])
+([&#39;pupil&#39;, &#39;y&#39;, &#39;x&#39;], [&#39;left&#39;, &#39;right&#39;])
 </pre></div></div>
 </div>
 <p>Almost all of <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>’s functions have keyword arguments <code class="docutils literal notranslate"><span class="pre">eyes=</span></code> and <code class="docutils literal notranslate"><span class="pre">variables=</span></code> that specify which eyes/variables to operate on. By default, all of the variables and eyes are processed.</p>
 <p>For example, we can run the <code class="docutils literal notranslate"><span class="pre">scale()</span></code> function that will re-scale the data to have mean=0 and standard devation 1. Here, we use the context manager <code class="docutils literal notranslate"><span class="pre">pp.loglevel(&quot;DEBUG&quot;)</span></code> to get output from <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> internals:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">pp</span><span class="o">.</span><span class="n">loglevel</span><span class="p">(</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">):</span>
@@ -214,21 +214,88 @@ EyeData(mohavedi, 55.6KiB):
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:38:57</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">_get_eye_var</span>:<span class="ansi-cyan-fg">194</span> | <span class="ansi-blue-intense-fg ansi-bold">scale(): eyes=[&#39;left&#39;], vars=[&#39;y&#39;, &#39;x&#39;, &#39;pupil&#39;]</span>
-<span class="ansi-green-fg">pp: 12:38:57</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">scale</span>:<span class="ansi-cyan-fg">820</span> | <span class="ansi-blue-intense-fg ansi-bold">Mean: {&#39;left&#39;: {&#39;y&#39;: 7.105427357601002e-18, &#39;x&#39;: 4.440892098500626e-19, &#39;pupil&#39;: -1.4210854715202004e-17}}</span>
-<span class="ansi-green-fg">pp: 12:38:57</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">scale</span>:<span class="ansi-cyan-fg">821</span> | <span class="ansi-blue-intense-fg ansi-bold">SD: {&#39;left&#39;: {&#39;y&#39;: 1.0, &#39;x&#39;: 1.0, &#39;pupil&#39;: 1.0}}</span>
+<span class="ansi-green-fg">pp: 12:59:13</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">_get_eye_var</span>:<span class="ansi-cyan-fg">194</span> | <span class="ansi-blue-intense-fg ansi-bold">scale(): eyes=[&#39;left&#39;], vars=[&#39;pupil&#39;, &#39;y&#39;, &#39;x&#39;]</span>
+<span class="ansi-green-fg">pp: 12:59:13</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">scale</span>:<span class="ansi-cyan-fg">820</span> | <span class="ansi-blue-intense-fg ansi-bold">Mean: {&#39;left&#39;: {&#39;pupil&#39;: 0.0017743030582778934, &#39;y&#39;: -0.02958842274723986, &#39;x&#39;: 0.025062813034298286}}</span>
+<span class="ansi-green-fg">pp: 12:59:13</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">scale</span>:<span class="ansi-cyan-fg">821</span> | <span class="ansi-blue-intense-fg ansi-bold">SD: {&#39;left&#39;: {&#39;pupil&#39;: 0.9685169385611292, &#39;y&#39;: 1.012354831683368, &#39;x&#39;: 0.9977838504196321}}</span>
 </pre></div></div>
 </div>
 <p>The output shows that all variables from the left eye have been processed.</p>
 <section id="Which-functions-work-on-which-data?">
 <h2>Which functions work on which data?<a class="headerlink" href="#Which-functions-work-on-which-data?" title="Link to this heading">¶</a></h2>
 <p>Not all of <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>s functions can be applied to all variables. Functions that are specific to pupil data have the prefix <code class="docutils literal notranslate"><span class="pre">pupil_*</span></code> and functions that only work on gaze (x/y) data, have the prefix <code class="docutils literal notranslate"><span class="pre">gaze_</span></code>. The other functions will operate on all variables (which may or may not make sense, it is up to you to check!).</p>
+<p>Functions that work only on pupillometric data are implemented in the <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> class and are therefore not available when using <code class="docutils literal notranslate"><span class="pre">GazeData</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dpupil</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">()</span> <span class="c1"># works fine</span>
+<span class="n">dgaze</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">()</span> <span class="c1"># fails</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">AttributeError</span>                            Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[32], line 2</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> dpupil<span style="color: rgb(98,98,98)">.</span>pupil_blinks_detect() <span style="color: rgb(95,135,135)"># works fine</span>
+<span class="ansi-green-fg">----&gt; 2</span> dgaze<span style="color: rgb(98,98,98)">.</span>pupil_blinks_detect()
+
+<span class="ansi-red-fg">AttributeError</span>: &#39;GazeData&#39; object has no attribute &#39;pupil_blinks_detect&#39;
+</pre></div></div>
+</div>
+<p>Functions that are implemented in <code class="docutils literal notranslate"><span class="pre">GenericEyeData</span></code> will work for both:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dpupil</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span> <span class="c1"># works</span>
+<span class="n">dgaze</span><span class="o">.</span><span class="n">scale</span><span class="p">()</span> <span class="c1"># works</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+GazeData(gememoda, 103.9KiB):
+ n                   : 1000
+ sampling_rate       : 1000.0
+ data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;mean_y&#39;, &#39;mean_x&#39;]
+ nevents             : 0
+ screen_limits       : not set
+ physical_screen_size: not set
+ screen_eye_distance : not set
+ duration_minutes    : 0.016666666666666666
+ start_min           : 0.0
+ end_min             : 0.01665
+ parameters          : {scale: {...}}
+ glimpse             : EyeDataDict(vars=6,n=1000,shape=(1000,)):
+  left_x (float64): -0.0813862278918966, -0.6679957999740566, -1.7337679601147598, 1.458039004980029, 0.8240340404971094...
+  left_y (float64): -0.711567073755129, 0.22701574459144955, 1.2819012451103702, -0.8827796447335403, -1.5903849667971501...
+  right_x (float64): 0.9626973487677861, -0.17827876962019754, 0.1106137723940685, -0.9696903516215334, 0.6644680267943046...
+  right_y (float64): 0.31340189774712973, 1.1308736355320714, -0.7814852910860114, -1.2597233647796173, -0.3645995245346349...
+  mean_y (float64): -0.2900743012870026, 0.9746687313634781, 0.3671378610511327, -1.541330111846402, -1.4116343476312987...
+  mean_x (float64): 0.6144940257680912, -0.5963646337735499, -1.1476480335279726, 0.353192240734368, 1.0459758453244563...
+
+ History:
+ *
+ └ fill_time_discontinuities()
+  └ merge_eyes()
+   └ scale()
+</pre></div></div>
+</div>
 </section>
 <section id="Creating-new-variables-or-eyes">
 <h2>Creating new variables or eyes<a class="headerlink" href="#Creating-new-variables-or-eyes" title="Link to this heading">¶</a></h2>
 <p>In some cases, new variables or “eyes” can be created. For example, we might consider to reduce a binocular dataset to one where we average the timeseries from the two eyes. In that case, we can use function <code class="docutils literal notranslate"><span class="pre">merge_eyes()</span></code>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dpupil</span><span class="o">.</span><span class="n">merge_eyes</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;right&quot;</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
@@ -236,27 +303,27 @@ EyeData(mohavedi, 55.6KiB):
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-PupilData(mikugere, 56.3KiB):
+PupilData(debibiki, 56.3KiB):
  n               : 1000
  sampling_rate   : 1000.0
- eyes            : [&#39;left&#39;, &#39;mean&#39;, &#39;right&#39;]
+ eyes            : [&#39;mean&#39;, &#39;left&#39;, &#39;right&#39;]
  data            : [&#39;left_pupil&#39;, &#39;right_pupil&#39;, &#39;mean_pupil&#39;]
  nevents         : 0
  nblinks         : {}
- blinks          : {&#39;left&#39;: None, &#39;mean&#39;: None, &#39;right&#39;: None}
+ blinks          : {&#39;mean&#39;: None, &#39;left&#39;: None, &#39;right&#39;: None}
  duration_minutes: 0.016666666666666666
  start_min       : 0.0
  end_min         : 0.01665
  params          : {}
  glimpse         : EyeDataDict(vars=3,n=1000,shape=(1000,)):
-  left_pupil (float64): -1.008303529610942, -1.7674272682382004, -1.3504472492905297, -0.8307784244907553, -0.940278451803245...
-  right_pupil (float64): -1.0847455379130668, -0.37366426340867454, 0.008197941206316955, -0.907624569163347, 0.6937086269810662...
-  mean_pupil (float64): -1.0465245337620044, -1.0705457658234374, -0.6711246540421064, -0.8692014968270512, -0.12328491241108941...
+  left_pupil (float64): 0.28284068252769706, -0.4969359675178975, -1.7109730132713936, -1.024197014557436, -0.7792117291273035...
+  right_pupil (float64): 2.5061323051140176, 0.5500808555889285, -0.4194523189113897, 0.5384978966510412, -1.3899010906520874...
+  mean_pupil (float64): 1.3944864938208574, 0.026572444035515508, -1.0652126660913916, -0.24284955895319738, -1.0845564098896956...
 
  History:
  *
@@ -267,80 +334,84 @@ PupilData(mikugere, 56.3KiB):
 <p>We can see that a new “eye” with variable “pupil” called <code class="docutils literal notranslate"><span class="pre">mean_pupil</span></code> has been created. In this case, the original data <code class="docutils literal notranslate"><span class="pre">left_pupil</span></code> and <code class="docutils literal notranslate"><span class="pre">right_pupil</span></code> have been preserved (this can be changed by using <code class="docutils literal notranslate"><span class="pre">keep_eyes=False</span></code>).</p>
 <p>In other cases, the package can create new variables. For example, the function <code class="docutils literal notranslate"><span class="pre">pupil_estimate_baseline()</span></code> will estimate tonic fluctuation in the pupil (see <a class="reference external" href="https://osf.io/preprints/psyarxiv/7ju4a_v2/">https://osf.io/preprints/psyarxiv/7ju4a_v2/</a>) and will create a new variable <code class="docutils literal notranslate"><span class="pre">&lt;eye&gt;_baseline</span></code>.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
 <span class="n">d</span><span class="o">.</span><span class="n">pupil_estimate_baseline</span><span class="p">()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">variables</span>
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:55:17</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">250</span> | <span class="ansi-bold">Optimizing Stan model</span>
-12:55:17 - cmdstanpy - INFO - Chain [1] start processing
-12:55:17 - cmdstanpy - INFO - Chain [1] done processing
-12:55:17 - cmdstanpy - WARNING - The default behavior of CmdStanVB.stan_variable() will change in a future release to return the variational sample, rather than the mean.
-To maintain the current behavior, pass the argument mean=True
-<span class="ansi-green-fg">pp: 12:55:17</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">259</span> | <span class="ansi-bold">Estimating PRF model (NNLS)</span>
-<span class="ansi-green-fg">pp: 12:55:17</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">291</span> | <span class="ansi-bold">Optimizing 2nd Stan model</span>
-12:55:17 - cmdstanpy - INFO - Chain [1] start processing
-12:55:17 - cmdstanpy - INFO - Chain [1] done processing
-12:55:17 - cmdstanpy - WARNING - The default behavior of CmdStanVB.stan_variable() will change in a future release to return the variational sample, rather than the mean.
-To maintain the current behavior, pass the argument mean=True
-<span class="ansi-green-fg">pp: 12:55:17</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">250</span> | <span class="ansi-bold">Optimizing Stan model</span>
-12:55:17 - cmdstanpy - INFO - Chain [1] start processing
-12:55:17 - cmdstanpy - INFO - Chain [1] done processing
-12:55:17 - cmdstanpy - WARNING - The default behavior of CmdStanVB.stan_variable() will change in a future release to return the variational sample, rather than the mean.
-To maintain the current behavior, pass the argument mean=True
-<span class="ansi-green-fg">pp: 12:55:17</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">259</span> | <span class="ansi-bold">Estimating PRF model (NNLS)</span>
-<span class="ansi-green-fg">pp: 12:55:17</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">291</span> | <span class="ansi-bold">Optimizing 2nd Stan model</span>
-12:55:17 - cmdstanpy - INFO - Chain [1] start processing
-12:55:17 - cmdstanpy - INFO - Chain [1] done processing
-12:55:17 - cmdstanpy - WARNING - The default behavior of CmdStanVB.stan_variable() will change in a future release to return the variational sample, rather than the mean.
-To maintain the current behavior, pass the argument mean=True
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-EyeData(test short, 2.7MiB):
- n                   : 20465
- sampling_rate       : 500.0
- data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;right_pupil&#39;, &#39;left_baseline&#39;, &#39;right_baseline&#39;]
- nevents             : 40
- screen_limits       : ((0, 1280), (0, 1024))
- physical_screen_size: (30, 20)
- screen_eye_distance : not set
- duration_minutes    : 0.6821666666666667
- start_min           : 0.0
- end_min             : 0.6821333333333333
- parameters          : {}
- glimpse             : EyeDataDict(vars=8,n=20465,shape=(20465,)):
-  left_x (float64): 655.6, 655.7, 655.0, 654.5, 655.0...
-  left_y (float64): 599.9, 598.9, 597.6, 597.8, 597.8...
-  left_pupil (float64): 1121.0, 1122.0, 1124.0, 1126.0, 1126.0...
-  right_x (float64): 773.1, 773.8, 774.8, 776.3, 776.7...
-  right_y (float64): 594.2, 593.9, 596.5, 597.4, 597.3...
-  right_pupil (float64): 949.0, 951.0, 956.0, 959.0, 960.0...
-  left_baseline (float64): 997.432053194403, 998.2207124709803, 999.0038298716057, 999.7814195245737, 1000.5534955581763...
-  right_baseline (float64): 853.8021043980411, 854.5397452521921, 855.2718689137017, 855.9984895804901, 856.7196214504758...
-
- eyes                : [&#39;left&#39;, &#39;right&#39;]
- nblinks             : {}
- blinks              : {&#39;left&#39;: None, &#39;right&#39;: None}
- params              : {}
- History:
- *
- └ fill_time_discontinuities()
-  └ reset_time()
-   └ pupil_estimate_baseline()
+[&#39;pupil&#39;, &#39;baseline&#39;, &#39;y&#39;, &#39;x&#39;]
+</pre></div></div>
+</div>
+</section>
+<section id="Debugging">
+<h2>Debugging<a class="headerlink" href="#Debugging" title="Link to this heading">¶</a></h2>
+<div class="line-block">
+<div class="line">If you want to be sure what steps <code class="docutils literal notranslate"><span class="pre">pupillometry</span></code> is taking, and which variables/eyes are being processed,</div>
+<div class="line">you can use the <code class="docutils literal notranslate"><span class="pre">pp.loglevel()</span></code> context manager to temporarily increase the logging level (the result is a rather lengthy and detailed debug-output):</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">pp</span><span class="o">.</span><span class="n">loglevel</span><span class="p">(</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">):</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">pupil_estimate_baseline</span><span class="p">()</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">_get_eye_var</span>:<span class="ansi-cyan-fg">194</span> | <span class="ansi-blue-intense-fg ansi-bold">pupil_estimate_baseline(): eyes=[&#39;left&#39;, &#39;right&#39;], vars=[&#39;pupil&#39;, &#39;baseline&#39;, &#39;y&#39;, &#39;x&#39;]</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">pupil_estimate_baseline</span>:<span class="ansi-cyan-fg">413</span> | <span class="ansi-blue-intense-fg ansi-bold">Estimating baseline for eye left</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">198</span> | <span class="ansi-blue-intense-fg ansi-bold">Downsampling factor is 50</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">208</span> | <span class="ansi-blue-intense-fg ansi-bold">Downsampling done</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">214</span> | <span class="ansi-blue-intense-fg ansi-bold">Peak-detection done, 42 peaks detected</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">217</span> | <span class="ansi-blue-intense-fg ansi-bold">B-spline matrix built, dims=(410, 46)</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">228</span> | <span class="ansi-blue-intense-fg ansi-bold">Compiling Stan model: /home/mmi041/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/stan/baseline_model_asym_laplac.stan</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">250</span> | <span class="ansi-blue-intense-fg ansi-bold">Optimizing Stan model</span>
+13:12:00 - cmdstanpy - INFO - Chain [1] start processing
+13:12:00 - cmdstanpy - INFO - Chain [1] done processing
+13:12:00 - cmdstanpy - WARNING - The default behavior of CmdStanVB.stan_variable() will change in a future release to return the variational sample, rather than the mean.
+To maintain the current behavior, pass the argument mean=True
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">259</span> | <span class="ansi-blue-intense-fg ansi-bold">Estimating PRF model (NNLS)</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">270</span> | <span class="ansi-blue-intense-fg ansi-bold">2nd Peak-detection done, 32 peaks detected</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">274</span> | <span class="ansi-blue-intense-fg ansi-bold">2nd B-spline matrix built, dims=(410, 36)</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">291</span> | <span class="ansi-blue-intense-fg ansi-bold">Optimizing 2nd Stan model</span>
+13:12:00 - cmdstanpy - INFO - Chain [1] start processing
+13:12:00 - cmdstanpy - INFO - Chain [1] done processing
+13:12:00 - cmdstanpy - WARNING - The default behavior of CmdStanVB.stan_variable() will change in a future release to return the variational sample, rather than the mean.
+To maintain the current behavior, pass the argument mean=True
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">pupil_estimate_baseline</span>:<span class="ansi-cyan-fg">413</span> | <span class="ansi-blue-intense-fg ansi-bold">Estimating baseline for eye right</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">198</span> | <span class="ansi-blue-intense-fg ansi-bold">Downsampling factor is 50</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">208</span> | <span class="ansi-blue-intense-fg ansi-bold">Downsampling done</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">214</span> | <span class="ansi-blue-intense-fg ansi-bold">Peak-detection done, 42 peaks detected</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">217</span> | <span class="ansi-blue-intense-fg ansi-bold">B-spline matrix built, dims=(410, 46)</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">228</span> | <span class="ansi-blue-intense-fg ansi-bold">Compiling Stan model: /home/mmi041/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/stan/baseline_model_asym_laplac.stan</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">250</span> | <span class="ansi-blue-intense-fg ansi-bold">Optimizing Stan model</span>
+13:12:00 - cmdstanpy - INFO - Chain [1] start processing
+13:12:00 - cmdstanpy - INFO - Chain [1] done processing
+13:12:00 - cmdstanpy - WARNING - The default behavior of CmdStanVB.stan_variable() will change in a future release to return the variational sample, rather than the mean.
+To maintain the current behavior, pass the argument mean=True
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">259</span> | <span class="ansi-blue-intense-fg ansi-bold">Estimating PRF model (NNLS)</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">270</span> | <span class="ansi-blue-intense-fg ansi-bold">2nd Peak-detection done, 35 peaks detected</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">274</span> | <span class="ansi-blue-intense-fg ansi-bold">2nd B-spline matrix built, dims=(410, 39)</span>
+<span class="ansi-green-fg">pp: 13:12:00</span> | <span class="ansi-blue-intense-fg ansi-bold">DEBUG   </span> | <span class="ansi-cyan-fg">baseline_envelope_iter_bspline</span>:<span class="ansi-cyan-fg">291</span> | <span class="ansi-blue-intense-fg ansi-bold">Optimizing 2nd Stan model</span>
+13:12:00 - cmdstanpy - INFO - Chain [1] start processing
+13:12:00 - cmdstanpy - INFO - Chain [1] done processing
+13:12:00 - cmdstanpy - WARNING - The default behavior of CmdStanVB.stan_variable() will change in a future release to return the variational sample, rather than the mean.
+To maintain the current behavior, pass the argument mean=True
 </pre></div></div>
 </div>
 </section>
@@ -367,6 +438,7 @@ Interactive version:
 <li><a class="reference internal" href="#">Processing monocular and binocular data</a><ul>
 <li><a class="reference internal" href="#Which-functions-work-on-which-data?">Which functions work on which data?</a></li>
 <li><a class="reference internal" href="#Creating-new-variables-or-eyes">Creating new variables or eyes</a></li>
+<li><a class="reference internal" href="#Debugging">Debugging</a></li>
 </ul>
 </li>
 </ul>

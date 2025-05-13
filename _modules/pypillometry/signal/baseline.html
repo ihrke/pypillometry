@@ -307,7 +307,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="p">}</span>
     
     <span class="c1">## variational optimization</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Optimizing Stan model&quot;</span><span class="p">)</span>    
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Optimizing Stan model&quot;</span><span class="p">)</span>    
     <span class="n">opt</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">variational</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
     <span class="n">vbc</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">stan_variable</span><span class="p">(</span><span class="s2">&quot;coef&quot;</span><span class="p">)</span><span class="c1">#, mean=True)</span>
     <span class="n">meansigvb</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">vbc</span><span class="p">)</span>
@@ -316,7 +316,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="c1"># new &quot;signal&quot;</span>
     <span class="n">syd2</span><span class="o">=</span><span class="n">syd</span><span class="o">-</span><span class="n">meansigvb</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Estimating PRF model (NNLS)&quot;</span><span class="p">)</span>    
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Estimating PRF model (NNLS)&quot;</span><span class="p">)</span>    
     <span class="c1">#coef,pred,resid=pupilresponse_nnls(txd,syd2,event_onsets,fs=fsd)</span>
     <span class="n">pred</span><span class="p">,</span> <span class="n">coef</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="o">=</span><span class="n">pupil_response</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">syd2</span><span class="p">,</span> <span class="n">event_onsets</span><span class="p">,</span> <span class="n">fsd</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">917</span><span class="p">)</span>
     <span class="n">resid</span><span class="o">=</span><span class="n">syd</span><span class="o">-</span><span class="n">pred</span>
@@ -348,7 +348,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="p">}</span>
     
     <span class="c1">##  variational optimization</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Optimizing 2nd Stan model&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Optimizing 2nd Stan model&quot;</span><span class="p">)</span>
     <span class="n">opt</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">variational</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data2</span><span class="p">)</span>
     <span class="n">vbc2</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">stan_variable</span><span class="p">(</span><span class="s2">&quot;coef&quot;</span><span class="p">)</span><span class="c1">#, mean=True)</span>
     <span class="n">meansigvb2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B2</span><span class="p">,</span> <span class="n">vbc2</span><span class="p">)</span>  
