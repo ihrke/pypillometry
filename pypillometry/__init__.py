@@ -30,7 +30,8 @@ def _collect_and_import_submodules() -> Dict[str, Any]:
         '.intervals',
         '.erpd',
         '.io',
-        '.plot'
+        '.plot',
+        '.roi'
     ]
     
     for module_name in submodules:

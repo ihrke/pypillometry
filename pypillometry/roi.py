@@ -10,6 +10,8 @@ import requests
 from typing import Dict, Union, Tuple
 import numpy as np
 from loguru import logger
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 class ROI:
     """Base class for Region of Interest (ROI).
@@ -43,6 +45,23 @@ class ROI:
         Supports both single coordinate and array of coordinates.
         """
         raise NotImplementedError("Subclasses must implement contains()")
+    
+    def plot(self, ax=None, **kwargs):
+        """Plot the ROI on the given axes.
+        
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            The axes to plot on. If None, the current axes will be used.
+        **kwargs : dict
+            Additional keyword arguments passed to the plotting function.
+            
+        Returns
+        -------
+        matplotlib.artist.Artist
+            The artist object created for the ROI.
+        """
+        raise NotImplementedError("Subclasses must implement plot()")
     
     def __str__(self) -> str:
         """String representation of the ROI."""
@@ -88,6 +107,44 @@ class CircularROI(ROI):
         else:
             return np.sqrt(np.sum((coords - self.center)**2, axis=1)) <= self.radius
     
+    def plot(self, ax=None, **kwargs):
+        """Plot the circular ROI.
+        
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            The axes to plot on. If None, the current axes will be used.
+        **kwargs : dict
+            Additional keyword arguments passed to patches.Circle.
+            Common options include:
+            - facecolor: color of the circle fill
+            - edgecolor: color of the circle edge
+            - alpha: transparency
+            - fill: whether to fill the circle
+            - label: label for the legend
+            
+        Returns
+        -------
+        matplotlib.patches.Circle
+            The circle patch object.
+        """
+        if ax is None:
+            ax = plt.gca()
+            
+        # Set default style if not provided
+        if 'facecolor' not in kwargs:
+            kwargs['facecolor'] = 'none'
+        if 'edgecolor' not in kwargs:
+            kwargs['edgecolor'] = 'red'
+        if 'alpha' not in kwargs:
+            kwargs['alpha'] = 0.5
+        if 'label' not in kwargs and self.name:
+            kwargs['label'] = self.name
+            
+        circle = patches.Circle(self.center, self.radius, **kwargs)
+        ax.add_patch(circle)
+        return circle
+    
     def __str__(self) -> str:
         """String representation of the circular ROI."""
         return f"{super().__str__()}(center={self.center}, radius={self.radius})"
@@ -127,6 +184,46 @@ class RectangularROI(ROI):
             return np.all(coords >= self.min_coords) and np.all(coords <= self.max_coords)
         else:
             return np.all(coords >= self.min_coords, axis=1) & np.all(coords <= self.max_coords, axis=1)
+    
+    def plot(self, ax=None, **kwargs):
+        """Plot the rectangular ROI.
+        
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            The axes to plot on. If None, the current axes will be used.
+        **kwargs : dict
+            Additional keyword arguments passed to patches.Rectangle.
+            Common options include:
+            - facecolor: color of the rectangle fill
+            - edgecolor: color of the rectangle edge
+            - alpha: transparency
+            - fill: whether to fill the rectangle
+            - label: label for the legend
+            
+        Returns
+        -------
+        matplotlib.patches.Rectangle
+            The rectangle patch object.
+        """
+        if ax is None:
+            ax = plt.gca()
+            
+        # Set default style if not provided
+        if 'facecolor' not in kwargs:
+            kwargs['facecolor'] = 'none'
+        if 'edgecolor' not in kwargs:
+            kwargs['edgecolor'] = 'red'
+        if 'alpha' not in kwargs:
+            kwargs['alpha'] = 0.5
+        if 'label' not in kwargs and self.name:
+            kwargs['label'] = self.name
+            
+        width = self.max_coords[0] - self.min_coords[0]
+        height = self.max_coords[1] - self.min_coords[1]
+        rect = patches.Rectangle(self.min_coords, width, height, **kwargs)
+        ax.add_patch(rect)
+        return rect
     
     def __str__(self) -> str:
         """String representation of the rectangular ROI."""
