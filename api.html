@@ -150,35 +150,35 @@ provides methods for handling pupillometric data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>time</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
+<li><p><strong>time</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
 using <cite>sampling_rate</cite> (in ms)</p></li>
-<li><p><strong>left_x</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from left eye (at least one of the eyes must be provided, both x and y)
+<li><p><strong>left_x</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from left eye (at least one of the eyes must be provided, both x and y)
 pupil is optional</p></li>
-<li><p><strong>left_y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from left eye (at least one of the eyes must be provided, both x and y)
+<li><p><strong>left_y</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from left eye (at least one of the eyes must be provided, both x and y)
 pupil is optional</p></li>
-<li><p><strong>left_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from left eye (at least one of the eyes must be provided, both x and y)
+<li><p><strong>left_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from left eye (at least one of the eyes must be provided, both x and y)
 pupil is optional</p></li>
-<li><p><strong>right_x</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from right eye (at least one of the eyes must be provided, both x and y)
+<li><p><strong>right_x</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided, both x and y)
 pupil is optional</p></li>
-<li><p><strong>right_y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from right eye (at least one of the eyes must be provided, both x and y)
+<li><p><strong>right_y</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided, both x and y)
 pupil is optional</p></li>
-<li><p><strong>right_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from right eye (at least one of the eyes must be provided, both x and y)
+<li><p><strong>right_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided, both x and y)
 pupil is optional</p></li>
-<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling-rate of the pupillary signal in Hz; if None,</p></li>
-<li><p><strong>screen_resolution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – (xmax, ymax) screen resolution in pixels</p></li>
-<li><p><strong>physical_screen_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – (width, height) of the screen in cm; if None, the screen size is not used</p></li>
-<li><p><strong>screen_eye_distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – distance from the screen to the eye in cm</p></li>
-<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
-<li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
-<li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
-<li><p><strong>keep_orig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
+<li><p><strong>sampling_rate</strong> (<em>float</em>) – sampling-rate of the pupillary signal in Hz; if None,</p></li>
+<li><p><strong>screen_resolution</strong> (<em>tuple</em>) – (xmax, ymax) screen resolution in pixels</p></li>
+<li><p><strong>physical_screen_size</strong> (<em>tuple</em>) – (width, height) of the screen in cm; if None, the screen size is not used</p></li>
+<li><p><strong>screen_eye_distance</strong> (<em>float</em>) – distance from the screen to the eye in cm</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
+<li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
+<li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
+<li><p><strong>keep_orig</strong> (<em>bool</em>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
 as initiated in the constructor is stored in member <cite>original</cite></p></li>
-<li><p><strong>fill_time_discontinuities</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
+<li><p><strong>fill_time_discontinuities</strong> (<em>bool</em>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
 when this option is True, such entries will be made and the signal set to 0 there
 (or do it later using <cite>fill_time_discontinuities()</cite>)</p></li>
-<li><p><strong>use_cache</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to use cached storage for data arrays. Default is False.</p></li>
-<li><p><strong>cache_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – Directory to store cache files. If None, creates a temporary directory.</p></li>
-<li><p><strong>max_memory_mb</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum memory usage in MB when using cache. Default is 100MB.</p></li>
+<li><p><strong>use_cache</strong> (<em>bool</em>) – Whether to use cached storage for data arrays. Default is False.</p></li>
+<li><p><strong>cache_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Directory to store cache files. If None, creates a temporary directory.</p></li>
+<li><p><strong>max_memory_mb</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximum memory usage in MB when using cache. Default is 100MB.</p></li>
 </ul>
 </dd>
 </dl>
@@ -345,7 +345,7 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
-<td><p>Save to file (using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>).</p></td>
+<td><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -366,11 +366,11 @@ pupil data is not touched where x/y is missing</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – Which eyes to correct. If None, correct all available eyes.</p></li>
-<li><p><strong>midpoint</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – The center of the screen (x,y) where it is assumed that the pupil is completely circular.
+<li><p><strong>eyes</strong> (<em>list</em>) – Which eyes to correct. If None, correct all available eyes.</p></li>
+<li><p><strong>midpoint</strong> (<em>tuple</em>) – The center of the screen (x,y) where it is assumed that the pupil is completely circular.
 If None, the midpoint is taken to be the center of the screen as registered
 in the EyeData object.</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to modify the object in place or return a new object.
+<li><p><strong>inplace</strong> (<em>bool</em>) – Whether to modify the object in place or return a new object.
 <cite>true</cite>: modify in place
 <cite>false</cite>: return a new object
 <cite>None</cite>: use the object’s default setting (initialized in __init__)</p></li>
@@ -391,7 +391,7 @@ in the EyeData object.</p></li>
 <dd><p>Return the pupil data as a PupilData object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>eye</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – Which eye to return data for.</p>
+<dd class="field-odd"><p><strong>eye</strong> (<em>str</em><em>, </em><em>optional</em>) – Which eye to return data for.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A PupilData object containing the pupil data.</p>
@@ -411,7 +411,7 @@ in the EyeData object.</p></li>
 <dd class="field-odd"><p>A dictionary summarizing the dataset.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -430,25 +430,25 @@ in the EyeData object.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>time</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
+<li><p><strong>time</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
 using <cite>sampling_rate</cite> (in ms)</p></li>
-<li><p><strong>left_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from left eye (at least one of the eyes must be provided)</p></li>
-<li><p><strong>right_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from right eye (at least one of the eyes must be provided)</p></li>
-<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling-rate of the signal in Hz; if None,</p></li>
-<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
-<li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
-<li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
-<li><p><strong>keep_orig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
+<li><p><strong>left_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from left eye (at least one of the eyes must be provided)</p></li>
+<li><p><strong>right_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided)</p></li>
+<li><p><strong>sampling_rate</strong> (<em>float</em>) – sampling-rate of the signal in Hz; if None,</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
+<li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
+<li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
+<li><p><strong>keep_orig</strong> (<em>bool</em>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
 as initiated in the constructor is stored in member <cite>original</cite></p></li>
-<li><p><strong>fill_time_discontinuities</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
+<li><p><strong>fill_time_discontinuities</strong> (<em>bool</em>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
 when this option is True, such entries will be made and the signal set to 0 there
 (or do it later using <cite>fill_time_discontinuities()</cite>)</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if True, the object is modified in place; if False, a new object is returned
+<li><p><strong>inplace</strong> (<em>bool</em>) – if True, the object is modified in place; if False, a new object is returned
 this object-level property can be overwritten by the method-level <cite>inplace</cite> argument
 default is “False”</p></li>
-<li><p><strong>use_cache</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to use cached storage for data arrays. Default is False.</p></li>
-<li><p><strong>cache_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Directory to store cache files. If None, creates a temporary directory.</p></li>
-<li><p><strong>max_memory_mb</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Maximum memory usage in MB when using cache. Default is 100MB.</p></li>
+<li><p><strong>use_cache</strong> (<em>bool</em>) – Whether to use cached storage for data arrays. Default is False.</p></li>
+<li><p><strong>cache_dir</strong> (<em>str</em>) – Directory to store cache files. If None, creates a temporary directory.</p></li>
+<li><p><strong>max_memory_mb</strong> (<em>float</em>) – Maximum memory usage in MB when using cache. Default is 100MB.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Attributes<span class="colon">:</span></dt>
@@ -581,7 +581,7 @@ default is “False”</p></li>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
-<td><p>Save to file (using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>).</p></td>
+<td><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -593,21 +593,21 @@ No attempt is being made to exclude overlaps of the time-windows.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>erpd_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – identifier for the result (e.g., “cue-locked” or “conflict-trials”)</p></li>
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – default is to use the “pupil” but it could be used to process, e.g.,
+<li><p><strong>erpd_name</strong> (<em>str</em>) – identifier for the result (e.g., “cue-locked” or “conflict-trials”)</p></li>
+<li><p><strong>eyes</strong> (<em>list</em><em> or </em><em>str</em>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
+<li><p><strong>variable</strong> (<em>str</em>) – default is to use the “pupil” but it could be used to process, e.g.,
 interpolated pupil data stored in a different variables, e.g., “pupilinterp”</p></li>
-<li><p><strong>baseline_win</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em> (</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>) or </em><em>None</em>) – <p>if None, no baseline-correction is applied
+<li><p><strong>baseline_win</strong> (<em>tuple</em><em> (</em><em>float</em><em>,</em><em>float</em><em>) or </em><em>None</em>) – <p>if None, no baseline-correction is applied
 if tuple, the mean value in the window in milliseconds (relative to <cite>time_win</cite>) is</p>
 <blockquote>
 <div><p>subtracted from the single-trial ERPDs (baseline-correction)</p>
 </div></blockquote>
 </p></li>
-<li><p><strong>event_select</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>function</em>) – variable describing which events to select and align to
+<li><p><strong>event_select</strong> (<em>str</em><em> or </em><em>function</em>) – variable describing which events to select and align to
 - if str: use all events whose label contains the string
 - if function: apply function to all labels, use those where the function returns True
 see <a class="reference internal" href="#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData.get_intervals()</span></code></a> for details</p></li>
-<li><p><strong>interval</strong> (<em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>]</em>) – time before and after event to include (in ms)</p></li>
+<li><p><strong>interval</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em>) – time before and after event to include (in ms)</p></li>
 <li><p><strong>kwargs</strong> – additional arguments passed to the <cite>event_select</cite> function</p></li>
 </ul>
 </dd>
@@ -628,21 +628,21 @@ whether there is a blink (1) or not (0).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>min_duration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – minimum duration for a sequence of missing numbers to be treated as blink</p></li>
-<li><p><strong>blink_val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – “missing value” code</p></li>
-<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – window-size for smoothing for velocity profile (in units)</p></li>
-<li><p><strong>vel_onset</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – negative velocity that needs to be crossed; arbitrary units that depend on
+<li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to process; if empty, all available eyes are processed</p></li>
+<li><p><strong>min_duration</strong> (<em>float</em>) – minimum duration for a sequence of missing numbers to be treated as blink</p></li>
+<li><p><strong>blink_val</strong> (<em>float</em>) – “missing value” code</p></li>
+<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – window-size for smoothing for velocity profile (in units)</p></li>
+<li><p><strong>vel_onset</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – negative velocity that needs to be crossed; arbitrary units that depend on
 sampling rate etc</p></li>
-<li><p><strong>vel_offset</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – positive velocity that needs to be exceeded; arbitrary units that depend on
+<li><p><strong>vel_offset</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – positive velocity that needs to be exceeded; arbitrary units that depend on
 sampling rate etc</p></li>
-<li><p><strong>min_onset_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – minimum number of consecutive samples that crossed threshold in the velocity
+<li><p><strong>min_onset_len</strong> (<em>int</em>) – minimum number of consecutive samples that crossed threshold in the velocity
 profile to detect as onset (to avoid noise-induced changes)</p></li>
-<li><p><strong>min_offset_len</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – minimum number of consecutive samples that crossed threshold in the velocity
+<li><p><strong>min_offset_len</strong> (<em>int</em>) – minimum number of consecutive samples that crossed threshold in the velocity
 profile to detect as offset (to avoid noise-induced changes)</p></li>
-<li><p><strong>strategies</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><em>strategies to use</em>) – so far, use a list containing any combination of “zero” and “velocity”</p></li>
-<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – one of “ms”, “sec”, “min”, “h”</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>strategies</strong> (<em>list</em><em> of </em><em>strategies to use</em>) – so far, use a list containing any combination of “zero” and “velocity”</p></li>
+<li><p><strong>units</strong> (<em>str</em>) – one of “ms”, “sec”, “min”, “h”</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
@@ -662,18 +662,18 @@ can help to set good parameter values for <cite>winsize</cite>, <cite>vel_onset<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>store_as</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – how to store the interpolated data; either “pupil” (default) which replaces
+<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
+<li><p><strong>store_as</strong> (<em>str</em>) – how to store the interpolated data; either “pupil” (default) which replaces
 the original pupil data or a string that will be used as the new variable
 name in the data (e.g., “pupilinterp”)</p></li>
-<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – method to use; so far, only “mahot” is implemented</p></li>
-<li><p><strong>winsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – size of the Hanning-window in ms</p></li>
-<li><p><strong>vel_onset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – velocity-threshold to detect the onset of the blink</p></li>
-<li><p><strong>vel_offset</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – velocity-threshold to detect the offset of the blink</p></li>
-<li><p><strong>margin</strong> (<em>Tuple</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>]</em>) – margin that is subtracted/added to onset and offset (in ms)</p></li>
-<li><p><strong>blinkwindow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – how much time before and after each blink to include (in ms)</p></li>
-<li><p><strong>interp_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – type of interpolation accepted by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.interpolate.interp1d()</span></code></p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>method</strong> (<em>str</em>) – method to use; so far, only “mahot” is implemented</p></li>
+<li><p><strong>winsize</strong> (<em>float</em>) – size of the Hanning-window in ms</p></li>
+<li><p><strong>vel_onset</strong> (<em>float</em>) – velocity-threshold to detect the onset of the blink</p></li>
+<li><p><strong>vel_offset</strong> (<em>float</em>) – velocity-threshold to detect the offset of the blink</p></li>
+<li><p><strong>margin</strong> (<em>Tuple</em><em>[</em><em>float</em><em>,</em><em>float</em><em>]</em>) – margin that is subtracted/added to onset and offset (in ms)</p></li>
+<li><p><strong>blinkwindow</strong> (<em>float</em>) – how much time before and after each blink to include (in ms)</p></li>
+<li><p><strong>interp_type</strong> (<em>str</em>) – type of interpolation accepted by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.interpolate.interp1d()</span></code></p></li>
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
@@ -687,17 +687,17 @@ if <cite>False</cite>, make and return copy before making changes</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – default is to use the “pupil” but it could be used to process, e.g.,
+<li><p><strong>eyes</strong> (<em>list</em><em> or </em><em>str</em>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
+<li><p><strong>variable</strong> (<em>str</em>) – default is to use the “pupil” but it could be used to process, e.g.,
 interpolated pupil data stored in a different variables, e.g., “pupilinterp”</p></li>
-<li><p><strong>method</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – <dl class="simple">
+<li><p><strong>method</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – <dl class="simple">
 <dt>“envelope_iter_bspline_1”: <code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.baseline.baseline_envelope_iter_bspline()</span></code></dt><dd><p>with one iteration</p>
 </dd>
 <dt>”envelope_iter_bspline_2”: <code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.baseline.baseline_envelope_iter_bspline()</span></code></dt><dd><p>with two iterations</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
 <li><p><strong>kwargs</strong> – named arguments passed to the low-level function in <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry.baseline</span></code>.</p></li>
 </ul>
@@ -719,14 +719,14 @@ if <cite>False</cite>, make and return copy before making changes</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>npar</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – npar-parameter for the canonical response-function or “free”;
+<li><p><strong>eyes</strong> (<em>list</em><em> or </em><em>str</em>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
+<li><p><strong>npar</strong> (<em>float</em>) – npar-parameter for the canonical response-function or “free”;
 in case of “free”, the function optimizes for this parameter</p></li>
-<li><p><strong>tmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – tmax-parameter for the canonical response-function or “free”;
+<li><p><strong>tmax</strong> (<em>float</em>) – tmax-parameter for the canonical response-function or “free”;
 in case of “free”, the function optimizes for this parameter</p></li>
-<li><p><strong>bounds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – in case that one or both parameters are estimated, give the lower
+<li><p><strong>bounds</strong> (<em>dict</em>) – in case that one or both parameters are estimated, give the lower
 and upper bounds for the parameters</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
@@ -746,10 +746,10 @@ see <code class="xref py py-func docutils literal notranslate"><span class="pre"
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – lowpass-filter cutoff</p></li>
-<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – filter order</p></li>
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of eyes to filter; if empty, all available eyes are filtered</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff</p></li>
+<li><p><strong>order</strong> (<em>int</em>) – filter order</p></li>
+<li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to filter; if empty, all available eyes are filtered</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes
 if <cite>None</cite>, use the object-level setting</p></li>
 </ul>
@@ -764,14 +764,14 @@ if <cite>None</cite>, use the object-level setting</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of eyes to smooth; if empty, all available eyes are smoothed</p></li>
-<li><p><strong>window</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – <dl class="simple">
+<li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to smooth; if empty, all available eyes are smoothed</p></li>
+<li><p><strong>window</strong> (<em>str</em>) – <dl class="simple">
 <dt>(the type of window from ‘flat’, ‘hanning’, ‘hamming’, ‘bartlett’, ‘blackman’);</dt><dd><p>flat window will produce a moving average smoothing.</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>winsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – the length of the window in ms</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>winsize</strong> (<em>float</em>) – the length of the window in ms</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
@@ -787,7 +787,7 @@ if <cite>False</cite>, make and return copy before making changes</p></li>
 <dd class="field-odd"><p>dictionary containing description of dataset</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -806,30 +806,30 @@ If you only want to store pupil-size, use the <cite>PupilData</cite> class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>time</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
+<li><p><strong>time</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – timing array or <cite>None</cite>, in which case the time-array goes from [0,maxT]
 using <cite>sampling_rate</cite> (in ms)</p></li>
-<li><p><strong>left_x</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from left eye (at least one of the eyes must be provided, both x and y)</p></li>
-<li><p><strong>left_y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from left eye (at least one of the eyes must be provided, both x and y)</p></li>
-<li><p><strong>right_x</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from right eye (at least one of the eyes must be provided, both x and y)</p></li>
-<li><p><strong>right_y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – data from right eye (at least one of the eyes must be provided, both x and y)</p></li>
-<li><p><strong>sampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling-rate of the signal in Hz; if None,</p></li>
-<li><p><strong>screen_resolution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – (xmax, ymax) screen resolution in pixels</p></li>
-<li><p><strong>physical_screen_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – (width, height) of the screen in cm; if None, the screen size is not used</p></li>
-<li><p><strong>screen_eye_distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – distance from the screen to the eye in cm</p></li>
-<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
-<li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
-<li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
-<li><p><strong>keep_orig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
+<li><p><strong>left_x</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from left eye (at least one of the eyes must be provided, both x and y)</p></li>
+<li><p><strong>left_y</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from left eye (at least one of the eyes must be provided, both x and y)</p></li>
+<li><p><strong>right_x</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided, both x and y)</p></li>
+<li><p><strong>right_y</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided, both x and y)</p></li>
+<li><p><strong>sampling_rate</strong> (<em>float</em>) – sampling-rate of the signal in Hz; if None,</p></li>
+<li><p><strong>screen_resolution</strong> (<em>tuple</em>) – (xmax, ymax) screen resolution in pixels</p></li>
+<li><p><strong>physical_screen_size</strong> (<em>tuple</em>) – (width, height) of the screen in cm; if None, the screen size is not used</p></li>
+<li><p><strong>screen_eye_distance</strong> (<em>float</em>) – distance from the screen to the eye in cm</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
+<li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
+<li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
+<li><p><strong>keep_orig</strong> (<em>bool</em>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
 as initiated in the constructor is stored in member <cite>original</cite></p></li>
-<li><p><strong>fill_time_discontinuities</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
+<li><p><strong>fill_time_discontinuities</strong> (<em>bool</em>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
 when this option is True, such entries will be made and the signal set to 0 there
 (or do it later using <cite>fill_time_discontinuities()</cite>)</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if True, the object is modified in place; if False, a new object is returned
+<li><p><strong>inplace</strong> (<em>bool</em>) – if True, the object is modified in place; if False, a new object is returned
 this object-level property can be overwritten by the method-level <cite>inplace</cite> argument
 default is “False”</p></li>
-<li><p><strong>use_cache</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to use cached storage for data arrays. Default is False.</p></li>
-<li><p><strong>cache_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Directory to store cache files. If None, creates a temporary directory.</p></li>
-<li><p><strong>max_memory_mb</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Maximum memory usage in MB when using cache. Default is 100MB.</p></li>
+<li><p><strong>use_cache</strong> (<em>bool</em>) – Whether to use cached storage for data arrays. Default is False.</p></li>
+<li><p><strong>cache_dir</strong> (<em>str</em>) – Directory to store cache files. If None, creates a temporary directory.</p></li>
+<li><p><strong>max_memory_mb</strong> (<em>float</em>) – Maximum memory usage in MB when using cache. Default is 100MB.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Attributes<span class="colon">:</span></dt>
@@ -958,7 +958,7 @@ default is “False”</p></li>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
-<td><p>Save to file (using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>).</p></td>
+<td><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -971,7 +971,7 @@ default is “False”</p></li>
 <dd class="field-odd"><p>height of screen in cm</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -985,7 +985,7 @@ default is “False”</p></li>
 <dd class="field-odd"><p>width of screen in cm</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -999,7 +999,7 @@ default is “False”</p></li>
 <dd class="field-odd"><p>distance from screen to eye in cm</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1013,7 +1013,7 @@ default is “False”</p></li>
 <dd class="field-odd"><p>ymax-ymin</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1027,7 +1027,7 @@ default is “False”</p></li>
 <dd class="field-odd"><p>xmax-xmin</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1041,7 +1041,7 @@ default is “False”</p></li>
 <dd class="field-odd"><p>xmin,xmax of the screen</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a></p>
+<dd class="field-even"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1067,9 +1067,9 @@ default is “False”</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>screen_eye_distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – distance from the screen to the eye in cm</p></li>
-<li><p><strong>screen_resolution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – (width, height) of the screen in pixels</p></li>
-<li><p><strong>physical_screen_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – (width, height) of the screen in cm</p></li>
+<li><p><strong>screen_eye_distance</strong> (<em>float</em>) – distance from the screen to the eye in cm</p></li>
+<li><p><strong>screen_resolution</strong> (<em>tuple</em>) – (width, height) of the screen in pixels</p></li>
+<li><p><strong>physical_screen_size</strong> (<em>tuple</em>) – (width, height) of the screen in cm</p></li>
 </ul>
 </dd>
 </dl>
@@ -1084,7 +1084,7 @@ default is “False”</p></li>
 <dd class="field-odd"><p>dictionary containing description of dataset</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1216,7 +1216,7 @@ implements some basic functions.</p>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.write_file" title="pypillometry.GenericEyeData.write_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code></a>(fname)</p></td>
-<td><p>Save to file (using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>).</p></td>
+<td><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -1247,8 +1247,8 @@ implements some basic functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – one of “ms”, “sec”, “min”, “h”</p></li>
+<li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to process; if empty, all available eyes are processed</p></li>
+<li><p><strong>units</strong> (<em>str</em>) – one of “ms”, “sec”, “min”, “h”</p></li>
 </ul>
 </dd>
 </dl>
@@ -1263,7 +1263,7 @@ implements some basic functions.</p>
 <dd class="field-odd"><p>dictionary with blinks for each eye</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1277,10 +1277,10 @@ This function simply treats repeated blinks as one long blink.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of eyes to consider; if empty, consider all</p></li>
-<li><p><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of variables to consider; if empty, consider all</p></li>
-<li><p><strong>distance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – merge together blinks that are closer together than <cite>distance</cite> in ms</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – list of eyes to consider; if empty, consider all</p></li>
+<li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em>) – list of variables to consider; if empty, consider all</p></li>
+<li><p><strong>distance</strong> (<em>float</em>) – merge together blinks that are closer together than <cite>distance</cite> in ms</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
@@ -1308,10 +1308,10 @@ See <code class="xref py py-func docutils literal notranslate"><span class="pre"
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fsd</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – new sampling-rate or decimate-factor</p></li>
-<li><p><strong>dsfac</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if False, <cite>fsd</cite> is the new sampling rate;
+<li><p><strong>fsd</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – new sampling-rate or decimate-factor</p></li>
+<li><p><strong>dsfac</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if False, <cite>fsd</cite> is the new sampling rate;
 if True, <cite>fsd</cite> is the decimate factor</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
@@ -1324,7 +1324,7 @@ if <cite>False</cite>, make and return copy before making changes</p></li>
 <dd><p>Drop original dataset from record (e.g., to save space).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<dd class="field-odd"><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes
 if <cite>None</cite>, use the setting of the object (specified in constructor)</p>
 </dd>
@@ -1333,7 +1333,7 @@ if <cite>None</cite>, use the setting of the object (specified in constructor)</
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.eyes">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eyes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pypillometry.GenericEyeData.eyes" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eyes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pypillometry.GenericEyeData.eyes" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of available eyes in the dataset.</p>
 </dd></dl>
 
@@ -1351,7 +1351,7 @@ if <cite>None</cite>, use the setting of the object (specified in constructor)</
 Use as <code class="docutils literal notranslate"><span class="pre">pypillometry.PupilData.from_file(&quot;yourfile.pd&quot;)</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – filename</p>
+<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – filename</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1363,8 +1363,8 @@ Use as <code class="docutils literal notranslate"><span class="pre">pypillometry
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eye</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – a single eye to get blinks for</p></li>
-<li><p><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – a single variable to get blinks for</p></li>
+<li><p><strong>eye</strong> (<em>str</em>) – a single eye to get blinks for</p></li>
+<li><p><strong>variable</strong> (<em>str</em>) – a single variable to get blinks for</p></li>
 </ul>
 </dd>
 </dl>
@@ -1377,12 +1377,12 @@ Use as <code class="docutils literal notranslate"><span class="pre">pypillometry
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – list of eyes to consider; if empty, all eyes are considered</p></li>
-<li><p><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – list of variables to consider; if empty, all variables are considered</p></li>
+<li><p><strong>eyes</strong> (<em>list</em><em> or </em><em>str</em>) – list of eyes to consider; if empty, all eyes are considered</p></li>
+<li><p><strong>variables</strong> (<em>list</em><em> or </em><em>str</em>) – list of variables to consider; if empty, all variables are considered</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1393,7 +1393,7 @@ Use as <code class="docutils literal notranslate"><span class="pre">pypillometry
 <dd><p>Get cache statistics if using cached storage.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.13)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1404,13 +1404,13 @@ Use as <code class="docutils literal notranslate"><span class="pre">pypillometry
 <dd><p>Return duration of the dataset in units specified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – unit one of “min”, “sec”, “h”, by default “min”</p>
+<dd class="field-odd"><p><strong>units</strong> (<em>str</em><em>, </em><em>optional</em>) – unit one of “min”, “sec”, “h”, by default “min”</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>duration of dataset in specified units</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1428,7 +1428,7 @@ with two entriess.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>event_select</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em> or </em><em>function</em>) – <p>variable describing which events to select and align to
+<li><p><strong>event_select</strong> (<em>str</em><em>, </em><em>tuple</em><em> or </em><em>function</em>) – <p>variable describing which events to select and align to
 - if str: use all events whose label contains the string
 - if function: apply function to all labels, use those where the function returns True
 - if tuple: use all events between the two events specified in the tuple.</p>
@@ -1436,12 +1436,12 @@ with two entriess.</p>
 <div><p>Both selectors must result in identical number of events.</p>
 </div></blockquote>
 </p></li>
-<li><p><strong>interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em> (</em><em>min</em><em>,</em><em>max</em><em>)</em>) – time-window relative to event-onset (0 is event-onset); i.e., negative
+<li><p><strong>interval</strong> (<em>tuple</em><em> (</em><em>min</em><em>,</em><em>max</em><em>)</em>) – time-window relative to event-onset (0 is event-onset); i.e., negative
 numbers are before the event, positive numbers after. Units are defined
 by the <cite>units</cite> parameter</p></li>
-<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – units of the interval (one of “ms”, “sec”, “min”); units=None means
+<li><p><strong>units</strong> (<em>str</em>) – units of the interval (one of “ms”, “sec”, “min”); units=None means
 that the interval in sampling units (i.e., indices into the time-array)</p></li>
-<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – passed onto the event_select function</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – passed onto the event_select function</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1475,10 +1475,10 @@ that the interval in sampling units (i.e., indices into the time-array)</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>, </em><em>optional</em>) – list of eyes to merge, by default [] meaning all eyes</p></li>
-<li><p><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>, </em><em>optional</em>) – list of variables to merge, by default [] meaning all variables</p></li>
-<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – which method to use for merging (one of “mean”, “regress”), by default “mean”</p></li>
-<li><p><strong>keep_eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – keep original eye data or drop?, by default True</p></li>
+<li><p><strong>eyes</strong> (<em>list</em><em>, </em><em>optional</em>) – list of eyes to merge, by default [] meaning all eyes</p></li>
+<li><p><strong>variables</strong> (<em>list</em><em>, </em><em>optional</em>) – list of variables to merge, by default [] meaning all variables</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – which method to use for merging (one of “mean”, “regress”), by default “mean”</p></li>
+<li><p><strong>keep_eyes</strong> (<em>bool</em><em>, </em><em>optional</em>) – keep original eye data or drop?, by default True</p></li>
 <li><p><strong>inplace</strong> (<em>make change inplace</em><em>, </em><em>optional</em>) – if None, use default value in class, by default None</p></li>
 </ul>
 </dd>
@@ -1493,7 +1493,7 @@ that the interval in sampling units (i.e., indices into the time-array)</p></li>
 using <cite>get_mask()</cite>, then applies this joint mask to all variables.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, make change in-place and return the object.
+<dd class="field-odd"><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, make change in-place and return the object.
 If False, make and return copy before making changes.
 If None, use the object’s default setting.</p>
 </dd>
@@ -1513,13 +1513,13 @@ If None, use the object’s default setting.</p>
 <p>By default, all eyes and variables are considered.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of eyes to consider; if empty, all eyes are considered</p>
+<dd class="field-odd"><p><strong>eyes</strong> (<em>list</em>) – list of eyes to consider; if empty, all eyes are considered</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>number of detected blinks</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
+<dd class="field-odd"><p>int</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1530,14 +1530,14 @@ If None, use the object’s default setting.</p>
 <dd><p>Return number of events in data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.notes">
-<span class="sig-name descname"><span class="pre">notes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></em><a class="headerlink" href="#pypillometry.GenericEyeData.notes" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">notes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></em><a class="headerlink" href="#pypillometry.GenericEyeData.notes" title="Link to this definition">¶</a></dt>
 <dd><p>Constructor</p>
 </dd></dl>
 
@@ -1555,8 +1555,8 @@ Resets onsets etc.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>t0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – time at which the <a class="reference internal" href="#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>’s time-vector starts</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>t0</strong> (<em>float</em>) – time at which the <a class="reference internal" href="#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>’s time-vector starts</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes
 if <cite>None</cite>, use the setting of the object (specified in constructor)</p></li>
 </ul>
@@ -1573,15 +1573,15 @@ Specify whether to scale <cite>x</cite>, <cite>y</cite>, <cite>pupil</cite> or o
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – variables to scale; can be “pupil”, “x”,”y”, “baseline”, “response” or any other variable
+<li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em>) – variables to scale; can be “pupil”, “x”,”y”, “baseline”, “response” or any other variable
 that is available in the dataset; either a string or a list of strings;
 available variables can be checked with <cite>obj.variables</cite>; empty list means all variables</p></li>
-<li><p><strong>mean</strong> (<em>None</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – mean to subtract from signal; if <cite>None</cite>, use the signal’s mean
+<li><p><strong>mean</strong> (<em>None</em><em>, </em><em>float</em><em> or </em><em>dict</em>) – mean to subtract from signal; if <cite>None</cite>, use the signal’s mean
 if dict, provide mean for each eye and variable configuration</p></li>
-<li><p><strong>sd</strong> (<em>None</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – sd to scale with; if <cite>None</cite>, use the signal’s std
+<li><p><strong>sd</strong> (<em>None</em><em>, </em><em>float</em><em> or </em><em>dict</em>) – sd to scale with; if <cite>None</cite>, use the signal’s std
 if dict, provide sd for each eye and variable configuration</p></li>
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of eyes to consider; if empty, all available eyes are considered</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – list of eyes to consider; if empty, all available eyes are considered</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes
 if <cite>None</cite>, use the object’s default setting</p></li>
 </ul>
@@ -1600,8 +1600,8 @@ if <cite>None</cite>, use the object’s default setting</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eye</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – a single eye to set the blinks for</p></li>
-<li><p><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – a single variable to set the blinks for</p></li>
+<li><p><strong>eye</strong> (<em>str</em>) – a single eye to set the blinks for</p></li>
+<li><p><strong>variable</strong> (<em>str</em>) – a single variable to set the blinks for</p></li>
 <li><p><strong>blinks</strong> (<em>ndarray</em><em> or </em><em>None</em>) – ndarrays of blinks (nblinks x 2);</p></li>
 </ul>
 </dd>
@@ -1615,9 +1615,9 @@ if <cite>None</cite>, use the object’s default setting</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>use_cache</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to use cached storage.</p></li>
-<li><p><strong>cache_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – Directory to store cache files.</p></li>
-<li><p><strong>max_memory_mb</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – Maximum memory usage in MB.</p></li>
+<li><p><strong>use_cache</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use cached storage.</p></li>
+<li><p><strong>cache_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Directory to store cache files.</p></li>
+<li><p><strong>max_memory_mb</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximum memory usage in MB.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1652,13 +1652,13 @@ pupil-size in interval before trial onset.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of eyes to consider; if empty, consider all</p></li>
-<li><p><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of variables to consider; if empty, consider all</p></li>
-<li><p><strong>event_select</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>function</em>) – variable describing which events to select and align to
+<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – list of eyes to consider; if empty, consider all</p></li>
+<li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em>) – list of variables to consider; if empty, consider all</p></li>
+<li><p><strong>event_select</strong> (<em>str</em><em> or </em><em>function</em>) – variable describing which events to select and align to
 see <a class="reference internal" href="#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData.get_intervals()</span></code></a> for details</p></li>
-<li><p><strong>interval</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em> (</em><em>min</em><em>,</em><em>max</em><em>)</em>) – time-window in ms relative to event-onset (0 is event-onset)</p></li>
+<li><p><strong>interval</strong> (<em>tuple</em><em> (</em><em>min</em><em>,</em><em>max</em><em>)</em>) – time-window in ms relative to event-onset (0 is event-onset)</p></li>
 <li><p><strong>statfct</strong> (<em>function</em>) – function mapping np.array to a single number</p></li>
-<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – passed onto the event_select function</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – passed onto the event_select function</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1681,12 +1681,12 @@ If units is <cite>None</cite>, use the units in the time vector.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – start for new dataset</p></li>
-<li><p><strong>end</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – end of new dataset</p></li>
-<li><p><strong>units</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – time units in which <cite>start</cite> and <cite>end</cite> are provided.
+<li><p><strong>start</strong> (<em>float</em>) – start for new dataset</p></li>
+<li><p><strong>end</strong> (<em>float</em>) – end of new dataset</p></li>
+<li><p><strong>units</strong> (<em>str</em>) – time units in which <cite>start</cite> and <cite>end</cite> are provided.
 (one of “ms”, “sec”, “min”, “h”).
 If units is <cite>None</cite>, use the units in the time vector.</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes
 if <cite>None</cite>, use the setting of the object (specified in constructor)</p></li>
 </ul>
@@ -1700,7 +1700,7 @@ if <cite>None</cite>, use the setting of the object (specified in constructor)</
 <dd><p>Return a summary of the <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code>-object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1713,15 +1713,15 @@ or the values stored in <cite>scale_params</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>variables</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – variables to scale; can be “pupil”, “x”,”y”, “baseline”, “response” or any other variable
+<li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em>) – variables to scale; can be “pupil”, “x”,”y”, “baseline”, “response” or any other variable
 that is available in the dataset; either a string or a list of strings;
 available variables can be checked with <cite>obj.variables</cite></p></li>
-<li><p><strong>eyes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – list of eyes to consider; if empty, all available eyes are considered</p></li>
-<li><p><strong>mean</strong> (<em>None</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a>) – mean to subtract from signal; if <cite>None</cite>, use the signal’s mean
+<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – list of eyes to consider; if empty, all available eyes are considered</p></li>
+<li><p><strong>mean</strong> (<em>None</em><em>, </em><em>float</em><em> or </em><em>dict</em>) – mean to subtract from signal; if <cite>None</cite>, use the signal’s mean
 if dict, provide mean for each eye and variable configuration</p></li>
-<li><p><strong>sd</strong> (<em>None</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>Parameters</em>) – sd to scale with; if <cite>None</cite>, use the signal’s std
+<li><p><strong>sd</strong> (<em>None</em><em>, </em><em>float</em><em> or </em><em>Parameters</em>) – sd to scale with; if <cite>None</cite>, use the signal’s std
 if dict, provide sd for each eye and variable configuration</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – if <cite>True</cite>, make change in-place and return the object
+<li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes
 if <cite>None</cite>, use the object’s default setting</p></li>
 </ul>
@@ -1731,17 +1731,17 @@ if <cite>None</cite>, use the object’s default setting</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.variables">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variables</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pypillometry.GenericEyeData.variables" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variables</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pypillometry.GenericEyeData.variables" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of available variables in the dataset.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.write_file">
 <span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.write_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.write_file" title="Link to this definition">¶</a></dt>
-<dd><p>Save to file (using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>).</p>
+<dd><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – filename</p>
+<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – filename</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1850,7 +1850,7 @@ custom identifier).</p>
 <dd><p>Count the number of missing values based on masks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>per_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, return a dictionary with counts per key.
+<dd class="field-odd"><p><strong>per_key</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, return a dictionary with counts per key.
 If False, return maximum count across all keys.
 Default is False.</p>
 </dd>
@@ -1859,7 +1859,7 @@ Default is False.</p>
 If per_key is True, returns a dictionary mapping keys to their missing value counts.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>, Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]]</p>
+<dd class="field-odd"><p>Union[int, Dict[str, int]]</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -1876,7 +1876,7 @@ If per_key is True, returns a dictionary mapping keys to their missing value cou
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pypillometry.EyeDataDict.eyes">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eyes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pypillometry.EyeDataDict.eyes" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eyes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pypillometry.EyeDataDict.eyes" title="Link to this definition">¶</a></dt>
 <dd><p>List of all available eyes.</p>
 </dd></dl>
 
@@ -1886,7 +1886,7 @@ If per_key is True, returns a dictionary mapping keys to their missing value cou
 <dd><p>Return a list of available eyes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>variable</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – If specified, return only eyes for this variable.</p>
+<dd class="field-odd"><p><strong>variable</strong> (<em>str</em><em>, </em><em>optional</em>) – If specified, return only eyes for this variable.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1903,7 +1903,7 @@ If per_key is True, returns a dictionary mapping keys to their missing value cou
 <dd><p>Return a subset EyeDataDict with all variables for a given eye.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>eye</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The eye to get data for (‘left’, ‘right’, ‘mean’, etc.)</p>
+<dd class="field-odd"><p><strong>eye</strong> (<em>str</em>) – The eye to get data for (‘left’, ‘right’, ‘mean’, etc.)</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A new EyeDataDict containing only data for the specified eye</p>
@@ -1927,7 +1927,7 @@ If per_key is True, returns a dictionary mapping keys to their missing value cou
 <dd><p>Get mask for a specific key or joint mask across all keys.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – Key to get mask for. If None, returns logical OR of all masks.</p>
+<dd class="field-odd"><p><strong>key</strong> (<em>str</em><em>, </em><em>optional</em>) – Key to get mask for. If None, returns logical OR of all masks.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Mask array for specified key, or joint mask if no key given.</p>
@@ -1964,14 +1964,14 @@ If per_key is True, returns a dictionary mapping keys to their missing value cou
 <dd><p>Set mask for a specific key.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pypillometry.EyeDataDict.variables">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variables</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pypillometry.EyeDataDict.variables" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variables</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pypillometry.EyeDataDict.variables" title="Link to this definition">¶</a></dt>
 <dd><p>List of all available variables.</p>
 </dd></dl>
 
@@ -2001,9 +2001,9 @@ If per_key is True, returns a dictionary mapping keys to their missing value cou
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
 <li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
-<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – onsets of events (stimuli/responses) in seconds</p></li>
-<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling rate in Hz</p></li>
-<li><p><strong>lp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – low-pass filter cutoff for removing random noise</p></li>
+<li><p><strong>event_onsets</strong> (<em>list</em>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
+<li><p><strong>lp</strong> (<em>float</em>) – low-pass filter cutoff for removing random noise</p></li>
 <li><p><strong>prominence_thr</strong> (<em>float in</em><em> [</em><em>0</em><em>,</em><em>100</em><em>]</em>) – percentile of the prominence distribution (of the peaks) to
 use for determining prominent peaks (see <cite>scipy.stats.peak_prominences()</cite>)</p></li>
 <li><p><strong>interp_method</strong> (<em>string</em><em>, </em><em>one</em><em> of </em><em>[</em><em>&quot;linear&quot;</em><em>, </em><em>&quot;cubic&quot;</em><em>, </em><em>&quot;spline&quot;</em><em>]</em>) – <p>“linear” - linear interpolation between the high-prominence peaks
@@ -2037,14 +2037,14 @@ The signal is downsampled (to <cite>fsd</cite> Hz) for speed.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
 <li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
-<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – onsets of events (stimuli/responses) in milliseconds</p></li>
-<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling rate in Hz</p></li>
-<li><p><strong>fsd</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – downsampled sampling rate (if too slow, decrease)</p></li>
-<li><p><strong>lp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – lowpass-filter cutoff (Hz)</p></li>
-<li><p><strong>lam_sig</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – parameter steering how much the baseline is shaped by the non-peaks of the signal</p></li>
-<li><p><strong>lam_min</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – parameters mapping how much low- and high-prominence peaks influence the baseline</p></li>
-<li><p><strong>lam_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – parameters mapping how much low- and high-prominence peaks influence the baseline</p></li>
-<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> [</em><em>0</em><em>, </em><em>100</em><em>]</em>) – how much information to print (0 nothing, 100 everything)</p></li>
+<li><p><strong>event_onsets</strong> (<em>list</em>) – onsets of events (stimuli/responses) in milliseconds</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
+<li><p><strong>fsd</strong> (<em>float</em>) – downsampled sampling rate (if too slow, decrease)</p></li>
+<li><p><strong>lp</strong> (<em>float</em>) – lowpass-filter cutoff (Hz)</p></li>
+<li><p><strong>lam_sig</strong> (<em>float</em>) – parameter steering how much the baseline is shaped by the non-peaks of the signal</p></li>
+<li><p><strong>lam_min</strong> (<em>float</em>) – parameters mapping how much low- and high-prominence peaks influence the baseline</p></li>
+<li><p><strong>lam_max</strong> (<em>float</em>) – parameters mapping how much low- and high-prominence peaks influence the baseline</p></li>
+<li><p><strong>verbose</strong> (<em>int</em><em> [</em><em>0</em><em>, </em><em>100</em><em>]</em>) – how much information to print (0 nothing, 100 everything)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2076,10 +2076,10 @@ base2: is the final baseline estimate</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
 <li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
-<li><p><strong>event_onsets</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – onsets of events (stimuli/responses) in seconds</p></li>
-<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling rate in Hz</p></li>
-<li><p><strong>lp1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – low-pass filter cutoff for removing random noise</p></li>
-<li><p><strong>lp2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – low-pass filter cutoff for removing spurious peaks from the baseline-signal</p></li>
+<li><p><strong>event_onsets</strong> (<em>list</em>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
+<li><p><strong>lp1</strong> (<em>float</em>) – low-pass filter cutoff for removing random noise</p></li>
+<li><p><strong>lp2</strong> (<em>float</em>) – low-pass filter cutoff for removing spurious peaks from the baseline-signal</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2102,7 +2102,7 @@ Similar behaviour as R’s bs() function from the splines-library.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>txd</strong> (<em>np.array</em>) – time-vector</p></li>
 <li><p><strong>knots</strong> (<em>np.array</em>) – location of the knots</p></li>
-<li><p><strong>spline_degree</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – degree of the spline</p></li>
+<li><p><strong>spline_degree</strong> (<em>int</em>) – degree of the spline</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2122,9 +2122,9 @@ Similar behaviour as R’s bs() function from the splines-library.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – lowpass-filter cutoff</p></li>
-<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling rate</p></li>
-<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – filter order</p></li>
+<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate</p></li>
+<li><p><strong>order</strong> (<em>int</em>) – filter order</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2145,9 +2145,9 @@ Similar behaviour as R’s bs() function from the splines-library.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>np.array</em>) – data to lowpass-filter</p></li>
-<li><p><strong>cutoff</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – lowpass-filter cutoff</p></li>
-<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – sampling rate</p></li>
-<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – filter order</p></li>
+<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate</p></li>
+<li><p><strong>order</strong> (<em>int</em>) – filter order</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2168,7 +2168,7 @@ Similar behaviour as R’s bs() function from the splines-library.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>y</strong> (<em>np.array</em>) – signal to downsample</p></li>
-<li><p><strong>R</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – decimate-factor</p></li>
+<li><p><strong>R</strong> (<em>int</em>) – decimate-factor</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2193,7 +2193,7 @@ You can also set the log-level to <cite>DEBUG</cite> or <cite>WARN</cite> by run
 <dd><p>Set the logging level for all pypillometry submodules.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The logging level. Can be one of “DEBUG”, “INFO”, “WARNING”, “ERROR”, “CRITICAL”.</p>
+<dd class="field-odd"><p><strong>level</strong> (<em>str</em>) – The logging level. Can be one of “DEBUG”, “INFO”, “WARNING”, “ERROR”, “CRITICAL”.</p>
 </dd>
 </dl>
 </dd></dl>

@@ -285,7 +285,7 @@ window.addEventListener("load", () => mermaid.run());
     
     <span class="c1"># load or compile model</span>
     <span class="n">fpath</span><span class="o">=</span><span class="n">files</span><span class="p">(</span><span class="s1">&#39;pypillometry.stan&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;baseline_model_asym_laplac.stan&#39;</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Compiling Stan model: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">fpath</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Compiling Stan model: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">fpath</span><span class="p">)</span>
 
     <span class="c1">#fname=&quot;stan/baseline_model_asym_laplac.stan&quot;</span>
     <span class="c1">#fpath=os.path.join(os.path.split(__file__)[0], fname)</span>

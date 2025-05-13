@@ -51,34 +51,55 @@ Interactive version:
 <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=pipes.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
 </div><section id="Pipeline-based-processing-in-pypillometry">
 <h1>Pipeline-based processing in pypillometry<a class="headerlink" href="#Pipeline-based-processing-in-pypillometry" title="Link to this heading">¶</a></h1>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
+<span class="o">%</span><span class="k">autoreload</span> 2
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
-</pre></div>
+<br/></pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The autoreload extension is already loaded. To reload it, use:
+  %reload_ext autoreload
+</pre></div></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> implements a pipeline-like approach where each operation executed on a <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>-object returns a copy of the (modified) object. This enables the “chaining” of commands as follows:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;../data/test.pd&quot;</span><span class="p">)</span>\
-    <span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span>\
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load a small example dataset</span>
+<span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">()</span>\
     <span class="o">.</span><span class="n">blinks_merge</span><span class="p">()</span>\
-    <span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>\
+    <span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>\
     <span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/mmi041/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/signal/baseline.py:144: RuntimeWarning: Mean of empty slice
+  y2=np.nanmean(y_padded.reshape(-1,R), axis=1)
+</pre></div></div>
 </div>
 <p>This command loads a data-file (<code class="docutils literal notranslate"><span class="pre">test.pd</span></code>), applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object <code class="docutils literal notranslate"><span class="pre">d</span></code>.</p>
 <p>Here, for better visibility, we put each operation in a separate line. For that to work, we need to tell Python that the line has not yet ended at the end of the statement which we achieve by putting a backslash <code class="docutils literal notranslate"><span class="pre">\</span></code> at the end of each (non-final) line.</p>
 <p>We can get a useful summary of the dataset and the operations applied to it by simply printing it:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
@@ -90,36 +111,44 @@ Interactive version:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-PupilData(test_ro_ka_si_hu_re_vu_vi_be, 331.3KiB):
- n                 : 6001
- nmiss             : 117.2
- perc_miss         : 1.9530078320279955
- nevents           : 56
- nblinks           : 24
- ninterpolated     : 0.0
- blinks_per_min    : 11.998000333277787
- fs                : 50
- duration_minutes  : 2.0003333333333333
- start_min         : 4.00015
- end_min           : 6.0
- baseline_estimated: False
- response_estimated: False
+EyeData(test short, 212.3KiB):
+ n                   : 2047
+ sampling_rate       : 50
+ data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;right_pupil&#39;]
+ nevents             : 40
+ screen_limits       : ((0, 1280), (0, 1024))
+ physical_screen_size: (30, 20)
+ screen_eye_distance : not set
+ duration_minutes    : 0.6823333333333333
+ start_min           : 0.00015
+ end_min             : 0.6820666666666667
+ parameters          : {}
+ glimpse             : EyeDataDict(vars=6,n=2047,shape=(2047,)):
+  left_x (float64): 656.5500000000001, 656.14, 654.0400000000001, 652.0199999999999, 650.4...
+  left_y (float64): 597.54, 591.5, 588.3899999999999, 593.7800000000001, 598.3199999999999...
+  left_pupil (float64): 1128.8869458721226, 1133.8058182761888, 1139.7069289167484, 1146.4462392731034, 1153.8027812522362...
+  right_x (float64): 775.56, 777.14, 777.08, 776.99, 778.72...
+  right_y (float64): 597.31, 601.3, 600.48, 595.3399999999999, 595.1...
+  right_pupil (float64): 954.2414624419623, 958.9101375371407, 963.632119267214, 968.2405296620748, 972.6750179976658...
+
+ eyes                : [&#39;left&#39;, &#39;right&#39;]
+ nblinks             : {&#39;left_pupil&#39;: 11, &#39;right_pupil&#39;: 11}
+ blinks              : {&#39;left&#39;: 11 intervals, 2154.55 +/- 3588.46, [460.00, 13460.00], &#39;right&#39;: 11 intervals, 1005.45 +/- 718.34, [320.00, 3080.00]}
+ params              : {}
  History:
  *
- └ reset_time()
-  └ blinks_detect()
-   └ sub_slice(4,6,units=min)
-    └ drop_original()
-     └ blinks_detect()
-      └ blinks_merge()
-       └ lowpass_filter(3)
-        └ downsample(50)
+ └ fill_time_discontinuities()
+  └ reset_time()
+   └ pupil_blinks_detect()
+    └ blinks_merge()
+     └ pupil_lowpass_filter(3)
+      └ downsample(50)
 
 </pre></div></div>
 </div>
 <p>We see that sampling rate, number of datapoints and more is automatically printed along with the history of all operations applied to the dataset. This information can also be retrieved separately and in a form useful for further processing the function <code class="docutils literal notranslate"><span class="pre">summary()</span></code> which returns the information in the form of a <code class="docutils literal notranslate"><span class="pre">dict</span></code>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
@@ -127,78 +156,37 @@ PupilData(test_ro_ka_si_hu_re_vu_vi_be, 331.3KiB):
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-{&#39;name&#39;: &#39;test_ro_ka_si_hu_re_vu_vi_be&#39;,
- &#39;n&#39;: 6001,
- &#39;nmiss&#39;: 117.2,
- &#39;perc_miss&#39;: 1.9530078320279955,
- &#39;nevents&#39;: 56,
- &#39;nblinks&#39;: 24,
- &#39;ninterpolated&#39;: 0.0,
- &#39;blinks_per_min&#39;: 11.998000333277787,
- &#39;fs&#39;: 50,
- &#39;duration_minutes&#39;: 2.0003333333333333,
- &#39;start_min&#39;: 4.00015,
- &#39;end_min&#39;: 6.0,
- &#39;baseline_estimated&#39;: False,
- &#39;response_estimated&#39;: False}
-</pre></div></div>
-</div>
-<p>The history is internally stored in <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>’s <code class="docutils literal notranslate"><span class="pre">history</span></code> member and can be applied to another object for convenience. That way, a pipeline can be developed on a single dataset and later be transferred to a whole folder of other (similar) datasets.</p>
-<p>As an example, we create several “fake” datasets representing data from several subjects (each with 10 trials):</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nsubj</span><span class="o">=</span><span class="mi">10</span> <span class="c1"># number of subjects</span>
-<span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">pp</span><span class="o">.</span><span class="n">create_fake_pupildata</span><span class="p">(</span><span class="n">ntrials</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">nsubj</span><span class="o">+</span><span class="mi">1</span><span class="p">)}</span>
-</pre></div>
-</div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">dict</span></code> <code class="docutils literal notranslate"><span class="pre">data</span></code> now contains ten <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> datasets. We will now use the data from the first subject to create a pipeline of processing operations:</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">template</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-<span class="n">template</span><span class="o">.</span><span class="n">print_history</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-* fake_bomitime_ni_fu
-└ lowpass_filter(5)
- └ downsample(100)
-</pre></div></div>
-</div>
-<p>We have stored the result of these operations in a new dataset <code class="docutils literal notranslate"><span class="pre">template</span></code> which contains a record of these operations. We can now easily apply identical operations on all the datasets using the <code class="docutils literal notranslate"><span class="pre">apply_history()</span></code> function:</p>
-<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">preproc_data</span><span class="o">=</span><span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">template</span><span class="o">.</span><span class="n">apply_history</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">d</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-<span class="n">preproc_data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">print_history</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-* fake_kowelale_wu_ni
-└ lowpass_filter(5)
- └ downsample(100)
+{&#39;name&#39;: &#39;test short&#39;,
+ &#39;n&#39;: 2047,
+ &#39;sampling_rate&#39;: 50,
+ &#39;data&#39;: [&#39;left_x&#39;,
+  &#39;left_y&#39;,
+  &#39;left_pupil&#39;,
+  &#39;right_x&#39;,
+  &#39;right_y&#39;,
+  &#39;right_pupil&#39;],
+ &#39;nevents&#39;: 40,
+ &#39;screen_limits&#39;: ((0, 1280), (0, 1024)),
+ &#39;physical_screen_size&#39;: (30, 20),
+ &#39;screen_eye_distance&#39;: &#39;not set&#39;,
+ &#39;duration_minutes&#39;: 0.6823333333333333,
+ &#39;start_min&#39;: 0.00015,
+ &#39;end_min&#39;: 0.6820666666666667,
+ &#39;parameters&#39;: &#39;{}&#39;,
+ &#39;glimpse&#39;: &#39;EyeDataDict(vars=6,n=2047,shape=(2047,)): \n  left_x (float64): 656.5500000000001, 656.14, 654.0400000000001, 652.0199999999999, 650.4...\n  left_y (float64): 597.54, 591.5, 588.3899999999999, 593.7800000000001, 598.3199999999999...\n  left_pupil (float64): 1128.8869458721226, 1133.8058182761888, 1139.7069289167484, 1146.4462392731034, 1153.8027812522362...\n  right_x (float64): 775.56, 777.14, 777.08, 776.99, 778.72...\n  right_y (float64): 597.31, 601.3, 600.48, 595.3399999999999, 595.1...\n  right_pupil (float64): 954.2414624419623, 958.9101375371407, 963.632119267214, 968.2405296620748, 972.6750179976658...\n&#39;,
+ &#39;eyes&#39;: [&#39;left&#39;, &#39;right&#39;],
+ &#39;nblinks&#39;: {&#39;left_pupil&#39;: 11, &#39;right_pupil&#39;: 11},
+ &#39;blinks&#39;: {&#39;left&#39;: 11 intervals, 2154.55 +/- 3588.46, [460.00, 13460.00],
+  &#39;right&#39;: 11 intervals, 1005.45 +/- 718.34, [320.00, 3080.00]},
+ &#39;params&#39;: &#39;{}&#39;}
 </pre></div></div>
 </div>
+<p>The history is internally stored in <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>’s <code class="docutils literal notranslate"><span class="pre">history</span></code> member and can be applied to another object for convenience. That way, a pipeline can be developed on a single dataset and later be transferred to a whole folder of other (similar) datasets.</p>
 </section>
 <div class="admonition note">
 This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/pipes.ipynb">pipes.ipynb</a>
