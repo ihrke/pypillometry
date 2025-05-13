@@ -225,7 +225,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     
     # load or compile model
     fpath=files('pypillometry.stan').joinpath('baseline_model_asym_laplac.stan')
-    logger.info("Compiling Stan model: %s"%fpath)
+    logger.debug("Compiling Stan model: %s"%fpath)
 
     #fname="stan/baseline_model_asym_laplac.stan"
     #fpath=os.path.join(os.path.split(__file__)[0], fname)

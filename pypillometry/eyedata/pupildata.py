@@ -410,7 +410,7 @@ class PupilData(GenericEyeData):
             variable="pupil"
 
         for eye in eyes:
-            logger.info("Estimating baseline for eye %s"%eye)
+            logger.debug("Estimating baseline for eye %s"%eye)
 
             if method=="envelope_iter_bspline_2":
                 txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],
@@ -467,7 +467,7 @@ class PupilData(GenericEyeData):
 
         obj.params["response"]=dict()
         for eye in eyes:
-            logger.info("Estimating response for eye %s"%eye)
+            logger.debug("Estimating response for eye %s"%eye)
             if not eye+"_baseline" in obj.data.keys():
                 logger.warning("Eye %s: no baseline estimated yet, using zero as baseline"%eye)
                 base=np.zeros(len(obj.tx))
