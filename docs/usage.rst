@@ -58,7 +58,22 @@ Pipeline-based processing
 
 This command loads an example data-file, applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object `d`. This object stores also the complete history of the operations applied to the dataset and allows to transfer it to a new dataset.
 
-See the following page more on this: :ref:`Pipeline-based processing in pypillometry </pipes.ipynb>`
+See the following page more on this: 
+
+- :ref:`Pipeline-based processing in pypillometry </pipes.ipynb>`
+
+Data modalities/variables and monocular vs. binocular data
+----------------------------------------------------------
+
+:mod:`pypillometry` supports monocular and binocular data and allows to process several data modalities. The package ensures that all timeseries always have the same length/dimension such that all data modalities are aligned. The data are stored internally as an :class:`~pypillometry.EyeDataDict`-object which is a dictionary of :class:`numpy.ndarray`-objects that are constrained to have the same shape. In addition, the keys of the dictionary are of the form "<eye>_<variable>", e.g., ``left_pupil`` or ``right_x``.
+
+Most functions that operate on :class:`~pypillometry.EyeData`-objects allow to specify the eye and variable to operate on with optional arguments ``eye=`` and ``variable=`` (per default, all eyes and all variables are processed). Functions that can potentially operate on all modalities are implemented as methods of :class:`~pypillometry.GenericEyeData` while functions that are specific to pupillometric or eye-tracking data are implemented as methods of :class:`~pypillometry.PupilData` or :class:`~pypillometry.GazeData`. However, all objects be they :class:`~pypillometry.PupilData`, :class:`~pypillometry.GazeData` or :class:`~pypillometry.EyeData` inherit from :class:`~pypillometry.GenericEyeData` and therefore support the same set of operations. 
+
+Finally, new variables (or even "eyes") can be created and added to the object. For example, when combining the data from both eyes, one can create a new variable that contains the average of the left and right pupil size which might be called "average_pupil". In that case, the ``eye="average"`` and ``variable="pupil"`` arguments should be used to access this new variable.
+
+Please see the following example for more details: 
+
+- :ref:`Processing monocular and binocular data </eyes_and_variables.ipynb>`
 
 Pre-processing data
 -------------------

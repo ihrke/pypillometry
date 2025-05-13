@@ -68,12 +68,12 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints', 
 
 # Add mappings
 intersphinx_mapping = {
-    'urllib3': ('http://urllib3.readthedocs.org/en/latest', None),
-    'python': ('http://docs.python.org/3', None),
-    'numpy': ('http://docs.scipy.org/doc/numpy', None),
-    'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('http://matplotlib.sourceforge.net', None),
-    'pystan': ('https://pystan.readthedocs.io/en/latest/', None),
+#    'urllib3': ('http://urllib3.readthedocs.org/en/latest', None),
+#    'python': ('http://docs.python.org/3', None),
+#    'numpy': ('https://numpy.org/doc/stable/', None),
+#    'scipy': ('https://docs.scipy.org/doc/scipy', None),
+#    'matplotlib': ('http://matplotlib.sourceforge.net', None),
+#    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
