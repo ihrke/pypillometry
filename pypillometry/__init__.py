@@ -31,11 +31,17 @@ import sys
 from contextlib import contextmanager
 from typing import Optional
 
+## logging for cmdstanpy disabled by default
+import logging
+cmdstanpy_logger = logging.getLogger("cmdstanpy")
+cmdstanpy_logger.disabled = True
+
 def logging_disable():
     """
     Disable logging for all pypillometry submodules.
     """
     logger.disable("pypillometry")
+    cmdstanpy_logger.disabled = True
 
 def logging_enable():
     """
@@ -47,6 +53,8 @@ def logging_enable():
 def logging_set_level(level="INFO"):
     """
     Set the logging level for all pypillometry submodules.
+
+    In the case of DEBUG, the logging for cmdstanpy is also enabled.
 
     Parameters
     ----------
@@ -63,7 +71,12 @@ def logging_set_level(level="INFO"):
     )    
     logger.add(sys.stderr, format=logger_format, level=level)
     logging_enable()
-
+    
+    # Enable cmdstanpy logging during DEBUG level
+    if level == "DEBUG":
+        cmdstanpy_logger.disabled = False
+    else:
+        cmdstanpy_logger.disabled = True
 
 @contextmanager
 def loglevel(level: str):

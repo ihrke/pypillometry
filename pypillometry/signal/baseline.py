@@ -247,7 +247,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     }
     
     ## variational optimization
-    logger.info("Optimizing Stan model")    
+    logger.debug("Optimizing Stan model")    
     opt=sm.variational(data=data)
     vbc=opt.stan_variable("coef")#, mean=True)
     meansigvb=np.dot(B, vbc)
@@ -256,7 +256,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     # new "signal"
     syd2=syd-meansigvb
 
-    logger.info("Estimating PRF model (NNLS)")    
+    logger.debug("Estimating PRF model (NNLS)")    
     #coef,pred,resid=pupilresponse_nnls(txd,syd2,event_onsets,fs=fsd)
     pred, coef, _, _, _=pupil_response(txd, syd2, event_onsets, fsd, npar=10, tmax=917)
     resid=syd-pred
@@ -288,7 +288,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     }
     
     ##  variational optimization
-    logger.info("Optimizing 2nd Stan model")
+    logger.debug("Optimizing 2nd Stan model")
     opt=sm.variational(data=data2)
     vbc2=opt.stan_variable("coef")#, mean=True)
     meansigvb2=np.dot(B2, vbc2)  
