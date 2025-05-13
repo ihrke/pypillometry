@@ -89,6 +89,7 @@ To share your study on OSF:
 1. Create a new project on [Open Science Framework](https://osf.io)
 2. Upload your study data files and configuration file (``pypillometry_conf.py``) to the project
     - the data files must be arranged in a folder structure that matches the one specified in the `raw_data` dictionary of the configuration file
+    - NOTE: It is completely fine to upload the data files to an already existing OSF project (simply add a subfolder for the data/configuration file)
 3. Note down your project's OSF ID (found in the project URL)
 
 To load a shared study from OSF, use :func:`~pypillometry.io.load_study_osf()`:
