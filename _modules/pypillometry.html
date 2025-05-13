@@ -53,22 +53,58 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;logging_set_level&quot;</span><span class="p">,</span> <span class="s2">&quot;logging_disable&quot;</span><span class="p">,</span> <span class="s2">&quot;logging_enable&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;EyeDataDict&quot;</span><span class="p">,</span> <span class="s2">&quot;CachedEyeDataDict&quot;</span><span class="p">,</span> <span class="s2">&quot;EyeData&quot;</span><span class="p">,</span> <span class="s2">&quot;GazeData&quot;</span><span class="p">,</span> <span class="s2">&quot;PupilData&quot;</span><span class="p">,</span> <span class="s2">&quot;GenericEyeData&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;example_datasets&quot;</span><span class="p">,</span> <span class="s2">&quot;get_example_data&quot;</span><span class="p">,</span> <span class="s2">&quot;get_interval_stats&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;ERPD&quot;</span><span class="p">,</span> <span class="s2">&quot;load_study_osf&quot;</span><span class="p">,</span> <span class="s2">&quot;load_study_local&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;loglevel&quot;</span><span class="p">,</span> <span class="s2">&quot;nologging&quot;</span><span class="p">]</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericEyeData</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.eyedata</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeData</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.gazedata</span><span class="w"> </span><span class="kn">import</span> <span class="n">GazeData</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.pupildata</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilData</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.example_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">example_datasets</span><span class="p">,</span> <span class="n">get_example_data</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_interval_stats</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.erpd</span><span class="w"> </span><span class="kn">import</span> <span class="n">ERPD</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_study_osf</span><span class="p">,</span> <span class="n">load_study_local</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_collect_and_import_submodules</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collect all public names and import everything from submodules.&quot;&quot;&quot;</span>
+    <span class="n">public_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">imported_objects</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="c1"># List of submodules to import from</span>
+    <span class="n">submodules</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;.eyedata.eyedatadict&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.eyedata.generic&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.eyedata.eyedata&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.eyedata.gazedata&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.eyedata.pupildata&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.convenience&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.example_data&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.intervals&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.erpd&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.io&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;.plot&#39;</span>
+    <span class="p">]</span>
+    
+    <span class="k">for</span> <span class="n">module_name</span> <span class="ow">in</span> <span class="n">submodules</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Import the module</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">package</span><span class="o">=</span><span class="s1">&#39;pypillometry&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Get all public names (not starting with _)</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">module</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
+            <span class="n">public_names</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+            
+            <span class="c1"># Import all public objects</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">imported_objects</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Could not import </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Could not import </span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">public_names</span><span class="p">,</span> <span class="n">imported_objects</span>
+
+<span class="c1"># Collect all public names and import everything</span>
+<span class="n">__all__</span><span class="p">,</span> <span class="n">_imported_objects</span> <span class="o">=</span> <span class="n">_collect_and_import_submodules</span><span class="p">()</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">__all__</span><span class="p">))</span>
+
+<span class="c1"># Add imported objects to the global namespace</span>
+<span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_imported_objects</span><span class="p">)</span>
 
 <span class="c1">## logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
@@ -183,7 +219,6 @@ window.addEventListener("load", () => mermaid.run());
 <span class="c1"># this enables log-messages with INFO or above</span>
 <span class="n">logging_set_level</span><span class="p">(</span><span class="s2">&quot;INFO&quot;</span><span class="p">)</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
 <span class="n">__package_path__</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
 </pre></div>
 
@@ -225,7 +260,7 @@ window.addEventListener("load", () => mermaid.run());
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-    &#169; Copyright 2020, Matthias Mittner.
+    &#169; Copyright 2020-2025, Matthias Mittner.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

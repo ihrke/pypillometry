@@ -75,6 +75,31 @@ Please see the following example for more details:
 
 - :ref:`Processing monocular and binocular data </eyes_and_variables.ipynb>`
 
+Plotting data
+-------------
+
+Each pypillometry object has a `.plot` attribute that gives access to the plotting functionality. Depending on the type of the object, the plotting functionality will be different. For example, :class:`~pypillometry.GazeData` objects (and also :class:`~pypillometry.EyeData` objects which inherit from that class) support the plotting of heatmaps or scanpaths.
+
+Here is an overview of the plotting functionality:
+
+.. autosummary::
+
+    PupilPlotter
+    GazePlotter
+    EyePlotter
+    GenericEyePlotter
+    
+ 
+Analyzing pupillometric data
+----------------------------
+
+
+Analyzing eye-tracking data
+---------------------------
+
+work in progress
+
+
 Pre-processing data
 -------------------
 

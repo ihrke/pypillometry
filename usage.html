@@ -101,6 +101,31 @@
 <li><p><a class="reference internal" href="eyes_and_variables.html"><span class="std std-ref">Processing monocular and binocular data</span></a></p></li>
 </ul>
 </section>
+<section id="plotting-data">
+<h2>Plotting data<a class="headerlink" href="#plotting-data" title="Link to this heading">¶</a></h2>
+<p>Each pypillometry object has a <cite>.plot</cite> attribute that gives access to the plotting functionality. Depending on the type of the object, the plotting functionality will be different. For example, <a class="reference internal" href="api.html#pypillometry.GazeData" title="pypillometry.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GazeData</span></code></a> objects (and also <a class="reference internal" href="api.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a> objects which inherit from that class) support the plotting of heatmaps or scanpaths.</p>
+<p>Here is an overview of the plotting functionality:</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilPlotter</span></code>(obj)</p></td>
+<td><p>Class for plotting pupil data.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">GazePlotter</span></code>(obj)</p></td>
+<td><p>Class for plotting eye data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">EyePlotter</span></code>(obj)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="analyzing-pupillometric-data">
+<h2>Analyzing pupillometric data<a class="headerlink" href="#analyzing-pupillometric-data" title="Link to this heading">¶</a></h2>
+</section>
+<section id="analyzing-eye-tracking-data">
+<h2>Analyzing eye-tracking data<a class="headerlink" href="#analyzing-eye-tracking-data" title="Link to this heading">¶</a></h2>
+<p>work in progress</p>
+</section>
 <section id="pre-processing-data">
 <h2>Pre-processing data<a class="headerlink" href="#pre-processing-data" title="Link to this heading">¶</a></h2>
 <p>Assuming you have generated a <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code> object, a range of pre-processing functions are available. The main pre-processing issues with pupillometric data are:</p>
@@ -261,6 +286,9 @@ The package implements novel algorithms developed in our lab and documentation w
 <li><a class="reference internal" href="#reading-writing-eye-data">Reading/writing eye-data</a></li>
 <li><a class="reference internal" href="#pipeline-based-processing">Pipeline-based processing</a></li>
 <li><a class="reference internal" href="#data-modalities-variables-and-monocular-vs-binocular-data">Data modalities/variables and monocular vs. binocular data</a></li>
+<li><a class="reference internal" href="#plotting-data">Plotting data</a></li>
+<li><a class="reference internal" href="#analyzing-pupillometric-data">Analyzing pupillometric data</a></li>
+<li><a class="reference internal" href="#analyzing-eye-tracking-data">Analyzing eye-tracking data</a></li>
 <li><a class="reference internal" href="#pre-processing-data">Pre-processing data</a><ul>
 <li><a class="reference internal" href="#handling-blinks">Handling Blinks</a></li>
 <li><a class="reference internal" href="#smoothing-low-pass-filtering">Smoothing/low-pass filtering</a></li>
@@ -331,7 +359,7 @@ The package implements novel algorithms developed in our lab and documentation w
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-    &#169; Copyright 2020, Matthias Mittner.
+    &#169; Copyright 2020-2025, Matthias Mittner.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>
