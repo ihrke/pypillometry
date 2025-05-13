@@ -7,6 +7,7 @@ preprocessing functions (blinks, smoothing, missing data...)
 import numpy as np
 import scipy.optimize
 import pylab as plt
+from loguru import logger
 
 from ..convenience import *
 
@@ -79,8 +80,6 @@ def helper_merge_blinks(b1,b2):
     newb.append([on,off])
     return np.array(newb)
 
-
-
 def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_len=5, min_offset_len=5):
     """
     Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.
@@ -102,25 +101,44 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     min_offset_len: int
         minimum number of consecutive samples that cross the threshold to detect offset
     """
+    
     # generate smoothed signal and velocity-profile
     sym=smooth_window(sy, smooth_winsize, "hanning")
     vel=np.r_[0,np.diff(sym)] 
     n=sym.size
+    logger.debug(f"Generated velocity profile, length {n}")
 
     # find first negative vel-crossing 
     onsets=np.where(vel<=vel_onset)[0]
+    logger.debug(f"Found {len(onsets)} potential onset points")
+    
+    if len(onsets) == 0:
+        logger.debug("No onsets found - returning empty array")
+        return np.array([])
+        
     onsets_ixx=np.r_[np.diff(onsets),10]>1
-    onsets_len=np.diff(np.r_[0,np.where(onsets_ixx)[0]])
-    onsets=onsets[onsets_ixx]
+    onsets_len=np.diff(np.r_[0,np.where(onsets_ixx)[0]+1])
+    onsets=onsets[:-1][onsets_ixx[:-1]]
     onsets=onsets[onsets_len>min_onset_len]
+    logger.debug(f"After filtering, {len(onsets)} onsets remain")
 
     ## offset finding
     offsets=np.where(vel>=vel_offset)[0]
+    logger.debug(f"Found {len(offsets)} potential offset points")
+    
+    if len(offsets) == 0:
+        logger.debug("No offsets found - returning empty array")
+        return np.array([])
+        
     offsets_ixx=np.r_[10,np.diff(offsets)]>1
     offsets_len=np.diff(np.r_[np.where(offsets_ixx)[0],offsets.size])
     offsets=offsets[offsets_ixx]
     offsets=offsets[offsets_len>min_offset_len]
+    logger.debug(f"After filtering, {len(offsets)} offsets remain")
     
+    if len(onsets) == 0 or len(offsets) == 0:
+        logger.debug("No valid onset/offset pairs - returning empty array")
+        return np.array([])
     
     ## find corresponding on- and off-sets
     blinks=[]
@@ -131,6 +149,7 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
         blinks.append([on,off])
         ons=onsets[onsets>off]
         on=ons[0] if ons.size>0 else None
+    logger.debug(f"Found {len(blinks)} blink pairs")
         
     ## if on- off-sets fall in a zero-region, grow until first non-zero sample
     blinks2=[]
@@ -140,7 +159,10 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
         while(off<n-1 and sy[off]==0):
             off+=1
         blinks2.append([on,off])
-    return np.array(blinks2)
+    
+    result = np.array(blinks2)
+    logger.debug(f"Returning {len(result)} blinks after zero-region adjustment")
+    return result
 
 def detect_blinks_zero(sy, min_duration, blink_val=0):
     """
@@ -165,19 +187,34 @@ def detect_blinks_zero(sy, min_duration, blink_val=0):
     x=np.r_[0, np.diff((sy==blink_val).astype(int))]
     starts=np.where(x==1)[0]
     ends=np.where(x==-1)[0]-1
+    
+    logger.debug(f"Found {len(starts)} potential blink starts and {len(ends)} potential blink ends")
+    
+    if len(starts) == 0 or len(ends) == 0:
+        logger.debug("No valid blinks found - returning empty array")
+        return np.array([])
+        
     if sy[0]==blink_val: ## first value missing?
         starts=np.r_[0,starts]    
+        logger.debug("First value is missing - adding 0 to starts")
+        
     if ends.size!=starts.size: 
         ## is the first start earlier than the first end?
         if starts[0]>ends[0]:
             ends=ends[1:] # drop first end
+            logger.debug("First start after first end - dropping first end")
         else:
             starts=starts[:-1] # drop last start
-    if ends[-1]==x.size:
+            logger.debug("Last start without end - dropping last start")
+            
+    if len(ends) > 0 and ends[-1]==x.size:
         ends[-1]-=1
+        logger.debug("Last end at signal boundary - adjusting index")
+        
     blinks=[ [start,end] for start,end in zip(starts,ends) if end-start>=min_duration]
-    return np.array(blinks)
+    logger.debug(f"Found {len(blinks)} blinks after duration filtering")
     
+    return np.array(blinks)
     
 def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin, blinkwindow):
     """
