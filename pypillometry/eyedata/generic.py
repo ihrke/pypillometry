@@ -8,11 +8,11 @@ All other eyedata classes should inherit from this class.
 
 from collections.abc import Iterable
 from .. import io
-from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, download
+from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, download, suppress_all_output
 from .eyedatadict import CachedEyeDataDict, EyeDataDict
 from ..signal import baseline
 from ..intervals import stat_event_interval, get_interval_stats, merge_intervals
-
+from ..logging import logging_get_level
 
 import numpy as np
 import itertools
@@ -584,7 +584,6 @@ class GenericEyeData(ABC):
 
         """
         import eyelinkio
-        from contextlib import redirect_stdout, redirect_stderr
 
         # download file if it is a URL
         if is_url(fname):
@@ -601,8 +600,7 @@ class GenericEyeData(ABC):
         else:
             logger.info(f"Loading EDF file: {fname} (current log level: {current_level}, set to DEBUG to see eyelinkio output)")
             # Suppress eyelinkio output for non-DEBUG levels
-            with open(os.devnull, 'w') as devnull:
-                with redirect_stdout(devnull), redirect_stderr(devnull):
+            with suppress_all_output():
                     edf = eyelinkio.read_edf(fname)
         #r=eyelinkio.read_eyelink(fname)
         return edf

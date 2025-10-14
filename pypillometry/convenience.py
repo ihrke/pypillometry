@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from typing import Union, Dict
 from contextlib import contextmanager
-import os
+import os, sys
 import requests
 from tqdm import tqdm
 
@@ -36,6 +36,34 @@ def change_dir(path: Union[str]):
         yield
     finally:
         os.chdir(old_dir)
+
+
+@contextmanager
+def suppress_all_output():
+    """Suppress all output including C library output."""
+    # Save original file descriptors
+    original_stdout_fd = os.dup(1)
+    original_stderr_fd = os.dup(2)
+    
+    # Open devnull
+    devnull_fd = os.open(os.devnull, os.O_WRONLY)
+    
+    try:
+        # Redirect file descriptors
+        os.dup2(devnull_fd, 1)  # stdout
+        os.dup2(devnull_fd, 2)  # stderr
+        sys.stdout.flush()
+        sys.stderr.flush()
+        yield
+    finally:
+        # Restore original file descriptors
+        os.dup2(original_stdout_fd, 1)
+        os.dup2(original_stderr_fd, 2)
+        
+        # Close file descriptors
+        os.close(original_stdout_fd)
+        os.close(original_stderr_fd)
+        os.close(devnull_fd)
 
 def mask_to_intervals(mask):
     """

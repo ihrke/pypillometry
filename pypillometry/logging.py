@@ -106,7 +106,7 @@ def loglevel(level: str):
     ...     pass
     >>> # Back to original logging level
     """
-    original_level = logger._core.min_level
+    original_level = logging_get_level()  # This returns a string, not a float
     logging_set_level(level)
     try:
         yield
