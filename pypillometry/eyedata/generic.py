@@ -552,9 +552,9 @@ class GenericEyeData(ABC):
         r=io.read_pickle(fname)
         return r
 
-    @requires_package("eyelinkio")
     @classmethod
-    def from_eyelink(cls, fname:str, eyes:list=[], variables:list=[]):
+    @requires_package("eyelinkio")
+    def from_eyelink(cls, fname:str, eyes:list=[], variables:list=[], return_edf_obj:bool=False):
         """
         Reads a :class:`.GenericEyedata` object from an Eyelink file.
 
@@ -573,19 +573,39 @@ class GenericEyeData(ABC):
             list of eyes to consider; if empty, all available eyes are considered
         variables: list
             list of variables to consider; if empty, all available variables are considered
+        return_edf_obj: bool
+            if True, return a tuple with the object of class :class:`.GenericEyedata` and the object returned by the "eyelinkio" package
+            if False, return only the object of class :class:`.GenericEyedata`
 
         Returns
         -------
-        :class:`.GenericEyedata`
-            object of class :class:`.GenericEyedata`
+        :class:`.GenericEyedata` or tuple
+            object of class :class:`.GenericEyedata` or tuple with the object of class :class:`.GenericEyedata` and the object returned by the "eyelinkio" package
 
         """
         import eyelinkio
+        from contextlib import redirect_stdout, redirect_stderr
 
+        # download file if it is a URL
         if is_url(fname):
-            fname = download(fname, fname)
+            fname = download(fname)
+        
+        # Check if DEBUG logging is enabled
+        current_level = logging_get_level()
+        show_eyelinkio_output = current_level == "DEBUG"
+
+        if show_eyelinkio_output:
+            logger.debug(f"Loading EDF file: {fname}")
+            logger.debug("eyelinkio output will be displayed below:")
+            edf = eyelinkio.read_edf(fname)
+        else:
+            logger.info(f"Loading EDF file: {fname} (current log level: {current_level}, set to DEBUG to see eyelinkio output)")
+            # Suppress eyelinkio output for non-DEBUG levels
+            with open(os.devnull, 'w') as devnull:
+                with redirect_stdout(devnull), redirect_stderr(devnull):
+                    edf = eyelinkio.read_edf(fname)
         #r=eyelinkio.read_eyelink(fname)
-        return r
+        return edf
 
     @abstractmethod
     def summary(self) -> dict:

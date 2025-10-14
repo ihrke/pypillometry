@@ -14,6 +14,7 @@ import requests
 from tqdm import tqdm
 from typing import Dict
 from loguru import logger
+from .convenience import is_url
 
 import requests
 
