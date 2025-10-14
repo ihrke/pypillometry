@@ -84,7 +84,7 @@ class EyeData(GazeData,PupilData):
                     name: str = None,
                     fill_time_discontinuities: bool = True,
                     keep_orig: bool = False, 
-                    notes: str = None,
+                    info: dict = None,
                     inplace: bool = False,
                     use_cache: bool = False,
                     cache_dir: Optional[str] = None,
@@ -100,7 +100,7 @@ class EyeData(GazeData,PupilData):
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
                           name, fill_time_discontinuities, 
-                          notes, inplace,
+                          info, inplace,
                           use_cache=use_cache,
                           cache_dir=cache_dir,
                           max_memory_mb=max_memory_mb)

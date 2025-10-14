@@ -65,7 +65,8 @@ class GenericEyeData(ABC):
     tx: np.ndarray ## time vector
     event_onsets: np.ndarray ## vector with event onsets in time units
     inplace: bool ## whether to make changes in-place
-    notes: str ## optional notes about the dataset
+    info: dict ## optional info about the dataset
+    params: dict ## parameters 
 
     @abstractmethod
     def __init__():
@@ -79,7 +80,7 @@ class GenericEyeData(ABC):
                     name: str,
                     fill_time_discontinuities: bool,
                     inplace: bool,
-                    notes: str = None,
+                    info: dict = None,
                     use_cache: bool = False,
                     cache_dir: Optional[str] = None,
                     max_memory_mb: float = 100):
@@ -127,8 +128,8 @@ class GenericEyeData(ABC):
         ## init whether or not to do operations in place
         self.inplace=inplace 
 
-        ## set notes
-        self.notes = notes
+        ## set info
+        self.info = info if info is not None else {}
 
         ## Initialize caching if requested
         if use_cache:
@@ -533,7 +534,8 @@ class GenericEyeData(ABC):
             filename
         """
         io.write_pickle(self, fname)
-       
+
+
     @classmethod
     def from_file(cls, fname:str):
         """
@@ -547,6 +549,37 @@ class GenericEyeData(ABC):
             filename
         """
         r=io.read_pickle(fname)
+        return r
+
+    @requires_package("eyelinkio")
+    @classmethod
+    def from_eyelink(cls, fname:str, eyes:list=[], variables:list=[]):
+        """
+        Reads a :class:`.GenericEyedata` object from an Eyelink file.
+
+        All "messages" are stored as event_labels (can be filtered later) and
+        it tries to be smart to detect different information from the EDF file.
+        However, the EDF file may contain other information of interest, e.g.,
+        calibration data, eyelink-detected saccades, etc.
+        If you need more control, use the "eyelinkio" package directly and 
+        create the object manually. 
+
+        Parameters
+        ----------
+        fname: str
+            filename of the EDF file
+        eyes: list
+            list of eyes to consider; if empty, all available eyes are considered
+        variables: list
+            list of variables to consider; if empty, all available variables are considered
+
+        Returns
+        -------
+        :class:`.GenericEyedata`
+            object of class :class:`.GenericEyedata`
+
+        """
+        r=eyelinkio.read_eyelink(fname)
         return r
 
     @abstractmethod
@@ -565,10 +598,10 @@ class GenericEyeData(ABC):
         flen=max([len(k) for k in pars.keys()])
         for k,v in pars.items():
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
-        if self.notes:
-            s+=" Notes:\n"
-            for line in self.notes.split('\n'):
-                s+="  " + line + "\n"
+        if self.info:
+            s+=" Info:\n"
+            for key, value in self.info.items():
+                s+="  " + f"{key}: {value}" + "\n"
         s+=" History:\n *\n"
         try:
             for i,ev in enumerate(self.history):
@@ -1141,7 +1174,7 @@ class GenericEyeData(ABC):
         
         # String attributes
         other_size += sys.getsizeof(self.name) if self.name is not None else 0
-        other_size += sys.getsizeof(self.notes) if self.notes is not None else 0
+        other_size += sys.getsizeof(self.info) if self.info is not None else 0
         
         # Numeric attributes
         other_size += sys.getsizeof(self.fs)

@@ -230,7 +230,7 @@ raw_data = {
 }
 
 
-# write down notes about each subject when going through the preprocs
+# write down info about each subject when going through the preprocs
 notes={
     "001":"good",
     "002":"good but many blinks",
@@ -336,7 +336,7 @@ def read_subject(info):
                 screen_eye_distance=study_info["screen_eye_distance"],
                 left_x=left_x, left_y=left_y, left_pupil=df.left_p,
                 right_x=right_x, right_y=right_y, right_pupil=df.right_p,
-                event_onsets=df_ev.time, event_labels=df_ev.event, notes=notes[info["subject"]],
+                event_onsets=df_ev.time, event_labels=df_ev.event, info={"notes": notes[info["subject"]]},
                 keep_orig=True)\
                 .reset_time()
     d.set_experiment_info(screen_eye_distance=study_info["screen_eye_distance"], 
