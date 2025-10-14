@@ -144,14 +144,14 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">=</span><span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">left_pupil</span><span class="p">,</span>
                                 <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_pupil</span><span class="p">)</span>
         
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_common</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> 
                           <span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="p">,</span> 
                           <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> 
-                          <span class="n">info</span><span class="p">,</span> <span class="n">inplace</span><span class="p">,</span>
+                          <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">,</span>
                           <span class="n">use_cache</span><span class="o">=</span><span class="n">use_cache</span><span class="p">,</span>
                           <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
                           <span class="n">max_memory_mb</span><span class="o">=</span><span class="n">max_memory_mb</span><span class="p">)</span>
-        
         <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="o">=</span><span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims_set</span><span class="o">=</span><span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance_set</span><span class="o">=</span><span class="kc">False</span>
