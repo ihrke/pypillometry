@@ -97,14 +97,14 @@ class EyeData(GazeData,PupilData):
         self.data=EyeDataDict(left_x=left_x, left_y=left_y, left_pupil=left_pupil,
                                 right_x=right_x, right_y=right_y, right_pupil=right_pupil)
         
+        
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
                           name, fill_time_discontinuities, 
-                          info, inplace,
+                          info=info, inplace=inplace,
                           use_cache=use_cache,
                           cache_dir=cache_dir,
                           max_memory_mb=max_memory_mb)
-        
         self._screen_size_set=False
         self._physical_screen_dims_set=False
         self._screen_eye_distance_set=False

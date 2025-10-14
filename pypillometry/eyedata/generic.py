@@ -553,7 +553,7 @@ class GenericEyeData(ABC):
         return r
 
     @classmethod
-    def from_eyelink(cls, fname:str, eyes:list=[], variables:list=[], return_edf_obj:bool=False):
+    def from_eyelink(cls, fname:str, return_edf_obj:bool=False):
         """
         Reads a :class:`.GenericEyedata` object from an Eyelink file.
 
@@ -568,10 +568,6 @@ class GenericEyeData(ABC):
         ----------
         fname: str
             filename of the EDF file
-        eyes: list
-            list of eyes to consider; if empty, all available eyes are considered
-        variables: list
-            list of variables to consider; if empty, all available variables are considered
         return_edf_obj: bool
             if True, return a tuple with the object of class :class:`.GenericEyedata` and the object returned by the "eyelinkio" package
             if False, return only the object of class :class:`.GenericEyedata`
@@ -583,8 +579,29 @@ class GenericEyeData(ABC):
 
         """
         edf = io.read_eyelink(fname)
-
-        obj = edf
+        
+        # convert data from EDF to EyeDataDict
+        avail_data_fields = edf["info"]["sample_fields"]
+        d = {}
+        if 'xpos_left' and 'ypos_left' and 'ps_left' in avail_data_fields:
+            d['left_x'] = edf["samples"][avail_data_fields.index("xpos_left")]
+            d['left_y'] = edf["samples"][avail_data_fields.index("ypos_left")]
+            d['left_pupil'] = edf["samples"][avail_data_fields.index("ps_left")]
+        if 'xpos_right' and 'ypos_right' and 'ps_right' in avail_data_fields:
+            d['right_x'] = edf["samples"][avail_data_fields.index("xpos_right")]
+            d['right_y'] = edf["samples"][avail_data_fields.index("ypos_right")]
+            d['right_pupil'] = edf["samples"][avail_data_fields.index("ps_right")]
+        
+        # create the object (currently has to be EyeData)
+        evon = edf["discrete"]["messages"]["stime"]
+        evlab = edf["discrete"]["messages"]["msg"]
+        info = {}
+        
+        info["eyelink_info"] = edf["info"]
+        
+        obj = cls(time=edf["times"], **d, event_onsets=evon, event_labels=evlab, 
+            sampling_rate=edf["info"]["sfreq"], info=info, 
+            screen_resolution=edf["info"]["screen_coords"], name=edf["info"]["filename"])
 
         if return_edf_obj:
             return obj, edf
