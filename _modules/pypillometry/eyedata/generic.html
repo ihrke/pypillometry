@@ -32,8 +32,7 @@ window.addEventListener("load", () => mermaid.run());
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">pypillometry  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../../pypillometry.html" accesskey="U">pypillometry</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">pypillometry.eyedata.generic</a></li> 
       </ul>
     </div>  
@@ -54,10 +53,11 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">sizeof_fmt</span><span class="p">,</span> <span class="n">ByteSize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">sizeof_fmt</span><span class="p">,</span> <span class="n">ByteSize</span><span class="p">,</span> <span class="n">requires_package</span><span class="p">,</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">download</span><span class="p">,</span> <span class="n">suppress_all_output</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">CachedEyeDataDict</span><span class="p">,</span> <span class="n">EyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">baseline</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">stat_event_interval</span><span class="p">,</span> <span class="n">get_interval_stats</span><span class="p">,</span> <span class="n">merge_intervals</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_get_level</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
@@ -113,7 +113,8 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">tx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="c1">## time vector</span>
     <span class="n">event_onsets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="c1">## vector with event onsets in time units</span>
     <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="c1">## whether to make changes in-place</span>
-    <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="c1">## optional notes about the dataset</span>
+    <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="c1">## optional info about the dataset</span>
+    <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span> <span class="c1">## parameters </span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">():</span>
@@ -127,7 +128,7 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                     <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-                    <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                     <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
@@ -175,8 +176,8 @@ window.addEventListener("load", () => mermaid.run());
         <span class="c1">## init whether or not to do operations in place</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span> 
 
-        <span class="c1">## set notes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">notes</span> <span class="o">=</span> <span class="n">notes</span>
+        <span class="c1">## set info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="n">info</span> <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
 
         <span class="c1">## Initialize caching if requested</span>
         <span class="k">if</span> <span class="n">use_cache</span><span class="p">:</span>
@@ -623,7 +624,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">io</span><span class="o">.</span><span class="n">write_pickle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span></div>
 
-       
+
+
 <div class="viewcode-block" id="GenericEyeData.from_file">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.from_file">[docs]</a>
     <span class="nd">@classmethod</span>
@@ -640,6 +642,48 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">r</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">r</span></div>
+
+
+<div class="viewcode-block" id="GenericEyeData.from_eyelink">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.from_eyelink">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_eyelink</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="p">[],</span> <span class="n">variables</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="p">[],</span> <span class="n">return_edf_obj</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads a :class:`.GenericEyedata` object from an Eyelink file.</span>
+
+<span class="sd">        All &quot;messages&quot; are stored as event_labels (can be filtered later) and</span>
+<span class="sd">        it tries to be smart to detect different information from the EDF file.</span>
+<span class="sd">        However, the EDF file may contain other information of interest, e.g.,</span>
+<span class="sd">        calibration data, eyelink-detected saccades, etc.</span>
+<span class="sd">        If you need more control, use the &quot;eyelinkio&quot; package directly and </span>
+<span class="sd">        create the object manually. </span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fname: str</span>
+<span class="sd">            filename of the EDF file</span>
+<span class="sd">        eyes: list</span>
+<span class="sd">            list of eyes to consider; if empty, all available eyes are considered</span>
+<span class="sd">        variables: list</span>
+<span class="sd">            list of variables to consider; if empty, all available variables are considered</span>
+<span class="sd">        return_edf_obj: bool</span>
+<span class="sd">            if True, return a tuple with the object of class :class:`.GenericEyedata` and the object returned by the &quot;eyelinkio&quot; package</span>
+<span class="sd">            if False, return only the object of class :class:`.GenericEyedata`</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`.GenericEyedata` or tuple</span>
+<span class="sd">            object of class :class:`.GenericEyedata` or tuple with the object of class :class:`.GenericEyedata` and the object returned by the &quot;eyelinkio&quot; package</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">edf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">read_eyelink</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">edf</span>
+
+        <span class="k">if</span> <span class="n">return_edf_obj</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">obj</span><span class="p">,</span> <span class="n">edf</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">obj</span></div>
 
 
 <div class="viewcode-block" id="GenericEyeData.summary">
@@ -661,10 +705,10 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">flen</span><span class="o">=</span><span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">s</span><span class="o">+=</span><span class="p">(</span><span class="s2">&quot; {k:&lt;&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">flen</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;}: </span><span class="si">{v}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span><span class="p">:</span>
-            <span class="n">s</span><span class="o">+=</span><span class="s2">&quot; Notes:</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">):</span>
-                <span class="n">s</span><span class="o">+=</span><span class="s2">&quot;  &quot;</span> <span class="o">+</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
+            <span class="n">s</span><span class="o">+=</span><span class="s2">&quot; Info:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">s</span><span class="o">+=</span><span class="s2">&quot;  &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="n">s</span><span class="o">+=</span><span class="s2">&quot; History:</span><span class="se">\n</span><span class="s2"> *</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">):</span>
@@ -1281,7 +1325,7 @@ window.addEventListener("load", () => mermaid.run());
         
         <span class="c1"># String attributes</span>
         <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
-        <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">notes</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
         
         <span class="c1"># Numeric attributes</span>
         <span class="n">other_size</span> <span class="o">+=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
@@ -1382,7 +1426,6 @@ window.addEventListener("load", () => mermaid.run());
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">pypillometry  documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../../pypillometry.html" >pypillometry</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">pypillometry.eyedata.generic</a></li> 
       </ul>
     </div>
