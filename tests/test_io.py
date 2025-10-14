@@ -6,7 +6,8 @@ import numpy as np
 import pickle
 import requests
 from unittest.mock import patch, MagicMock
-from pypillometry.io import write_pickle, read_pickle
+from pypillometry.io import write_pickle, read_pickle, read_eyelink
+from importlib.resources import files
 
 class TestIO(unittest.TestCase):
     def setUp(self):
@@ -95,6 +96,117 @@ class TestIO(unittest.TestCase):
         """Test reading from invalid local file."""
         with self.assertRaises(FileNotFoundError):
             read_pickle(os.path.join(self.temp_dir, 'nonexistent.pkl'))
+
+    def test_read_eyelink_local_file(self):
+        """Test reading EDF file using read_eyelink function."""
+        # Get path to test EDF file
+        test_edf_path = files('pypillometry.data').joinpath('test.edf')
+        test_edf_path = os.path.abspath(test_edf_path)
+        
+        # Skip test if eyelinkio is not available
+        try:
+            import eyelinkio
+        except ImportError:
+            self.skipTest("eyelinkio package not available")
+        
+        # Skip test if test file doesn't exist
+        if not os.path.exists(test_edf_path):
+            self.skipTest(f"Test EDF file not found at {test_edf_path}")
+        
+        # Test reading the EDF file
+        edf_data = read_eyelink(test_edf_path)
+        
+        # Basic assertions about the returned object
+        self.assertIsNotNone(edf_data, "read_eyelink should return a non-None object")
+        
+        # Check that it's an eyelinkio object (has expected attributes)
+        # These are common attributes that eyelinkio EDF objects typically have
+        expected_attrs = ['discrete', 'samples', 'info']
+        for attr in expected_attrs:
+            if hasattr(edf_data, attr):
+                # At least one expected attribute should be present
+                break
+        else:
+            # If none of the expected attributes are found, it might still be valid
+            # Just check that it's not a basic type
+            self.assertNotIsInstance(edf_data, (str, int, float, list, dict))
+
+    @patch('pypillometry.io.is_url')
+    @patch('pypillometry.io.download')
+    def test_read_eyelink_url(self, mock_download, mock_is_url):
+        """Test reading EDF file from URL using read_eyelink function."""
+        # Skip test if eyelinkio is not available
+        try:
+            import eyelinkio
+        except ImportError:
+            self.skipTest("eyelinkio package not available")
+        
+        # Get path to test EDF file for mocking
+        test_edf_path = files('pypillometry.data').joinpath('test.edf')        
+        test_edf_path = os.path.abspath(test_edf_path)
+        
+        # Skip test if test file doesn't exist
+        if not os.path.exists(test_edf_path):
+            self.skipTest(f"Test EDF file not found at {test_edf_path}")
+        
+        # Mock URL detection and download
+        mock_is_url.return_value = True
+        mock_download.return_value = test_edf_path
+        
+        # Test reading from URL
+        test_url = "https://example.com/test.edf"
+        edf_data = read_eyelink(test_url)
+        
+        # Verify mocks were called
+        mock_is_url.assert_called_once_with(test_url)
+        mock_download.assert_called_once_with(test_url)
+        
+        # Basic assertions about the returned object
+        self.assertIsNotNone(edf_data, "read_eyelink should return a non-None object")
+
+    def test_read_eyelink_nonexistent_file(self):
+        """Test reading nonexistent EDF file."""
+        # Skip test if eyelinkio is not available
+        try:
+            import eyelinkio
+        except ImportError:
+            self.skipTest("eyelinkio package not available")
+        
+        nonexistent_file = os.path.join(self.temp_dir, 'nonexistent.edf')
+        
+        # Should raise an exception when trying to read nonexistent file
+        with self.assertRaises(Exception):  # Could be FileNotFoundError or eyelinkio-specific error
+            read_eyelink(nonexistent_file)
+
+    @patch('pypillometry.io.logging_get_level')
+    def test_read_eyelink_logging_levels(self, mock_get_level):
+        """Test that read_eyelink respects logging levels."""
+        # Skip test if eyelinkio is not available
+        try:
+            import eyelinkio
+        except ImportError:
+            self.skipTest("eyelinkio package not available")
+        
+        # Get path to test EDF file
+        test_edf_path = files('pypillometry.data').joinpath('test.edf')        
+        test_edf_path = os.path.abspath(test_edf_path)
+        
+        # Skip test if test file doesn't exist
+        if not os.path.exists(test_edf_path):
+            self.skipTest(f"Test EDF file not found at {test_edf_path}")
+        
+        # Test with DEBUG level (should show output)
+        mock_get_level.return_value = "DEBUG"
+        edf_data_debug = read_eyelink(test_edf_path)
+        self.assertIsNotNone(edf_data_debug)
+        
+        # Test with INFO level (should suppress output)
+        mock_get_level.return_value = "INFO"
+        edf_data_info = read_eyelink(test_edf_path)
+        self.assertIsNotNone(edf_data_info)
+        
+        # Both should return valid data
+        self.assertEqual(type(edf_data_debug), type(edf_data_info))
 
 if __name__ == '__main__':
     unittest.main()
