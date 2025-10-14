@@ -29,8 +29,14 @@ example_datasets = {
         "description":"Short version (first 40 sec) of a 20-minute reinforcement learning task."
         "Data from a single participant, features strong horizontal eye-movements"
         "between the two stimuli presented on the left and right.",
-    }
-
+    },
+    "rlmw_010_edf": {
+        "edf":"https://osf.io/trsuq/download",
+        "description":"Binocular data from a 20-minute reinforcement learning task "
+        "in EDF (Eyelink) format."
+        "Data from a single participant, features strong horizontal eye-movements"
+        "between the two stimuli presented on the left and right.",
+    },
 }
 
 
@@ -60,6 +66,7 @@ def download(url: str, fname: str, chunk_size=1024):
         for data in resp.iter_content(chunk_size=chunk_size):
             size = file.write(data)
             bar.update(size)
+    return fname
 
 def get_example_data(key):
     """Load example data for a given example (see `example_datasets`).

@@ -5,8 +5,6 @@ roi.py
 Implement region of interest (ROI) functionality for gaze-data (x/y).
 """
 
-import os
-import requests
 from typing import Dict, Union, Tuple
 import numpy as np
 from loguru import logger

@@ -106,6 +106,7 @@ def get_osf_project_files(osf_id: str) -> Dict[str, Dict[str, str]]:
 def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False, config_file: str = "pypillometry_conf.py"):
     """
     Read a study from OSF using the configuration file.
+    Example: https://osf.io/p2u74/
     
     Parameters
     ----------
@@ -234,6 +235,7 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         study_data[subject_id] = config.read_subject(info)
         
     return study_data, config
+
 def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subjects: list[str] = None):
     """
     Read a study from a local directory using the configuration file.
@@ -320,6 +322,25 @@ def write_pickle(obj, fname):
     with open(fname, "wb") as f:
         pickle.dump(obj, f)
     
+def is_url(url):
+    """Check if a string is a URL.
+    
+    Parameters
+    ----------
+    url : str
+        URL to check
+        
+    Returns
+    -------
+    bool
+        True if the string is a URL, False otherwise
+    """
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    if not parsed.scheme or not parsed.netloc:
+        return False
+    return True
+
 def read_pickle(fname):
     """
     Read a Python object from a file using :mod:`pickle`.
@@ -334,7 +355,7 @@ def read_pickle(fname):
     object
         loaded object
     """
-    if fname.startswith("http"):
+    if is_url(fname):
         # try loading from URL
         response = requests.get(fname, stream=True)
         if response.status_code == 200:
