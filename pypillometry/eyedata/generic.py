@@ -592,15 +592,21 @@ class GenericEyeData(ABC):
             d['right_y'] = edf["samples"][avail_data_fields.index("ypos_right")]
             d['right_pupil'] = edf["samples"][avail_data_fields.index("ps_right")]
         
-        # create the object (currently has to be EyeData)
+        # get events
         evon = edf["discrete"]["messages"]["stime"]
         evlab = edf["discrete"]["messages"]["msg"]
-        info = {}
         
+        # store the info from the EDF file
+        info = {}
         info["eyelink_info"] = edf["info"]
         
-        obj = cls(time=edf["times"], **d, event_onsets=evon, event_labels=evlab, 
-            sampling_rate=edf["info"]["sfreq"], info=info, 
+        # get time vector (Eyelink stores in seconds, convert to ms)
+        sfreq = edf["info"]["sfreq"]
+        tx = edf["times"]*1000
+
+        # build the object
+        obj = cls(time=tx, **d, event_onsets=evon, event_labels=evlab, 
+            sampling_rate=sfreq, info=info, 
             screen_resolution=edf["info"]["screen_coords"], name=edf["info"]["filename"])
 
         if return_edf_obj:
