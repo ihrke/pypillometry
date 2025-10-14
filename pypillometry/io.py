@@ -322,24 +322,6 @@ def write_pickle(obj, fname):
     with open(fname, "wb") as f:
         pickle.dump(obj, f)
     
-def is_url(url):
-    """Check if a string is a URL.
-    
-    Parameters
-    ----------
-    url : str
-        URL to check
-        
-    Returns
-    -------
-    bool
-        True if the string is a URL, False otherwise
-    """
-    from urllib.parse import urlparse
-    parsed = urlparse(url)
-    if not parsed.scheme or not parsed.netloc:
-        return False
-    return True
 
 def read_pickle(fname):
     """

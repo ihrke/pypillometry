@@ -8,7 +8,7 @@ All other eyedata classes should inherit from this class.
 
 from collections.abc import Iterable
 from .. import io
-from ..convenience import sizeof_fmt, ByteSize, requires_package
+from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, download
 from .eyedatadict import CachedEyeDataDict, EyeDataDict
 from ..signal import baseline
 from ..intervals import stat_event_interval, get_interval_stats, merge_intervals
@@ -580,7 +580,11 @@ class GenericEyeData(ABC):
             object of class :class:`.GenericEyedata`
 
         """
-        r=eyelinkio.read_eyelink(fname)
+        import eyelinkio
+
+        if is_url(fname):
+            fname = download(fname, fname)
+        #r=eyelinkio.read_eyelink(fname)
         return r
 
     @abstractmethod

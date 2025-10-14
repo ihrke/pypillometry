@@ -1,6 +1,9 @@
 import unittest
 import numpy as np
-from pypillometry.convenience import ByteSize, sizeof_fmt
+import os
+import tempfile
+from unittest.mock import patch, MagicMock
+from pypillometry.convenience import ByteSize, sizeof_fmt, download
 
 class TestConvenience(unittest.TestCase):
     def test_byte_size_basic(self):
@@ -104,6 +107,135 @@ class TestConvenience(unittest.TestCase):
         # Test non-power-of-2 numbers
         self.assertEqual(sizeof_fmt(1500), "1.5KiB")
         self.assertEqual(sizeof_fmt(1536), "1.5KiB")
+
+    @patch('requests.get')
+    @patch('tqdm.tqdm')
+    def test_download_with_filename(self, mock_tqdm, mock_get):
+        """Test download function with specified filename."""
+        # Mock the response
+        mock_response = MagicMock()
+        mock_response.headers.get.return_value = '1024'  # Content-length
+        mock_response.iter_content.return_value = [b'test data chunk 1', b'test data chunk 2']
+        mock_get.return_value = mock_response
+        
+        # Mock tqdm
+        mock_progress_bar = MagicMock()
+        mock_tqdm.return_value.__enter__.return_value = mock_progress_bar
+        
+        # Create a temporary file for testing
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            tmp_filename = tmp_file.name
+        
+        try:
+            # Test download with specified filename
+            result = download('https://example.com/test.txt', fname=tmp_filename)
+            
+            # Verify the result
+            self.assertEqual(result, tmp_filename)
+            
+            # Verify requests.get was called correctly
+            mock_get.assert_called_once_with('https://example.com/test.txt', stream=True)
+            
+            # Verify file was written
+            self.assertTrue(os.path.exists(tmp_filename))
+            with open(tmp_filename, 'rb') as f:
+                content = f.read()
+                self.assertEqual(content, b'test data chunk 1test data chunk 2')
+                
+        finally:
+            # Clean up
+            if os.path.exists(tmp_filename):
+                os.remove(tmp_filename)
+
+    @patch('requests.get')
+    @patch('tqdm.tqdm')
+    @patch('tempfile.mkstemp')
+    def test_download_without_filename(self, mock_mkstemp, mock_tqdm, mock_get):
+        """Test download function without filename (creates temporary file)."""
+        # Mock the response
+        mock_response = MagicMock()
+        mock_response.headers.get.return_value = '1024'  # Content-length
+        mock_response.iter_content.return_value = [b'test data chunk 1', b'test data chunk 2']
+        mock_get.return_value = mock_response
+        
+        # Mock tqdm
+        mock_progress_bar = MagicMock()
+        mock_tqdm.return_value.__enter__.return_value = mock_progress_bar
+        
+        # Create a real temporary file for testing
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.txt') as tmp_file:
+            tmp_filename = tmp_file.name
+        
+        # Mock mkstemp to return a valid file descriptor and filename
+        import os
+        tmp_fd = os.open(tmp_filename, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+        mock_mkstemp.return_value = (tmp_fd, tmp_filename)
+        
+        try:
+            # Test download without filename
+            result = download('https://example.com/test.txt', fname=None)
+            
+            # Verify the result
+            self.assertEqual(result, tmp_filename)
+            
+            # Verify mkstemp was called with correct suffix
+            mock_mkstemp.assert_called_once_with(suffix='.txt')
+            
+            # Verify requests.get was called correctly
+            mock_get.assert_called_once_with('https://example.com/test.txt', stream=True)
+            
+            # Verify file was written
+            self.assertTrue(os.path.exists(tmp_filename))
+            with open(tmp_filename, 'rb') as f:
+                content = f.read()
+                self.assertEqual(content, b'test data chunk 1test data chunk 2')
+                
+        finally:
+            # Clean up
+            if os.path.exists(tmp_filename):
+                os.remove(tmp_filename)
+
+    @patch('requests.get')
+    @patch('tqdm.tqdm')
+    @patch('tempfile.mkstemp')
+    def test_download_without_filename_no_extension(self, mock_mkstemp, mock_tqdm, mock_get):
+        """Test download function without filename and no file extension in URL."""
+        # Mock the response
+        mock_response = MagicMock()
+        mock_response.headers.get.return_value = '1024'  # Content-length
+        mock_response.iter_content.return_value = [b'test data']
+        mock_get.return_value = mock_response
+        
+        # Mock tqdm
+        mock_progress_bar = MagicMock()
+        mock_tqdm.return_value.__enter__.return_value = mock_progress_bar
+        
+        # Create a real temporary file for testing
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            tmp_filename = tmp_file.name
+        
+        # Mock mkstemp to return a valid file descriptor and filename
+        import os
+        tmp_fd = os.open(tmp_filename, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+        mock_mkstemp.return_value = (tmp_fd, tmp_filename)
+        
+        try:
+            # Test download without filename and no extension in URL
+            result = download('https://example.com/test', fname=None)
+            
+            # Verify the result
+            self.assertEqual(result, tmp_filename)
+            
+            # Verify mkstemp was called with empty suffix
+            mock_mkstemp.assert_called_once_with(suffix='')
+            
+            # Verify requests.get was called correctly
+            mock_get.assert_called_once_with('https://example.com/test', stream=True)
+                
+        finally:
+            # Clean up
+            if os.path.exists(tmp_filename):
+                os.remove(tmp_filename)
 
 if __name__ == '__main__':
     unittest.main() 

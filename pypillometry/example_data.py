@@ -14,6 +14,7 @@ import tempfile
 import os.path
 import requests
 from tqdm import tqdm
+from .convenience import download
 
 example_datasets = {
     "rlmw_002": {
@@ -38,35 +39,6 @@ example_datasets = {
         "between the two stimuli presented on the left and right.",
     },
 }
-
-
-def download(url: str, fname: str, chunk_size=1024):
-    """Download a file from a URL to a local file.
-
-    See https://gist.github.com/yanqd0/c13ed29e29432e3cf3e7c38467f42f51.
-
-    Parameters
-    ----------
-    url : str
-        URL of the file to download.
-    fname : str
-        Local filename to save the file to.
-    chunk_size : int, optional  
-        Size of the chunks to download the file in. Default is 1024.
-    """
-    resp = requests.get(url, stream=True)
-    total = int(resp.headers.get('content-length', 0))
-    with open(fname, 'wb') as file, tqdm(
-        desc=fname,
-        total=total,
-        unit='iB',
-        unit_scale=True,
-        unit_divisor=1024,
-    ) as bar:
-        for data in resp.iter_content(chunk_size=chunk_size):
-            size = file.write(data)
-            bar.update(size)
-    return fname
 
 def get_example_data(key):
     """Load example data for a given example (see `example_datasets`).
