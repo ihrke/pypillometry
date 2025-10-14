@@ -316,6 +316,8 @@ def is_url(url):
         True if the string is a URL, False otherwise
     """
     from urllib.parse import urlparse
+    if not isinstance(url, str):
+        url = str(url)
     parsed = urlparse(url)
     if not parsed.scheme or not parsed.netloc:
         return False

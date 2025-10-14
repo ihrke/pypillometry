@@ -3,7 +3,7 @@ import numpy as np
 import os
 import tempfile
 from unittest.mock import patch, MagicMock
-from pypillometry.convenience import ByteSize, sizeof_fmt, download
+from pypillometry.convenience import ByteSize, sizeof_fmt, download, is_url
 
 class TestConvenience(unittest.TestCase):
     def test_byte_size_basic(self):
@@ -236,6 +236,102 @@ class TestConvenience(unittest.TestCase):
             # Clean up
             if os.path.exists(tmp_filename):
                 os.remove(tmp_filename)
+
+    def test_is_url(self):
+        """Test the is_url function."""
+        
+        # Valid URLs
+        valid_urls = [
+            "http://example.com",
+            "https://example.com",
+            "https://www.example.com",
+            "http://example.com/path",
+            "https://example.com/path/to/file.txt",
+            "https://example.com:8080",
+            "https://example.com:8080/path",
+            "http://subdomain.example.com",
+            "https://example.com/path?query=value",
+            "https://example.com/path#fragment",
+            "https://example.com/path?query=value#fragment",
+            "ftp://ftp.example.com",
+            "https://192.168.1.1",
+            "http://localhost:3000",
+            "https://osf.io/trsuq/download",  # Real example from codebase
+        ]
+        
+        for url in valid_urls:
+            with self.subTest(url=url):
+                self.assertTrue(is_url(url), f"'{url}' should be recognized as a valid URL")
+        
+        # Invalid URLs
+        invalid_urls = [
+            "not_a_url",
+            "example.com",  # Missing scheme
+            "http://",      # Missing netloc
+            "://example.com",  # Missing scheme
+            "file.txt",
+            "/path/to/file",
+            "C:\\path\\to\\file",
+            "",
+            "   ",
+            # Note: "http:// example.com" is actually considered valid by urlparse
+            # Note: "ht tp://example.com" has invalid scheme but urlparse is permissive
+        ]
+        
+        for url in invalid_urls:
+            with self.subTest(url=url):
+                self.assertFalse(is_url(url), f"'{url}' should NOT be recognized as a valid URL")
+        
+        # Edge cases
+        edge_cases = [
+            (None, False),  # None input
+            (123, False),   # Integer input
+            ([], False),    # List input
+            ({}, False),    # Dict input
+        ]
+        
+        for input_val, expected in edge_cases:
+            with self.subTest(input=input_val):
+                result = is_url(input_val)
+                self.assertEqual(result, expected, f"is_url({input_val}) should return {expected}")
+
+    def test_is_url_type_conversion(self):
+        """Test that is_url handles type conversion correctly."""
+        # The function converts non-strings to strings
+        # Test that it doesn't crash on various types
+        test_cases = [
+            (123, False),
+            (12.34, False),
+            (True, False),
+            (False, False),
+            ([], False),
+            ({}, False),
+        ]
+        
+        for input_val, expected in test_cases:
+            with self.subTest(input=input_val):
+                # Should not raise an exception
+                result = is_url(input_val)
+                self.assertEqual(result, expected)
+
+    def test_is_url_urlparse_edge_cases(self):
+        """Test edge cases where urlparse behavior might be surprising."""
+        # These are cases where urlparse is more permissive than we might expect
+        edge_cases = [
+            ("http:// example.com", True),   # Space after scheme - urlparse accepts this
+            ("ht tp://example.com", False),  # Space in scheme - urlparse treats as path
+            ("http://", False),              # Missing netloc
+            ("://example.com", False),       # Missing scheme
+            ("http://example", True),        # No TLD - but still valid according to urlparse
+            ("ftp://192.168.1.1", True),    # IP address
+            ("custom://example.com", True),  # Custom scheme
+        ]
+        
+        for url, expected in edge_cases:
+            with self.subTest(url=url):
+                result = is_url(url)
+                self.assertEqual(result, expected, 
+                    f"is_url('{url}') returned {result}, expected {expected}")
 
 if __name__ == '__main__':
     unittest.main() 

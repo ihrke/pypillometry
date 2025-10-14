@@ -14,7 +14,8 @@ import requests
 from tqdm import tqdm
 from typing import Dict
 from loguru import logger
-from .convenience import is_url
+from .convenience import is_url, download, suppress_all_output, requires_package
+from .logging import logging_get_level
 
 import requests
 
@@ -359,3 +360,39 @@ def read_pickle(fname):
         with open(fname, 'rb') as f:
             obj=pickle.load(f)
     return obj
+
+@requires_package("eyelinkio")
+def read_eyelink(fname:str):
+    """
+    Read an Eyelink file/URL and return the object returned by the "eyelinkio" package.
+    
+    Parameters
+    ----------
+    fname: str
+        filename of the Eyelink file
+
+    Returns
+    -------
+    object
+        object returned by the "eyelinkio" package
+    """
+    import eyelinkio
+
+    # download file if it is a URL
+    if is_url(fname):
+        fname = download(fname)
+    
+    # Check if DEBUG logging is enabled
+    current_level = logging_get_level()
+    show_eyelinkio_output = current_level == "DEBUG"
+
+    if show_eyelinkio_output:
+        logger.debug(f"Loading EDF file: {fname}")
+        logger.debug("eyelinkio output will be displayed below:")
+        edf = eyelinkio.read_edf(fname)
+    else:
+        logger.info(f"Loading EDF file: {fname} (current log level: {current_level}, set to DEBUG to see eyelinkio output)")
+        # Suppress eyelinkio output for non-DEBUG levels
+        with suppress_all_output():
+            edf = eyelinkio.read_edf(fname)
+    return edf

@@ -553,7 +553,6 @@ class GenericEyeData(ABC):
         return r
 
     @classmethod
-    @requires_package("eyelinkio")
     def from_eyelink(cls, fname:str, eyes:list=[], variables:list=[], return_edf_obj:bool=False):
         """
         Reads a :class:`.GenericEyedata` object from an Eyelink file.
@@ -583,27 +582,14 @@ class GenericEyeData(ABC):
             object of class :class:`.GenericEyedata` or tuple with the object of class :class:`.GenericEyedata` and the object returned by the "eyelinkio" package
 
         """
-        import eyelinkio
+        edf = io.read_eyelink(fname)
 
-        # download file if it is a URL
-        if is_url(fname):
-            fname = download(fname)
-        
-        # Check if DEBUG logging is enabled
-        current_level = logging_get_level()
-        show_eyelinkio_output = current_level == "DEBUG"
+        obj = edf
 
-        if show_eyelinkio_output:
-            logger.debug(f"Loading EDF file: {fname}")
-            logger.debug("eyelinkio output will be displayed below:")
-            edf = eyelinkio.read_edf(fname)
+        if return_edf_obj:
+            return obj, edf
         else:
-            logger.info(f"Loading EDF file: {fname} (current log level: {current_level}, set to DEBUG to see eyelinkio output)")
-            # Suppress eyelinkio output for non-DEBUG levels
-            with suppress_all_output():
-                    edf = eyelinkio.read_edf(fname)
-        #r=eyelinkio.read_eyelink(fname)
-        return edf
+            return obj
 
     @abstractmethod
     def summary(self) -> dict:
