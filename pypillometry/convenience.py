@@ -271,3 +271,36 @@ def test_selector(obj, selfun, **kwargs):
     if not callable(selfun):
         raise ValueError("selfun must be a function")
     return obj.event_labels[np.array([selfun(evlab, **kwargs) for evlab in self.event_labels])]
+
+
+## Decorator to check for optional dependencies
+import functools
+from typing import Callable, Any
+
+def requires_package(package_name: str, install_hint: str = None):
+    """
+    Decorator to mark functions that require optional dependencies.
+    
+    Parameters
+    ----------
+    package_name : str
+        Name of the required package
+    install_hint : str, optional
+        Custom installation instruction
+    """
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs) -> Any:
+            try:
+                __import__(package_name)
+            except ImportError:
+                hint = install_hint or f"pip install {package_name}"
+                raise ImportError(
+                    f"Function '{func.__name__}' requires the '{package_name}' package. "
+                    f"Install it with: {hint}"
+                )
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+

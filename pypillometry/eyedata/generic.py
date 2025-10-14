@@ -8,10 +8,11 @@ All other eyedata classes should inherit from this class.
 
 from collections.abc import Iterable
 from .. import io
-from ..convenience import sizeof_fmt, ByteSize
+from ..convenience import sizeof_fmt, ByteSize, requires_package
 from .eyedatadict import CachedEyeDataDict, EyeDataDict
 from ..signal import baseline
 from ..intervals import stat_event_interval, get_interval_stats, merge_intervals
+
 
 import numpy as np
 import itertools
