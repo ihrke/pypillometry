@@ -40,6 +40,67 @@ example_datasets = {
     },
 }
 
+class DatasetDict(dict):
+    """A dictionary that displays as a pandas DataFrame in Jupyter.
+    
+    This class inherits from dict and behaves like a normal dictionary,
+    but when displayed in Jupyter notebooks, it automatically renders
+    as a nicely formatted pandas DataFrame showing dataset information.
+    """
+    
+    def _repr_html_(self):
+        """Return HTML representation for Jupyter display."""
+        # Parse the dictionary to create DataFrame
+        data = []
+        for key, info in self.items():
+            description = info.get("description", "No description available")
+            
+            # Infer type from keys and values
+            if "edf" in info:
+                source_type = "EDF"
+            elif "samples_asc" in info or "sample_asc" in info:
+                sample_key = "samples_asc" if "samples_asc" in info else "sample_asc"
+                sample_value = str(info[sample_key])
+                if "osf.io" in sample_value:
+                    source_type = "ASC (OSF)"
+                else:
+                    source_type = "ASC (local)"
+            else:
+                source_type = "Unknown"
+            
+            data.append({
+                "Dataset": key,
+                "Type": source_type,
+                "Description": description
+            })
+        
+        df = pd.DataFrame(data)
+        return df._repr_html_()
+
+
+def get_available_datasets():
+    """Return available example datasets.
+    
+    Returns a dictionary that displays as a nicely formatted pandas DataFrame
+    in Jupyter notebooks but can be used as a normal dict otherwise.
+    
+    Returns
+    -------
+    DatasetDict
+        A dictionary (subclass of dict) containing all dataset metadata.
+        When displayed in Jupyter, it will render as a pandas DataFrame
+        with columns for Dataset name, Type, and Description.
+    
+    Examples
+    --------
+    >>> datasets = get_available_datasets()
+    >>> # In Jupyter, this displays as a nice DataFrame
+    >>> datasets
+    >>> # But you can still use it like a normal dict
+    >>> datasets['rlmw_002']
+    """
+    return DatasetDict(example_datasets)
+
 def get_example_data(key):
     """Load example data for a given example (see `example_datasets`).
 
@@ -56,7 +117,8 @@ def get_example_data(key):
     """
     if key not in example_datasets:
         raise ValueError(f"Key '{key}' not found in example datasets. "
-                         f"Available keys are: {list(example_datasets.keys())}")
+                         f"Available keys are: {list(example_datasets.keys())}. "
+                         f"Call get_available_datasets() to see all available datasets.")
 
     # run the function with the same name as the key
     funcname = f"get_{key}"

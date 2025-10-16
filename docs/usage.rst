@@ -26,12 +26,12 @@ Once the data has been manually parsed into :mod:`numpy`-arrays, it can be conve
 
 :mod:`pypillometry` provides functions to load data from local data directories (:func:`~pypillometry.load_study_local`) and from OSF-projects (:func:`~pypillometry.load_study_osf`) based on a user-provided configuration file (:ref:`/examples/pypillometry_conf.py`).
 
-The package comes with a few example datasets for convenience (see the dictionary `example_data` for an overview and :ref:`this notebook </example_datasets.ipynb>`). These can be loaded using the :func:`~pypillometry.get_example_data()` function.
+The package comes with a few example datasets for convenience (see :ref:`this notebook </example_datasets.ipynb>`). These can be loaded using the :func:`~pypillometry.get_example_data()` function.
 
 Please refer to the following notebooks for more information:
 
 - :ref:`An example for importing data from Eyelink EDF-files </importdata.ipynb>`
-- :ref:`Example datasets included in the package </example_datasets.ipynb>`
+- :ref:`Example datasets included in the package </example_datasets.ipynb>` 
 - :ref:`Providing a configuration file for loading data from a local directory or OSF </examples/share_study.rst>`
 
 
