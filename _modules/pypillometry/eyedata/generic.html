@@ -688,7 +688,7 @@ window.addEventListener("load", () => mermaid.run());
         
         <span class="c1"># get events</span>
         <span class="n">evon</span> <span class="o">=</span> <span class="n">edf</span><span class="p">[</span><span class="s2">&quot;discrete&quot;</span><span class="p">][</span><span class="s2">&quot;messages&quot;</span><span class="p">][</span><span class="s2">&quot;stime&quot;</span><span class="p">]</span>
-        <span class="n">evlab</span> <span class="o">=</span> <span class="n">edf</span><span class="p">[</span><span class="s2">&quot;discrete&quot;</span><span class="p">][</span><span class="s2">&quot;messages&quot;</span><span class="p">][</span><span class="s2">&quot;msg&quot;</span><span class="p">]</span>
+        <span class="n">evlab</span> <span class="o">=</span> <span class="n">edf</span><span class="p">[</span><span class="s2">&quot;discrete&quot;</span><span class="p">][</span><span class="s2">&quot;messages&quot;</span><span class="p">][</span><span class="s2">&quot;msg&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
         
         <span class="c1"># store the info from the EDF file</span>
         <span class="n">info</span> <span class="o">=</span> <span class="p">{}</span>

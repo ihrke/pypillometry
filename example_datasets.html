@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Example datasets included in pypillometry &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Pipeline-based processing in pypillometry" href="pipes.html" />
+    <link rel="prev" title="Importing Data Example" href="importdata.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pipes.html" title="Pipeline-based processing in pypillometry"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="importdata.html" title="Importing Data Example"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/example_datasets.ipynb">example_datasets.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=example_datasets.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Example-datasets-included-in-pypillometry">
+<h1>Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code><a class="headerlink" href="#Example-datasets-included-in-pypillometry" title="Link to this heading">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> comes with a set of example dataset for convenience (so that you can easily start trying the package).</p>
+<p>Some smaller datasets are included directly in the package, others will be downloaded when requested. The datasets can be retrieved with the <code class="docutils literal notranslate"><span class="pre">get_dataset()</span></code> function.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+</pre></div>
+</div>
+</div>
+<p>You can get an overview over all available datasets:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">get_available_datasets</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Dataset</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>rlmw_002</td>
+      <td>ASC (OSF)</td>
+      <td>Binocular data from a 20-minute reinforcement ...</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>rlmw_002_short</td>
+      <td>ASC (local)</td>
+      <td>Short version (first 40 sec) of a 20-minute re...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>rlmw_010_edf</td>
+      <td>EDF</td>
+      <td>Binocular data from a 20-minute reinforcement ...</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Using the identifier, you can load the dataset into python using the <code class="docutils literal notranslate"><span class="pre">get_example_data()</span></code> function</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+002_rlmw_samples.asc: 100%|██████████| 35.1M/35.1M [00:03&lt;00:00, 11.8MiB/s]
+002_rlmw_events.asc: 100%|██████████| 1.07M/1.07M [00:00&lt;00:00, 5.16MiB/s]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EyeData(test short, 59.3MiB):
+ n                   : 597301
+ sampling_rate       : 500.0
+ data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;right_pupil&#39;]
+ nevents             : 1320
+ screen_limits       : ((0, 1280), (0, 1024))
+ physical_screen_size: (30, 20)
+ screen_eye_distance : not set
+ duration_minutes    : 19.910033333333335
+ start_min           : 0.0
+ end_min             : 19.91
+ parameters          : {}
+ glimpse             : EyeDataDict(vars=6,n=597301,shape=(597301,)):
+  left_x (float64): 655.6, 655.7, 655.0, 654.5, 655.0...
+  left_y (float64): 599.9, 598.9, 597.6, 597.8, 597.8...
+  left_pupil (float64): 1121.0, 1122.0, 1124.0, 1126.0, 1126.0...
+  right_x (float64): 773.1, 773.8, 774.8, 776.3, 776.7...
+  right_y (float64): 594.2, 593.9, 596.5, 597.4, 597.3...
+  right_pupil (float64): 949.0, 951.0, 956.0, 959.0, 960.0...
+
+ eyes                : [&#39;left&#39;, &#39;right&#39;]
+ nblinks             : {}
+ blinks              : {&#39;left&#39;: None, &#39;right&#39;: None}
+ params              : {}
+ History:
+ *
+ └ fill_time_discontinuities()
+  └ reset_time()
+</pre></div></div>
+</div>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/example_datasets.ipynb">example_datasets.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=example_datasets.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="importdata.html"
+                          title="previous chapter">Importing Data Example</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="pipes.html"
+                          title="next chapter">Pipeline-based processing in pypillometry</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/example_datasets.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pipes.html" title="Pipeline-based processing in pypillometry"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="importdata.html" title="Importing Data Example"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

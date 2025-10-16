@@ -14,6 +14,7 @@ When clicking on this link, the notebook will open in an interactive session in 
    :caption: List of Notebooks:
 
    /importdata
+   /example_datasets
    /pipes
    /blinks
    /plotting
