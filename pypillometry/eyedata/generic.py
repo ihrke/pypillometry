@@ -594,7 +594,7 @@ class GenericEyeData(ABC):
         
         # get events
         evon = edf["discrete"]["messages"]["stime"]
-        evlab = edf["discrete"]["messages"]["msg"]
+        evlab = edf["discrete"]["messages"]["msg"].astype(str)
         
         # store the info from the EDF file
         info = {}

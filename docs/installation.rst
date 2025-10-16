@@ -33,7 +33,9 @@ Requirements
 - :mod:`numpy`, :mod:`scipy` and :mod:`matplotlib`
 - :mod:`cmdstanpy` 
 
-It is useful to access :mod:`pypillometry` through Jupyter or Jupyter Notebook, so installing those packages is also useful but not necessary.
+If you want to ready Eyelink's .edf files directly, you can install the [`eyelinkio`](https://github.com/scott-huberty/eyelinkio) package.
+
+It can be useful to access :mod:`pypillometry` through Jupyter or Jupyter Notebook, so installing those packages is also useful but not necessary.
 
 All requirements can be installed by running `pip install -r requirements.txt`.
 
