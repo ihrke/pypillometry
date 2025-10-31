@@ -3,6 +3,7 @@ preproc.py
 ==========
 
 preprocessing functions (blinks, smoothing, missing data...)
+21.10.2025 (Josephine) Added fix to detect_blinks_velocity() line 123
 """
 import numpy as np
 import scipy.optimize
@@ -119,7 +120,8 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     onsets_ixx=np.r_[np.diff(onsets),10]>1
     onsets_len=np.diff(np.r_[0,np.where(onsets_ixx)[0]+1])
     onsets=onsets[:-1][onsets_ixx[:-1]]
-    onsets=onsets[onsets_len>min_onset_len]
+    onsets_len=onsets_len[:len(onsets)]            ## truncate onsets_len to the length of onsets to avoid IndexError in line 124
+    onsets=onsets[onsets_len>min_onset_len]        ## will produce IndexError since len(onsets)!=len(onsets_len)
     logger.debug(f"After filtering, {len(onsets)} onsets remain")
 
     ## offset finding
