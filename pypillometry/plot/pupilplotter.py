@@ -4,6 +4,7 @@ from .genplotter import GenericPlotter
 import numpy as np
 from collections.abc import Iterable
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
+from pathlib import Path
 
 from loguru import logger
 
@@ -25,7 +26,7 @@ class PupilPlotter(GenericPlotter):
         self.obj = obj
     
     def pupil_plot(self, 
-                   eyes: list=[],
+                   eyes: str|list=[],
                    plot_range: Tuple[float,float]=(-np.inf, +np.inf),
                    plot_events: bool=True,
                    highlight_blinks: bool=True,
@@ -93,6 +94,7 @@ class PupilPlotter(GenericPlotter):
 
         # plot grey lines for events
         if plot_events:
+            logger.debug("Plotting events, %i in range"%len(evon))
             plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)
             ll,ul=plt.ylim()
             for ev,lab in zip(evon,evlab):
@@ -101,6 +103,7 @@ class PupilPlotter(GenericPlotter):
         # highlight if a blink in any of the eyes
         if highlight_blinks:
             blinks = self.obj.get_blinks_merged(eyes, "pupil")
+            logger.debug("Highlighting blinks, %i in range"%blinks.shape[0])
             for sblink,eblink in blinks:
                 if eblink<startix or sblink>endix:
                     continue
@@ -149,27 +152,30 @@ class PupilPlotter(GenericPlotter):
             cstart=cend
 
         figs=[]
-        _backend=mpl.get_backend()
-        mpl.use("pdf")
-        plt.ioff() ## avoid showing plots when saving to PDF 
 
         for start,end in segments:
             plt.figure(figsize=figsize)
             self.pupil_plot( plot_range=(start,end), units="min", **kwargs)
             if ylim is not None:
                 plt.ylim(*ylim)
-            figs.append(plt.gcf())
+            fig = plt.gcf()
+            figs.append(fig)
+            
+            # Close figure immediately after creation if saving to PDF to prevent display and memory issues
+            if pdffile is not None:
+                plt.close(fig)
 
-
-        if isinstance(pdffile, str):
-            print("> Writing PDF file '%s'"%pdffile)
+        if pdffile is not None:
+            # Create parent directories if they don't exist
+            pdf_path = Path(pdffile)
+            if pdf_path.parent != Path('.') and not pdf_path.parent.exists():
+                pdf_path.parent.mkdir(parents=True, exist_ok=True)
+                logger.info("Created directory: {}", pdf_path.parent)
+            
+            logger.info("Writing PDF file '{}'", pdffile)
             with PdfPages(pdffile) as pdf:
                 for fig in figs:
-                    pdf.savefig(fig)         
-
-        ## switch back to original backend and interactive mode                        
-        mpl.use(_backend) 
-        plt.ion()
+                    pdf.savefig(fig)
 
         return figs        
 

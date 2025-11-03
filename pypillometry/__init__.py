@@ -32,7 +32,8 @@ def _collect_and_import_submodules() -> Dict[str, Any]:
         '.io',
         '.logging',
         '.plot',
-        '.roi'
+        '.roi',
+        '.signal'
     ]
     
     for module_name in submodules:

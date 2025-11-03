@@ -592,8 +592,8 @@ class GenericEyeData(ABC):
             d['right_y'] = edf["samples"][avail_data_fields.index("ypos_right")]
             d['right_pupil'] = edf["samples"][avail_data_fields.index("ps_right")]
         
-        # get events
-        evon = edf["discrete"]["messages"]["stime"]
+        # get events (Eyelink stores in seconds, convert to ms)
+        evon = edf["discrete"]["messages"]["stime"]*1000
         evlab = edf["discrete"]["messages"]["msg"].astype(str)
         
         # store the info from the EDF file

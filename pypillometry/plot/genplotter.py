@@ -4,6 +4,7 @@ from ..eyedata import GenericEyeData
 from ..convenience import mask_to_intervals
 import numpy as np
 from loguru import logger
+from pathlib import Path
 
 import pylab as plt
 import matplotlib.patches as patches
@@ -67,10 +68,6 @@ class GenericPlotter:
         nfig=int(np.ceil(len(intervals)/nsubplots))
 
         figs=[]
-        if isinstance(pdf_file,str):
-            _backend=mpl.get_backend()
-            mpl.use("pdf")
-            plt.ioff() ## avoid showing plots when saving to PDF 
         
         iinterv=0
         for i in range(nfig):
@@ -94,15 +91,22 @@ class GenericPlotter:
                     ax.text(0.5, 0.5, '%i'%(iinterv), fontsize=12, horizontalalignment='center',     
                             verticalalignment='center', transform=ax.transAxes)
             figs.append(fig)
+            
+            # Close figure immediately after creation if saving to PDF to prevent display and memory issues
+            if pdf_file is not None:
+                plt.close(fig)
 
         if pdf_file is not None:
+            # Create parent directories if they don't exist
+            pdf_path = Path(pdf_file)
+            if pdf_path.parent != Path('.') and not pdf_path.parent.exists():
+                pdf_path.parent.mkdir(parents=True, exist_ok=True)
+                logger.info("Created directory: {}", pdf_path.parent)
+            
             logger.info("Saving file '{}'", pdf_file)
             with PdfPages(pdf_file) as pdf:
                 for fig in figs:
                     pdf.savefig(fig)
-            ## switch back to original backend and interactive mode                
-            mpl.use(_backend) 
-            plt.ion()
             
         return figs    
 
@@ -216,14 +220,14 @@ class GenericPlotter:
         plt.legend()
         plt.xlabel(xlab)
         
-    def plot_timeseries_segments(self, pdffile: str=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
+    def plot_timeseries_segments(self, pdf_file: str=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
         """
         Plot the whole dataset chunked up into segments (usually to a PDF file).
 
         Parameters
         ----------
 
-        pdffile: str or None
+        pdf_file: str or None
             file name to store the PDF; if None, no PDF is written 
         interv: float
             duration of each of the segments to be plotted (in minutes)
@@ -250,27 +254,30 @@ class GenericPlotter:
             cstart=cend
 
         figs=[]
-        _backend=mpl.get_backend()
-        mpl.use("pdf")
-        plt.ioff() ## avoid showing plots when saving to PDF 
 
         for start,end in segments:
             plt.figure(figsize=figsize)
             self.plot_timeseries( plot_range=(start,end), units="min", **kwargs)
             if ylim is not None:
                 plt.ylim(*ylim)
-            figs.append(plt.gcf())
+            fig = plt.gcf()
+            figs.append(fig)
+            
+            # Close figure immediately after creation if saving to PDF to prevent display and memory issues
+            if pdf_file is not None:
+                plt.close(fig)
 
-
-        if isinstance(pdffile, str):
-            logger.info("Writing PDF file '{}'", pdffile)
-            with PdfPages(pdffile) as pdf:
+        if pdf_file is not None:
+            # Create parent directories if they don't exist
+            pdf_path = Path(pdf_file)
+            if pdf_path.parent != Path('.') and not pdf_path.parent.exists():
+                pdf_path.parent.mkdir(parents=True, exist_ok=True)
+                logger.info("Created directory: {}", pdf_path.parent)
+            
+            logger.info("Writing PDF file '{}'", pdf_file)
+            with PdfPages(pdf_file) as pdf:
                 for fig in figs:
-                    pdf.savefig(fig)         
-
-        ## switch back to original backend and interactive mode                        
-        mpl.use(_backend) 
-        plt.ion()
+                    pdf.savefig(fig)
 
         return figs
         
