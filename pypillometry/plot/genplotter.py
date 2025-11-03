@@ -28,6 +28,7 @@ class GenericPlotter:
         """"
         Plotting data around intervals.
 
+        Intervals can be extracted with EyeData.get_intervals(). 
         Each interval gets a separate subplot. 
         The data is plotted for each eye and variable in different colors.
         
@@ -256,8 +257,7 @@ class GenericPlotter:
         figs=[]
 
         for start,end in segments:
-            plt.figure(figsize=figsize)
-            self.plot_timeseries( plot_range=(start,end), units="min", **kwargs)
+            self.plot_timeseries( plot_range=(start,end), units="min", figsize=figsize, **kwargs)
             if ylim is not None:
                 plt.ylim(*ylim)
             fig = plt.gcf()

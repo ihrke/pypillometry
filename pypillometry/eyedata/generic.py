@@ -740,7 +740,7 @@ class GenericEyeData(ABC):
     def get_intervals(self, 
                     event_select,
                     interval: tuple=(-200,200),
-                    units: str="ms", **kwargs):
+                    units: str|None=None, **kwargs):
         """
         Return a list of intervals relative to event-onsets. For example, extract
         the interval before and after a stimulus has been presented.

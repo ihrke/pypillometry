@@ -101,8 +101,9 @@ class PupilPlotter(GenericPlotter):
                 plt.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
         
         # highlight if a blink in any of the eyes
-        if highlight_blinks:
-            blinks = self.obj.get_blinks_merged(eyes, "pupil")
+        blinks = np.array(self.obj.get_blinks_merged(eyes, "pupil"))
+
+        if highlight_blinks and blinks is not None and len(blinks)>0:
             logger.debug("Highlighting blinks, %i in range"%blinks.shape[0])
             for sblink,eblink in blinks:
                 if eblink<startix or sblink>endix:
