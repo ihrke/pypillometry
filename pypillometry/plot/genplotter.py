@@ -122,7 +122,9 @@ class GenericPlotter:
             eyes: list=[],
             plot_onsets: str="line",
             units: Union[str, None]=None,
-            plot_masked: bool=False
+            plot_masked: bool=False,
+            label_prefix: str="",
+            style: dict=None
             ) -> None:
         """
         Plot a part of the EyeData. Each data type is plotted in a separate subplot.
@@ -147,6 +149,14 @@ class GenericPlotter:
             The units to plot. Default is "sec". If None, use the units in the time vector.
         plot_masked: bool
             Whether to highlight masked regions with a light red background. Default is False.
+        label_prefix: str
+            Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
+            Default is "" (no prefix).
+        style: dict or dict of dicts
+            Styling for plotted lines. Can be:
+            - Single dict: Applied to all eyes with automatic differentiation (e.g., {'color': 'red'})
+            - Dict of dicts: Per-eye styling (e.g., {'left': {'linestyle': '-'}, 'right': {'linestyle': '--'}})
+            Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).
         """
         obj = self.obj
         eyes,variables=obj._get_eye_var(eyes, variables)
@@ -216,11 +226,52 @@ class GenericPlotter:
                 axs = fig.subplots(nplots, 1)
                 if not isinstance(axs, Iterable):
                     axs=[axs]
+        
+        # Determine if style is per-eye or global
+        per_eye_style = (style is not None and 
+                         isinstance(style, dict) and 
+                         any(isinstance(v, dict) for v in style.values()))
+        
+        # Define differentiation properties for multiple eyes
+        # These cycle through different linestyles to keep eyes distinguishable
+        linestyles = ['-', '--', '-.', ':']
+        
         for var,ax in zip(variables, axs):
-            for eye in eyes:
+            for idx, eye in enumerate(eyes):
                 vname = "_".join([eye,var])
                 if vname in obj.data.keys():
-                    ax.plot(tx, obj.data[vname][startix:endix], label=eye)
+                    # Build label with optional prefix
+                    label_parts = []
+                    if label_prefix:
+                        label_parts.append(label_prefix)
+                    label_parts.append(eye)
+                    # Add variable name only if multiple variables plotted
+                    if len(variables) > 1:
+                        label_parts.append(var)
+                    label = "_".join(label_parts)
+                    
+                    # Prepare plot kwargs with style
+                    plot_kwargs = {'label': label}
+                    
+                    if style is not None:
+                        if per_eye_style:
+                            # Per-eye styling: use eye-specific style if available
+                            if eye in style:
+                                plot_kwargs.update(style[eye])
+                        else:
+                            # Global style: apply to all, but add differentiation for multiple eyes
+                            plot_kwargs.update(style)
+                            
+                            # If multiple eyes and no explicit differentiation, vary linestyle
+                            if len(eyes) > 1:
+                                # Only add differentiation if not explicitly set in style
+                                if 'linestyle' not in style and 'ls' not in style:
+                                    plot_kwargs['linestyle'] = linestyles[idx % len(linestyles)]
+                    elif len(eyes) > 1:
+                        # No style provided but multiple eyes: use default colors with varied linestyles
+                        plot_kwargs['linestyle'] = linestyles[idx % len(linestyles)]
+                    
+                    ax.plot(tx, obj.data[vname][startix:endix], **plot_kwargs)
                     if plot_masked and vname in obj.data.mask:
                         mask = obj.data.mask[vname][startix:endix]
                         ax.fill_between(tx, ax.get_ylim()[0], ax.get_ylim()[1], 

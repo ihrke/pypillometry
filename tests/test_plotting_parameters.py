@@ -83,6 +83,29 @@ class TestPupilPlotParameters(unittest.TestCase):
         fig = plt.figure()
         self.data.plot.pupil_plot(highlight_blinks=False)
         self.assertIsNotNone(plt.gcf())
+    
+    def test_pupil_plot_style_single_dict(self):
+        """Test pupil_plot with single style dict (should auto-differentiate eyes)"""
+        fig = plt.figure()
+        self.data.plot.pupil_plot(eyes=["left", "right"], style={'color': 'red', 'alpha': 0.7})
+        self.assertIsNotNone(plt.gcf())
+        # Check that lines were created
+        lines = plt.gca().get_lines()
+        self.assertGreater(len(lines), 0)
+    
+    def test_pupil_plot_style_per_eye(self):
+        """Test pupil_plot with per-eye style dict"""
+        fig = plt.figure()
+        self.data.plot.pupil_plot(
+            eyes=["left", "right"],
+            style={
+                'left': {'color': 'blue', 'linestyle': '-'},
+                'right': {'color': 'green', 'linestyle': '--'}
+            }
+        )
+        self.assertIsNotNone(plt.gcf())
+        lines = plt.gca().get_lines()
+        self.assertEqual(len(lines), 2)
 
 
 class TestPlotTimeseriesParameters(unittest.TestCase):
@@ -138,6 +161,27 @@ class TestPlotTimeseriesParameters(unittest.TestCase):
         fig = plt.figure()
         self.data.plot.plot_timeseries(units=None)
         self.assertIsNotNone(plt.gcf())
+    
+    def test_plot_timeseries_style_single_dict(self):
+        """Test plot_timeseries with single style dict (should auto-differentiate eyes)"""
+        fig = plt.figure()
+        self.data.plot.plot_timeseries(eyes=["left", "right"], style={'color': 'blue', 'alpha': 0.8})
+        self.assertIsNotNone(plt.gcf())
+        # Check that axes were created
+        self.assertGreater(len(fig.axes), 0)
+    
+    def test_plot_timeseries_style_per_eye(self):
+        """Test plot_timeseries with per-eye style dict"""
+        fig = plt.figure()
+        self.data.plot.plot_timeseries(
+            eyes=["left", "right"],
+            style={
+                'left': {'color': 'red', 'linestyle': '-'},
+                'right': {'color': 'purple', 'linestyle': ':'}
+            }
+        )
+        self.assertIsNotNone(plt.gcf())
+        self.assertGreater(len(fig.axes), 0)
 
 
 class TestPlotIntervalsParameters(unittest.TestCase):
@@ -250,9 +294,11 @@ class TestSegmentPlotParameters(unittest.TestCase):
     
     def test_segments_with_units(self):
         """Test plot_timeseries_segments with different units"""
-        for units in ["sec", "ms", "min"]:
+        # Use appropriate interval values for each unit
+        units_intervals = [("sec", 1.0), ("ms", 1000.0), ("min", 1.0)]
+        for units, interv in units_intervals:
             figs = self.data.plot.plot_timeseries_segments(
-                interv=1.0,
+                interv=interv,
                 units=units
             )
             self.assertIsNotNone(figs)

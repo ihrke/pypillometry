@@ -30,7 +30,9 @@ class PupilPlotter(GenericPlotter):
                    plot_range: Tuple[float,float]=(-np.inf, +np.inf),
                    plot_events: bool=True,
                    highlight_blinks: bool=True,
-                   units: str="sec"
+                   units: str="sec",
+                   label_prefix: str="",
+                   style: dict=None
             ) -> None:
         """Make a plot of the pupil data using `matplotlib`.
 
@@ -49,6 +51,14 @@ class PupilPlotter(GenericPlotter):
             plot events as vertical lines with labels
         highlight_blinks: bool
             highlight detected blinks
+        label_prefix: str
+            Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
+            Default is "" (no prefix).
+        style: dict or dict of dicts
+            Styling for plotted lines. Can be:
+            - Single dict: Applied to all eyes with automatic differentiation (e.g., {'color': 'red'})
+            - Dict of dicts: Per-eye styling (e.g., {'left': {'linestyle': '-'}, 'right': {'linestyle': '--'}})
+            Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).
         """
         if not isinstance(eyes, list):
             eyes=[eyes]
@@ -88,9 +98,45 @@ class PupilPlotter(GenericPlotter):
 
         tx=tx[startix:endix]
 
+        # Determine if style is per-eye or global
+        per_eye_style = (style is not None and 
+                         isinstance(style, dict) and 
+                         any(isinstance(v, dict) for v in style.values()))
+        
+        # Define differentiation properties for multiple eyes
+        # These cycle through different linestyles to keep eyes distinguishable
+        linestyles = ['-', '--', '-.', ':']
+        
         # plot timeseries
-        for eye in eyes:
-            plt.plot(tx, self.obj.data[eye,"pupil"][startix:endix], label=eye)
+        for idx, eye in enumerate(eyes):
+            # Build label with optional prefix
+            if label_prefix:
+                label = f"{label_prefix}_{eye}"
+            else:
+                label = eye
+            
+            # Prepare plot kwargs with style
+            plot_kwargs = {'label': label}
+            
+            if style is not None:
+                if per_eye_style:
+                    # Per-eye styling: use eye-specific style if available
+                    if eye in style:
+                        plot_kwargs.update(style[eye])
+                else:
+                    # Global style: apply to all, but add differentiation for multiple eyes
+                    plot_kwargs.update(style)
+                    
+                    # If multiple eyes and no explicit differentiation, vary linestyle
+                    if len(eyes) > 1:
+                        # Only add differentiation if not explicitly set in style
+                        if 'linestyle' not in style and 'ls' not in style:
+                            plot_kwargs['linestyle'] = linestyles[idx % len(linestyles)]
+            elif len(eyes) > 1:
+                # No style provided but multiple eyes: use default colors with varied linestyles
+                plot_kwargs['linestyle'] = linestyles[idx % len(linestyles)]
+            
+            plt.plot(tx, self.obj.data[eye,"pupil"][startix:endix], **plot_kwargs)
 
         # plot grey lines for events
         if plot_events:
