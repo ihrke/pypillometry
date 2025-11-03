@@ -102,6 +102,23 @@ class GenericPlotter:
                 for eye,var in itertools.product(eyes,variables):
                     ax.plot(obj.tx[slic]*fac,obj.data[eye,var][slic], label="%s_%s"%(eye,var))
 
+                # Plot vertical line at event onset (first event for this interval)
+                if intervals.event_onsets is not None and len(intervals.event_onsets) > (iinterv-1):
+                    event_onset_idx = iinterv - 1
+                    # Convert event onset from intervals units to display units
+                    if intervals.units is None:
+                        # Event onset is in indices, need to convert to ms then to display units
+                        event_onset_ms = obj.tx[int(intervals.event_onsets[event_onset_idx])]
+                    else:
+                        # Event onset is in intervals units, convert to ms first
+                        fac_onset_to_ms = 1.0 / obj._unit_fac(intervals.units)
+                        event_onset_ms = intervals.event_onsets[event_onset_idx] * fac_onset_to_ms
+                    
+                    # Now convert to display units
+                    event_onset_display = event_onset_ms * fac
+                    ax.axvline(event_onset_display, color='red', linestyle='--', 
+                              linewidth=1, alpha=0.7, zorder=1)
+
                 if plot_mask:
                     mask = obj.data.mask[eye+"_"+var][slic]
                     txm = obj.tx[slic]

@@ -828,6 +828,16 @@ class GenericEyeData(ABC):
                              for i, j in zip(np.where(event_ix[0])[0], np.where(event_ix[1])[0])]
             selected_indices = np.where(event_ix[0])[0]
             
+            # Get event onsets (use first event of the pair as reference)
+            if units is None:
+                # In index units
+                event_onsets_list = [np.argmin(np.abs(self.tx-self.event_onsets[i])) 
+                                    for i in np.where(event_ix[0])[0]]
+            else:
+                # In specified units
+                event_onsets_list = [self.event_onsets[i] * fac 
+                                    for i in np.where(event_ix[0])[0]]
+            
         else:
             # one event with padding interval
             if callable(event_select):
@@ -858,6 +868,14 @@ class GenericEyeData(ABC):
             # Get labels and indices for selected events
             selected_indices = np.where(event_ix)[0]
             selected_labels = [self.event_labels[i] for i in selected_indices]
+            
+            # Get event onsets in appropriate units
+            if units is None:
+                # In index units
+                event_onsets_list = eix.tolist()
+            else:
+                # In specified units
+                event_onsets_list = (self.event_onsets[event_ix] * fac).tolist()
         
         intervals_list = [(s,e) for s,e in zip(sti,ste)]
         
@@ -875,7 +893,8 @@ class GenericEyeData(ABC):
             label=label,
             event_labels=selected_labels,
             event_indices=selected_indices,
-            data_time_range=data_time_range
+            data_time_range=data_time_range,
+            event_onsets=event_onsets_list
         )
 
     @keephistory

@@ -145,7 +145,7 @@ class Intervals:
     ...     print(f"{start}-{end}")
     """
     
-    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None, data_time_range=None):
+    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None):
         """
         Initialize an Intervals object.
         
@@ -163,6 +163,8 @@ class Intervals:
             Indices for each interval
         data_time_range : tuple, optional
             Time range (min, max) of the original dataset
+        event_onsets : list or np.ndarray, optional
+            Original event onset times (in same units as intervals)
         """
         if isinstance(intervals, np.ndarray):
             self.intervals = [tuple(row) for row in intervals]
@@ -173,6 +175,7 @@ class Intervals:
         self.event_labels = event_labels
         self.event_indices = event_indices
         self.data_time_range = data_time_range
+        self.event_onsets = event_onsets
     
     def __len__(self):
         """Return number of intervals."""

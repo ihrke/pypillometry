@@ -325,7 +325,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
         ax = plt.gca()
         lines = ax.get_lines()
         
-        # Check that lines are black
+        # Check that all lines are black (Intervals.plot doesn't have zero line)
         for line in lines:
             color = line.get_color()
             # Black is (0, 0, 0) or 'black' or 'k'
