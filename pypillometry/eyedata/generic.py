@@ -738,7 +738,7 @@ class GenericEyeData(ABC):
     def get_intervals(self, 
                     event_select,
                     interval: tuple=(-200,200),
-                    units: str|None=None, **kwargs):
+                    units: str|None=None, label: str|None=None, **kwargs):
         """
         Return an Intervals object containing intervals relative to event-onsets.
         For example, extract the interval before and after a stimulus has been presented.
@@ -765,6 +765,10 @@ class GenericEyeData(ABC):
         units : str or None
             units of the interval (one of "ms", "sec", "min", "h"); units=None means
             that the interval in sampling units (i.e., indices into the time-array)
+
+        label : str or None
+            optional label for the Intervals object. If None, a label is automatically
+            generated from the event_select parameter
 
         kwargs : dict
             passed onto the event_select function
@@ -812,11 +816,12 @@ class GenericEyeData(ABC):
                 sti=(self.event_onsets[event_ix[0]]*fac)+interval[0]
                 ste=(self.event_onsets[event_ix[1]]*fac)+interval[1]
             
-            # Create label for between-events intervals
-            if isinstance(event_select[0], str) and isinstance(event_select[1], str):
-                label = f"{event_select[0]}_to_{event_select[1]}"
-            else:
-                label = "between_events"
+            # Create label for between-events intervals if not provided
+            if label is None:
+                if isinstance(event_select[0], str) and isinstance(event_select[1], str):
+                    label = f"{event_select[0]}_to_{event_select[1]}"
+                else:
+                    label = "between_events"
             
             # Get labels and indices for selected events
             selected_labels = [f"{self.event_labels[i]}_to_{self.event_labels[j]}" 
@@ -843,11 +848,12 @@ class GenericEyeData(ABC):
                 sti=(self.event_onsets[event_ix]*fac)+interval[0]
                 ste=(self.event_onsets[event_ix]*fac)+interval[1]
             
-            # Create label from event_select
-            if isinstance(event_select, str):
-                label = event_select
-            else:
-                label = "custom_events"
+            # Create label from event_select if not provided
+            if label is None:
+                if isinstance(event_select, str):
+                    label = event_select
+                else:
+                    label = "custom_events"
             
             # Get labels and indices for selected events
             selected_indices = np.where(event_ix)[0]

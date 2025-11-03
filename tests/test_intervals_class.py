@@ -179,6 +179,20 @@ class TestIntervalsWithGetIntervals(unittest.TestCase):
             count += 1
         
         self.assertEqual(count, len(intervals))
+    
+    def test_intervals_custom_label(self):
+        """Test that custom label parameter overrides automatic label"""
+        custom_label = "my_custom_label"
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms", label=custom_label)
+        
+        self.assertEqual(intervals.label, custom_label)
+    
+    def test_intervals_automatic_label_when_none(self):
+        """Test that automatic label is used when label parameter is None"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms", label=None)
+        
+        # Should use the automatic label from event_select
+        self.assertEqual(intervals.label, "F")
 
 
 if __name__ == '__main__':
