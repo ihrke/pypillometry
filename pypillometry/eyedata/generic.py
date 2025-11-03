@@ -861,12 +861,21 @@ class GenericEyeData(ABC):
         
         intervals_list = [(s,e) for s,e in zip(sti,ste)]
         
+        # Get data time range for plotting (in same units as intervals)
+        if units is None:
+            # Units are indices
+            data_time_range = (0, len(self.tx))
+        else:
+            # Convert tx range to specified units
+            data_time_range = (self.tx[0] * fac, self.tx[-1] * fac)
+        
         return Intervals(
             intervals=intervals_list,
             units=units,
             label=label,
             event_labels=selected_labels,
-            event_indices=selected_indices
+            event_indices=selected_indices,
+            data_time_range=data_time_range
         )
 
     @keephistory

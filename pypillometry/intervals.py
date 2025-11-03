@@ -145,7 +145,7 @@ class Intervals:
     ...     print(f"{start}-{end}")
     """
     
-    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None):
+    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None, data_time_range=None):
         """
         Initialize an Intervals object.
         
@@ -161,6 +161,8 @@ class Intervals:
             Labels for each interval
         event_indices : np.ndarray, optional
             Indices for each interval
+        data_time_range : tuple, optional
+            Time range (min, max) of the original dataset
         """
         if isinstance(intervals, np.ndarray):
             self.intervals = [tuple(row) for row in intervals]
@@ -170,6 +172,7 @@ class Intervals:
         self.label = label
         self.event_labels = event_labels
         self.event_indices = event_indices
+        self.data_time_range = data_time_range
     
     def __len__(self):
         """Return number of intervals."""
@@ -217,6 +220,83 @@ class Intervals:
             Dictionary with summary statistics (n, mean, sd, min, max)
         """
         return get_interval_stats(self.intervals)
+    
+    def plot(self, show_labels: bool = True, **kwargs):
+        """
+        Plot intervals as horizontal lines on a timeline.
+        
+        Uses the current matplotlib axes to create a visualization where each 
+        interval is shown as a horizontal black line at a different y-level.
+        
+        Parameters
+        ----------
+        show_labels : bool
+            Whether to display event labels for each interval (default True)
+        **kwargs : dict
+            Additional keyword arguments passed to matplotlib plot()
+            
+        Returns
+        -------
+        None
+            Modifies the current axes in place
+            
+        Examples
+        --------
+        >>> intervals = data.get_intervals("F", interval=(-200, 200), units="ms")
+        >>> plt.figure()
+        >>> intervals.plot()
+        >>> plt.show()
+        """
+        import matplotlib.pyplot as plt
+        
+        if len(self.intervals) == 0:
+            return
+        
+        ax = plt.gca()
+        
+        # Determine x-axis range
+        if self.data_time_range is not None:
+            x_min, x_max = self.data_time_range
+        else:
+            # Fallback: use min/max of intervals
+            all_values = [val for interval in self.intervals for val in interval]
+            x_min, x_max = min(all_values), max(all_values)
+        
+        # Set x-axis limits with some padding
+        padding = (x_max - x_min) * 0.05
+        ax.set_xlim(x_min - padding, x_max + padding)
+        
+        # Plot each interval as a horizontal line at different y-levels
+        for i, (start, end) in enumerate(self.intervals):
+            y_level = i + 1
+            
+            # Plot horizontal black line for the interval
+            ax.plot([start, end], [y_level, y_level], color='black', **kwargs)
+            
+            # Optionally add event label centered on the line
+            if show_labels and self.event_labels is not None and i < len(self.event_labels):
+                # Place label at the middle of the interval
+                label_x = (start + end) / 2
+                ax.text(label_x, y_level, self.event_labels[i], 
+                       rotation=90,
+                       color='grey',
+                       verticalalignment='center',
+                       horizontalalignment='center',
+                       fontsize=8)
+        
+        # Set y-axis limits and labels
+        ax.set_ylim(0, len(self.intervals) + 1)
+        ax.set_ylabel('Interval #')
+        
+        # Set x-axis label based on units
+        if self.units is not None:
+            ax.set_xlabel(f'Time ({self.units})')
+        else:
+            ax.set_xlabel('Time (indices)')
+        
+        # Set title from global label
+        if self.label is not None:
+            ax.set_title(self.label)
     
     def __repr__(self):
         """
