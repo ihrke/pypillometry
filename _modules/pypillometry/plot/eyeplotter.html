@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Overview: module code &#8212; pypillometry  documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
-    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <title>pypillometry.plot.eyeplotter &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/nature.css?v=279e0f84" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
@@ -19,20 +19,21 @@
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
 window.addEventListener("load", () => mermaid.run());
 </script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
+          <a href="../../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
+          <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Overview: module code</a></li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.plot.eyeplotter</a></li> 
       </ul>
     </div>  
 
@@ -41,16 +42,16 @@ window.addEventListener("load", () => mermaid.run());
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="pypillometry/eyedata/eyedata.html">pypillometry.eyedata.eyedata</a></li>
-<li><a href="pypillometry/eyedata/eyedatadict.html">pypillometry.eyedata.eyedatadict</a></li>
-<li><a href="pypillometry/eyedata/gazedata.html">pypillometry.eyedata.gazedata</a></li>
-<li><a href="pypillometry/eyedata/generic.html">pypillometry.eyedata.generic</a></li>
-<li><a href="pypillometry/eyedata/pupildata.html">pypillometry.eyedata.pupildata</a></li>
-<li><a href="pypillometry/logging.html">pypillometry.logging</a></li>
-<li><a href="pypillometry/plot/eyeplotter.html">pypillometry.plot.eyeplotter</a></li>
-<li><a href="pypillometry/signal/baseline.html">pypillometry.signal.baseline</a></li>
-</ul>
+  <h1>Source code for pypillometry.plot.eyeplotter</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">..plot.gazeplotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">GazePlotter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..plot.pupilplotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilPlotter</span>
+
+<div class="viewcode-block" id="EyePlotter">
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyePlotter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EyePlotter</span><span class="p">(</span><span class="n">GazePlotter</span><span class="p">,</span><span class="n">PupilPlotter</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+</pre></div>
 
             <div class="clearer"></div>
           </div>
@@ -58,13 +59,13 @@ window.addEventListener("load", () => mermaid.run());
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../index.html">
-              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
             </a></p>
 <search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
+    <form class="search" action="../../../search.html" method="get">
       <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
@@ -79,13 +80,14 @@ window.addEventListener("load", () => mermaid.run());
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
+          <a href="../../../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
+          <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Overview: module code</a></li> 
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.plot.eyeplotter</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

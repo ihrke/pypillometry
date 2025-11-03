@@ -81,6 +81,10 @@ GazeData
 Plotting
 --------
 
+.. autoclass:: pypillometry.EyePlotter
+    :members:
+
+
 
 Supporting classes
 ------------------

@@ -1104,6 +1104,40 @@ default is “False”</p></li>
 </section>
 <section id="plotting">
 <h2><a class="toc-backref" href="#id6" role="doc-backlink">Plotting</a><a class="headerlink" href="#plotting" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pypillometry.EyePlotter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">EyePlotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/eyeplotter.html#EyePlotter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyePlotter" title="Link to this definition">¶</a></dt>
+<dd><p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_blinks</span></code>([eyes, variables, pdf_file, ...])</p></td>
+<td><p>Plot the detected blinks into separate figures each with nrow x ncol subplots.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_heatmap</span></code>([plot_range, eyes, ...])</p></td>
+<td><p>Plot EyeData as a heatmap.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_intervals</span></code>(intervals[, eyes, variables, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_scanpath</span></code>([plot_range, eyes, ...])</p></td>
+<td><p>Plot EyeData as a scanpath.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_timeseries</span></code>([plot_range, variables, ...])</p></td>
+<td><p>Plot a part of the EyeData.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_timeseries_segments</span></code>([pdf_file, interv, ...])</p></td>
+<td><p>Plot the whole dataset chunked up into segments (usually to a PDF file).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_plot</span></code>([eyes, plot_range, plot_events, ...])</p></td>
+<td><p>Make a plot of the pupil data using <cite>matplotlib</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_plot_segments</span></code>([pdffile, interv, ...])</p></td>
+<td><p>Plot the whole dataset chunked up into segments (usually to a PDF file).</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </section>
 <section id="supporting-classes">
 <h2><a class="toc-backref" href="#id7" role="doc-backlink">Supporting classes</a><a class="headerlink" href="#supporting-classes" title="Link to this heading">¶</a></h2>
