@@ -2,6 +2,9 @@
 Tests for the Intervals class.
 """
 import unittest
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend for testing
+import matplotlib.pyplot as plt
 import sys
 sys.path.insert(0, "..")
 import pypillometry as pp
@@ -193,6 +196,140 @@ class TestIntervalsWithGetIntervals(unittest.TestCase):
         
         # Should use the automatic label from event_select
         self.assertEqual(intervals.label, "F")
+
+
+class TestIntervalsPlotMethod(unittest.TestCase):
+    """Test Intervals.plot() method"""
+    
+    def setUp(self):
+        """Create test data"""
+        self.data = pp.get_example_data("rlmw_002_short")
+        plt.close('all')
+    
+    def tearDown(self):
+        """Clean up after each test"""
+        plt.close('all')
+    
+    def test_plot_runs_without_error(self):
+        """Test that plot() completes without error"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        
+        fig = plt.figure()
+        intervals.plot()
+        
+        # Should have created axes with content
+        ax = plt.gca()
+        self.assertIsNotNone(ax)
+        self.assertGreater(len(ax.get_lines()), 0)
+    
+    def test_plot_with_labels(self):
+        """Test that plot shows labels when requested"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        
+        fig = plt.figure()
+        intervals.plot(show_labels=True)
+        
+        ax = plt.gca()
+        # Should have text labels
+        texts = ax.texts
+        self.assertGreater(len(texts), 0)
+    
+    def test_plot_without_labels(self):
+        """Test that plot hides labels when requested"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        
+        fig = plt.figure()
+        intervals.plot(show_labels=False)
+        
+        ax = plt.gca()
+        # Should not have text labels
+        texts = ax.texts
+        self.assertEqual(len(texts), 0)
+    
+    def test_plot_uses_current_axes(self):
+        """Test that plot uses the current axes"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        
+        # Plot to first axes
+        plt.sca(ax1)
+        intervals.plot()
+        
+        # First axes should have lines, second should be empty
+        self.assertGreater(len(ax1.get_lines()), 0)
+        self.assertEqual(len(ax2.get_lines()), 0)
+    
+    def test_plot_sets_title_from_label(self):
+        """Test that plot uses intervals label as title"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms", label="test_label")
+        
+        fig = plt.figure()
+        intervals.plot()
+        
+        ax = plt.gca()
+        self.assertEqual(ax.get_title(), "test_label")
+    
+    def test_plot_sets_xlabel_from_units(self):
+        """Test that plot sets x-axis label based on units"""
+        # Test with ms
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        fig = plt.figure()
+        intervals.plot()
+        ax = plt.gca()
+        self.assertIn("ms", ax.get_xlabel())
+        plt.close('all')
+        
+        # Test with None (indices)
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
+        fig = plt.figure()
+        intervals.plot()
+        ax = plt.gca()
+        self.assertIn("indices", ax.get_xlabel())
+    
+    def test_plot_handles_empty_intervals(self):
+        """Test that plot handles empty intervals gracefully"""
+        from pypillometry.intervals import Intervals
+        
+        empty_intervals = Intervals([], units="ms", label="empty")
+        
+        fig = plt.figure()
+        # Should not raise an error
+        empty_intervals.plot()
+        
+        ax = plt.gca()
+        # Should have no lines
+        self.assertEqual(len(ax.get_lines()), 0)
+    
+    def test_plot_with_different_units(self):
+        """Test that plot works with different units"""
+        for units in ["ms", "sec", "min", None]:
+            intervals = self.data.get_intervals("F", interval=(-200, 200), units=units)
+            
+            fig = plt.figure()
+            intervals.plot()
+            
+            ax = plt.gca()
+            # Should have created content
+            self.assertGreater(len(ax.get_lines()), 0)
+            
+            plt.close('all')
+    
+    def test_plot_lines_are_black(self):
+        """Test that interval lines are black"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        
+        fig = plt.figure()
+        intervals.plot()
+        
+        ax = plt.gca()
+        lines = ax.get_lines()
+        
+        # Check that lines are black
+        for line in lines:
+            color = line.get_color()
+            # Black is (0, 0, 0) or 'black' or 'k'
+            self.assertIn(color, ['black', 'k', (0.0, 0.0, 0.0, 1.0)])
 
 
 if __name__ == '__main__':
