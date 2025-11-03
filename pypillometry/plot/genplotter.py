@@ -249,7 +249,7 @@ class GenericPlotter:
         pdf_file: str or None
             file name to store the PDF; if None, no PDF is written 
         interv: float
-            duration of each of the segments to be plotted (in minutes)
+            duration of each of the segments to be plotted (in the units specified by `units`)
         figsize: Tuple[int,int]
             dimensions of the figures
         ylim: Tuple[float,float] or None
@@ -259,7 +259,8 @@ class GenericPlotter:
         variables: list
             list of variables to plot; if empty, all available variables are plotted
         units: str
-            units for the time axis; default is "min" (minutes)
+            units for the time axis; default is "min" (minutes). 
+            The `interv` parameter is also interpreted in these units.
         kwargs: 
             additional arguments passed to :func:`plot_timeseries()`
 
@@ -269,14 +270,18 @@ class GenericPlotter:
         figs: list of :class:`matplotlib.Figure` objects
         """
 
-        # start and end in minutes
+        # Calculate start and end times in the specified units
         obj=self.obj
-        smins,emins=obj.tx.min()/1000./60., obj.tx.max()/1000./60.
+        fac=obj._unit_fac(units)
+        stime = obj.tx.min() * fac
+        etime = obj.tx.max() * fac
+        
+        # Create segments
         segments=[]
-        cstart=smins
-        cend=smins
-        while cend<emins:
-            cend=min(emins, cstart+interv)
+        cstart=stime
+        cend=stime
+        while cend<etime:
+            cend=min(etime, cstart+interv)
             segments.append( (cstart,cend) )
             cstart=cend
 
