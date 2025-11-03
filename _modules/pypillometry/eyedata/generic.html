@@ -849,7 +849,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">def</span><span class="w"> </span><span class="nf">get_intervals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                     <span class="n">event_select</span><span class="p">,</span>
                     <span class="n">interval</span><span class="p">:</span> <span class="nb">tuple</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span>
-                    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a list of intervals relative to event-onsets. For example, extract</span>
 <span class="sd">        the interval before and after a stimulus has been presented.</span>
