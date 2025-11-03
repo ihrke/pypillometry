@@ -73,7 +73,12 @@ class GenericPlotter:
         iinterv=0
         for i in range(nfig):
             fig=plt.figure(figsize=figsize)
-            axs = fig.subplots(nrow, ncol).flatten()
+            axs = fig.subplots(nrow, ncol)
+            # Ensure axs is always iterable (flatten if array, wrap if single Axes)
+            if isinstance(axs, np.ndarray):
+                axs = axs.flatten()
+            elif not isinstance(axs, Iterable):
+                axs = [axs]
 
             for ix,(start,end) in enumerate(intervals[(i*nsubplots):(i+1)*nsubplots]):
                 iinterv+=1
