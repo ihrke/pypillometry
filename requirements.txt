@@ -10,3 +10,4 @@ tqdm
 pytest
 pytest-cov
 h5py
+eyelinkio
