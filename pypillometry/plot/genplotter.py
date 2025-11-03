@@ -237,7 +237,9 @@ class GenericPlotter:
         plt.legend()
         plt.xlabel(xlab)
         
-    def plot_timeseries_segments(self, pdf_file: str=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
+    def plot_timeseries_segments(self, pdf_file: str=None, interv: float=1, figsize=(15,5), 
+                                  ylim=None, eyes: list=[], variables: list=[], 
+                                  units: str="min", **kwargs):
         """
         Plot the whole dataset chunked up into segments (usually to a PDF file).
 
@@ -250,8 +252,16 @@ class GenericPlotter:
             duration of each of the segments to be plotted (in minutes)
         figsize: Tuple[int,int]
             dimensions of the figures
+        ylim: Tuple[float,float] or None
+            y-axis limits for the plots
+        eyes: list
+            list of eyes to plot; if empty, all available eyes are plotted
+        variables: list
+            list of variables to plot; if empty, all available variables are plotted
+        units: str
+            units for the time axis; default is "min" (minutes)
         kwargs: 
-            arguments passed to :func:`plot_timeseries()`
+            additional arguments passed to :func:`plot_timeseries()`
 
         Returns
         -------
@@ -275,7 +285,8 @@ class GenericPlotter:
         for start,end in segments:
             # Create a new figure for each segment
             fig = plt.figure(figsize=figsize)
-            self.plot_timeseries( plot_range=(start,end), units="min", **kwargs)
+            self.plot_timeseries(plot_range=(start,end), units=units, 
+                               eyes=eyes, variables=variables, **kwargs)
             if ylim is not None:
                 plt.ylim(*ylim)
             figs.append(fig)

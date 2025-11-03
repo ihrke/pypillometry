@@ -228,6 +228,35 @@ class TestSegmentPlotParameters(unittest.TestCase):
             figsize=(20, 10)
         )
         self.assertIsNotNone(figs)
+    
+    def test_segments_with_eyes(self):
+        """Test plot_timeseries_segments with specific eyes"""
+        figs = self.data.plot.plot_timeseries_segments(
+            interv=1.0,
+            eyes=["left"]
+        )
+        self.assertIsNotNone(figs)
+    
+    def test_segments_with_variables(self):
+        """Test plot_timeseries_segments with specific variables"""
+        # Get available variables
+        available_vars = list(set([k.split('_')[1] for k in self.data.data.keys() if '_' in k]))
+        if len(available_vars) > 0:
+            figs = self.data.plot.plot_timeseries_segments(
+                interv=1.0,
+                variables=[available_vars[0]]
+            )
+            self.assertIsNotNone(figs)
+    
+    def test_segments_with_units(self):
+        """Test plot_timeseries_segments with different units"""
+        for units in ["sec", "ms", "min"]:
+            figs = self.data.plot.plot_timeseries_segments(
+                interv=1.0,
+                units=units
+            )
+            self.assertIsNotNone(figs)
+            plt.close('all')
 
 
 if __name__ == '__main__':
