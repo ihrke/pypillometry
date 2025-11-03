@@ -631,9 +631,7 @@ class GenericEyeData(ABC):
         for k,v in pars.items():
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
         if self.info:
-            s+=" Info:\n"
-            for key, value in self.info.items():
-                s+="  " + f"{key}: {value}" + "\n"
+            s+=f" Info: {len(self.info)} keys: {', '.join(list(self.info.keys())[:5])}" + ("..." if len(self.info) > 5 else "") + "\n"
         s+=" History:\n *\n"
         try:
             for i,ev in enumerate(self.history):

@@ -117,11 +117,12 @@ class GenericPlotter:
             eyes: list=[],
             plot_onsets: str="line",
             units: Union[str, None]=None,
-            figsize: tuple=(10,5),
             plot_masked: bool=False
             ) -> None:
         """
         Plot a part of the EyeData. Each data type is plotted in a separate subplot.
+        
+        Uses the current figure/axes. If no figure exists, creates one automatically.
 
         Parameters:
         -----------
@@ -139,8 +140,6 @@ class GenericPlotter:
             "label" (text label), "both" (both lines and labels), or "none" (no markers).
         units: str
             The units to plot. Default is "sec". If None, use the units in the time vector.
-        figsize: tuple
-            The figure size (per subplot). Default is (10,5).
         plot_masked: bool
             Whether to highlight masked regions with a light red background. Default is False.
         """
@@ -194,12 +193,24 @@ class GenericPlotter:
         evon=evon[ixx]
 
         nplots = len(variables)
-        fig, axs = plt.subplots(nplots,1)
-        # for the case when nplots=1, make axs iterable
-        if not isinstance(axs, Iterable):
-            axs=[axs]
-        fig.set_figheight(figsize[1]*nplots)
-        fig.set_figwidth(figsize[0])
+        # Use current figure or create new one if none exists
+        fig = plt.gcf()
+        # Check if current figure is empty/new
+        if len(fig.axes) == 0:
+            # Create subplots in the current figure
+            axs = fig.subplots(nplots, 1)
+            # for the case when nplots=1, make axs iterable
+            if not isinstance(axs, Iterable):
+                axs=[axs]
+        else:
+            # Use existing axes
+            axs = fig.axes
+            if len(axs) != nplots:
+                logger.warning(f"Current figure has {len(axs)} axes but {nplots} variables to plot. Creating new subplots.")
+                fig.clear()
+                axs = fig.subplots(nplots, 1)
+                if not isinstance(axs, Iterable):
+                    axs=[axs]
         for var,ax in zip(variables, axs):
             for eye in eyes:
                 vname = "_".join([eye,var])
@@ -257,10 +268,11 @@ class GenericPlotter:
         figs=[]
 
         for start,end in segments:
-            self.plot_timeseries( plot_range=(start,end), units="min", figsize=figsize, **kwargs)
+            # Create a new figure for each segment
+            fig = plt.figure(figsize=figsize)
+            self.plot_timeseries( plot_range=(start,end), units="min", **kwargs)
             if ylim is not None:
                 plt.ylim(*ylim)
-            fig = plt.gcf()
             figs.append(fig)
             
             # Close figure immediately after creation if saving to PDF to prevent display and memory issues
