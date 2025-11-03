@@ -326,9 +326,6 @@ class PupilData(GenericEyeData):
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
 
-        if not isinstance(store_as, str):
-            raise ValueError("store_as must be a string")
-
         # parameters in sampling units (from ms)
         winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
         margin_ix=tuple(int(np.ceil(m/1000.*self.fs)) for m in margin)
@@ -351,10 +348,17 @@ class PupilData(GenericEyeData):
                 t2,t3=onset,offset
                 t1=max(0,t2-t3+t2)
                 t4=min(t3-t2+t3, len(self)-1)
+                
+                # Ensure all 4 time points are distinct and in order
                 if t1==t2:
                     t2+=1
                 if t3==t4:
                     t3-=1
+                
+                # Check if blink is too short to interpolate (need at least 4 distinct points)
+                if not (t1 < t2 < t3 < t4):
+                    logger.warning(f"Skipping blink {ix} for {eye}: blink too short to interpolate (t1={t1}, t2={t2}, t3={t3}, t4={t4})")
+                    continue
                 
                 txpts=[obj.tx[pt] for pt in [t1,t2,t3,t4]]
                 sypts=[obj.data[eye,"pupil"][pt] for pt in [t1,t2,t3,t4]]
