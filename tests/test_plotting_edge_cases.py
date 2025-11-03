@@ -24,20 +24,16 @@ class TestPlottingEdgeCases(unittest.TestCase):
         """Clean up after each test"""
         plt.close('all')
     
-    def test_plot_intervals_empty_list(self):
-        """Test plot_intervals with empty intervals list"""
-        figs = self.data.plot.plot_intervals([])
-        self.assertEqual(len(figs), 0)
-    
     def test_plot_intervals_single_interval(self):
-        """Test plot_intervals with single interval"""
-        intervals = [(0, 1000)]
+        """Test plot_intervals with Intervals object containing one interval"""
+        from pypillometry.intervals import Intervals
+        intervals = Intervals([(0, 1000)], units="ms", label="single")
         figs = self.data.plot.plot_intervals(intervals)
         self.assertIsNotNone(figs)
     
     def test_plot_intervals_many_intervals(self):
-        """Test plot_intervals with many intervals"""
-        intervals = [(i*1000, (i+1)*1000) for i in range(20)]
+        """Test plot_intervals with Intervals object containing many intervals"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, nrow=5, ncol=3)
         self.assertIsNotNone(figs)
     
@@ -86,11 +82,11 @@ class TestPlottingErrorHandling(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.data.plot.plot_timeseries(plot_onsets="invalid_option")
     
-    def test_plot_intervals_invalid_array_shape(self):
-        """Test that invalid array shape raises ValueError"""
-        # Array with wrong number of columns
-        intervals = np.array([[0, 1000, 2000]])  # 3 columns instead of 2
-        with self.assertRaises(ValueError):
+    def test_plot_intervals_invalid_type(self):
+        """Test that invalid input type raises TypeError"""
+        # Pass a list instead of Intervals object
+        intervals = [(0, 1000), (2000, 3000)]
+        with self.assertRaises(TypeError):
             self.data.plot.plot_intervals(intervals)
 
 
@@ -124,7 +120,8 @@ class TestPlottingMinimalData(unittest.TestCase):
     
     def test_plot_intervals_minimal_data(self):
         """Test plot_intervals with minimal data"""
-        intervals = [(0, 2), (2, 4)]
+        from pypillometry.intervals import Intervals
+        intervals = Intervals([(0, 2), (2, 4)], units=None, label="minimal")
         figs = self.data.plot.plot_intervals(intervals)
         self.assertIsNotNone(figs)
 

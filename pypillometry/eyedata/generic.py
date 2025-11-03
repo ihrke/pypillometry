@@ -740,8 +740,8 @@ class GenericEyeData(ABC):
                     interval: tuple=(-200,200),
                     units: str|None=None, **kwargs):
         """
-        Return a list of intervals relative to event-onsets. For example, extract
-        the interval before and after a stimulus has been presented.
+        Return an Intervals object containing intervals relative to event-onsets.
+        For example, extract the interval before and after a stimulus has been presented.
         It is possible to select based on the event label, e.g. only select
         events matching "stimulus" or "response". It is also 
         possible to select the intervals situated between two different events,
@@ -762,8 +762,8 @@ class GenericEyeData(ABC):
             numbers are before the event, positive numbers after. Units are defined
             by the `units` parameter
 
-        units : str
-            units of the interval (one of "ms", "sec", "min"); units=None means
+        units : str or None
+            units of the interval (one of "ms", "sec", "min", "h"); units=None means
             that the interval in sampling units (i.e., indices into the time-array)
 
         kwargs : dict
@@ -772,9 +772,12 @@ class GenericEyeData(ABC):
         Returns
         --------
 
-        result: 
-            interval on- and offsets for each match, units determined by `units`
+        result: Intervals
+            Intervals object containing interval on- and offsets for each match,
+            with associated metadata (event labels, indices, units)
         """
+        from ..intervals import Intervals
+        
         fac=self._unit_fac(units)
 
         if not isinstance(interval, Iterable):
@@ -808,6 +811,18 @@ class GenericEyeData(ABC):
             else:
                 sti=(self.event_onsets[event_ix[0]]*fac)+interval[0]
                 ste=(self.event_onsets[event_ix[1]]*fac)+interval[1]
+            
+            # Create label for between-events intervals
+            if isinstance(event_select[0], str) and isinstance(event_select[1], str):
+                label = f"{event_select[0]}_to_{event_select[1]}"
+            else:
+                label = "between_events"
+            
+            # Get labels and indices for selected events
+            selected_labels = [f"{self.event_labels[i]}_to_{self.event_labels[j]}" 
+                             for i, j in zip(np.where(event_ix[0])[0], np.where(event_ix[1])[0])]
+            selected_indices = np.where(event_ix[0])[0]
+            
         else:
             # one event with padding interval
             if callable(event_select):
@@ -827,10 +842,26 @@ class GenericEyeData(ABC):
             else:
                 sti=(self.event_onsets[event_ix]*fac)+interval[0]
                 ste=(self.event_onsets[event_ix]*fac)+interval[1]
+            
+            # Create label from event_select
+            if isinstance(event_select, str):
+                label = event_select
+            else:
+                label = "custom_events"
+            
+            # Get labels and indices for selected events
+            selected_indices = np.where(event_ix)[0]
+            selected_labels = [self.event_labels[i] for i in selected_indices]
         
-        intervals = [(s,e) for s,e in zip(sti,ste)]
-
-        return intervals
+        intervals_list = [(s,e) for s,e in zip(sti,ste)]
+        
+        return Intervals(
+            intervals=intervals_list,
+            units=units,
+            label=label,
+            event_labels=selected_labels,
+            event_indices=selected_indices
+        )
 
     @keephistory
     def scale(self, variables=[], mean: Union[float,dict,None]=None, 
@@ -1087,7 +1118,8 @@ class GenericEyeData(ABC):
         return obj    
             
     def stat_per_event(self, 
-                       interval: Tuple[float,float], event_select=None,                        
+                       intervals=None,
+                       interval: Tuple[float,float]=None, event_select=None,                        
                        eyes: str|list=[], variables: str|list=[],                       
                        statfct: Callable=np.mean, units: str="ms",
                        **kwargs):
@@ -1098,18 +1130,23 @@ class GenericEyeData(ABC):
 
         Parameters
         -----------
-
+        intervals: Intervals, optional
+            Intervals object to use. If provided, interval and event_select are ignored.
+        interval : tuple (min,max), optional
+            time-window in ms relative to event-onset (0 is event-onset).
+            Required if intervals is not provided.
+        event_select: str or function, optional
+            variable describing which events to select and align to
+            see :class:`GenericEyeData.get_intervals()` for details.
+            Required if intervals is not provided.
         eyes: str or list
             list of eyes to consider; if empty, consider all
         variables: str or list
             list of variables to consider; if empty, consider all
-        event_select: str or function
-            variable describing which events to select and align to
-            see :class:`GenericEyeData.get_intervals()` for details
-        interval : tuple (min,max)
-            time-window in ms relative to event-onset (0 is event-onset)
         statfct : function
             function mapping np.array to a single number
+        units: str
+            units for interval parameter (if used)
         kwargs : dict
             passed onto the event_select function
     
@@ -1119,13 +1156,26 @@ class GenericEyeData(ABC):
         result: np.array or dict
             number of event-onsets long result array; in case of multiple eyes/variables, a dict is returned
         """
+        from ..intervals import Intervals, stat_event_interval
+        
         eyes,variables=self._get_eye_var(eyes,variables)
-        units = self._unit_fac(units)
-        intervs=self.get_intervals(event_select, interval, units=units, **kwargs)
+        
+        # Accept either Intervals object or old-style parameters
+        if intervals is not None:
+            if not isinstance(intervals, Intervals):
+                raise TypeError("intervals must be an Intervals object")
+            intervs = intervals
+        else:
+            if event_select is None or interval is None:
+                raise ValueError("Must provide either 'intervals' or both 'event_select' and 'interval'")
+            intervs = self.get_intervals(event_select, interval, units=units, **kwargs)
 
+        # Convert Intervals to list for stat_event_interval
+        intervals_list = intervs.intervals
+        
         stat={}
         for eye,var in itertools.product(eyes, variables):
-            stat[eye+"_"+var]=stat_event_interval(self.tx, self.data[eye,var], intervs, statfct)
+            stat[eye+"_"+var]=stat_event_interval(self.tx, self.data[eye,var], intervals_list, statfct)
 
         return stat
 

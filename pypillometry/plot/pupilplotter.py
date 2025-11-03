@@ -260,7 +260,11 @@ class PupilPlotter(GenericPlotter):
         list of plt.Figure objects each with nrow*ncol subplots
         in Jupyter Notebook, those are displayed inline one after the other
         """
+        from ..intervals import Intervals
+        
         blinks=self.obj.get_blinks_merged()
-        intervals=[(max(0,int(s-pre_blink)),min(self.obj.tx.size,int(e+post_blink))) for s,e in blinks]
+        intervals_list=[(max(0,int(s-pre_blink)),min(self.obj.tx.size,int(e+post_blink))) for s,e in blinks]
+        # Create Intervals object with index units (units=None)
+        intervals = Intervals(intervals_list, units=None, label="blinks")
         return self.plot_intervals(intervals, eyes, variables, pdf_file, nrow, ncol, figsize, units, plot_index)
 

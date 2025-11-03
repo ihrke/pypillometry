@@ -43,14 +43,8 @@ class TestPlottingSmokeGeneric(unittest.TestCase):
         self.assertIsNotNone(plt.gcf())
     
     def test_plot_intervals_runs(self):
-        """Test that plot_intervals completes without error"""
-        intervals = [(0, 1000), (2000, 3000)]
-        figs = self.data.plot.plot_intervals(intervals)
-        self.assertIsNotNone(figs)
-    
-    def test_plot_intervals_numpy_array(self):
-        """Test plot_intervals with numpy array input"""
-        intervals = np.array([[0, 1000], [2000, 3000]])
+        """Test that plot_intervals completes without error using Intervals object"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals)
         self.assertIsNotNone(figs)
     

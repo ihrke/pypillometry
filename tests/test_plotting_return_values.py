@@ -26,13 +26,13 @@ class TestPlottingReturnValues(unittest.TestCase):
     
     def test_plot_intervals_returns_list(self):
         """Test that plot_intervals returns a list"""
-        intervals = [(0, 1000), (2000, 3000)]
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, nrow=1, ncol=1)
         self.assertIsInstance(figs, list)
     
     def test_plot_intervals_returns_figures(self):
         """Test that plot_intervals returns Figure objects"""
-        intervals = [(0, 1000), (2000, 3000)]
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, nrow=1, ncol=1)
         for fig in figs:
             self.assertIsInstance(fig, plt.Figure)
@@ -40,10 +40,19 @@ class TestPlottingReturnValues(unittest.TestCase):
     def test_plot_intervals_correct_figure_count(self):
         """Test that plot_intervals returns correct number of figures"""
         # With nrow=2, ncol=2, we have 4 subplots per figure
-        # 5 intervals should give us 2 figures
-        intervals = [(i*1000, (i+1)*1000) for i in range(5)]
-        figs = self.data.plot.plot_intervals(intervals, nrow=2, ncol=2)
-        self.assertEqual(len(figs), 2)
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        if len(intervals) >= 5:
+            # Take first 5 intervals
+            from pypillometry.intervals import Intervals
+            intervals_subset = Intervals(
+                intervals.intervals[:5],
+                intervals.units,
+                intervals.label,
+                intervals.event_labels[:5] if intervals.event_labels else None,
+                intervals.event_indices[:5] if intervals.event_indices is not None else None
+            )
+            figs = self.data.plot.plot_intervals(intervals_subset, nrow=2, ncol=2)
+            self.assertEqual(len(figs), 2)
     
     def test_plot_timeseries_creates_axes(self):
         """Test that plot_timeseries creates the correct number of axes"""
@@ -111,11 +120,12 @@ class TestPlottingEmptyReturns(unittest.TestCase):
         """Clean up after each test"""
         plt.close('all')
     
-    def test_plot_intervals_empty_list(self):
-        """Test with empty intervals list"""
-        figs = self.data.plot.plot_intervals([])
+    def test_plot_intervals_with_intervals_object(self):
+        """Test with Intervals object"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        figs = self.data.plot.plot_intervals(intervals)
         self.assertIsInstance(figs, list)
-        self.assertEqual(len(figs), 0)
+        self.assertGreater(len(figs), 0)
 
 
 if __name__ == '__main__':

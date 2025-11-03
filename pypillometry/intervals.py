@@ -114,5 +114,138 @@ def stat_event_interval(tx,sy,intervals,statfct=np.mean):
             end_ix+=1
         res[i]=statfct(sy[start_ix:end_ix])
     return res
+
+
+class Intervals:
+    """
+    Container for intervals with metadata.
     
+    This class wraps a list of (start, end) intervals and provides additional
+    metadata such as units, labels, and associated event information.
+    
+    Attributes
+    ----------
+    intervals : list of tuples
+        List of (start, end) tuples representing intervals
+    units : str or None
+        Units of the intervals ("ms", "sec", "min", "h", or None for indices)
+    label : str or None
+        Optional descriptive label for the interval collection
+    event_labels : list or None
+        Event labels corresponding to each interval
+    event_indices : np.ndarray or None
+        Event indices corresponding to each interval
         
+    Examples
+    --------
+    >>> intervals = Intervals([(0, 100), (200, 300)], units="ms", label="stimulus")
+    >>> len(intervals)
+    2
+    >>> for start, end in intervals:
+    ...     print(f"{start}-{end}")
+    """
+    
+    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None):
+        """
+        Initialize an Intervals object.
+        
+        Parameters
+        ----------
+        intervals : list of tuples or np.ndarray
+            Intervals as list of (start, end) tuples or 2D array
+        units : str or None
+            Units of the intervals
+        label : str, optional
+            Descriptive label for the intervals
+        event_labels : list, optional
+            Labels for each interval
+        event_indices : np.ndarray, optional
+            Indices for each interval
+        """
+        if isinstance(intervals, np.ndarray):
+            self.intervals = [tuple(row) for row in intervals]
+        else:
+            self.intervals = [tuple(i) for i in intervals]
+        self.units = units
+        self.label = label
+        self.event_labels = event_labels
+        self.event_indices = event_indices
+    
+    def __len__(self):
+        """Return number of intervals."""
+        return len(self.intervals)
+    
+    def __iter__(self):
+        """Iterate over intervals."""
+        return iter(self.intervals)
+    
+    def __getitem__(self, idx):
+        """Get interval(s) by index."""
+        return self.intervals[idx]
+    
+    def to_array(self):
+        """
+        Convert intervals to numpy array.
+        
+        Returns
+        -------
+        np.ndarray
+            Array with shape (n, 2) containing intervals
+        """
+        return np.array(self.intervals)
+    
+    def merge(self):
+        """
+        Merge overlapping intervals.
+        
+        Returns
+        -------
+        Intervals
+            New Intervals object with merged intervals
+        """
+        merged = merge_intervals(self.intervals.copy())
+        return Intervals(merged, self.units, self.label, 
+                        self.event_labels, self.event_indices)
+    
+    def stats(self):
+        """
+        Get statistics about interval durations.
+        
+        Returns
+        -------
+        IntervalStats
+            Dictionary with summary statistics (n, mean, sd, min, max)
+        """
+        return get_interval_stats(self.intervals)
+    
+    def __repr__(self):
+        """
+        String representation using IntervalStats for nice formatting.
+        
+        Returns
+        -------
+        str
+            Formatted string with label, statistics, and units
+        """
+        parts = []
+        
+        # Add label if present
+        if self.label is not None:
+            parts.append(f"Intervals '{self.label}'")
+        else:
+            parts.append("Intervals")
+        
+        # Add statistics using IntervalStats
+        if len(self.intervals) > 0:
+            stats = self.stats()
+            parts.append(str(stats))
+        else:
+            parts.append("0 intervals")
+        
+        # Add units info
+        if self.units is not None:
+            parts.append(f"units={self.units}")
+        else:
+            parts.append("units=None (indices)")
+        
+        return " | ".join(parts)

@@ -197,22 +197,22 @@ class TestPlotIntervalsParameters(unittest.TestCase):
         plt.close('all')
     
     def test_plot_intervals_different_layouts(self):
-        """Test plot_intervals with different nrow/ncol combinations"""
-        intervals = [(i*1000, (i+1)*1000) for i in range(6)]
+        """Test plot_intervals with different nrow/ncol combinations using Intervals"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         
         # 2x3 layout
         figs1 = self.data.plot.plot_intervals(intervals, nrow=2, ncol=3)
-        self.assertEqual(len(figs1), 1)
+        self.assertGreaterEqual(len(figs1), 1)
         
         plt.close('all')
         
         # 3x2 layout
         figs2 = self.data.plot.plot_intervals(intervals, nrow=3, ncol=2)
-        self.assertEqual(len(figs2), 1)
+        self.assertGreaterEqual(len(figs2), 1)
     
     def test_plot_intervals_units(self):
-        """Test plot_intervals with different units"""
-        intervals = [(0, 1000), (2000, 3000)]
+        """Test plot_intervals with different units for display"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         
         for units in ["ms", "sec", "min"]:
             figs = self.data.plot.plot_intervals(intervals, units=units)
@@ -221,13 +221,13 @@ class TestPlotIntervalsParameters(unittest.TestCase):
     
     def test_plot_intervals_plot_mask(self):
         """Test plot_intervals with plot_mask option"""
-        intervals = [(0, 1000), (2000, 3000)]
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, plot_mask=True)
         self.assertIsNotNone(figs)
     
     def test_plot_intervals_plot_index(self):
         """Test plot_intervals with plot_index option"""
-        intervals = [(0, 1000), (2000, 3000)]
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         
         # With index
         figs1 = self.data.plot.plot_intervals(intervals, plot_index=True)

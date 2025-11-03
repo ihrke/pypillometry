@@ -497,19 +497,17 @@ class PupilData(GenericEyeData):
         return obj
     
 
-    def get_erpd(self, erpd_name: str, event_select, 
+    def get_erpd(self, intervals, 
                  eyes: list=[], variable: str="pupil",
-                 baseline_win: Optional[Tuple[float,float]]=None, 
-                 interval: Tuple[float,float]=(-500, 2000), 
-                 **kwargs):
+                 baseline_win: Optional[Tuple[float,float]]=None):
         """
-        Extract event-related pupil dilation (ERPD).
+        Extract event-related pupil dilation (ERPD) from Intervals object.
         No attempt is being made to exclude overlaps of the time-windows.
 
         Parameters
         ----------
-        erpd_name: str
-            identifier for the result (e.g., "cue-locked" or "conflict-trials")
+        intervals: Intervals
+            Intervals object containing the time windows to extract (from get_intervals())
         eyes: list or str
             str or list of eyes to process; if empty, all available eyes are processed
         variable: str
@@ -517,32 +515,53 @@ class PupilData(GenericEyeData):
             interpolated pupil data stored in a different variables, e.g., "pupilinterp"
         baseline_win: tuple (float,float) or None
             if None, no baseline-correction is applied
-            if tuple, the mean value in the window in milliseconds (relative to `time_win`) is 
+            if tuple, the mean value in the window in milliseconds (relative to interval) is 
                 subtracted from the single-trial ERPDs (baseline-correction)
-        event_select: str or function
-            variable describing which events to select and align to
-            - if str: use all events whose label contains the string
-            - if function: apply function to all labels, use those where the function returns True
-            see :class:`GenericEyeData.get_intervals()` for details
-        interval: Tuple[float, float]
-            time before and after event to include (in ms)
-        kwargs:
-            additional arguments passed to the `event_select` function
         """
+        from ..intervals import Intervals
+        
+        if not isinstance(intervals, Intervals):
+            raise TypeError("intervals must be an Intervals object. Use get_intervals() to create one.")
+        
         eyes,_=self._get_eye_var(eyes,[])
         if not isinstance(variable, str):
             logger.warning("variable must be a string; using default 'pupil'")
             variable="pupil"
 
-        # convert interval into sampling units
-        interval_ix=tuple(( int(np.ceil(tw/1000.*self.fs)) for tw in interval ))
-        duration_ix=interval_ix[1]-interval_ix[0]
-        txw=np.linspace(interval[0], interval[1], num=duration_ix)
-
-        # units=None means, we get indices into self.tx back from self.get_intervals()
-        # use inter in sampling units with units=None to find closest points in tx
-        intervals = self.get_intervals(event_select, interval_ix, units=None, **kwargs)
-        nintv=len(intervals)
+        # Convert Intervals to indices for data extraction
+        if intervals.units is None:
+            # Already in index units
+            intervals_idx = intervals.intervals
+            # Need to determine the time window from the first interval
+            first_start, first_end = intervals_idx[0]
+            duration_ix = first_end - first_start
+            # Estimate time window in ms (assuming uniform spacing)
+            interval_ms = (first_start / self.fs * 1000, first_end / self.fs * 1000)
+        else:
+            # Convert from intervals' units to indices
+            fac_to_ms = 1.0 / self._unit_fac(intervals.units)
+            intervals_idx = []
+            
+            # Get the interval window in ms from the first interval
+            first_start, first_end = intervals.intervals[0]
+            start_ms = first_start * fac_to_ms
+            end_ms = first_end * fac_to_ms
+            interval_ms = (start_ms, end_ms)
+            
+            for start, end in intervals.intervals:
+                # Convert to ms
+                start_ms = start * fac_to_ms
+                end_ms = end * fac_to_ms
+                # Find corresponding indices
+                start_ix = np.argmin(np.abs(self.tx - start_ms))
+                end_ix = np.argmin(np.abs(self.tx - end_ms))
+                intervals_idx.append((start_ix, end_ix))
+        
+        # Calculate duration and time window
+        duration_ix = intervals_idx[0][1] - intervals_idx[0][0]
+        txw = np.linspace(interval_ms[0], interval_ms[1], num=duration_ix)
+        
+        nintv=len(intervals_idx)
 
 
         data = EyeDataDict()
@@ -552,7 +571,7 @@ class PupilData(GenericEyeData):
             erpd=np.zeros((duration_ix,nintv))
             mask=np.ones((duration_ix,nintv))
 
-            for i,(on,off) in enumerate(intervals):
+            for i,(on,off) in enumerate(intervals_idx):
                 onl,offl=0,duration_ix # "local" window indices
             
                 if on<0: ## pad with zeros in case timewindow starts before data
@@ -568,12 +587,15 @@ class PupilData(GenericEyeData):
             data[eye,"erpd"]=erpd
             data.mask[eye+"_erpd"]=mask
         
+        # Use intervals.label as ERPD name if available
+        erpd_name = intervals.label if intervals.label is not None else "erpd"
         rerpd = ERPD(erpd_name, txw, data)
+        
         if baseline_win is not None:
             blwin=np.array(baseline_win)
-            if np.any(blwin<interval[0]) or np.any(blwin>=interval[1]):
+            if np.any(blwin<interval_ms[0]) or np.any(blwin>=interval_ms[1]):
                 logger.warning("Baseline window misspecified %s vs. %s; "
-                               "NOT doing baseline correction"%(baseline_win, interval))
+                               "NOT doing baseline correction"%(baseline_win, interval_ms))
             else:
                 rerpd.baseline_correct(baseline_win=baseline_win) 
 

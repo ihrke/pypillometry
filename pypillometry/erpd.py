@@ -201,9 +201,8 @@ class ERPD:
         ax1.legend()
         
 
-def group_erpd(datasets: List, erpd_name: str, event_select, 
-               baseline_win: Optional[Tuple[float,float]]=None, 
-               time_win: Tuple[float,float]=(-500, 2000),
+def group_erpd(datasets: List, intervals, 
+               baseline_win: Optional[Tuple[float,float]]=None,
                subj_meanfct=np.mean):
     """
     Calculate group-level ERPDs by applying `subj_meanfct` to each subj-level ERPD.
@@ -214,21 +213,14 @@ def group_erpd(datasets: List, erpd_name: str, event_select,
     datasets: list of PupilData objects
         one PupilData object for each subject that should go into the group-level ERPD.
         
-    erpd_name: str
-        identifier for the result (e.g., "cue-locked" or "conflict-trials")
+    intervals: Intervals
+        Intervals object containing the time windows to extract (from get_intervals()).
+        The label from the Intervals object will be used as the ERPD name.
 
     baseline_win: tuple (float,float) or None
         if None, no baseline-correction is applied
-        if tuple, the mean value in the window in milliseconds (relative to `time_win`) is 
+        if tuple, the mean value in the window in milliseconds (relative to intervals) is 
             subtracted from the single-trial ERPDs (baseline-correction)
-
-    event_select: str or function
-        variable describing which events to select and align to
-        - if str: use all events whose label contains the string
-        - if function: apply function to all labels, use those where the function returns True
-
-    time_win: Tuple[float, float]
-        time before and after event to include (in ms)
         
     subj_meanfct: fct
         function to summarize each individual ERPD
@@ -237,10 +229,18 @@ def group_erpd(datasets: List, erpd_name: str, event_select,
     -------
 
     an :py:class:`ERPD` object for the group
-    """        
-    erpds=[d.get_erpd(erpd_name, event_select, baseline_win, time_win) for d in datasets]
+    """
+    from .intervals import Intervals
+    
+    if not isinstance(intervals, Intervals):
+        raise TypeError("intervals must be an Intervals object. Use get_intervals() to create one.")
+    
+    erpds=[d.get_erpd(intervals, baseline_win=baseline_win) for d in datasets]
     merpd=np.array([subj_meanfct(e.erpd, axis=0) for e in erpds])
     mmissing=np.array([subj_meanfct(e.missing, axis=0) for e in erpds])
     tx=erpds[0].tx
+    
+    # Use intervals.label as ERPD name if available
+    erpd_name = intervals.label if intervals.label is not None else "group_erpd"
     erpd=ERPD(erpd_name, tx, merpd, mmissing, None)    
     return erpd

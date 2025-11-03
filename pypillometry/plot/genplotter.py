@@ -2,6 +2,7 @@ import itertools
 from typing import Iterable, Optional, Tuple, Union
 from ..eyedata import GenericEyeData
 from ..convenience import mask_to_intervals
+from ..intervals import Intervals
 import numpy as np
 from loguru import logger
 from pathlib import Path
@@ -19,7 +20,7 @@ class GenericPlotter:
     """
     obj: GenericEyeData # link to the data object
 
-    def plot_intervals(self, intervals: list|np.ndarray,
+    def plot_intervals(self, intervals: Intervals,
                        eyes: str|list=[], variables: str|list=[],
                        pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
                        figsize: Tuple[int,int]=(10,10), 
@@ -34,12 +35,12 @@ class GenericPlotter:
         
         Parameters
         ----------
+        intervals: Intervals
+            Intervals object containing the intervals to plot (from get_intervals())
         eyes: str or list
             eyes to plot
         variables: str or list
             variables to plot
-        intervals: list of tuples
-            intervals to plot
         pdf_file: str or None
             if the name of a file is given, the figures are saved into a 
             multi-page PDF file
@@ -48,25 +49,39 @@ class GenericPlotter:
         nrow: int
             number of rows for the subplots for the intervals
         units: str
-            units in which the signal is plotted
+            units in which the signal is plotted (for display only)
         plot_index: bool
             plot a number with the blinks' index (e.g., for identifying abnormal blinks)
         plot_mask: bool
             plot the "mask" array of the underlying data object
         """
+        if not isinstance(intervals, Intervals):
+            raise TypeError("intervals must be an Intervals object. Use get_intervals() to create one.")
+        
         obj=self.obj # PupilData object
-        fac=obj._unit_fac(units)
+        fac=obj._unit_fac(units)  # For display
         nsubplots=nrow*ncol # number of subplots per figure
 
         eyes,variables=obj._get_eye_var(eyes, variables)
-        if isinstance(intervals, np.ndarray):
-            if intervals.ndim!=2 or intervals.shape[1]!=2:
-                raise ValueError("intervals must be a list of tuples or a 2D array with 2 columns")
-            intervals=intervals.tolist()
-        if isinstance(intervals, Iterable):
-            intervals=[tuple(i) for i in intervals]
+        
+        # Convert Intervals to indices for data slicing
+        if intervals.units is None:
+            # Already in index units
+            intervals_idx = intervals.intervals
+        else:
+            # Convert from intervals' units to indices
+            fac_to_ms = 1.0 / obj._unit_fac(intervals.units)
+            intervals_idx = []
+            for start, end in intervals.intervals:
+                # Convert to ms
+                start_ms = start * fac_to_ms
+                end_ms = end * fac_to_ms
+                # Find corresponding indices
+                start_ix = np.argmin(np.abs(obj.tx - start_ms))
+                end_ix = np.argmin(np.abs(obj.tx - end_ms))
+                intervals_idx.append((start_ix, end_ix))
             
-        nfig=int(np.ceil(len(intervals)/nsubplots))
+        nfig=int(np.ceil(len(intervals_idx)/nsubplots))
 
         figs=[]
         
@@ -80,7 +95,7 @@ class GenericPlotter:
             elif not isinstance(axs, Iterable):
                 axs = [axs]
 
-            for ix,(start,end) in enumerate(intervals[(i*nsubplots):(i+1)*nsubplots]):
+            for ix,(start,end) in enumerate(intervals_idx[(i*nsubplots):(i+1)*nsubplots]):
                 iinterv+=1
                 slic=slice(start,end)
                 ax=axs[ix]
