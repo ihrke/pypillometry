@@ -200,6 +200,61 @@ class Intervals:
         """
         return np.array(self.intervals)
     
+    def __array__(self) -> np.ndarray:
+        """
+        Convert intervals to numpy array.
+        
+        Returns
+        -------
+        np.ndarray
+            Array with shape (n, 2) containing intervals in current units
+            
+        Examples
+        --------
+        >>> intervals = data.get_intervals("stim", units="ms")
+        >>> arr = np.array(intervals)
+        """
+        return np.array(self.intervals)
+    
+    def as_index(self, eyedata_obj) -> np.ndarray:
+        """
+        Convert intervals to integer indices for array indexing.
+        
+        Parameters
+        ----------
+        eyedata_obj : GenericEyeData
+            EyeData object with time array for conversion
+            
+        Returns
+        -------
+        np.ndarray
+            Array with shape (n, 2) and dtype=int containing interval indices
+            
+        Examples
+        --------
+        >>> intervals = data.get_intervals("stim", interval=(-200, 200), units="ms")
+        >>> indices = intervals.as_index(data)
+        >>> for start, end in indices:
+        ...     data.tx[start:end]
+        """
+        if self.units is None:
+            return np.array(self.intervals, dtype=int)
+        
+        indices = []
+        for start, end in self.intervals:
+            if self.units == "ms":
+                start_ms, end_ms = start, end
+            else:
+                units_to_ms = {"sec": 1000.0, "min": 60000.0, "h": 3600000.0}
+                start_ms = start * units_to_ms[self.units]
+                end_ms = end * units_to_ms[self.units]
+            
+            start_ix = np.argmin(np.abs(eyedata_obj.tx - start_ms))
+            end_ix = np.argmin(np.abs(eyedata_obj.tx - end_ms))
+            indices.append((start_ix, end_ix))
+        
+        return np.array(indices, dtype=int)
+    
     def merge(self):
         """
         Merge overlapping intervals.
