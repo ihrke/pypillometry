@@ -309,7 +309,7 @@ class Intervals:
             data_time_range = None
         # convert event_onsets to target units if it is not None
         if self.event_onsets is not None:
-            event_onsets = self.event_onsets * fac
+            event_onsets = np.array(self.event_onsets) * fac
         else:
             event_onsets = None
         return Intervals(converted, target_units, self.label,
