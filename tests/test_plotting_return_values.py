@@ -78,7 +78,8 @@ class TestPlottingReturnValues(unittest.TestCase):
     def test_plot_timeseries_segments_figure_count(self):
         """Test that correct number of figures are created"""
         # Calculate expected number based on data duration
-        duration_min = self.data.tx.max() / 1000 / 60
+        # Duration is the difference between max and min time, not just max time
+        duration_min = (self.data.tx.max() - self.data.tx.min()) / 1000 / 60
         interv = 1.0  # minutes
         expected_figs = int(np.ceil(duration_min / interv))
         
