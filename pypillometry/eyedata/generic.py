@@ -350,34 +350,36 @@ class GenericEyeData(ABC):
         """
         eyes,variables=self._get_eye_var(eyes,variables)
         
-        return {eye+"_"+var:self.get_blinks(eye,var).shape[0] 
+        return {eye+"_"+var:len(self.get_blinks(eye,var)) 
                 for eye,var in itertools.product(eyes,variables)
-                if self.get_blinks(eye,var) is not None}
+                if len(self.get_blinks(eye,var)) > 0}
 
 
-    def blink_stats(self, eyes=[], units: str="ms"):
+    def blink_stats(self, eyes: list = [], units: str = "ms") -> dict:
         """
-        Return statistics on blinks.
-
+        Return statistics on blink durations.
+        
         Parameters
         ----------
-        eyes: list
-            list of eyes to process; if empty, all available eyes are processed
-        units: str
-            one of "ms", "sec", "min", "h"
+        eyes : list
+            Eyes to process. If empty, all eyes are processed.
+        units : str
+            Units for statistics: "ms", "sec", "min", or "h"
+            
+        Returns
+        -------
+        dict
+            Dictionary mapping eye name to IntervalStats (or None if no blinks)
         """
-        eyes,_=self._get_eye_var(eyes,[])
-        fac=self._unit_fac(units)
-
-        stats=dict()
-
+        eyes, _ = self._get_eye_var(eyes, [])
+        
+        stats = dict()
         for eye in eyes:
-            blinks=self.get_blinks(eye,"pupil")
-            if blinks is not None:
-                blinks=blinks/self.fs*1000*fac
-                stats[eye]=get_interval_stats(blinks)            
+            blinks = self.get_blinks(eye, "pupil", units=units)
+            if len(blinks) > 0:
+                stats[eye] = blinks.stats()
             else:
-                stats[eye]=None
+                stats[eye] = None
         return stats
 
 
@@ -1126,50 +1128,52 @@ class GenericEyeData(ABC):
         return obj
         
     @keephistory
-    def blinks_merge(self, eyes=[], variables=[], distance: float=100, inplace=None):
-        """Merge together blinks that are close together. 
-
-        Some subjects blink repeatedly and standard detection/interpolation can result in weird results.
-        This function simply treats repeated blinks as one long blink.
-
+    def blinks_merge(self, eyes: list = [], variables: list = [], 
+                    distance: float = 100, inplace: bool|None = None):
+        """
+        Merge blinks that are close together.
+        
         Parameters
         ----------
-
-        eyes: str or list
-            list of eyes to consider; if empty, consider all
-        variables: str or list
-            list of variables to consider; if empty, consider all
-        distance: float
-            merge together blinks that are closer together than `distance` in ms
-        inplace: bool
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes                                                    
+        eyes : list
+            Eyes to process. If empty, all eyes are processed.
+        variables : list
+            Variables to process. If empty, all variables are processed.
+        distance : float
+            Merge blinks closer than this distance (in ms)
+        inplace : bool or None
+            If True, modify in place. If False, return copy.
+            
+        Returns
+        -------
+        GenericEyeData
+            Modified object
         """
         obj = self._get_inplace(inplace)
         eyes,variables=self._get_eye_var(eyes,variables)
 
         distance_ix=distance/self.fs*1000.
 
-        for eye,var in itertools.product(eyes, variables):
-            blinks = obj.get_blinks(eye, var)
-            if blinks is None:
+        for eye, var in itertools.product(eyes, variables):
+            blinks = obj.get_blinks(eye, var, units=None)
+            if len(blinks) == 0:
                 continue
-
-            newblinks=[] 
-            i=1
-            cblink=blinks[0,:] ## start with first blink
-            while(i<blinks.shape[0]):
-                if (blinks[i,0]-cblink[1])<=distance_ix:
-                    # merge
-                    cblink[1]=blinks[i,1]
+            
+            blinks_array = blinks.as_index(obj)
+            
+            newblinks = []
+            i = 1
+            cblink = blinks_array[0, :].copy()
+            while i < blinks_array.shape[0]:
+                if (blinks_array[i, 0] - cblink[1]) <= distance_ix:
+                    cblink[1] = blinks_array[i, 1]
                 else:
                     newblinks.append(cblink)
-                    cblink=blinks[i,:]
-                i+=1            
+                    cblink = blinks_array[i, :].copy()
+                i += 1
             newblinks.append(cblink)
-            newblinks=np.array(newblinks)       
-
-            obj.set_blinks(eye,var,newblinks)
+            
+            obj.set_blinks(eye, var, np.array(newblinks))
 
         return obj    
             
