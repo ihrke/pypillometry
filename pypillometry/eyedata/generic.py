@@ -522,9 +522,8 @@ class GenericEyeData(ABC):
             if `None`, use the setting of the object (specified in constructor)
         """
         obj = self._get_inplace(inplace)
-        tmin=self.tx.min()
-        obj.tx=(self.tx-tmin)+t0
-        obj.event_onsets=(self.event_onsets-tmin)+t0
+        obj.tx=self.tx-t0
+        obj.event_onsets=self.event_onsets-t0
         return obj
 
     @keephistory
@@ -736,6 +735,116 @@ class GenericEyeData(ABC):
                 raise ValueError("event_labels must have same length as event_onsets")
             self.event_labels=np.array(event_labels)
 
+    def get_events(self, units: str = "ms"):
+        """
+        Get events as an Events object.
+        
+        Returns the event onsets and labels stored in the dataset as an
+        Events object, which provides convenient filtering and display capabilities.
+        
+        Parameters
+        ----------
+        units : str, optional
+            Units for the event onsets: "ms", "sec", "min", or "h".
+            Default is "ms" (the internal storage format).
+            
+        Returns
+        -------
+        Events
+            Events object containing the event onsets and labels
+            
+        Examples
+        --------
+        >>> events = data.get_events()
+        >>> len(events)
+        42
+        
+        >>> # Get events in seconds
+        >>> events_sec = data.get_events(units="sec")
+        
+        >>> # Filter and work with events
+        >>> stim_events = data.get_events().filter("stim")
+        
+        See Also
+        --------
+        set_events : Replace events from an Events object
+        get_intervals : Extract intervals around events
+        """
+        from ..events import Events
+        
+        # Get data time range in ms (internal format)
+        data_time_range = (self.tx[0], self.tx[-1])
+        
+        # Create Events object (always in ms first, since that's internal format)
+        events = Events(
+            onsets=self.event_onsets.copy(),
+            labels=self.event_labels.copy(),
+            units="ms",
+            data_time_range=data_time_range
+        )
+        
+        # Convert to requested units if different from ms
+        if units != "ms":
+            events = events.to_units(units)
+        
+        return events
+    
+    @keephistory
+    def set_events(self, events, inplace=None):
+        """
+        Replace event onsets and labels from an Events object.
+        
+        This method updates the internal event_onsets and event_labels arrays
+        from an Events object. The Events object's onsets are automatically
+        converted to milliseconds (the internal storage format) if needed.
+        
+        Parameters
+        ----------
+        events : Events
+            Events object containing the new events to set
+        inplace : bool, optional
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes
+            if `None`, use the setting of the object (specified in constructor)
+            
+        Returns
+        -------
+        GenericEyeData
+            The object with updated events (may be self or a copy depending on inplace)
+            
+        Examples
+        --------
+        >>> # Filter events and set them back
+        >>> events = data.get_events()
+        >>> stim_events = events.filter("stim")
+        >>> data.set_events(stim_events)
+        
+        >>> # Modify events and update
+        >>> events = data.get_events()
+        >>> # ... filter or modify events ...
+        >>> data.set_events(events)
+        
+        See Also
+        --------
+        get_events : Get events as an Events object
+        set_event_onsets : Lower-level method to set events from arrays
+        """
+        from ..events import Events
+        
+        obj = self._get_inplace(inplace)
+        
+        if not isinstance(events, Events):
+            raise TypeError(f"events must be an Events object, got {type(events)}")
+        
+        # Convert to ms if needed (internal storage is always in ms)
+        if events.units != "ms":
+            events = events.to_units("ms")
+        
+        # Use the existing set_event_onsets method
+        obj.set_event_onsets(events.onsets, events.labels)
+        
+        return obj
+
     @keephistory
     def fill_time_discontinuities(self, yval=0, print_info=True):
         """
@@ -804,12 +913,13 @@ class GenericEyeData(ABC):
 
         Parameters
         -----------
-        event_select: str, tuple or function
+        event_select: str, tuple, function, or Events
             variable describing which events to select and align to
             - if str: use all events whose label contains the string
             - if function: apply function to all labels, use those where the function returns True
             - if tuple: use all events between the two events specified in the tuple. 
                 Both selectors must result in identical number of events.
+            - if Events: use the events from the Events object directly
 
         interval : tuple (min,max)
             time-window relative to event-onset (0 is event-onset); i.e., negative
@@ -835,6 +945,7 @@ class GenericEyeData(ABC):
             with associated metadata (event labels, indices, units)
         """
         from ..intervals import Intervals
+        from ..events import Events
         
         fac=self._unit_fac(units)
 
@@ -842,6 +953,51 @@ class GenericEyeData(ABC):
             raise ValueError("interval must be iterable")
         if interval[1]<=interval[0]:
             raise ValueError("interval must be (min,max) with min<max, got {}".format(interval))
+        
+        # Handle Events object as event_select
+        if isinstance(event_select, Events):
+            # Convert Events to ms if needed (internal format)
+            if event_select.units != "ms":
+                events_ms = event_select.to_units("ms")
+            else:
+                events_ms = event_select
+            
+            # Use events directly - create intervals around them
+            if units is None:
+                # Work in indices
+                eix = np.array([np.argmin(np.abs(self.tx - ev)) 
+                               for ev in events_ms.onsets])
+                sti = np.maximum(eix + interval[0], 0)
+                ste = np.minimum(eix + interval[1], len(self.tx))
+                event_onsets_list = eix.tolist()
+            else:
+                # Work in specified units
+                sti = (events_ms.onsets * fac) + interval[0]
+                ste = (events_ms.onsets * fac) + interval[1]
+                event_onsets_list = (events_ms.onsets * fac).tolist()
+            
+            intervals_list = [(s, e) for s, e in zip(sti, ste)]
+            
+            # Create label from Events if not provided
+            if label is None:
+                label = f"events_{len(events_ms)}"
+            
+            # Get data time range
+            if units is None:
+                data_time_range = (0, len(self.tx))
+            else:
+                data_time_range = (self.tx[0] * fac, self.tx[-1] * fac)
+            
+            return Intervals(
+                intervals=intervals_list,
+                units=units,
+                label=label,
+                event_labels=events_ms.labels.tolist(),
+                event_indices=None,  # We don't have indices from Events object
+                data_time_range=data_time_range,
+                event_onsets=event_onsets_list
+            )
+        
         if isinstance(event_select, tuple):
             # two events and interval in between
             if len(event_select)!=2:

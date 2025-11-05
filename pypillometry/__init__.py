@@ -27,6 +27,7 @@ def _collect_and_import_submodules() -> Dict[str, Any]:
         '.eyedata.pupildata',
         '.convenience',
         '.example_data',
+        '.events',
         '.intervals',
         '.erpd',
         '.io',

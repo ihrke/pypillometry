@@ -442,5 +442,328 @@ class TestEyeData(unittest.TestCase):
         for key in data.keys():
             np.testing.assert_array_equal(obj3.data.mask[key], expected_empty_mask)
 
+
+class TestEventsIntegration(unittest.TestCase):
+    """Test get_events() and set_events() methods"""
+    
+    def setUp(self):
+        """Set up test data"""
+        self.data = get_rlmw_002_short()
+        self.original_event_count = self.data.nevents()
+    
+    def test_get_events_returns_events_object(self):
+        """Test that get_events returns an Events object"""
+        from pypillometry.events import Events
+        
+        events = self.data.get_events()
+        
+        self.assertIsInstance(events, Events)
+        self.assertEqual(len(events), self.original_event_count)
+    
+    def test_get_events_default_units(self):
+        """Test that get_events defaults to ms units"""
+        events = self.data.get_events()
+        
+        self.assertEqual(events.units, "ms")
+        np.testing.assert_array_equal(events.onsets, self.data.event_onsets)
+        np.testing.assert_array_equal(events.labels, self.data.event_labels)
+    
+    def test_get_events_with_different_units(self):
+        """Test get_events with different units"""
+        events_ms = self.data.get_events(units="ms")
+        events_sec = self.data.get_events(units="sec")
+        events_min = self.data.get_events(units="min")
+        
+        self.assertEqual(events_sec.units, "sec")
+        self.assertEqual(events_min.units, "min")
+        
+        # Check conversion accuracy
+        np.testing.assert_array_almost_equal(
+            events_sec.onsets, events_ms.onsets / 1000.0, decimal=6
+        )
+        np.testing.assert_array_almost_equal(
+            events_min.onsets, events_ms.onsets / 60000.0, decimal=9
+        )
+    
+    def test_get_events_has_time_range(self):
+        """Test that get_events includes data time range"""
+        events = self.data.get_events()
+        
+        self.assertIsNotNone(events.data_time_range)
+        self.assertAlmostEqual(events.data_time_range[0], self.data.tx[0])
+        self.assertAlmostEqual(events.data_time_range[1], self.data.tx[-1])
+    
+    def test_set_events_round_trip(self):
+        """Test that get_events -> set_events preserves data"""
+        events = self.data.get_events()
+        original_onsets = self.data.event_onsets.copy()
+        original_labels = self.data.event_labels.copy()
+        
+        # Set the same events back
+        result = self.data.set_events(events)
+        
+        np.testing.assert_array_equal(result.event_onsets, original_onsets)
+        np.testing.assert_array_equal(result.event_labels, original_labels)
+        self.assertIs(result, self.data)
+    
+    def test_set_events_with_filtered_events(self):
+        """Test setting filtered events"""
+        events = self.data.get_events()
+        filtered = events.filter("F")
+        
+        result = self.data.set_events(filtered)
+        
+        self.assertEqual(result.nevents(), len(filtered))
+        np.testing.assert_array_equal(result.event_onsets, filtered.onsets)
+        np.testing.assert_array_equal(result.event_labels, filtered.labels)
+        # Should return self (inplace by default)
+        self.assertIs(result, self.data)
+    
+    def test_set_events_with_different_units(self):
+        """Test that set_events handles unit conversion"""
+        # Get events in seconds
+        events_sec = self.data.get_events(units="sec")
+        original_onsets_ms = self.data.event_onsets.copy()
+        
+        # Set them back (should convert to ms internally)
+        result = self.data.set_events(events_sec)
+        
+        # Should match original (within floating point precision)
+        np.testing.assert_array_almost_equal(
+            result.event_onsets, original_onsets_ms, decimal=3
+        )
+        self.assertIs(result, self.data)
+    
+    def test_set_events_invalid_type(self):
+        """Test that set_events rejects non-Events objects"""
+        with self.assertRaises(TypeError):
+            self.data.set_events([100, 200, 300])
+        
+        with self.assertRaises(TypeError):
+            self.data.set_events({"onsets": [100, 200], "labels": ["A", "B"]})
+    
+    def test_get_events_empty(self):
+        """Test get_events with no events"""
+        # Create data with no events
+        data = pp.EyeData(
+            left_x=[1, 2, 3],
+            left_y=[4, 5, 6],
+            left_pupil=[7, 8, 9],
+            sampling_rate=1000,
+            event_onsets=None,
+            event_labels=None
+        )
+        
+        events = data.get_events()
+        
+        self.assertEqual(len(events), 0)
+        self.assertEqual(events.units, "ms")
+    
+    def test_set_events_empty(self):
+        """Test setting empty events"""
+        from pypillometry.events import Events
+        
+        empty_events = Events([], [], units="ms")
+        result = self.data.set_events(empty_events)
+        
+        self.assertEqual(result.nevents(), 0)
+        self.assertIs(result, self.data)
+    
+    def test_filter_and_set_workflow(self):
+        """Test typical workflow: get -> filter -> set"""
+        # Get events, filter them, and set back
+        events = self.data.get_events()
+        stim_events = events.filter("F")
+        
+        original_count = len(events)
+        filtered_count = len(stim_events)
+        
+        self.assertLess(filtered_count, original_count)
+        
+        # Set filtered events
+        result = self.data.set_events(stim_events)
+        self.assertEqual(result.nevents(), filtered_count)
+        self.assertIs(result, self.data)
+        
+        # Verify all events match the filter
+        for label in result.event_labels:
+            self.assertIn("F", label)
+    
+    def test_get_events_labels_preserved(self):
+        """Test that event labels are properly preserved"""
+        events = self.data.get_events()
+        
+        # All labels should be strings
+        for label in events.labels:
+            self.assertIsInstance(label, (str, np.str_))
+        
+        # Should match original labels
+        for orig_label, event_label in zip(self.data.event_labels, events.labels):
+            self.assertEqual(str(orig_label), str(event_label))
+    
+    def test_set_events_inplace_parameter(self):
+        """Test set_events with inplace parameter"""
+        events = self.data.get_events()
+        filtered = events.filter("F")
+        
+        # Test inplace=True
+        data_copy1 = self.data.copy()
+        result1 = data_copy1.set_events(filtered, inplace=True)
+        self.assertIs(result1, data_copy1)
+        self.assertEqual(result1.nevents(), len(filtered))
+        
+        # Test inplace=False
+        data_copy2 = self.data.copy()
+        original_count = data_copy2.nevents()
+        result2 = data_copy2.set_events(filtered, inplace=False)
+        self.assertIsNot(result2, data_copy2)
+        self.assertEqual(data_copy2.nevents(), original_count)  # Original unchanged
+        self.assertEqual(result2.nevents(), len(filtered))  # Result has filtered events
+    
+    def test_set_events_keeps_history(self):
+        """Test that set_events adds to history"""
+        events = self.data.get_events()
+        filtered = events.filter("F")
+        
+        original_history_len = len(self.data.history)
+        self.data.set_events(filtered)
+        
+        # History should have increased
+        self.assertGreater(len(self.data.history), original_history_len)
+        # Last entry should be set_events
+        self.assertEqual(self.data.history[-1]["funcname"], "set_events")
+
+
+class TestEventsWithGetIntervals(unittest.TestCase):
+    """Test get_intervals() with Events objects"""
+    
+    def setUp(self):
+        """Set up test data"""
+        self.data = get_rlmw_002_short()
+    
+    def test_get_intervals_with_events_object(self):
+        """Test that get_intervals accepts Events object"""
+        from pypillometry.intervals import Intervals
+        
+        events = self.data.get_events()
+        intervals = self.data.get_intervals(events, interval=(-200, 200), units="ms")
+        
+        self.assertIsInstance(intervals, Intervals)
+        self.assertEqual(len(intervals), len(events))
+        self.assertEqual(intervals.units, "ms")
+    
+    def test_get_intervals_with_filtered_events(self):
+        """Test get_intervals with filtered Events object"""
+        events = self.data.get_events()
+        filtered = events.filter("F")
+        
+        intervals = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
+        
+        # Should have same number of intervals as filtered events
+        self.assertEqual(len(intervals), len(filtered))
+        
+        # Compare with string selector
+        intervals_str = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        self.assertEqual(len(intervals), len(intervals_str))
+    
+    def test_get_intervals_events_vs_string(self):
+        """Test that Events and string selector give same results"""
+        events = self.data.get_events()
+        filtered = events.filter("F")
+        
+        intervals_events = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
+        intervals_str = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        
+        # Should have same number of intervals
+        self.assertEqual(len(intervals_events), len(intervals_str))
+        
+        # Should have same event labels
+        self.assertEqual(intervals_events.event_labels, intervals_str.event_labels)
+    
+    def test_get_intervals_with_events_different_units(self):
+        """Test get_intervals with Events in different units"""
+        events = self.data.get_events()
+        events_sec = events.to_units("sec")
+        
+        intervals = self.data.get_intervals(events_sec, interval=(-0.2, 0.2), units="sec")
+        
+        self.assertEqual(len(intervals), len(events))
+        self.assertEqual(intervals.units, "sec")
+    
+    def test_get_intervals_with_events_custom_label(self):
+        """Test that custom label works with Events object"""
+        events = self.data.get_events()
+        intervals = self.data.get_intervals(events, interval=(-200, 200), units="ms", label="custom_label")
+        
+        self.assertEqual(intervals.label, "custom_label")
+    
+    def test_get_intervals_with_events_automatic_label(self):
+        """Test that automatic label is generated when not provided"""
+        events = self.data.get_events()
+        filtered = events.filter("F")
+        
+        intervals = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
+        
+        # Should have automatic label
+        self.assertIsNotNone(intervals.label)
+        self.assertIn("events", intervals.label.lower())
+    
+    def test_get_intervals_with_events_units_consistency(self):
+        """Test that units are consistent between Events and resulting Intervals"""
+        events = self.data.get_events(units="sec")
+        
+        intervals = self.data.get_intervals(events, interval=(-0.2, 0.2), units="sec")
+        
+        self.assertEqual(intervals.units, "sec")
+        self.assertEqual(events.units, "sec")
+    
+    def test_get_intervals_with_events_indices(self):
+        """Test get_intervals with Events using index units"""
+        events = self.data.get_events()
+        
+        intervals = self.data.get_intervals(events, interval=(-10, 10), units=None)
+        
+        self.assertEqual(intervals.units, None)
+        self.assertEqual(len(intervals), len(events))
+    
+    def test_get_intervals_with_empty_events(self):
+        """Test get_intervals with empty Events object"""
+        from pypillometry.events import Events
+        
+        empty_events = Events([], [], units="ms")
+        
+        intervals = self.data.get_intervals(empty_events, interval=(-200, 200), units="ms")
+        
+        self.assertEqual(len(intervals), 0)
+    
+    def test_get_intervals_events_preserves_labels(self):
+        """Test that event labels are preserved in intervals"""
+        events = self.data.get_events()
+        filtered = events.filter("F")
+        
+        intervals = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
+        
+        # Should have event labels
+        self.assertIsNotNone(intervals.event_labels)
+        self.assertEqual(len(intervals.event_labels), len(filtered))
+        
+        # Labels should match
+        for interval_label, event_label in zip(intervals.event_labels, filtered.labels):
+            self.assertEqual(interval_label, event_label)
+    
+    def test_get_intervals_backward_compatibility(self):
+        """Test that existing string/function selectors still work"""
+        # String selector
+        intervals_str = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        self.assertIsNotNone(intervals_str)
+        
+        # Function selector
+        intervals_func = self.data.get_intervals(lambda label: "F" in label, interval=(-200, 200), units="ms")
+        self.assertIsNotNone(intervals_func)
+        
+        # Should have same number of intervals
+        self.assertEqual(len(intervals_str), len(intervals_func))
+
+
 if __name__ == '__main__':
     unittest.main() 
