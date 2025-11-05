@@ -900,12 +900,13 @@ class GenericEyeData(ABC):
 
         Parameters
         -----------
-        event_select: str, tuple or function
+        event_select: str, tuple, function, or Events
             variable describing which events to select and align to
             - if str: use all events whose label contains the string
             - if function: apply function to all labels, use those where the function returns True
             - if tuple: use all events between the two events specified in the tuple. 
                 Both selectors must result in identical number of events.
+            - if Events: use the events from the Events object directly
 
         interval : tuple (min,max)
             time-window relative to event-onset (0 is event-onset); i.e., negative
@@ -931,6 +932,7 @@ class GenericEyeData(ABC):
             with associated metadata (event labels, indices, units)
         """
         from ..intervals import Intervals
+        from ..events import Events
         
         fac=self._unit_fac(units)
 
@@ -938,6 +940,51 @@ class GenericEyeData(ABC):
             raise ValueError("interval must be iterable")
         if interval[1]<=interval[0]:
             raise ValueError("interval must be (min,max) with min<max, got {}".format(interval))
+        
+        # Handle Events object as event_select
+        if isinstance(event_select, Events):
+            # Convert Events to ms if needed (internal format)
+            if event_select.units != "ms":
+                events_ms = event_select.to_units("ms")
+            else:
+                events_ms = event_select
+            
+            # Use events directly - create intervals around them
+            if units is None:
+                # Work in indices
+                eix = np.array([np.argmin(np.abs(self.tx - ev)) 
+                               for ev in events_ms.onsets])
+                sti = np.maximum(eix + interval[0], 0)
+                ste = np.minimum(eix + interval[1], len(self.tx))
+                event_onsets_list = eix.tolist()
+            else:
+                # Work in specified units
+                sti = (events_ms.onsets * fac) + interval[0]
+                ste = (events_ms.onsets * fac) + interval[1]
+                event_onsets_list = (events_ms.onsets * fac).tolist()
+            
+            intervals_list = [(s, e) for s, e in zip(sti, ste)]
+            
+            # Create label from Events if not provided
+            if label is None:
+                label = f"events_{len(events_ms)}"
+            
+            # Get data time range
+            if units is None:
+                data_time_range = (0, len(self.tx))
+            else:
+                data_time_range = (self.tx[0] * fac, self.tx[-1] * fac)
+            
+            return Intervals(
+                intervals=intervals_list,
+                units=units,
+                label=label,
+                event_labels=events_ms.labels.tolist(),
+                event_indices=None,  # We don't have indices from Events object
+                data_time_range=data_time_range,
+                event_onsets=event_onsets_list
+            )
+        
         if isinstance(event_select, tuple):
             # two events and interval in between
             if len(event_select)!=2:
