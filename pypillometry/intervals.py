@@ -255,6 +255,58 @@ class Intervals:
         
         return np.array(indices, dtype=int)
     
+    def to_units(self, target_units: str|None) -> 'Intervals':
+        """
+        Convert intervals to different time units.
+        
+        Parameters
+        ----------
+        target_units : str
+            Target units: "ms", "sec", "min", or "h"
+            
+        Returns
+        -------
+        Intervals
+            New Intervals object with converted units
+            
+        Raises
+        ------
+        ValueError
+            If current or target units are None (indices)
+        
+        Examples
+        --------
+        >>> intervals = data.get_intervals("stim", units="ms")
+        >>> intervals_sec = intervals.to_units("sec")
+        """
+        if self.units is None:
+            raise ValueError(
+                "Cannot convert from indices (units=None). "
+                "Use get_intervals(units='ms') or get_blinks(units='ms') instead."
+            )
+        
+        if target_units is None:
+            raise ValueError(
+                "Cannot convert to indices. Use intervals.as_index(eyedata_obj) instead."
+            )
+        
+        if self.units == target_units:
+            return self
+        
+        units_to_ms = {"ms": 1.0, "sec": 1000.0, "min": 60000.0, "h": 3600000.0}
+        
+        if self.units not in units_to_ms:
+            raise ValueError(f"Unknown source units: {self.units}")
+        if target_units not in units_to_ms:
+            raise ValueError(f"Unknown target units: {target_units}")
+        
+        fac = units_to_ms[self.units] / units_to_ms[target_units]
+        converted = [(s * fac, e * fac) for s, e in self.intervals]
+        
+        return Intervals(converted, target_units, self.label,
+                        self.event_labels, self.event_indices,
+                        self.data_time_range, self.event_onsets)
+    
     def merge(self):
         """
         Merge overlapping intervals.
