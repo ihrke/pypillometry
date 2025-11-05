@@ -736,6 +736,102 @@ class GenericEyeData(ABC):
                 raise ValueError("event_labels must have same length as event_onsets")
             self.event_labels=np.array(event_labels)
 
+    def get_events(self, units: str = "ms"):
+        """
+        Get events as an Events object.
+        
+        Returns the event onsets and labels stored in the dataset as an
+        Events object, which provides convenient filtering and display capabilities.
+        
+        Parameters
+        ----------
+        units : str, optional
+            Units for the event onsets: "ms", "sec", "min", or "h".
+            Default is "ms" (the internal storage format).
+            
+        Returns
+        -------
+        Events
+            Events object containing the event onsets and labels
+            
+        Examples
+        --------
+        >>> events = data.get_events()
+        >>> len(events)
+        42
+        
+        >>> # Get events in seconds
+        >>> events_sec = data.get_events(units="sec")
+        
+        >>> # Filter and work with events
+        >>> stim_events = data.get_events().filter_events("stim")
+        
+        See Also
+        --------
+        set_events : Replace events from an Events object
+        get_intervals : Extract intervals around events
+        """
+        from ..events import Events
+        
+        # Get data time range in ms (internal format)
+        data_time_range = (self.tx[0], self.tx[-1])
+        
+        # Create Events object (always in ms first, since that's internal format)
+        events = Events(
+            onsets=self.event_onsets.copy(),
+            labels=self.event_labels.copy(),
+            units="ms",
+            data_time_range=data_time_range
+        )
+        
+        # Convert to requested units if different from ms
+        if units != "ms":
+            events = events.to_units(units)
+        
+        return events
+    
+    def set_events(self, events):
+        """
+        Replace event onsets and labels from an Events object.
+        
+        This method updates the internal event_onsets and event_labels arrays
+        from an Events object. The Events object's onsets are automatically
+        converted to milliseconds (the internal storage format) if needed.
+        
+        Parameters
+        ----------
+        events : Events
+            Events object containing the new events to set
+            
+        Examples
+        --------
+        >>> # Filter events and set them back
+        >>> events = data.get_events()
+        >>> stim_events = events.filter_events("stim")
+        >>> data.set_events(stim_events)
+        
+        >>> # Modify events and update
+        >>> events = data.get_events()
+        >>> # ... filter or modify events ...
+        >>> data.set_events(events)
+        
+        See Also
+        --------
+        get_events : Get events as an Events object
+        set_event_onsets : Lower-level method to set events from arrays
+        """
+        from ..events import Events
+        
+        if not isinstance(events, Events):
+            raise TypeError(f"events must be an Events object, got {type(events)}")
+        
+        # Convert to ms if needed (internal storage is always in ms)
+        if events.units != "ms":
+            events = events.to_units("ms")
+        
+        # Use the existing set_event_onsets method
+        self.set_event_onsets(events.onsets, events.labels)
+
     @keephistory
     def fill_time_discontinuities(self, yval=0, print_info=True):
         """
