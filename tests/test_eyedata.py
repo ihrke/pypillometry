@@ -508,7 +508,7 @@ class TestEventsIntegration(unittest.TestCase):
     def test_set_events_with_filtered_events(self):
         """Test setting filtered events"""
         events = self.data.get_events()
-        filtered = events.filter_events("F")
+        filtered = events.filter("F")
         
         self.data.set_events(filtered)
         
@@ -568,7 +568,7 @@ class TestEventsIntegration(unittest.TestCase):
         """Test typical workflow: get -> filter -> set"""
         # Get events, filter them, and set back
         events = self.data.get_events()
-        stim_events = events.filter_events("F")
+        stim_events = events.filter("F")
         
         original_count = len(events)
         filtered_count = len(stim_events)
@@ -617,7 +617,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_get_intervals_with_filtered_events(self):
         """Test get_intervals with filtered Events object"""
         events = self.data.get_events()
-        filtered = events.filter_events("F")
+        filtered = events.filter("F")
         
         intervals = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
         
@@ -631,7 +631,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_get_intervals_events_vs_string(self):
         """Test that Events and string selector give same results"""
         events = self.data.get_events()
-        filtered = events.filter_events("F")
+        filtered = events.filter("F")
         
         intervals_events = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
         intervals_str = self.data.get_intervals("F", interval=(-200, 200), units="ms")
@@ -662,7 +662,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_get_intervals_with_events_automatic_label(self):
         """Test that automatic label is generated when not provided"""
         events = self.data.get_events()
-        filtered = events.filter_events("F")
+        filtered = events.filter("F")
         
         intervals = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
         
@@ -701,7 +701,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
     def test_get_intervals_events_preserves_labels(self):
         """Test that event labels are preserved in intervals"""
         events = self.data.get_events()
-        filtered = events.filter_events("F")
+        filtered = events.filter("F")
         
         intervals = self.data.get_intervals(filtered, interval=(-200, 200), units="ms")
         

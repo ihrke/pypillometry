@@ -263,7 +263,7 @@ class Events:
         
         return html + summary
     
-    def filter_events(self, selector) -> 'Events':
+    def filter(self, selector) -> 'Events':
         """
         Filter events and return a new Events object.
         
@@ -288,17 +288,17 @@ class Events:
         Examples
         --------
         >>> events = Events([100, 500, 1000], ["stim", "resp", "stim"], units="ms")
-        >>> stim_events = events.filter_events("stim")
+        >>> stim_events = events.filter("stim")
         >>> len(stim_events)
         2
         
         >>> # Filter by custom function
         >>> events = Events([100, 200], ["A1", "B2"], units="ms")
-        >>> numeric = events.filter_events(lambda label: label[-1].isdigit())
+        >>> numeric = events.filter(lambda label: label[-1].isdigit())
         
         >>> # Filter by time range
         >>> events = Events([100, 500, 1000], ["A", "B", "C"], units="ms")
-        >>> middle = events.filter_events((200, 800))
+        >>> middle = events.filter((200, 800))
         >>> len(middle)
         1
         """

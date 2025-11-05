@@ -764,7 +764,7 @@ class GenericEyeData(ABC):
         >>> events_sec = data.get_events(units="sec")
         
         >>> # Filter and work with events
-        >>> stim_events = data.get_events().filter_events("stim")
+        >>> stim_events = data.get_events().filter("stim")
         
         See Also
         --------
@@ -807,7 +807,7 @@ class GenericEyeData(ABC):
         --------
         >>> # Filter events and set them back
         >>> events = data.get_events()
-        >>> stim_events = events.filter_events("stim")
+        >>> stim_events = events.filter("stim")
         >>> data.set_events(stim_events)
         
         >>> # Modify events and update
