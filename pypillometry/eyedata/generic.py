@@ -11,7 +11,7 @@ from .. import io
 from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, download, suppress_all_output
 from .eyedatadict import CachedEyeDataDict, EyeDataDict
 from ..signal import baseline
-from ..intervals import stat_event_interval, get_interval_stats, merge_intervals
+from ..intervals import stat_event_interval, get_interval_stats, merge_intervals, Intervals
 from ..logging import logging_get_level
 
 import numpy as np
@@ -237,58 +237,80 @@ class GenericEyeData(ABC):
             for bstart,bend in blinks:
                 self.data.mask[eye+"_"+variable][bstart:bend]=1
 
-    def get_blinks(self, eye:str, variable:str):
-        """Get blinks for a given eye and variable.
-
+    def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
+                   units: str|None = None) -> Intervals:
+        """
+        Get blinks as Intervals object.
+        
         Parameters
         ----------
-        eye : str
-            a single eye to get blinks for
-        variable : str
-            a single variable to get blinks for
+        eyes : str or list
+            Eye(s) to get blinks for. If list or empty, blinks are merged.
+        variables : str or list
+            Variable(s) to get blinks for. If list or empty, blinks are merged.
+        units : str or None, optional
+            Units for intervals: "ms", "sec", "min", "h", or None for indices
+            
+        Returns
+        -------
+        Intervals
+            Intervals object (may contain zero intervals if no blinks detected)
+            
+        Examples
+        --------
+        >>> blinks = data.get_blinks('left', 'pupil')
+        >>> blinks_ms = data.get_blinks('left', 'pupil', units="ms")
+        >>> blinks_merged = data.get_blinks(['left', 'right'], 'pupil')
+        >>> indices = blinks_ms.as_index(data)
         """
-        key = eye+"_"+variable
-        if key in self._blinks.keys():
-            return self._blinks[key]
-        else: 
-            return None
-
-    def get_blinks_merged(self, eyes=[], variables=[]) -> np.ndarray:
-        """Get blinks merged over given eyes and variables.
-
-        Parameters
-        ----------
-        eyes : list or str
-            list of eyes to consider; if empty, all eyes are considered
-        variables : list or str
-            list of variables to consider; if empty, all variables are considered
-        """
-        eyes,variables=self._get_eye_var(eyes,variables)
-
-        blinks=[]
-        for eye,var in itertools.product(eyes,variables):
-            cblinks=self.get_blinks(eye,var)
-            if cblinks is None: 
-                continue
-            elif isinstance(cblinks, np.ndarray):
-                blinks += cblinks.tolist()
-            elif isinstance(blinks, Iterable):
-                blinks += cblinks
-        mblinks = merge_intervals(blinks)
-        return mblinks
-
-        #bmask=np.any([self.data.mask[eye+"_"+variable] 
-        #        for eye,variable in itertools.product(eyes,variables)], 
-        #       axis=0)
-        #
-        #a=np.diff(np.r_[0, bmask, 0])[:-1]
-        #bstarts=np.where(a>0)[0]
-        #bends=np.where(a<0)[0]
-#
-        ##z = np.concatenate(([0], bmask, [0]))
-        ##start = np.flatnonzero(~z[:-1] & z[1:])   
-        ##end = np.flatnonzero(z[:-1] & ~z[1:])
-        #blinks = np.column_stack((bstarts, bends))  
+        eyes, variables = self._get_eye_var(eyes, variables)
+        
+        # Check if we need to merge across multiple eyes/variables
+        need_merge = len(eyes) > 1 or len(variables) > 1
+        
+        if need_merge:
+            blinks = []
+            for e, v in itertools.product(eyes, variables):
+                key = e + "_" + v
+                if key in self._blinks and self._blinks[key] is not None:
+                    blinks += self._blinks[key].tolist()
+            
+            if blinks:
+                mblinks = merge_intervals(blinks)
+            else:
+                mblinks = []
+            
+            result = Intervals(
+                intervals=mblinks,
+                units=None,
+                label=f"blinks_{'_'.join(eyes)}_{'_'.join(variables)}",
+                data_time_range=(0, len(self.tx))
+            )
+        else:
+            # Single eye/variable
+            key = eyes[0] + "_" + variables[0]
+            if key in self._blinks and self._blinks[key] is not None:
+                blinks_list = self._blinks[key].tolist()
+            else:
+                blinks_list = []
+            
+            result = Intervals(
+                intervals=blinks_list,
+                units=None,
+                label=f"{eyes[0]}_{variables[0]}_blinks",
+                data_time_range=(0, len(self.tx))
+            )
+        
+        # Convert to requested units if needed
+        if units is not None:
+            intervals_ms = [(self.tx[int(s)], self.tx[int(e)]) for s, e in result.intervals]
+            result = Intervals(intervals_ms, "ms", result.label,
+                              result.event_labels, result.event_indices,
+                              result.data_time_range, result.event_onsets)
+            if units != "ms":
+                result = result.to_units(units)
+        
+        return result  
 
 
     def _init_blinks(self, eyes=[], variables=[]):
