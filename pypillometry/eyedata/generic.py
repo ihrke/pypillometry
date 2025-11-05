@@ -522,9 +522,8 @@ class GenericEyeData(ABC):
             if `None`, use the setting of the object (specified in constructor)
         """
         obj = self._get_inplace(inplace)
-        tmin=self.tx.min()
-        obj.tx=(self.tx-tmin)+t0
-        obj.event_onsets=(self.event_onsets-tmin)+t0
+        obj.tx=self.tx-t0
+        obj.event_onsets=self.event_onsets-t0
         return obj
 
     @keephistory
