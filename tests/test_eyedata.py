@@ -500,21 +500,24 @@ class TestEventsIntegration(unittest.TestCase):
         original_labels = self.data.event_labels.copy()
         
         # Set the same events back
-        self.data.set_events(events)
+        result = self.data.set_events(events)
         
-        np.testing.assert_array_equal(self.data.event_onsets, original_onsets)
-        np.testing.assert_array_equal(self.data.event_labels, original_labels)
+        np.testing.assert_array_equal(result.event_onsets, original_onsets)
+        np.testing.assert_array_equal(result.event_labels, original_labels)
+        self.assertIs(result, self.data)
     
     def test_set_events_with_filtered_events(self):
         """Test setting filtered events"""
         events = self.data.get_events()
         filtered = events.filter("F")
         
-        self.data.set_events(filtered)
+        result = self.data.set_events(filtered)
         
-        self.assertEqual(self.data.nevents(), len(filtered))
-        np.testing.assert_array_equal(self.data.event_onsets, filtered.onsets)
-        np.testing.assert_array_equal(self.data.event_labels, filtered.labels)
+        self.assertEqual(result.nevents(), len(filtered))
+        np.testing.assert_array_equal(result.event_onsets, filtered.onsets)
+        np.testing.assert_array_equal(result.event_labels, filtered.labels)
+        # Should return self (inplace by default)
+        self.assertIs(result, self.data)
     
     def test_set_events_with_different_units(self):
         """Test that set_events handles unit conversion"""
@@ -523,12 +526,13 @@ class TestEventsIntegration(unittest.TestCase):
         original_onsets_ms = self.data.event_onsets.copy()
         
         # Set them back (should convert to ms internally)
-        self.data.set_events(events_sec)
+        result = self.data.set_events(events_sec)
         
         # Should match original (within floating point precision)
         np.testing.assert_array_almost_equal(
-            self.data.event_onsets, original_onsets_ms, decimal=3
+            result.event_onsets, original_onsets_ms, decimal=3
         )
+        self.assertIs(result, self.data)
     
     def test_set_events_invalid_type(self):
         """Test that set_events rejects non-Events objects"""
@@ -560,9 +564,10 @@ class TestEventsIntegration(unittest.TestCase):
         from pypillometry.events import Events
         
         empty_events = Events([], [], units="ms")
-        self.data.set_events(empty_events)
+        result = self.data.set_events(empty_events)
         
-        self.assertEqual(self.data.nevents(), 0)
+        self.assertEqual(result.nevents(), 0)
+        self.assertIs(result, self.data)
     
     def test_filter_and_set_workflow(self):
         """Test typical workflow: get -> filter -> set"""
@@ -576,11 +581,12 @@ class TestEventsIntegration(unittest.TestCase):
         self.assertLess(filtered_count, original_count)
         
         # Set filtered events
-        self.data.set_events(stim_events)
-        self.assertEqual(self.data.nevents(), filtered_count)
+        result = self.data.set_events(stim_events)
+        self.assertEqual(result.nevents(), filtered_count)
+        self.assertIs(result, self.data)
         
         # Verify all events match the filter
-        for label in self.data.event_labels:
+        for label in result.event_labels:
             self.assertIn("F", label)
     
     def test_get_events_labels_preserved(self):
@@ -594,6 +600,38 @@ class TestEventsIntegration(unittest.TestCase):
         # Should match original labels
         for orig_label, event_label in zip(self.data.event_labels, events.labels):
             self.assertEqual(str(orig_label), str(event_label))
+    
+    def test_set_events_inplace_parameter(self):
+        """Test set_events with inplace parameter"""
+        events = self.data.get_events()
+        filtered = events.filter("F")
+        
+        # Test inplace=True
+        data_copy1 = self.data.copy()
+        result1 = data_copy1.set_events(filtered, inplace=True)
+        self.assertIs(result1, data_copy1)
+        self.assertEqual(result1.nevents(), len(filtered))
+        
+        # Test inplace=False
+        data_copy2 = self.data.copy()
+        original_count = data_copy2.nevents()
+        result2 = data_copy2.set_events(filtered, inplace=False)
+        self.assertIsNot(result2, data_copy2)
+        self.assertEqual(data_copy2.nevents(), original_count)  # Original unchanged
+        self.assertEqual(result2.nevents(), len(filtered))  # Result has filtered events
+    
+    def test_set_events_keeps_history(self):
+        """Test that set_events adds to history"""
+        events = self.data.get_events()
+        filtered = events.filter("F")
+        
+        original_history_len = len(self.data.history)
+        self.data.set_events(filtered)
+        
+        # History should have increased
+        self.assertGreater(len(self.data.history), original_history_len)
+        # Last entry should be set_events
+        self.assertEqual(self.data.history[-1]["funcname"], "set_events")
 
 
 class TestEventsWithGetIntervals(unittest.TestCase):

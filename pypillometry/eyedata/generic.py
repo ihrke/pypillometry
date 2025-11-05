@@ -790,7 +790,8 @@ class GenericEyeData(ABC):
         
         return events
     
-    def set_events(self, events):
+    @keephistory
+    def set_events(self, events, inplace=None):
         """
         Replace event onsets and labels from an Events object.
         
@@ -802,6 +803,15 @@ class GenericEyeData(ABC):
         ----------
         events : Events
             Events object containing the new events to set
+        inplace : bool, optional
+            if `True`, make change in-place and return the object
+            if `False`, make and return copy before making changes
+            if `None`, use the setting of the object (specified in constructor)
+            
+        Returns
+        -------
+        GenericEyeData
+            The object with updated events (may be self or a copy depending on inplace)
             
         Examples
         --------
@@ -822,6 +832,8 @@ class GenericEyeData(ABC):
         """
         from ..events import Events
         
+        obj = self._get_inplace(inplace)
+        
         if not isinstance(events, Events):
             raise TypeError(f"events must be an Events object, got {type(events)}")
         
@@ -830,7 +842,9 @@ class GenericEyeData(ABC):
             events = events.to_units("ms")
         
         # Use the existing set_event_onsets method
-        self.set_event_onsets(events.onsets, events.labels)
+        obj.set_event_onsets(events.onsets, events.labels)
+        
+        return obj
 
     @keephistory
     def fill_time_discontinuities(self, yval=0, print_info=True):
