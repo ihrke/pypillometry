@@ -442,5 +442,159 @@ class TestEyeData(unittest.TestCase):
         for key in data.keys():
             np.testing.assert_array_equal(obj3.data.mask[key], expected_empty_mask)
 
+
+class TestEventsIntegration(unittest.TestCase):
+    """Test get_events() and set_events() methods"""
+    
+    def setUp(self):
+        """Set up test data"""
+        self.data = get_rlmw_002_short()
+        self.original_event_count = self.data.nevents()
+    
+    def test_get_events_returns_events_object(self):
+        """Test that get_events returns an Events object"""
+        from pypillometry.events import Events
+        
+        events = self.data.get_events()
+        
+        self.assertIsInstance(events, Events)
+        self.assertEqual(len(events), self.original_event_count)
+    
+    def test_get_events_default_units(self):
+        """Test that get_events defaults to ms units"""
+        events = self.data.get_events()
+        
+        self.assertEqual(events.units, "ms")
+        np.testing.assert_array_equal(events.onsets, self.data.event_onsets)
+        np.testing.assert_array_equal(events.labels, self.data.event_labels)
+    
+    def test_get_events_with_different_units(self):
+        """Test get_events with different units"""
+        events_ms = self.data.get_events(units="ms")
+        events_sec = self.data.get_events(units="sec")
+        events_min = self.data.get_events(units="min")
+        
+        self.assertEqual(events_sec.units, "sec")
+        self.assertEqual(events_min.units, "min")
+        
+        # Check conversion accuracy
+        np.testing.assert_array_almost_equal(
+            events_sec.onsets, events_ms.onsets / 1000.0, decimal=6
+        )
+        np.testing.assert_array_almost_equal(
+            events_min.onsets, events_ms.onsets / 60000.0, decimal=9
+        )
+    
+    def test_get_events_has_time_range(self):
+        """Test that get_events includes data time range"""
+        events = self.data.get_events()
+        
+        self.assertIsNotNone(events.data_time_range)
+        self.assertAlmostEqual(events.data_time_range[0], self.data.tx[0])
+        self.assertAlmostEqual(events.data_time_range[1], self.data.tx[-1])
+    
+    def test_set_events_round_trip(self):
+        """Test that get_events -> set_events preserves data"""
+        events = self.data.get_events()
+        original_onsets = self.data.event_onsets.copy()
+        original_labels = self.data.event_labels.copy()
+        
+        # Set the same events back
+        self.data.set_events(events)
+        
+        np.testing.assert_array_equal(self.data.event_onsets, original_onsets)
+        np.testing.assert_array_equal(self.data.event_labels, original_labels)
+    
+    def test_set_events_with_filtered_events(self):
+        """Test setting filtered events"""
+        events = self.data.get_events()
+        filtered = events.filter_events("F")
+        
+        self.data.set_events(filtered)
+        
+        self.assertEqual(self.data.nevents(), len(filtered))
+        np.testing.assert_array_equal(self.data.event_onsets, filtered.onsets)
+        np.testing.assert_array_equal(self.data.event_labels, filtered.labels)
+    
+    def test_set_events_with_different_units(self):
+        """Test that set_events handles unit conversion"""
+        # Get events in seconds
+        events_sec = self.data.get_events(units="sec")
+        original_onsets_ms = self.data.event_onsets.copy()
+        
+        # Set them back (should convert to ms internally)
+        self.data.set_events(events_sec)
+        
+        # Should match original (within floating point precision)
+        np.testing.assert_array_almost_equal(
+            self.data.event_onsets, original_onsets_ms, decimal=3
+        )
+    
+    def test_set_events_invalid_type(self):
+        """Test that set_events rejects non-Events objects"""
+        with self.assertRaises(TypeError):
+            self.data.set_events([100, 200, 300])
+        
+        with self.assertRaises(TypeError):
+            self.data.set_events({"onsets": [100, 200], "labels": ["A", "B"]})
+    
+    def test_get_events_empty(self):
+        """Test get_events with no events"""
+        # Create data with no events
+        data = pp.EyeData(
+            left_x=[1, 2, 3],
+            left_y=[4, 5, 6],
+            left_pupil=[7, 8, 9],
+            sampling_rate=1000,
+            event_onsets=None,
+            event_labels=None
+        )
+        
+        events = data.get_events()
+        
+        self.assertEqual(len(events), 0)
+        self.assertEqual(events.units, "ms")
+    
+    def test_set_events_empty(self):
+        """Test setting empty events"""
+        from pypillometry.events import Events
+        
+        empty_events = Events([], [], units="ms")
+        self.data.set_events(empty_events)
+        
+        self.assertEqual(self.data.nevents(), 0)
+    
+    def test_filter_and_set_workflow(self):
+        """Test typical workflow: get -> filter -> set"""
+        # Get events, filter them, and set back
+        events = self.data.get_events()
+        stim_events = events.filter_events("F")
+        
+        original_count = len(events)
+        filtered_count = len(stim_events)
+        
+        self.assertLess(filtered_count, original_count)
+        
+        # Set filtered events
+        self.data.set_events(stim_events)
+        self.assertEqual(self.data.nevents(), filtered_count)
+        
+        # Verify all events match the filter
+        for label in self.data.event_labels:
+            self.assertIn("F", label)
+    
+    def test_get_events_labels_preserved(self):
+        """Test that event labels are properly preserved"""
+        events = self.data.get_events()
+        
+        # All labels should be strings
+        for label in events.labels:
+            self.assertIsInstance(label, (str, np.str_))
+        
+        # Should match original labels
+        for orig_label, event_label in zip(self.data.event_labels, events.labels):
+            self.assertEqual(str(orig_label), str(event_label))
+
+
 if __name__ == '__main__':
     unittest.main() 
