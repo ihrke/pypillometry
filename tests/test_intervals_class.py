@@ -332,6 +332,160 @@ class TestIntervalsPlotMethod(unittest.TestCase):
             self.assertIn(color, ['black', 'k', (0.0, 0.0, 0.0, 1.0)])
 
 
+class TestIntervalsConversionMethods(unittest.TestCase):
+    """Test Intervals conversion methods (as_index, to_units, __array__)"""
+    
+    def setUp(self):
+        """Create test data"""
+        self.data = pp.get_example_data("rlmw_002_short")
+    
+    def test_array_conversion_with_units_none(self):
+        """Test __array__() with index units"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
+        arr = np.array(intervals)
+        
+        self.assertIsInstance(arr, np.ndarray)
+        self.assertEqual(arr.shape[1], 2)  # Should have 2 columns (start, end)
+        self.assertEqual(len(arr), len(intervals))
+    
+    def test_array_conversion_with_units_ms(self):
+        """Test __array__() with time units"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        arr = np.array(intervals)
+        
+        self.assertIsInstance(arr, np.ndarray)
+        self.assertEqual(arr.shape[1], 2)
+        self.assertEqual(len(arr), len(intervals))
+    
+    def test_as_index_with_units_none(self):
+        """Test as_index() when intervals already in indices"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
+        indices = intervals.as_index(self.data)
+        
+        self.assertIsInstance(indices, np.ndarray)
+        self.assertEqual(indices.dtype, np.int_)
+        self.assertEqual(indices.shape[1], 2)
+        self.assertEqual(len(indices), len(intervals))
+    
+    def test_as_index_with_units_ms(self):
+        """Test as_index() with millisecond units"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        indices = intervals.as_index(self.data)
+        
+        self.assertIsInstance(indices, np.ndarray)
+        self.assertEqual(indices.dtype, np.int_)
+        self.assertEqual(indices.shape[1], 2)
+        
+        # Check that indices are valid for the data
+        for start, end in indices:
+            self.assertGreaterEqual(start, 0)
+            self.assertLess(end, len(self.data.tx))
+    
+    def test_as_index_with_units_sec(self):
+        """Test as_index() with second units"""
+        intervals = self.data.get_intervals("F", interval=(-0.2, 0.2), units="sec")
+        indices = intervals.as_index(self.data)
+        
+        self.assertIsInstance(indices, np.ndarray)
+        self.assertEqual(indices.dtype, np.int_)
+        
+        # Check that indices are valid
+        for start, end in indices:
+            self.assertGreaterEqual(start, 0)
+            self.assertLess(end, len(self.data.tx))
+    
+    def test_to_units_ms_to_sec(self):
+        """Test converting from milliseconds to seconds"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals_sec = intervals.to_units("sec")
+        
+        self.assertEqual(intervals_sec.units, "sec")
+        self.assertEqual(len(intervals_sec), len(intervals))
+        
+        # Check conversion accuracy (200ms = 0.2sec)
+        arr_ms = np.array(intervals)
+        arr_sec = np.array(intervals_sec)
+        np.testing.assert_array_almost_equal(arr_sec, arr_ms / 1000.0, decimal=6)
+    
+    def test_to_units_sec_to_ms(self):
+        """Test converting from seconds to milliseconds"""
+        intervals = self.data.get_intervals("F", interval=(-0.2, 0.2), units="sec")
+        intervals_ms = intervals.to_units("ms")
+        
+        self.assertEqual(intervals_ms.units, "ms")
+        
+        # Check conversion accuracy
+        arr_sec = np.array(intervals)
+        arr_ms = np.array(intervals_ms)
+        np.testing.assert_array_almost_equal(arr_ms, arr_sec * 1000.0, decimal=6)
+    
+    def test_to_units_ms_to_min(self):
+        """Test converting from milliseconds to minutes"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals_min = intervals.to_units("min")
+        
+        self.assertEqual(intervals_min.units, "min")
+        
+        # Check conversion accuracy (200ms = 0.2/60 min)
+        arr_ms = np.array(intervals)
+        arr_min = np.array(intervals_min)
+        np.testing.assert_array_almost_equal(arr_min, arr_ms / 60000.0, decimal=9)
+    
+    def test_to_units_same_units(self):
+        """Test converting to same units returns self"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals_same = intervals.to_units("ms")
+        
+        # Should return the same object
+        self.assertIs(intervals_same, intervals)
+    
+    def test_to_units_from_none_raises_error(self):
+        """Test that converting from indices raises error"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
+        
+        with self.assertRaises(ValueError) as cm:
+            intervals.to_units("ms")
+        
+        self.assertIn("indices", str(cm.exception).lower())
+    
+    def test_to_units_to_none_raises_error(self):
+        """Test that converting to indices raises error"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        
+        with self.assertRaises(ValueError) as cm:
+            intervals.to_units(None)
+        
+        self.assertIn("indices", str(cm.exception).lower())
+    
+    def test_to_units_unknown_source_raises_error(self):
+        """Test that unknown source units raise error"""
+        intervals = Intervals([(0, 100), (200, 300)], units="unknown", label="test")
+        
+        with self.assertRaises(ValueError) as cm:
+            intervals.to_units("ms")
+        
+        self.assertIn("unknown", str(cm.exception).lower())
+    
+    def test_to_units_unknown_target_raises_error(self):
+        """Test that unknown target units raise error"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        
+        with self.assertRaises(ValueError) as cm:
+            intervals.to_units("unknown")
+        
+        self.assertIn("unknown", str(cm.exception).lower())
+    
+    def test_to_units_preserves_metadata(self):
+        """Test that to_units preserves metadata"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        intervals_sec = intervals.to_units("sec")
+        
+        # Check that metadata is preserved
+        self.assertEqual(intervals_sec.label, intervals.label)
+        if intervals.event_labels is not None:
+            self.assertEqual(len(intervals_sec.event_labels), len(intervals.event_labels))
+
+
 if __name__ == '__main__':
     unittest.main()
 
