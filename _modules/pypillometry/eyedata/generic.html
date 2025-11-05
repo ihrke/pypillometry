@@ -601,9 +601,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">            if `None`, use the setting of the object (specified in constructor)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
-        <span class="n">tmin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-        <span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">-</span><span class="n">tmin</span><span class="p">)</span><span class="o">+</span><span class="n">t0</span>
-        <span class="n">obj</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">-</span><span class="n">tmin</span><span class="p">)</span><span class="o">+</span><span class="n">t0</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">-</span><span class="n">t0</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">-</span><span class="n">t0</span>
         <span class="k">return</span> <span class="n">obj</span></div>
 
 
@@ -837,6 +836,122 @@ window.addEventListener("load", () => mermaid.run());
             <span class="bp">self</span><span class="o">.</span><span class="n">event_labels</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">event_labels</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="GenericEyeData.get_events">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.get_events">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get events as an Events object.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns the event onsets and labels stored in the dataset as an</span>
+<span class="sd">        Events object, which provides convenient filtering and display capabilities.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        units : str, optional</span>
+<span class="sd">            Units for the event onsets: &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, or &quot;h&quot;.</span>
+<span class="sd">            Default is &quot;ms&quot; (the internal storage format).</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Events</span>
+<span class="sd">            Events object containing the event onsets and labels</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; events = data.get_events()</span>
+<span class="sd">        &gt;&gt;&gt; len(events)</span>
+<span class="sd">        42</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Get events in seconds</span>
+<span class="sd">        &gt;&gt;&gt; events_sec = data.get_events(units=&quot;sec&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Filter and work with events</span>
+<span class="sd">        &gt;&gt;&gt; stim_events = data.get_events().filter(&quot;stim&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        set_events : Replace events from an Events object</span>
+<span class="sd">        get_intervals : Extract intervals around events</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..events</span><span class="w"> </span><span class="kn">import</span> <span class="n">Events</span>
+        
+        <span class="c1"># Get data time range in ms (internal format)</span>
+        <span class="n">data_time_range</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        
+        <span class="c1"># Create Events object (always in ms first, since that&#39;s internal format)</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">Events</span><span class="p">(</span>
+            <span class="n">onsets</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_labels</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span>
+            <span class="n">data_time_range</span><span class="o">=</span><span class="n">data_time_range</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># Convert to requested units if different from ms</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="o">!=</span> <span class="s2">&quot;ms&quot;</span><span class="p">:</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">events</span></div>
+
+    
+<div class="viewcode-block" id="GenericEyeData.set_events">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.set_events">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Replace event onsets and labels from an Events object.</span>
+<span class="sd">        </span>
+<span class="sd">        This method updates the internal event_onsets and event_labels arrays</span>
+<span class="sd">        from an Events object. The Events object&#39;s onsets are automatically</span>
+<span class="sd">        converted to milliseconds (the internal storage format) if needed.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        events : Events</span>
+<span class="sd">            Events object containing the new events to set</span>
+<span class="sd">        inplace : bool, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object</span>
+<span class="sd">            if `False`, make and return copy before making changes</span>
+<span class="sd">            if `None`, use the setting of the object (specified in constructor)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GenericEyeData</span>
+<span class="sd">            The object with updated events (may be self or a copy depending on inplace)</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; # Filter events and set them back</span>
+<span class="sd">        &gt;&gt;&gt; events = data.get_events()</span>
+<span class="sd">        &gt;&gt;&gt; stim_events = events.filter(&quot;stim&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; data.set_events(stim_events)</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Modify events and update</span>
+<span class="sd">        &gt;&gt;&gt; events = data.get_events()</span>
+<span class="sd">        &gt;&gt;&gt; # ... filter or modify events ...</span>
+<span class="sd">        &gt;&gt;&gt; data.set_events(events)</span>
+<span class="sd">        </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        get_events : Get events as an Events object</span>
+<span class="sd">        set_event_onsets : Lower-level method to set events from arrays</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..events</span><span class="w"> </span><span class="kn">import</span> <span class="n">Events</span>
+        
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">Events</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;events must be an Events object, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">events</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Convert to ms if needed (internal storage is always in ms)</span>
+        <span class="k">if</span> <span class="n">events</span><span class="o">.</span><span class="n">units</span> <span class="o">!=</span> <span class="s2">&quot;ms&quot;</span><span class="p">:</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Use the existing set_event_onsets method</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">set_event_onsets</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="n">events</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+
 <div class="viewcode-block" id="GenericEyeData.fill_time_discontinuities">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.fill_time_discontinuities">[docs]</a>
     <span class="nd">@keephistory</span>
@@ -910,12 +1025,13 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
-<span class="sd">        event_select: str, tuple or function</span>
+<span class="sd">        event_select: str, tuple, function, or Events</span>
 <span class="sd">            variable describing which events to select and align to</span>
 <span class="sd">            - if str: use all events whose label contains the string</span>
 <span class="sd">            - if function: apply function to all labels, use those where the function returns True</span>
 <span class="sd">            - if tuple: use all events between the two events specified in the tuple. </span>
 <span class="sd">                Both selectors must result in identical number of events.</span>
+<span class="sd">            - if Events: use the events from the Events object directly</span>
 
 <span class="sd">        interval : tuple (min,max)</span>
 <span class="sd">            time-window relative to event-onset (0 is event-onset); i.e., negative</span>
@@ -941,6 +1057,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">            with associated metadata (event labels, indices, units)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..events</span><span class="w"> </span><span class="kn">import</span> <span class="n">Events</span>
         
         <span class="n">fac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
 
@@ -948,6 +1065,51 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;interval must be iterable&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&lt;=</span><span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;interval must be (min,max) with min&lt;max, got </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interval</span><span class="p">))</span>
+        
+        <span class="c1"># Handle Events object as event_select</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_select</span><span class="p">,</span> <span class="n">Events</span><span class="p">):</span>
+            <span class="c1"># Convert Events to ms if needed (internal format)</span>
+            <span class="k">if</span> <span class="n">event_select</span><span class="o">.</span><span class="n">units</span> <span class="o">!=</span> <span class="s2">&quot;ms&quot;</span><span class="p">:</span>
+                <span class="n">events_ms</span> <span class="o">=</span> <span class="n">event_select</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">events_ms</span> <span class="o">=</span> <span class="n">event_select</span>
+            
+            <span class="c1"># Use events directly - create intervals around them</span>
+            <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Work in indices</span>
+                <span class="n">eix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span> <span class="o">-</span> <span class="n">ev</span><span class="p">))</span> 
+                               <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events_ms</span><span class="o">.</span><span class="n">onsets</span><span class="p">])</span>
+                <span class="n">sti</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">eix</span> <span class="o">+</span> <span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">ste</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">eix</span> <span class="o">+</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+                <span class="n">event_onsets_list</span> <span class="o">=</span> <span class="n">eix</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Work in specified units</span>
+                <span class="n">sti</span> <span class="o">=</span> <span class="p">(</span><span class="n">events_ms</span><span class="o">.</span><span class="n">onsets</span> <span class="o">*</span> <span class="n">fac</span><span class="p">)</span> <span class="o">+</span> <span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">ste</span> <span class="o">=</span> <span class="p">(</span><span class="n">events_ms</span><span class="o">.</span><span class="n">onsets</span> <span class="o">*</span> <span class="n">fac</span><span class="p">)</span> <span class="o">+</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">event_onsets_list</span> <span class="o">=</span> <span class="p">(</span><span class="n">events_ms</span><span class="o">.</span><span class="n">onsets</span> <span class="o">*</span> <span class="n">fac</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            
+            <span class="n">intervals_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sti</span><span class="p">,</span> <span class="n">ste</span><span class="p">)]</span>
+            
+            <span class="c1"># Create label from Events if not provided</span>
+            <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;events_</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">events_ms</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            
+            <span class="c1"># Get data time range</span>
+            <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">data_time_range</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data_time_range</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">fac</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">fac</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">Intervals</span><span class="p">(</span>
+                <span class="n">intervals</span><span class="o">=</span><span class="n">intervals_list</span><span class="p">,</span>
+                <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                <span class="n">event_labels</span><span class="o">=</span><span class="n">events_ms</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="n">event_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># We don&#39;t have indices from Events object</span>
+                <span class="n">data_time_range</span><span class="o">=</span><span class="n">data_time_range</span><span class="p">,</span>
+                <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets_list</span>
+            <span class="p">)</span>
+        
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_select</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="c1"># two events and interval in between</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">event_select</span><span class="p">)</span><span class="o">!=</span><span class="mi">2</span><span class="p">:</span>
