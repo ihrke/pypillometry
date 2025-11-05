@@ -221,6 +221,48 @@ class Events:
         
         return " | ".join(parts)
     
+    def _repr_html_(self) -> str:
+        """
+        HTML representation for Jupyter notebooks.
+        
+        Displays events as a nicely formatted HTML table with columns for
+        index, onset time, and event label.
+        
+        Returns
+        -------
+        str
+            HTML string for displaying in Jupyter notebook
+        """
+        try:
+            import pandas as pd
+        except ImportError:
+            # Fallback to text representation if pandas not available
+            return f"<pre>{repr(self)}</pre>"
+        
+        if len(self) == 0:
+            return f"<p><i>Events: 0 events (units={self.units})</i></p>"
+        
+        # Determine unit display
+        unit_str = self.units if self.units is not None else "indices"
+        
+        # Create DataFrame
+        df = pd.DataFrame({
+            f'Onset ({unit_str})': self.onsets,
+            'Label': self.labels
+        })
+        
+        # Convert to HTML
+        html = df.to_html(index=True, index_names=['#'])
+        
+        # Add summary info below table
+        summary = f'<p style="font-size: 0.9em; color: #666; margin-top: 8px;">'
+        summary += f'Total: {len(self)} events'
+        if self.data_time_range is not None:
+            summary += f' | Data range: [{self.data_time_range[0]:.1f}, {self.data_time_range[1]:.1f}] {unit_str}'
+        summary += '</p>'
+        
+        return html + summary
+    
     def filter_events(self, selector) -> 'Events':
         """
         Filter events and return a new Events object.
