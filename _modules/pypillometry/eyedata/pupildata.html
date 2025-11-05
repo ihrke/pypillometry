@@ -567,19 +567,17 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="PupilData.get_erpd">
 <a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.get_erpd">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_erpd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">erpd_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">event_select</span><span class="p">,</span> 
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_erpd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intervals</span><span class="p">,</span> 
                  <span class="n">eyes</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[],</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span>
-                 <span class="n">baseline_win</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                 <span class="n">interval</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> 
-                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                 <span class="n">baseline_win</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Extract event-related pupil dilation (ERPD).</span>
+<span class="sd">        Extract event-related pupil dilation (ERPD) from Intervals object.</span>
 <span class="sd">        No attempt is being made to exclude overlaps of the time-windows.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        erpd_name: str</span>
-<span class="sd">            identifier for the result (e.g., &quot;cue-locked&quot; or &quot;conflict-trials&quot;)</span>
+<span class="sd">        intervals: Intervals</span>
+<span class="sd">            Intervals object containing the time windows to extract (from get_intervals())</span>
 <span class="sd">        eyes: list or str</span>
 <span class="sd">            str or list of eyes to process; if empty, all available eyes are processed</span>
 <span class="sd">        variable: str</span>
@@ -587,32 +585,53 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">            interpolated pupil data stored in a different variables, e.g., &quot;pupilinterp&quot;</span>
 <span class="sd">        baseline_win: tuple (float,float) or None</span>
 <span class="sd">            if None, no baseline-correction is applied</span>
-<span class="sd">            if tuple, the mean value in the window in milliseconds (relative to `time_win`) is </span>
+<span class="sd">            if tuple, the mean value in the window in milliseconds (relative to interval) is </span>
 <span class="sd">                subtracted from the single-trial ERPDs (baseline-correction)</span>
-<span class="sd">        event_select: str or function</span>
-<span class="sd">            variable describing which events to select and align to</span>
-<span class="sd">            - if str: use all events whose label contains the string</span>
-<span class="sd">            - if function: apply function to all labels, use those where the function returns True</span>
-<span class="sd">            see :class:`GenericEyeData.get_intervals()` for details</span>
-<span class="sd">        interval: Tuple[float, float]</span>
-<span class="sd">            time before and after event to include (in ms)</span>
-<span class="sd">        kwargs:</span>
-<span class="sd">            additional arguments passed to the `event_select` function</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">Intervals</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;intervals must be an Intervals object. Use get_intervals() to create one.&quot;</span><span class="p">)</span>
+        
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;variable must be a string; using default &#39;pupil&#39;&quot;</span><span class="p">)</span>
             <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span>
 
-        <span class="c1"># convert interval into sampling units</span>
-        <span class="n">interval_ix</span><span class="o">=</span><span class="nb">tuple</span><span class="p">((</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">tw</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span> <span class="k">for</span> <span class="n">tw</span> <span class="ow">in</span> <span class="n">interval</span> <span class="p">))</span>
-        <span class="n">duration_ix</span><span class="o">=</span><span class="n">interval_ix</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">interval_ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">txw</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">duration_ix</span><span class="p">)</span>
-
-        <span class="c1"># units=None means, we get indices into self.tx back from self.get_intervals()</span>
-        <span class="c1"># use inter in sampling units with units=None to find closest points in tx</span>
-        <span class="n">intervals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">event_select</span><span class="p">,</span> <span class="n">interval_ix</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">nintv</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span>
+        <span class="c1"># Convert Intervals to indices for data extraction</span>
+        <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Already in index units</span>
+            <span class="n">intervals_idx</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">intervals</span>
+            <span class="c1"># Need to determine the time window from the first interval</span>
+            <span class="n">first_start</span><span class="p">,</span> <span class="n">first_end</span> <span class="o">=</span> <span class="n">intervals_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">duration_ix</span> <span class="o">=</span> <span class="n">first_end</span> <span class="o">-</span> <span class="n">first_start</span>
+            <span class="c1"># Estimate time window in ms (assuming uniform spacing)</span>
+            <span class="n">interval_ms</span> <span class="o">=</span> <span class="p">(</span><span class="n">first_start</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">first_end</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Convert from intervals&#39; units to indices</span>
+            <span class="n">fac_to_ms</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">intervals</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+            <span class="n">intervals_idx</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="c1"># Get the interval window in ms from the first interval</span>
+            <span class="n">first_start</span><span class="p">,</span> <span class="n">first_end</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">start_ms</span> <span class="o">=</span> <span class="n">first_start</span> <span class="o">*</span> <span class="n">fac_to_ms</span>
+            <span class="n">end_ms</span> <span class="o">=</span> <span class="n">first_end</span> <span class="o">*</span> <span class="n">fac_to_ms</span>
+            <span class="n">interval_ms</span> <span class="o">=</span> <span class="p">(</span><span class="n">start_ms</span><span class="p">,</span> <span class="n">end_ms</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">intervals</span><span class="o">.</span><span class="n">intervals</span><span class="p">:</span>
+                <span class="c1"># Convert to ms</span>
+                <span class="n">start_ms</span> <span class="o">=</span> <span class="n">start</span> <span class="o">*</span> <span class="n">fac_to_ms</span>
+                <span class="n">end_ms</span> <span class="o">=</span> <span class="n">end</span> <span class="o">*</span> <span class="n">fac_to_ms</span>
+                <span class="c1"># Find corresponding indices</span>
+                <span class="n">start_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span> <span class="o">-</span> <span class="n">start_ms</span><span class="p">))</span>
+                <span class="n">end_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span> <span class="o">-</span> <span class="n">end_ms</span><span class="p">))</span>
+                <span class="n">intervals_idx</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">start_ix</span><span class="p">,</span> <span class="n">end_ix</span><span class="p">))</span>
+        
+        <span class="c1"># Calculate duration and time window</span>
+        <span class="n">duration_ix</span> <span class="o">=</span> <span class="n">intervals_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">intervals_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">txw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">interval_ms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">interval_ms</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">duration_ix</span><span class="p">)</span>
+        
+        <span class="n">nintv</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">intervals_idx</span><span class="p">)</span>
 
 
         <span class="n">data</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
@@ -622,7 +641,7 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">erpd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">duration_ix</span><span class="p">,</span><span class="n">nintv</span><span class="p">))</span>
             <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">duration_ix</span><span class="p">,</span><span class="n">nintv</span><span class="p">))</span>
 
-            <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">intervals</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,(</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">intervals_idx</span><span class="p">):</span>
                 <span class="n">onl</span><span class="p">,</span><span class="n">offl</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">duration_ix</span> <span class="c1"># &quot;local&quot; window indices</span>
             
                 <span class="k">if</span> <span class="n">on</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">:</span> <span class="c1">## pad with zeros in case timewindow starts before data</span>
@@ -638,12 +657,15 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;erpd&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">erpd</span>
             <span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_erpd&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">mask</span>
         
+        <span class="c1"># Use intervals.label as ERPD name if available</span>
+        <span class="n">erpd_name</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">label</span> <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;erpd&quot;</span>
         <span class="n">rerpd</span> <span class="o">=</span> <span class="n">ERPD</span><span class="p">(</span><span class="n">erpd_name</span><span class="p">,</span> <span class="n">txw</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        
         <span class="k">if</span> <span class="n">baseline_win</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">blwin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">baseline_win</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">blwin</span><span class="o">&lt;</span><span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">blwin</span><span class="o">&gt;=</span><span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">blwin</span><span class="o">&lt;</span><span class="n">interval_ms</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">blwin</span><span class="o">&gt;=</span><span class="n">interval_ms</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Baseline window misspecified </span><span class="si">%s</span><span class="s2"> vs. </span><span class="si">%s</span><span class="s2">; &quot;</span>
-                               <span class="s2">&quot;NOT doing baseline correction&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">baseline_win</span><span class="p">,</span> <span class="n">interval</span><span class="p">))</span>
+                               <span class="s2">&quot;NOT doing baseline correction&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">baseline_win</span><span class="p">,</span> <span class="n">interval_ms</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">rerpd</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">(</span><span class="n">baseline_win</span><span class="o">=</span><span class="n">baseline_win</span><span class="p">)</span> 
 

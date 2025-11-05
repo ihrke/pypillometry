@@ -144,7 +144,7 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.blinks_merge</span></code>([eyes, variables, ...])</p></td>
-<td><p>Merge together blinks that are close together.</p></td>
+<td><p>Merge blinks that are close together.</p></td>
 </tr>
 </tbody>
 </table>
@@ -197,8 +197,8 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
-<td><p>Extract event-related pupil dilation (ERPD).</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(intervals[, eyes, ...])</p></td>
+<td><p>Extract event-related pupil dilation (ERPD) from Intervals object.</p></td>
 </tr>
 </tbody>
 </table>
@@ -212,11 +212,11 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.summary</span></code></a>()</p></td>
 <td><p>Return a summary of the dataset as a dictionary.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.stat_per_event</span></code>(interval[, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.stat_per_event</span></code>([intervals, ...])</p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
-<td><p>Extract event-related pupil dilation (ERPD).</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(intervals[, eyes, ...])</p></td>
+<td><p>Extract event-related pupil dilation (ERPD) from Intervals object.</p></td>
 </tr>
 </tbody>
 </table>
@@ -228,14 +228,14 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <p><a class="reference internal" href="erpds.html"><span class="std std-ref">Here is an example notebook for for how to work with ERPDs</span></a>.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(erpd_name, event_select)</p></td>
-<td><p>Extract event-related pupil dilation (ERPD).</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(intervals[, eyes, ...])</p></td>
+<td><p>Extract event-related pupil dilation (ERPD) from Intervals object.</p></td>
 </tr>
 </tbody>
 </table>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">group_erpd</span></code>(datasets, erpd_name, event_select)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">group_erpd</span></code>(datasets, intervals[, ...])</p></td>
 <td><p>Calculate group-level ERPDs by applying <cite>subj_meanfct</cite> to each subj-level ERPD.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPD.summary</span></code>()</p></td>
