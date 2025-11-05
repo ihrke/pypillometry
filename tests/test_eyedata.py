@@ -252,9 +252,66 @@ class TestEyeData(unittest.TestCase):
         # Merge blinks that are within 100ms of each other
         merged = self.eyedata.blinks_merge(eyes=['left'], variables=['pupil'], distance=100)
         blinks = merged.get_blinks('left', 'pupil')
+        
+        # blinks is now an Intervals object
+        from pypillometry.intervals import Intervals
+        self.assertIsInstance(blinks, Intervals)
         self.assertEqual(len(blinks), 1)  # Should merge into one blink
-        self.assertEqual(blinks[0][0], 100)  # Start of first blink
-        self.assertEqual(blinks[0][1], 350)  # End of last blink
+        
+        # Convert to integer indices for indexing
+        blinks_ix = blinks.as_index(merged)
+        self.assertEqual(blinks_ix[0, 0], 100)  # Start of first blink
+        self.assertEqual(blinks_ix[0, 1], 350)  # End of last blink
+        self.assertEqual(blinks_ix.dtype, np.int_)  # Should be integer type
+    
+    def test_get_blinks_returns_empty_intervals(self):
+        """Test that get_blinks returns empty Intervals when no blinks detected"""
+        from pypillometry.intervals import Intervals
+        
+        # Get blinks for an eye that has no blinks
+        blinks = self.eyedata.get_blinks('left', 'pupil')
+        
+        self.assertIsInstance(blinks, Intervals)
+        self.assertEqual(len(blinks), 0)
+    
+    def test_get_blinks_with_units(self):
+        """Test get_blinks with units parameter"""
+        from pypillometry.intervals import Intervals
+        
+        # Create some artificial blinks
+        self.eyedata.set_blinks('left', 'pupil', np.array([[100, 200], [250, 350]]))
+        
+        # Get blinks in different units
+        blinks_idx = self.eyedata.get_blinks('left', 'pupil', units=None)
+        blinks_ms = self.eyedata.get_blinks('left', 'pupil', units='ms')
+        blinks_sec = self.eyedata.get_blinks('left', 'pupil', units='sec')
+        
+        self.assertIsInstance(blinks_idx, Intervals)
+        self.assertIsInstance(blinks_ms, Intervals)
+        self.assertIsInstance(blinks_sec, Intervals)
+        
+        self.assertIsNone(blinks_idx.units)
+        self.assertEqual(blinks_ms.units, 'ms')
+        self.assertEqual(blinks_sec.units, 'sec')
+        
+        self.assertEqual(len(blinks_idx), 2)
+        self.assertEqual(len(blinks_ms), 2)
+        self.assertEqual(len(blinks_sec), 2)
+    
+    def test_get_blinks_merged_multiple_eyes(self):
+        """Test merging blinks across multiple eyes"""
+        from pypillometry.intervals import Intervals
+        
+        # Create blinks for both eyes
+        self.eyedata.set_blinks('left', 'pupil', np.array([[100, 200]]))
+        self.eyedata.set_blinks('right', 'pupil', np.array([[150, 250]]))
+        
+        # Get merged blinks
+        blinks = self.eyedata.get_blinks(['left', 'right'], 'pupil')
+        
+        self.assertIsInstance(blinks, Intervals)
+        # Should merge overlapping blinks
+        self.assertGreater(len(blinks), 0)
 
     def test_stat_per_event(self):
         """Test statistical analysis per event"""
