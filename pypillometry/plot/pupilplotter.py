@@ -1,6 +1,7 @@
 import itertools
 from ..eyedata import GenericEyeData
 from .genplotter import GenericPlotter
+from ..intervals import Intervals
 import numpy as np
 from collections.abc import Iterable
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
@@ -226,45 +227,58 @@ class PupilPlotter(GenericPlotter):
 
         return figs        
 
-    def plot_blinks(self,
-                    eyes: str|list=[], variables: str|list="pupil",
-                    pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
-                    figsize: Tuple[int,int]=(10,10), 
-                    pre_blink: float=200, post_blink: float=200, units: str="ms", 
-                    plot_index: bool=True):
+    def plot_blinks(self, eyes: str|list = [], variables: str|list = "pupil",
+                   pdf_file: str|None = None, nrow: int = 5, ncol: int = 3, 
+                   figsize: tuple = (10, 10),
+                   pre_blink: float = 200, post_blink: float = 200, 
+                   units: str = "ms", plot_index: bool = True) -> list:
         """
-        Plot the detected blinks into separate figures each with nrow x ncol subplots. 
-
+        Plot detected blinks in separate subplots.
+        
         Parameters
         ----------
-        eyes: str or list
-            eyes to plot
-        variables: str or list
-            variables to plot (default "pupil")
-        pdf_file: str or None
-            if the name of a file is given, the figures are saved into a multi-page PDF file
-        ncol: int
-            number of columns for the blink-plots
-        pre_blink: float
-            extend plot a certain time before each blink (in ms)
-        post_blink: float
-            extend plot a certain time after each blink (in ms)
-        units: str
-            units in which the signal is plotted
-        plot_index: bool
-            plot a number with the blinks' index (e.g., for identifying abnormal blinks)
-
+        eyes : str or list
+            Eyes to plot
+        variables : str or list
+            Variables to plot
+        pdf_file : str or None
+            Save to PDF file if provided
+        nrow : int
+            Number of rows per figure
+        ncol : int
+            Number of columns per figure
+        figsize : tuple
+            Figure size (width, height)
+        pre_blink : float
+            Time before blink to include (in ms)
+        post_blink : float
+            Time after blink to include (in ms)
+        units : str
+            Display units for time axis
+        plot_index : bool
+            Show blink index numbers
+            
         Returns
         -------
-
-        list of plt.Figure objects each with nrow*ncol subplots
-        in Jupyter Notebook, those are displayed inline one after the other
+        list
+            List of matplotlib Figure objects
         """
-        from ..intervals import Intervals
+        blinks = self.obj.get_blinks(units=None)
+        if len(blinks) == 0:
+            logger.warning("No blinks to plot")
+            return []
         
-        blinks=self.obj.get_blinks_merged()
-        intervals_list=[(max(0,int(s-pre_blink)),min(self.obj.tx.size,int(e+post_blink))) for s,e in blinks]
-        # Create Intervals object with index units (units=None)
-        intervals = Intervals(intervals_list, units=None, label="blinks")
-        return self.plot_intervals(intervals, eyes, variables, pdf_file, nrow, ncol, figsize, units, plot_index)
+        blinks_ix = blinks.as_index(self.obj)
+        
+        pre_blink_ix = int(pre_blink / 1000 * self.obj.fs)
+        post_blink_ix = int(post_blink / 1000 * self.obj.fs)
+        
+        padded = [
+            (max(0, s - pre_blink_ix), min(len(self.obj.tx), e + post_blink_ix))
+            for s, e in blinks_ix
+        ]
+        
+        intervals = Intervals(padded, units=None, label="blinks")
+        return self.plot_intervals(intervals, eyes, variables,
+                                  pdf_file, nrow, ncol, figsize, units, plot_index)
 
