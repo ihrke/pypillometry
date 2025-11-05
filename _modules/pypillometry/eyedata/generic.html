@@ -223,6 +223,36 @@ window.addEventListener("load", () => mermaid.run());
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return number of sampling points&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delegate unknown attribute access to the plot object.</span>
+<span class="sd">        </span>
+<span class="sd">        This allows calling plot methods directly on the data object:</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; data.plot_timeseries()  # instead of data.plot.plot_timeseries()</span>
+<span class="sd">        &gt;&gt;&gt; data.plot_intervals(intervals, units=&#39;ms&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; data.pupil_plot(plot_range=(0, 1000))</span>
+<span class="sd">        </span>
+<span class="sd">        The original syntax still works:</span>
+<span class="sd">        &gt;&gt;&gt; data.plot.plot_timeseries()  # this still works too</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Avoid infinite recursion - only delegate if &#39;plot&#39; property exists</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Use object.__getattribute__ to avoid recursion</span>
+                <span class="n">plot_obj</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">plot_obj</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">plot_obj</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        
+        <span class="c1"># If not found in plot object, raise the normal AttributeError</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; object has no attribute &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="p">)</span>
+
 <div class="viewcode-block" id="GenericEyeData.nevents">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.nevents">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">nevents</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
