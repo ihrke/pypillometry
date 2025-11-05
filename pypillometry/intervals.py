@@ -302,10 +302,19 @@ class Intervals:
         
         fac = units_to_ms[self.units] / units_to_ms[target_units]
         converted = [(s * fac, e * fac) for s, e in self.intervals]
-        
+        # convert data_time_range to target units if it is not None
+        if self.data_time_range is not None:
+            data_time_range = (self.data_time_range[0] * fac, self.data_time_range[1] * fac)
+        else:
+            data_time_range = None
+        # convert event_onsets to target units if it is not None
+        if self.event_onsets is not None:
+            event_onsets = self.event_onsets * fac
+        else:
+            event_onsets = None
         return Intervals(converted, target_units, self.label,
                         self.event_labels, self.event_indices,
-                        self.data_time_range, self.event_onsets)
+                        data_time_range, event_onsets)
     
     def merge(self):
         """

@@ -306,7 +306,7 @@ class GenericEyeData(ABC):
             intervals_ms = [(self.tx[int(s)], self.tx[int(e)]) for s, e in result.intervals]
             result = Intervals(intervals_ms, "ms", result.label,
                               result.event_labels, result.event_indices,
-                              result.data_time_range, result.event_onsets)
+                              (self.tx[0], self.tx[-1]), result.event_onsets)
             if units != "ms":
                 result = result.to_units(units)
         
