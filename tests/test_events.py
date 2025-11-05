@@ -338,6 +338,185 @@ class TestEventsEdgeCases(unittest.TestCase):
         self.assertEqual(events.labels[1], "B")
 
 
+class TestEventsFiltering(unittest.TestCase):
+    """Test Events.filter_events() method"""
+    
+    def setUp(self):
+        """Create test events"""
+        self.events = Events(
+            onsets=[100, 500, 1000, 1500, 2000],
+            labels=["stim1", "resp", "stim2", "resp", "stim3"],
+            units="ms",
+            data_time_range=(0, 3000)
+        )
+    
+    def test_filter_string_substring(self):
+        """Test filtering by substring matching"""
+        stim_events = self.events.filter_events("stim")
+        
+        self.assertIsInstance(stim_events, Events)
+        self.assertEqual(len(stim_events), 3)
+        np.testing.assert_array_equal(stim_events.onsets, [100, 1000, 2000])
+        np.testing.assert_array_equal(stim_events.labels, ["stim1", "stim2", "stim3"])
+    
+    def test_filter_string_exact_match(self):
+        """Test filtering with exact label match"""
+        resp_events = self.events.filter_events("resp")
+        
+        self.assertEqual(len(resp_events), 2)
+        np.testing.assert_array_equal(resp_events.onsets, [500, 1500])
+        np.testing.assert_array_equal(resp_events.labels, ["resp", "resp"])
+    
+    def test_filter_string_no_match(self):
+        """Test filtering with no matches returns empty Events"""
+        empty_events = self.events.filter_events("nonexistent")
+        
+        self.assertIsInstance(empty_events, Events)
+        self.assertEqual(len(empty_events), 0)
+        self.assertEqual(empty_events.units, "ms")
+    
+    def test_filter_function_simple(self):
+        """Test filtering with simple function"""
+        # Filter events containing digit 2
+        events = self.events.filter_events(lambda label: "2" in label)
+        
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events.labels[0], "stim2")
+    
+    def test_filter_function_complex(self):
+        """Test filtering with more complex function"""
+        # Filter events that start with 's'
+        events = self.events.filter_events(lambda label: label.startswith("s"))
+        
+        self.assertEqual(len(events), 3)
+        np.testing.assert_array_equal(events.labels, ["stim1", "stim2", "stim3"])
+    
+    def test_filter_function_with_condition(self):
+        """Test filtering with conditional function"""
+        # Filter events where label length > 4
+        events = self.events.filter_events(lambda label: len(label) > 4)
+        
+        self.assertEqual(len(events), 3)
+        np.testing.assert_array_equal(events.labels, ["stim1", "stim2", "stim3"])
+    
+    def test_filter_time_range_middle(self):
+        """Test filtering by time range in middle"""
+        middle_events = self.events.filter_events((400, 1600))
+        
+        self.assertEqual(len(middle_events), 3)
+        np.testing.assert_array_equal(middle_events.onsets, [500, 1000, 1500])
+    
+    def test_filter_time_range_beginning(self):
+        """Test filtering by time range at beginning"""
+        early_events = self.events.filter_events((0, 600))
+        
+        self.assertEqual(len(early_events), 2)
+        np.testing.assert_array_equal(early_events.onsets, [100, 500])
+    
+    def test_filter_time_range_end(self):
+        """Test filtering by time range at end"""
+        late_events = self.events.filter_events((1400, 3000))
+        
+        self.assertEqual(len(late_events), 2)
+        np.testing.assert_array_equal(late_events.onsets, [1500, 2000])
+    
+    def test_filter_time_range_inclusive(self):
+        """Test that time range filtering is inclusive"""
+        # Should include events exactly at boundaries
+        events = self.events.filter_events((500, 1000))
+        
+        self.assertEqual(len(events), 2)
+        np.testing.assert_array_equal(events.onsets, [500, 1000])
+    
+    def test_filter_time_range_no_match(self):
+        """Test time range filtering with no matches"""
+        empty_events = self.events.filter_events((5000, 6000))
+        
+        self.assertEqual(len(empty_events), 0)
+    
+    def test_filter_time_range_invalid_order(self):
+        """Test that invalid time range raises error"""
+        with self.assertRaises(ValueError) as cm:
+            self.events.filter_events((1000, 500))
+        
+        self.assertIn("min_time must be < max_time", str(cm.exception))
+    
+    def test_filter_time_range_invalid_length(self):
+        """Test that time range with wrong length raises error"""
+        with self.assertRaises(ValueError) as cm:
+            self.events.filter_events((100, 200, 300))
+        
+        self.assertIn("tuple of (min_time, max_time)", str(cm.exception))
+    
+    def test_filter_invalid_type(self):
+        """Test that invalid selector type raises error"""
+        with self.assertRaises(TypeError) as cm:
+            self.events.filter_events(123)
+        
+        self.assertIn("str, callable, or tuple", str(cm.exception))
+    
+    def test_filter_preserves_units(self):
+        """Test that filtering preserves units"""
+        filtered = self.events.filter_events("stim")
+        
+        self.assertEqual(filtered.units, self.events.units)
+    
+    def test_filter_preserves_time_range(self):
+        """Test that filtering preserves data_time_range"""
+        filtered = self.events.filter_events("stim")
+        
+        self.assertEqual(filtered.data_time_range, self.events.data_time_range)
+    
+    def test_filter_chaining_string_then_time(self):
+        """Test chaining filters: string then time range"""
+        result = self.events.filter_events("stim").filter_events((0, 1500))
+        
+        self.assertEqual(len(result), 2)
+        np.testing.assert_array_equal(result.labels, ["stim1", "stim2"])
+    
+    def test_filter_chaining_time_then_string(self):
+        """Test chaining filters: time range then string"""
+        result = self.events.filter_events((400, 1600)).filter_events("resp")
+        
+        self.assertEqual(len(result), 2)
+        np.testing.assert_array_equal(result.onsets, [500, 1500])
+    
+    def test_filter_chaining_multiple(self):
+        """Test chaining multiple filters"""
+        result = (self.events
+                  .filter_events(lambda label: len(label) > 4)
+                  .filter_events((0, 1500))
+                  .filter_events("1"))
+        
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result.labels[0], "stim1")
+    
+    def test_filter_returns_new_object(self):
+        """Test that filtering returns a new Events object (immutable)"""
+        original_len = len(self.events)
+        filtered = self.events.filter_events("stim")
+        
+        # Original should be unchanged
+        self.assertEqual(len(self.events), original_len)
+        self.assertIsNot(filtered, self.events)
+    
+    def test_filter_empty_events(self):
+        """Test filtering empty Events"""
+        empty = Events([], [], units="ms")
+        result = empty.filter_events("test")
+        
+        self.assertEqual(len(result), 0)
+    
+    def test_filter_with_different_units(self):
+        """Test filtering works with different units"""
+        events_sec = Events([1.0, 2.0, 3.0], ["A", "B", "C"], units="sec")
+        filtered = events_sec.filter_events((1.5, 2.5))
+        
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered.onsets[0], 2.0)
+        self.assertEqual(filtered.units, "sec")
+
+
 if __name__ == '__main__':
     unittest.main()
 

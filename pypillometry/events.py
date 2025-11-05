@@ -262,11 +262,11 @@ class Events:
         """
         if isinstance(selector, str):
             # String selector: substring matching
-            mask = np.array([selector in label for label in self.labels])
+            mask = np.array([selector in label for label in self.labels], dtype=bool)
         
         elif callable(selector):
             # Function selector: apply to each label
-            mask = np.array([bool(selector(label)) for label in self.labels])
+            mask = np.array([bool(selector(label)) for label in self.labels], dtype=bool)
         
         elif isinstance(selector, tuple):
             # Time range selector
