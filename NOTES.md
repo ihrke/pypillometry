@@ -4,6 +4,7 @@
 - [ ] `FakePupilData` (and `FakeGazeData`?)
 - [ ] update docs
 
+- [ ] make blink-detection better by also using x-y data (implement an EyeData.blinks_detect() function that uses both gaze and pupil)
 
 ## Status of implementation 2025-03-06
 

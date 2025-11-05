@@ -176,6 +176,36 @@ class GenericEyeData(ABC):
         """Return number of sampling points"""
         return len(self.tx)
 
+    def __getattr__(self, name):
+        """
+        Delegate unknown attribute access to the plot object.
+        
+        This allows calling plot methods directly on the data object:
+        
+        Examples
+        --------
+        >>> data.plot_timeseries()  # instead of data.plot.plot_timeseries()
+        >>> data.plot_intervals(intervals, units='ms')
+        >>> data.pupil_plot(plot_range=(0, 1000))
+        
+        The original syntax still works:
+        >>> data.plot.plot_timeseries()  # this still works too
+        """
+        # Avoid infinite recursion - only delegate if 'plot' property exists
+        if name != 'plot':
+            try:
+                # Use object.__getattribute__ to avoid recursion
+                plot_obj = object.__getattribute__(self, 'plot')
+                if hasattr(plot_obj, name):
+                    return getattr(plot_obj, name)
+            except AttributeError:
+                pass
+        
+        # If not found in plot object, raise the normal AttributeError
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{name}'"
+        )
+
     def nevents(self) -> int:
         """Return number of events in data."""
         return self.event_onsets.size
