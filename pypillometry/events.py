@@ -220,4 +220,75 @@ class Events:
             parts.append(f"range={range_str}")
         
         return " | ".join(parts)
+    
+    def filter_events(self, selector) -> 'Events':
+        """
+        Filter events and return a new Events object.
+        
+        This method supports multiple types of selectors for flexible filtering:
+        - String: matches labels containing the substring
+        - Callable: applies function to each label, keeps events where it returns True
+        - Tuple: filters by time range (min_time, max_time)
+        
+        Parameters
+        ----------
+        selector : str, callable, or tuple
+            Filtering criterion:
+            - str: substring to search for in labels
+            - callable: function that takes a label and returns bool
+            - tuple: (min_time, max_time) to filter by onset time range
+            
+        Returns
+        -------
+        Events
+            New Events object containing only the filtered events
+            
+        Examples
+        --------
+        >>> events = Events([100, 500, 1000], ["stim", "resp", "stim"], units="ms")
+        >>> stim_events = events.filter_events("stim")
+        >>> len(stim_events)
+        2
+        
+        >>> # Filter by custom function
+        >>> events = Events([100, 200], ["A1", "B2"], units="ms")
+        >>> numeric = events.filter_events(lambda label: label[-1].isdigit())
+        
+        >>> # Filter by time range
+        >>> events = Events([100, 500, 1000], ["A", "B", "C"], units="ms")
+        >>> middle = events.filter_events((200, 800))
+        >>> len(middle)
+        1
+        """
+        if isinstance(selector, str):
+            # String selector: substring matching
+            mask = np.array([selector in label for label in self.labels])
+        
+        elif callable(selector):
+            # Function selector: apply to each label
+            mask = np.array([bool(selector(label)) for label in self.labels])
+        
+        elif isinstance(selector, tuple):
+            # Time range selector
+            if len(selector) != 2:
+                raise ValueError("Time range selector must be a tuple of (min_time, max_time)")
+            
+            min_time, max_time = selector
+            if min_time >= max_time:
+                raise ValueError(f"min_time must be < max_time, got {min_time} >= {max_time}")
+            
+            mask = np.logical_and(self.onsets >= min_time, self.onsets <= max_time)
+        
+        else:
+            raise TypeError(
+                f"selector must be str, callable, or tuple, got {type(selector)}"
+            )
+        
+        # Create new Events with filtered data
+        return Events(
+            onsets=self.onsets[mask],
+            labels=self.labels[mask],
+            units=self.units,
+            data_time_range=self.data_time_range
+        )
 
