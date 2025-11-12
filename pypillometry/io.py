@@ -362,14 +362,18 @@ def read_pickle(fname):
     return obj
 
 @requires_package("eyelinkio")
-def read_eyelink(fname:str):
+def read_eyelink(source: str, cache_file: str = None, force_download: bool = False):
     """
     Read an Eyelink file/URL and return the object returned by the "eyelinkio" package.
     
     Parameters
     ----------
-    fname: str
-        filename of the Eyelink file
+    source: str
+        filename of the Eyelink file or URL
+    cache_file: str, optional
+        filename to cache the file in case it is downloaded from a URL
+    force_download: bool, optional
+        if True, force re-download even if file exists locally
 
     Returns
     -------
@@ -378,13 +382,27 @@ def read_eyelink(fname:str):
     """
     import eyelinkio
 
-    # download file if it is a URL
-    if is_url(fname):
-        fname = download(fname)
-    
+    # Handle if source is a URL or local file
+    if is_url(source):
+        if cache_file is not None:
+            # If cached file exists and no force_download, use it
+            if os.path.exists(cache_file) and not force_download:
+                fname = cache_file
+            else:
+                cache_dir = os.path.dirname(cache_file)
+                # If cache_dir is non-empty and does not exist, make it
+                if cache_dir and not os.path.exists(cache_dir):
+                    logger.info(f"Creating directory for cache file: {cache_dir}")
+                    os.makedirs(cache_dir, exist_ok=True)
+                fname = download(source, cache_file)
+        else:
+            fname = download(source)
+    else:
+        fname = source
+
     # Check if DEBUG logging is enabled
     current_level = logging_get_level()
-    show_eyelinkio_output = current_level == "DEBUG"
+    show_eyelinkio_output = (current_level == "DEBUG")
 
     if show_eyelinkio_output:
         logger.debug(f"Loading EDF file: {fname}")
@@ -392,7 +410,7 @@ def read_eyelink(fname:str):
         edf = eyelinkio.read_edf(fname)
     else:
         logger.info(f"Loading EDF file: {fname} (current log level: {current_level}, set to DEBUG to see eyelinkio output)")
-        # Suppress eyelinkio output for non-DEBUG levels
         with suppress_all_output():
             edf = eyelinkio.read_edf(fname)
+
     return edf

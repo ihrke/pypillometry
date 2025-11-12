@@ -606,7 +606,7 @@ class GenericEyeData(ABC):
         return r
 
     @classmethod
-    def from_eyelink(cls, fname:str, return_edf_obj:bool=False, remove_eyelink_triggers:bool=False):
+    def from_eyelink(cls, fname:str, return_edf_obj:bool=False, remove_eyelink_triggers:bool=False, **kwargs):
         """
         Reads a :class:`.GenericEyedata` object from an Eyelink file.
 
@@ -626,6 +626,8 @@ class GenericEyeData(ABC):
             if False, return only the object of class :class:`.GenericEyedata`
         remove_eyelink_triggers: bool
             if True, remove all Eyelink triggers from the event_labels (related to eye-tracker settings, calibration, validation etc)
+        kwargs: dict
+            additional arguments to pass to the pypillometry.io.read_eyelink()
 
         Returns
         -------
@@ -633,7 +635,7 @@ class GenericEyeData(ABC):
             object of class :class:`.GenericEyedata` or tuple with the object of class :class:`.GenericEyedata` and the object returned by the "eyelinkio" package
 
         """
-        edf = io.read_eyelink(fname)
+        edf = io.read_eyelink(fname, **kwargs)
         
         # convert data from EDF to EyeDataDict
         avail_data_fields = edf["info"]["sample_fields"]
