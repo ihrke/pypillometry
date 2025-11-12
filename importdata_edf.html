@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Importing Data from Eyelink EDF files Example &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Importing Data from Eyelink EDF files Example</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/importdata_edf.ipynb">importdata_edf.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=importdata_edf.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Importing-Data-from-Eyelink-EDF-files-Example">
+<h1>Importing Data from Eyelink EDF files Example<a class="headerlink" href="#Importing-Data-from-Eyelink-EDF-files-Example" title="Link to this heading">¶</a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</pre></div>
+</div>
+</div>
+<p>The easiest way is to use a local filename or a URL where the EDF file is stored:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">url</span><span class="o">=</span><span class="s1">&#39;https://osf.io/trsuq/download&#39;</span> <span class="c1"># will download the file from OSF</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+tmpfxwzpzg0: 100%|██████████| 14.2M/14.2M [00:01&lt;00:00, 11.6MiB/s]
+<span class="ansi-green-fg">pp: 10:45:45</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">read_eyelink</span>:<span class="ansi-cyan-fg">582</span> | <span class="ansi-bold">Loading EDF file: /tmp/tmpfxwzpzg0 (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EyeData(tmpfxwzpzg0, 61.1MiB):
+ n                   : 598885
+ sampling_rate       : 500.0
+ data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;right_pupil&#39;]
+ nevents             : 1685
+ screen_limits       : ((0, 1280), (0, 1024))
+ physical_screen_size: not set
+ screen_eye_distance : not set
+ duration_minutes    : 19.962833333333336
+ start_min           : 0.0
+ end_min             : 19.9628
+ parameters          : {}
+ glimpse             : EyeDataDict(vars=6,n=598885,shape=(598885,)):
+  left_x (float64): 668.2000122070312, 660.5999755859375, 650.0, 639.0999755859375, 628.4000244140625...
+  left_y (float64): 491.1000061035156, 490.1000061035156, 489.3999938964844, 488.5, 488.0...
+  left_pupil (float64): 724.0, 724.0, 725.0, 727.0, 727.0...
+  right_x (float64): 682.7999877929688, 679.5, 674.5, 662.7000122070312, 644.2999877929688...
+  right_y (float64): 505.20001220703125, 502.8999938964844, 501.29998779296875, 499.0, 496.3999938964844...
+  right_pupil (float64): 637.0, 642.0, 644.0, 639.0, 636.0...
+
+ eyes                : [&#39;right&#39;, &#39;left&#39;]
+ nblinks             : {}
+ blinks              : {&#39;right&#39;: None, &#39;left&#39;: None}
+ params              : {}
+ Info: 1 keys: eyelink_info
+ History:
+ *
+ └ fill_time_discontinuities()
+</pre></div></div>
+</div>
+<p>You can also cache a local copy of the file to avoid further downloads. The following command will download the file only the first time and read it from the local file the second time it is run:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="s2">&quot;example_data/test.edf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 10:43:39</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">read_eyelink</span>:<span class="ansi-cyan-fg">582</span> | <span class="ansi-bold">Loading EDF file: example_data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+</pre></div></div>
+</div>
+<p>This works for publicly shared EDF files such as the one under the link <a class="reference external" href="https://osf.io/trsuq/download">https://osf.io/trsuq/download</a>. If you want to load data from a private OSF repository, you will need to authenticate first. To do that, create a “Personal access token” on your OSF page under <a class="reference external" href="https://osf.io/settings/tokens">https://osf.io/settings/tokens</a>.</p>
+<p>Copy that token and store it in a variable or a protected file (CAUTION: if you share that token, they will be able to access your private OSF data). Here, I stored my token in a file “my_osf_token.secret” so that the token is not revealed in the documentation:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">private_url</span> <span class="o">=</span> <span class="s2">&quot;https://osf.io/5vkj3/download&quot;</span>
+
+<span class="c1"># read the token from the file</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;my_osf_token.secret&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+<span class="c1"># use the token to authenticate to OSF</span>
+<span class="n">session</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">osf_authenticate</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">private_url</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 10:47:38</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">osf_authenticate</span>:<span class="ansi-cyan-fg">81</span> | <span class="ansi-bold">OSF token validation succeeded.</span>
+tmpml4svjq1: 100%|██████████| 43.9M/43.9M [00:05&lt;00:00, 8.24MiB/s]
+<span class="ansi-green-fg">pp: 10:47:46</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">read_eyelink</span>:<span class="ansi-cyan-fg">582</span> | <span class="ansi-bold">Loading EDF file: /tmp/tmpml4svjq1 (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 10:48:20</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">682</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+</pre></div></div>
+</div>
+<p>The result is an <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object containing all the data and samples.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># plot the timeseries for a minute of data (min 10-11)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot_timeseries</span><span class="p">(</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/importdata_edf_9_0.png" src="_images/importdata_edf_9_0.png" />
+</div>
+</div>
+<p>Note: The <code class="docutils literal notranslate"><span class="pre">EyeData.from_eyelink()</span></code> function removes Eyelink’s triggers related to calibration and validation. If you want those, you can use keyword arguments</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">remove_eyelink_triggers=False</span></code> to keep those</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">return_edf_obj=True</span></code> to return the original <code class="docutils literal notranslate"><span class="pre">eyelinkio</span></code> object that contains all information (including saccade detection etc)</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="p">,</span><span class="n">edfobj</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">private_url</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">return_edf_obj</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">edfobj</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+tmpr8bngegk: 100%|██████████| 43.9M/43.9M [00:03&lt;00:00, 14.0MiB/s]
+<span class="ansi-green-fg">pp: 10:53:42</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">read_eyelink</span>:<span class="ansi-cyan-fg">582</span> | <span class="ansi-bold">Loading EDF file: /tmp/tmpr8bngegk (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 10:54:17</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">682</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;EDF | tmpr8bngegk&gt;
+  Version: EYELINK II 1
+  Eye: BINOCULAR
+  Pupil unit: PUPIL_AREA
+  Sampling frequency: 1000.0 Hz
+  Calibrations: 4
+  Length: 1905.643 seconds
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">edfobj</span><span class="p">[</span><span class="s2">&quot;discrete&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;messages&#39;: array([(   0.   , b&#39;!CAL \n&gt;&gt;&gt;&gt;&gt;&gt;&gt; CALIBRATION (HV9,P-CR) FOR LEFT: &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&#39;),
+        (   0.   , b&#39;!CAL Calibration points:  &#39;),
+        (   0.   , b&#39;!CAL -15.8, -58.2         0,    264   &#39;), ...,
+        (1875.54 , b&#39;TRIG_TASK_END_253&#39;),
+        (1905.633, b&#39;TRIG_SESSION_END_249&#39;), (1905.642, b&#39;RECORDING_STOP&#39;)],
+       dtype=[(&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;msg&#39;, &#39;S260&#39;)]),
+ &#39;buttons&#39;: array([(0., 0.), (0., 0.), (0., 0.), (0., 0.)],
+       dtype=[(&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;buttons&#39;, &#39;&lt;f8&#39;)]),
+ &#39;inputs&#39;: array([(0., 0.), (0., 0.), (0., 0.), (0., 0.)],
+       dtype=[(&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;input&#39;, &#39;&lt;f8&#39;)]),
+ &#39;fixations&#39;: array([(0., 7.000000e-03, 2.590000e-01,  971.09997559, 628.5       ),
+        (1., 1.000000e-02, 2.590000e-01,  986.29998779, 627.59997559),
+        (1., 3.190000e-01, 4.480000e-01,  644.40002441, 532.20001221), ...,
+        (1., 1.905359e+03, 1.905453e+03, 1068.19995117, 514.79998779),
+        (0., 1.905515e+03, 1.905641e+03,  853.5       , 488.5       ),
+        (1., 1.905506e+03, 1.905641e+03,  858.70001221, 567.40002441)],
+       dtype=[(&#39;eye&#39;, &#39;&lt;f8&#39;), (&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;etime&#39;, &#39;&lt;f8&#39;), (&#39;axp&#39;, &#39;&lt;f8&#39;), (&#39;ayp&#39;, &#39;&lt;f8&#39;)]),
+ &#39;saccades&#39;: array([(1., 2.600000e-01, 3.180000e-01,  978.70001221, 627.09997559,  655.09997559, 535.70001221, 349.5       ),
+        (0., 2.600000e-01, 3.490000e-01,  974.        , 628.29998779,  651.90002441, 494.1000061 , 265.3999939 ),
+        (1., 4.490000e-01, 5.050000e-01,  649.70001221, 530.20001221,  405.79998779, 517.59997559, 295.70001221),
+        ...,
+        (1., 1.905350e+03, 1.905358e+03, 1027.19995117, 563.5       , 1043.90002441, 545.40002441,  76.90000153),
+        (1., 1.905454e+03, 1.905505e+03, 1074.80004883, 502.70001221,  873.90002441, 562.79998779, 474.3999939 ),
+        (0., 1.905452e+03, 1.905514e+03, 1045.90002441, 441.20001221,  852.40002441, 488.70001221, 352.        )],
+       dtype=[(&#39;eye&#39;, &#39;&lt;f8&#39;), (&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;etime&#39;, &#39;&lt;f8&#39;), (&#39;sxp&#39;, &#39;&lt;f8&#39;), (&#39;syp&#39;, &#39;&lt;f8&#39;), (&#39;exp&#39;, &#39;&lt;f8&#39;), (&#39;eyp&#39;, &#39;&lt;f8&#39;), (&#39;pv&#39;, &#39;&lt;f8&#39;)]),
+ &#39;blinks&#39;: array([(1.,    7.771,    7.866), (0.,    7.769,    7.867),
+        (1.,   12.847,   12.948), ..., (1., 1904.197, 1904.301),
+        (0., 1905.097, 1905.194), (1., 1904.869, 1905.205)],
+       dtype=[(&#39;eye&#39;, &#39;&lt;f8&#39;), (&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;etime&#39;, &#39;&lt;f8&#39;)])}
+</pre></div></div>
+</div>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/importdata_edf.ipynb">importdata_edf.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=importdata_edf.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/importdata_edf.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Importing Data from Eyelink EDF files Example</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

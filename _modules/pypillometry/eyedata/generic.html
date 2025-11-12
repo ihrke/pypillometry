@@ -53,7 +53,8 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">sizeof_fmt</span><span class="p">,</span> <span class="n">ByteSize</span><span class="p">,</span> <span class="n">requires_package</span><span class="p">,</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">download</span><span class="p">,</span> <span class="n">suppress_all_output</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">sizeof_fmt</span><span class="p">,</span> <span class="n">ByteSize</span><span class="p">,</span> <span class="n">requires_package</span><span class="p">,</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">suppress_all_output</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..io</span><span class="w"> </span><span class="kn">import</span> <span class="n">download</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">CachedEyeDataDict</span><span class="p">,</span> <span class="n">EyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">baseline</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">stat_event_interval</span><span class="p">,</span> <span class="n">get_interval_stats</span><span class="p">,</span> <span class="n">merge_intervals</span><span class="p">,</span> <span class="n">Intervals</span>
@@ -586,21 +587,23 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="GenericEyeData.reset_time">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.reset_time">[docs]</a>
     <span class="nd">@keephistory</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">reset_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Resets time so that the time-array starts at time zero (t0).</span>
 <span class="sd">        Resets onsets etc.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        t0: float</span>
-<span class="sd">            time at which the :class:`.PupilData`&#39;s time-vector starts</span>
+<span class="sd">        t0: float or None</span>
+<span class="sd">            time at which the :class:`.PupilData`&#39;s time-vector starts; if None, use the first time point</span>
 <span class="sd">        inplace: bool</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes</span>
 <span class="sd">            if `None`, use the setting of the object (specified in constructor)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">t0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">-</span><span class="n">t0</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">-</span><span class="n">t0</span>
         <span class="k">return</span> <span class="n">obj</span></div>
@@ -697,7 +700,10 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="GenericEyeData.from_eyelink">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.from_eyelink">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_eyelink</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">return_edf_obj</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_eyelink</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> 
+        <span class="n">return_edf_obj</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+        <span class="n">remove_eyelink_triggers</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reads a :class:`.GenericEyedata` object from an Eyelink file.</span>
 
@@ -715,6 +721,10 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        return_edf_obj: bool</span>
 <span class="sd">            if True, return a tuple with the object of class :class:`.GenericEyedata` and the object returned by the &quot;eyelinkio&quot; package</span>
 <span class="sd">            if False, return only the object of class :class:`.GenericEyedata`</span>
+<span class="sd">        remove_eyelink_triggers: bool</span>
+<span class="sd">            if True, remove all Eyelink triggers from the event_labels (related to eye-tracker settings, calibration, validation etc)</span>
+<span class="sd">        kwargs: dict</span>
+<span class="sd">            additional arguments to pass to the pypillometry.io.read_eyelink()</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -722,7 +732,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">            object of class :class:`.GenericEyedata` or tuple with the object of class :class:`.GenericEyedata` and the object returned by the &quot;eyelinkio&quot; package</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">edf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">read_eyelink</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">edf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">read_eyelink</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         
         <span class="c1"># convert data from EDF to EyeDataDict</span>
         <span class="n">avail_data_fields</span> <span class="o">=</span> <span class="n">edf</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="s2">&quot;sample_fields&quot;</span><span class="p">]</span>
@@ -752,6 +762,20 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span> <span class="o">**</span><span class="n">d</span><span class="p">,</span> <span class="n">event_onsets</span><span class="o">=</span><span class="n">evon</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">evlab</span><span class="p">,</span> 
             <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> 
             <span class="n">screen_resolution</span><span class="o">=</span><span class="n">edf</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="s2">&quot;screen_coords&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="n">edf</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="s2">&quot;filename&quot;</span><span class="p">])</span>
+
+        <span class="c1"># filter out irrelevant triggers</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">eyelink_filter_func</span><span class="p">(</span><span class="n">lab</span><span class="p">):</span>
+            <span class="n">ban_strings</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;!CAL&quot;</span><span class="p">,</span> <span class="s2">&quot;VALIDATE&quot;</span><span class="p">,</span> <span class="s2">&quot;RECCFG&quot;</span><span class="p">,</span> <span class="s2">&quot;GAZE_COORDS&quot;</span><span class="p">,</span> <span class="s2">&quot;ELCL_WINDOW_SIZES&quot;</span><span class="p">,</span> 
+                        <span class="s2">&quot;CAMERA_LENS_FOCAL_LENGTH&quot;</span><span class="p">,</span> <span class="s2">&quot;ELCL_PROC&quot;</span><span class="p">,</span> <span class="s2">&quot;!MODE&quot;</span><span class="p">,</span> <span class="s2">&quot;ELCLCFG&quot;</span><span class="p">,</span> <span class="s2">&quot;THRESHOLDS&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;ELCL_PCR_PARAM&quot;</span><span class="p">]</span>
+            <span class="n">isbanned</span> <span class="o">=</span> <span class="p">[</span><span class="n">bstr</span> <span class="ow">in</span> <span class="n">lab</span> <span class="k">for</span> <span class="n">bstr</span> <span class="ow">in</span> <span class="n">ban_strings</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">isbanned</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">remove_eyelink_triggers</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Filtering out Eyelink triggers&quot;</span><span class="p">)</span>
+            <span class="n">ev</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+            <span class="n">evs</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">eyelink_filter_func</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">set_events</span><span class="p">(</span><span class="n">evs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">return_edf_obj</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">obj</span><span class="p">,</span> <span class="n">edf</span>

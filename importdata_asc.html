@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Importing Data from Eyelink ASC files Example &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Importing Data from Eyelink ASC files Example</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/importdata_asc.ipynb">importdata_asc.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=importdata_asc.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Importing-Data-from-Eyelink-ASC-files-Example">
+<h1>Importing Data from Eyelink ASC files Example<a class="headerlink" href="#Importing-Data-from-Eyelink-ASC-files-Example" title="Link to this heading">¶</a></h1>
+<p>This example shows how to read <code class="docutils literal notranslate"><span class="pre">.asc</span></code> files generated from Eyelink EDF files using <code class="docutils literal notranslate"><span class="pre">edf2asc</span></code>. Most likely, it will be better to read the EDF file directly, see the <a href="#id1"><span class="problematic" id="id2">`notebook on reading EDF files &lt;&gt;`__</span></a>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</pre></div>
+</div>
+</div>
+<p>In this example, we use data recorded with an Eyelink-eyetracker. These eyetrackers store the files in binary files with the extension <code class="docutils literal notranslate"><span class="pre">.edf</span></code>. Some information about this file-format is <a class="reference external" href="http://download.sr-support.com/dispdoc/page25.html">here</a>. We use a command-line utility released by Eyelink to convert this proprietory format into a more easily read <code class="docutils literal notranslate"><span class="pre">.asc</span></code> file that is a whitespace-separated plain-text format. The converter, <code class="docutils literal notranslate"><span class="pre">edf2asc</span></code> is a program that can be downloaded for different
+platforms from the <a class="reference external" href="https://www.sr-research.com/support/">Eyelink support forum</a>. There is a GUI-based program for windows and command-line programs for linux and mac. Binaries of the command-line tools for linux and mac are included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> under <a class="reference external" href="https://github.com/ihrke/pypillometry/tree/master/external">this link</a>.</p>
+<p>On linux, we would call these programs on an example edf-file twice as follows.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>../external/edf2asc-linux<span class="w"> </span>-y<span class="w"> </span>-s<span class="w"> </span>../data/test.edf<span class="w"> </span>../data/test_samples.asc
+<span class="o">!</span>../external/edf2asc-linux<span class="w"> </span>-y<span class="w"> </span>-e<span class="w"> </span>../data/test.edf<span class="w"> </span>../data/test_events.asc
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+EDF2ASC: EyeLink EDF file -&gt; ASCII (text) file translator
+EDF2ASC version 3.0 Linux Dec  1 2008
+(c)1995-2007 by SR Research, last modified Dec  1 2008
+
+processing file ../data/test.edf
+=======================Preamble of file ../data/test.edf=======================
+| DATE: Fri Feb 14 08:48:33 2020                                              |
+| TYPE: EDF_FILE BINARY EVENT SAMPLE TAGGED                                   |
+| VERSION: EYELINK II 1                                                       |
+| SOURCE: EYELINK CL                                                          |
+| EYELINK II CL v6.12 Feb  1 2018 (EyeLink Portable Duo)                      |
+| CAMERA: EyeLink USBCAM Version 1.01                                         |
+| SERIAL NUMBER: CLU-DAC49                                                    |
+| CAMERA_CONFIG: DAC49200.SCD                                                 |
+| Psychopy GC demo                                                            |
+===============================================================================
+
+Converted successfully: 0 events, 1245363 samples, 6 blocks.
+
+EDF2ASC: EyeLink EDF file -&gt; ASCII (text) file translator
+EDF2ASC version 3.0 Linux Dec  1 2008
+(c)1995-2007 by SR Research, last modified Dec  1 2008
+
+processing file ../data/test.edf
+=======================Preamble of file ../data/test.edf=======================
+| DATE: Fri Feb 14 08:48:33 2020                                              |
+| TYPE: EDF_FILE BINARY EVENT SAMPLE TAGGED                                   |
+| VERSION: EYELINK II 1                                                       |
+| SOURCE: EYELINK CL                                                          |
+| EYELINK II CL v6.12 Feb  1 2018 (EyeLink Portable Duo)                      |
+| CAMERA: EyeLink USBCAM Version 1.01                                         |
+| SERIAL NUMBER: CLU-DAC49                                                    |
+| CAMERA_CONFIG: DAC49200.SCD                                                 |
+| Psychopy GC demo                                                            |
+===============================================================================
+
+Converted successfully: 37139 events, 0 samples, 6 blocks.
+</pre></div></div>
+</div>
+<p>This results in two files, one containing all the samples and one all the recorded events.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fname_samples</span><span class="o">=</span><span class="s2">&quot;../data/test_samples.asc&quot;</span>
+<span class="n">fname_events</span><span class="o">=</span><span class="s2">&quot;../data/test_events.asc&quot;</span>
+</pre></div>
+</div>
+</div>
+<p>The samples-files contains a large table containing the timestamp, x/y-coordinates for the eyeposition and pupil-area for both the left and the right eye. Here are the first few rows of this file:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>head<span class="w"> </span><span class="nv">$fname_samples</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+3385900   817.3   345.2  1707.0   860.6   375.2  1738.0 .....
+3385902   817.0   343.5  1706.0   860.7   375.9  1739.0 .....
+3385904   816.7   341.6  1705.0   861.2   376.6  1739.0 .....
+3385906   816.7   340.4  1706.0   861.7   376.8  1740.0 .....
+3385908   816.7   340.2  1707.0   861.6   376.9  1742.0 .....
+3385910   816.8   340.2  1708.0   861.1   377.1  1743.0 .....
+3385912   816.9   340.9  1708.0   860.7   377.5  1744.0 .....
+3385914   816.1   342.1  1710.0   861.1   378.7  1745.0 .....
+3385916   815.2   343.2  1712.0   862.5   380.0  1746.0 .....
+3385918   814.4   343.6  1713.0   863.9   380.7  1747.0 .....
+</pre></div></div>
+</div>
+<p>We can easily read this file using <code class="docutils literal notranslate"><span class="pre">pandas.read_csv()</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="s2">&quot;left_p&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;right_x&quot;</span><span class="p">,</span> <span class="s2">&quot;right_y&quot;</span><span class="p">,</span> <span class="s2">&quot;right_p&quot;</span><span class="p">])</span>
+<span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
+<span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span>
+
+<span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="o">.</span><span class="n">values</span>
+<span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span>
+
+<span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="o">.</span><span class="n">values</span>
+<span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span>
+
+<span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="o">.</span><span class="n">values</span>
+<span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span>
+
+
+<span class="n">df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_476872/154614805.py:1: ParserWarning: Length of header or names does not match length of data. This leads to a loss of data with index_col=False.
+  df=pd.read_table(fname_samples, index_col=False,
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>left_x</th>
+      <th>left_y</th>
+      <th>left_p</th>
+      <th>right_x</th>
+      <th>right_y</th>
+      <th>right_p</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>3385900</td>
+      <td>817.3</td>
+      <td>345.2</td>
+      <td>1707.0</td>
+      <td>860.6</td>
+      <td>375.2</td>
+      <td>1738.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>3385902</td>
+      <td>817.0</td>
+      <td>343.5</td>
+      <td>1706.0</td>
+      <td>860.7</td>
+      <td>375.9</td>
+      <td>1739.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3385904</td>
+      <td>816.7</td>
+      <td>341.6</td>
+      <td>1705.0</td>
+      <td>861.2</td>
+      <td>376.6</td>
+      <td>1739.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3385906</td>
+      <td>816.7</td>
+      <td>340.4</td>
+      <td>1706.0</td>
+      <td>861.7</td>
+      <td>376.8</td>
+      <td>1740.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>3385908</td>
+      <td>816.7</td>
+      <td>340.2</td>
+      <td>1707.0</td>
+      <td>861.6</td>
+      <td>376.9</td>
+      <td>1742.0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1245358</th>
+      <td>5923060</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1245359</th>
+      <td>5923062</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1245360</th>
+      <td>5923064</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1245361</th>
+      <td>5923066</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1245362</th>
+      <td>5923068</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>1245363 rows × 7 columns</p>
+</div></div>
+</div>
+<p>We can already use this information to create our <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>-object. We simply pass in the pupil-area of the right eye (column <code class="docutils literal notranslate"><span class="pre">right_p</span></code>) and the timestamp-array from the samples-file (Note: we could just as easily have used the left eye or the mean of both):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="p">(</span><span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 11:01:46</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">886</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 11:01:46</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">888</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PupilData(test, 19.1MiB):
+ n               : 1268585
+ sampling_rate   : 500.0
+ eyes            : [&#39;right&#39;, &#39;left&#39;]
+ data            : [&#39;left_pupil&#39;, &#39;right_pupil&#39;]
+ nevents         : 0
+ nblinks         : {}
+ blinks          : {&#39;right&#39;: None, &#39;left&#39;: None}
+ duration_minutes: 42.28616666666667
+ start_min       : 56.431666666666665
+ end_min         : 98.7178
+ params          : {}
+ glimpse         : EyeDataDict(vars=2,n=310151,shape=(310151,)):
+  left_pupil (float64): 1707.0, 1706.0, 1705.0, 1706.0, 1707.0...
+  right_pupil (float64): 1738.0, 1739.0, 1739.0, 1740.0, 1742.0...
+
+ History:
+ *
+ └ fill_time_discontinuities()
+</pre></div></div>
+</div>
+<p>We can also import the eye-tracking data from the same file if desired. In that case, we would use the <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> class:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span>
+             <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="p">,</span>
+             <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="p">,</span>
+             <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 11:01:47</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">886</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 11:01:47</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">888</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EyeData(test, 38.1MiB):
+ n                   : 1268585
+ sampling_rate       : 500.0
+ data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;right_pupil&#39;]
+ nevents             : 0
+ screen_limits       : not set
+ physical_screen_size: not set
+ screen_eye_distance : not set
+ duration_minutes    : 42.28616666666667
+ start_min           : 56.431666666666665
+ end_min             : 98.7178
+ parameters          : {}
+ glimpse             : EyeDataDict(vars=6,n=310151,shape=(310151,)):
+  left_x (float64): 817.3, 817.0, 816.7, 816.7, 816.7...
+  left_y (float64): 345.2, 343.5, 341.6, 340.4, 340.2...
+  left_pupil (float64): 1707.0, 1706.0, 1705.0, 1706.0, 1707.0...
+  right_x (float64): 860.6, 860.7, 861.2, 861.7, 861.6...
+  right_y (float64): 375.2, 375.9, 376.6, 376.8, 376.9...
+  right_pupil (float64): 1738.0, 1739.0, 1739.0, 1740.0, 1742.0...
+
+ eyes                : [&#39;right&#39;, &#39;left&#39;]
+ nblinks             : {}
+ blinks              : {&#39;right&#39;: None, &#39;left&#39;: None}
+ params              : {}
+ History:
+ *
+ └ fill_time_discontinuities()
+</pre></div></div>
+</div>
+<p>Of course, this dataset is still missing the important information contained in the event-file which we will use for analysing trial-related pupil-diameter data. For that, we will have to read the events-file, which has a more complicated structure than the samples-file:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>head<span class="w"> </span>-20<span class="w"> </span><span class="nv">$fname_events</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+** CONVERTED FROM ../data/test.edf using edfapi 3.0 Linux Dec  1 2008 on Wed Nov 12 11:01:43 2025
+** DATE: Fri Feb 14 08:48:33 2020
+** TYPE: EDF_FILE BINARY EVENT SAMPLE TAGGED
+** VERSION: EYELINK II 1
+** SOURCE: EYELINK CL
+** EYELINK II CL v6.12 Feb  1 2018 (EyeLink Portable Duo)
+** CAMERA: EyeLink USBCAM Version 1.01
+** SERIAL NUMBER: CLU-DAC49
+** CAMERA_CONFIG: DAC49200.SCD
+** Psychopy GC demo
+**
+
+MSG     2728855 DISPLAY_COORDS = 0 0 1919 1079
+INPUT   2767568 0
+MSG     2784000 !CAL
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; CALIBRATION (HV9,P-CR) FOR LEFT: &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+MSG     2784000 !CAL Calibration points:
+MSG     2784000 !CAL -29.4, -23.5        -0,     -2
+MSG     2784000 !CAL -29.3, -35.7        -0,  -1544
+MSG     2784000 !CAL -32.9, -10.4        -0,   1559
+</pre></div></div>
+</div>
+<p>After a header (lines starting with ‘**’) containing meta-information, we get a sequence of “events” which have different formats for all rows. We are interested in lines starting with “MSG” because those contain our experimental markers. Therefore, we read the samples file and remove all rows that do not start with “MSG” first:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">events</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+<span class="c1"># keep only lines starting with &quot;MSG&quot;</span>
+<span class="n">events</span><span class="o">=</span><span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MSG&quot;</span><span class="p">)]</span>
+<span class="n">events</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;MSG\t2728855 DISPLAY_COORDS = 0 0 1919 1079\n&#39;,
+ &#39;MSG\t2784000 !CAL \n&#39;,
+ &#39;MSG\t2784000 !CAL Calibration points:  \n&#39;,
+ &#39;MSG\t2784000 !CAL -29.4, -23.5        -0,     -2   \n&#39;,
+ &#39;MSG\t2784000 !CAL -29.3, -35.7        -0,  -1544   \n&#39;,
+ &#39;MSG\t2784000 !CAL -32.9, -10.4        -0,   1559   \n&#39;,
+ &#39;MSG\t2784000 !CAL -49.7, -23.0     -2835,     -2   \n&#39;,
+ &#39;MSG\t2784000 !CAL -10.8, -27.4      2835,     -2   \n&#39;,
+ &#39;MSG\t2784000 !CAL -48.3, -33.3     -2818,  -1544   \n&#39;,
+ &#39;MSG\t2784000 !CAL -11.0, -34.2      2818,  -1544   \n&#39;]
+</pre></div></div>
+</div>
+<p>Next, we added an experimental marker that was sent as the experiment was started. This marker was called <code class="docutils literal notranslate"><span class="pre">experiment_start</span></code>. Hence, we can remove all events before this marker.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">experiment_start_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">&quot;experiment_start&quot;</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">[</span><span class="n">experiment_start_index</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+<span class="n">events</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;MSG\t3387245 C_GW_1_1_UD_UD\n&#39;,
+ &#39;MSG\t3390421 F_GW_1_1_10_0\n&#39;,
+ &#39;MSG\t3392759 C_NW_1_2_UD_UD\n&#39;,
+ &#39;MSG\t3394293 R_NW_1_2_UD_UD\n&#39;,
+ &#39;MSG\t3395952 F_NW_1_2_-1_0\n&#39;,
+ &#39;MSG\t3397974 C_NA_1_3_UD_UD\n&#39;,
+ &#39;MSG\t3399892 R_NA_1_3_UD_UD\n&#39;,
+ &#39;MSG\t3400999 F_NA_1_3_-11_0\n&#39;,
+ &#39;MSG\t3403206 C_GA_1_4_UD_UD\n&#39;,
+ &#39;MSG\t3404640 R_GA_1_4_UD_UD\n&#39;]
+</pre></div></div>
+</div>
+<p>This is in a format where we can convert it into a <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> object for further processing.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_ev</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
+<span class="n">df_ev</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>MSG</td>
+      <td>3387245</td>
+      <td>C_GW_1_1_UD_UD</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>MSG</td>
+      <td>3390421</td>
+      <td>F_GW_1_1_10_0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>MSG</td>
+      <td>3392759</td>
+      <td>C_NW_1_2_UD_UD</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>MSG</td>
+      <td>3394293</td>
+      <td>R_NW_1_2_UD_UD</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>MSG</td>
+      <td>3395952</td>
+      <td>F_NW_1_2_-1_0</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1065</th>
+      <td>MSG</td>
+      <td>5893078</td>
+      <td>V_UD_UD_16_UD_UD</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1066</th>
+      <td>MSG</td>
+      <td>5899076</td>
+      <td>V_UD_UD_17_UD_UD</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1067</th>
+      <td>MSG</td>
+      <td>5905073</td>
+      <td>V_UD_UD_18_UD_UD</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1068</th>
+      <td>MSG</td>
+      <td>5911072</td>
+      <td>V_UD_UD_19_UD_UD</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1069</th>
+      <td>MSG</td>
+      <td>5917071</td>
+      <td>V_UD_UD_20_UD_UD</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+<p>1070 rows × 9 columns</p>
+</div></div>
+</div>
+<p>In this table, the second column contains the time-stamp (identical to the time-stamp in the samples file), and the third column contains our custom markers (the format like “C_GW_1_1_UD_UD” and so on is specific for our experimental design). There are many more columns which seem to contain no information in our samples. Let’s check what those columns are for by printing the rows in our data-frame where these columns are not <code class="docutils literal notranslate"><span class="pre">None</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_ev</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">df_ev</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span><span class="o">!=</span><span class="kc">None</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>209</th>
+      <td>MSG</td>
+      <td>3900393</td>
+      <td>RECCFG</td>
+      <td>CR</td>
+      <td>500</td>
+      <td>2</td>
+      <td>1</td>
+      <td>LR</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>211</th>
+      <td>MSG</td>
+      <td>3900393</td>
+      <td>GAZE_COORDS</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1919.00</td>
+      <td>1079.00</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>212</th>
+      <td>MSG</td>
+      <td>3900393</td>
+      <td>THRESHOLDS</td>
+      <td>L</td>
+      <td>56</td>
+      <td>231</td>
+      <td>R</td>
+      <td>66</td>
+      <td>239</td>
+    </tr>
+    <tr>
+      <th>213</th>
+      <td>MSG</td>
+      <td>3900393</td>
+      <td>ELCL_WINDOW_SIZES</td>
+      <td>176</td>
+      <td>188</td>
+      <td>0</td>
+      <td>0</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>215</th>
+      <td>MSG</td>
+      <td>3900393</td>
+      <td>ELCL_PROC</td>
+      <td>CENTROID</td>
+      <td>(3)</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Apparently, there are more eye-tracker specific markers in our files (in this case due to drift-checks during the experiments). We can safely drop those from our set of interesting events by dropping all rows in which the fourth column is not <code class="docutils literal notranslate"><span class="pre">None</span></code> and then dropping all non-interesting columns.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_ev</span><span class="o">=</span><span class="n">df_ev</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">df_ev</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span><span class="o">==</span><span class="kc">None</span><span class="p">][[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
+<span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;event&quot;</span><span class="p">]</span>
+<span class="n">df_ev</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>event</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>3387245</td>
+      <td>C_GW_1_1_UD_UD</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>3390421</td>
+      <td>F_GW_1_1_10_0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3392759</td>
+      <td>C_NW_1_2_UD_UD</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3394293</td>
+      <td>R_NW_1_2_UD_UD</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>3395952</td>
+      <td>F_NW_1_2_-1_0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1065</th>
+      <td>5893078</td>
+      <td>V_UD_UD_16_UD_UD</td>
+    </tr>
+    <tr>
+      <th>1066</th>
+      <td>5899076</td>
+      <td>V_UD_UD_17_UD_UD</td>
+    </tr>
+    <tr>
+      <th>1067</th>
+      <td>5905073</td>
+      <td>V_UD_UD_18_UD_UD</td>
+    </tr>
+    <tr>
+      <th>1068</th>
+      <td>5911072</td>
+      <td>V_UD_UD_19_UD_UD</td>
+    </tr>
+    <tr>
+      <th>1069</th>
+      <td>5917071</td>
+      <td>V_UD_UD_20_UD_UD</td>
+    </tr>
+  </tbody>
+</table>
+<p>1035 rows × 2 columns</p>
+</div></div>
+</div>
+<p>Finally, we can pass those event-markers into our <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>, <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> or <code class="docutils literal notranslate"><span class="pre">GazeData</span></code>-object.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="p">(</span><span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 11:01:50</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">886</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 11:01:50</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">888</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PupilData(test, 14.4MiB):
+ n               : 1268585
+ sampling_rate   : 500.0
+ eyes            : [&#39;right&#39;]
+ data            : [&#39;right_pupil&#39;]
+ nevents         : 1035
+ nblinks         : {}
+ blinks          : {&#39;right&#39;: None}
+ duration_minutes: 42.28616666666667
+ start_min       : 56.431666666666665
+ end_min         : 98.7178
+ params          : {}
+ glimpse         : EyeDataDict(vars=1,n=310151,shape=(310151,)):
+  right_pupil (float64): 1738.0, 1739.0, 1739.0, 1740.0, 1742.0...
+
+ History:
+ *
+ └ fill_time_discontinuities()
+</pre></div></div>
+</div>
+<p>The summary of the dataset shows us that the eyetracker started recording at time=56.4 minutes. We can reset the time index to start with 0 by using the <code class="docutils literal notranslate"><span class="pre">reset_time()</span></code> function.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">reset_time</span><span class="p">()</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Now we can store away this dataset in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>-format and use all the <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>-functions on it, e.g., plot a minute of this dataset.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">));</span>
+<span class="n">d</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/importdata_asc_31_0.png" src="_images/importdata_asc_31_0.png" />
+</div>
+</div>
+<section id="Generalize-to-multiple-similar-datasets">
+<h2>Generalize to multiple similar datasets<a class="headerlink" href="#Generalize-to-multiple-similar-datasets" title="Link to this heading">¶</a></h2>
+<p>Now that we have successfully found a way to create our <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> structure from the raw <code class="docutils literal notranslate"><span class="pre">.EDF</span></code> files, we can wrap the code from this notebook into an easily accessible function that creates <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> objects for a given <code class="docutils literal notranslate"><span class="pre">.EDF</span></code> file that has the same structure.</p>
+<p>NOTE: You may want to consider using a <a class="reference external" href="https://ihrke.github.io/pypillometry/examples/share_study.html">configuration file to facilitate loading and sharing your study data</a>.</p>
+<p>We simply create a function that takes the name of an <code class="docutils literal notranslate"><span class="pre">EDF</span></code>-file as input and runs all the code above, returning the final <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> object. For convenience, we will assume that the <code class="docutils literal notranslate"><span class="pre">EDF2ASC</span></code> utility has already run such that <code class="docutils literal notranslate"><span class="pre">.asc</span></code> files are already available (see above for details).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">datapath</span><span class="o">=</span><span class="s2">&quot;../data&quot;</span> <span class="c1">## this is where the datafiles are located</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">read_dataset</span><span class="p">(</span><span class="n">edffile</span><span class="p">):</span>
+    <span class="n">basename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">edffile</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">## remove .edf from filename</span>
+    <span class="n">fname_samples</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">basename</span><span class="o">+</span><span class="s2">&quot;_samples.asc&quot;</span><span class="p">)</span>
+    <span class="n">fname_events</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">basename</span><span class="o">+</span><span class="s2">&quot;_events.asc&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt; Attempt loading &#39;</span><span class="si">%s</span><span class="s2">&#39; and &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">fname_events</span><span class="p">))</span>
+    <span class="c1">## read samples-file</span>
+    <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="s2">&quot;left_p&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;right_x&quot;</span><span class="p">,</span> <span class="s2">&quot;right_y&quot;</span><span class="p">,</span> <span class="s2">&quot;right_p&quot;</span><span class="p">])</span>
+    <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span>
+
+    <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span>
+
+    <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span>
+
+    <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span>
+
+    <span class="c1">## read events-file</span>
+    <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">events</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="c1"># keep only lines starting with &quot;MSG&quot;</span>
+    <span class="n">events</span><span class="o">=</span><span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MSG&quot;</span><span class="p">)]</span>
+    <span class="c1"># remove events before experiment start</span>
+    <span class="n">experiment_start_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">&quot;experiment_start&quot;</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">[</span><span class="n">experiment_start_index</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="c1"># re-arrange as described above</span>
+    <span class="n">df_ev</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
+    <span class="n">df_ev</span><span class="o">=</span><span class="n">df_ev</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">df_ev</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span><span class="o">==</span><span class="kc">None</span><span class="p">][[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
+    <span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;event&quot;</span><span class="p">]</span>
+
+    <span class="c1"># create `PupilData`-object</span>
+    <span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
+                   <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="p">,</span>
+                   <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="p">,</span>
+                   <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">edffile</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span>
+<br/></pre></div>
+</div>
+</div>
+<p>We can test this code by simply running the function with a certain filename located in <code class="docutils literal notranslate"><span class="pre">datapath</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">read_dataset</span><span class="p">(</span><span class="s2">&quot;test.edf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&gt; Attempt loading &#39;../data/test_samples.asc&#39; and &#39;../data/test_events.asc&#39;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/tmp/ipykernel_476872/89281874.py:10: ParserWarning: Length of header or names does not match length of data. This leads to a loss of data with index_col=False.
+  df=pd.read_table(fname_samples, index_col=False,
+<span class="ansi-green-fg">pp: 11:02:42</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">886</span> | <span class="ansi-bold">Filling in 5 gaps</span>
+<span class="ansi-green-fg">pp: 11:02:42</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fill_time_discontinuities</span>:<span class="ansi-cyan-fg">888</span> | <span class="ansi-bold">[32.35   4.012  6.21   2.02   1.862] seconds</span>
+</pre></div></div>
+</div>
+<p>After that, we might want to save the final <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>/<code class="docutils literal notranslate"><span class="pre">EyeData</span></code> objects as binary files that can be readily loaded back. This can be done using <code class="docutils literal notranslate"><span class="pre">EyeData.write_file</span></code> or <code class="docutils literal notranslate"><span class="pre">pypillometry.write_pickle()</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fname</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s2">&quot;.pd&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+../data/test.edf.pd
+</pre></div></div>
+</div>
+<p>These datasets can be read back using the <code class="docutils literal notranslate"><span class="pre">EyeData.from_file()</span></code> method:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d2</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">d2</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EyeData(test.edf, 38.1MiB):
+ n                   : 1268585
+ sampling_rate       : 500.0
+ data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;right_pupil&#39;]
+ nevents             : 1035
+ screen_limits       : not set
+ physical_screen_size: not set
+ screen_eye_distance : not set
+ duration_minutes    : 42.28616666666667
+ start_min           : 56.431666666666665
+ end_min             : 98.7178
+ parameters          : {}
+ glimpse             : EyeDataDict(vars=6,n=310151,shape=(310151,)):
+  left_x (float64): 817.3, 817.0, 816.7, 816.7, 816.7...
+  left_y (float64): 345.2, 343.5, 341.6, 340.4, 340.2...
+  left_pupil (float64): 1707.0, 1706.0, 1705.0, 1706.0, 1707.0...
+  right_x (float64): 860.6, 860.7, 861.2, 861.7, 861.6...
+  right_y (float64): 375.2, 375.9, 376.6, 376.8, 376.9...
+  right_pupil (float64): 1738.0, 1739.0, 1739.0, 1740.0, 1742.0...
+
+ eyes                : [&#39;right&#39;, &#39;left&#39;]
+ nblinks             : {}
+ blinks              : {&#39;right&#39;: None, &#39;left&#39;: None}
+ params              : {}
+ History:
+ *
+ └ fill_time_discontinuities()
+</pre></div></div>
+</div>
+</section>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/importdata_asc.ipynb">importdata_asc.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=importdata_asc.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Importing Data from Eyelink ASC files Example</a><ul>
+<li><a class="reference internal" href="#Generalize-to-multiple-similar-datasets">Generalize to multiple similar datasets</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/importdata_asc.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Importing Data from Eyelink ASC files Example</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

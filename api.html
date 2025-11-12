@@ -251,7 +251,7 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code>([yval, print_info])</p></td>
 <td><p>find gaps in the time-vector and fill them in (add zeros to the signal)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from an Eyelink file.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
@@ -499,7 +499,7 @@ default is “False”</p></li>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code>([yval, print_info])</p></td>
 <td><p>find gaps in the time-vector and fill them in (add zeros to the signal)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from an Eyelink file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
@@ -894,7 +894,7 @@ default is “False”</p></li>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code>([yval, print_info])</p></td>
 <td><p>find gaps in the time-vector and fill them in (add zeros to the signal)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from an Eyelink file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
@@ -1195,7 +1195,7 @@ implements some basic functions.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.fill_time_discontinuities" title="pypillometry.GenericEyeData.fill_time_discontinuities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code></a>([yval, print_info])</p></td>
 <td><p>find gaps in the time-vector and fill them in (add zeros to the signal)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.from_eyelink" title="pypillometry.GenericEyeData.from_eyelink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code></a>(fname[, return_edf_obj])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.from_eyelink" title="pypillometry.GenericEyeData.from_eyelink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code></a>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from an Eyelink file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.from_file" title="pypillometry.GenericEyeData.from_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code></a>(fname)</p></td>
@@ -1407,7 +1407,7 @@ if <cite>None</cite>, use the setting of the object (specified in constructor)</
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.from_eyelink">
-<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_eyelink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_edf_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.from_eyelink"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.from_eyelink" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_eyelink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_edf_obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_eyelink_triggers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.from_eyelink"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.from_eyelink" title="Link to this definition">¶</a></dt>
 <dd><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from an Eyelink file.</p>
 <p>All “messages” are stored as event_labels (can be filtered later) and
 it tries to be smart to detect different information from the EDF file.
@@ -1421,6 +1421,8 @@ create the object manually.</p>
 <li><p><strong>fname</strong> (<em>str</em>) – filename of the EDF file</p></li>
 <li><p><strong>return_edf_obj</strong> (<em>bool</em>) – if True, return a tuple with the object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> and the object returned by the “eyelinkio” package
 if False, return only the object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code></p></li>
+<li><p><strong>remove_eyelink_triggers</strong> (<em>bool</em>) – if True, remove all Eyelink triggers from the event_labels (related to eye-tracker settings, calibration, validation etc)</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – additional arguments to pass to the pypillometry.io.read_eyelink()</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1683,13 +1685,13 @@ If None, use the object’s default setting.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.reset_time">
-<span class="sig-name descname"><span class="pre">reset_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.reset_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.reset_time" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">reset_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.reset_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.reset_time" title="Link to this definition">¶</a></dt>
 <dd><p>Resets time so that the time-array starts at time zero (t0).
 Resets onsets etc.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>t0</strong> (<em>float</em>) – time at which the <a class="reference internal" href="#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>’s time-vector starts</p></li>
+<li><p><strong>t0</strong> (<em>float</em><em> or </em><em>None</em>) – time at which the <a class="reference internal" href="#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>’s time-vector starts; if None, use the first time point</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes
 if <cite>None</cite>, use the setting of the object (specified in constructor)</p></li>
