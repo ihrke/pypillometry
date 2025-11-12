@@ -12,14 +12,138 @@ except:
 import os
 import requests
 from tqdm import tqdm
-from typing import Dict
+from typing import Dict, Optional
 from loguru import logger
-from .convenience import is_url, download, suppress_all_output, requires_package
+from .convenience import is_url, suppress_all_output, requires_package
 from .logging import logging_get_level
 
 import requests
 
 from pypillometry.convenience import change_dir
+
+
+def osf_authenticate(
+    access_token: str,
+    validate: bool = True,
+    session: Optional[requests.Session] = None,
+    timeout: float = 10.0,
+) -> requests.Session:
+    """
+    Authenticate against the OSF API using a personal access token.
+
+    Parameters
+    ----------
+    access_token : str
+        Personal access token generated on OSF.
+    validate : bool, optional
+        If True (default), verify the token by calling ``/v2/users/me/``.
+    session : requests.Session, optional
+        Existing session to configure. If None, a new session is created.
+    timeout : float, optional
+        Timeout (in seconds) for the validation request when ``validate`` is True.
+
+    Returns
+    -------
+    requests.Session
+        Session configured with the OSF bearer token.
+
+    Raises
+    ------
+    ValueError
+        If no access token is provided or validation fails.
+    """
+    if not access_token or not isinstance(access_token, str):
+        raise ValueError("A non-empty OSF access token string is required.")
+
+    token = access_token.strip()
+    if not token:
+        raise ValueError("Access token cannot be empty or whitespace.")
+
+    session = session or requests.Session()
+
+    session.headers.update(
+        {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/json",
+        }
+    )
+
+    if validate:
+        try:
+            response = session.get("https://api.osf.io/v2/users/me/", timeout=timeout)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as exc:
+            status = exc.response.status_code if exc.response is not None else "unknown"
+            raise ValueError(f"OSF token validation failed (status {status}).") from exc
+        except requests.exceptions.RequestException as exc:
+            raise ValueError("OSF token validation request failed.") from exc
+        else:
+            logger.debug("OSF token validation succeeded.")
+
+    return session
+
+
+def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optional[requests.Session] = None) -> str:
+    """Download a file from a URL to a local file.
+
+    See https://gist.github.com/yanqd0/c13ed29e29432e3cf3e7c38467f42f51.
+
+    Parameters
+    ----------
+    url : str
+        URL of the file to download.
+    fname : str, optional
+        Local filename to save the file to. If None, create a temporary file.
+    chunk_size : int, optional
+        Size of the chunks to download the file in. Default is 1024.
+    session : requests.Session, optional
+        requests session to use for the download. If None, a new session is created.
+
+    Returns
+    -------
+    str
+        Local filename of the downloaded file.
+    """
+    import tempfile
+
+    # Create temporary file if fname is None
+    if fname is None:
+        # Extract file extension from URL if possible
+        from urllib.parse import urlparse
+
+        parsed_url = urlparse(url)
+        path = parsed_url.path
+        if path and "." in os.path.basename(path):
+            suffix = os.path.splitext(path)[1]
+        else:
+            suffix = ""
+
+        # Create temporary file
+        fd, fname = tempfile.mkstemp(suffix=suffix)
+        os.close(fd)  # Close the file descriptor, we'll open it again below
+
+    own_session = session is None
+    session = session or requests.Session()
+    try:
+        with session.get(url, stream=True) as resp:
+            resp.raise_for_status()
+            total = int(resp.headers.get("content-length", 0))
+            with open(fname, "wb") as file, tqdm(
+                desc=os.path.basename(fname),
+                total=total,
+                unit="iB",
+                unit_scale=True,
+                unit_divisor=1024,
+            ) as bar:
+                for data in resp.iter_content(chunk_size=chunk_size):
+                    size = file.write(data)
+                    bar.update(size)
+    finally:
+        if own_session:
+            session.close()
+
+    return fname
+
 def get_osf_project_files(osf_id: str) -> Dict[str, Dict[str, str]]:
     """
     Get all file IDs from an OSF project.

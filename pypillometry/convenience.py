@@ -11,7 +11,6 @@ import pandas as pd
 from typing import Union, Dict
 from contextlib import contextmanager
 import os, sys
-import requests
 from tqdm import tqdm
 
 @contextmanager
@@ -323,59 +322,6 @@ def is_url(url):
         return False
     return True
 
-
-
-def download(url: str, fname: str=None, chunk_size=1024):
-    """Download a file from a URL to a local file.
-
-    See https://gist.github.com/yanqd0/c13ed29e29432e3cf3e7c38467f42f51.
-
-    Parameters
-    ----------
-    url : str
-        URL of the file to download.
-    fname : str, optional
-        Local filename to save the file to. If None, create a temporary file.
-    chunk_size : int, optional  
-        Size of the chunks to download the file in. Default is 1024.
-
-    Returns
-    -------
-    str
-        Local filename of the downloaded file.
-    """
-    import tempfile
-    import os
-    
-    # Create temporary file if fname is None
-    if fname is None:
-        # Extract file extension from URL if possible
-        from urllib.parse import urlparse
-        parsed_url = urlparse(url)
-        path = parsed_url.path
-        if path and '.' in os.path.basename(path):
-            suffix = os.path.splitext(path)[1]
-        else:
-            suffix = ''
-        
-        # Create temporary file
-        fd, fname = tempfile.mkstemp(suffix=suffix)
-        os.close(fd)  # Close the file descriptor, we'll open it again below
-    
-    resp = requests.get(url, stream=True)
-    total = int(resp.headers.get('content-length', 0))
-    with open(fname, 'wb') as file, tqdm(
-        desc=os.path.basename(fname),
-        total=total,
-        unit='iB',
-        unit_scale=True,
-        unit_divisor=1024,
-    ) as bar:
-        for data in resp.iter_content(chunk_size=chunk_size):
-            size = file.write(data)
-            bar.update(size)
-    
-    return fname
 
 
 ## Decorator to check for optional dependencies

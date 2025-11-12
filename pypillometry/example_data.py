@@ -14,7 +14,7 @@ import tempfile
 import os.path
 import requests
 from tqdm import tqdm
-from .convenience import download
+from .io import download
 
 example_datasets = {
     "rlmw_002": {
