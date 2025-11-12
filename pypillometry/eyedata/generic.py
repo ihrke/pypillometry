@@ -610,7 +610,7 @@ class GenericEyeData(ABC):
     def from_eyelink(
         cls, fname:str, 
         return_edf_obj:bool=False, 
-        remove_eyelink_triggers:bool=False, **kwargs):
+        remove_eyelink_triggers:bool=True, **kwargs):
         """
         Reads a :class:`.GenericEyedata` object from an Eyelink file.
 
@@ -679,6 +679,7 @@ class GenericEyeData(ABC):
             return np.logical_not(np.any(isbanned))
 
         if remove_eyelink_triggers:
+            logger.info("Filtering out Eyelink triggers")
             ev = obj.get_events()
             evs = ev.filter(eyelink_filter_func)
             obj = obj.set_events(evs)
