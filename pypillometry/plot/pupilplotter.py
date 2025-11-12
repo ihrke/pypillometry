@@ -224,16 +224,15 @@ class PupilPlotter(GenericPlotter):
         figs=[]
 
         for start,end in segments:
-            plt.figure(figsize=figsize)
+            fig = plt.figure(figsize=figsize)
             self.pupil_plot(plot_range=(start, end), units=units, **kwargs)
             if ylim is not None:
                 plt.ylim(*ylim)
-            fig = plt.gcf()
             figs.append(fig)
             
             # Close figure immediately after creation if saving to PDF to prevent display and memory issues
-        if pdf_file is not None:
-            plt.close(fig)
+            if pdf_file is not None:
+                plt.close(fig)
 
         if pdf_file is not None:
             # Create parent directories if they don't exist
