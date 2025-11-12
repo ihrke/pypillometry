@@ -78,9 +78,47 @@ def osf_authenticate(
         except requests.exceptions.RequestException as exc:
             raise ValueError("OSF token validation request failed.") from exc
         else:
-            logger.debug("OSF token validation succeeded.")
+            logger.info("OSF token validation succeeded.")
 
     return session
+
+
+def _osf_client_url_to_download_url(url: str, session: Optional[requests.Session] = None) -> str:
+    """
+    Convert an OSF client URL to a download URL.
+    Parameters
+    ----------
+    url : str
+        OSF client URL
+    session : requests.Session, optional
+        requests session to use for the download. If None, a new session is created.
+    Returns
+    -------
+    str
+        Download URL
+    """
+    # is it an OSF client URL?
+    if not url.startswith("https://osf.io/"):
+        logger.debug(f"URL is not an OSF client URL: {url!r}")
+        return url
+    # get the project ID
+    from urllib.parse import urlsplit
+    parts = [segment for segment in urlsplit(url).path.split('/') if segment]
+    if not parts:
+        logger.error(f"No OSF identifier found in {url!r}")
+        return url
+    file_id = parts[0]  
+    logger.debug(f"File ID: {file_id}")
+
+    # make a get request to https://api.osf.io/v2/files/{file_id}/
+    if session is not None:
+        response = session.get(f"https://api.osf.io/v2/files/{file_id}/")
+    else:
+        response = requests.get(f"https://api.osf.io/v2/files/{file_id}/")
+    download_url = response.json()["data"]["links"]["move"].replace("/move", "/download")
+    logger.debug(f"Download URL: {download_url}")
+    return download_url
+
 
 
 def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optional[requests.Session] = None) -> str:
@@ -121,6 +159,9 @@ def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optio
         # Create temporary file
         fd, fname = tempfile.mkstemp(suffix=suffix)
         os.close(fd)  # Close the file descriptor, we'll open it again below
+
+    # convert the URL to a download URL if it is an OSF client URL
+    url = _osf_client_url_to_download_url(url, session=session)
 
     own_session = session is None
     session = session or requests.Session()
