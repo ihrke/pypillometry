@@ -1,0 +1,59 @@
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px;">
+  <h3 style="margin-top:0;">{{ class_name }} — <span style="color:#555;">{{ name }}</span></h3>
+
+  <table style="border-collapse:collapse; width:100%; margin-bottom:10px;">
+    <tbody>
+      {% for label, value in overview %}
+      <tr>
+        <th style="text-align:left; padding:4px 8px; background:#f6f6f6;">{{ label }}</th>
+        <td style="padding:4px 8px;">{{ value }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if glimpse %}
+  <p style="margin:8px 0;">
+    <strong>Glimpse</strong>
+    <code>{{ glimpse }}</code>
+  </p>
+  {% endif %}
+
+  {% if blink_stats %}
+  <details style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Blink statistics</summary>
+    <table style="border-collapse:collapse; width:100%; margin-top:8px;">
+      <thead>
+        <tr style="background:#f0f0f0;">
+          <th style="text-align:left; padding:4px 8px;">Eye</th>
+          <th style="padding:4px 8px;">Count</th>
+          <th style="padding:4px 8px;">Mean ± SD (ms)</th>
+          <th style="padding:4px 8px;">Range (ms)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in blink_stats %}
+        <tr>
+          <th style="text-align:left; padding:4px 8px;">{{ row.eye }}</th>
+          <td style="text-align:center; padding:4px 8px;">{{ row.count }}</td>
+          <td style="text-align:center; padding:4px 8px;">{{ row.mean_sd }}</td>
+          <td style="text-align:center; padding:4px 8px;">{{ row.range }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {% endif %}
+
+  {% if history %}
+  <details>
+    <summary style="cursor:pointer; font-weight:600;">Recent history</summary>
+    <ol style="margin-top:8px;">
+      {% for item in history %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ol>
+  </details>
+  {% endif %}
+</div>
+

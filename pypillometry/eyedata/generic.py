@@ -22,6 +22,7 @@ from loguru import logger
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable, Dict, Any
 import functools
 from random import choice
+from importlib import resources
 import copy
 import pickle
 import inspect
@@ -725,6 +726,63 @@ class GenericEyeData(ABC):
             s+=" └no history\n"
         return s
     
+    @requires_package("jinja2")
+    def _repr_html_(self):
+        """Rich HTML representation for notebooks using Jinja templates."""
+        from jinja2 import Template
+
+        summary = self.summary()
+        blink_stats_raw = summary.get("blinks", {}) or {}
+        history_items = [ev["funcstring"] for ev in getattr(self, "history", [])[-5:]]
+
+        size_str = sizeof_fmt(int(self.get_size()))
+
+        overview = [
+            ("Samples", f"{summary['n']:,}"),
+            ("Sampling rate", f"{summary['sampling_rate']} Hz"),
+            (
+                "Duration",
+                f"{summary['duration_minutes']:.2f} min "
+                f"(start {summary['start_min']:.2f}, end {summary['end_min']:.2f})",
+            ),
+            ("Eyes", ", ".join(summary["eyes"])),
+            ("Variables", ", ".join(summary["data"])),
+            ("Events", summary["nevents"]),
+            ("Size", size_str),
+        ]
+
+        if blink_stats_raw:
+            counts = ", ".join(
+                f"{eye}: {stats['n']}" for eye, stats in blink_stats_raw.items() if stats
+            )
+            overview.insert(-1, ("Blinks", counts))
+
+        blink_stats = []
+        for eye, stats in blink_stats_raw.items():
+            if not stats:
+                continue
+            blink_stats.append(
+                {
+                    "eye": eye,
+                    "count": stats["n"],
+                    "mean_sd": f"{stats['mean']:.1f} ± {stats['sd']:.1f}",
+                    "range": f"[{stats['min']:.1f}, {stats['max']:.1f}]",
+                }
+            )
+
+        context = {
+            "class_name": self.__class__.__name__,
+            "name": summary["name"],
+            "overview": overview,
+            "glimpse": summary.get("glimpse"),
+            "blink_stats": blink_stats,
+            "history": history_items,
+        }
+
+        template_source = resources.read_text("pypillometry.templates", "eyedata_repr.html")
+        template = Template(template_source)
+        return template.render(**context)
+
     def copy(self, new_name: Optional[str]=None):
         """
         Make and return a deep-copy of the pupil data.
