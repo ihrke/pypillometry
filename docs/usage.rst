@@ -57,7 +57,7 @@ This will return a new object with the results of the operations.
 
 This will return a new object `d_new` with the results of the operations. The original object `d` is not modified.
 
-See the following notebook for more on this: 
+See the following notebook for more on these issues: 
 
 - :ref:`Pipeline-based processing in pypillometry </pipes.ipynb>`
 
