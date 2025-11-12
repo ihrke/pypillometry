@@ -606,7 +606,7 @@ class GenericEyeData(ABC):
         return r
 
     @classmethod
-    def from_eyelink(cls, fname:str, return_edf_obj:bool=False):
+    def from_eyelink(cls, fname:str, return_edf_obj:bool=False, remove_eyelink_triggers:bool=False):
         """
         Reads a :class:`.GenericEyedata` object from an Eyelink file.
 
@@ -624,6 +624,8 @@ class GenericEyeData(ABC):
         return_edf_obj: bool
             if True, return a tuple with the object of class :class:`.GenericEyedata` and the object returned by the "eyelinkio" package
             if False, return only the object of class :class:`.GenericEyedata`
+        remove_eyelink_triggers: bool
+            if True, remove all Eyelink triggers from the event_labels (related to eye-tracker settings, calibration, validation etc)
 
         Returns
         -------
@@ -661,6 +663,19 @@ class GenericEyeData(ABC):
         obj = cls(time=tx, **d, event_onsets=evon, event_labels=evlab, 
             sampling_rate=sfreq, info=info, 
             screen_resolution=edf["info"]["screen_coords"], name=edf["info"]["filename"])
+
+        # filter out irrelevant triggers
+        def eyelink_filter_func(lab):
+            ban_strings = ["!CAL", "VALIDATE", "RECCFG", "GAZE_COORDS", "ELCL_WINDOW_SIZES", 
+                        "CAMERA_LENS_FOCAL_LENGTH", "ELCL_PROC", "!MODE", "ELCLCFG", "THRESHOLDS",
+                        "ELCL_PCR_PARAM"]
+            isbanned = [bstr in lab for bstr in ban_strings]
+            return np.logical_not(np.any(isbanned))
+
+        if remove_eyelink_triggers:
+            ev = obj.get_events()
+            evs = ev.filter(eyelink_filter_func)
+            obj = obj.set_events(evs)
 
         if return_edf_obj:
             return obj, edf
