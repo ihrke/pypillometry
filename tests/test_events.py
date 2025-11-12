@@ -533,8 +533,9 @@ class TestEventsPlot(unittest.TestCase):
     def test_plot_auto_mode_spaced_labels(self):
         fig, ax = plt.subplots()
         try:
-            returned_ax = self.events.plot(show_labels="auto", units="ms")
-            self.assertIs(returned_ax, ax)
+            returned = self.events.plot(show_labels="auto", units="ms")
+            self.assertIsNone(returned)
+            self.assertIs(ax, plt.gca())
             texts = ax.texts
             self.assertGreater(len(texts), 0)
             xs = [txt.get_position()[0] for txt in texts]
@@ -547,8 +548,8 @@ class TestEventsPlot(unittest.TestCase):
     def test_plot_all_labels(self):
         fig, ax = plt.subplots()
         try:
-            returned_ax = self.events.plot(show_labels="all", units="ms")
-            self.assertIs(returned_ax, ax)
+            returned = self.events.plot(show_labels="all", units="ms")
+            self.assertIsNone(returned)
             self.assertEqual(len(ax.texts), len(self.events))
         finally:
             plt.close(fig)
@@ -556,8 +557,8 @@ class TestEventsPlot(unittest.TestCase):
     def test_plot_no_labels(self):
         fig, ax = plt.subplots()
         try:
-            returned_ax = self.events.plot(show_labels="none", units="ms")
-            self.assertIs(returned_ax, ax)
+            returned = self.events.plot(show_labels="none", units="ms")
+            self.assertIsNone(returned)
             self.assertEqual(len(ax.texts), 0)
         finally:
             plt.close(fig)

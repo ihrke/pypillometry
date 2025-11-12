@@ -305,8 +305,8 @@ class Events:
 
         Returns
         -------
-        matplotlib.axes.Axes
-            Axes containing the plot.
+        None
+            Plot is drawn on the current matplotlib axes.
         """
         import matplotlib.pyplot as plt
 
@@ -328,7 +328,7 @@ class Events:
 
         if len(self) == 0:
             ax.set_ylim(0, 1)
-            return ax
+            return
 
         y_positions = np.arange(1, len(self) + 1)
 
@@ -390,8 +390,7 @@ class Events:
                         rotation_mode="anchor",
                     )
                     last_label_x = onset
-
-        return ax
+        return
     
     def filter(self, selector) -> 'Events':
         """
