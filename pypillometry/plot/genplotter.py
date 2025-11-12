@@ -395,5 +395,5 @@ class GenericPlotter:
                 for fig in figs:
                     pdf.savefig(fig)
 
-        return figs
+        return figs if pdf_file is None else None
         

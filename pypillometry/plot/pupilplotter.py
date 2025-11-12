@@ -247,7 +247,7 @@ class PupilPlotter(GenericPlotter):
                 for fig in figs:
                     pdf.savefig(fig)
 
-        return figs        
+        return figs if pdf_file is None else None
 
     def plot_blinks(self, eyes: str|list = [], variables: str|list = "pupil",
                    pdf_file: str|None = None, nrow: int = 5, ncol: int = 3, 
