@@ -1465,8 +1465,14 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="GenericEyeData.blinks_merge">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.blinks_merge">[docs]</a>
     <span class="nd">@keephistory</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">blinks_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">variables</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span> 
-                    <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">blinks_merge</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">eyes</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">variables</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span><span class="p">,</span>
+        <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Merge blinks that are close together.</span>
 <span class="sd">        </span>
@@ -1477,7 +1483,9 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        variables : list</span>
 <span class="sd">            Variables to process. If empty, all variables are processed.</span>
 <span class="sd">        distance : float</span>
-<span class="sd">            Merge blinks closer than this distance (in ms)</span>
+<span class="sd">            Merge blinks closer than this distance (in units specified by ``units``)</span>
+<span class="sd">        units : str</span>
+<span class="sd">            Units for ``distance``. Can be &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, or &quot;h&quot;. Default &quot;ms&quot;.</span>
 <span class="sd">        inplace : bool or None</span>
 <span class="sd">            If True, modify in place. If False, return copy.</span>
 <span class="sd">            </span>
@@ -1489,13 +1497,16 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">variables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span><span class="n">variables</span><span class="p">)</span>
 
-        <span class="n">distance_ix</span><span class="o">=</span><span class="n">distance</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="o">*</span><span class="mf">1000.</span>
+        <span class="n">fac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+        <span class="n">distance_ix</span> <span class="o">=</span> <span class="p">(</span><span class="n">distance</span> <span class="o">/</span> <span class="n">fac</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">)</span>        
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Distance &#39;</span><span class="si">{</span><span class="n">distance</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">&#39; in index units: </span><span class="si">{</span><span class="n">distance_ix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">):</span>
             <span class="n">blinks</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">continue</span>
-            
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing blinks for eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> and variable </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks&quot;</span><span class="p">)</span>
             <span class="n">blinks_array</span> <span class="o">=</span> <span class="n">blinks</span><span class="o">.</span><span class="n">as_index</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
             
             <span class="n">newblinks</span> <span class="o">=</span> <span class="p">[]</span>

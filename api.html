@@ -627,9 +627,8 @@ if tuple, the mean value in the window in milliseconds (relative to interval) is
 First, blinks are detected as consecutive sequence of <cite>blink_val</cite>
 (f.eks., 0 or NaN). Second, blinks are defined as everything between
 two crossings of the velocity profile (from negative to positive).</p>
-<p>Detected blinks are put into member <cite>blinks</cite> (matrix 2 x nblinks where start and end
-are stored as indexes) and member <cite>blink_mask</cite> which codes for each sampling point
-whether there is a blink (1) or not (0).</p>
+<p>Detected blinks are put into member <cite>blinks</cite> and the <cite>mask</cite> field of
+each eye’s data in the <cite>EyeDataDict</cite> is set to 1 for the blinks.</p>
 <p>Finally, detected blinks have to be at least <cite>min_duration</cite> duration (in <cite>units</cite>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1328,14 +1327,15 @@ implements some basic functions.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.blinks_merge">
-<span class="sig-name descname"><span class="pre">blinks_merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.blinks_merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.blinks_merge" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">blinks_merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ms'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.blinks_merge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.blinks_merge" title="Link to this definition">¶</a></dt>
 <dd><p>Merge blinks that are close together.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<em>list</em>) – Eyes to process. If empty, all eyes are processed.</p></li>
 <li><p><strong>variables</strong> (<em>list</em>) – Variables to process. If empty, all variables are processed.</p></li>
-<li><p><strong>distance</strong> (<em>float</em>) – Merge blinks closer than this distance (in ms)</p></li>
+<li><p><strong>distance</strong> (<em>float</em>) – Merge blinks closer than this distance (in units specified by <code class="docutils literal notranslate"><span class="pre">units</span></code>)</p></li>
+<li><p><strong>units</strong> (<em>str</em>) – Units for <code class="docutils literal notranslate"><span class="pre">distance</span></code>. Can be “ms”, “sec”, “min”, or “h”. Default “ms”.</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em><em> or </em><em>None</em>) – If True, modify in place. If False, return copy.</p></li>
 </ul>
 </dd>

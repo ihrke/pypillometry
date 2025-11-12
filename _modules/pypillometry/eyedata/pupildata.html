@@ -264,9 +264,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        (f.eks., 0 or NaN). Second, blinks are defined as everything between</span>
 <span class="sd">        two crossings of the velocity profile (from negative to positive).</span>
 <span class="sd">        </span>
-<span class="sd">        Detected blinks are put into member `blinks` (matrix 2 x nblinks where start and end</span>
-<span class="sd">        are stored as indexes) and member `blink_mask` which codes for each sampling point</span>
-<span class="sd">        whether there is a blink (1) or not (0).</span>
+<span class="sd">        Detected blinks are put into member `blinks` and the `mask` field of </span>
+<span class="sd">        each eye&#39;s data in the `EyeDataDict` is set to 1 for the blinks.</span>
 
 <span class="sd">        Finally, detected blinks have to be at least `min_duration` duration (in `units`).</span>
 <span class="sd">        </span>
@@ -318,19 +317,24 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Strategy &#39;</span><span class="si">%s</span><span class="s2">&#39; unknown&quot;</span><span class="o">%</span><span class="n">strat</span><span class="p">)</span>
         
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detecting blinks for eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="c1">## detect blinks with the different strategies</span>
             <span class="k">if</span> <span class="s2">&quot;velocity&quot;</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
                 <span class="n">blinks_vel</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_velocity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with velocity strategy&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span> 
                 <span class="n">blinks_vel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
                 
             <span class="k">if</span> <span class="s2">&quot;zero&quot;</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
                 <span class="n">blinks_zero</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_zero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_zero</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with zero strategy&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">blinks_zero</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
 
             <span class="c1">## merge the two blinks</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Merging </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_zero</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks&quot;</span><span class="p">)</span>
             <span class="n">blinks</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">helper_merge_blinks</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">,</span> <span class="n">blinks_zero</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Merged </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks&quot;</span><span class="p">)</span>
             <span class="n">obj</span><span class="o">.</span><span class="n">set_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">]</span> <span class="k">for</span> <span class="p">(</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="n">blinks</span> <span class="k">if</span> <span class="n">off</span><span class="o">-</span><span class="n">on</span><span class="o">&gt;=</span><span class="n">min_duration_ix</span><span class="p">]))</span>
             
         <span class="k">return</span> <span class="n">obj</span>    </div>
@@ -395,6 +399,7 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">winsize_ix</span><span class="o">+=</span><span class="mi">1</span> 
 
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interpolating blinks for eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">syr</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1">## interpolated signal</span>
             <span class="n">mask</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_pupil&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1"># copy of mask</span>
             <span class="n">bls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">)</span>
