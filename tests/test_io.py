@@ -159,7 +159,7 @@ class TestIO(unittest.TestCase):
         
         # Verify mocks were called
         mock_is_url.assert_called_once_with(test_url)
-        mock_download.assert_called_once_with(test_url)
+        mock_download.assert_called_once_with(test_url, session=None)
         
         # Basic assertions about the returned object
         self.assertIsNotNone(edf_data, "read_eyelink should return a non-None object")
