@@ -1338,8 +1338,14 @@ class GenericEyeData(ABC):
         return obj
         
     @keephistory
-    def blinks_merge(self, eyes: list = [], variables: list = [], 
-                    distance: float = 100, inplace: bool|None = None):
+    def blinks_merge(
+        self,
+        eyes: list = [],
+        variables: list = [],
+        distance: float = 100,
+        units: str = "ms",
+        inplace: bool | None = None,
+    ):
         """
         Merge blinks that are close together.
         
@@ -1350,7 +1356,9 @@ class GenericEyeData(ABC):
         variables : list
             Variables to process. If empty, all variables are processed.
         distance : float
-            Merge blinks closer than this distance (in ms)
+            Merge blinks closer than this distance (in units specified by ``units``)
+        units : str
+            Units for ``distance``. Can be "ms", "sec", "min", or "h". Default "ms".
         inplace : bool or None
             If True, modify in place. If False, return copy.
             
@@ -1362,7 +1370,8 @@ class GenericEyeData(ABC):
         obj = self._get_inplace(inplace)
         eyes,variables=self._get_eye_var(eyes,variables)
 
-        distance_ix=distance/self.fs*1000.
+        fac = self._unit_fac(units)
+        distance_ix = distance / fac / self.fs * 1000.0  # convert to index distance
 
         for eye, var in itertools.product(eyes, variables):
             blinks = obj.get_blinks(eye, var, units=None)

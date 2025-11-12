@@ -279,7 +279,7 @@ class TestEyeData(unittest.TestCase):
         self.eyedata.set_blinks('left', 'pupil', np.array([[100, 200], [250, 350]]))
         
         # Merge blinks that are within 100ms of each other
-        merged = self.eyedata.blinks_merge(eyes=['left'], variables=['pupil'], distance=100)
+        merged = self.eyedata.blinks_merge(eyes=['left'], variables=['pupil'], distance=100, units="ms")
         blinks = merged.get_blinks('left', 'pupil')
         
         # blinks is now an Intervals object
@@ -291,6 +291,13 @@ class TestEyeData(unittest.TestCase):
         blinks_ix = blinks.as_index(merged)
         self.assertEqual(blinks_ix[0, 0], 100)  # Start of first blink
         self.assertEqual(blinks_ix[0, 1], 350)  # End of last blink
+
+        # Test merging with distance specified in seconds
+        merged_sec = self.eyedata.blinks_merge(eyes=['left'], variables=['pupil'], distance=0.1, units="sec")
+        blinks_sec = merged_sec.get_blinks('left', 'pupil')
+        blinks_ix_sec = blinks_sec.as_index(merged_sec)
+        self.assertEqual(blinks_ix_sec[0, 0], 100)
+        self.assertEqual(blinks_ix_sec[0, 1], 350)
         self.assertEqual(blinks_ix.dtype, np.int_)  # Should be integer type
     
     def test_get_blinks_returns_empty_intervals(self):
