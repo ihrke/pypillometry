@@ -51,8 +51,8 @@ Interactive version:
 <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=pipes.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
 </div><section id="Pipeline-based-processing-in-pypillometry">
 <h1>Pipeline-based processing in pypillometry<a class="headerlink" href="#Pipeline-based-processing-in-pypillometry" title="Link to this heading">¶</a></h1>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
@@ -63,18 +63,9 @@ Interactive version:
 <br/></pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-The autoreload extension is already loaded. To reload it, use:
-  %reload_ext autoreload
-</pre></div></div>
-</div>
 <p><code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> implements a pipeline-like approach where each operation executed on a <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>-object returns a copy of the (modified) object. This enables the “chaining” of commands as follows:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load a small example dataset</span>
@@ -95,11 +86,11 @@ The autoreload extension is already loaded. To reload it, use:
   y2=np.nanmean(y_padded.reshape(-1,R), axis=1)
 </pre></div></div>
 </div>
-<p>This command loads a data-file (<code class="docutils literal notranslate"><span class="pre">test.pd</span></code>), applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object <code class="docutils literal notranslate"><span class="pre">d</span></code>.</p>
+<p>This command loads a data-file (here we use a standard dataset include with <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>), applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object <code class="docutils literal notranslate"><span class="pre">d</span></code>.</p>
 <p>Here, for better visibility, we put each operation in a separate line. For that to work, we need to tell Python that the line has not yet ended at the end of the statement which we achieve by putting a backslash <code class="docutils literal notranslate"><span class="pre">\</span></code> at the end of each (non-final) line.</p>
 <p>We can get a useful summary of the dataset and the operations applied to it by simply printing it:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
@@ -111,44 +102,77 @@ The autoreload extension is already loaded. To reload it, use:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-EyeData(test short, 212.3KiB):
- n                   : 2047
- sampling_rate       : 50
- data                : [&#39;left_x&#39;, &#39;left_y&#39;, &#39;left_pupil&#39;, &#39;right_x&#39;, &#39;right_y&#39;, &#39;right_pupil&#39;]
- nevents             : 40
- screen_limits       : ((0, 1280), (0, 1024))
- physical_screen_size: (30, 20)
- screen_eye_distance : not set
- duration_minutes    : 0.6823333333333333
- start_min           : 0.00015
- end_min             : 0.6820666666666667
- parameters          : {}
- glimpse             : EyeDataDict(vars=6,n=2047,shape=(2047,)):
-  left_x (float64): 656.5500000000001, 656.14, 654.0400000000001, 652.0199999999999, 650.4...
-  left_y (float64): 597.54, 591.5, 588.3899999999999, 593.7800000000001, 598.3199999999999...
-  left_pupil (float64): 1128.8869458721226, 1133.8058182761888, 1139.7069289167484, 1146.4462392731034, 1153.8027812522362...
-  right_x (float64): 775.56, 777.14, 777.08, 776.99, 778.72...
-  right_y (float64): 597.31, 601.3, 600.48, 595.3399999999999, 595.1...
-  right_pupil (float64): 954.2414624419623, 958.9101375371407, 963.632119267214, 968.2405296620748, 972.6750179976658...
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">IndexError</span>                                Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[3], line 1</span>
+<span class="ansi-green-fg">----&gt; 1</span> <span style="color: rgb(0,135,0)">print</span>(d)
 
- eyes                : [&#39;left&#39;, &#39;right&#39;]
- nblinks             : {&#39;left_pupil&#39;: 11, &#39;right_pupil&#39;: 11}
- blinks              : {&#39;left&#39;: 11 intervals, 2154.55 +/- 3588.46, [460.00, 13460.00], &#39;right&#39;: 11 intervals, 1005.45 +/- 718.34, [320.00, 3080.00]}
- params              : {}
- History:
- *
- └ fill_time_discontinuities()
-  └ reset_time()
-   └ pupil_blinks_detect()
-    └ blinks_merge()
-     └ pupil_lowpass_filter(3)
-      └ downsample(50)
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata/generic.py:701</span>, in <span class="ansi-cyan-fg">GenericEyeData.__repr__</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    699</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span style="color: rgb(0,0,255)">__repr__</span>(<span style="color: rgb(0,135,0)">self</span>) <span style="color: rgb(98,98,98)">-</span><span style="color: rgb(98,98,98)">&gt;</span> <span style="color: rgb(0,135,0)">str</span>:
+<span class="ansi-green-intense-fg ansi-bold">    700</span> <span style="color: rgb(188,188,188)">    </span><span style="color: rgb(175,0,0)">&#34;&#34;&#34;Return a string-representation of the dataset.&#34;&#34;&#34;</span>
+<span class="ansi-green-fg">--&gt; 701</span>     pars<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>summary()
+<span class="ansi-green-intense-fg ansi-bold">    702</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">del</span> pars[<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">name</span><span style="color: rgb(175,0,0)">&#34;</span>]
+<span class="ansi-green-intense-fg ansi-bold">    703</span>     size <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>get_size()
 
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata/eyedata.py:135</span>, in <span class="ansi-cyan-fg">EyeData.summary</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    126</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span style="color: rgb(0,0,255)">summary</span>(<span style="color: rgb(0,135,0)">self</span>):
+<span class="ansi-green-intense-fg ansi-bold">    127</span> <span style="color: rgb(188,188,188)">    </span><span style="color: rgb(175,0,0)">&#34;&#34;&#34;Return a summary of the dataset as a dictionary.</span>
+<span class="ansi-green-intense-fg ansi-bold">    128</span>
+<span class="ansi-green-intense-fg ansi-bold">    129</span> <span style="color: rgb(175,0,0)">    Returns</span>
+<span class="ansi-green-fg">   (...)</span>
+<span class="ansi-green-intense-fg ansi-bold">    132</span> <span style="color: rgb(175,0,0)">        A dictionary summarizing the dataset.</span>
+<span class="ansi-green-intense-fg ansi-bold">    133</span> <span style="color: rgb(175,0,0)">    &#34;&#34;&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">    134</span>     ds <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">dict</span>(GazeData<span style="color: rgb(98,98,98)">.</span>summary(<span style="color: rgb(0,135,0)">self</span>),
+<span class="ansi-green-fg">--&gt; 135</span>               <span style="color: rgb(98,98,98)">*</span><span style="color: rgb(98,98,98)">*</span>PupilData<span style="color: rgb(98,98,98)">.</span>summary(<span style="color: rgb(0,135,0)">self</span>))
+<span class="ansi-green-intense-fg ansi-bold">    136</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> ds
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata/pupildata.py:130</span>, in <span class="ansi-cyan-fg">PupilData.summary</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    112</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span style="color: rgb(0,0,255)">summary</span>(<span style="color: rgb(0,135,0)">self</span>):
+<span class="ansi-green-intense-fg ansi-bold">    113</span> <span style="color: rgb(188,188,188)">    </span><span style="color: rgb(175,0,0)">&#34;&#34;&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">    114</span> <span style="color: rgb(175,0,0)">    Return a summary of the dataset as a dictionary.</span>
+<span class="ansi-green-intense-fg ansi-bold">    115</span>
+<span class="ansi-green-fg">   (...)</span>
+<span class="ansi-green-intense-fg ansi-bold">    119</span> <span style="color: rgb(175,0,0)">        dictionary containing description of dataset</span>
+<span class="ansi-green-intense-fg ansi-bold">    120</span> <span style="color: rgb(175,0,0)">    &#34;&#34;&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">    122</span>     summary<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">dict</span>(
+<span class="ansi-green-intense-fg ansi-bold">    123</span>         name<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>name,
+<span class="ansi-green-intense-fg ansi-bold">    124</span>         n<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">len</span>(<span style="color: rgb(0,135,0)">self</span>),
+<span class="ansi-green-intense-fg ansi-bold">    125</span>         sampling_rate<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>fs,
+<span class="ansi-green-intense-fg ansi-bold">    126</span>         eyes<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>eyes,
+<span class="ansi-green-intense-fg ansi-bold">    127</span>         data<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">list</span>(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>data<span style="color: rgb(98,98,98)">.</span>keys()),
+<span class="ansi-green-intense-fg ansi-bold">    128</span>         nevents<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>nevents(),
+<span class="ansi-green-intense-fg ansi-bold">    129</span>         nblinks<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>nblinks(),
+<span class="ansi-green-fg">--&gt; 130</span>         blinks<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>blink_stats(),
+<span class="ansi-green-intense-fg ansi-bold">    131</span>         duration_minutes<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>get_duration(<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">min</span><span style="color: rgb(175,0,0)">&#34;</span>),
+<span class="ansi-green-intense-fg ansi-bold">    132</span>         start_min<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx<span style="color: rgb(98,98,98)">.</span>min()<span style="color: rgb(98,98,98)">/</span><span style="color: rgb(98,98,98)">1000.</span><span style="color: rgb(98,98,98)">/</span><span style="color: rgb(98,98,98)">60.</span>,
+<span class="ansi-green-intense-fg ansi-bold">    133</span>         end_min<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx<span style="color: rgb(98,98,98)">.</span>max()<span style="color: rgb(98,98,98)">/</span><span style="color: rgb(98,98,98)">1000.</span><span style="color: rgb(98,98,98)">/</span><span style="color: rgb(98,98,98)">60.</span>,
+<span class="ansi-green-intense-fg ansi-bold">    134</span>         params<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_strfy_params(),
+<span class="ansi-green-intense-fg ansi-bold">    135</span>         glimpse<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">repr</span>(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>data)
+<span class="ansi-green-intense-fg ansi-bold">    136</span>     )
+<span class="ansi-green-intense-fg ansi-bold">    138</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> summary
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata/generic.py:409</span>, in <span class="ansi-cyan-fg">GenericEyeData.blink_stats</span><span class="ansi-blue-fg">(self, eyes, units)</span>
+<span class="ansi-green-intense-fg ansi-bold">    407</span> stats <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">dict</span>()
+<span class="ansi-green-intense-fg ansi-bold">    408</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> eye <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> eyes:
+<span class="ansi-green-fg">--&gt; 409</span>     blinks <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>get_blinks(eye, <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">pupil</span><span style="color: rgb(175,0,0)">&#34;</span>, units<span style="color: rgb(98,98,98)">=</span>units)
+<span class="ansi-green-intense-fg ansi-bold">    410</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">len</span>(blinks) <span style="color: rgb(98,98,98)">&gt;</span> <span style="color: rgb(98,98,98)">0</span>:
+<span class="ansi-green-intense-fg ansi-bold">    411</span>         stats[eye] <span style="color: rgb(98,98,98)">=</span> blinks<span style="color: rgb(98,98,98)">.</span>stats()
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata/generic.py:337</span>, in <span class="ansi-cyan-fg">GenericEyeData.get_blinks</span><span class="ansi-blue-fg">(self, eyes, variables, units)</span>
+<span class="ansi-green-intense-fg ansi-bold">    335</span> <span style="color: rgb(95,135,135)"># Convert to requested units if needed</span>
+<span class="ansi-green-intense-fg ansi-bold">    336</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> units <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">--&gt; 337</span>     intervals_ms <span style="color: rgb(98,98,98)">=</span> [(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx[<span style="color: rgb(0,135,0)">int</span>(s)], <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx[<span style="color: rgb(0,135,0)">int</span>(e)]) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> s, e <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> result<span style="color: rgb(98,98,98)">.</span>intervals]
+<span class="ansi-green-intense-fg ansi-bold">    338</span>     result <span style="color: rgb(98,98,98)">=</span> Intervals(intervals_ms, <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">ms</span><span style="color: rgb(175,0,0)">&#34;</span>, result<span style="color: rgb(98,98,98)">.</span>label,
+<span class="ansi-green-intense-fg ansi-bold">    339</span>                       result<span style="color: rgb(98,98,98)">.</span>event_labels, result<span style="color: rgb(98,98,98)">.</span>event_indices,
+<span class="ansi-green-intense-fg ansi-bold">    340</span>                       (<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx[<span style="color: rgb(98,98,98)">0</span>], <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx[<span style="color: rgb(98,98,98)">-</span><span style="color: rgb(98,98,98)">1</span>]), result<span style="color: rgb(98,98,98)">.</span>event_onsets)
+<span class="ansi-green-intense-fg ansi-bold">    341</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> units <span style="color: rgb(98,98,98)">!=</span> <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">ms</span><span style="color: rgb(175,0,0)">&#34;</span>:
+
+<span class="ansi-red-fg">IndexError</span>: index 2712 is out of bounds for axis 0 with size 2047
 </pre></div></div>
 </div>
 <p>We see that sampling rate, number of datapoints and more is automatically printed along with the history of all operations applied to the dataset. This information can also be retrieved separately and in a form useful for further processing the function <code class="docutils literal notranslate"><span class="pre">summary()</span></code> which returns the information in the form of a <code class="docutils literal notranslate"><span class="pre">dict</span></code>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
@@ -156,34 +180,69 @@ EyeData(test short, 212.3KiB):
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
-</pre></div>
+<div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;name&#39;: &#39;test short&#39;,
- &#39;n&#39;: 2047,
- &#39;sampling_rate&#39;: 50,
- &#39;data&#39;: [&#39;left_x&#39;,
-  &#39;left_y&#39;,
-  &#39;left_pupil&#39;,
-  &#39;right_x&#39;,
-  &#39;right_y&#39;,
-  &#39;right_pupil&#39;],
- &#39;nevents&#39;: 40,
- &#39;screen_limits&#39;: ((0, 1280), (0, 1024)),
- &#39;physical_screen_size&#39;: (30, 20),
- &#39;screen_eye_distance&#39;: &#39;not set&#39;,
- &#39;duration_minutes&#39;: 0.6823333333333333,
- &#39;start_min&#39;: 0.00015,
- &#39;end_min&#39;: 0.6820666666666667,
- &#39;parameters&#39;: &#39;{}&#39;,
- &#39;glimpse&#39;: &#39;EyeDataDict(vars=6,n=2047,shape=(2047,)): \n  left_x (float64): 656.5500000000001, 656.14, 654.0400000000001, 652.0199999999999, 650.4...\n  left_y (float64): 597.54, 591.5, 588.3899999999999, 593.7800000000001, 598.3199999999999...\n  left_pupil (float64): 1128.8869458721226, 1133.8058182761888, 1139.7069289167484, 1146.4462392731034, 1153.8027812522362...\n  right_x (float64): 775.56, 777.14, 777.08, 776.99, 778.72...\n  right_y (float64): 597.31, 601.3, 600.48, 595.3399999999999, 595.1...\n  right_pupil (float64): 954.2414624419623, 958.9101375371407, 963.632119267214, 968.2405296620748, 972.6750179976658...\n&#39;,
- &#39;eyes&#39;: [&#39;left&#39;, &#39;right&#39;],
- &#39;nblinks&#39;: {&#39;left_pupil&#39;: 11, &#39;right_pupil&#39;: 11},
- &#39;blinks&#39;: {&#39;left&#39;: 11 intervals, 2154.55 +/- 3588.46, [460.00, 13460.00],
-  &#39;right&#39;: 11 intervals, 1005.45 +/- 718.34, [320.00, 3080.00]},
- &#39;params&#39;: &#39;{}&#39;}
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">IndexError</span>                                Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[4], line 1</span>
+<span class="ansi-green-fg">----&gt; 1</span> d<span style="color: rgb(98,98,98)">.</span>summary()
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata/eyedata.py:135</span>, in <span class="ansi-cyan-fg">EyeData.summary</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    126</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span style="color: rgb(0,0,255)">summary</span>(<span style="color: rgb(0,135,0)">self</span>):
+<span class="ansi-green-intense-fg ansi-bold">    127</span> <span style="color: rgb(188,188,188)">    </span><span style="color: rgb(175,0,0)">&#34;&#34;&#34;Return a summary of the dataset as a dictionary.</span>
+<span class="ansi-green-intense-fg ansi-bold">    128</span>
+<span class="ansi-green-intense-fg ansi-bold">    129</span> <span style="color: rgb(175,0,0)">    Returns</span>
+<span class="ansi-green-fg">   (...)</span>
+<span class="ansi-green-intense-fg ansi-bold">    132</span> <span style="color: rgb(175,0,0)">        A dictionary summarizing the dataset.</span>
+<span class="ansi-green-intense-fg ansi-bold">    133</span> <span style="color: rgb(175,0,0)">    &#34;&#34;&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">    134</span>     ds <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">dict</span>(GazeData<span style="color: rgb(98,98,98)">.</span>summary(<span style="color: rgb(0,135,0)">self</span>),
+<span class="ansi-green-fg">--&gt; 135</span>               <span style="color: rgb(98,98,98)">*</span><span style="color: rgb(98,98,98)">*</span>PupilData<span style="color: rgb(98,98,98)">.</span>summary(<span style="color: rgb(0,135,0)">self</span>))
+<span class="ansi-green-intense-fg ansi-bold">    136</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> ds
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata/pupildata.py:130</span>, in <span class="ansi-cyan-fg">PupilData.summary</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    112</span> <span class="ansi-bold" style="color: rgb(0,135,0)">def</span><span style="color: rgb(188,188,188)"> </span><span style="color: rgb(0,0,255)">summary</span>(<span style="color: rgb(0,135,0)">self</span>):
+<span class="ansi-green-intense-fg ansi-bold">    113</span> <span style="color: rgb(188,188,188)">    </span><span style="color: rgb(175,0,0)">&#34;&#34;&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">    114</span> <span style="color: rgb(175,0,0)">    Return a summary of the dataset as a dictionary.</span>
+<span class="ansi-green-intense-fg ansi-bold">    115</span>
+<span class="ansi-green-fg">   (...)</span>
+<span class="ansi-green-intense-fg ansi-bold">    119</span> <span style="color: rgb(175,0,0)">        dictionary containing description of dataset</span>
+<span class="ansi-green-intense-fg ansi-bold">    120</span> <span style="color: rgb(175,0,0)">    &#34;&#34;&#34;</span>
+<span class="ansi-green-intense-fg ansi-bold">    122</span>     summary<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">dict</span>(
+<span class="ansi-green-intense-fg ansi-bold">    123</span>         name<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>name,
+<span class="ansi-green-intense-fg ansi-bold">    124</span>         n<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">len</span>(<span style="color: rgb(0,135,0)">self</span>),
+<span class="ansi-green-intense-fg ansi-bold">    125</span>         sampling_rate<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>fs,
+<span class="ansi-green-intense-fg ansi-bold">    126</span>         eyes<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>eyes,
+<span class="ansi-green-intense-fg ansi-bold">    127</span>         data<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">list</span>(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>data<span style="color: rgb(98,98,98)">.</span>keys()),
+<span class="ansi-green-intense-fg ansi-bold">    128</span>         nevents<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>nevents(),
+<span class="ansi-green-intense-fg ansi-bold">    129</span>         nblinks<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>nblinks(),
+<span class="ansi-green-fg">--&gt; 130</span>         blinks<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>blink_stats(),
+<span class="ansi-green-intense-fg ansi-bold">    131</span>         duration_minutes<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>get_duration(<span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">min</span><span style="color: rgb(175,0,0)">&#34;</span>),
+<span class="ansi-green-intense-fg ansi-bold">    132</span>         start_min<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx<span style="color: rgb(98,98,98)">.</span>min()<span style="color: rgb(98,98,98)">/</span><span style="color: rgb(98,98,98)">1000.</span><span style="color: rgb(98,98,98)">/</span><span style="color: rgb(98,98,98)">60.</span>,
+<span class="ansi-green-intense-fg ansi-bold">    133</span>         end_min<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx<span style="color: rgb(98,98,98)">.</span>max()<span style="color: rgb(98,98,98)">/</span><span style="color: rgb(98,98,98)">1000.</span><span style="color: rgb(98,98,98)">/</span><span style="color: rgb(98,98,98)">60.</span>,
+<span class="ansi-green-intense-fg ansi-bold">    134</span>         params<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>_strfy_params(),
+<span class="ansi-green-intense-fg ansi-bold">    135</span>         glimpse<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(0,135,0)">repr</span>(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>data)
+<span class="ansi-green-intense-fg ansi-bold">    136</span>     )
+<span class="ansi-green-intense-fg ansi-bold">    138</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> summary
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata/generic.py:409</span>, in <span class="ansi-cyan-fg">GenericEyeData.blink_stats</span><span class="ansi-blue-fg">(self, eyes, units)</span>
+<span class="ansi-green-intense-fg ansi-bold">    407</span> stats <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">dict</span>()
+<span class="ansi-green-intense-fg ansi-bold">    408</span> <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> eye <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> eyes:
+<span class="ansi-green-fg">--&gt; 409</span>     blinks <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>get_blinks(eye, <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">pupil</span><span style="color: rgb(175,0,0)">&#34;</span>, units<span style="color: rgb(98,98,98)">=</span>units)
+<span class="ansi-green-intense-fg ansi-bold">    410</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">len</span>(blinks) <span style="color: rgb(98,98,98)">&gt;</span> <span style="color: rgb(98,98,98)">0</span>:
+<span class="ansi-green-intense-fg ansi-bold">    411</span>         stats[eye] <span style="color: rgb(98,98,98)">=</span> blinks<span style="color: rgb(98,98,98)">.</span>stats()
+
+File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs/../pypillometry/eyedata/generic.py:337</span>, in <span class="ansi-cyan-fg">GenericEyeData.get_blinks</span><span class="ansi-blue-fg">(self, eyes, variables, units)</span>
+<span class="ansi-green-intense-fg ansi-bold">    335</span> <span style="color: rgb(95,135,135)"># Convert to requested units if needed</span>
+<span class="ansi-green-intense-fg ansi-bold">    336</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> units <span class="ansi-bold" style="color: rgb(175,0,255)">is</span> <span class="ansi-bold" style="color: rgb(175,0,255)">not</span> <span class="ansi-bold" style="color: rgb(0,135,0)">None</span>:
+<span class="ansi-green-fg">--&gt; 337</span>     intervals_ms <span style="color: rgb(98,98,98)">=</span> [(<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx[<span style="color: rgb(0,135,0)">int</span>(s)], <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx[<span style="color: rgb(0,135,0)">int</span>(e)]) <span class="ansi-bold" style="color: rgb(0,135,0)">for</span> s, e <span class="ansi-bold" style="color: rgb(175,0,255)">in</span> result<span style="color: rgb(98,98,98)">.</span>intervals]
+<span class="ansi-green-intense-fg ansi-bold">    338</span>     result <span style="color: rgb(98,98,98)">=</span> Intervals(intervals_ms, <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">ms</span><span style="color: rgb(175,0,0)">&#34;</span>, result<span style="color: rgb(98,98,98)">.</span>label,
+<span class="ansi-green-intense-fg ansi-bold">    339</span>                       result<span style="color: rgb(98,98,98)">.</span>event_labels, result<span style="color: rgb(98,98,98)">.</span>event_indices,
+<span class="ansi-green-intense-fg ansi-bold">    340</span>                       (<span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx[<span style="color: rgb(98,98,98)">0</span>], <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>tx[<span style="color: rgb(98,98,98)">-</span><span style="color: rgb(98,98,98)">1</span>]), result<span style="color: rgb(98,98,98)">.</span>event_onsets)
+<span class="ansi-green-intense-fg ansi-bold">    341</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> units <span style="color: rgb(98,98,98)">!=</span> <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">ms</span><span style="color: rgb(175,0,0)">&#34;</span>:
+
+<span class="ansi-red-fg">IndexError</span>: index 2712 is out of bounds for axis 0 with size 2047
 </pre></div></div>
 </div>
 <p>The history is internally stored in <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>’s <code class="docutils literal notranslate"><span class="pre">history</span></code> member and can be applied to another object for convenience. That way, a pipeline can be developed on a single dataset and later be transferred to a whole folder of other (similar) datasets.</p>
