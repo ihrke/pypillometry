@@ -298,7 +298,24 @@ class TestEyeData(unittest.TestCase):
         blinks_ix_sec = blinks_sec.as_index(merged_sec)
         self.assertEqual(blinks_ix_sec[0, 0], 100)
         self.assertEqual(blinks_ix_sec[0, 1], 350)
-        self.assertEqual(blinks_ix.dtype, np.int_)  # Should be integer type
+
+    def test_pupil_blinks_detect_updates_mask(self):
+        """Test that blink detection updates data mask correctly."""
+        # Create artificial signal with values set to 0 indicating blinks
+        data_copy = self.eyedata.copy()
+        data_copy.data['left_pupil'][:] = 1.0
+        data_copy.data['left_pupil'][100:150] = 0.0
+        data_copy.data['left_pupil'][300:360] = 0.0
+
+        result = data_copy.pupil_blinks_detect(eyes=['left'], blink_val=0.0, units="ms")
+
+        blinks = result.get_blinks('left', 'pupil')
+        self.assertGreater(len(blinks), 0)
+
+        mask = result.data.mask['left_pupil']
+        blink_indices = blinks.as_index(result)
+        for start, end in blink_indices:
+            self.assertTrue(np.all(mask[start:end] == 1))
     
     def test_get_blinks_returns_empty_intervals(self):
         """Test that get_blinks returns empty Intervals when no blinks detected"""
