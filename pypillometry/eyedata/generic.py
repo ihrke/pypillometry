@@ -508,21 +508,23 @@ class GenericEyeData(ABC):
     
 
     @keephistory
-    def reset_time(self, t0: float=0, inplace=None):
+    def reset_time(self, t0: float|None=None, inplace=None):
         """
         Resets time so that the time-array starts at time zero (t0).
         Resets onsets etc.
         
         Parameters
         ----------
-        t0: float
-            time at which the :class:`.PupilData`'s time-vector starts
+        t0: float or None
+            time at which the :class:`.PupilData`'s time-vector starts; if None, use the first time point
         inplace: bool
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes
             if `None`, use the setting of the object (specified in constructor)
         """
         obj = self._get_inplace(inplace)
+        if t0 is None:
+            t0 = self.tx[0]
         obj.tx=self.tx-t0
         obj.event_onsets=self.event_onsets-t0
         return obj
