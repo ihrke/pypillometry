@@ -181,6 +181,35 @@ class TestEyeData(unittest.TestCase):
         self.eyedata.correct_pupil_foreshortening(eyes=['left'], inplace=True)
         self.assertFalse(np.array_equal(original_pupil, self.eyedata.data['left_pupil']))
 
+    def test_reset_time_defaults(self):
+        """reset_time should shift time axes in-place when inplace is None."""
+        data = self.eyedata.copy()
+        original_tx = data.tx.copy()
+        original_onsets = data.event_onsets.copy()
+
+        result = data.reset_time()
+
+        self.assertIs(result, data)
+        expected_shift = original_tx[0]
+        np.testing.assert_allclose(data.tx, original_tx - expected_shift)
+        np.testing.assert_allclose(data.event_onsets, original_onsets - expected_shift)
+        self.assertAlmostEqual(data.tx[0], 0.0)
+
+    def test_reset_time_with_t0_and_copy(self):
+        """reset_time should honour t0 argument and leave original untouched when inplace=False."""
+        original_tx = self.eyedata.tx.copy()
+        original_onsets = self.eyedata.event_onsets.copy()
+        t0 = original_tx[10]
+
+        result = self.eyedata.reset_time(t0=t0, inplace=False)
+
+        self.assertIsNot(result, self.eyedata)
+        np.testing.assert_array_equal(self.eyedata.tx, original_tx)
+        np.testing.assert_array_equal(self.eyedata.event_onsets, original_onsets)
+        np.testing.assert_allclose(result.tx, original_tx - t0)
+        np.testing.assert_allclose(result.event_onsets, original_onsets - t0)
+        self.assertAlmostEqual(result.tx[0], original_tx[0] - t0)
+
     def test_plot_property(self):
         """Test the plot property"""
         plotter = self.eyedata.plot
