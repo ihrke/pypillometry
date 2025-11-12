@@ -56,7 +56,7 @@ class TestPlottingPDFGeneration(unittest.TestCase):
         pdf_path = os.path.join(self.temp_dir, "test_pupil_segments.pdf")
         
         figs = self.data.plot.pupil_plot_segments(
-            pdffile=pdf_path, 
+            pdf_file=pdf_path, 
             interv=1.0
         )
         
@@ -128,7 +128,7 @@ class TestPlottingPDFDirectoryCreation(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.dirname(pdf_path)))
         
         figs = self.data.plot.pupil_plot_segments(
-            pdffile=pdf_path, 
+            pdf_file=pdf_path, 
             interv=1.0
         )
         

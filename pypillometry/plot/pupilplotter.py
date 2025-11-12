@@ -178,7 +178,7 @@ class PupilPlotter(GenericPlotter):
 
     def pupil_plot_segments(
         self,
-        pdffile: Optional[str] = None,
+        pdf_file: Optional[str] = None,
         interv: float = 1,
         figsize=(15, 5),
         ylim=None,
@@ -191,7 +191,7 @@ class PupilPlotter(GenericPlotter):
         Parameters
         ----------
 
-        pdffile: str or None
+        pdf_file: str or None
             file name to store the PDF; if None, no PDF is written 
         interv: float
             duration of each of the segments to be plotted (in units specified by ``units``)
@@ -232,18 +232,18 @@ class PupilPlotter(GenericPlotter):
             figs.append(fig)
             
             # Close figure immediately after creation if saving to PDF to prevent display and memory issues
-            if pdffile is not None:
-                plt.close(fig)
+        if pdf_file is not None:
+            plt.close(fig)
 
-        if pdffile is not None:
+        if pdf_file is not None:
             # Create parent directories if they don't exist
-            pdf_path = Path(pdffile)
+            pdf_path = Path(pdf_file)
             if pdf_path.parent != Path('.') and not pdf_path.parent.exists():
                 pdf_path.parent.mkdir(parents=True, exist_ok=True)
                 logger.info("Created directory: {}", pdf_path.parent)
             
-            logger.info("Writing PDF file '{}'", pdffile)
-            with PdfPages(pdffile) as pdf:
+            logger.info("Writing PDF file '{}'", pdf_file)
+            with PdfPages(pdf_file) as pdf:
                 for fig in figs:
                     pdf.savefig(fig)
 
