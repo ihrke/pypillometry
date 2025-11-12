@@ -334,7 +334,15 @@ class GenericEyeData(ABC):
         
         # Convert to requested units if needed
         if units is not None:
-            intervals_ms = [(self.tx[int(s)], self.tx[int(e)]) for s, e in result.intervals]
+            intervals_ms = []
+            last_idx = len(self.tx) - 1
+            for start, end in result.intervals:
+                start_idx = max(0, min(last_idx, int(start)))
+                end_idx = max(0, min(last_idx, int(end) - 1))
+                if end_idx < start_idx:
+                    end_idx = start_idx
+                intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
+
             result = Intervals(intervals_ms, "ms", result.label,
                               result.event_labels, result.event_indices,
                               (self.tx[0], self.tx[-1]), result.event_onsets)

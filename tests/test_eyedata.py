@@ -308,6 +308,13 @@ class TestEyeData(unittest.TestCase):
         np.testing.assert_array_equal(blinks_ix_sep[0], [100, 200])
         np.testing.assert_array_equal(blinks_ix_sep[1], [250, 350])
 
+        # Blink extending to end of signal should convert without IndexError
+        end_idx = len(self.eyedata.tx) - 1
+        self.eyedata.set_blinks('left', 'pupil', np.array([[end_idx - 10, end_idx]]))
+        blinks_end = self.eyedata.get_blinks('left', 'pupil', units='ms')
+        self.assertEqual(len(blinks_end), 1)
+        self.assertLessEqual(blinks_end.intervals[0][1], self.eyedata.tx[-1])
+
     def test_pupil_blinks_detect_updates_mask(self):
         """Test that blink detection updates data mask correctly."""
         # Create artificial signal with values set to 0 indicating blinks
