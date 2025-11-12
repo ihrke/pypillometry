@@ -206,9 +206,8 @@ class PupilData(GenericEyeData):
         (f.eks., 0 or NaN). Second, blinks are defined as everything between
         two crossings of the velocity profile (from negative to positive).
         
-        Detected blinks are put into member `blinks` (matrix 2 x nblinks where start and end
-        are stored as indexes) and member `blink_mask` which codes for each sampling point
-        whether there is a blink (1) or not (0).
+        Detected blinks are put into member `blinks` and the `mask` field of 
+        each eye's data in the `EyeDataDict` is set to 1 for the blinks.
 
         Finally, detected blinks have to be at least `min_duration` duration (in `units`).
         
@@ -260,19 +259,24 @@ class PupilData(GenericEyeData):
                 logger.warning("Strategy '%s' unknown"%strat)
         
         for eye in eyes:
+            logger.debug(f"Detecting blinks for eye {eye}")
             ## detect blinks with the different strategies
             if "velocity" in strategies:
                 blinks_vel=preproc.detect_blinks_velocity(self.data[eye,"pupil"], winsize_ix, vel_onset, vel_offset, min_onset_len, min_offset_len)
+                logger.debug(f"Detected {len(blinks_vel)} blinks with velocity strategy")
             else: 
                 blinks_vel=np.array([])
                 
             if "zero" in strategies:
                 blinks_zero=preproc.detect_blinks_zero(self.data[eye,"pupil"], 1, blink_val)
+                logger.debug(f"Detected {len(blinks_zero)} blinks with zero strategy")
             else:
                 blinks_zero=np.array([])
 
             ## merge the two blinks
+            logger.debug(f"Merging {len(blinks_vel)} blinks with {len(blinks_zero)} blinks")
             blinks=preproc.helper_merge_blinks(blinks_vel, blinks_zero)
+            logger.debug(f"Merged {len(blinks)} blinks")
             obj.set_blinks(eye, "pupil", np.array([[on,off] for (on,off) in blinks if off-on>=min_duration_ix]))
             
         return obj    

@@ -167,7 +167,15 @@ class PupilPlotter(GenericPlotter):
         plt.xlabel(xlab)        
 
 
-    def pupil_plot_segments(self, pdffile: Optional[str]=None, interv: float=1, figsize=(15,5), ylim=None, **kwargs):
+    def pupil_plot_segments(
+        self,
+        pdffile: Optional[str] = None,
+        interv: float = 1,
+        figsize=(15, 5),
+        ylim=None,
+        units: str = "min",
+        **kwargs,
+    ):
         """
         Plot the whole dataset chunked up into segments (usually to a PDF file).
 
@@ -177,10 +185,12 @@ class PupilPlotter(GenericPlotter):
         pdffile: str or None
             file name to store the PDF; if None, no PDF is written 
         interv: float
-            duration of each of the segments to be plotted (in minutes)
+            duration of each of the segments to be plotted (in units specified by ``units``)
         figsize: Tuple[int,int]
             dimensions of the figures
-        kwargs: 
+        units: str, optional
+            Time units for segment boundaries passed to :func:`PupilData.pupil_plot`. Default "min".
+        kwargs:
             arguments passed to :func:`PupilData.pupil_plot()`
 
         Returns
@@ -189,14 +199,16 @@ class PupilPlotter(GenericPlotter):
         figs: list of :class:`matplotlib.Figure` objects
         """
 
-        # start and end in minutes
-        obj=self.obj
-        smins,emins=obj.tx.min()/1000./60., obj.tx.max()/1000./60.
+        obj = self.obj
+        unit_factor = obj._unit_fac(units) if units is not None else 1.0
+        start_unit = float(np.min(obj.tx) * unit_factor)
+        end_unit = float(np.max(obj.tx) * unit_factor)
+
         segments=[]
-        cstart=smins
-        cend=smins
-        while cend<emins:
-            cend=min(emins, cstart+interv)
+        cstart=start_unit
+        cend=start_unit
+        while cend < end_unit:
+            cend = min(end_unit, cstart + interv)
             segments.append( (cstart,cend) )
             cstart=cend
 
@@ -204,7 +216,7 @@ class PupilPlotter(GenericPlotter):
 
         for start,end in segments:
             plt.figure(figsize=figsize)
-            self.pupil_plot( plot_range=(start,end), units="min", **kwargs)
+            self.pupil_plot(plot_range=(start, end), units=units, **kwargs)
             if ylim is not None:
                 plt.ylim(*ylim)
             fig = plt.gcf()
