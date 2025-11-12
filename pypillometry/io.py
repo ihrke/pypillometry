@@ -486,7 +486,11 @@ def read_pickle(fname):
     return obj
 
 @requires_package("eyelinkio")
-def read_eyelink(source: str, cache_file: str = None, force_download: bool = False):
+def read_eyelink(
+    source: str, 
+    cache_file: str = None, 
+    force_download: bool = False, 
+    session: Optional[requests.Session] = None):
     """
     Read an Eyelink file/URL and return the object returned by the "eyelinkio" package.
     
@@ -498,7 +502,8 @@ def read_eyelink(source: str, cache_file: str = None, force_download: bool = Fal
         filename to cache the file in case it is downloaded from a URL
     force_download: bool, optional
         if True, force re-download even if file exists locally
-
+    session: requests.Session, optional
+        requests session to use for the download. 
     Returns
     -------
     object
@@ -518,9 +523,9 @@ def read_eyelink(source: str, cache_file: str = None, force_download: bool = Fal
                 if cache_dir and not os.path.exists(cache_dir):
                     logger.info(f"Creating directory for cache file: {cache_dir}")
                     os.makedirs(cache_dir, exist_ok=True)
-                fname = download(source, cache_file)
+                fname = download(source, cache_file, session=session)
         else:
-            fname = download(source)
+            fname = download(source, session=session)
     else:
         fname = source
 

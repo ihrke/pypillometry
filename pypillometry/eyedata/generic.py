@@ -607,7 +607,10 @@ class GenericEyeData(ABC):
         return r
 
     @classmethod
-    def from_eyelink(cls, fname:str, return_edf_obj:bool=False, remove_eyelink_triggers:bool=False, **kwargs):
+    def from_eyelink(
+        cls, fname:str, 
+        return_edf_obj:bool=False, 
+        remove_eyelink_triggers:bool=False, **kwargs):
         """
         Reads a :class:`.GenericEyedata` object from an Eyelink file.
 

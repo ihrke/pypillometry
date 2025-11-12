@@ -30,9 +30,10 @@ The package comes with a few example datasets for convenience (see :ref:`this no
 
 Please refer to the following notebooks for more information:
 
-- :ref:`An example for importing data from Eyelink EDF-files </importdata.ipynb>`
+- :ref:`An example for importing data from Eyelink EDF-files </importdata_edf.ipynb>`
+- :ref:`An example for importing data from Eyelink ASC-files </importdata_asc.ipynb>`
 - :ref:`Example datasets included in the package </example_datasets.ipynb>` 
-- :ref:`Providing a configuration file for loading data from a local directory or OSF </examples/share_study.rst>`
+- :ref:`Providing a configuration file for loading/sharing data from a local directory or OSF </examples/share_study.rst>`
 
 
 Pipeline-based processing
