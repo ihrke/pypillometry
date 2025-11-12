@@ -6,7 +6,7 @@ import numpy as np
 import pickle
 import requests
 from unittest.mock import patch, MagicMock
-from pypillometry.io import write_pickle, read_pickle, read_eyelink
+from pypillometry.io import write_pickle, read_pickle, read_eyelink, download
 from importlib.resources import files
 
 class TestIO(unittest.TestCase):
@@ -295,6 +295,62 @@ class TestIO(unittest.TestCase):
         
         # Both should return valid data
         self.assertEqual(type(edf_data_debug), type(edf_data_info))
+
+    @patch("pypillometry.io._osf_client_url_to_download_url", return_value="https://files.osf.io/download")
+    @patch("pypillometry.io.tqdm")
+    def test_download_with_provided_session(self, mock_tqdm, mock_osf_url):
+        """download should reuse provided session and respect OSF URL conversion."""
+        session = MagicMock()
+        response = MagicMock()
+        response.headers.get.return_value = "128"
+        response.iter_content.return_value = [b"chunk1", b"chunk2"]
+        session.get.return_value.__enter__.return_value = response
+        session.get.return_value.__exit__.return_value = False
+
+        mock_bar = MagicMock()
+        mock_tqdm.return_value.__enter__.return_value = mock_bar
+
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            fname = tmp.name
+
+        try:
+            result = download("https://osf.io/abc123/download", fname=fname, session=session)
+            self.assertEqual(result, fname)
+            mock_osf_url.assert_called_once_with("https://osf.io/abc123/download", session=session)
+            session.get.assert_called_once_with("https://files.osf.io/download", stream=True)
+            mock_bar.update.assert_called()
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
+
+    @patch("pypillometry.io.requests.Session")
+    @patch("pypillometry.io._osf_client_url_to_download_url", side_effect=lambda url, session=None: url)
+    @patch("pypillometry.io.tqdm")
+    def test_download_creates_session_when_missing(self, mock_tqdm, mock_osf_url, mock_session_cls):
+        """download should create and close its own session when none supplied."""
+        mock_session = MagicMock()
+        mock_session_cls.return_value = mock_session
+
+        response = MagicMock()
+        response.headers.get.return_value = "0"
+        response.iter_content.return_value = []
+        mock_session.get.return_value.__enter__.return_value = response
+        mock_session.get.return_value.__exit__.return_value = False
+
+        mock_tqdm.return_value.__enter__.return_value = MagicMock()
+
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            fname = tmp.name
+
+        try:
+            result = download("https://example.com/file.dat", fname=fname)
+            self.assertEqual(result, fname)
+            mock_osf_url.assert_called_once_with("https://example.com/file.dat", session=None)
+            mock_session.get.assert_called_once_with("https://example.com/file.dat", stream=True)
+            mock_session.close.assert_called_once()
+        finally:
+            if os.path.exists(fname):
+                os.remove(fname)
 
 if __name__ == '__main__':
     unittest.main()
