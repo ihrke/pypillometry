@@ -39,7 +39,7 @@ Please refer to the following notebooks for more information:
 Pipeline-based processing
 -------------------------
 
-:py:mod:`pypillometry` implements a pipeline-like approach where each operation executed on a :class:`~pypillometry.PupilData`,-:class:`~pypillometry.GazeData` or :class:`~pypillometry.EyeData`-object returns a copy of the (modified) object. This enables the "chaining" of commands as follows:
+:py:mod:`pypillometry` implements a pipeline-like approach where each operation executed on a :class:`~pypillometry.PupilData`,-:class:`~pypillometry.GazeData` or :class:`~pypillometry.EyeData`-object returns a reference to the (modified) object. This enables the "chaining" of commands as follows:
 
 .. code-block:: python
 
@@ -47,7 +47,17 @@ Pipeline-based processing
 
 This command loads an example data-file, applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object `d`. This object stores also the complete history of the operations applied to the dataset and allows to transfer it to a new dataset.
 
-See the following page more on this: 
+By default, the operations are executed in place and the original object is modified. However, this can be changed by setting the `inplace` argument to `False`.
+This will return a new object with the results of the operations.
+
+.. code-block:: python
+
+    d=pp.get_example_data("rlmw_002_short")
+    d_new=d.pupil_blinks_detect(inplace=False).blinks_merge().pupil_lowpass_filter(3).downsample(50)
+
+This will return a new object `d_new` with the results of the operations. The original object `d` is not modified.
+
+See the following notebook for more on this: 
 
 - :ref:`Pipeline-based processing in pypillometry </pipes.ipynb>`
 
