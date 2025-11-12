@@ -1,26 +1,31 @@
-<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px;">
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
   <h3 style="margin-top:0;">{{ class_name }} — <span style="color:#555;">{{ name }}</span></h3>
 
-  <table style="border-collapse:collapse; width:100%; margin-bottom:10px;">
-    <tbody>
-      {% for label, value in overview %}
-      <tr>
-        <th style="text-align:left; padding:4px 8px; background:#f6f6f6;">{{ label }}</th>
-        <td style="padding:4px 8px;">{{ value }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
+    {% for label, value in overview %}
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">{{ label }}</div>
+      <div style="font-weight:600;">{{ value }}</div>
+    </div>
+    {% endfor %}
+  </div>
 
-  {% if glimpse %}
-  <p style="margin:8px 0;">
-    <strong>Glimpse</strong>
-    <code>{{ glimpse }}</code>
-  </p>
+  {% if sparklines %}
+  <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
+      {% for spark in sparklines %}
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">{{ spark.label }}</div>
+        <img src="{{ spark.data }}" alt="{{ spark.label }} sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+      {% endfor %}
+    </div>
+  </details>
   {% endif %}
 
   {% if blink_stats %}
-  <details style="margin-bottom:8px;">
+  <details open style="margin-bottom:8px;">
     <summary style="cursor:pointer; font-weight:600;">Blink statistics</summary>
     <table style="border-collapse:collapse; width:100%; margin-top:8px;">
       <thead>
@@ -42,6 +47,13 @@
         {% endfor %}
       </tbody>
     </table>
+  </details>
+  {% endif %}
+
+  {% if glimpse %}
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Data glimpse</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">{{ glimpse }}</pre>
   </details>
   {% endif %}
 

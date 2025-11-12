@@ -14,7 +14,7 @@ setuptools.setup(
     version=version,
     author="Matthias Mittner",
     author_email="matthias.mittner@uit.no",
-    description="Pupillometry in Python.",
+    description="Pupillometry and Eye-tracking in Python.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ihrke/pypillometry",
@@ -27,7 +27,7 @@ setuptools.setup(
     #include_package_data=True,
     package_dir={"pypillometry": "pypillometry"},
     package_data={
-        "pypillometry": [],
+        "pypillometry": ["templates/*.html"],
         "pypillometry.data": ["*.asc"],
         "pypillometry.stan": ["*.stan"],
         },

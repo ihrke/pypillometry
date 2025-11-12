@@ -23,6 +23,8 @@ from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable, Di
 import functools
 from random import choice
 from importlib import resources
+from io import BytesIO
+import base64
 import copy
 import pickle
 import inspect
@@ -770,6 +772,41 @@ class GenericEyeData(ABC):
                 }
             )
 
+        sparklines = []
+        try:
+            import matplotlib
+            matplotlib.use("Agg")
+            from matplotlib.figure import Figure
+
+            from matplotlib.backends.backend_agg import FigureCanvasAgg
+
+            for key in sorted(self.data.keys()):
+                eye, var = key if isinstance(key, tuple) else (None, key)
+                label = f"{eye} {var}".strip() if eye else var
+                data = self.data[key]
+                if data is None or len(data) == 0:
+                    continue
+                step = max(1, len(data) // 200)
+                sample = data[::step]
+                fig = Figure(figsize=(1.8, 0.6), dpi=100)
+                ax = fig.subplots()
+                ax.plot(sample, color="#1f77b4", linewidth=1)
+                ax.axis("off")
+                canvas = FigureCanvasAgg(fig)
+                buf = BytesIO()
+                canvas.print_png(buf)
+                buf.seek(0)
+                img_b64 = base64.b64encode(buf.read()).decode("ascii")
+                sparklines.append(
+                    {
+                        "label": label,
+                        "data": f"data:image/png;base64,{img_b64}",
+                    }
+                )
+        except Exception as exc:  # pragma: no cover - optional feature
+            logger.debug(f"Could not render sparklines: {exc}")
+            sparklines = []
+
         context = {
             "class_name": self.__class__.__name__,
             "name": summary["name"],
@@ -777,6 +814,7 @@ class GenericEyeData(ABC):
             "glimpse": summary.get("glimpse"),
             "blink_stats": blink_stats,
             "history": history_items,
+            "sparklines": sparklines,
         }
 
         template_source = resources.read_text("pypillometry.templates", "eyedata_repr.html")
