@@ -278,6 +278,116 @@ class Events:
         summary += '</p>'
         
         return html + summary
+
+    def plot(
+        self,
+        show_labels: str = "auto",
+        marker: str = ".",
+        units: Optional[str] = "min",
+        **kwargs,
+    ):
+        """
+        Plot events as points on a time axis.
+
+        Parameters
+        ----------
+        show_labels : {"auto", "all", "none"}, optional
+            Labeling strategy. "auto" (default) shows a subset spaced apart,
+            "all" annotates every event, "none" disables labels.
+        marker : str, optional
+            Matplotlib marker style for the events (default 'o').
+        units : str or None, optional
+            Units to display in the plot. Defaults to "min". Use None to keep existing units.
+        **kwargs :
+            Additional keyword arguments passed to :func:`matplotlib.axes.Axes.plot`.
+
+        Returns
+        -------
+        matplotlib.axes.Axes
+            Axes containing the plot.
+        """
+        import matplotlib.pyplot as plt
+
+        if show_labels not in {"auto", "all", "none"}:
+            raise ValueError("show_labels must be one of {'auto', 'all', 'none'}")
+
+        ax = plt.gca()
+
+        target_units = units if units is not None else self.units
+        if target_units is not None and target_units != self.units:
+            converted = self.to_units(target_units)
+        else:
+            converted = self
+
+        # Always label axes even if no events so the plot remains informative.
+        x_label = f"Time ({converted.units})" if converted.units is not None else "Time (indices)"
+        ax.set_xlabel(x_label)
+        ax.set_ylabel("Event #")
+
+        if len(self) == 0:
+            ax.set_ylim(0, 1)
+            return ax
+
+        y_positions = np.arange(1, len(self) + 1)
+
+        plot_kwargs = {"linestyle": "None", "marker": marker, "markersize": 3}
+        plot_kwargs.update(kwargs)
+
+        ax.plot(converted.onsets, y_positions, **plot_kwargs)
+
+        if converted.data_time_range is not None:
+            x_min, x_max = converted.data_time_range
+        else:
+            x_min = float(np.min(converted.onsets))
+            x_max = float(np.max(converted.onsets))
+
+        span = x_max - x_min
+        if span == 0:
+            padding = max(1.0, abs(x_max) * 0.05)
+        else:
+            padding = span * 0.05
+
+        x_limits = (x_min - padding, x_max + padding)
+        ax.set_xlim(*x_limits)
+        ax.set_ylim(0, len(self) + 1)
+        ax.set_yticks([1, len(self)] if len(self) > 1 else [1])
+
+        if show_labels != "none":
+            effective_spacing = 0.0
+            if show_labels == "auto":
+                logger.debug("Plotting only a subset of labels, use show_labels='all' to show all labels")
+                fig = ax.figure
+                try:
+                    fig.canvas.draw()
+                except Exception:
+                    pass
+                bbox = ax.get_window_extent()
+                axis_width_pixels = bbox.width if bbox.width > 0 else 1.0
+                desired_pixels = 10.0
+                span = x_limits[1] - x_limits[0]
+                effective_spacing = span * desired_pixels / axis_width_pixels if axis_width_pixels else 0.0
+
+            label_offset = padding * 0.05 if padding > 0 else 0.0
+            last_label_x = -np.inf
+            for onset, y_pos, label in zip(converted.onsets, y_positions, self.labels):
+                spacing_requirement = (
+                    show_labels == "all"
+                    or effective_spacing <= 0
+                    or abs(onset - last_label_x) >= effective_spacing
+                )
+                if spacing_requirement:
+                    ax.text(
+                        onset + label_offset,
+                        y_pos,
+                        str(label),
+                        va="center",
+                        ha="left",
+                        fontsize=8,
+                        alpha=0.8,
+                        rotation=90,
+                        rotation_mode="anchor",
+                    )
+                    last_label_x = onset
     
     def filter(self, selector) -> 'Events':
         """
