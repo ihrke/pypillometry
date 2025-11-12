@@ -148,19 +148,28 @@ class PupilPlotter(GenericPlotter):
                 plt.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
         
         # highlight if a blink in any of the eyes
-        blinks_obj = self.obj.get_blinks(eyes, "pupil", units=None)
-        blinks = blinks_obj.as_index(self.obj)
-
-        if highlight_blinks and len(blinks)>0:
-            logger.debug("Highlighting blinks, %i in range"%blinks.shape[0])
-            for sblink,eblink in blinks:
-                if eblink<startix or sblink>endix:
+        if highlight_blinks:
+            ax = plt.gca()
+            for eye in eyes:
+                mask = self.obj.data.mask.get(f"{eye}_pupil")
+                if mask is None:
                     continue
-                else:
-                    sblink=min(tx.size-1, max(0,sblink-startix))
-                    eblink=min(endix-startix-1,eblink-startix)
-                
-                plt.gca().axvspan(tx[sblink],tx[eblink],color="red", alpha=0.2)
+                masked_segment = mask[startix:endix]
+                blink_spans = []
+                in_blink = False
+                span_start = 0
+                for idx, value in enumerate(masked_segment):
+                    if value and not in_blink:
+                        in_blink = True
+                        span_start = idx
+                    elif not value and in_blink:
+                        blink_spans.append((span_start, idx))
+                        in_blink = False
+                if in_blink:
+                    blink_spans.append((span_start, len(masked_segment)))
+
+                for sblink, eblink in blink_spans:
+                    ax.axvspan(tx[sblink], tx[min(eblink - 1, len(tx) - 1)], color="red", alpha=0.2)
 
 
         plt.legend()
