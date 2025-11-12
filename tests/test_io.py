@@ -10,6 +10,94 @@ from pypillometry.io import write_pickle, read_pickle, read_eyelink
 from importlib.resources import files
 
 class TestIO(unittest.TestCase):
+    @patch("requests.Session")
+    def test_osf_authenticate_success_validation(self, mock_session_cls):
+        """osf_authenticate should configure headers and validate token."""
+        from pypillometry.io import osf_authenticate
+
+        mock_session = MagicMock()
+        mock_session_cls.return_value = mock_session
+
+        mock_response = MagicMock()
+        mock_response.raise_for_status.return_value = None
+        mock_session.get.return_value = mock_response
+
+        result_session = osf_authenticate("abc123")
+
+        self.assertIs(result_session, mock_session)
+        mock_session.headers.update.assert_called_with(
+            {"Authorization": "Bearer abc123", "Accept": "application/json"}
+        )
+        mock_session.get.assert_called_once_with(
+            "https://api.osf.io/v2/users/me/",
+            timeout=10.0,
+        )
+
+    def test_osf_authenticate_reuses_session(self):
+        """osf_authenticate should reuse provided session instance."""
+        from pypillometry.io import osf_authenticate
+
+        session = requests.Session()
+        with patch.object(session, "get") as mock_get:
+            mock_response = MagicMock()
+            mock_response.raise_for_status.return_value = None
+            mock_get.return_value = mock_response
+
+            returned = osf_authenticate("token123", session=session)
+
+        self.assertIs(returned, session)
+        self.assertEqual(session.headers["Authorization"], "Bearer token123")
+
+    def test_osf_authenticate_invalid_token(self):
+        """osf_authenticate should reject empty tokens."""
+        from pypillometry.io import osf_authenticate
+
+        with self.assertRaises(ValueError):
+            osf_authenticate("")
+        with self.assertRaises(ValueError):
+            osf_authenticate("   ")
+
+    @patch("requests.Session")
+    def test_osf_authenticate_validation_failure(self, mock_session_cls):
+        """HTTP errors during validation should raise ValueError."""
+        from pypillometry.io import osf_authenticate
+
+        mock_session = MagicMock()
+        mock_session_cls.return_value = mock_session
+
+        error_response = MagicMock()
+        error_response.status_code = 403
+        http_error = requests.exceptions.HTTPError(response=error_response)
+
+        mock_session.get.return_value.raise_for_status.side_effect = http_error
+
+        with self.assertRaisesRegex(ValueError, "OSF token validation failed"):
+            osf_authenticate("badtoken")
+
+    @patch("requests.Session")
+    def test_osf_authenticate_request_exception(self, mock_session_cls):
+        """General request exceptions should raise ValueError."""
+        from pypillometry.io import osf_authenticate
+
+        mock_session = MagicMock()
+        mock_session_cls.return_value = mock_session
+        mock_session.get.side_effect = requests.exceptions.RequestException("network error")
+
+        with self.assertRaisesRegex(ValueError, "OSF token validation request failed"):
+            osf_authenticate("token")
+
+    @patch("requests.Session")
+    def test_osf_authenticate_skip_validation(self, mock_session_cls):
+        """Setting validate=False should skip network call."""
+        from pypillometry.io import osf_authenticate
+
+        mock_session = MagicMock()
+        mock_session_cls.return_value = mock_session
+
+        returned = osf_authenticate("token", validate=False)
+
+        self.assertIs(returned, mock_session)
+        mock_session.get.assert_not_called()
     def setUp(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
