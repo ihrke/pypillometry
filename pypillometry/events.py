@@ -250,9 +250,25 @@ class Events:
             f'Onset ({unit_str})': self.onsets,
             'Label': self.labels
         })
-        
-        # Convert to HTML
-        html = df.to_html(index=True, index_names=['#'])
+
+        # Convert to HTML respecting current pandas display options
+        import inspect
+
+        max_rows = pd.get_option("display.max_rows")
+        min_rows = pd.get_option("display.min_rows")
+
+        to_html_kwargs = {
+            "index": True,
+            "index_names": ['#'],
+        }
+
+        to_html_signature = inspect.signature(pd.DataFrame.to_html)
+        if "max_rows" in to_html_signature.parameters and max_rows is not None:
+            to_html_kwargs["max_rows"] = max_rows
+        if "min_rows" in to_html_signature.parameters and min_rows is not None:
+            to_html_kwargs["min_rows"] = min_rows
+
+        html = df.to_html(**to_html_kwargs)
         
         # Add summary info below table
         summary = f'<p style="font-size: 0.9em; color: #666; margin-top: 8px;">'
