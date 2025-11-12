@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, "..")
 import pypillometry as pp
 import numpy as np
+import pandas as pd
 from pypillometry.intervals import Intervals, IntervalStats
 
 
@@ -78,6 +79,33 @@ class TestIntervalsClass(unittest.TestCase):
         self.assertEqual(intervals.label, "stimuli")
         self.assertEqual(intervals.event_labels, ["event1", "event2"])
         np.testing.assert_array_equal(intervals.event_indices, [0, 5])
+
+    def test_intervals_as_pandas(self):
+        """Test conversion of intervals to pandas DataFrame"""
+        intervals_list = [(0, 100), (200, 260)]
+        event_labels = ["stim", "resp"]
+        event_indices = np.array([0, 1])
+        event_onsets = [0, 200]
+        intervals = Intervals(
+            intervals_list,
+            units="ms",
+            label="events",
+            event_labels=event_labels,
+            event_indices=event_indices,
+            event_onsets=event_onsets,
+        )
+
+        df = intervals.as_pandas()
+        self.assertIsInstance(df, pd.DataFrame)
+        self.assertEqual(len(df), 2)
+        self.assertTrue((df["start"].values == np.array([0, 200])).all())
+        self.assertTrue((df["duration"].values == np.array([100, 60])).all())
+        self.assertTrue((df["event_label"].values == np.array(event_labels)).all())
+        self.assertTrue((df["event_index"].values == event_indices).all())
+        self.assertTrue((df["event_onset"].values == np.array(event_onsets)).all())
+
+        empty_df = Intervals([], units="ms").as_pandas()
+        self.assertTrue(empty_df.empty)
 
 
 class TestIntervalsMethods(unittest.TestCase):

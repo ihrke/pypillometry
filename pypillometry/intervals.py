@@ -3,6 +3,8 @@
 
 import numpy as np
 
+from pypillometry.convenience import requires_package
+
 class IntervalStats(dict):
     """
     A dictionary with a specialized repr() function
@@ -339,6 +341,45 @@ class Intervals:
             Dictionary with summary statistics (n, mean, sd, min, max)
         """
         return get_interval_stats(self.intervals)
+
+
+    @requires_package("pandas")
+    def as_pandas(self):
+        """
+        Represent intervals as a :class:`pandas.DataFrame`.
+
+        Returns
+        -------
+        pandas.DataFrame
+            DataFrame with columns ``start``, ``end``, and ``duration``. When metadata
+            is available, columns ``event_label``, ``event_index``, and ``event_onset``
+            are included. If the intervals have units, the column ``units`` is added.
+
+        Raises
+        ------
+        ImportError
+            If pandas is not installed.
+        """
+        import pandas as pd
+
+        records = []
+        for idx, (start, end) in enumerate(self.intervals):
+            record = {
+                "start": start,
+                "end": end,
+                "duration": end - start,
+            }
+            if self.units is not None:
+                record["units"] = self.units
+            if self.event_labels is not None and idx < len(self.event_labels):
+                record["event_label"] = self.event_labels[idx]
+            if self.event_indices is not None and idx < len(self.event_indices):
+                record["event_index"] = self.event_indices[idx]
+            if self.event_onsets is not None and idx < len(self.event_onsets):
+                record["event_onset"] = self.event_onsets[idx]
+            records.append(record)
+
+        return pd.DataFrame(records)
     
     def plot(self, show_labels: bool = True, **kwargs):
         """

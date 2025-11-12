@@ -1371,13 +1371,15 @@ class GenericEyeData(ABC):
         eyes,variables=self._get_eye_var(eyes,variables)
 
         fac = self._unit_fac(units)
-        distance_ix = distance / fac / self.fs * 1000.0  # convert to index distance
+        distance_ix = (distance / fac) * (self.fs / 1000.0)        
+
+        logger.debug(f"Distance '{distance} {units}' in index units: {distance_ix}")
 
         for eye, var in itertools.product(eyes, variables):
             blinks = obj.get_blinks(eye, var, units=None)
             if len(blinks) == 0:
                 continue
-            
+            logger.debug(f"Processing blinks for eye {eye} and variable {var}: {len(blinks)} blinks")
             blinks_array = blinks.as_index(obj)
             
             newblinks = []

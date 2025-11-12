@@ -299,6 +299,15 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(blinks_ix_sec[0, 0], 100)
         self.assertEqual(blinks_ix_sec[0, 1], 350)
 
+        # Ensure blinks beyond distance remain separate
+        self.eyedata.set_blinks('left', 'pupil', np.array([[100, 200], [250, 350]]))
+        separated = self.eyedata.blinks_merge(eyes=['left'], variables=['pupil'], distance=10, units="ms")
+        blinks_sep = separated.get_blinks('left', 'pupil')
+        blinks_ix_sep = blinks_sep.as_index(separated)
+        self.assertEqual(len(blinks_ix_sep), 2)
+        np.testing.assert_array_equal(blinks_ix_sep[0], [100, 200])
+        np.testing.assert_array_equal(blinks_ix_sep[1], [250, 350])
+
     def test_pupil_blinks_detect_updates_mask(self):
         """Test that blink detection updates data mask correctly."""
         # Create artificial signal with values set to 0 indicating blinks

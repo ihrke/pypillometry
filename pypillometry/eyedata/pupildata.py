@@ -338,6 +338,7 @@ class PupilData(GenericEyeData):
             winsize_ix+=1 
 
         for eye in eyes:
+            logger.debug(f"Interpolating blinks for eye {eye}")
             syr=obj.data[eye,"pupil"].copy() ## interpolated signal
             mask=obj.data.mask[eye+"_pupil"].copy() # copy of mask
             bls = self.get_blinks(eye, "pupil")
