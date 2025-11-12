@@ -4,6 +4,8 @@
 import numpy as np
 from typing import Optional, List, Tuple
 
+from loguru import logger
+
 
 class Events:
     """
@@ -388,6 +390,8 @@ class Events:
                         rotation_mode="anchor",
                     )
                     last_label_x = onset
+
+        return ax
     
     def filter(self, selector) -> 'Events':
         """

@@ -7,6 +7,9 @@ sys.path.insert(0, "..")
 import pypillometry as pp
 import numpy as np
 from pypillometry.events import Events
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 
 class TestEventsClass(unittest.TestCase):
@@ -515,6 +518,49 @@ class TestEventsFiltering(unittest.TestCase):
         self.assertEqual(len(filtered), 1)
         self.assertEqual(filtered.onsets[0], 2.0)
         self.assertEqual(filtered.units, "sec")
+
+
+class TestEventsPlot(unittest.TestCase):
+    """Tests for the Events.plot method."""
+
+    def setUp(self):
+        self.events = Events(
+            onsets=np.linspace(0, 1000, 50),
+            labels=[f"E{i}" for i in range(50)],
+            units="ms"
+        )
+
+    def test_plot_auto_mode_spaced_labels(self):
+        fig, ax = plt.subplots()
+        try:
+            returned_ax = self.events.plot(show_labels="auto", units="ms")
+            self.assertIs(returned_ax, ax)
+            texts = ax.texts
+            self.assertGreater(len(texts), 0)
+            xs = [txt.get_position()[0] for txt in texts]
+            if len(xs) > 1:
+                diffs = np.diff(xs)
+                self.assertTrue(np.all(diffs >= 0))
+        finally:
+            plt.close(fig)
+
+    def test_plot_all_labels(self):
+        fig, ax = plt.subplots()
+        try:
+            returned_ax = self.events.plot(show_labels="all", units="ms")
+            self.assertIs(returned_ax, ax)
+            self.assertEqual(len(ax.texts), len(self.events))
+        finally:
+            plt.close(fig)
+
+    def test_plot_no_labels(self):
+        fig, ax = plt.subplots()
+        try:
+            returned_ax = self.events.plot(show_labels="none", units="ms")
+            self.assertIs(returned_ax, ax)
+            self.assertEqual(len(ax.texts), 0)
+        finally:
+            plt.close(fig)
 
 
 if __name__ == '__main__':
