@@ -370,12 +370,11 @@ class PupilData(GenericEyeData):
                 intfct=interp1d(txpts,sypts, kind=interp_type)
                 islic=slice(t2, t3)
                 syr[islic]=intfct(obj.tx[islic])
+                # mark the interpolated datapoints as masked
+                mask[islic] = 1
 
-                # store interpolated data
-                obj.data[eye,store_as]=syr
-                # record the interpolated datapoints
-                obj.data.mask[eye+"_"+store_as]=mask
-                obj.data.mask[eye+"_"+store_as][islic]=1                
+            # store interpolated data with mask preservation
+            obj.data.set_with_mask(f"{eye}_{store_as}", syr, mask=mask)
 
         return obj
             

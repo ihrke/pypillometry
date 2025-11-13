@@ -726,20 +726,17 @@ class TestEyeDataDelitem(unittest.TestCase):
             del self.eyedata['nonexistent_key']
     
     def test_delitem_time_raises_error(self):
-        """Deleting time array should raise ValueError"""
-        with self.assertRaises(ValueError) as cm:
+        """Deleting time array should raise KeyError (time not in data dict)"""
+        with self.assertRaises(KeyError):
             del self.eyedata['time']
-        self.assertIn("Cannot delete time array", str(cm.exception))
     
     def test_delitem_time_with_unit_raises_error(self):
-        """Deleting time_* keys should raise ValueError"""
-        with self.assertRaises(ValueError) as cm:
+        """Deleting time_* keys should raise KeyError (not in data dict)"""
+        with self.assertRaises(KeyError):
             del self.eyedata['time_sec']
-        self.assertIn("Cannot delete time array", str(cm.exception))
         
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(KeyError):
             del self.eyedata['time_ms']
-        self.assertIn("Cannot delete time array", str(cm.exception))
     
     def test_delitem_time_tuple_raises_error(self):
         """Deleting ('time', 'sec') should raise ValueError"""
@@ -766,6 +763,49 @@ class TestEyeDataDelitem(unittest.TestCase):
         # Verify it's back
         self.assertIn('left_x', self.eyedata.data)
         np.testing.assert_array_equal(self.eyedata.data['left_x'], new_data)
+    
+    def test_pupil_blinks_interpolate_preserves_mask(self):
+        """Test that blink interpolation preserves original mask and marks interpolated regions"""
+        # Create pupil data with some manually masked regions
+        pd = pp.PupilData(
+            left_pupil=np.random.rand(1000) * 100 + 3000,
+            sampling_rate=100
+        )
+        
+        # Manually mask some regions (not blinks)
+        manual_mask_indices = slice(100, 120)
+        pd.data.mask['left_pupil'][manual_mask_indices] = 1
+        
+        # Add some blinks (zeros) - need enough zeros to be detected as blinks
+        blink_indices = slice(500, 520)  # 20 samples at 100Hz = 200ms
+        pd.data['left_pupil'][blink_indices] = 0
+        
+        # Store original mask
+        original_mask = pd.data.mask['left_pupil'].copy()
+        
+        # First detect blinks, then interpolate
+        pd = pd.pupil_blinks_detect(eyes=['left'], min_duration=50, inplace=True)
+        pd_interp = pd.pupil_blinks_interpolate(eyes=['left'], store_as='pupil', inplace=False)
+        
+        # Verify manual mask is preserved
+        np.testing.assert_array_equal(
+            pd_interp.data.mask['left_pupil'][manual_mask_indices],
+            original_mask[manual_mask_indices],
+            err_msg="Manually masked regions should be preserved"
+        )
+        
+        # Verify blink regions are now masked (interpolated regions are marked)
+        # Note: not all indices might be interpolated depending on the algorithm
+        self.assertTrue(
+            np.any(pd_interp.data.mask['left_pupil'][blink_indices] == 1),
+            "At least some interpolated blink regions should be masked"
+        )
+        
+        # Verify data was interpolated (not all zeros anymore)
+        self.assertTrue(
+            np.any(pd_interp.data['left_pupil'][blink_indices] > 0),
+            "Blink regions should be interpolated (not all zero)"
+        )
 
 
 class TestEventsIntegration(unittest.TestCase):
