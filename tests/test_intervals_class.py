@@ -467,6 +467,30 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         # Should return the same object
         self.assertIs(intervals_same, intervals)
     
+    def test_to_units_with_aliases(self):
+        """Test converting to units using aliases"""
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        
+        # Test various aliases
+        intervals_seconds = intervals.to_units("seconds")
+        intervals_s = intervals.to_units("s")
+        intervals_minutes = intervals.to_units("minutes")
+        intervals_hrs = intervals.to_units("hrs")
+        
+        # Check that canonical units are returned
+        self.assertEqual(intervals_seconds.units, "sec")
+        self.assertEqual(intervals_s.units, "sec")
+        self.assertEqual(intervals_minutes.units, "min")
+        self.assertEqual(intervals_hrs.units, "h")
+        
+        # Check conversion accuracy
+        arr_ms = np.array(intervals)
+        arr_seconds = np.array(intervals_seconds)
+        arr_s = np.array(intervals_s)
+        
+        np.testing.assert_array_almost_equal(arr_seconds, arr_ms / 1000.0, decimal=6)
+        np.testing.assert_array_almost_equal(arr_s, arr_ms / 1000.0, decimal=6)
+    
     def test_to_units_from_none_raises_error(self):
         """Test that converting from indices raises error"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
@@ -486,11 +510,10 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         self.assertIn("indices", str(cm.exception).lower())
     
     def test_to_units_unknown_source_raises_error(self):
-        """Test that unknown source units raise error"""
-        intervals = Intervals([(0, 100), (200, 300)], units="unknown", label="test")
-        
+        """Test that unknown source units raise error in constructor"""
+        # Now that units are normalized in __init__, invalid units are caught there
         with self.assertRaises(ValueError) as cm:
-            intervals.to_units("ms")
+            intervals = Intervals([(0, 100), (200, 300)], units="unknown", label="test")
         
         self.assertIn("unknown", str(cm.exception).lower())
     

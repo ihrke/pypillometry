@@ -29,12 +29,12 @@
 - Update blink-related tests (e.g., `test_get_blinks_with_units`, `test_blinks_merge`) to cover alias inputs.  
 - Run: `conda run -n pypil pytest tests/test_eyedata.py::TestEyeData::test_get_blinks_with_units tests/test_eyedata.py::TestEyeData::test_blinks_merge`.
 
-5. **Normalize units in event accessors**  
+5. **Normalize units in event accessors** ✓
 
 - File: `pypillometry/eyedata/generic.py` (`get_events`, `set_events`)  
 - Use `normalize_unit` for incoming/outgoing units and ensure conversions target canonical names before delegating to `Events`.  
 - Add/adjust tests around event retrieval (`test_get_events` cases) to include alias coverage.  
-- Run: `conda run -n pypil pytest tests/test_eyedata.py::TestEyeData::test_get_events`.
+- Run: `conda run -n pypil pytest tests/test_eyedata.py::TestEventsIntegration::test_get_events_with_different_units`.
 
 6. **Update `Intervals` conversions**  
 

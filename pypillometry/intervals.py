@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from pypillometry.convenience import requires_package
+from pypillometry.convenience import requires_package, normalize_unit
 
 class IntervalStats(dict):
     """
@@ -172,7 +172,10 @@ class Intervals:
             self.intervals = [tuple(row) for row in intervals]
         else:
             self.intervals = [tuple(i) for i in intervals]
-        self.units = units
+        
+        # Normalize units to canonical form (handles aliases)
+        self.units = normalize_unit(units)
+        
         self.label = label
         self.event_labels = event_labels
         self.event_indices = event_indices
@@ -242,12 +245,14 @@ class Intervals:
         if self.units is None:
             return np.array(self.intervals, dtype=int)
         
+        # Define conversion factors to milliseconds
+        units_to_ms = {"ms": 1.0, "sec": 1000.0, "min": 60000.0, "h": 3600000.0}
+        
         indices = []
         for start, end in self.intervals:
             if self.units == "ms":
                 start_ms, end_ms = start, end
             else:
-                units_to_ms = {"sec": 1000.0, "min": 60000.0, "h": 3600000.0}
                 start_ms = start * units_to_ms[self.units]
                 end_ms = end * units_to_ms[self.units]
             
@@ -280,6 +285,7 @@ class Intervals:
         --------
         >>> intervals = data.get_intervals("stim", units="ms")
         >>> intervals_sec = intervals.to_units("sec")
+        >>> intervals_seconds = intervals.to_units("seconds")  # alias works too
         """
         if self.units is None:
             raise ValueError(
@@ -291,6 +297,9 @@ class Intervals:
             raise ValueError(
                 "Cannot convert to indices. Use intervals.as_index(eyedata_obj) instead."
             )
+        
+        # Normalize target units (source units already normalized in __init__)
+        target_units = normalize_unit(target_units)
         
         if self.units == target_units:
             return self
