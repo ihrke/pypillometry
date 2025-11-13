@@ -36,16 +36,18 @@ class GazePlotter(GenericPlotter):
         for roi in rois:
             roi.plot(ax)
     
-    def plot_heatmap(self, 
-            plot_range: tuple=(-np.inf, +np.inf), 
-            eyes: list=[],
-            plot_screen: bool=True,
-            rois: List[ROI]=None,
-            units: str="sec",
-            figsize: tuple=(10,10),
-            cmap: str="jet",
-            gridsize="auto"
-            ) -> None:
+    def plot_heatmap(
+        self,
+        plot_range: tuple = (-np.inf, +np.inf),
+        eyes: list = [],
+        show_screen: bool = True,
+        show_masked: bool = False,
+        rois: List[ROI] = None,
+        units: str = "sec",
+        figsize: tuple = (10, 10),
+        cmap: str = "jet",
+        gridsize="auto"
+    ) -> None:
         """
         Plot EyeData as a heatmap. Typically used for a large amount of data
         to spot the most frequent locations.
@@ -60,8 +62,10 @@ class GazePlotter(GenericPlotter):
         eyes: list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
-        plot_screen: bool
+        show_screen: bool
             Whether to plot the screen limits. Default is True.
+        show_masked: bool
+            Whether to plot the masked data (because of blinks, artifacts, ...). Default is False.
         rois: List[ROI], optional
             List of ROIs to plot. Default is None.
         units: str
@@ -111,15 +115,24 @@ class GazePlotter(GenericPlotter):
             vx = "_".join([eye,"x"])
             vy = "_".join([eye,"y"])
             if vx in obj.data.keys() and vy in obj.data.keys():
+                x_data = obj.data[vx][startix:endix]
+                y_data = obj.data[vy][startix:endix]
+                if show_masked and vx in obj.data.mask and vy in obj.data.mask:
+                    mask = obj.data.mask[vx][startix:endix] | obj.data.mask[vy][startix:endix]
+                    mask = mask.astype(bool)
+                    x_plot = x_data[~mask]
+                    y_plot = y_data[~mask]
+                else:
+                    x_plot = x_data
+                    y_plot = y_data
                 divider = make_axes_locatable(ax)
-                im=ax.hexbin(obj.data[vx][startix:endix], obj.data[vy][startix:endix], 
-                            gridsize=gridsize, cmap=cmap, mincnt=1)
+                im=ax.hexbin(x_plot, y_plot, gridsize=gridsize, cmap=cmap, mincnt=1)
                 cax = divider.append_axes('right', size='5%', pad=0.05)
                 fig.colorbar(im, cax=cax, orientation='vertical')
             ax.set_title(eye)
             ax.set_aspect("equal")
             #fig.colorbar()
-            if plot_screen:
+            if show_screen:
                 screenrect=patches.Rectangle((obj.screen_xlim[0], obj.screen_ylim[0]), 
                                 obj.screen_xlim[1], obj.screen_ylim[1], 
                                 fill=False, edgecolor="red", linewidth=2)
