@@ -355,3 +355,83 @@ def requires_package(package_name: str, install_hint: str = None):
     return decorator
 
 
+# Unit handling utilities
+UNIT_ALIASES = {
+    # milliseconds
+    "ms": "ms",
+    "millisecond": "ms",
+    "milliseconds": "ms",
+    # seconds
+    "s": "sec",
+    "sec": "sec",
+    "secs": "sec",
+    "second": "sec",
+    "seconds": "sec",
+    # minutes
+    "m": "min",
+    "min": "min",
+    "mins": "min",
+    "minute": "min",
+    "minutes": "min",
+    # hours
+    "h": "h",
+    "hr": "h",
+    "hrs": "h",
+    "hour": "h",
+    "hours": "h",
+}
+
+CANONICAL_UNITS = {"ms", "sec", "min", "h"}
+
+
+def normalize_unit(unit: Union[str, None]) -> Union[str, None]:
+    """
+    Normalize a time unit string to its canonical form.
+    
+    Accepts various aliases (e.g., "seconds", "s", "secs") and returns the
+    canonical unit name ("sec"). Returns None if input is None.
+
+    Parameters
+    ----------
+    unit : str or None
+        Unit string to normalize (e.g., "seconds", "ms", "h"). If None, returns None.
+    
+    Returns
+    -------
+    str or None
+        Canonical unit name ("ms", "sec", "min", "h") or None if input is None
+    
+    Raises
+    ------
+    ValueError
+        If unit string is not recognized
+    
+    Examples
+    --------
+    >>> normalize_unit("seconds")
+    'sec'
+    >>> normalize_unit("ms")
+    'ms'
+    >>> normalize_unit("hours")
+    'h'
+    >>> normalize_unit(None)
+    None
+    >>> normalize_unit("invalid")
+    ValueError: Unknown unit 'invalid'. Valid units are: ms, sec, min, h
+    """
+    # Handle None case
+    if unit is None:
+        return None
+    
+    # Normalize: lowercase and strip whitespace
+    unit_normalized = str(unit).lower().strip()
+    
+    # Look up in aliases
+    if unit_normalized in UNIT_ALIASES:
+        return UNIT_ALIASES[unit_normalized]
+    
+    # Not found
+    valid_units_str = ", ".join(sorted(CANONICAL_UNITS))
+    raise ValueError(f"Unknown unit '{unit}'. Valid units are: {valid_units_str}")
+
+

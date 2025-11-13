@@ -3,7 +3,7 @@ import numpy as np
 import os
 import tempfile
 from unittest.mock import patch, MagicMock
-from pypillometry.convenience import ByteSize, sizeof_fmt, is_url
+from pypillometry.convenience import ByteSize, sizeof_fmt, is_url, normalize_unit, UNIT_ALIASES, CANONICAL_UNITS
 from pypillometry.io import download
 
 class TestConvenience(unittest.TestCase):
@@ -346,6 +346,115 @@ class TestConvenience(unittest.TestCase):
                 result = is_url(url)
                 self.assertEqual(result, expected, 
                     f"is_url('{url}') returned {result}, expected {expected}")
+
+
+class TestNormalizeUnit(unittest.TestCase):
+    """Test the normalize_unit function."""
+    
+    def test_canonical_units_passthrough(self):
+        """Canonical units should be returned unchanged."""
+        for unit in CANONICAL_UNITS:
+            with self.subTest(unit=unit):
+                self.assertEqual(normalize_unit(unit), unit)
+    
+    def test_alias_normalization(self):
+        """All aliases should normalize to their canonical form."""
+        test_cases = [
+            # seconds
+            ("s", "sec"),
+            ("sec", "sec"),
+            ("secs", "sec"),
+            ("second", "sec"),
+            ("seconds", "sec"),
+            # milliseconds
+            ("ms", "ms"),
+            ("millisecond", "ms"),
+            ("milliseconds", "ms"),
+            # minutes
+            ("m", "min"),
+            ("min", "min"),
+            ("mins", "min"),
+            ("minute", "min"),
+            ("minutes", "min"),
+            # hours
+            ("h", "h"),
+            ("hr", "h"),
+            ("hrs", "h"),
+            ("hour", "h"),
+            ("hours", "h"),
+        ]
+        
+        for alias, expected in test_cases:
+            with self.subTest(alias=alias):
+                self.assertEqual(normalize_unit(alias), expected)
+    
+    def test_case_insensitive(self):
+        """Unit normalization should be case-insensitive."""
+        test_cases = [
+            ("SEC", "sec"),
+            ("Seconds", "sec"),
+            ("MS", "ms"),
+            ("Min", "min"),
+            ("HOURS", "h"),
+        ]
+        
+        for input_unit, expected in test_cases:
+            with self.subTest(input=input_unit):
+                self.assertEqual(normalize_unit(input_unit), expected)
+    
+    def test_whitespace_stripped(self):
+        """Leading/trailing whitespace should be stripped."""
+        test_cases = [
+            (" sec ", "sec"),
+            ("\tms\t", "ms"),
+            (" minutes ", "min"),
+            ("  h  ", "h"),
+        ]
+        
+        for input_unit, expected in test_cases:
+            with self.subTest(input=input_unit):
+                self.assertEqual(normalize_unit(input_unit), expected)
+    
+    def test_none_handling(self):
+        """Test that None input returns None."""
+        self.assertIsNone(normalize_unit(None))
+    
+    def test_invalid_unit_raises(self):
+        """Invalid units should raise ValueError."""
+        invalid_units = [
+            "seconds123",
+            "invalid",
+            "xyz",
+            "microseconds",
+            "nanoseconds",
+            "",
+        ]
+        
+        for invalid in invalid_units:
+            with self.subTest(invalid=invalid):
+                with self.assertRaises(ValueError) as cm:
+                    normalize_unit(invalid)
+                self.assertIn("Unknown unit", str(cm.exception))
+    
+    def test_error_message_helpful(self):
+        """Error messages should list valid units."""
+        with self.assertRaises(ValueError) as cm:
+            normalize_unit("invalid")
+        
+        error_msg = str(cm.exception)
+        # Check that all canonical units are mentioned
+        for unit in CANONICAL_UNITS:
+            self.assertIn(unit, error_msg)
+    
+    def test_all_aliases_covered(self):
+        """Ensure all defined aliases actually work."""
+        for alias in UNIT_ALIASES.keys():
+            with self.subTest(alias=alias):
+                # Should not raise
+                result = normalize_unit(alias)
+                # Result should be one of the canonical units
+                self.assertIn(result, CANONICAL_UNITS)
+
 
 if __name__ == '__main__':
     unittest.main() 
