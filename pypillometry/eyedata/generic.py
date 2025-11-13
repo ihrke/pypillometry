@@ -969,6 +969,9 @@ class GenericEyeData(ABC):
         """
         from ..events import Events
         
+        # Normalize units (handles aliases)
+        units = normalize_unit(units) if units is not None else "ms"
+        
         # Get data time range in ms (internal format)
         data_time_range = (self.tx[0], self.tx[-1])
         
@@ -1033,8 +1036,10 @@ class GenericEyeData(ABC):
         if not isinstance(events, Events):
             raise TypeError(f"events must be an Events object, got {type(events)}")
         
-        # Convert to ms if needed (internal storage is always in ms)
-        if events.units != "ms":
+        # Normalize units (handles aliases) and convert to ms if needed
+        # (internal storage is always in ms)
+        event_units = normalize_unit(events.units)
+        if event_units != "ms" and event_units is not None:
             events = events.to_units("ms")
         
         # Use the existing set_event_onsets method

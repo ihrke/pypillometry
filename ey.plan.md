@@ -22,7 +22,7 @@
 - Extend accessor tests (e.g., add parametrized alias assertions in `test_dunder_getitem_time_accessors`).  
 - Run: `conda run -n pypil pytest tests/test_eyedata.py::TestEyeData::test_dunder_getitem_time_accessors`.
 
-4. **Normalize units in blink helpers**  
+4. **Normalize units in blink helpers** ✓
 
 - File: `pypillometry/eyedata/generic.py` (`get_blinks`)  
 - Normalize requested `units` before comparison (`None` vs canonical), ensuring alias inputs ("seconds", "hrs", etc.) propagate to `Intervals.to_units`.  

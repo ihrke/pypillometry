@@ -607,6 +607,24 @@ class TestEventsIntegration(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             events_min.onsets, events_ms.onsets / 60000.0, decimal=9
         )
+        
+        # Test with aliases
+        events_seconds = self.data.get_events(units="seconds")
+        events_s = self.data.get_events(units="s")
+        events_minutes = self.data.get_events(units="minutes")
+        events_hrs = self.data.get_events(units="hrs")
+        
+        self.assertEqual(events_seconds.units, "sec")
+        self.assertEqual(events_s.units, "sec")
+        self.assertEqual(events_minutes.units, "min")
+        self.assertEqual(events_hrs.units, "h")
+        
+        np.testing.assert_array_almost_equal(
+            events_seconds.onsets, events_sec.onsets, decimal=9
+        )
+        np.testing.assert_array_almost_equal(
+            events_s.onsets, events_sec.onsets, decimal=9
+        )
     
     def test_get_events_has_time_range(self):
         """Test that get_events includes data time range"""
