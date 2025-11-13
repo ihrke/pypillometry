@@ -110,6 +110,72 @@ class EyeDataDict(MutableMapping):
         self.mask[key] = np.zeros(self.shape, dtype=int)
         self.mask[key][np.isnan(value)] = 1 # set mask to 1 for missing values
 
+    def set_with_mask(self, key: Union[str, Tuple[str, str]], value: NDArray, 
+                      mask: Optional[NDArray] = None, preserve_mask: bool = False) -> None:
+        """
+        Set data array with explicit mask control.
+        
+        This method provides more control over mask handling than __setitem__,
+        which always resets the mask to zeros (except for NaN values).
+        
+        Parameters
+        ----------
+        key : str or tuple
+            Dictionary key for the data (e.g., "left_pupil" or ("left", "pupil"))
+        value : NDArray
+            Data array to store
+        mask : NDArray, optional
+            Mask array to use. If None and preserve_mask=True, keeps existing mask.
+            If None and preserve_mask=False, creates new zero mask (with NaNs masked).
+        preserve_mask : bool, default False
+            If True and mask is None, preserve the existing mask for this key.
+            Ignored if mask is explicitly provided.
+        
+        Examples
+        --------
+        >>> # Set data and preserve existing mask
+        >>> data_dict.set_with_mask("left_pupil", new_values, preserve_mask=True)
+        
+        >>> # Set data with explicit mask
+        >>> data_dict.set_with_mask("left_pupil", new_values, mask=new_mask)
+        
+        >>> # Set data with fresh zero mask (same as __setitem__)
+        >>> data_dict.set_with_mask("left_pupil", new_values)
+        """
+        if value is None or len(value) == 0:
+            return
+        
+        value = np.array(value)
+        
+        # Shape validation
+        if self.length > 0 and self.shape is not None:
+            if value.shape != self.shape:
+                raise ValueError(
+                    f"Array must have shape {self.shape}, got {value.shape}"
+                )
+        if self.length == 0 or self.shape is None:
+            self.length = value.shape[0]
+            self.shape = value.shape
+        if np.any(np.array(self.shape) != np.array(value.shape)):
+            raise ValueError("Array must have same dimensions as existing arrays")
+        
+        key = self._validate_key(key)
+        
+        # Store data
+        self.data[key] = value.astype(float)
+        
+        # Handle mask
+        if mask is not None:
+            # Explicit mask provided
+            self.mask[key] = np.asarray(mask).astype(int)
+        elif preserve_mask and key in self.mask:
+            # Preserve existing mask - do nothing
+            pass
+        else:
+            # Create new mask (default behavior, same as __setitem__)
+            self.mask[key] = np.zeros(self.shape, dtype=int)
+            self.mask[key][np.isnan(value)] = 1
+
     def __delitem__(self, key):
         if isinstance(key, tuple):
             key = "_".join(key)

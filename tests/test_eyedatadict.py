@@ -147,6 +147,109 @@ class TestEyeDataDict(unittest.TestCase):
         self.assertIn('left_pupil', pupil_data)
         self.assertIn('right_pupil', pupil_data)
 
+    def test_set_with_mask_explicit(self):
+        """Test set_with_mask with explicit mask provided"""
+        d = EyeDataDict()
+        
+        # Create data and explicit mask
+        data = np.array([1.0, 2.0, 3.0, 4.0])
+        mask = np.array([0, 1, 0, 1])
+        
+        # Set with explicit mask
+        d.set_with_mask('left_pupil', data, mask=mask)
+        
+        # Verify data
+        np.testing.assert_array_equal(d['left_pupil'], data)
+        # Verify mask
+        np.testing.assert_array_equal(d.mask['left_pupil'], mask)
+    
+    def test_set_with_mask_preserve_existing(self):
+        """Test set_with_mask with preserve_mask=True"""
+        d = EyeDataDict()
+        
+        # Initial data and mask
+        initial_data = np.array([1.0, 2.0, 3.0, 4.0])
+        initial_mask = np.array([0, 1, 0, 1])
+        d['left_pupil'] = initial_data
+        d.mask['left_pupil'] = initial_mask
+        
+        # Update data while preserving mask
+        new_data = np.array([10.0, 20.0, 30.0, 40.0])
+        d.set_with_mask('left_pupil', new_data, preserve_mask=True)
+        
+        # Verify new data
+        np.testing.assert_array_equal(d['left_pupil'], new_data)
+        # Verify mask is preserved
+        np.testing.assert_array_equal(d.mask['left_pupil'], initial_mask)
+    
+    def test_set_with_mask_default_behavior(self):
+        """Test set_with_mask with default behavior (same as __setitem__)"""
+        d = EyeDataDict()
+        
+        # Initial data and mask
+        initial_data = np.array([1.0, 2.0, 3.0, 4.0])
+        initial_mask = np.array([0, 1, 0, 1])
+        d['left_pupil'] = initial_data
+        d.mask['left_pupil'] = initial_mask
+        
+        # Update data with default behavior (resets mask)
+        new_data = np.array([10.0, 20.0, 30.0, 40.0])
+        d.set_with_mask('left_pupil', new_data)
+        
+        # Verify new data
+        np.testing.assert_array_equal(d['left_pupil'], new_data)
+        # Verify mask is reset to zeros
+        np.testing.assert_array_equal(d.mask['left_pupil'], np.zeros(4, dtype=int))
+    
+    def test_set_with_mask_with_nans(self):
+        """Test set_with_mask handles NaN values correctly"""
+        d = EyeDataDict()
+        
+        # Data with NaN values
+        data = np.array([1.0, np.nan, 3.0, np.nan])
+        d.set_with_mask('left_pupil', data)
+        
+        # Verify NaN positions are masked
+        expected_mask = np.array([0, 1, 0, 1])
+        np.testing.assert_array_equal(d.mask['left_pupil'], expected_mask)
+    
+    def test_set_with_mask_with_tuple_key(self):
+        """Test set_with_mask works with tuple keys"""
+        d = EyeDataDict()
+        
+        # Set with tuple key
+        data = np.array([1.0, 2.0, 3.0])
+        mask = np.array([0, 1, 0])
+        d.set_with_mask(('left', 'pupil'), data, mask=mask)
+        
+        # Verify data and mask
+        np.testing.assert_array_equal(d['left_pupil'], data)
+        np.testing.assert_array_equal(d.mask['left_pupil'], mask)
+    
+    def test_set_with_mask_shape_validation(self):
+        """Test set_with_mask validates array shapes"""
+        d = EyeDataDict()
+        
+        # Set initial data
+        d['left_x'] = np.array([1.0, 2.0, 3.0])
+        
+        # Try to set data with wrong shape
+        with self.assertRaises(ValueError):
+            d.set_with_mask('left_y', np.array([1.0, 2.0, 3.0, 4.0]))
+    
+    def test_set_with_mask_preserve_on_nonexistent_key(self):
+        """Test set_with_mask with preserve_mask on a new key creates zero mask"""
+        d = EyeDataDict()
+        
+        # Set new key with preserve_mask=True (but no existing mask to preserve)
+        data = np.array([1.0, 2.0, 3.0])
+        d.set_with_mask('left_pupil', data, preserve_mask=True)
+        
+        # Verify data
+        np.testing.assert_array_equal(d['left_pupil'], data)
+        # Verify mask is created as zeros (since there was no mask to preserve)
+        np.testing.assert_array_equal(d.mask['left_pupil'], np.zeros(3, dtype=int))
+
     def test_cached_initialization(self):
         """Test initialization of CachedEyeDataDict"""
         # Test initialization with memory cache only
