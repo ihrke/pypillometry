@@ -227,6 +227,96 @@ class GenericEyeData(ABC):
 
         return np.ma.masked_array(data_array, mask=mask)
 
+    def __setitem__(self, key, value):
+        """
+        Set data arrays using dict-style access.
+        
+        Accepts numpy arrays (mask will be all zeros) or masked arrays
+        (mask and data stored separately in EyeDataDict).
+        
+        Special handling for "time" keys:
+        - data["time"] = array: Updates tx directly (assumes milliseconds)
+        - data["time_sec"] = array: Converts from seconds to milliseconds
+        - data["time_min"] = array: Converts from minutes to milliseconds
+        - data["time_h"] = array: Converts from hours to milliseconds
+        - data["time", "sec"] = array: Same as "time_sec"
+        
+        Parameters
+        ----------
+        key : str or tuple
+            Dictionary-style key (e.g., "left_x" or ("left", "x"))
+        value : np.ndarray or np.ma.MaskedArray
+            Array to store. If masked array, mask is extracted and stored separately.
+        
+        Examples
+        --------
+        >>> data["left_x"] = np.array([1, 2, 3])
+        >>> data["left", "pupil"] = np.ma.masked_array([10, 20, 30], mask=[0, 1, 0])
+        >>> data["time_sec"] = np.array([0, 0.1, 0.2])  # Converts to ms
+        """
+        normalized_key = key
+        
+        # Handle tuple keys (e.g., ("left", "x") or ("time", "sec"))
+        if isinstance(key, tuple):
+            if len(key) == 0:
+                raise KeyError("Empty key tuple")
+            if key[0] == "time":
+                unit = key[1] if len(key) > 1 else None
+                self._set_time_array(value, unit)
+                return
+            normalized_key = "_".join(key)
+        
+        # Handle string keys starting with "time"
+        if isinstance(normalized_key, str):
+            if normalized_key.startswith("time"):
+                prefix, _, suffix = normalized_key.partition("_")
+                if prefix == "time":
+                    self._set_time_array(value, suffix or None)
+                    return
+        
+        # For non-time keys, set data in EyeDataDict
+        value = np.asarray(value)
+        
+        if isinstance(value, np.ma.MaskedArray):
+            # Extract data and mask from masked array
+            self.data.data[normalized_key] = value.data.astype(float)
+            self.data.mask[normalized_key] = value.mask.astype(int)
+        else:
+            # Regular array - let EyeDataDict handle it (creates zero mask)
+            self.data[normalized_key] = value
+
+    def _set_time_array(self, value, unit: Optional[str]):
+        """
+        Set the time vector from the provided array, converting to milliseconds if needed.
+        
+        Parameters
+        ----------
+        value : np.ndarray
+            Time array in the specified units
+        unit : str or None
+            Unit of the input array (e.g., "sec", "min", "h", "ms").
+            None or "" or "ms" means the array is already in milliseconds.
+        """
+        value = np.asarray(value)
+        
+        if unit is None or unit == "":
+            # Already in milliseconds
+            self.tx = value.astype(float)
+            return
+        
+        # Normalize unit (handles all aliases)
+        unit = normalize_unit(unit)
+        
+        if unit == "ms" or unit is None:
+            # Already in milliseconds
+            self.tx = value.astype(float)
+        else:
+            # Convert to milliseconds
+            # _unit_fac gives factor to convert FROM ms to target unit
+            # So to convert TO ms, we divide by the factor
+            factor = self._unit_fac(unit)
+            self.tx = (value / factor).astype(float)
+
     def _get_time_array(self, unit: Optional[str]):
         """
         Return the time vector in the requested units.
