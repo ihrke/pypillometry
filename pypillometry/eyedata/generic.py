@@ -317,6 +317,38 @@ class GenericEyeData(ABC):
             factor = self._unit_fac(unit)
             self.tx = (value / factor).astype(float)
 
+    def __delitem__(self, key):
+        """
+        Delete data arrays using dict-style access.
+        
+        Parameters
+        ----------
+        key : str or tuple
+            Dictionary-style key (e.g., "left_x" or ("left", "x"))
+        
+        Examples
+        --------
+        >>> del data["left_x"]
+        >>> del data["left", "pupil"]
+        
+        Raises
+        ------
+        KeyError
+            If the key does not exist in the data
+        """
+        normalized_key = key
+        
+        # Handle tuple keys (e.g., ("left", "x"))
+        if isinstance(key, tuple):
+            if len(key) == 0:
+                raise KeyError("Empty key tuple")
+            if key[0] == "time":
+                raise ValueError("Cannot delete time array using __delitem__")
+            normalized_key = "_".join(key)
+                
+        # Delete from EyeDataDict (removes both data and mask)
+        del self.data[normalized_key]
+
     def _get_time_array(self, unit: Optional[str]):
         """
         Return the time vector in the requested units.

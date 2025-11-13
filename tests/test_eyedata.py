@@ -690,6 +690,84 @@ class TestEyeDataSetitem(unittest.TestCase):
         np.testing.assert_array_equal(retrieved.mask, mask_part)
 
 
+class TestEyeDataDelitem(unittest.TestCase):
+    """Test __delitem__ accessor for deleting data arrays"""
+    
+    def setUp(self):
+        """Set up test data"""
+        self.eyedata = get_rlmw_002_short()
+    
+    def test_delitem_string_key(self):
+        """Deleting with string key should remove data and mask"""
+        # Verify it exists first
+        self.assertIn('left_pupil', self.eyedata.data)
+        
+        # Delete it
+        del self.eyedata['left_pupil']
+        
+        # Verify it's gone
+        self.assertNotIn('left_pupil', self.eyedata.data)
+        self.assertNotIn('left_pupil', self.eyedata.data.mask)
+    
+    def test_delitem_tuple_key(self):
+        """Deleting with tuple key should work like string key"""
+        # Verify it exists first
+        self.assertIn('right_x', self.eyedata.data)
+        
+        # Delete with tuple key
+        del self.eyedata['right', 'x']
+        
+        # Verify it's gone
+        self.assertNotIn('right_x', self.eyedata.data)
+    
+    def test_delitem_nonexistent_key_raises(self):
+        """Deleting a nonexistent key should raise KeyError"""
+        with self.assertRaises(KeyError):
+            del self.eyedata['nonexistent_key']
+    
+    def test_delitem_time_raises_error(self):
+        """Deleting time array should raise ValueError"""
+        with self.assertRaises(ValueError) as cm:
+            del self.eyedata['time']
+        self.assertIn("Cannot delete time array", str(cm.exception))
+    
+    def test_delitem_time_with_unit_raises_error(self):
+        """Deleting time_* keys should raise ValueError"""
+        with self.assertRaises(ValueError) as cm:
+            del self.eyedata['time_sec']
+        self.assertIn("Cannot delete time array", str(cm.exception))
+        
+        with self.assertRaises(ValueError) as cm:
+            del self.eyedata['time_ms']
+        self.assertIn("Cannot delete time array", str(cm.exception))
+    
+    def test_delitem_time_tuple_raises_error(self):
+        """Deleting ('time', 'sec') should raise ValueError"""
+        with self.assertRaises(ValueError) as cm:
+            del self.eyedata['time', 'sec']
+        self.assertIn("Cannot delete time array", str(cm.exception))
+    
+    def test_delitem_empty_tuple_raises(self):
+        """Deleting with empty tuple should raise KeyError"""
+        with self.assertRaises(KeyError) as cm:
+            del self.eyedata[()]
+        self.assertIn("Empty key tuple", str(cm.exception))
+    
+    def test_delitem_then_setitem(self):
+        """After deleting, should be able to set a new value"""
+        # Delete
+        del self.eyedata['left_x']
+        self.assertNotIn('left_x', self.eyedata.data)
+        
+        # Set new value
+        new_data = np.ones(len(self.eyedata)) * 555.0
+        self.eyedata['left_x'] = new_data
+        
+        # Verify it's back
+        self.assertIn('left_x', self.eyedata.data)
+        np.testing.assert_array_equal(self.eyedata.data['left_x'], new_data)
+
+
 class TestEventsIntegration(unittest.TestCase):
     """Test get_events() and set_events() methods"""
     
