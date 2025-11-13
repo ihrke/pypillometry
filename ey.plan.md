@@ -36,10 +36,10 @@
 - Add/adjust tests around event retrieval (`test_get_events` cases) to include alias coverage.  
 - Run: `conda run -n pypil pytest tests/test_eyedata.py::TestEventsIntegration::test_get_events_with_different_units`.
 
-6. **Update `Intervals` conversions**  
+6. **Update `Intervals` conversions** ✓
 
-- File: `pypillometry/intervals.py` (`Intervals.as_index`, `Intervals.to_units`)  
-- Replace local `units_to_ms` dicts with calls to `normalize_unit`, support aliases for both source and target; update docstrings accordingly.  
+- File: `pypillometry/intervals.py` (`Intervals.__init__`, `Intervals.as_index`, `Intervals.to_units`)  
+- Normalize units in constructor so internal representation always uses canonical units; simplify conversion methods.  
 - Extend interval tests in `tests/test_intervals_class.py` to exercise alias conversions (e.g., `secs`, `minutes`).  
 - Run: `conda run -n pypil pytest tests/test_intervals_class.py`.
 

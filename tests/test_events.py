@@ -165,14 +165,12 @@ class TestEventsUnitConversion(unittest.TestCase):
         np.testing.assert_array_almost_equal(events_h.onsets, [1.0, 2.0])
     
     def test_to_units_same_units_returns_copy(self):
-        """Test converting to same units returns a copy"""
+        """Test converting to same units returns self (not a copy after refactor)"""
         events = Events([100, 200], ["A", "B"], units="ms")
         events_same = events.to_units("ms")
         
-        # Should be a new object (not same reference)
-        self.assertIsNot(events_same, events)
-        # But with same values
-        np.testing.assert_array_equal(events_same.onsets, events.onsets)
+        # After refactor, same units returns self (no copy needed)
+        self.assertIs(events_same, events)
         self.assertEqual(events_same.units, events.units)
     
     def test_to_units_preserves_time_range(self):
@@ -203,11 +201,10 @@ class TestEventsUnitConversion(unittest.TestCase):
         self.assertIn("indices", str(cm.exception))
     
     def test_to_units_unknown_source_raises_error(self):
-        """Test that unknown source units raise error"""
-        events = Events([100, 200], ["A", "B"], units="unknown")
-        
+        """Test that unknown source units raise error in constructor"""
+        # Now that units are normalized in __init__, invalid units are caught there
         with self.assertRaises(ValueError) as cm:
-            events.to_units("ms")
+            events = Events([100, 200], ["A", "B"], units="unknown")
         
         self.assertIn("unknown", str(cm.exception).lower())
     
@@ -219,6 +216,26 @@ class TestEventsUnitConversion(unittest.TestCase):
             events.to_units("unknown")
         
         self.assertIn("unknown", str(cm.exception).lower())
+    
+    def test_to_units_with_aliases(self):
+        """Test unit conversion with aliases"""
+        events = Events([1000, 2000], ["A", "B"], units="ms")
+        
+        # Test various aliases
+        events_seconds = events.to_units("seconds")
+        events_s = events.to_units("s")
+        events_minutes = events.to_units("minutes")
+        events_hrs = events.to_units("hrs")
+        
+        # Check that canonical units are returned
+        self.assertEqual(events_seconds.units, "sec")
+        self.assertEqual(events_s.units, "sec")
+        self.assertEqual(events_minutes.units, "min")
+        self.assertEqual(events_hrs.units, "h")
+        
+        # Check conversion accuracy
+        np.testing.assert_array_almost_equal(events_seconds.onsets, [1.0, 2.0])
+        np.testing.assert_array_almost_equal(events_s.onsets, [1.0, 2.0])
     
     def test_to_units_chain_conversions(self):
         """Test chaining multiple unit conversions"""

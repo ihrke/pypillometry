@@ -5,6 +5,7 @@ import numpy as np
 from typing import Optional, List, Tuple
 
 from loguru import logger
+from pypillometry.convenience import normalize_unit
 
 
 class Events:
@@ -56,7 +57,10 @@ class Events:
         """
         self.onsets = np.array(onsets, dtype=float)
         self.labels = np.array(labels, dtype=str)
-        self.units = units
+        
+        # Normalize units to canonical form (handles aliases)
+        self.units = normalize_unit(units)
+        
         self.data_time_range = data_time_range
         
         # Validate that onsets and labels have same length
@@ -146,14 +150,18 @@ class Events:
                 "Events with units=None represent indices, not time values."
             )
         
-        if target_units == self.units:
-            # No conversion needed
-            return Events(
-                onsets=self.onsets.copy(),
-                labels=self.labels.copy(),
-                units=self.units,
-                data_time_range=self.data_time_range
+        # Normalize target units (source units already normalized in __init__)
+        target_units = normalize_unit(target_units)
+        
+        if target_units is None:
+            raise ValueError(
+                "Cannot convert to indices (units=None). "
+                "Use appropriate methods on the eyedata object instead."
             )
+        
+        if self.units == target_units:
+            # No conversion needed, return self
+            return self
         
         # Define conversion factors (everything relative to ms)
         units_to_ms = {
@@ -165,14 +173,8 @@ class Events:
         
         if self.units not in units_to_ms:
             raise ValueError(f"Unknown source units: {self.units}")
-        if target_units is not None and target_units not in units_to_ms:
+        if target_units not in units_to_ms:
             raise ValueError(f"Unknown target units: {target_units}")
-        
-        if target_units is None:
-            raise ValueError(
-                "Cannot convert to indices (units=None). "
-                "Use appropriate methods on the eyedata object instead."
-            )
         
         # Convert: first to ms, then to target units
         fac = units_to_ms[self.units] / units_to_ms[target_units]
