@@ -869,12 +869,8 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="n">sparklines</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
-            <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s2">&quot;Agg&quot;</span><span class="p">)</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.figure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Figure</span>
-
             <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.backends.backend_agg</span><span class="w"> </span><span class="kn">import</span> <span class="n">FigureCanvasAgg</span>
-
             <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
                 <span class="n">eye</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="n">key</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
                 <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="n">eye</span> <span class="k">else</span> <span class="n">var</span>
