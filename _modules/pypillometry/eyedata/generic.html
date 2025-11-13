@@ -53,7 +53,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">sizeof_fmt</span><span class="p">,</span> <span class="n">ByteSize</span><span class="p">,</span> <span class="n">requires_package</span><span class="p">,</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">suppress_all_output</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">sizeof_fmt</span><span class="p">,</span> <span class="n">ByteSize</span><span class="p">,</span> <span class="n">requires_package</span><span class="p">,</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">suppress_all_output</span><span class="p">,</span> <span class="n">normalize_unit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..io</span><span class="w"> </span><span class="kn">import</span> <span class="n">download</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">CachedEyeDataDict</span><span class="p">,</span> <span class="n">EyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">baseline</span>
@@ -203,15 +203,29 @@ window.addEventListener("load", () => mermaid.run());
             <span class="bp">self</span><span class="o">.</span><span class="n">fill_time_discontinuities</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_unit_fac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">units</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;for converting units&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">units</span><span class="o">==</span><span class="s2">&quot;sec&quot;</span><span class="p">:</span>
-            <span class="n">fac</span><span class="o">=</span><span class="mf">1.</span><span class="o">/</span><span class="mf">1000.</span>
-        <span class="k">elif</span> <span class="n">units</span><span class="o">==</span><span class="s2">&quot;min&quot;</span><span class="p">:</span>
-            <span class="n">fac</span><span class="o">=</span><span class="mf">1.</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span>
-        <span class="k">elif</span> <span class="n">units</span><span class="o">==</span><span class="s2">&quot;h&quot;</span><span class="p">:</span>
-            <span class="n">fac</span><span class="o">=</span><span class="mf">1.</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="o">/</span><span class="mf">60.</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">fac</span><span class="o">=</span><span class="mf">1.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert time units to factor for converting from milliseconds.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        units : str or None</span>
+<span class="sd">            Time unit (accepts aliases like &quot;seconds&quot;, &quot;s&quot;, &quot;hrs&quot;, etc.)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Conversion factor from milliseconds to target unit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Normalize unit (handles aliases and None)</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;sec&quot;</span><span class="p">:</span>
+            <span class="n">fac</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">1000.</span>
+        <span class="k">elif</span> <span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span>
+            <span class="n">fac</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span>
+        <span class="k">elif</span> <span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;h&quot;</span><span class="p">:</span>
+            <span class="n">fac</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="o">/</span><span class="mf">60.</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># None or &quot;ms&quot;</span>
+            <span class="n">fac</span> <span class="o">=</span> <span class="mf">1.</span>
         <span class="k">return</span> <span class="n">fac</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_strfy_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -226,6 +240,62 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return number of sampling points&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Provide dict-style access to data arrays, returning masked arrays.</span>
+<span class="sd">        Supports special keys for retrieving time in different units.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">normalized_key</span> <span class="o">=</span> <span class="n">key</span>
+
+        <span class="c1"># Handle tuple keys (e.g., (&quot;left&quot;, &quot;x&quot;) or (&quot;time&quot;, &quot;sec&quot;))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Empty key tuple&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span>
+                <span class="n">unit</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_time_array</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+            <span class="n">normalized_key</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">normalized_key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">normalized_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">):</span>
+                <span class="n">prefix</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">normalized_key</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">prefix</span> <span class="o">==</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_time_array</span><span class="p">(</span><span class="n">suffix</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># Delegate to EyeDataDict and wrap using the stored mask</span>
+        <span class="n">data_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">normalized_key</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">normalized_key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="c1"># Fallback if mask not directly accessible (e.g., cached dict),</span>
+            <span class="c1"># letting EyeDataDict resolve the key.</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_mask</span><span class="p">(</span><span class="n">normalized_key</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_time_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the time vector in the requested units.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        unit : str or None</span>
+<span class="sd">            Unit suffix (e.g., &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;, &quot;ms&quot;). Accepts aliases.</span>
+<span class="sd">            None or &quot;&quot; or &quot;ms&quot; returns raw time in milliseconds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span>
+
+        <span class="c1"># Normalize unit (handles all aliases)</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;ms&quot;</span> <span class="ow">or</span> <span class="n">unit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span>
+
+        <span class="c1"># Use _unit_fac which already handles all valid units</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span> <span class="o">*</span> <span class="n">factor</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -353,6 +423,9 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        &gt;&gt;&gt; indices = blinks_ms.as_index(data)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">)</span>
+        
+        <span class="c1"># Normalize units (handles aliases like &quot;seconds&quot;, &quot;hrs&quot;, etc.)</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
         
         <span class="c1"># Check if we need to merge across multiple eyes/variables</span>
         <span class="n">need_merge</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
@@ -999,6 +1072,9 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">..events</span><span class="w"> </span><span class="kn">import</span> <span class="n">Events</span>
         
+        <span class="c1"># Normalize units (handles aliases)</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">units</span><span class="p">)</span> <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;ms&quot;</span>
+        
         <span class="c1"># Get data time range in ms (internal format)</span>
         <span class="n">data_time_range</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         
@@ -1066,8 +1142,10 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">Events</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;events must be an Events object, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">events</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         
-        <span class="c1"># Convert to ms if needed (internal storage is always in ms)</span>
-        <span class="k">if</span> <span class="n">events</span><span class="o">.</span><span class="n">units</span> <span class="o">!=</span> <span class="s2">&quot;ms&quot;</span><span class="p">:</span>
+        <span class="c1"># Normalize units (handles aliases) and convert to ms if needed</span>
+        <span class="c1"># (internal storage is always in ms)</span>
+        <span class="n">event_units</span> <span class="o">=</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event_units</span> <span class="o">!=</span> <span class="s2">&quot;ms&quot;</span> <span class="ow">and</span> <span class="n">event_units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">events</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
         
         <span class="c1"># Use the existing set_event_onsets method</span>
