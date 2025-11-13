@@ -8,7 +8,7 @@
 - Create/extend unit utility tests (e.g., new `tests/test_convenience.py::TestNormalizeUnit`) covering canonical returns, alias expansion, None handling, and error raising.  
 - After this change, run: `conda run -n pypil pytest tests/test_convenience.py`.
 
-2. **Refactor `GenericEyeData._unit_fac` to use aliases**  
+2. **Refactor `GenericEyeData._unit_fac` to use aliases** ✓
 
 - File: `pypillometry/eyedata/generic.py`  
 - Replace manual `if` ladder with `normalize_unit` calls (falling back to canonical ms factor) so any alias resolves before computing factors.  

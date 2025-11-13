@@ -152,6 +152,13 @@ class TestEyeData(unittest.TestCase):
         np.testing.assert_allclose(self.eyedata['time_sec'], self.eyedata.tx / 1000.0)
         np.testing.assert_allclose(self.eyedata['time_min'], self.eyedata.tx / (1000.0 * 60.0))
         np.testing.assert_allclose(self.eyedata['time', 'sec'], self.eyedata.tx / 1000.0)
+        
+        # Test with aliases
+        np.testing.assert_allclose(self.eyedata['time_seconds'], self.eyedata.tx / 1000.0)
+        np.testing.assert_allclose(self.eyedata['time_s'], self.eyedata.tx / 1000.0)
+        np.testing.assert_allclose(self.eyedata['time_minutes'], self.eyedata.tx / (1000.0 * 60.0))
+        np.testing.assert_allclose(self.eyedata['time_hrs'], self.eyedata.tx / (1000.0 * 3600.0))
+        np.testing.assert_allclose(self.eyedata['time', 'hours'], self.eyedata.tx / (1000.0 * 3600.0))
 
     def test_summary(self):
         """Test the summary method"""

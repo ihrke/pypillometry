@@ -234,42 +234,20 @@ class GenericEyeData(ABC):
         Parameters
         ----------
         unit : str or None
-            Unit suffix (e.g., "sec", "min", "h", "ms"). None or "ms" returns raw time.
+            Unit suffix (e.g., "sec", "min", "h", "ms"). Accepts aliases.
+            None or "" or "ms" returns raw time in milliseconds.
         """
         if unit is None or unit == "":
             return self.tx
 
-        unit_norm = unit.lower()
-        unit_aliases = {
-            "s": "sec",
-            "sec": "sec",
-            "secs": "sec",
-            "second": "sec",
-            "seconds": "sec",
-            "m": "min",
-            "min": "min",
-            "mins": "min",
-            "minute": "min",
-            "minutes": "min",
-            "h": "h",
-            "hr": "h",
-            "hrs": "h",
-            "hour": "h",
-            "hours": "h",
-            "ms": "ms",
-            "millisecond": "ms",
-            "milliseconds": "ms",
-        }
-        unit_norm = unit_aliases.get(unit_norm, unit_norm)
+        # Normalize unit (handles all aliases)
+        unit = normalize_unit(unit)
 
-        if unit_norm == "ms":
+        if unit == "ms" or unit is None:
             return self.tx
 
-        valid_units = {"sec", "min", "h"}
-        if unit_norm not in valid_units:
-            raise KeyError(f"Unsupported time unit '{unit}'")
-
-        factor = self._unit_fac(unit_norm)
+        # Use _unit_fac which already handles all valid units
+        factor = self._unit_fac(unit)
         return self.tx * factor
 
     def __getattr__(self, name):
