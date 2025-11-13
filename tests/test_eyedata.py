@@ -433,6 +433,17 @@ class TestEyeData(unittest.TestCase):
         # Check relationships between different units
         self.assertAlmostEqual(duration_min * 60, duration_sec)
         self.assertAlmostEqual(duration_h * 60, duration_min)
+        
+        # Test with aliases
+        duration_seconds = self.eyedata.get_duration(units='seconds')
+        duration_s = self.eyedata.get_duration(units='s')
+        duration_minutes = self.eyedata.get_duration(units='minutes')
+        duration_hrs = self.eyedata.get_duration(units='hrs')
+        
+        self.assertAlmostEqual(duration_sec, duration_seconds)
+        self.assertAlmostEqual(duration_sec, duration_s)
+        self.assertAlmostEqual(duration_min, duration_minutes)
+        self.assertAlmostEqual(duration_h, duration_hrs)
 
     def test_get_size(self):
         """Test size reporting."""

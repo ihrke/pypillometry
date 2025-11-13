@@ -8,7 +8,7 @@ All other eyedata classes should inherit from this class.
 
 from collections.abc import Iterable
 from .. import io
-from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, suppress_all_output
+from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, suppress_all_output, normalize_unit
 from ..io import download
 from .eyedatadict import CachedEyeDataDict, EyeDataDict
 from ..signal import baseline
@@ -156,15 +156,29 @@ class GenericEyeData(ABC):
             self.fill_time_discontinuities()
 
     def _unit_fac(self, units):
-        """for converting units"""
-        if units=="sec":
-            fac=1./1000.
-        elif units=="min":
-            fac=1./1000./60.
-        elif units=="h":
-            fac=1./1000./60./60.
-        else:
-            fac=1.
+        """Convert time units to factor for converting from milliseconds.
+        
+        Parameters
+        ----------
+        units : str or None
+            Time unit (accepts aliases like "seconds", "s", "hrs", etc.)
+            
+        Returns
+        -------
+        float
+            Conversion factor from milliseconds to target unit
+        """
+        # Normalize unit (handles aliases and None)
+        units = normalize_unit(units)
+        
+        if units == "sec":
+            fac = 1./1000.
+        elif units == "min":
+            fac = 1./1000./60.
+        elif units == "h":
+            fac = 1./1000./60./60.
+        else:  # None or "ms"
+            fac = 1.
         return fac
 
     def _strfy_params(self):
