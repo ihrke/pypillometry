@@ -15,7 +15,7 @@
 - Update/extend existing tests that exercise `_unit_fac` indirectly (e.g., `TestEyeData.test_get_duration`) with new alias cases.  
 - Run: `conda run -n pypil pytest tests/test_eyedata.py::TestEyeData::test_get_duration`.
 
-3. **Align time accessor with shared helper**  
+3. **Align time accessor with shared helper** ✓
 
 - File: `pypillometry/eyedata/generic.py` (`_get_time_array`)  
 - Remove inline alias dict, call `normalize_unit` (allowing None) and compute factors via `_unit_fac`; ensure unsupported aliases raise consistently.  

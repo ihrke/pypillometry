@@ -397,6 +397,17 @@ class TestEyeData(unittest.TestCase):
         
         self.assertEqual(len(blinks_idx), 2)
         self.assertEqual(len(blinks_ms), 2)
+        
+        # Test with aliases
+        blinks_seconds = self.eyedata.get_blinks('left', 'pupil', units='seconds')
+        blinks_s = self.eyedata.get_blinks('left', 'pupil', units='s')
+        blinks_minutes = self.eyedata.get_blinks('left', 'pupil', units='minutes')
+        
+        self.assertEqual(blinks_seconds.units, 'sec')
+        self.assertEqual(blinks_s.units, 'sec')
+        self.assertEqual(blinks_minutes.units, 'min')
+        self.assertEqual(len(blinks_seconds), 2)
+        self.assertEqual(len(blinks_s), 2)
         self.assertEqual(len(blinks_sec), 2)
     
     def test_get_blinks_merged_multiple_eyes(self):

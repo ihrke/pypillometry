@@ -369,6 +369,9 @@ class GenericEyeData(ABC):
         """
         eyes, variables = self._get_eye_var(eyes, variables)
         
+        # Normalize units (handles aliases like "seconds", "hrs", etc.)
+        units = normalize_unit(units)
+        
         # Check if we need to merge across multiple eyes/variables
         need_merge = len(eyes) > 1 or len(variables) > 1
         
