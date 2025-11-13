@@ -274,6 +274,128 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set data arrays using dict-style access.</span>
+<span class="sd">        </span>
+<span class="sd">        Accepts numpy arrays (mask will be all zeros) or masked arrays</span>
+<span class="sd">        (mask and data stored separately in EyeDataDict).</span>
+<span class="sd">        </span>
+<span class="sd">        Special handling for &quot;time&quot; keys:</span>
+<span class="sd">        - data[&quot;time&quot;] = array: Updates tx directly (assumes milliseconds)</span>
+<span class="sd">        - data[&quot;time_sec&quot;] = array: Converts from seconds to milliseconds</span>
+<span class="sd">        - data[&quot;time_min&quot;] = array: Converts from minutes to milliseconds</span>
+<span class="sd">        - data[&quot;time_h&quot;] = array: Converts from hours to milliseconds</span>
+<span class="sd">        - data[&quot;time&quot;, &quot;sec&quot;] = array: Same as &quot;time_sec&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str or tuple</span>
+<span class="sd">            Dictionary-style key (e.g., &quot;left_x&quot; or (&quot;left&quot;, &quot;x&quot;))</span>
+<span class="sd">        value : np.ndarray or np.ma.MaskedArray</span>
+<span class="sd">            Array to store. If masked array, mask is extracted and stored separately.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; data[&quot;left_x&quot;] = np.array([1, 2, 3])</span>
+<span class="sd">        &gt;&gt;&gt; data[&quot;left&quot;, &quot;pupil&quot;] = np.ma.masked_array([10, 20, 30], mask=[0, 1, 0])</span>
+<span class="sd">        &gt;&gt;&gt; data[&quot;time_sec&quot;] = np.array([0, 0.1, 0.2])  # Converts to ms</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">normalized_key</span> <span class="o">=</span> <span class="n">key</span>
+        
+        <span class="c1"># Handle tuple keys (e.g., (&quot;left&quot;, &quot;x&quot;) or (&quot;time&quot;, &quot;sec&quot;))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Empty key tuple&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span>
+                <span class="n">unit</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_time_array</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="n">normalized_key</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        
+        <span class="c1"># Handle string keys starting with &quot;time&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">normalized_key</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">normalized_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">):</span>
+                <span class="n">prefix</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">normalized_key</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">prefix</span> <span class="o">==</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_set_time_array</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">suffix</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="k">return</span>
+        
+        <span class="c1"># For non-time keys, set data in EyeDataDict</span>
+        <span class="c1"># Check for masked array BEFORE converting with asarray</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+            <span class="c1"># Extract data and mask from masked array</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">normalized_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">normalized_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Regular array - let EyeDataDict handle it (creates zero mask)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">normalized_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_time_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the time vector from the provided array, converting to milliseconds if needed.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : np.ndarray</span>
+<span class="sd">            Time array in the specified units</span>
+<span class="sd">        unit : str or None</span>
+<span class="sd">            Unit of the input array (e.g., &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;, &quot;ms&quot;).</span>
+<span class="sd">            None or &quot;&quot; or &quot;ms&quot; means the array is already in milliseconds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="c1"># Already in milliseconds</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tx</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">return</span>
+        
+        <span class="c1"># Normalize unit (handles all aliases)</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;ms&quot;</span> <span class="ow">or</span> <span class="n">unit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Already in milliseconds</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tx</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Convert to milliseconds</span>
+            <span class="c1"># _unit_fac gives factor to convert FROM ms to target unit</span>
+            <span class="c1"># So to convert TO ms, we divide by the factor</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tx</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span> <span class="o">/</span> <span class="n">factor</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete data arrays using dict-style access.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key : str or tuple</span>
+<span class="sd">            Dictionary-style key (e.g., &quot;left_x&quot; or (&quot;left&quot;, &quot;x&quot;))</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; del data[&quot;left_x&quot;]</span>
+<span class="sd">        &gt;&gt;&gt; del data[&quot;left&quot;, &quot;pupil&quot;]</span>
+<span class="sd">        </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            If the key does not exist in the data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">normalized_key</span> <span class="o">=</span> <span class="n">key</span>
+        
+        <span class="c1"># Handle tuple keys (e.g., (&quot;left&quot;, &quot;x&quot;))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Empty key tuple&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;time&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot delete time array using __delitem__&quot;</span><span class="p">)</span>
+            <span class="n">normalized_key</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                
+        <span class="c1"># Delete from EyeDataDict (removes both data and mask)</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">normalized_key</span><span class="p">]</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_time_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the time vector in the requested units.</span>
