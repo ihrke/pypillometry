@@ -275,14 +275,14 @@ class GenericEyeData(ABC):
                     return
         
         # For non-time keys, set data in EyeDataDict
-        value = np.asarray(value)
-        
+        # Check for masked array BEFORE converting with asarray
         if isinstance(value, np.ma.MaskedArray):
             # Extract data and mask from masked array
             self.data.data[normalized_key] = value.data.astype(float)
             self.data.mask[normalized_key] = value.mask.astype(int)
         else:
             # Regular array - let EyeDataDict handle it (creates zero mask)
+            value = np.asarray(value)
             self.data[normalized_key] = value
 
     def _set_time_array(self, value, unit: Optional[str]):

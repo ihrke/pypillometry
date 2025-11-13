@@ -566,6 +566,130 @@ class TestEyeData(unittest.TestCase):
             np.testing.assert_array_equal(obj3.data.mask[key], expected_empty_mask)
 
 
+class TestEyeDataSetitem(unittest.TestCase):
+    """Test __setitem__ accessor for setting data arrays"""
+    
+    def setUp(self):
+        """Set up test data"""
+        self.eyedata = get_rlmw_002_short()
+        self.original_tx = self.eyedata.tx.copy()
+        self.original_left_pupil = self.eyedata.data['left_pupil'].copy()
+    
+    def test_setitem_regular_array(self):
+        """Setting a regular numpy array should work and create zero mask"""
+        new_data = np.array([100.0, 200.0, 300.0] + [400.0] * (len(self.eyedata) - 3))
+        self.eyedata['left_pupil'] = new_data
+        
+        np.testing.assert_array_equal(self.eyedata.data['left_pupil'], new_data)
+        # Mask should be all zeros (no masked values)
+        np.testing.assert_array_equal(
+            self.eyedata.data.mask['left_pupil'], 
+            np.zeros(len(new_data), dtype=int)
+        )
+    
+    def test_setitem_masked_array(self):
+        """Setting a masked array should preserve both data and mask"""
+        data_part = np.array([100.0, 200.0, 300.0] + [400.0] * (len(self.eyedata) - 3))
+        mask_part = np.array([0, 1, 0] + [0] * (len(self.eyedata) - 3), dtype=bool)
+        masked_arr = np.ma.masked_array(data_part, mask=mask_part)
+        
+        self.eyedata['left_pupil'] = masked_arr
+        
+        np.testing.assert_array_equal(self.eyedata.data['left_pupil'], data_part)
+        np.testing.assert_array_equal(
+            self.eyedata.data.mask['left_pupil'], 
+            mask_part.astype(int)
+        )
+    
+    def test_setitem_with_tuple_key(self):
+        """Setting with tuple key should work like string key"""
+        new_data = np.array([500.0, 600.0] + [700.0] * (len(self.eyedata) - 2))
+        self.eyedata['left', 'pupil'] = new_data
+        
+        np.testing.assert_array_equal(self.eyedata.data['left_pupil'], new_data)
+    
+    def test_setitem_time_default_ms(self):
+        """Setting 'time' should update tx (assumes milliseconds)"""
+        new_time = np.arange(len(self.eyedata)) * 2.0  # 0, 2, 4, 6, ...
+        self.eyedata['time'] = new_time
+        
+        np.testing.assert_array_equal(self.eyedata.tx, new_time)
+    
+    def test_setitem_time_with_sec_conversion(self):
+        """Setting 'time_sec' should convert from seconds to milliseconds"""
+        new_time_sec = np.arange(len(self.eyedata)) * 0.002  # 0, 0.002, 0.004, ...
+        self.eyedata['time_sec'] = new_time_sec
+        
+        expected_ms = new_time_sec * 1000.0
+        np.testing.assert_allclose(self.eyedata.tx, expected_ms)
+    
+    def test_setitem_time_with_min_conversion(self):
+        """Setting 'time_min' should convert from minutes to milliseconds"""
+        new_time_min = np.arange(len(self.eyedata)) / 30000.0  # Small fractions of minutes
+        self.eyedata['time_min'] = new_time_min
+        
+        expected_ms = new_time_min * 60.0 * 1000.0
+        np.testing.assert_allclose(self.eyedata.tx, expected_ms)
+    
+    def test_setitem_time_with_h_conversion(self):
+        """Setting 'time_h' should convert from hours to milliseconds"""
+        new_time_h = np.arange(len(self.eyedata)) / 1800000.0  # Tiny fractions of hours
+        self.eyedata['time_h'] = new_time_h
+        
+        expected_ms = new_time_h * 3600.0 * 1000.0
+        np.testing.assert_allclose(self.eyedata.tx, expected_ms)
+    
+    def test_setitem_time_with_tuple_key(self):
+        """Setting ('time', 'sec') should work like 'time_sec'"""
+        new_time_sec = np.arange(len(self.eyedata)) * 0.002
+        self.eyedata['time', 'sec'] = new_time_sec
+        
+        expected_ms = new_time_sec * 1000.0
+        np.testing.assert_allclose(self.eyedata.tx, expected_ms)
+    
+    def test_setitem_time_with_aliases(self):
+        """Setting time with unit aliases should work"""
+        # Test "seconds" alias
+        new_time = np.arange(len(self.eyedata)) * 0.002
+        self.eyedata['time_seconds'] = new_time
+        np.testing.assert_allclose(self.eyedata.tx, new_time * 1000.0)
+        
+        # Test "s" alias
+        self.eyedata['time_s'] = new_time
+        np.testing.assert_allclose(self.eyedata.tx, new_time * 1000.0)
+        
+        # Test "minutes" alias
+        new_time_min = np.arange(len(self.eyedata)) / 30000.0
+        self.eyedata['time_minutes'] = new_time_min
+        np.testing.assert_allclose(self.eyedata.tx, new_time_min * 60000.0)
+        
+        # Test "hrs" alias
+        new_time_h = np.arange(len(self.eyedata)) / 1800000.0
+        self.eyedata['time_hrs'] = new_time_h
+        np.testing.assert_allclose(self.eyedata.tx, new_time_h * 3600000.0)
+    
+    def test_setitem_new_variable(self):
+        """Setting a new variable should add it to the data dict"""
+        new_var = np.ones(len(self.eyedata)) * 999.0
+        self.eyedata['left_new_variable'] = new_var
+        
+        self.assertIn('left_new_variable', self.eyedata.data)
+        np.testing.assert_array_equal(self.eyedata.data['left_new_variable'], new_var)
+    
+    def test_setitem_retrieval_roundtrip(self):
+        """Setting then getting should return the same masked array"""
+        data_part = np.array([111.0, 222.0] + [333.0] * (len(self.eyedata) - 2))
+        mask_part = np.array([1, 0] + [0] * (len(self.eyedata) - 2), dtype=bool)
+        masked_arr = np.ma.masked_array(data_part, mask=mask_part)
+        
+        self.eyedata['right_pupil'] = masked_arr
+        retrieved = self.eyedata['right_pupil']
+        
+        self.assertIsInstance(retrieved, np.ma.MaskedArray)
+        np.testing.assert_array_equal(retrieved.data, data_part)
+        np.testing.assert_array_equal(retrieved.mask, mask_part)
+
+
 class TestEventsIntegration(unittest.TestCase):
     """Test get_events() and set_events() methods"""
     
