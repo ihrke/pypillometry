@@ -128,6 +128,31 @@ class TestEyeData(unittest.TestCase):
         with self.assertRaises(ValueError):
             pp.EyeData(right_y=[3,4], sampling_rate=1000)
 
+    def test_dunder_getitem_returns_masked_array(self):
+        """GenericEyeData should return masked arrays via __getitem__."""
+        masked = self.eyedata['left_pupil']
+        self.assertIsInstance(masked, np.ma.MaskedArray)
+        np.testing.assert_array_equal(np.ma.getdata(masked), self.left_pupil)
+        np.testing.assert_array_equal(
+            np.ma.getmaskarray(masked),
+            self.eyedata.data.mask['left_pupil']
+        )
+
+        masked_tuple = self.eyedata['left', 'pupil']
+        self.assertIsInstance(masked_tuple, np.ma.MaskedArray)
+        np.testing.assert_array_equal(np.ma.getdata(masked_tuple), self.left_pupil)
+        np.testing.assert_array_equal(
+            np.ma.getmaskarray(masked_tuple),
+            self.eyedata.data.mask['left_pupil']
+        )
+
+    def test_dunder_getitem_time_accessors(self):
+        """Special time keys should return the time axis in requested units."""
+        np.testing.assert_array_equal(self.eyedata['time'], self.eyedata.tx)
+        np.testing.assert_allclose(self.eyedata['time_sec'], self.eyedata.tx / 1000.0)
+        np.testing.assert_allclose(self.eyedata['time_min'], self.eyedata.tx / (1000.0 * 60.0))
+        np.testing.assert_allclose(self.eyedata['time', 'sec'], self.eyedata.tx / 1000.0)
+
     def test_summary(self):
         """Test the summary method"""
         summary = self.eyedata.summary()

@@ -180,6 +180,84 @@ class GenericEyeData(ABC):
         """Return number of sampling points"""
         return len(self.tx)
 
+    def __getitem__(self, key):
+        """
+        Provide dict-style access to data arrays, returning masked arrays.
+        Supports special keys for retrieving time in different units.
+        """
+        normalized_key = key
+
+        # Handle tuple keys (e.g., ("left", "x") or ("time", "sec"))
+        if isinstance(key, tuple):
+            if len(key) == 0:
+                raise KeyError("Empty key tuple")
+            if key[0] == "time":
+                unit = key[1] if len(key) > 1 else None
+                return self._get_time_array(unit)
+            normalized_key = "_".join(key)
+
+        if isinstance(normalized_key, str):
+            if normalized_key.startswith("time"):
+                prefix, _, suffix = normalized_key.partition("_")
+                if prefix == "time":
+                    return self._get_time_array(suffix or None)
+
+        # Delegate to EyeDataDict and wrap using the stored mask
+        data_array = self.data[normalized_key]
+        try:
+            mask = self.data.mask[normalized_key]
+        except KeyError:
+            # Fallback if mask not directly accessible (e.g., cached dict),
+            # letting EyeDataDict resolve the key.
+            mask = self.data.get_mask(normalized_key)
+
+        return np.ma.masked_array(data_array, mask=mask)
+
+    def _get_time_array(self, unit: Optional[str]):
+        """
+        Return the time vector in the requested units.
+
+        Parameters
+        ----------
+        unit : str or None
+            Unit suffix (e.g., "sec", "min", "h", "ms"). None or "ms" returns raw time.
+        """
+        if unit is None or unit == "":
+            return self.tx
+
+        unit_norm = unit.lower()
+        unit_aliases = {
+            "s": "sec",
+            "sec": "sec",
+            "secs": "sec",
+            "second": "sec",
+            "seconds": "sec",
+            "m": "min",
+            "min": "min",
+            "mins": "min",
+            "minute": "min",
+            "minutes": "min",
+            "h": "h",
+            "hr": "h",
+            "hrs": "h",
+            "hour": "h",
+            "hours": "h",
+            "ms": "ms",
+            "millisecond": "ms",
+            "milliseconds": "ms",
+        }
+        unit_norm = unit_aliases.get(unit_norm, unit_norm)
+
+        if unit_norm == "ms":
+            return self.tx
+
+        valid_units = {"sec", "min", "h"}
+        if unit_norm not in valid_units:
+            raise KeyError(f"Unsupported time unit '{unit}'")
+
+        factor = self._unit_fac(unit_norm)
+        return self.tx * factor
+
     def __getattr__(self, name):
         """
         Delegate unknown attribute access to the plot object.
