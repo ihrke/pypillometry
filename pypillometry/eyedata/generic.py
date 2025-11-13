@@ -774,12 +774,8 @@ class GenericEyeData(ABC):
 
         sparklines = []
         try:
-            import matplotlib
-            matplotlib.use("Agg")
             from matplotlib.figure import Figure
-
             from matplotlib.backends.backend_agg import FigureCanvasAgg
-
             for key in sorted(self.data.keys()):
                 eye, var = key if isinstance(key, tuple) else (None, key)
                 label = f"{eye} {var}".strip() if eye else var
