@@ -295,3 +295,105 @@ class GazeData(GenericEyeData):
             raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
         return self._screen_eye_distance
 
+    @keephistory
+    def mask_eye_divergences(self, threshold: float = .99, thr_type: str = "percentile", store_as: str|None = None, inplace=None):
+        """
+        Calculate Euclidean distance between left and right eye coordinates and mask divergences.
+        
+        This method computes the distance between corresponding (x,y) coordinates in the left
+        and right eyes. Points where the distance exceeds a threshold are masked. The distance
+        is stored as a new variable in the data.
+        
+        Parameters
+        ----------
+        threshold : float, default=.99
+            If thr_type is "percentile": percentile value (0-1) for threshold calculation.
+            If thr_type is "pixel": maximum allowed distance in pixels.
+        thr_type : str, default="percentile"
+            Type of threshold to apply:
+            - "percentile": threshold is calculated as the given percentile of the distance distribution
+            - "pixel": threshold is the maximum allowed distance in pixels
+        store_as : str or None, default=None
+            Variable name to store the distance timeseries. If None, distance is not stored.
+        inplace : bool or None
+            If True, make change in-place and return the object.
+            If False, make and return copy before making changes.
+            If None, use the object-level setting.
+        
+        Returns
+        -------
+        GazeData
+            Object with distance timeseries stored and divergent points masked.
+        
+        Raises
+        ------
+        ValueError
+            If both left and right eye data are not available.
+            If thr_type is not "percentile" or "pixel".
+        
+        Examples
+        --------
+        >>> # Mask divergences at 99th percentile
+        >>> gaze_data = gaze_data.mask_eye_divergences(threshold=0.99, thr_type="percentile")
+        
+        >>> # Mask divergences beyond 100 pixels
+        >>> gaze_data = gaze_data.mask_eye_divergences(threshold=100, thr_type="pixel")
+        """
+        obj = self._get_inplace(inplace)
+        
+        # Check that both eyes are available
+        if 'left' not in obj.eyes or 'right' not in obj.eyes:
+            raise ValueError(
+                "Both left and right eye data are required for mask_eye_divergences. "
+                f"Available eyes: {obj.eyes}"
+            )
+        
+        # Validate thr_type
+        if thr_type not in ["percentile", "pixel"]:
+            raise ValueError(
+                f"thr_type must be 'percentile' or 'pixel', got '{thr_type}'"
+            )
+        
+        # Get masked arrays for left and right eye coordinates
+        left_x = obj['left_x']
+        left_y = obj['left_y']
+        right_x = obj['right_x']
+        right_y = obj['right_y']
+        
+        # Calculate Euclidean distance
+        dist = np.ma.sqrt((left_x - right_x)**2 + (left_y - right_y)**2)
+        
+        # Calculate threshold
+        if thr_type == "percentile":
+            # threshold should be between 0 and 1 for percentile
+            if not 0 <= threshold <= 1:
+                raise ValueError(
+                    f"For thr_type='percentile', threshold must be between 0 and 1, got {threshold}"
+                )
+            thr = np.percentile(dist.compressed(), threshold * 100)
+        else:  # thr_type == "pixel"
+            thr = threshold
+        
+        # Mask divergent points (where distance exceeds threshold)
+        dist_mask = dist > thr
+        
+        # Combine with existing mask
+        final_mask = np.ma.getmaskarray(dist) | dist_mask
+        
+        # Create masked array with the combined mask
+        dist_masked = np.ma.masked_array(dist.data, mask=final_mask)
+        
+        # Store distance as a timeseries if requested
+        if store_as is not None:
+            obj[store_as] = dist_masked
+        
+        # Update masks for left and right eye coordinates where divergence is detected
+        for eye in ['left', 'right']:
+            for var in ['x', 'y']:
+                key = f"{eye}_{var}"
+                existing_mask = obj.data.mask[key].copy()
+                # Mark divergent points as masked
+                existing_mask[dist_mask] = 1
+                obj.data.mask[key] = existing_mask
+        
+        return obj
