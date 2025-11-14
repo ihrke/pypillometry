@@ -806,6 +806,35 @@ class TestEyeDataDelitem(unittest.TestCase):
             np.any(pd_interp.data['left_pupil'][blink_indices] > 0),
             "Blink regions should be interpolated (not all zero)"
         )
+    
+    def test_pupil_lowpass_preserves_mask(self):
+        """Test that lowpass filtering preserves existing mask"""
+        # Create pupil data
+        pd = pp.PupilData(
+            left_pupil=np.random.rand(1000) * 100 + 3000,
+            sampling_rate=100
+        )
+        
+        # Manually mask some regions
+        mask_indices = slice(200, 250)
+        pd.data.mask['left_pupil'][mask_indices] = 1
+        original_mask = pd.data.mask['left_pupil'].copy()
+        
+        # Apply lowpass filter
+        pd_filtered = pd.pupil_lowpass_filter(cutoff=10, order=4, eyes=['left'], inplace=False)
+        
+        # Verify mask is preserved
+        np.testing.assert_array_equal(
+            pd_filtered.data.mask['left_pupil'],
+            original_mask,
+            err_msg="Lowpass filtering should preserve the mask"
+        )
+        
+        # Verify data was actually filtered (changed)
+        self.assertFalse(
+            np.array_equal(pd.data['left_pupil'], pd_filtered.data['left_pupil']),
+            "Data should be filtered (changed)"
+        )
 
 
 class TestEventsIntegration(unittest.TestCase):

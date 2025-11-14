@@ -160,7 +160,8 @@ class PupilData(GenericEyeData):
         eyes,_=self._get_eye_var(eyes,[])
 
         for eye in eyes:
-            obj.data[eye,"pupil"]=baseline.butter_lowpass_filter(obj.data[eye,"pupil"], cutoff, obj.fs, order)
+            filtered = baseline.butter_lowpass_filter(obj.data[eye,"pupil"], cutoff, obj.fs, order)
+            obj.data.set_with_mask(f"{eye}_pupil", filtered, preserve_mask=True)
         return obj
 
     @keephistory
