@@ -835,6 +835,35 @@ class TestEyeDataDelitem(unittest.TestCase):
             np.array_equal(pd.data['left_pupil'], pd_filtered.data['left_pupil']),
             "Data should be filtered (changed)"
         )
+    
+    def test_pupil_smooth_preserves_mask(self):
+        """Test that smoothing preserves existing mask"""
+        # Create pupil data
+        pd = pp.PupilData(
+            left_pupil=np.random.rand(1000) * 100 + 3000,
+            sampling_rate=100
+        )
+        
+        # Manually mask some regions
+        mask_indices = slice(300, 350)
+        pd.data.mask['left_pupil'][mask_indices] = 1
+        original_mask = pd.data.mask['left_pupil'].copy()
+        
+        # Apply smoothing
+        pd_smoothed = pd.pupil_smooth_window(eyes=['left'], window='hanning', winsize=50, inplace=False)
+        
+        # Verify mask is preserved
+        np.testing.assert_array_equal(
+            pd_smoothed.data.mask['left_pupil'],
+            original_mask,
+            err_msg="Smoothing should preserve the mask"
+        )
+        
+        # Verify data was actually smoothed (changed)
+        self.assertFalse(
+            np.array_equal(pd.data['left_pupil'], pd_smoothed.data['left_pupil']),
+            "Data should be smoothed (changed)"
+        )
 
 
 class TestEventsIntegration(unittest.TestCase):

@@ -190,7 +190,8 @@ class PupilData(GenericEyeData):
 
         # process requested eyes
         for eye in eyes:
-            obj.data[eye,"pupil"]=preproc.smooth_window(obj.data[eye,"pupil"], winsize_ix, window )
+            smoothed = preproc.smooth_window(obj.data[eye,"pupil"], winsize_ix, window)
+            obj.data.set_with_mask(f"{eye}_pupil", smoothed, preserve_mask=True)
 
         return obj
 
