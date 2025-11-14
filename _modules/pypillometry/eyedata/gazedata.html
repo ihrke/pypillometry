@@ -346,8 +346,113 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance_set</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Physical screen size not set! Use `set_experiment_info()` to set it.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance</span>
 
+<div class="viewcode-block" id="GazeData.mask_eye_divergences">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GazeData.mask_eye_divergences">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mask_eye_divergences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">.99</span><span class="p">,</span> <span class="n">thr_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;percentile&quot;</span><span class="p">,</span> <span class="n">store_as</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate Euclidean distance between left and right eye coordinates and mask divergences.</span>
+<span class="sd">        </span>
+<span class="sd">        This method computes the distance between corresponding (x,y) coordinates in the left</span>
+<span class="sd">        and right eyes. Points where the distance exceeds a threshold are masked. The distance</span>
+<span class="sd">        is stored as a new variable in the data.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        threshold : float, default=.99</span>
+<span class="sd">            If thr_type is &quot;percentile&quot;: percentile value (0-1) for threshold calculation.</span>
+<span class="sd">            If thr_type is &quot;pixel&quot;: maximum allowed distance in pixels.</span>
+<span class="sd">        thr_type : str, default=&quot;percentile&quot;</span>
+<span class="sd">            Type of threshold to apply:</span>
+<span class="sd">            - &quot;percentile&quot;: threshold is calculated as the given percentile of the distance distribution</span>
+<span class="sd">            - &quot;pixel&quot;: threshold is the maximum allowed distance in pixels</span>
+<span class="sd">        store_as : str or None, default=None</span>
+<span class="sd">            Variable name to store the distance timeseries. If None, distance is not stored.</span>
+<span class="sd">        inplace : bool or None</span>
+<span class="sd">            If True, make change in-place and return the object.</span>
+<span class="sd">            If False, make and return copy before making changes.</span>
+<span class="sd">            If None, use the object-level setting.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GazeData</span>
+<span class="sd">            Object with distance timeseries stored and divergent points masked.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If both left and right eye data are not available.</span>
+<span class="sd">            If thr_type is not &quot;percentile&quot; or &quot;pixel&quot;.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; # Mask divergences at 99th percentile</span>
+<span class="sd">        &gt;&gt;&gt; gaze_data = gaze_data.mask_eye_divergences(threshold=0.99, thr_type=&quot;percentile&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Mask divergences beyond 100 pixels</span>
+<span class="sd">        &gt;&gt;&gt; gaze_data = gaze_data.mask_eye_divergences(threshold=100, thr_type=&quot;pixel&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        
+        <span class="c1"># Check that both eyes are available</span>
+        <span class="k">if</span> <span class="s1">&#39;left&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">eyes</span> <span class="ow">or</span> <span class="s1">&#39;right&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">eyes</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Both left and right eye data are required for mask_eye_divergences. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Available eyes: </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="n">eyes</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        
+        <span class="c1"># Validate thr_type</span>
+        <span class="k">if</span> <span class="n">thr_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;percentile&quot;</span><span class="p">,</span> <span class="s2">&quot;pixel&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;thr_type must be &#39;percentile&#39; or &#39;pixel&#39;, got &#39;</span><span class="si">{</span><span class="n">thr_type</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+            <span class="p">)</span>
+        
+        <span class="c1"># Get masked arrays for left and right eye coordinates</span>
+        <span class="n">left_x</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;left_x&#39;</span><span class="p">]</span>
+        <span class="n">left_y</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;left_y&#39;</span><span class="p">]</span>
+        <span class="n">right_x</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;right_x&#39;</span><span class="p">]</span>
+        <span class="n">right_y</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;right_y&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Calculate Euclidean distance</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">left_x</span> <span class="o">-</span> <span class="n">right_x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">left_y</span> <span class="o">-</span> <span class="n">right_y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="c1"># Calculate threshold</span>
+        <span class="k">if</span> <span class="n">thr_type</span> <span class="o">==</span> <span class="s2">&quot;percentile&quot;</span><span class="p">:</span>
+            <span class="c1"># threshold should be between 0 and 1 for percentile</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">threshold</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;For thr_type=&#39;percentile&#39;, threshold must be between 0 and 1, got </span><span class="si">{</span><span class="n">threshold</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">thr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">compressed</span><span class="p">(),</span> <span class="n">threshold</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># thr_type == &quot;pixel&quot;</span>
+            <span class="n">thr</span> <span class="o">=</span> <span class="n">threshold</span>
+        
+        <span class="c1"># Mask divergent points (where distance exceeds threshold)</span>
+        <span class="n">dist_mask</span> <span class="o">=</span> <span class="n">dist</span> <span class="o">&gt;</span> <span class="n">thr</span>
+        
+        <span class="c1"># Combine with existing mask</span>
+        <span class="n">final_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span> <span class="o">|</span> <span class="n">dist_mask</span>
+        
+        <span class="c1"># Create masked array with the combined mask</span>
+        <span class="n">dist_masked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">final_mask</span><span class="p">)</span>
+        
+        <span class="c1"># Store distance as a timeseries if requested</span>
+        <span class="k">if</span> <span class="n">store_as</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">store_as</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist_masked</span>
+        
+        <span class="c1"># Update masks for left and right eye coordinates where divergence is detected</span>
+        <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">existing_mask</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="c1"># Mark divergent points as masked</span>
+                <span class="n">existing_mask</span><span class="p">[</span><span class="n">dist_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">existing_mask</span>
+        
+        <span class="k">return</span> <span class="n">obj</span></div>
+</div>
 
 </pre></div>
 
