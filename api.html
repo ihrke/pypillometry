@@ -1034,10 +1034,10 @@ If None, use the object-level setting.</p></li>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>If apply_mask=True: returns self for chaining.
-If apply_mask=False: returns dict of Intervals objects with keys like “left_x”, “left_y”, etc.</p>
+If apply_mask=False: returns Intervals object containing detected divergence intervals.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#pypillometry.GazeData" title="pypillometry.GazeData">GazeData</a> or dict</p>
+<dd class="field-odd"><p><a class="reference internal" href="#pypillometry.GazeData" title="pypillometry.GazeData">GazeData</a> or Intervals</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – If both left and right eye data are not available.
