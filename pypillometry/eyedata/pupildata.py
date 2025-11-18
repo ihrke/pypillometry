@@ -16,7 +16,7 @@ from ..signal import preproc
 from ..signal import pupil
 #from .. import io
 from ..plot import PupilPlotter
-from ..intervals import IntervalStats, get_interval_stats
+from ..intervals import IntervalStats, get_interval_stats, Intervals
 
 import json
 from loguru import logger
@@ -201,15 +201,16 @@ class PupilData(GenericEyeData):
                       winsize: float=11, vel_onset: float=-5, vel_offset: float=5, 
                       min_onset_len: int=5, min_offset_len: int=5,
                       strategies: list=["zero","velocity"],
-                      units="ms", inplace=None):
+                      units="ms", apply_mask=True, inplace=None):
         """
         Detect blinks in the pupillary signal using several strategies.
         First, blinks are detected as consecutive sequence of `blink_val` 
         (f.eks., 0 or NaN). Second, blinks are defined as everything between
         two crossings of the velocity profile (from negative to positive).
         
-        Detected blinks are put into member `blinks` and the `mask` field of 
-        each eye's data in the `EyeDataDict` is set to 1 for the blinks.
+        Detected blinks are always stored internally. When apply_mask=True,
+        the blinks are also applied as masks to the data. When apply_mask=False,
+        the detected blinks are returned as Intervals objects.
 
         Finally, detected blinks have to be at least `min_duration` duration (in `units`).
         
@@ -239,9 +240,19 @@ class PupilData(GenericEyeData):
             so far, use a list containing any combination of "zero" and "velocity"
         units: str
             one of "ms", "sec", "min", "h"
+        apply_mask: bool
+            if `True`, apply detected blinks as masks to the data and return self
+            if `False`, return detected blinks as Intervals (or dict of Intervals)
         inplace: bool
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
+            
+        Returns
+        -------
+        self or Intervals or dict
+            If apply_mask=True: returns self for chaining
+            If apply_mask=False and single eye: returns Intervals object
+            If apply_mask=False and multiple eyes: returns dict of Intervals objects
         """
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
@@ -259,6 +270,8 @@ class PupilData(GenericEyeData):
         for strat in strategies:
             if strat not in ["zero", "velocity"]:
                 logger.warning("Strategy '%s' unknown"%strat)
+        
+        detected_intervals = {}
         
         for eye in eyes:
             logger.debug(f"Detecting blinks for eye {eye}")
@@ -279,9 +292,30 @@ class PupilData(GenericEyeData):
             logger.debug(f"Merging {len(blinks_vel)} blinks with {len(blinks_zero)} blinks")
             blinks=preproc.helper_merge_blinks(blinks_vel, blinks_zero)
             logger.debug(f"Merged {len(blinks)} blinks")
-            obj.set_blinks(eye, "pupil", np.array([[on,off] for (on,off) in blinks if off-on>=min_duration_ix]))
             
-        return obj    
+            # Filter by minimum duration and create Intervals object
+            filtered_blinks = [(int(on), int(off)) for (on,off) in blinks if off-on>=min_duration_ix]
+            intervals_obj = Intervals(
+                intervals=filtered_blinks,
+                units=None,  # Using index units
+                label=f"{eye}_pupil_blinks",
+                data_time_range=(0, len(obj.tx))
+            )
+            
+            # Store detected blinks internally (always)
+            key = f"{eye}_pupil"
+            detected_intervals[key] = intervals_obj
+            obj.set_blinks(intervals_obj, eyes=[eye], variables=["pupil"], apply_mask=apply_mask)
+        
+        # Return based on apply_mask
+        if apply_mask:
+            return obj
+        else:
+            # Return single Intervals or dict depending on number of eyes
+            if len(eyes) == 1:
+                return detected_intervals[f"{eyes[0]}_pupil"]
+            else:
+                return detected_intervals    
     
     @keephistory
     def pupil_blinks_interpolate(self, eyes: str|list=[],

@@ -10,7 +10,7 @@ sys.path.insert(0, "..")
 import pypillometry as pp
 import numpy as np
 import pandas as pd
-from pypillometry.intervals import Intervals, IntervalStats
+from pypillometry.intervals import Intervals, IntervalStats, merge_intervals
 
 
 class TestIntervalsClass(unittest.TestCase):
@@ -122,6 +122,59 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertEqual(len(merged), 2)  # Should merge first two
         self.assertEqual(merged.units, "ms")
         self.assertEqual(merged.label, "test")
+    
+    def test_intervals_merge_with_metadata(self):
+        """Test that merge preserves and combines metadata"""
+        intervals_list = [(0, 100), (50, 150), (200, 300)]
+        event_labels = ["event1", "event2", "event3"]
+        event_indices = [0, 1, 2]
+        event_onsets = [10, 60, 210]
+        
+        intervals = Intervals(intervals_list, units="ms", label="test",
+                             event_labels=event_labels,
+                             event_indices=event_indices,
+                             event_onsets=event_onsets)
+        
+        merged = intervals.merge()
+        
+        # Should have 2 intervals (first two merged, third separate)
+        self.assertEqual(len(merged), 2)
+        
+        # First interval: merged labels with underscore
+        self.assertEqual(merged.event_labels[0], "event1_event2")
+        # Second interval: unchanged label
+        self.assertEqual(merged.event_labels[1], "event3")
+        
+        # First interval: first index from merged group
+        self.assertEqual(merged.event_indices[0], 0)
+        # Second interval: original index
+        self.assertEqual(merged.event_indices[1], 2)
+        
+        # First interval: first onset from merged group
+        self.assertEqual(merged.event_onsets[0], 10)
+        # Second interval: original onset
+        self.assertEqual(merged.event_onsets[1], 210)
+    
+    def test_intervals_merge_custom_separator(self):
+        """Test merge with custom separator for labels"""
+        intervals_list = [(0, 100), (50, 150)]
+        event_labels = ["a", "b"]
+        
+        intervals = Intervals(intervals_list, units="ms",
+                             event_labels=event_labels)
+        
+        merged = intervals.merge(merge_sep="|")
+        
+        self.assertEqual(len(merged), 1)
+        self.assertEqual(merged.event_labels[0], "a|b")
+    
+    def test_intervals_merge_empty_returns_self(self):
+        """Test that merging empty intervals returns self"""
+        intervals = Intervals([], units="ms")
+        
+        merged = intervals.merge()
+        
+        self.assertIs(merged, intervals)
     
     def test_intervals_stats(self):
         """Test getting interval statistics"""
@@ -535,6 +588,208 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         self.assertEqual(intervals_sec.label, intervals.label)
         if intervals.event_labels is not None:
             self.assertEqual(len(intervals_sec.event_labels), len(intervals.event_labels))
+
+
+class TestMergeIntervals(unittest.TestCase):
+    """Test merge_intervals function"""
+    
+    def test_merge_intervals_from_args(self):
+        """Test merging multiple Intervals passed as arguments"""
+        intervals1 = Intervals([(0, 100), (200, 300)], units="ms", label="int1",
+                              event_labels=["a", "b"])
+        intervals2 = Intervals([(50, 150), (400, 500)], units="ms", label="int2",
+                              event_labels=["c", "d"])
+        
+        merged = merge_intervals(intervals1, intervals2)
+        
+        self.assertIsInstance(merged, Intervals)
+        self.assertEqual(len(merged), 4)  # All 4 intervals, not merged
+        self.assertEqual(merged.units, "ms")
+        self.assertEqual(merged.label, "merged")
+        
+        # Check metadata preserved
+        self.assertIsNotNone(merged.event_labels)
+        self.assertEqual(merged.event_labels, ["a", "b", "c", "d"])
+    
+    def test_merge_intervals_from_list(self):
+        """Test merging from a list of Intervals"""
+        intervals1 = Intervals([(0, 100)], units="ms", event_labels=["x"])
+        intervals2 = Intervals([(200, 300)], units="ms", event_labels=["y"])
+        intervals3 = Intervals([(400, 500)], units="ms", event_labels=["z"])
+        
+        intervals_list = [intervals1, intervals2, intervals3]
+        merged = merge_intervals(intervals_list)
+        
+        self.assertEqual(len(merged), 3)
+        self.assertEqual(merged.event_labels, ["x", "y", "z"])
+    
+    def test_merge_intervals_from_dict(self):
+        """Test merging from a dict of Intervals"""
+        intervals1 = Intervals([(0, 100)], units="ms", event_labels=["p"])
+        intervals2 = Intervals([(200, 300)], units="ms", event_labels=["q"])
+        
+        intervals_dict = {"left_pupil": intervals1, "right_pupil": intervals2}
+        merged = merge_intervals(intervals_dict)
+        
+        self.assertEqual(len(merged), 2)
+        self.assertEqual(merged.event_labels, ["p", "q"])
+    
+    def test_merge_intervals_custom_label(self):
+        """Test merging with custom label"""
+        intervals1 = Intervals([(0, 100)], units="ms")
+        intervals2 = Intervals([(200, 300)], units="ms")
+        
+        merged = merge_intervals(intervals1, intervals2, label="custom")
+        
+        self.assertEqual(merged.label, "custom")
+    
+    def test_merge_intervals_preserves_all_metadata(self):
+        """Test that all metadata is preserved"""
+        intervals1 = Intervals([(0, 100), (200, 300)], units="ms",
+                              event_labels=["a", "b"],
+                              event_indices=[0, 1],
+                              event_onsets=[10, 20])
+        intervals2 = Intervals([(400, 500)], units="ms",
+                              event_labels=["c"],
+                              event_indices=[2],
+                              event_onsets=[30])
+        
+        merged = merge_intervals(intervals1, intervals2)
+        
+        self.assertEqual(merged.event_labels, ["a", "b", "c"])
+        self.assertEqual(list(merged.event_indices), [0, 1, 2])
+        self.assertEqual(list(merged.event_onsets), [10, 20, 30])
+    
+    def test_merge_intervals_partial_metadata(self):
+        """Test merging when only some objects have metadata"""
+        intervals1 = Intervals([(0, 100)], units="ms",
+                              event_labels=["a"])
+        intervals2 = Intervals([(200, 300)], units="ms")  # No metadata
+        intervals3 = Intervals([(400, 500)], units="ms",
+                              event_labels=["c"])
+        
+        merged = merge_intervals(intervals1, intervals2, intervals3)
+        
+        # Should preserve labels with None for missing
+        self.assertEqual(merged.event_labels, ["a", None, "c"])
+    
+    def test_merge_intervals_no_metadata(self):
+        """Test merging when no objects have metadata"""
+        intervals1 = Intervals([(0, 100)], units="ms")
+        intervals2 = Intervals([(200, 300)], units="ms")
+        
+        merged = merge_intervals(intervals1, intervals2)
+        
+        # Should have no metadata
+        self.assertIsNone(merged.event_labels)
+        self.assertIsNone(merged.event_indices)
+        self.assertIsNone(merged.event_onsets)
+    
+    def test_merge_intervals_does_not_merge_overlaps(self):
+        """Test that overlapping intervals are NOT merged, just concatenated"""
+        intervals1 = Intervals([(0, 100)], units="ms")
+        intervals2 = Intervals([(50, 150)], units="ms")  # Overlaps with first
+        
+        merged = merge_intervals(intervals1, intervals2)
+        
+        # Should have both intervals, not merged
+        self.assertEqual(len(merged), 2)
+        arr = merged.to_array()
+        self.assertEqual(arr[0, 0], 0)
+        self.assertEqual(arr[0, 1], 100)
+        self.assertEqual(arr[1, 0], 50)
+        self.assertEqual(arr[1, 1], 150)
+    
+    def test_merge_intervals_then_merge_method(self):
+        """Test combining intervals then merging overlaps with .merge()"""
+        intervals1 = Intervals([(0, 100)], units="ms")
+        intervals2 = Intervals([(50, 150)], units="ms")
+        
+        combined = merge_intervals(intervals1, intervals2)
+        self.assertEqual(len(combined), 2)
+        
+        # Now merge overlaps
+        merged = combined.merge()
+        self.assertEqual(len(merged), 1)
+        self.assertEqual(merged[0], (0, 150))
+    
+    def test_merge_intervals_empty_intervals(self):
+        """Test merging when one or more Intervals are empty"""
+        intervals1 = Intervals([(0, 100)], units="ms")
+        intervals2 = Intervals([], units="ms")
+        intervals3 = Intervals([(200, 300)], units="ms")
+        
+        merged = merge_intervals(intervals1, intervals2, intervals3)
+        
+        self.assertEqual(len(merged), 2)
+    
+    def test_merge_intervals_all_empty(self):
+        """Test merging when all Intervals are empty"""
+        intervals1 = Intervals([], units="ms")
+        intervals2 = Intervals([], units="ms")
+        
+        merged = merge_intervals(intervals1, intervals2)
+        
+        self.assertEqual(len(merged), 0)
+        self.assertEqual(merged.units, "ms")
+    
+    def test_merge_intervals_units_must_match(self):
+        """Test that merging requires matching units"""
+        intervals1 = Intervals([(0, 100)], units="ms")
+        intervals2 = Intervals([(0, 1)], units="sec")
+        
+        with self.assertRaises(ValueError) as cm:
+            merge_intervals(intervals1, intervals2)
+        
+        self.assertIn("units", str(cm.exception).lower())
+    
+    def test_merge_intervals_single_object(self):
+        """Test merging with a single Intervals object"""
+        intervals = Intervals([(0, 100), (200, 300)], units="ms",
+                             event_labels=["a", "b"])
+        
+        merged = merge_intervals(intervals)
+        
+        # Should return a new object with same content
+        self.assertEqual(len(merged), 2)
+        self.assertEqual(merged.event_labels, ["a", "b"])
+    
+    def test_merge_intervals_preserves_data_time_range(self):
+        """Test that data_time_range is preserved from first object"""
+        intervals1 = Intervals([(0, 100)], units="ms",
+                              data_time_range=(0, 1000))
+        intervals2 = Intervals([(200, 300)], units="ms",
+                              data_time_range=(0, 2000))
+        
+        merged = merge_intervals(intervals1, intervals2)
+        
+        # Should use data_time_range from first object
+        self.assertEqual(merged.data_time_range, (0, 1000))
+    
+    def test_merge_intervals_no_arguments_raises_error(self):
+        """Test that calling with no arguments raises error"""
+        with self.assertRaises(ValueError) as cm:
+            merge_intervals()
+        
+        self.assertIn("no intervals", str(cm.exception).lower())
+    
+    def test_merge_intervals_invalid_type_raises_error(self):
+        """Test that invalid argument types raise error"""
+        intervals1 = Intervals([(0, 100)], units="ms")
+        
+        with self.assertRaises(TypeError):
+            merge_intervals(intervals1, "not an intervals object")
+    
+    def test_merge_intervals_different_units(self):
+        """Test merging with different unit types"""
+        for units in ["ms", "sec", "min", "h", None]:
+            intervals1 = Intervals([(0, 100)], units=units)
+            intervals2 = Intervals([(200, 300)], units=units)
+            
+            merged = merge_intervals(intervals1, intervals2)
+            
+            self.assertEqual(merged.units, units)
+            self.assertEqual(len(merged), 2)
 
 
 if __name__ == '__main__':

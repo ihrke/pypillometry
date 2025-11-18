@@ -12,7 +12,7 @@ from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, suppre
 from ..io import download
 from .eyedatadict import CachedEyeDataDict, EyeDataDict
 from ..signal import baseline
-from ..intervals import stat_event_interval, get_interval_stats, merge_intervals, Intervals
+from ..intervals import stat_event_interval, get_interval_stats, Intervals
 from ..logging import logging_get_level
 
 import numpy as np
@@ -37,8 +37,8 @@ import sys
 from abc import ABC, abstractmethod 
 
 
-## decoratory to keep a history of actions performed on dataset
-# can only be used with functions that return "self" 
+## decorator to keep a history of actions performed on dataset
+# Only adds history when the function returns a GenericEyeData instance (self) 
 def keephistory(func):
     @functools.wraps(func)
     def wrapper(*args,**kwargs):
@@ -53,7 +53,9 @@ def keephistory(func):
             allargs+=kwargstr
         fstr="{func}({allargs})".format(func=funcname, allargs=allargs)
         #fstr="{func}({argstr},{kwargstr})".format(func=funcname,argstr=argstr,kwargstr=kwargstr)
-        obj.add_to_history({"funcstring":fstr, "funcname":funcname, "args":args[1:], "kwargs":kwargs})
+        # Only add to history if obj is a GenericEyeData instance (has add_to_history method)
+        if hasattr(obj, 'add_to_history'):
+            obj.add_to_history({"funcstring":fstr, "funcname":funcname, "args":args[1:], "kwargs":kwargs})
         return obj
     return wrapper
         
@@ -441,52 +443,93 @@ class GenericEyeData(ABC):
         """
         return self._blinks
     
-    def set_blinks(self, eye:str, variable:str, blinks):
+    def set_blinks(self, intervals, eyes=[], variables=[], apply_mask=True):
         """
-        Set blinks for a given eye and variable.
+        Set blinks for specified eyes and variables.
 
         Parameters
         ----------
-        eye: str
-            a single eye to set the blinks for
-        variable: str
-            a single variable to set the blinks for
-        blinks: ndarray or None
-            ndarrays of blinks (nblinks x 2); 
+        intervals : Intervals or dict
+            Either:
+            - A single Intervals object: stored for all specified eyes/variables
+            - A dict of Intervals: keys like "left_pupil", "right_x", etc.
+              When dict is provided, `eyes` and `variables` are ignored.
+        eyes : list of str, optional
+            List of eyes to set blinks for (e.g., ['left', 'right']).
+            If empty, applies to all available eyes.
+            Ignored if `intervals` is a dict.
+        variables : list of str, optional
+            List of variables to set blinks for (e.g., ['pupil', 'x', 'y']).
+            If empty, applies to all available variables.
+            Ignored if `intervals` is a dict.
+        apply_mask : bool, optional
+            If True, apply intervals as mask to data. If False, only store intervals.
+            Default is True.
         """
-        if not ( isinstance(blinks, np.ndarray) or blinks is None ):
-            raise ValueError("Blinks must be a numpy.ndarray or None")
-        
-        self._blinks[eye+"_"+variable]=blinks
-        # update mask in EyeDataDict
-        if blinks is not None:
-            for bstart,bend in blinks:
-                self.data.mask[eye+"_"+variable][bstart:bend]=1
+        # Check if intervals is a dict
+        if isinstance(intervals, dict):
+            # Store each Intervals object to its corresponding eye_variable
+            for key, interval_obj in intervals.items():
+                if interval_obj is not None and not isinstance(interval_obj, Intervals):
+                    raise TypeError(f"Dict values must be Intervals objects or None, got {type(interval_obj)} for key '{key}'")
+                
+                self._blinks[key] = interval_obj
+                
+                # Apply mask if requested and intervals exist
+                if apply_mask and interval_obj is not None:
+                    if key not in self.data.data:
+                        logger.warning(f"Key '{key}' not found in data, skipping mask application")
+                        continue
+                    intervals_array = interval_obj.to_array()
+                    for bstart, bend in intervals_array:
+                        self.data.mask[key][int(bstart):int(bend)] = 1
+        else:
+            # Single Intervals object - apply to specified eyes/variables
+            if intervals is not None and not isinstance(intervals, Intervals):
+                raise TypeError(f"intervals must be an Intervals object, dict, or None, got {type(intervals)}")
+            
+            eyes, variables = self._get_eye_var(eyes, variables)
+            
+            # Store for all combinations of eyes and variables
+            for eye in eyes:
+                for var in variables:
+                    key = f"{eye}_{var}"
+                    self._blinks[key] = intervals
+                    
+                    # Apply mask if requested and intervals exist
+                    if apply_mask and intervals is not None:
+                        if key not in self.data.data:
+                            logger.warning(f"Key '{key}' not found in data, skipping mask application")
+                            continue
+                        intervals_array = intervals.to_array()
+                        for bstart, bend in intervals_array:
+                            self.data.mask[key][int(bstart):int(bend)] = 1
 
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
-                   units: str|None = None) -> Intervals:
+                   units: str|None = None):
         """
-        Get blinks as Intervals object.
+        Get blinks as Intervals object or dict of Intervals.
         
         Parameters
         ----------
         eyes : str or list
-            Eye(s) to get blinks for. If list or empty, blinks are merged.
+            Eye(s) to get blinks for. If multiple, returns dict.
         variables : str or list
-            Variable(s) to get blinks for. If list or empty, blinks are merged.
+            Variable(s) to get blinks for. If multiple, returns dict.
         units : str or None, optional
             Units for intervals: "ms", "sec", "min", "h", or None for indices
             
         Returns
         -------
-        Intervals
-            Intervals object (may contain zero intervals if no blinks detected)
+        Intervals or dict
+            If single eye and variable: returns Intervals object.
+            If multiple eyes/variables: returns dict with keys like "left_pupil".
             
         Examples
         --------
         >>> blinks = data.get_blinks('left', 'pupil')
         >>> blinks_ms = data.get_blinks('left', 'pupil', units="ms")
-        >>> blinks_merged = data.get_blinks(['left', 'right'], 'pupil')
+        >>> blinks_dict = data.get_blinks(['left', 'right'], 'pupil')
         >>> indices = blinks_ms.as_index(data)
         """
         eyes, variables = self._get_eye_var(eyes, variables)
@@ -494,61 +537,215 @@ class GenericEyeData(ABC):
         # Normalize units (handles aliases like "seconds", "hrs", etc.)
         units = normalize_unit(units)
         
-        # Check if we need to merge across multiple eyes/variables
-        need_merge = len(eyes) > 1 or len(variables) > 1
+        # Check if we need to return dict for multiple eyes/variables
+        return_dict = len(eyes) > 1 or len(variables) > 1
         
-        if need_merge:
-            blinks = []
+        if return_dict:
+            # Return dict of Intervals
+            result = {}
             for e, v in itertools.product(eyes, variables):
                 key = e + "_" + v
                 if key in self._blinks and self._blinks[key] is not None:
-                    blinks += self._blinks[key].tolist()
+                    intervals_obj = self._blinks[key]
+                else:
+                    # No blinks stored - create empty Intervals
+                    intervals_obj = Intervals(
+                        intervals=[],
+                        units=None,
+                        label=f"{e}_{v}_blinks",
+                        data_time_range=(0, len(self.tx))
+                    )
+                
+                # Convert to requested units if needed
+                if units is not None:
+                    intervals_ms = []
+                    last_idx = len(self.tx) - 1
+                    for start, end in intervals_obj.intervals:
+                        start_idx = max(0, min(last_idx, int(start)))
+                        end_idx = max(0, min(last_idx, int(end) - 1))
+                        if end_idx < start_idx:
+                            end_idx = start_idx
+                        intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
+
+                    intervals_obj = Intervals(intervals_ms, "ms", intervals_obj.label,
+                                            intervals_obj.event_labels, intervals_obj.event_indices,
+                                            (self.tx[0], self.tx[-1]), intervals_obj.event_onsets)
+                    if units != "ms":
+                        intervals_obj = intervals_obj.to_units(units)
+                
+                result[key] = intervals_obj
             
-            if blinks:
-                mblinks = merge_intervals(blinks)
-            else:
-                mblinks = []
-            
-            result = Intervals(
-                intervals=mblinks,
-                units=None,
-                label=f"blinks_{'_'.join(eyes)}_{'_'.join(variables)}",
-                data_time_range=(0, len(self.tx))
-            )
+            return result
         else:
-            # Single eye/variable
+            # Single eye/variable - return Intervals directly
             key = eyes[0] + "_" + variables[0]
             if key in self._blinks and self._blinks[key] is not None:
-                blinks_list = self._blinks[key].tolist()
+                result = self._blinks[key]
             else:
-                blinks_list = []
+                # No blinks stored - return empty Intervals
+                result = Intervals(
+                    intervals=[],
+                    units=None,
+                    label=f"{eyes[0]}_{variables[0]}_blinks",
+                    data_time_range=(0, len(self.tx))
+                )
+            
+            # Convert to requested units if needed
+            if units is not None:
+                intervals_ms = []
+                last_idx = len(self.tx) - 1
+                for start, end in result.intervals:
+                    start_idx = max(0, min(last_idx, int(start)))
+                    end_idx = max(0, min(last_idx, int(end) - 1))
+                    if end_idx < start_idx:
+                        end_idx = start_idx
+                    intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
+
+                result = Intervals(intervals_ms, "ms", result.label,
+                                result.event_labels, result.event_indices,
+                                (self.tx[0], self.tx[-1]), result.event_onsets)
+                if units != "ms":
+                    result = result.to_units(units)
+            
+            return result  
+
+    def mask_as_intervals(self, eyes: str|list = [], variables: str|list = [], 
+                          units: str|None = None, label: str|None = None):
+        """
+        Convert masks to Intervals objects.
+        
+        Parameters
+        ----------
+        eyes : str or list
+            Eye(s) to get masks for. If multiple, returns dict.
+        variables : str or list
+            Variable(s) to get masks for. If multiple, returns dict.
+        units : str or None, optional
+            Units for intervals: "ms", "sec", "min", "h", or None for indices.
+            Default is None (indices).
+        label : str, optional
+            Descriptive label for the intervals. Default is None.
+            
+        Returns
+        -------
+        Intervals or dict
+            If single eye and variable: returns Intervals object.
+            If multiple eyes/variables: returns dict with keys like "left_pupil".
+            
+        Examples
+        --------
+        >>> mask_intervals = data.mask_as_intervals('left', 'pupil')
+        >>> mask_ms = data.mask_as_intervals('left', 'pupil', units='ms')
+        >>> mask_dict = data.mask_as_intervals(['left', 'right'], 'pupil')
+        """
+        eyes, variables = self._get_eye_var(eyes, variables)
+        
+        # Normalize units (handles aliases like "seconds", "hrs", etc.)
+        units = normalize_unit(units)
+        
+        # Check if we need to return dict for multiple eyes/variables
+        return_dict = len(eyes) > 1 or len(variables) > 1
+        
+        if return_dict:
+            # Return dict of Intervals
+            result = {}
+            for e, v in itertools.product(eyes, variables):
+                key = e + "_" + v
+                if key not in self.data.mask:
+                    continue
+                    
+                mask = self.data.mask[key]
+                intervals_list = self._mask_to_intervals_list(mask)
+                
+                intervals_obj = Intervals(
+                    intervals_list,
+                    units=None,
+                    label=label or f"{key}_mask",
+                    data_time_range=(0, len(self.tx))
+                )
+                
+                # Convert to requested units if needed
+                if units is not None:
+                    intervals_ms = []
+                    last_idx = len(self.tx) - 1
+                    for start, end in intervals_obj.intervals:
+                        start_idx = max(0, min(last_idx, int(start)))
+                        end_idx = max(0, min(last_idx, int(end)))
+                        if end_idx < start_idx:
+                            end_idx = start_idx
+                        intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
+                    
+                    intervals_obj = Intervals(
+                        intervals_ms, 
+                        "ms", 
+                        intervals_obj.label,
+                        data_time_range=(self.tx[0], self.tx[-1])
+                    )
+                    if units != "ms":
+                        intervals_obj = intervals_obj.to_units(units)
+                
+                result[key] = intervals_obj
+            
+            return result
+        else:
+            # Single eye/variable - return Intervals directly
+            key = eyes[0] + "_" + variables[0]
+            if key not in self.data.mask:
+                if units is not None:
+                    return Intervals([], units=units, label=label or f"{key}_mask",
+                                   data_time_range=(self.tx[0], self.tx[-1]))
+                return Intervals([], units=None, label=label or f"{key}_mask",
+                               data_time_range=(0, len(self.tx)))
+                
+            mask = self.data.mask[key]
+            intervals_list = self._mask_to_intervals_list(mask)
             
             result = Intervals(
-                intervals=blinks_list,
+                intervals_list,
                 units=None,
-                label=f"{eyes[0]}_{variables[0]}_blinks",
+                label=label or f"{key}_mask",
                 data_time_range=(0, len(self.tx))
             )
+            
+            # Convert to requested units if needed
+            if units is not None:
+                intervals_ms = []
+                last_idx = len(self.tx) - 1
+                for start, end in result.intervals:
+                    start_idx = max(0, min(last_idx, int(start)))
+                    end_idx = max(0, min(last_idx, int(end)))
+                    if end_idx < start_idx:
+                        end_idx = start_idx
+                    intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
+                
+                result = Intervals(
+                    intervals_ms, 
+                    "ms", 
+                    result.label,
+                    data_time_range=(self.tx[0], self.tx[-1])
+                )
+                if units != "ms":
+                    result = result.to_units(units)
+            
+            return result
+    
+    def _mask_to_intervals_list(self, mask):
+        """Helper method to convert mask array to list of interval tuples."""
+        if not isinstance(mask, np.ndarray):
+            mask = np.array(mask)
+        if mask.ndim > 1:
+            raise ValueError("mask must be 1D")
+        if mask.dtype not in (bool, int):
+            raise ValueError("mask must be int or boolean")
+        if mask.size == 0 or not np.any(mask):
+            return []
         
-        # Convert to requested units if needed
-        if units is not None:
-            intervals_ms = []
-            last_idx = len(self.tx) - 1
-            for start, end in result.intervals:
-                start_idx = max(0, min(last_idx, int(start)))
-                end_idx = max(0, min(last_idx, int(end) - 1))
-                if end_idx < start_idx:
-                    end_idx = start_idx
-                intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
-
-            result = Intervals(intervals_ms, "ms", result.label,
-                              result.event_labels, result.event_indices,
-                              (self.tx[0], self.tx[-1]), result.event_onsets)
-            if units != "ms":
-                result = result.to_units(units)
-        
-        return result  
-
+        m = np.concatenate(([0], mask, [0]))
+        idxs = np.flatnonzero(m[1:] != m[:-1])
+        ivs = list(zip(idxs[::2], idxs[1::2]))
+        ivs = [(max(start, 0), min(end, mask.size - 1)) 
+               for start, end in ivs]
+        return ivs
 
     def _init_blinks(self, eyes=[], variables=[]):
         """Initialize blink-arrays for selected eyes and variables.
@@ -567,7 +764,7 @@ class GenericEyeData(ABC):
         ## initialize blinks
         self._blinks={}
         for eye,variable in itertools.product(eyes, variables):
-            self.set_blinks(eye,variable, None)        
+            self._blinks[f"{eye}_{variable}"] = None        
 
     def nblinks(self, eyes=[], variables=[]) -> int:
         """
@@ -1631,14 +1828,14 @@ class GenericEyeData(ABC):
                     for eye in eyes:
                         logger.debug("Dropping eye %s for variable %s" % (eye, var))
                         del obj.data[eye+"_"+var]
-                        obj.set_blinks(eye,var,None)
+                        obj.set_blinks(None, eyes=[eye], variables=[var])
         else:
             raise ValueError("Method %s not implemented" % method)
 
         return obj
         
     @keephistory
-    def blinks_merge(
+    def blinks_merge_close(
         self,
         eyes: list = [],
         variables: list = [],
@@ -1668,10 +1865,10 @@ class GenericEyeData(ABC):
             Modified object
         """
         obj = self._get_inplace(inplace)
-        eyes,variables=self._get_eye_var(eyes,variables)
+        eyes, variables = obj._get_eye_var(eyes, variables)
 
-        fac = self._unit_fac(units)
-        distance_ix = (distance / fac) * (self.fs / 1000.0)        
+        fac = obj._unit_fac(units)
+        distance_ix = (distance / fac) * (obj.fs / 1000.0)        
 
         logger.debug(f"Distance '{distance} {units}' in index units: {distance_ix}")
 
@@ -1694,7 +1891,14 @@ class GenericEyeData(ABC):
                 i += 1
             newblinks.append(cblink)
             
-            obj.set_blinks(eye, var, np.array(newblinks))
+            # Store merged blinks as Intervals
+            merged_intervals = Intervals(
+                intervals=[(int(s), int(e)) for s, e in newblinks],
+                units=None,
+                label=f"{eye}_{var}_blinks",
+                data_time_range=(0, len(obj.tx))
+            )
+            obj.set_blinks(merged_intervals, eyes=[eye], variables=[var], apply_mask=True)
 
         return obj    
             
@@ -1894,4 +2098,109 @@ class GenericEyeData(ABC):
         for key in obj.data.keys():
             obj.data.set_mask(key, joint_mask)
             
+        return obj
+
+    @keephistory
+    def mask_intervals(self, intervals, eyes=[], variables=[], inplace=None):
+        """Apply Intervals as masks to selected data.
+        
+        Takes detected intervals (e.g., blinks, artifacts) and applies them
+        as masks to specified eyes and variables.
+        
+        Parameters
+        ----------
+        intervals : Intervals or dict
+            Either:
+            - A single Intervals object: applied to all specified eyes/variables
+            - A dict of Intervals: keys like "left_pupil", "right_x", etc. 
+              When dict is provided, `eyes` and `variables` are ignored.
+        eyes : list of str, optional
+            List of eyes to apply mask to (e.g., ['left', 'right']).
+            If empty, applies to all available eyes.
+            Ignored if `intervals` is a dict.
+        variables : list of str, optional
+            List of variables to apply mask to (e.g., ['pupil', 'x', 'y']).
+            If empty, applies to all available variables.
+            Ignored if `intervals` is a dict.
+        inplace : bool, optional
+            If True, make change in-place and return the object.
+            If False, make and return copy before making changes.
+            If None, use the object's default setting.
+            
+        Returns
+        -------
+        GenericEyeData
+            The object with masks applied.
+            
+        Examples
+        --------
+        Apply blinks from a single Intervals object to left eye pupil data:
+        
+        >>> blinks = data.pupil_blinks_detect(apply_mask=False)
+        >>> data.mask_intervals(blinks['left_pupil'], eyes=['left'], variables=['pupil'])
+        
+        Apply a dict of intervals (one per eye/variable):
+        
+        >>> blinks = data.pupil_blinks_detect(apply_mask=False)
+        >>> data.mask_intervals(blinks)  # eyes and variables ignored
+        
+        Chain with other operations:
+        
+        >>> data.mask_intervals(blinks).pupil_lowpass_filter()
+        
+        See Also
+        --------
+        pupil_blinks_detect : Detect blinks with optional masking
+        get_blinks : Retrieve stored blink intervals
+        """
+        obj = self._get_inplace(inplace)
+        
+        # Check if intervals is a dict
+        if isinstance(intervals, dict):
+            # Apply each Intervals object to its corresponding eye_variable
+            for key, interval_obj in intervals.items():
+                if not isinstance(interval_obj, Intervals):
+                    raise TypeError(f"Dict values must be Intervals objects, got {type(interval_obj)} for key '{key}'")
+                
+                # Convert to index-based intervals if needed
+                if interval_obj.units is not None:
+                    intervals_array = interval_obj.as_index(obj)
+                else:
+                    intervals_array = interval_obj.to_array()
+                
+                # Apply mask for this specific eye_variable
+                if key not in obj.data.data:
+                    logger.warning(f"Key '{key}' not found in data, skipping")
+                    continue
+                    
+                for start, end in intervals_array:
+                    start_idx = int(max(0, min(len(obj.tx) - 1, start)))
+                    end_idx = int(max(0, min(len(obj.tx), end)))
+                    obj.data.mask[key][start_idx:end_idx] = 1
+        else:
+            # Single Intervals object - apply to specified eyes/variables
+            if not isinstance(intervals, Intervals):
+                raise TypeError(f"intervals must be an Intervals object or dict, got {type(intervals)}")
+            
+            eyes, variables = obj._get_eye_var(eyes, variables)
+            
+            # Convert to index-based intervals if needed
+            if intervals.units is not None:
+                intervals_array = intervals.as_index(obj)
+            else:
+                intervals_array = intervals.to_array()
+            
+            # Apply to all combinations of eyes and variables
+            for eye in eyes:
+                for var in variables:
+                    key = f"{eye}_{var}"
+                    if key not in obj.data.data:
+                        logger.warning(f"Key '{key}' not found in data, skipping")
+                        continue
+                    
+                    for start, end in intervals_array:
+                        start_idx = int(max(0, min(len(obj.tx) - 1, start)))
+                        end_idx = int(max(0, min(len(obj.tx), end)))
+                        obj.data.mask[key][start_idx:end_idx] = 1
+        
         return obj

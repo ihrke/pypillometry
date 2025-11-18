@@ -1,7 +1,6 @@
 import itertools
 from typing import Iterable, Optional, Tuple, Union
 from ..eyedata import GenericEyeData
-from ..convenience import mask_to_intervals
 from ..intervals import Intervals
 import numpy as np
 from loguru import logger
@@ -122,7 +121,7 @@ class GenericPlotter:
                 if plot_mask:
                     mask = obj.data.mask[eye+"_"+var][slic]
                     txm = obj.tx[slic]
-                    mint = mask_to_intervals(mask)
+                    mint = obj._mask_to_intervals_list(mask)
                     for sm,em in mint:
                         ax.axvspan(txm[sm]*fac,txm[em]*fac, color="grey", alpha=0.3)
                 if plot_index: 
@@ -396,4 +395,146 @@ class GenericPlotter:
                     pdf.savefig(fig)
 
         return figs if pdf_file is None else None
+
+    def plot_masked(self, eyes: str|list = [], variables: str|list = [], 
+                    units: str = "ms", merge: bool = False, 
+                    show_labels: bool = True, **kwargs):
+        """
+        Plot masked intervals for specified eyes and variables.
         
+        Visualizes masked data segments as horizontal lines on a timeline,
+        similar to Intervals.plot(). Each interval is shown at a different
+        y-level. When plotting multiple eyes/variables without merging,
+        each is shown in a different color with slight y-offsets for clarity.
+        
+        Parameters
+        ----------
+        eyes : str or list, optional
+            Eye(s) to plot masks for. If empty, uses all available eyes.
+        variables : str or list, optional
+            Variable(s) to plot masks for. If empty, uses all available variables.
+        units : str, optional
+            Time units for x-axis: "ms", "sec", "min", "h", or None for indices.
+            Default is "ms".
+        merge : bool, optional
+            If True, merge all masks into a single set of intervals for plotting.
+            If False, plot each eye/variable separately with different colors.
+            Default is False.
+        show_labels : bool, optional
+            Whether to show labels for each interval group. Default is True.
+        **kwargs : dict
+            Additional keyword arguments passed to matplotlib plot()
+            
+        Returns
+        -------
+        None
+            Modifies the current axes in place
+            
+        Examples
+        --------
+        Plot masked intervals for left pupil:
+        
+        >>> data.plot.plot_masked('left', 'pupil')
+        
+        Plot for multiple eyes with different colors:
+        
+        >>> data.plot.plot_masked(['left', 'right'], 'pupil', merge=False)
+        
+        Merge all masks and plot as one:
+        
+        >>> data.plot.plot_masked(['left', 'right'], 'pupil', merge=True)
+        """
+        from ..intervals import merge_intervals
+        
+        obj = self.obj
+        
+        # Get masked intervals for specified eyes/variables
+        intervals_result = obj.mask_as_intervals(eyes, variables, units=units)
+        
+        # Handle empty result
+        if isinstance(intervals_result, dict):
+            if len(intervals_result) == 0:
+                logger.warning("No masked intervals found")
+                return
+            intervals_dict = intervals_result
+        else:
+            # Single Intervals object - convert to dict for uniform handling
+            eyes_list, variables_list = obj._get_eye_var(eyes, variables)
+            key = f"{eyes_list[0]}_{variables_list[0]}"
+            intervals_dict = {key: intervals_result}
+        
+        ax = plt.gca()
+        
+        if merge:
+            # Merge all intervals and plot as one set
+            merged = merge_intervals(intervals_dict, label='All masked intervals')
+            merged = merged.merge()
+            
+            # Use Intervals.plot style
+            for i, (start, end) in enumerate(merged.intervals):
+                y_level = i + 1
+                ax.plot([start, end], [y_level, y_level], color='black', **kwargs)
+            
+            # Set y-axis limits
+            ax.set_ylim(0, len(merged.intervals) + 1)
+            ax.set_ylabel('Interval #')
+            
+            # Set title
+            if show_labels:
+                ax.set_title('Masked Intervals (merged)')
+        else:
+            # Plot each eye/variable separately with different colors and offsets
+            color_cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
+            
+            # Calculate maximum number of intervals across all groups for y-axis
+            max_intervals = max((len(ivs) for ivs in intervals_dict.values()), default=0)
+            
+            if max_intervals == 0:
+                logger.warning("No masked intervals found")
+                return
+            
+            # Offset for multiple variables (small vertical shift)
+            offset_increment = 0.15
+            
+            legend_handles = []
+            legend_labels = []
+            
+            for idx, (key, intervals_obj) in enumerate(intervals_dict.items()):
+                if len(intervals_obj) == 0:
+                    continue
+                
+                color = color_cycle[idx % len(color_cycle)]
+                
+                # Apply offset for visibility when multiple groups
+                base_offset = idx * offset_increment if len(intervals_dict) > 1 else 0
+                
+                # Plot each interval for this eye/variable
+                for i, (start, end) in enumerate(intervals_obj.intervals):
+                    # Each interval gets its own y-level (1, 2, 3, ...)
+                    # Plus a small offset based on which eye/variable group it's in
+                    y_level = (i + 1) + base_offset
+                    line, = ax.plot([start, end], [y_level, y_level], 
+                                   color=color, linewidth=2, **kwargs)
+                    
+                    # Only add to legend once per group
+                    if i == 0:
+                        legend_handles.append(line)
+                        legend_labels.append(key)
+            
+            # Set y-axis limits with some padding
+            ax.set_ylim(0, max_intervals + 1)
+            ax.set_ylabel('Interval #')
+            
+            # Add legend if multiple groups and labels are requested
+            if show_labels and len(intervals_dict) > 1:
+                ax.legend(legend_handles, legend_labels, loc='best')
+            
+            # Set title
+            if show_labels:
+                ax.set_title('Masked Intervals')
+        
+        # Set x-axis label based on units
+        if units is not None:
+            ax.set_xlabel(f'Time ({units})')
+        else:
+            ax.set_xlabel('Time (indices)')
