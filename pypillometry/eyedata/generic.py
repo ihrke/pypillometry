@@ -37,8 +37,8 @@ import sys
 from abc import ABC, abstractmethod 
 
 
-## decoratory to keep a history of actions performed on dataset
-# can only be used with functions that return "self" 
+## decorator to keep a history of actions performed on dataset
+# Only adds history when the function returns a GenericEyeData instance (self) 
 def keephistory(func):
     @functools.wraps(func)
     def wrapper(*args,**kwargs):
@@ -53,7 +53,9 @@ def keephistory(func):
             allargs+=kwargstr
         fstr="{func}({allargs})".format(func=funcname, allargs=allargs)
         #fstr="{func}({argstr},{kwargstr})".format(func=funcname,argstr=argstr,kwargstr=kwargstr)
-        obj.add_to_history({"funcstring":fstr, "funcname":funcname, "args":args[1:], "kwargs":kwargs})
+        # Only add to history if obj is a GenericEyeData instance (has add_to_history method)
+        if hasattr(obj, 'add_to_history'):
+            obj.add_to_history({"funcstring":fstr, "funcname":funcname, "args":args[1:], "kwargs":kwargs})
         return obj
     return wrapper
         
