@@ -1312,6 +1312,135 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         # Should have same number of intervals
         self.assertEqual(len(intervals_str), len(intervals_func))
 
+    def test_mask_as_intervals_single_eye_variable(self):
+        """Test mask_as_intervals with single eye/variable"""
+        data = self.data.copy()
+        data.pupil_blinks_detect()
+        
+        # Test single eye/variable returns Intervals object
+        intervals = data.mask_as_intervals('left', 'pupil')
+        self.assertEqual(intervals.__class__.__name__, 'Intervals')
+        self.assertIsNone(intervals.units)  # Default is indices
+        self.assertEqual(intervals.label, 'left_pupil_mask')
+        self.assertEqual(intervals.data_time_range, (0, len(data.tx)))
+        
+    def test_mask_as_intervals_multiple_eyes(self):
+        """Test mask_as_intervals with multiple eyes returns dict"""
+        data = self.data.copy()
+        data.pupil_blinks_detect()
+        
+        # Test multiple eyes returns dict
+        intervals_dict = data.mask_as_intervals(['left', 'right'], 'pupil')
+        self.assertIsInstance(intervals_dict, dict)
+        self.assertIn('left_pupil', intervals_dict)
+        self.assertIn('right_pupil', intervals_dict)
+        
+        # Each value should be an Intervals object
+        for key, intervals in intervals_dict.items():
+            self.assertEqual(intervals.__class__.__name__, 'Intervals')
+            self.assertIsNone(intervals.units)
+            
+    def test_mask_as_intervals_multiple_variables(self):
+        """Test mask_as_intervals with multiple variables returns dict"""
+        data = self.data.copy()
+        data.pupil_blinks_detect()
+        
+        # Test multiple variables returns dict
+        intervals_dict = data.mask_as_intervals('left', ['pupil', 'x'])
+        self.assertIsInstance(intervals_dict, dict)
+        self.assertIn('left_pupil', intervals_dict)
+        self.assertIn('left_x', intervals_dict)
+        
+    def test_mask_as_intervals_with_units_ms(self):
+        """Test mask_as_intervals with units='ms'"""
+        data = self.data.copy()
+        data.pupil_blinks_detect()
+        
+        intervals = data.mask_as_intervals('left', 'pupil', units='ms')
+        self.assertEqual(intervals.units, 'ms')
+        self.assertEqual(intervals.data_time_range, (data.tx[0], data.tx[-1]))
+        
+        # If there are intervals, check they're in milliseconds
+        if len(intervals) > 0:
+            # Values should be larger than indices
+            first_interval = intervals.intervals[0]
+            self.assertGreater(first_interval[0], 10)  # Should be in ms range
+            
+    def test_mask_as_intervals_with_units_sec(self):
+        """Test mask_as_intervals with units='sec'"""
+        data = self.data.copy()
+        data.pupil_blinks_detect()
+        
+        intervals = data.mask_as_intervals('left', 'pupil', units='sec')
+        self.assertEqual(intervals.units, 'sec')
+        
+    def test_mask_as_intervals_with_custom_label(self):
+        """Test mask_as_intervals with custom label"""
+        data = self.data.copy()
+        data.pupil_blinks_detect()
+        
+        intervals = data.mask_as_intervals('left', 'pupil', label='my_custom_label')
+        self.assertEqual(intervals.label, 'my_custom_label')
+        
+    def test_mask_as_intervals_empty_mask(self):
+        """Test mask_as_intervals with empty mask (no masked data)"""
+        data = self.data.copy()
+        # Don't detect blinks, so mask should be all zeros
+        
+        intervals = data.mask_as_intervals('left', 'pupil')
+        self.assertEqual(len(intervals), 0)
+        self.assertEqual(intervals.intervals, [])
+        
+    def test_mask_as_intervals_nonexistent_key(self):
+        """Test mask_as_intervals with non-existent key"""
+        data = self.data.copy()
+        
+        # Should return empty Intervals if key doesn't exist
+        intervals = data.mask_as_intervals('nonexistent', 'variable')
+        self.assertEqual(len(intervals), 0)
+        
+    def test_mask_as_intervals_with_actual_mask(self):
+        """Test mask_as_intervals correctly identifies masked intervals"""
+        data = self.data.copy()
+        
+        # Manually create a mask with known intervals
+        mask = np.zeros(len(data.tx), dtype=int)
+        mask[100:150] = 1  # First interval (indices 100-149)
+        mask[200:250] = 1  # Second interval (indices 200-249)
+        data.data.set_mask('left_pupil', mask)
+        
+        intervals = data.mask_as_intervals('left', 'pupil')
+        self.assertEqual(len(intervals), 2)
+        
+        # Check intervals match what we set
+        # Note: intervals use exclusive end indices (like Python slicing)
+        # mask[100:150] sets indices 100-149, returned as (100, 150)
+        self.assertEqual(intervals.intervals[0], (100, 150))
+        self.assertEqual(intervals.intervals[1], (200, 250))
+        
+    def test_mask_as_intervals_multiple_eyes_with_units(self):
+        """Test mask_as_intervals with multiple eyes and units"""
+        data = self.data.copy()
+        data.pupil_blinks_detect()
+        
+        intervals_dict = data.mask_as_intervals(['left', 'right'], 'pupil', units='ms')
+        
+        for key, intervals in intervals_dict.items():
+            self.assertEqual(intervals.units, 'ms')
+            self.assertEqual(intervals.data_time_range, (data.tx[0], data.tx[-1]))
+            
+    def test_mask_as_intervals_all_eyes_all_variables(self):
+        """Test mask_as_intervals with default (all eyes and variables)"""
+        data = self.data.copy()
+        data.pupil_blinks_detect()
+        
+        # Empty lists should get all available eyes and variables
+        intervals_dict = data.mask_as_intervals([], [])
+        self.assertIsInstance(intervals_dict, dict)
+        
+        # Should have entries for multiple combinations
+        self.assertGreater(len(intervals_dict), 1)
+
 
 if __name__ == '__main__':
     unittest.main() 
