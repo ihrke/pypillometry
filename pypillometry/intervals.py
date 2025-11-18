@@ -419,37 +419,75 @@ class Intervals:
                         self.event_labels, self.event_indices,
                         data_time_range, event_onsets)
     
-    def merge(self):
+    def merge(self, merge_sep='_'):
         """
         Merge overlapping intervals.
+        
+        When intervals are merged, metadata is handled as follows:
+        - event_labels: Labels of merged intervals are joined with merge_sep
+        - event_indices: First index of merged group is kept
+        - event_onsets: First onset of merged group is kept
+        
+        Parameters
+        ----------
+        merge_sep : str, optional
+            Separator to use when joining event labels of merged intervals. 
+            Default is '_'.
         
         Returns
         -------
         Intervals
-            New Intervals object with merged intervals
+            New Intervals object with merged intervals and updated metadata.
         """
         if not self.intervals:
-            return Intervals([], self.units, self.label, 
-                           self.event_labels, self.event_indices)
+            return self
         
-        # Sort intervals based on the start point
-        sorted_intervals = sorted(self.intervals, key=lambda x: x[0])
+        # Get indices that would sort intervals by start point
+        sorted_indices = sorted(range(len(self.intervals)), 
+                               key=lambda i: self.intervals[i][0])
+        sorted_intervals = [self.intervals[i] for i in sorted_indices]
         
+        # Track which original intervals belong to each merged interval
         merged = [sorted_intervals[0]]
+        merged_groups = [[sorted_indices[0]]]  # Track original indices in each group
         
-        for current in sorted_intervals[1:]:
+        for idx, current in zip(sorted_indices[1:], sorted_intervals[1:]):
             last_merged = merged[-1]
             
             # Check if intervals overlap
             if current[0] <= last_merged[1]:
                 # Merge the intervals
                 merged[-1] = (last_merged[0], max(last_merged[1], current[1]))
+                merged_groups[-1].append(idx)  # Add to current merge group
             else:
                 # No overlap, add the current interval
                 merged.append(current)
+                merged_groups.append([idx])  # Start new merge group
+        
+        # Build merged metadata
+        merged_labels = None
+        merged_indices = None
+        merged_onsets = None
+        
+        if self.event_labels is not None:
+            merged_labels = []
+            for group in merged_groups:
+                group_labels = [str(self.event_labels[i]) for i in group]
+                merged_labels.append(merge_sep.join(group_labels))
+        
+        if self.event_indices is not None:
+            # Keep the first index from each merge group
+            merged_indices = [self.event_indices[group[0]] for group in merged_groups]
+        
+        if self.event_onsets is not None:
+            # Keep the first onset from each merge group
+            merged_onsets = [self.event_onsets[group[0]] for group in merged_groups]
         
         return Intervals(merged, self.units, self.label, 
-                        self.event_labels, self.event_indices)
+                        event_labels=merged_labels,
+                        event_indices=merged_indices,
+                        data_time_range=self.data_time_range,
+                        event_onsets=merged_onsets)
     
     def stats(self):
         """
