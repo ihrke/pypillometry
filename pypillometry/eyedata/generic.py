@@ -1691,7 +1691,7 @@ class GenericEyeData(ABC):
                     for eye in eyes:
                         logger.debug("Dropping eye %s for variable %s" % (eye, var))
                         del obj.data[eye+"_"+var]
-                        obj.set_blinks(eye,var,None)
+                        obj.set_blinks(None, eyes=[eye], variables=[var])
         else:
             raise ValueError("Method %s not implemented" % method)
 

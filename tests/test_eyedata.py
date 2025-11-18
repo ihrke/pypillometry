@@ -423,7 +423,7 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(len(blinks_sec), 2)
     
     def test_get_blinks_merged_multiple_eyes(self):
-        """Test merging blinks across multiple eyes"""
+        """Test getting blinks for multiple eyes returns a dict"""
         from pypillometry.intervals import Intervals
         
         # Create blinks for both eyes
@@ -434,12 +434,14 @@ class TestEyeData(unittest.TestCase):
         self.eyedata.set_blinks(intervals_left, eyes=['left'], variables=['pupil'])
         self.eyedata.set_blinks(intervals_right, eyes=['right'], variables=['pupil'])
         
-        # Get merged blinks
+        # Get blinks for multiple eyes - should return a dict
         blinks = self.eyedata.get_blinks(['left', 'right'], 'pupil')
         
-        self.assertIsInstance(blinks, Intervals)
-        # Should merge overlapping blinks
-        self.assertGreater(len(blinks), 0)
+        self.assertIsInstance(blinks, dict)
+        self.assertIn('left_pupil', blinks)
+        self.assertIn('right_pupil', blinks)
+        self.assertIsInstance(blinks['left_pupil'], Intervals)
+        self.assertIsInstance(blinks['right_pupil'], Intervals)
 
     def test_stat_per_event(self):
         """Test statistical analysis per event"""
