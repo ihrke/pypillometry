@@ -43,7 +43,8 @@ window.addEventListener("load", () => mermaid.run());
           <div class="body" role="main">
             
   <h1>Source code for pypillometry.eyedata.gazedata</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericEyeData</span><span class="p">,</span> <span class="n">keephistory</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericEyeData</span><span class="p">,</span> <span class="n">keephistory</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">GazePlotter</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -429,18 +430,13 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># thr_type == &quot;pixel&quot;</span>
             <span class="n">thr</span> <span class="o">=</span> <span class="n">threshold</span>
         
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Masking divergent points with threshold </span><span class="si">{</span><span class="n">thr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># Mask divergent points (where distance exceeds threshold)</span>
-        <span class="n">dist_mask</span> <span class="o">=</span> <span class="n">dist</span> <span class="o">&gt;</span> <span class="n">thr</span>
-        
-        <span class="c1"># Combine with existing mask</span>
-        <span class="n">final_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span> <span class="o">|</span> <span class="n">dist_mask</span>
-        
-        <span class="c1"># Create masked array with the combined mask</span>
-        <span class="n">dist_masked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">final_mask</span><span class="p">)</span>
+        <span class="n">dist</span><span class="o">.</span><span class="n">mask</span> <span class="o">|=</span> <span class="p">(</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="n">thr</span><span class="p">)</span>
         
         <span class="c1"># Store distance as a timeseries if requested</span>
         <span class="k">if</span> <span class="n">store_as</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">obj</span><span class="p">[</span><span class="n">store_as</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist_masked</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">store_as</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist</span>
         
         <span class="c1"># Update masks for left and right eye coordinates where divergence is detected</span>
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">]:</span>
@@ -448,7 +444,7 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="n">existing_mask</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                 <span class="c1"># Mark divergent points as masked</span>
-                <span class="n">existing_mask</span><span class="p">[</span><span class="n">dist_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">existing_mask</span> <span class="o">|=</span> <span class="n">dist</span><span class="o">.</span><span class="n">mask</span>
                 <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">existing_mask</span>
         
         <span class="k">return</span> <span class="n">obj</span></div>
