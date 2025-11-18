@@ -61,7 +61,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">..signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">pupil</span>
 <span class="c1">#from .. import io</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilPlotter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntervalStats</span><span class="p">,</span> <span class="n">get_interval_stats</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntervalStats</span><span class="p">,</span> <span class="n">get_interval_stats</span><span class="p">,</span> <span class="n">Intervals</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
@@ -259,15 +259,16 @@ window.addEventListener("load", () => mermaid.run());
                       <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> 
                       <span class="n">min_onset_len</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
                       <span class="n">strategies</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span><span class="s2">&quot;velocity&quot;</span><span class="p">],</span>
-                      <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                      <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Detect blinks in the pupillary signal using several strategies.</span>
 <span class="sd">        First, blinks are detected as consecutive sequence of `blink_val` </span>
 <span class="sd">        (f.eks., 0 or NaN). Second, blinks are defined as everything between</span>
 <span class="sd">        two crossings of the velocity profile (from negative to positive).</span>
 <span class="sd">        </span>
-<span class="sd">        Detected blinks are put into member `blinks` and the `mask` field of </span>
-<span class="sd">        each eye&#39;s data in the `EyeDataDict` is set to 1 for the blinks.</span>
+<span class="sd">        Detected blinks are always stored internally. When apply_mask=True,</span>
+<span class="sd">        the blinks are also applied as masks to the data. When apply_mask=False,</span>
+<span class="sd">        the detected blinks are returned as Intervals objects.</span>
 
 <span class="sd">        Finally, detected blinks have to be at least `min_duration` duration (in `units`).</span>
 <span class="sd">        </span>
@@ -297,9 +298,19 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">            so far, use a list containing any combination of &quot;zero&quot; and &quot;velocity&quot;</span>
 <span class="sd">        units: str</span>
 <span class="sd">            one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;</span>
+<span class="sd">        apply_mask: bool</span>
+<span class="sd">            if `True`, apply detected blinks as masks to the data and return self</span>
+<span class="sd">            if `False`, return detected blinks as Intervals (or dict of Intervals)</span>
 <span class="sd">        inplace: bool</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes                                                    </span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self or Intervals or dict</span>
+<span class="sd">            If apply_mask=True: returns self for chaining</span>
+<span class="sd">            If apply_mask=False and single eye: returns Intervals object</span>
+<span class="sd">            If apply_mask=False and multiple eyes: returns dict of Intervals objects</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
@@ -317,6 +328,8 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">strat</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">]:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Strategy &#39;</span><span class="si">%s</span><span class="s2">&#39; unknown&quot;</span><span class="o">%</span><span class="n">strat</span><span class="p">)</span>
+        
+        <span class="n">detected_intervals</span> <span class="o">=</span> <span class="p">{}</span>
         
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detecting blinks for eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -337,9 +350,30 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Merging </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_zero</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks&quot;</span><span class="p">)</span>
             <span class="n">blinks</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">helper_merge_blinks</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">,</span> <span class="n">blinks_zero</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Merged </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks&quot;</span><span class="p">)</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">set_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">]</span> <span class="k">for</span> <span class="p">(</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="n">blinks</span> <span class="k">if</span> <span class="n">off</span><span class="o">-</span><span class="n">on</span><span class="o">&gt;=</span><span class="n">min_duration_ix</span><span class="p">]))</span>
             
-        <span class="k">return</span> <span class="n">obj</span>    </div>
+            <span class="c1"># Filter by minimum duration and create Intervals object</span>
+            <span class="n">filtered_blinks</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">int</span><span class="p">(</span><span class="n">on</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">off</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="n">blinks</span> <span class="k">if</span> <span class="n">off</span><span class="o">-</span><span class="n">on</span><span class="o">&gt;=</span><span class="n">min_duration_ix</span><span class="p">]</span>
+            <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
+                <span class="n">intervals</span><span class="o">=</span><span class="n">filtered_blinks</span><span class="p">,</span>
+                <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Using index units</span>
+                <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil_blinks&quot;</span><span class="p">,</span>
+                <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Store detected blinks internally (always)</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil&quot;</span>
+            <span class="n">detected_intervals</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">intervals_obj</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">set_blinks</span><span class="p">(</span><span class="n">intervals_obj</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">eye</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">apply_mask</span><span class="o">=</span><span class="n">apply_mask</span><span class="p">)</span>
+        
+        <span class="c1"># Return based on apply_mask</span>
+        <span class="k">if</span> <span class="n">apply_mask</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">obj</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Return single Intervals or dict depending on number of eyes</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">detected_intervals</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_pupil&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">detected_intervals</span>    </div>
 
     
 <div class="viewcode-block" id="PupilData.pupil_blinks_interpolate">

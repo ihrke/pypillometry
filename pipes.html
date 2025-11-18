@@ -65,13 +65,13 @@ Interactive version:
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> implements a pipeline-like approach where each operation executed on a <code class="docutils literal notranslate"><span class="pre">PupilData</span></code>-object returns a copy of the (modified) object. This enables the “chaining” of commands as follows:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load a small example dataset</span>
 <span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
 <span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">()</span>\
-    <span class="o">.</span><span class="n">blinks_merge</span><span class="p">()</span>\
+    <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">()</span>\
     <span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>\
     <span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
 </pre></div>

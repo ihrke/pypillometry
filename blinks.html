@@ -182,13 +182,13 @@ Interactive version:
 <img alt="_images/blinks_14_0.png" src="_images/blinks_14_0.png" />
 </div>
 </div>
-<p>If we would attempt a normal interpolation of these blinks separately, the interpolation would fail because the signal “neighbouring” the blink is contaminated by new blinks. Therefore, such sequences should be merged before interpolation using function <code class="docutils literal notranslate"><span class="pre">blinks_merge()</span></code>. We can specifiy how far apart two blinks need to be to be treated as separate blinks by setting the <code class="docutils literal notranslate"><span class="pre">distance=</span></code> argument (in units of ms).</p>
+<p>If we would attempt a normal interpolation of these blinks separately, the interpolation would fail because the signal “neighbouring” the blink is contaminated by new blinks. Therefore, such sequences should be merged before interpolation using function <code class="docutils literal notranslate"><span class="pre">blinks_merge_close()</span></code>. We can specifiy how far apart two blinks need to be to be treated as separate blinks by setting the <code class="docutils literal notranslate"><span class="pre">distance=</span></code> argument (in units of ms).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[93]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-<span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">blinks_merge</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">130</span><span class="p">)</span>
+<span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">130</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
 <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>

@@ -47,6 +47,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">.generic</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericEyeData</span><span class="p">,</span> <span class="n">keephistory</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">GazePlotter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
@@ -352,13 +353,15 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="GazeData.mask_eye_divergences">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GazeData.mask_eye_divergences">[docs]</a>
     <span class="nd">@keephistory</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">mask_eye_divergences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">.99</span><span class="p">,</span> <span class="n">thr_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;percentile&quot;</span><span class="p">,</span> <span class="n">store_as</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mask_eye_divergences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">.99</span><span class="p">,</span> <span class="n">thr_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;percentile&quot;</span><span class="p">,</span> 
+                           <span class="n">store_as</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">apply_mask</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculate Euclidean distance between left and right eye coordinates and mask divergences.</span>
+<span class="sd">        Calculate Euclidean distance between left and right eye coordinates and detect divergences.</span>
 <span class="sd">        </span>
 <span class="sd">        This method computes the distance between corresponding (x,y) coordinates in the left</span>
-<span class="sd">        and right eyes. Points where the distance exceeds a threshold are masked. The distance</span>
-<span class="sd">        is stored as a new variable in the data.</span>
+<span class="sd">        and right eyes. Points where the distance exceeds a threshold are detected as divergences.</span>
+<span class="sd">        When apply_mask=True, these points are masked. When apply_mask=False, the divergences</span>
+<span class="sd">        are returned as Intervals objects.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -371,6 +374,9 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">            - &quot;pixel&quot;: threshold is the maximum allowed distance in pixels</span>
 <span class="sd">        store_as : str or None, default=None</span>
 <span class="sd">            Variable name to store the distance timeseries. If None, distance is not stored.</span>
+<span class="sd">        apply_mask : bool, default=True</span>
+<span class="sd">            If True, apply detected divergences as masks to the data and return self.</span>
+<span class="sd">            If False, return detected divergences as dict of Intervals objects.</span>
 <span class="sd">        inplace : bool or None</span>
 <span class="sd">            If True, make change in-place and return the object.</span>
 <span class="sd">            If False, make and return copy before making changes.</span>
@@ -378,8 +384,9 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        GazeData</span>
-<span class="sd">            Object with distance timeseries stored and divergent points masked.</span>
+<span class="sd">        GazeData or dict</span>
+<span class="sd">            If apply_mask=True: returns self for chaining.</span>
+<span class="sd">            If apply_mask=False: returns dict of Intervals objects with keys like &quot;left_x&quot;, &quot;left_y&quot;, etc.</span>
 <span class="sd">        </span>
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -391,6 +398,9 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; # Mask divergences at 99th percentile</span>
 <span class="sd">        &gt;&gt;&gt; gaze_data = gaze_data.mask_eye_divergences(threshold=0.99, thr_type=&quot;percentile&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Detect divergences without masking</span>
+<span class="sd">        &gt;&gt;&gt; divergences = gaze_data.mask_eye_divergences(threshold=0.99, apply_mask=False)</span>
 <span class="sd">        </span>
 <span class="sd">        &gt;&gt;&gt; # Mask divergences beyond 100 pixels</span>
 <span class="sd">        &gt;&gt;&gt; gaze_data = gaze_data.mask_eye_divergences(threshold=100, thr_type=&quot;pixel&quot;)</span>
@@ -430,24 +440,45 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># thr_type == &quot;pixel&quot;</span>
             <span class="n">thr</span> <span class="o">=</span> <span class="n">threshold</span>
         
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Masking divergent points with threshold </span><span class="si">{</span><span class="n">thr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="c1"># Mask divergent points (where distance exceeds threshold)</span>
-        <span class="n">dist</span><span class="o">.</span><span class="n">mask</span> <span class="o">|=</span> <span class="p">(</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="n">thr</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detecting divergent points with threshold </span><span class="si">{</span><span class="n">thr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Create a mask for divergent points (where distance exceeds threshold)</span>
+        <span class="n">divergence_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">dist</span> <span class="o">&gt;</span> <span class="n">thr</span><span class="p">)</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        
+        <span class="c1"># Convert mask to intervals</span>
+        <span class="n">intervals_list</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_mask_to_intervals_list</span><span class="p">(</span><span class="n">divergence_mask</span><span class="p">)</span>
         
         <span class="c1"># Store distance as a timeseries if requested</span>
         <span class="k">if</span> <span class="n">store_as</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">obj</span><span class="p">[</span><span class="n">store_as</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist</span>
+            <span class="n">dist_copy</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">dist_copy</span><span class="o">.</span><span class="n">mask</span> <span class="o">|=</span> <span class="n">divergence_mask</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">store_as</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist_copy</span>
         
-        <span class="c1"># Update masks for left and right eye coordinates where divergence is detected</span>
+        <span class="c1"># Create Intervals objects for each eye/variable</span>
+        <span class="n">detected_intervals</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">]:</span>
             <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]:</span>
                 <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="n">existing_mask</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                <span class="c1"># Mark divergent points as masked</span>
-                <span class="n">existing_mask</span> <span class="o">|=</span> <span class="n">dist</span><span class="o">.</span><span class="n">mask</span>
-                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">existing_mask</span>
+                <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
+                    <span class="n">intervals</span><span class="o">=</span><span class="n">intervals_list</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Using index units</span>
+                    <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_divergences&quot;</span><span class="p">,</span>
+                    <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+                <span class="p">)</span>
+                <span class="n">detected_intervals</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">intervals_obj</span>
         
-        <span class="k">return</span> <span class="n">obj</span></div>
+        <span class="c1"># Apply mask if requested</span>
+        <span class="k">if</span> <span class="n">apply_mask</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]:</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">existing_mask</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                    <span class="c1"># Mark divergent points as masked</span>
+                    <span class="n">existing_mask</span> <span class="o">|=</span> <span class="n">divergence_mask</span>
+                    <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">existing_mask</span>
+            <span class="k">return</span> <span class="n">obj</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">detected_intervals</span></div>
 </div>
 
 </pre></div>

@@ -29,7 +29,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": null,
    "metadata": {},
    "outputs": [
     {
@@ -45,7 +45,7 @@
     "# load a small example dataset\n",
     "d=pp.get_example_data(\"rlmw_002_short\")\n",
     "d=d.pupil_blinks_detect()\\\n",
-    "    .blinks_merge()\\\n",
+    "    .blinks_merge_close()\\\n",
     "    .pupil_lowpass_filter(3)\\\n",
     "    .downsample(50)"
    ]

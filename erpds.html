@@ -76,11 +76,11 @@ Interactive version:
 </div>
 <p>Next, we apply a basic blink-detection and interpolation pipeline as illustrated in the <a class="reference external" href="blinks.html">blinks</a> example.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d2</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">min_offset_len</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>\
-        <span class="o">.</span><span class="n">blinks_merge</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>\
+        <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>\
         <span class="o">.</span><span class="n">blinks_interp_mahot</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">150</span><span class="p">))</span>\
         <span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>\
         <span class="o">.</span><span class="n">scale</span><span class="p">()</span>
