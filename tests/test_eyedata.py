@@ -561,7 +561,96 @@ class TestEyeData(unittest.TestCase):
         # Check that copy also has joint mask
         for key in data.keys():
             np.testing.assert_array_equal(obj2.data.mask[key], expected_mask)
-            
+    
+    def test_mask_intervals_single(self):
+        """Test mask_intervals with a single Intervals object"""
+        from pypillometry.intervals import Intervals
+        
+        # Create test intervals
+        intervals = Intervals([(100, 200), (300, 400)], units=None,
+                             data_time_range=(0, len(self.eyedata.tx)))
+        
+        # Apply intervals as mask to left eye pupil
+        result = self.eyedata.mask_intervals(intervals, eyes=['left'], variables=['pupil'])
+        
+        # Check that mask was applied
+        mask = result.data.mask['left_pupil']
+        self.assertTrue(np.all(mask[100:200] == 1))
+        self.assertTrue(np.all(mask[300:400] == 1))
+        self.assertTrue(np.all(mask[0:100] == 0))
+        
+    def test_mask_intervals_dict(self):
+        """Test mask_intervals with a dict of Intervals"""
+        from pypillometry.intervals import Intervals
+        
+        # Create intervals for different variables
+        intervals_dict = {
+            'left_pupil': Intervals([(100, 200)], units=None,
+                                   data_time_range=(0, len(self.eyedata.tx))),
+            'right_pupil': Intervals([(150, 250)], units=None,
+                                    data_time_range=(0, len(self.eyedata.tx)))
+        }
+        
+        # Apply intervals
+        result = self.eyedata.mask_intervals(intervals_dict)
+        
+        # Check that masks were applied correctly
+        self.assertTrue(np.all(result.data.mask['left_pupil'][100:200] == 1))
+        self.assertTrue(np.all(result.data.mask['right_pupil'][150:250] == 1))
+        
+    def test_pupil_blinks_detect_apply_mask_false(self):
+        """Test pupil_blinks_detect with apply_mask=False returns Intervals"""
+        from pypillometry.intervals import Intervals
+        
+        # Create artificial signal with blinks
+        data_copy = self.eyedata.copy()
+        data_copy.data['left_pupil'][:] = 1.0
+        data_copy.data['left_pupil'][100:150] = 0.0
+        
+        # Detect without applying mask
+        result = data_copy.pupil_blinks_detect(eyes=['left'], blink_val=0.0, 
+                                              apply_mask=False, units="ms")
+        
+        # Should return Intervals object (single eye)
+        self.assertIsInstance(result, Intervals)
+        self.assertGreater(len(result), 0)
+        
+        # Mask should NOT be applied yet
+        self.assertFalse(np.all(data_copy.data.mask['left_pupil'][100:150] == 1))
+        
+    def test_pupil_blinks_detect_apply_mask_false_multiple_eyes(self):
+        """Test pupil_blinks_detect with apply_mask=False and multiple eyes returns dict"""
+        from pypillometry.intervals import Intervals
+        
+        # Create artificial signal with blinks
+        data_copy = self.eyedata.copy()
+        data_copy.data['left_pupil'][:] = 1.0
+        data_copy.data['left_pupil'][100:150] = 0.0
+        data_copy.data['right_pupil'][:] = 1.0
+        data_copy.data['right_pupil'][200:250] = 0.0
+        
+        # Detect without applying mask
+        result = data_copy.pupil_blinks_detect(eyes=['left', 'right'], blink_val=0.0,
+                                              apply_mask=False, units="ms")
+        
+        # Should return dict of Intervals
+        self.assertIsInstance(result, dict)
+        self.assertIn('left_pupil', result)
+        self.assertIn('right_pupil', result)
+        self.assertIsInstance(result['left_pupil'], Intervals)
+        self.assertIsInstance(result['right_pupil'], Intervals)
+
+    def test_setitem_masked_array(self):
+        """Test __setitem__ with masked array"""
+        data = {
+            'left_pupil': np.array([1, 2, 3, 4, 5]),
+            'right_pupil': np.array([1, 2, 3, 4, 5]),
+            'left_x': np.array([1, 2, 3, 4, 5]),
+            'left_y': np.array([1, 2, 3, 4, 5]),
+            'right_x': np.array([1, 2, 3, 4, 5]),
+            'right_y': np.array([1, 2, 3, 4, 5])
+        }
+        
         # Test with no masks
         obj3 = pp.EyeData(
             left_x=data['left_x'],

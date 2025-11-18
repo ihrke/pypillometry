@@ -231,6 +231,59 @@ class TestGazeData(unittest.TestCase):
         
         # Distance array should also have the masked point
         self.assertEqual(d_masked.data.mask['dist'][1], 1)
+    
+    def test_mask_eye_divergences_apply_mask_false(self):
+        """Test mask_eye_divergences with apply_mask=False returns Intervals"""
+        from pypillometry.intervals import Intervals
+        
+        # Create test data with divergence
+        d = pp.GazeData(
+            left_x=np.array([100, 110, 120, 130, 140]),
+            left_y=np.array([100, 100, 100, 100, 100]),
+            right_x=np.array([100, 110, 500, 130, 140]),  # Large divergence at index 2
+            right_y=np.array([100, 100, 100, 100, 100]),
+            sampling_rate=1000
+        )
+        
+        # Detect divergences without applying mask
+        result = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", 
+                                       apply_mask=False, inplace=False)
+        
+        # Should return dict of Intervals
+        self.assertIsInstance(result, dict)
+        self.assertIn('left_x', result)
+        self.assertIn('left_y', result)
+        self.assertIn('right_x', result)
+        self.assertIn('right_y', result)
+        
+        # Each should be an Intervals object
+        for key, intervals in result.items():
+            self.assertIsInstance(intervals, Intervals)
+        
+        # Mask should NOT be applied to original data
+        original_mask_sum = np.sum(d.data.mask['left_x'])
+        self.assertEqual(original_mask_sum, 0)
+    
+    def test_mask_eye_divergences_apply_mask_true_default(self):
+        """Test that apply_mask=True is the default behavior"""
+        d = pp.GazeData(
+            left_x=np.array([100, 110, 120, 130, 140]),
+            left_y=np.array([100, 100, 100, 100, 100]),
+            right_x=np.array([100, 110, 500, 130, 140]),
+            right_y=np.array([100, 100, 100, 100, 100]),
+            sampling_rate=1000
+        )
+        
+        # Call without apply_mask argument (should default to True)
+        result = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", 
+                                       inplace=False)
+        
+        # Should return GazeData object (self)
+        self.assertIsInstance(result, pp.GazeData)
+        
+        # Mask should be applied
+        mask_sum = np.sum(result.data.mask['left_x'])
+        self.assertGreater(mask_sum, 0)
 
 if __name__ == '__main__':
     unittest.main()

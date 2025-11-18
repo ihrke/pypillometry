@@ -123,6 +123,59 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertEqual(merged.units, "ms")
         self.assertEqual(merged.label, "test")
     
+    def test_intervals_merge_with_metadata(self):
+        """Test that merge preserves and combines metadata"""
+        intervals_list = [(0, 100), (50, 150), (200, 300)]
+        event_labels = ["event1", "event2", "event3"]
+        event_indices = [0, 1, 2]
+        event_onsets = [10, 60, 210]
+        
+        intervals = Intervals(intervals_list, units="ms", label="test",
+                             event_labels=event_labels,
+                             event_indices=event_indices,
+                             event_onsets=event_onsets)
+        
+        merged = intervals.merge()
+        
+        # Should have 2 intervals (first two merged, third separate)
+        self.assertEqual(len(merged), 2)
+        
+        # First interval: merged labels with underscore
+        self.assertEqual(merged.event_labels[0], "event1_event2")
+        # Second interval: unchanged label
+        self.assertEqual(merged.event_labels[1], "event3")
+        
+        # First interval: first index from merged group
+        self.assertEqual(merged.event_indices[0], 0)
+        # Second interval: original index
+        self.assertEqual(merged.event_indices[1], 2)
+        
+        # First interval: first onset from merged group
+        self.assertEqual(merged.event_onsets[0], 10)
+        # Second interval: original onset
+        self.assertEqual(merged.event_onsets[1], 210)
+    
+    def test_intervals_merge_custom_separator(self):
+        """Test merge with custom separator for labels"""
+        intervals_list = [(0, 100), (50, 150)]
+        event_labels = ["a", "b"]
+        
+        intervals = Intervals(intervals_list, units="ms",
+                             event_labels=event_labels)
+        
+        merged = intervals.merge(merge_sep="|")
+        
+        self.assertEqual(len(merged), 1)
+        self.assertEqual(merged.event_labels[0], "a|b")
+    
+    def test_intervals_merge_empty_returns_self(self):
+        """Test that merging empty intervals returns self"""
+        intervals = Intervals([], units="ms")
+        
+        merged = intervals.merge()
+        
+        self.assertIs(merged, intervals)
+    
     def test_intervals_stats(self):
         """Test getting interval statistics"""
         intervals_list = [(0, 100), (0, 200), (0, 300)]
