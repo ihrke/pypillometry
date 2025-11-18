@@ -441,27 +441,67 @@ class GenericEyeData(ABC):
         """
         return self._blinks
     
-    def set_blinks(self, eye:str, variable:str, blinks):
+    def set_blinks(self, intervals, eyes=[], variables=[], apply_mask=True):
         """
-        Set blinks for a given eye and variable.
+        Set blinks for specified eyes and variables.
 
         Parameters
         ----------
-        eye: str
-            a single eye to set the blinks for
-        variable: str
-            a single variable to set the blinks for
-        blinks: ndarray or None
-            ndarrays of blinks (nblinks x 2); 
+        intervals : Intervals or dict
+            Either:
+            - A single Intervals object: stored for all specified eyes/variables
+            - A dict of Intervals: keys like "left_pupil", "right_x", etc.
+              When dict is provided, `eyes` and `variables` are ignored.
+        eyes : list of str, optional
+            List of eyes to set blinks for (e.g., ['left', 'right']).
+            If empty, applies to all available eyes.
+            Ignored if `intervals` is a dict.
+        variables : list of str, optional
+            List of variables to set blinks for (e.g., ['pupil', 'x', 'y']).
+            If empty, applies to all available variables.
+            Ignored if `intervals` is a dict.
+        apply_mask : bool, optional
+            If True, apply intervals as mask to data. If False, only store intervals.
+            Default is True.
         """
-        if not ( isinstance(blinks, np.ndarray) or blinks is None ):
-            raise ValueError("Blinks must be a numpy.ndarray or None")
-        
-        self._blinks[eye+"_"+variable]=blinks
-        # update mask in EyeDataDict
-        if blinks is not None:
-            for bstart,bend in blinks:
-                self.data.mask[eye+"_"+variable][bstart:bend]=1
+        # Check if intervals is a dict
+        if isinstance(intervals, dict):
+            # Store each Intervals object to its corresponding eye_variable
+            for key, interval_obj in intervals.items():
+                if interval_obj is not None and not isinstance(interval_obj, Intervals):
+                    raise TypeError(f"Dict values must be Intervals objects or None, got {type(interval_obj)} for key '{key}'")
+                
+                self._blinks[key] = interval_obj
+                
+                # Apply mask if requested and intervals exist
+                if apply_mask and interval_obj is not None:
+                    if key not in self.data.data:
+                        logger.warning(f"Key '{key}' not found in data, skipping mask application")
+                        continue
+                    intervals_array = interval_obj.to_array()
+                    for bstart, bend in intervals_array:
+                        self.data.mask[key][int(bstart):int(bend)] = 1
+        else:
+            # Single Intervals object - apply to specified eyes/variables
+            if intervals is not None and not isinstance(intervals, Intervals):
+                raise TypeError(f"intervals must be an Intervals object, dict, or None, got {type(intervals)}")
+            
+            eyes, variables = self._get_eye_var(eyes, variables)
+            
+            # Store for all combinations of eyes and variables
+            for eye in eyes:
+                for var in variables:
+                    key = f"{eye}_{var}"
+                    self._blinks[key] = intervals
+                    
+                    # Apply mask if requested and intervals exist
+                    if apply_mask and intervals is not None:
+                        if key not in self.data.data:
+                            logger.warning(f"Key '{key}' not found in data, skipping mask application")
+                            continue
+                        intervals_array = intervals.to_array()
+                        for bstart, bend in intervals_array:
+                            self.data.mask[key][int(bstart):int(bend)] = 1
 
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
                    units: str|None = None) -> Intervals:
@@ -502,7 +542,8 @@ class GenericEyeData(ABC):
             for e, v in itertools.product(eyes, variables):
                 key = e + "_" + v
                 if key in self._blinks and self._blinks[key] is not None:
-                    blinks += self._blinks[key].tolist()
+                    # _blinks now stores Intervals objects
+                    blinks += self._blinks[key].intervals
             
             if blinks:
                 mblinks = merge_intervals(blinks)
@@ -519,16 +560,16 @@ class GenericEyeData(ABC):
             # Single eye/variable
             key = eyes[0] + "_" + variables[0]
             if key in self._blinks and self._blinks[key] is not None:
-                blinks_list = self._blinks[key].tolist()
+                # _blinks now stores Intervals objects - return directly
+                result = self._blinks[key]
             else:
-                blinks_list = []
-            
-            result = Intervals(
-                intervals=blinks_list,
-                units=None,
-                label=f"{eyes[0]}_{variables[0]}_blinks",
-                data_time_range=(0, len(self.tx))
-            )
+                # No blinks stored - return empty Intervals
+                result = Intervals(
+                    intervals=[],
+                    units=None,
+                    label=f"{eyes[0]}_{variables[0]}_blinks",
+                    data_time_range=(0, len(self.tx))
+                )
         
         # Convert to requested units if needed
         if units is not None:
@@ -567,7 +608,7 @@ class GenericEyeData(ABC):
         ## initialize blinks
         self._blinks={}
         for eye,variable in itertools.product(eyes, variables):
-            self.set_blinks(eye,variable, None)        
+            self._blinks[f"{eye}_{variable}"] = None        
 
     def nblinks(self, eyes=[], variables=[]) -> int:
         """
@@ -1668,10 +1709,10 @@ class GenericEyeData(ABC):
             Modified object
         """
         obj = self._get_inplace(inplace)
-        eyes,variables=self._get_eye_var(eyes,variables)
+        eyes, variables = obj._get_eye_var(eyes, variables)
 
-        fac = self._unit_fac(units)
-        distance_ix = (distance / fac) * (self.fs / 1000.0)        
+        fac = obj._unit_fac(units)
+        distance_ix = (distance / fac) * (obj.fs / 1000.0)        
 
         logger.debug(f"Distance '{distance} {units}' in index units: {distance_ix}")
 
@@ -1694,7 +1735,14 @@ class GenericEyeData(ABC):
                 i += 1
             newblinks.append(cblink)
             
-            obj.set_blinks(eye, var, np.array(newblinks))
+            # Store merged blinks as Intervals
+            merged_intervals = Intervals(
+                intervals=[(int(s), int(e)) for s, e in newblinks],
+                units=None,
+                label=f"{eye}_{var}_blinks",
+                data_time_range=(0, len(obj.tx))
+            )
+            obj.set_blinks(merged_intervals, eyes=[eye], variables=[var], apply_mask=True)
 
         return obj    
             
