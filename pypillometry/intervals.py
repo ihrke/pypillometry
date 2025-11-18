@@ -20,28 +20,27 @@ class IntervalStats(dict):
         return r
 
 
-def merge_intervals(*args, **kwargs):
-    """Merge multiple Intervals objects into a single Intervals object.
+def merge_intervals(*args, label: str = 'merged'):
+    """Combine multiple Intervals objects into a single Intervals object.
     
-    Takes multiple Intervals objects and combines them into one, merging
-    any overlapping intervals. All input Intervals must have the same units.
+    Takes multiple Intervals objects and concatenates them into one, preserving
+    all intervals and their metadata. Does NOT merge overlapping intervals - 
+    call .merge() on the result if you want to merge overlapping intervals.
+    All input Intervals must have the same units.
     
     Parameters
     ----------
     *args : Intervals objects, list, or dict
         Variable number of Intervals objects, or a single list/dict of Intervals.
-        If dict, keys are ignored and all Intervals are merged.
-    distance : float, optional
-        Maximum distance between intervals to merge (in the intervals' units).
-        Default is 0 (only merge overlapping intervals).
+        If dict, keys are ignored and all Intervals are combined.
     label : str, optional
-        Label for the resulting merged Intervals object. If not provided,
-        uses "merged" as the label.
+        Label for the resulting Intervals object. Default is "merged".
         
     Returns
     -------
     Intervals
-        A single Intervals object containing all merged intervals.
+        A single Intervals object containing all intervals from all input
+        Intervals objects with their metadata preserved.
         
     Raises
     ------
@@ -50,31 +49,30 @@ def merge_intervals(*args, **kwargs):
         
     Examples
     --------
-    Merge multiple Intervals objects:
+    Combine multiple Intervals objects:
     
-    >>> intervals1 = Intervals([(0, 100), (200, 300)], units="ms")
-    >>> intervals2 = Intervals([(50, 150), (400, 500)], units="ms")
-    >>> merged = merge_intervals_objects(intervals1, intervals2)
-    >>> len(merged)
-    3
+    >>> intervals1 = Intervals([(0, 100), (200, 300)], units="ms", event_labels=["a", "b"])
+    >>> intervals2 = Intervals([(50, 150), (400, 500)], units="ms", event_labels=["c", "d"])
+    >>> combined = merge_intervals(intervals1, intervals2)
+    >>> len(combined)
+    4
+    >>> combined.event_labels
+    ['a', 'b', 'c', 'd']
     
-    Merge from a list:
+    Combine from a list:
     
     >>> intervals_list = [intervals1, intervals2, intervals3]
-    >>> merged = merge_intervals_objects(intervals_list)
+    >>> combined = merge_intervals(intervals_list)
     
-    Merge from a dict:
+    Combine from a dict:
     
     >>> intervals_dict = {"left_pupil": intervals1, "right_pupil": intervals2}
-    >>> merged = merge_intervals_objects(intervals_dict)
+    >>> combined = merge_intervals(intervals_dict)
     
-    Merge with distance parameter:
+    Then merge overlapping intervals if needed:
     
-    >>> merged = merge_intervals_objects(intervals1, intervals2, distance=50)
+    >>> combined.merge()
     """
-    # Extract keyword arguments
-    distance = kwargs.get('distance', 0)
-    label = kwargs.get('label', 'merged')
     
     # Parse input to get list of Intervals objects
     intervals_list = []
@@ -113,38 +111,55 @@ def merge_intervals(*args, **kwargs):
                 f"Found {first_units} and {obj.units}"
             )
     
-    # Collect all intervals
+    # Collect all intervals and metadata
     all_intervals = []
+    all_event_labels = []
+    all_event_indices = []
+    all_event_onsets = []
+    has_labels = False
+    has_indices = False
+    has_onsets = False
+    
     for obj in intervals_list:
         all_intervals.extend(obj.intervals)
+        
+        # Collect metadata if present in any object
+        if obj.event_labels is not None:
+            has_labels = True
+            all_event_labels.extend(obj.event_labels)
+        else:
+            # Pad with None for this object's intervals
+            all_event_labels.extend([None] * len(obj.intervals))
+        
+        if obj.event_indices is not None:
+            has_indices = True
+            all_event_indices.extend(obj.event_indices)
+        else:
+            all_event_indices.extend([None] * len(obj.intervals))
+        
+        if obj.event_onsets is not None:
+            has_onsets = True
+            all_event_onsets.extend(obj.event_onsets)
+        else:
+            all_event_onsets.extend([None] * len(obj.intervals))
     
     if not all_intervals:
         # All were empty
         return Intervals([], units=first_units, label=label,
                         data_time_range=intervals_list[0].data_time_range)
     
-    # Sort by start time
-    all_intervals.sort(key=lambda x: x[0])
-    
-    # Merge with distance parameter
-    merged = []
-    current = list(all_intervals[0])
-    
-    for start, end in all_intervals[1:]:
-        if start - current[1] <= distance:
-            # Merge: extend current interval
-            current[1] = max(current[1], end)
-        else:
-            # No merge: save current and start new
-            merged.append(tuple(current))
-            current = [start, end]
-    merged.append(tuple(current))
-    
     # Use data_time_range from first object if available
     data_time_range = intervals_list[0].data_time_range if intervals_list[0].data_time_range is not None else None
     
-    return Intervals(merged, units=first_units, label=label,
-                    data_time_range=data_time_range)
+    return Intervals(
+        all_intervals,
+        units=first_units,
+        label=label,
+        event_labels=all_event_labels if has_labels else None,
+        event_indices=all_event_indices if has_indices else None,
+        event_onsets=all_event_onsets if has_onsets else None,
+        data_time_range=data_time_range
+    )
 
 def get_interval_stats(intervals):
     """
