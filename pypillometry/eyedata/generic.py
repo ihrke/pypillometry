@@ -12,7 +12,7 @@ from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, suppre
 from ..io import download
 from .eyedatadict import CachedEyeDataDict, EyeDataDict
 from ..signal import baseline
-from ..intervals import stat_event_interval, get_interval_stats, merge_intervals, Intervals
+from ..intervals import stat_event_interval, get_interval_stats, Intervals
 from ..logging import logging_get_level
 
 import numpy as np
@@ -546,7 +546,15 @@ class GenericEyeData(ABC):
                     blinks += self._blinks[key].intervals
             
             if blinks:
-                mblinks = merge_intervals(blinks)
+                # Sort and merge overlapping intervals
+                blinks.sort(key=lambda x: x[0])
+                mblinks = [blinks[0]]
+                for current in blinks[1:]:
+                    last_merged = mblinks[-1]
+                    if current[0] <= last_merged[1]:
+                        mblinks[-1] = (last_merged[0], max(last_merged[1], current[1]))
+                    else:
+                        mblinks.append(current)
             else:
                 mblinks = []
             
