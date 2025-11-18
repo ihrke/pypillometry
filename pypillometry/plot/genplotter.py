@@ -397,7 +397,7 @@ class GenericPlotter:
         return figs if pdf_file is None else None
 
     def plot_masked(self, eyes: str|list = [], variables: str|list = [], 
-                    units: str = "ms", merge: bool = False, 
+                    units: str = "min", merge: bool = False, 
                     show_labels: bool = True, **kwargs):
         """
         Plot masked intervals for specified eyes and variables.
@@ -415,7 +415,7 @@ class GenericPlotter:
             Variable(s) to plot masks for. If empty, uses all available variables.
         units : str, optional
             Time units for x-axis: "ms", "sec", "min", "h", or None for indices.
-            Default is "ms".
+            Default is "min
         merge : bool, optional
             If True, merge all masks into a single set of intervals for plotting.
             If False, plot each eye/variable separately with different colors.

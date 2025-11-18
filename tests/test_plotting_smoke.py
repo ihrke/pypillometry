@@ -134,6 +134,118 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         fig = plt.figure()
         self.data.plot.plot_timeseries()
         self.assertIsNotNone(plt.gcf())
+    
+    def test_plot_masked_single_eye_variable(self):
+        """Test plot_masked with single eye and variable"""
+        self.data.pupil_blinks_detect()
+        fig = plt.figure()
+        result = self.data.plot.plot_masked('left', 'pupil')
+        self.assertIsNone(result)  # Should return None
+        self.assertIsNotNone(plt.gcf())
+    
+    def test_plot_masked_multiple_eyes_no_merge(self):
+        """Test plot_masked with multiple eyes without merging"""
+        self.data.pupil_blinks_detect()
+        # Only check if there are actual intervals
+        intervals = self.data.mask_as_intervals(['left', 'right'], 'pupil')
+        if sum(len(iv) for iv in intervals.values()) > 0:
+            fig = plt.figure()
+            result = self.data.plot.plot_masked(['left', 'right'], 'pupil', merge=False)
+            self.assertIsNone(result)
+            self.assertIsNotNone(plt.gcf())
+            # Check that a legend was created (for multiple groups)
+            ax = plt.gca()
+            legend = ax.get_legend()
+            self.assertIsNotNone(legend)
+        else:
+            # Just check it runs without error even with no intervals
+            fig = plt.figure()
+            self.data.plot.plot_masked(['left', 'right'], 'pupil', merge=False)
+            self.assertIsNotNone(plt.gcf())
+    
+    def test_plot_masked_multiple_eyes_with_merge(self):
+        """Test plot_masked with multiple eyes with merging"""
+        self.data.pupil_blinks_detect()
+        fig = plt.figure()
+        result = self.data.plot.plot_masked(['left', 'right'], 'pupil', merge=True)
+        self.assertIsNone(result)
+        self.assertIsNotNone(plt.gcf())
+    
+    def test_plot_masked_with_units_ms(self):
+        """Test plot_masked with milliseconds units"""
+        self.data.pupil_blinks_detect()
+        # Check if there are intervals before checking labels
+        intervals = self.data.mask_as_intervals('left', 'pupil')
+        fig = plt.figure()
+        self.data.plot.plot_masked('left', 'pupil', units='ms')
+        self.assertIsNotNone(plt.gcf())
+        # Only check x-axis label if there were intervals to plot
+        if len(intervals) > 0:
+            ax = plt.gca()
+            xlabel = ax.get_xlabel()
+            self.assertIn('ms', xlabel)
+    
+    def test_plot_masked_with_units_sec(self):
+        """Test plot_masked with seconds units"""
+        self.data.pupil_blinks_detect()
+        # Check if there are intervals before checking labels
+        intervals = self.data.mask_as_intervals('left', 'pupil')
+        fig = plt.figure()
+        self.data.plot.plot_masked('left', 'pupil', units='sec')
+        self.assertIsNotNone(plt.gcf())
+        # Only check x-axis label if there were intervals to plot
+        if len(intervals) > 0:
+            ax = plt.gca()
+            xlabel = ax.get_xlabel()
+            self.assertIn('sec', xlabel)
+    
+    def test_plot_masked_with_units_none(self):
+        """Test plot_masked with indices (units=None)"""
+        self.data.pupil_blinks_detect()
+        # Check if there are intervals before checking labels
+        intervals = self.data.mask_as_intervals('left', 'pupil')
+        fig = plt.figure()
+        self.data.plot.plot_masked('left', 'pupil', units=None)
+        self.assertIsNotNone(plt.gcf())
+        # Only check x-axis label if there were intervals to plot
+        if len(intervals) > 0:
+            ax = plt.gca()
+            xlabel = ax.get_xlabel()
+            self.assertIn('indices', xlabel)
+    
+    def test_plot_masked_no_labels(self):
+        """Test plot_masked with show_labels=False"""
+        self.data.pupil_blinks_detect()
+        fig = plt.figure()
+        self.data.plot.plot_masked(['left', 'right'], 'pupil', show_labels=False)
+        self.assertIsNotNone(plt.gcf())
+        # Title and legend should not be present when show_labels=False
+        ax = plt.gca()
+        title = ax.get_title()
+        self.assertEqual(title, '')
+    
+    def test_plot_masked_empty_mask(self):
+        """Test plot_masked with no masked data"""
+        # Don't detect blinks, so masks should be mostly empty
+        fig = plt.figure()
+        # This should handle empty intervals gracefully
+        self.data.plot.plot_masked('left', 'pupil')
+        # Should complete without error even with no intervals
+        self.assertIsNotNone(plt.gcf())
+    
+    def test_plot_masked_all_eyes_all_variables(self):
+        """Test plot_masked with default parameters (all eyes and variables)"""
+        self.data.pupil_blinks_detect()
+        fig = plt.figure()
+        self.data.plot.plot_masked([], [], merge=False)
+        self.assertIsNotNone(plt.gcf())
+    
+    def test_plot_masked_with_kwargs(self):
+        """Test plot_masked accepts additional kwargs for matplotlib"""
+        self.data.pupil_blinks_detect()
+        fig = plt.figure()
+        self.data.plot.plot_masked('left', 'pupil', linewidth=5, alpha=0.5)
+        self.assertIsNotNone(plt.gcf())
 
 
 if __name__ == '__main__':
