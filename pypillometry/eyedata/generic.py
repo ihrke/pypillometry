@@ -1696,7 +1696,7 @@ class GenericEyeData(ABC):
         return obj
         
     @keephistory
-    def blinks_merge(
+    def blinks_merge_close(
         self,
         eyes: list = [],
         variables: list = [],

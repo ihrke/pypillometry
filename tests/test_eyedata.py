@@ -305,17 +305,20 @@ class TestEyeData(unittest.TestCase):
         self.assertNotIn('right_pupil', merged_no_keep.data)
         self.assertIn('mean_pupil', merged_no_keep.data)
 
-    def test_blinks_merge(self):
+    def test_blinks_merge_close(self):
         """Test merging of close blinks"""
+        from pypillometry.intervals import Intervals
+        
         # First create some artificial blinks
-        self.eyedata.set_blinks('left', 'pupil', np.array([[100, 200], [250, 350]]))
+        intervals = Intervals([(100, 200), (250, 350)], units=None, 
+                             data_time_range=(0, len(self.eyedata.tx)))
+        self.eyedata.set_blinks(intervals, eyes=['left'], variables=['pupil'])
         
         # Merge blinks that are within 100ms of each other
-        merged = self.eyedata.blinks_merge(eyes=['left'], variables=['pupil'], distance=100, units="ms")
+        merged = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=100, units="ms")
         blinks = merged.get_blinks('left', 'pupil')
         
         # blinks is now an Intervals object
-        from pypillometry.intervals import Intervals
         self.assertIsInstance(blinks, Intervals)
         self.assertEqual(len(blinks), 1)  # Should merge into one blink
         
@@ -325,15 +328,20 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(blinks_ix[0, 1], 350)  # End of last blink
 
         # Test merging with distance specified in seconds
-        merged_sec = self.eyedata.blinks_merge(eyes=['left'], variables=['pupil'], distance=0.1, units="sec")
+        intervals2 = Intervals([(100, 200), (250, 350)], units=None,
+                              data_time_range=(0, len(self.eyedata.tx)))
+        self.eyedata.set_blinks(intervals2, eyes=['left'], variables=['pupil'])
+        merged_sec = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=0.1, units="sec")
         blinks_sec = merged_sec.get_blinks('left', 'pupil')
         blinks_ix_sec = blinks_sec.as_index(merged_sec)
         self.assertEqual(blinks_ix_sec[0, 0], 100)
         self.assertEqual(blinks_ix_sec[0, 1], 350)
 
         # Ensure blinks beyond distance remain separate
-        self.eyedata.set_blinks('left', 'pupil', np.array([[100, 200], [250, 350]]))
-        separated = self.eyedata.blinks_merge(eyes=['left'], variables=['pupil'], distance=10, units="ms")
+        intervals3 = Intervals([(100, 200), (250, 350)], units=None,
+                              data_time_range=(0, len(self.eyedata.tx)))
+        self.eyedata.set_blinks(intervals3, eyes=['left'], variables=['pupil'])
+        separated = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=10, units="ms")
         blinks_sep = separated.get_blinks('left', 'pupil')
         blinks_ix_sep = blinks_sep.as_index(separated)
         self.assertEqual(len(blinks_ix_sep), 2)
@@ -342,7 +350,9 @@ class TestEyeData(unittest.TestCase):
 
         # Blink extending to end of signal should convert without IndexError
         end_idx = len(self.eyedata.tx) - 1
-        self.eyedata.set_blinks('left', 'pupil', np.array([[end_idx - 10, end_idx]]))
+        intervals_end = Intervals([(end_idx - 10, end_idx)], units=None,
+                                 data_time_range=(0, len(self.eyedata.tx)))
+        self.eyedata.set_blinks(intervals_end, eyes=['left'], variables=['pupil'])
         blinks_end = self.eyedata.get_blinks('left', 'pupil', units='ms')
         self.assertEqual(len(blinks_end), 1)
         self.assertLessEqual(blinks_end.intervals[0][1], self.eyedata.tx[-1])
@@ -380,7 +390,9 @@ class TestEyeData(unittest.TestCase):
         from pypillometry.intervals import Intervals
         
         # Create some artificial blinks
-        self.eyedata.set_blinks('left', 'pupil', np.array([[100, 200], [250, 350]]))
+        intervals = Intervals([(100, 200), (250, 350)], units=None,
+                             data_time_range=(0, len(self.eyedata.tx)))
+        self.eyedata.set_blinks(intervals, eyes=['left'], variables=['pupil'])
         
         # Get blinks in different units
         blinks_idx = self.eyedata.get_blinks('left', 'pupil', units=None)
@@ -415,8 +427,12 @@ class TestEyeData(unittest.TestCase):
         from pypillometry.intervals import Intervals
         
         # Create blinks for both eyes
-        self.eyedata.set_blinks('left', 'pupil', np.array([[100, 200]]))
-        self.eyedata.set_blinks('right', 'pupil', np.array([[150, 250]]))
+        intervals_left = Intervals([(100, 200)], units=None,
+                                  data_time_range=(0, len(self.eyedata.tx)))
+        intervals_right = Intervals([(150, 250)], units=None,
+                                   data_time_range=(0, len(self.eyedata.tx)))
+        self.eyedata.set_blinks(intervals_left, eyes=['left'], variables=['pupil'])
+        self.eyedata.set_blinks(intervals_right, eyes=['right'], variables=['pupil'])
         
         # Get merged blinks
         blinks = self.eyedata.get_blinks(['left', 'right'], 'pupil')
