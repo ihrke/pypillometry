@@ -43,7 +43,7 @@ Pipeline-based processing
 
 .. code-block:: python
 
-    d=pp.get_example_data("rlmw_002_short").pupil_blinks_detect().blinks_merge().pupil_lowpass_filter(3).downsample(50)
+    d=pp.get_example_data("rlmw_002_short").pupil_blinks_detect().blinks_merge_close().pupil_lowpass_filter(3).downsample(50)
 
 This command loads an example data-file, applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object `d`. This object stores also the complete history of the operations applied to the dataset and allows to transfer it to a new dataset.
 
@@ -53,7 +53,7 @@ This will return a new object with the results of the operations.
 .. code-block:: python
 
     d=pp.get_example_data("rlmw_002_short")
-    d_new=d.pupil_blinks_detect(inplace=False).blinks_merge().pupil_lowpass_filter(3).downsample(50)
+    d_new=d.pupil_blinks_detect(inplace=False).blinks_merge_close().pupil_lowpass_filter(3).downsample(50)
 
 This will return a new object `d_new` with the results of the operations. The original object `d` is not modified.
 
@@ -127,7 +127,7 @@ The following is a list of functions for that purpose. Note that the functions t
     PupilData.blinks_detect
     PupilData.blinks_interpolate    
     PupilData.blinks_interp_mahot
-    PupilData.blinks_merge
+    PupilData.blinks_merge_close
     PupilData.blinks_plot
 
 Smoothing/low-pass filtering
