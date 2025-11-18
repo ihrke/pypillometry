@@ -3,7 +3,6 @@ from .generic import GenericEyeData, keephistory
 from .eyedatadict import EyeDataDict
 from ..plot import GazePlotter
 from ..intervals import Intervals
-from ..convenience import mask_to_intervals
 import numpy as np
 import json
 from typing import Optional
@@ -392,7 +391,7 @@ class GazeData(GenericEyeData):
         divergence_mask = (dist > thr).filled(False)
         
         # Convert mask to intervals
-        intervals_list = mask_to_intervals(divergence_mask)
+        intervals_list = obj._mask_to_intervals_list(divergence_mask)
         
         # Store distance as a timeseries if requested
         if store_as is not None:

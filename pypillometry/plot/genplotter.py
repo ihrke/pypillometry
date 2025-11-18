@@ -1,7 +1,6 @@
 import itertools
 from typing import Iterable, Optional, Tuple, Union
 from ..eyedata import GenericEyeData
-from ..convenience import mask_to_intervals
 from ..intervals import Intervals
 import numpy as np
 from loguru import logger
@@ -122,7 +121,7 @@ class GenericPlotter:
                 if plot_mask:
                     mask = obj.data.mask[eye+"_"+var][slic]
                     txm = obj.tx[slic]
-                    mint = mask_to_intervals(mask)
+                    mint = obj._mask_to_intervals_list(mask)
                     for sm,em in mint:
                         ax.axvspan(txm[sm]*fac,txm[em]*fac, color="grey", alpha=0.3)
                 if plot_index: 
