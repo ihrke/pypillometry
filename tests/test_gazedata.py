@@ -249,16 +249,12 @@ class TestGazeData(unittest.TestCase):
         result = d.mask_eye_divergences(threshold=0.5, thr_type="percentile", 
                                        apply_mask=False, inplace=False)
         
-        # Should return dict of Intervals
-        self.assertIsInstance(result, dict)
-        self.assertIn('left_x', result)
-        self.assertIn('left_y', result)
-        self.assertIn('right_x', result)
-        self.assertIn('right_y', result)
+        # Should return a single Intervals object
+        self.assertIsInstance(result, Intervals)
+        self.assertEqual(result.label, "eye_divergences")
         
-        # Each should be an Intervals object
-        for key, intervals in result.items():
-            self.assertIsInstance(intervals, Intervals)
+        # Should have detected divergence intervals
+        self.assertGreater(len(result), 0)
         
         # Mask should NOT be applied to original data
         original_mask_sum = np.sum(d.data.mask['left_x'])

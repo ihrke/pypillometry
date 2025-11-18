@@ -329,9 +329,9 @@ class GazeData(GenericEyeData):
         
         Returns
         -------
-        GazeData or dict
+        GazeData or Intervals
             If apply_mask=True: returns self for chaining.
-            If apply_mask=False: returns dict of Intervals objects with keys like "left_x", "left_y", etc.
+            If apply_mask=False: returns Intervals object containing detected divergence intervals.
         
         Raises
         ------
@@ -365,14 +365,8 @@ class GazeData(GenericEyeData):
                 f"thr_type must be 'percentile' or 'pixel', got '{thr_type}'"
             )
         
-        # Get masked arrays for left and right eye coordinates
-        left_x = obj['left_x']
-        left_y = obj['left_y']
-        right_x = obj['right_x']
-        right_y = obj['right_y']
-        
         # Calculate Euclidean distance
-        dist = np.ma.sqrt((left_x - right_x)**2 + (left_y - right_y)**2)
+        dist = np.ma.sqrt((obj['left_x'] - obj['right_x'])**2 + (obj['left_y'] - obj['right_y'])**2)
         
         # Calculate threshold
         if thr_type == "percentile":
@@ -399,28 +393,17 @@ class GazeData(GenericEyeData):
             dist_copy.mask |= divergence_mask
             obj[store_as] = dist_copy
         
-        # Create Intervals objects for each eye/variable
-        detected_intervals = {}
-        for eye in ['left', 'right']:
-            for var in ['x', 'y']:
-                key = f"{eye}_{var}"
-                intervals_obj = Intervals(
-                    intervals=intervals_list,
-                    units=None,  # Using index units
-                    label=f"{key}_divergences",
-                    data_time_range=(0, len(obj.tx))
-                )
-                detected_intervals[key] = intervals_obj
+        # Create Intervals object for the detected divergences
+        intervals_obj = Intervals(
+            intervals=intervals_list,
+            units=None,  # Using index units
+            label="eye_divergences",
+            data_time_range=(0, len(obj.tx))
+        )
         
         # Apply mask if requested
         if apply_mask:
-            for eye in ['left', 'right']:
-                for var in ['x', 'y']:
-                    key = f"{eye}_{var}"
-                    existing_mask = obj.data.mask[key].copy()
-                    # Mark divergent points as masked
-                    existing_mask |= divergence_mask
-                    obj.data.mask[key] = existing_mask
+            obj.mask_intervals(intervals_obj, eyes=['left', 'right'], variables=['x', 'y'])
             return obj
         else:
-            return detected_intervals
+            return intervals_obj

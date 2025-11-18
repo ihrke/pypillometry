@@ -730,7 +730,11 @@ class GenericEyeData(ABC):
             return result
     
     def _mask_to_intervals_list(self, mask):
-        """Helper method to convert mask array to list of interval tuples."""
+        """Helper method to convert mask array to list of interval tuples.
+        
+        Returns intervals with exclusive end (Python convention): [start, end)
+        This means the interval (1, 4) covers indices 1, 2, 3 (not 4).
+        """
         if not isinstance(mask, np.ndarray):
             mask = np.array(mask)
         if mask.ndim > 1:
@@ -743,7 +747,8 @@ class GenericEyeData(ABC):
         m = np.concatenate(([0], mask, [0]))
         idxs = np.flatnonzero(m[1:] != m[:-1])
         ivs = list(zip(idxs[::2], idxs[1::2]))
-        ivs = [(max(start, 0), min(end, mask.size - 1)) 
+        # Use exclusive end to match Python slicing convention
+        ivs = [(max(start, 0), min(end, mask.size)) 
                for start, end in ivs]
         return ivs
 
