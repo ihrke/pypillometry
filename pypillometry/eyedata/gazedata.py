@@ -2,6 +2,8 @@ from loguru import logger
 from .generic import GenericEyeData, keephistory
 from .eyedatadict import EyeDataDict
 from ..plot import GazePlotter
+from ..intervals import Intervals
+from ..convenience import mask_to_intervals
 import numpy as np
 import json
 from typing import Optional
@@ -297,13 +299,15 @@ class GazeData(GenericEyeData):
         return self._screen_eye_distance
 
     @keephistory
-    def mask_eye_divergences(self, threshold: float = .99, thr_type: str = "percentile", store_as: str|None = None, inplace=None):
+    def mask_eye_divergences(self, threshold: float = .99, thr_type: str = "percentile", 
+                           store_as: str|None = None, apply_mask: bool = True, inplace=None):
         """
-        Calculate Euclidean distance between left and right eye coordinates and mask divergences.
+        Calculate Euclidean distance between left and right eye coordinates and detect divergences.
         
         This method computes the distance between corresponding (x,y) coordinates in the left
-        and right eyes. Points where the distance exceeds a threshold are masked. The distance
-        is stored as a new variable in the data.
+        and right eyes. Points where the distance exceeds a threshold are detected as divergences.
+        When apply_mask=True, these points are masked. When apply_mask=False, the divergences
+        are returned as Intervals objects.
         
         Parameters
         ----------
@@ -316,6 +320,9 @@ class GazeData(GenericEyeData):
             - "pixel": threshold is the maximum allowed distance in pixels
         store_as : str or None, default=None
             Variable name to store the distance timeseries. If None, distance is not stored.
+        apply_mask : bool, default=True
+            If True, apply detected divergences as masks to the data and return self.
+            If False, return detected divergences as dict of Intervals objects.
         inplace : bool or None
             If True, make change in-place and return the object.
             If False, make and return copy before making changes.
@@ -323,8 +330,9 @@ class GazeData(GenericEyeData):
         
         Returns
         -------
-        GazeData
-            Object with distance timeseries stored and divergent points masked.
+        GazeData or dict
+            If apply_mask=True: returns self for chaining.
+            If apply_mask=False: returns dict of Intervals objects with keys like "left_x", "left_y", etc.
         
         Raises
         ------
@@ -336,6 +344,9 @@ class GazeData(GenericEyeData):
         --------
         >>> # Mask divergences at 99th percentile
         >>> gaze_data = gaze_data.mask_eye_divergences(threshold=0.99, thr_type="percentile")
+        
+        >>> # Detect divergences without masking
+        >>> divergences = gaze_data.mask_eye_divergences(threshold=0.99, apply_mask=False)
         
         >>> # Mask divergences beyond 100 pixels
         >>> gaze_data = gaze_data.mask_eye_divergences(threshold=100, thr_type="pixel")
@@ -375,21 +386,42 @@ class GazeData(GenericEyeData):
         else:  # thr_type == "pixel"
             thr = threshold
         
-        logger.debug(f"Masking divergent points with threshold {thr}")
-        # Mask divergent points (where distance exceeds threshold)
-        dist.mask |= (dist > thr)
+        logger.debug(f"Detecting divergent points with threshold {thr}")
+        
+        # Create a mask for divergent points (where distance exceeds threshold)
+        divergence_mask = (dist > thr).filled(False)
+        
+        # Convert mask to intervals
+        intervals_list = mask_to_intervals(divergence_mask)
         
         # Store distance as a timeseries if requested
         if store_as is not None:
-            obj[store_as] = dist
+            dist_copy = dist.copy()
+            dist_copy.mask |= divergence_mask
+            obj[store_as] = dist_copy
         
-        # Update masks for left and right eye coordinates where divergence is detected
+        # Create Intervals objects for each eye/variable
+        detected_intervals = {}
         for eye in ['left', 'right']:
             for var in ['x', 'y']:
                 key = f"{eye}_{var}"
-                existing_mask = obj.data.mask[key].copy()
-                # Mark divergent points as masked
-                existing_mask |= dist.mask
-                obj.data.mask[key] = existing_mask
+                intervals_obj = Intervals(
+                    intervals=intervals_list,
+                    units=None,  # Using index units
+                    label=f"{key}_divergences",
+                    data_time_range=(0, len(obj.tx))
+                )
+                detected_intervals[key] = intervals_obj
         
-        return obj
+        # Apply mask if requested
+        if apply_mask:
+            for eye in ['left', 'right']:
+                for var in ['x', 'y']:
+                    key = f"{eye}_{var}"
+                    existing_mask = obj.data.mask[key].copy()
+                    # Mark divergent points as masked
+                    existing_mask |= divergence_mask
+                    obj.data.mask[key] = existing_mask
+            return obj
+        else:
+            return detected_intervals
