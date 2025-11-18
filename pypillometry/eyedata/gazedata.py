@@ -1,3 +1,4 @@
+from loguru import logger
 from .generic import GenericEyeData, keephistory
 from .eyedatadict import EyeDataDict
 from ..plot import GazePlotter
@@ -374,18 +375,13 @@ class GazeData(GenericEyeData):
         else:  # thr_type == "pixel"
             thr = threshold
         
+        logger.debug(f"Masking divergent points with threshold {thr}")
         # Mask divergent points (where distance exceeds threshold)
-        dist_mask = dist > thr
-        
-        # Combine with existing mask
-        final_mask = np.ma.getmaskarray(dist) | dist_mask
-        
-        # Create masked array with the combined mask
-        dist_masked = np.ma.masked_array(dist.data, mask=final_mask)
+        dist.mask |= (dist > thr)
         
         # Store distance as a timeseries if requested
         if store_as is not None:
-            obj[store_as] = dist_masked
+            obj[store_as] = dist
         
         # Update masks for left and right eye coordinates where divergence is detected
         for eye in ['left', 'right']:
@@ -393,7 +389,7 @@ class GazeData(GenericEyeData):
                 key = f"{eye}_{var}"
                 existing_mask = obj.data.mask[key].copy()
                 # Mark divergent points as masked
-                existing_mask[dist_mask] = 1
+                existing_mask |= dist.mask
                 obj.data.mask[key] = existing_mask
         
         return obj

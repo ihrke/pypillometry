@@ -225,7 +225,7 @@ class GenericEyeData(ABC):
             # letting EyeDataDict resolve the key.
             mask = self.data.get_mask(normalized_key)
 
-        return np.ma.masked_array(data_array, mask=mask)
+        return np.ma.masked_array(data_array, mask=mask, fill_value=np.nan)
 
     def __setitem__(self, key, value):
         """
@@ -974,7 +974,7 @@ class GenericEyeData(ABC):
             for key in sorted(self.data.keys()):
                 eye, var = key if isinstance(key, tuple) else (None, key)
                 label = f"{eye} {var}".strip() if eye else var
-                data = self.data[key]
+                data = self[key]  # Use accessor to get masked array
                 if data is None or len(data) == 0:
                     continue
                 step = max(1, len(data) // 200)
