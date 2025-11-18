@@ -504,29 +504,30 @@ class GenericEyeData(ABC):
                             self.data.mask[key][int(bstart):int(bend)] = 1
 
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
-                   units: str|None = None) -> Intervals:
+                   units: str|None = None):
         """
-        Get blinks as Intervals object.
+        Get blinks as Intervals object or dict of Intervals.
         
         Parameters
         ----------
         eyes : str or list
-            Eye(s) to get blinks for. If list or empty, blinks are merged.
+            Eye(s) to get blinks for. If multiple, returns dict.
         variables : str or list
-            Variable(s) to get blinks for. If list or empty, blinks are merged.
+            Variable(s) to get blinks for. If multiple, returns dict.
         units : str or None, optional
             Units for intervals: "ms", "sec", "min", "h", or None for indices
             
         Returns
         -------
-        Intervals
-            Intervals object (may contain zero intervals if no blinks detected)
+        Intervals or dict
+            If single eye and variable: returns Intervals object.
+            If multiple eyes/variables: returns dict with keys like "left_pupil".
             
         Examples
         --------
         >>> blinks = data.get_blinks('left', 'pupil')
         >>> blinks_ms = data.get_blinks('left', 'pupil', units="ms")
-        >>> blinks_merged = data.get_blinks(['left', 'right'], 'pupil')
+        >>> blinks_dict = data.get_blinks(['left', 'right'], 'pupil')
         >>> indices = blinks_ms.as_index(data)
         """
         eyes, variables = self._get_eye_var(eyes, variables)
@@ -534,41 +535,49 @@ class GenericEyeData(ABC):
         # Normalize units (handles aliases like "seconds", "hrs", etc.)
         units = normalize_unit(units)
         
-        # Check if we need to merge across multiple eyes/variables
-        need_merge = len(eyes) > 1 or len(variables) > 1
+        # Check if we need to return dict for multiple eyes/variables
+        return_dict = len(eyes) > 1 or len(variables) > 1
         
-        if need_merge:
-            blinks = []
+        if return_dict:
+            # Return dict of Intervals
+            result = {}
             for e, v in itertools.product(eyes, variables):
                 key = e + "_" + v
                 if key in self._blinks and self._blinks[key] is not None:
-                    # _blinks now stores Intervals objects
-                    blinks += self._blinks[key].intervals
+                    intervals_obj = self._blinks[key]
+                else:
+                    # No blinks stored - create empty Intervals
+                    intervals_obj = Intervals(
+                        intervals=[],
+                        units=None,
+                        label=f"{e}_{v}_blinks",
+                        data_time_range=(0, len(self.tx))
+                    )
+                
+                # Convert to requested units if needed
+                if units is not None:
+                    intervals_ms = []
+                    last_idx = len(self.tx) - 1
+                    for start, end in intervals_obj.intervals:
+                        start_idx = max(0, min(last_idx, int(start)))
+                        end_idx = max(0, min(last_idx, int(end) - 1))
+                        if end_idx < start_idx:
+                            end_idx = start_idx
+                        intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
+
+                    intervals_obj = Intervals(intervals_ms, "ms", intervals_obj.label,
+                                            intervals_obj.event_labels, intervals_obj.event_indices,
+                                            (self.tx[0], self.tx[-1]), intervals_obj.event_onsets)
+                    if units != "ms":
+                        intervals_obj = intervals_obj.to_units(units)
+                
+                result[key] = intervals_obj
             
-            if blinks:
-                # Sort and merge overlapping intervals
-                blinks.sort(key=lambda x: x[0])
-                mblinks = [blinks[0]]
-                for current in blinks[1:]:
-                    last_merged = mblinks[-1]
-                    if current[0] <= last_merged[1]:
-                        mblinks[-1] = (last_merged[0], max(last_merged[1], current[1]))
-                    else:
-                        mblinks.append(current)
-            else:
-                mblinks = []
-            
-            result = Intervals(
-                intervals=mblinks,
-                units=None,
-                label=f"blinks_{'_'.join(eyes)}_{'_'.join(variables)}",
-                data_time_range=(0, len(self.tx))
-            )
+            return result
         else:
-            # Single eye/variable
+            # Single eye/variable - return Intervals directly
             key = eyes[0] + "_" + variables[0]
             if key in self._blinks and self._blinks[key] is not None:
-                # _blinks now stores Intervals objects - return directly
                 result = self._blinks[key]
             else:
                 # No blinks stored - return empty Intervals
@@ -578,25 +587,25 @@ class GenericEyeData(ABC):
                     label=f"{eyes[0]}_{variables[0]}_blinks",
                     data_time_range=(0, len(self.tx))
                 )
-        
-        # Convert to requested units if needed
-        if units is not None:
-            intervals_ms = []
-            last_idx = len(self.tx) - 1
-            for start, end in result.intervals:
-                start_idx = max(0, min(last_idx, int(start)))
-                end_idx = max(0, min(last_idx, int(end) - 1))
-                if end_idx < start_idx:
-                    end_idx = start_idx
-                intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
+            
+            # Convert to requested units if needed
+            if units is not None:
+                intervals_ms = []
+                last_idx = len(self.tx) - 1
+                for start, end in result.intervals:
+                    start_idx = max(0, min(last_idx, int(start)))
+                    end_idx = max(0, min(last_idx, int(end) - 1))
+                    if end_idx < start_idx:
+                        end_idx = start_idx
+                    intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
 
-            result = Intervals(intervals_ms, "ms", result.label,
-                              result.event_labels, result.event_indices,
-                              (self.tx[0], self.tx[-1]), result.event_onsets)
-            if units != "ms":
-                result = result.to_units(units)
-        
-        return result  
+                result = Intervals(intervals_ms, "ms", result.label,
+                                result.event_labels, result.event_indices,
+                                (self.tx[0], self.tx[-1]), result.event_onsets)
+                if units != "ms":
+                    result = result.to_units(units)
+            
+            return result  
 
 
     def _init_blinks(self, eyes=[], variables=[]):
