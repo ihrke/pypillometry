@@ -48,12 +48,6 @@ class GazeData(GenericEyeData):
         if True, the object is modified in place; if False, a new object is returned
         this object-level property can be overwritten by the method-level `inplace` argument
         default is "False"
-    use_cache: bool
-        Whether to use cached storage for data arrays. Default is False.
-    cache_dir: str
-        Directory to store cache files. If None, creates a temporary directory.
-    max_memory_mb: float
-        Maximum memory usage in MB when using cache. Default is 100MB.
     """
     def __init__(self, 
                     time: np.ndarray = None,
@@ -71,20 +65,8 @@ class GazeData(GenericEyeData):
                     fill_time_discontinuities: bool = True,
                     keep_orig: bool = False,
                     info: dict = None,
-                    inplace: bool = False,
-                    use_cache: bool = False,
-                    cache_dir: Optional[str] = None,
-                    max_memory_mb: float = 100):
+                    inplace: bool = False):
         """Constructor for the GazeData class.
-        
-        Parameters
-        ----------
-        use_cache : bool, optional
-            Whether to use cached storage for data arrays. Default is False.
-        cache_dir : str, optional
-            Directory to store cache files. If None, creates a temporary directory.
-        max_memory_mb : float, optional
-            Maximum memory usage in MB when using cache. Default is 100MB.
         """
         if (left_x is None and left_y is None and right_x is None and right_y is None):
             raise ValueError("At least one eye-trace (both x and y coordinates) must be provided")
@@ -95,10 +77,7 @@ class GazeData(GenericEyeData):
         self._init_common(time, sampling_rate, 
                           event_onsets, event_labels, 
                           name, fill_time_discontinuities, 
-                          info=info, inplace=inplace,
-                          use_cache=use_cache,
-                          cache_dir=cache_dir,
-                          max_memory_mb=max_memory_mb)
+                          info=info, inplace=inplace)
         
         self._screen_size_set=False
         self._physical_screen_dims_set=False

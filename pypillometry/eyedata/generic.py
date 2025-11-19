@@ -10,7 +10,7 @@ from collections.abc import Iterable
 from .. import io
 from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, suppress_all_output, normalize_unit
 from ..io import download
-from .eyedatadict import CachedEyeDataDict, EyeDataDict
+from .eyedatadict import EyeDataDict
 from ..signal import baseline
 from ..intervals import stat_event_interval, get_interval_stats, Intervals
 from ..logging import logging_get_level
@@ -87,10 +87,7 @@ class GenericEyeData(ABC):
                     name: str,
                     fill_time_discontinuities: bool,
                     inplace: bool,
-                    info: dict = None,
-                    use_cache: bool = False,
-                    cache_dir: Optional[str] = None,
-                    max_memory_mb: float = 100):
+                    info: dict = None):
         """
         Common code for the child-classes of GenericEyeData.
         Assumes that self.data is already set and filled.
@@ -137,21 +134,6 @@ class GenericEyeData(ABC):
 
         ## set info
         self.info = info if info is not None else {}
-
-        ## Initialize caching if requested
-        if use_cache:
-            # Create cache directory if it doesn't exist
-            if cache_dir is not None:
-                os.makedirs(cache_dir, exist_ok=True)
-                logger.info(f"Created cache directory at {cache_dir}")
-            
-            # Convert to cached version
-            old_data = self.data
-            self.data = CachedEyeDataDict(cache_dir=cache_dir, max_memory_mb=max_memory_mb)
-            for k, v in old_data.items():
-                self.data[k] = v
-                if k in old_data.mask:
-                    self.data.set_mask(k, old_data.mask[k])
 
         ## fill in time discontinuities
         if fill_time_discontinuities:
@@ -1997,60 +1979,6 @@ class GenericEyeData(ABC):
             stat[eye+"_"+var]=stat_event_interval(self.tx, self.data[eye,var], intervals_list, statfct)
 
         return stat
-
-    def set_cache_options(self, use_cache: bool = None, cache_dir: Optional[str] = None, max_memory_mb: float = None):
-        """Update cache settings.
-        
-        Parameters
-        ----------
-        use_cache : bool, optional
-            Whether to use cached storage.
-        cache_dir : str, optional
-            Directory to store cache files.
-        max_memory_mb : float, optional
-            Maximum memory usage in MB.
-        """
-        if use_cache is not None:
-            self.use_cache = use_cache
-        if cache_dir is not None:
-            self.cache_dir = cache_dir
-        if max_memory_mb is not None:
-            self.max_memory_mb = max_memory_mb
-            
-        if self.use_cache and isinstance(self.data, EyeDataDict):
-            # Convert to cached version
-            old_data = self.data
-            self.data = CachedEyeDataDict(cache_dir=self.cache_dir, max_memory_mb=self.max_memory_mb)
-            for k, v in old_data.items():
-                self.data[k] = v
-                if k in old_data.mask:
-                    self.data.set_mask(k, old_data.mask[k])
-        elif not self.use_cache and isinstance(self.data, CachedEyeDataDict):
-            # Convert to in-memory version
-            old_data = self.data
-            self.data = EyeDataDict()
-            for k, v in old_data.items():
-                self.data[k] = v
-                if k in old_data.mask:
-                    self.data.set_mask(k, old_data.mask[k])
-            old_data.clear_cache()
-            
-    def get_cache_stats(self) -> Optional[Dict[str, Any]]:
-        """Get cache statistics if using cached storage."""
-        if isinstance(self.data, CachedEyeDataDict):
-            return self.data.get_cache_stats()
-        return None
-        
-    def clear_cache(self):
-        """Clear memory cache if using cached storage."""
-        if isinstance(self.data, CachedEyeDataDict):
-            self.data.clear_cache()
-            
-    def set_max_memory(self, max_memory_mb: float):
-        """Set maximum memory usage in MB if using cached storage."""
-        if isinstance(self.data, CachedEyeDataDict):
-            self.data.set_max_memory(max_memory_mb)
-            self.max_memory_mb = max_memory_mb
 
     def get_size(self) -> ByteSize:
         """Return the size of the object in bytes.
