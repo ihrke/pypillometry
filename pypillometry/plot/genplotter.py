@@ -316,11 +316,14 @@ class GenericPlotter:
                     
                     ax.plot(tx, data_to_plot, **plot_kwargs)
                     
-                    # Optionally highlight masked regions with red background
+                    # Highlight masked regions with axvspan (automatically extends full height)
                     if show_mask_highlight and vname in obj.data.mask:
                         mask = obj.data.mask[vname][startix:endix]
-                        ax.fill_between(tx, ax.get_ylim()[0], ax.get_ylim()[1], 
-                                      where=mask, color='red', alpha=0.2)
+                        mask_intervals = obj._mask_to_intervals_list(mask)
+                        for start_ix, end_ix in mask_intervals:
+                            # Convert indices to time values
+                            ax.axvspan(tx[start_ix], tx[end_ix], color='red', alpha=0.2, zorder=0)
+            
             if ev_line:
                 ax.vlines(evon, *ax.get_ylim(), color="grey", alpha=0.5)
             if ev_label:

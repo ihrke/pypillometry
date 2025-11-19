@@ -48,7 +48,8 @@ extensions=['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon',
             "myst_parser", ## enable myst-parser
             'sphinx.ext.intersphinx', 'sphinx.ext.autosummary', 
             "nbsphinx", ## enable jupyter notebooks
-            "numpydoc" ## enable numpy-style docstrings
+            "numpydoc", ## enable numpy-style docstrings
+            "jupyter_sphinx" ## enable jupyter-execute 
             ]
 
 myst_enable_extensions = ["colon_fence"]
