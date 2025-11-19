@@ -1,3 +1,5 @@
+.. currentmodule:: pypillometry
+
 API documentation
 ==================
 
@@ -84,6 +86,11 @@ Plotting
 .. autoclass:: pypillometry.EyePlotter
     :members:
 
+.. autoclass:: pypillometry.PupilPlotter
+    :members:
+
+.. autoclass:: pypillometry.GazePlotter
+    :members:
 
 
 Supporting classes
@@ -118,14 +125,27 @@ Logging
 -------
 
 By default, the log-level is set to `INFO` which results in a moderate amount of logging information.
-The logging can be turned off by running :func:`pypillometry.logging_disable` and turned back on by running :func:`pypillometry.logging_enable`.
-You can also set the log-level to `DEBUG` or `WARN` by running :func:`pypillometry.logging_set_level`.
+The logging can be turned off by running :func:`~pypillometry.logging_disable` and turned back on by running :func:`~pypillometry.logging_enable`.
+You can also set the log-level to `DEBUG` or `WARN` by running :func:`~pypillometry.logging_set_level`.
 
 .. autofunction:: pypillometry.logging_set_level
 
 .. autofunction:: pypillometry.logging_disable
 
 .. autofunction:: pypillometry.logging_enable
+
+
+
+Modules
+-------
+
+
+.. automodule:: pypillometry.io
+    :members: load_study_osf, load_study_local, osf_authenticate, read_eyelink, ready_pickle, write_pickle
+
+
+.. automodule:: pypillometry.example_data
+    :members: get_example_data, get_available_datasets
 
 ..
     .. automodule:: pypillometry.pupildata

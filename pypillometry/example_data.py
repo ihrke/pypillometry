@@ -1,4 +1,8 @@
-"""Example datasets for pypillometry.
+"""
+example_data.py
+===============  
+
+Example datasets for pypillometry.
 
 This module provides example datasets for pypillometry. The datasets are
 used in the documentation and for testing purposes. Most of them are stored on
