@@ -120,40 +120,64 @@ class TestPlotTimeseriesParameters(unittest.TestCase):
         """Clean up after each test"""
         plt.close('all')
     
-    def test_plot_onsets_line(self):
+    def test_show_onsets_line(self):
         """Test plot_timeseries with line onsets"""
         fig = plt.figure()
-        self.data.plot.plot_timeseries(plot_onsets="line")
+        self.data.plot.plot_timeseries(show_onsets="line")
         self.assertIsNotNone(plt.gcf())
     
-    def test_plot_onsets_label(self):
+    def test_show_onsets_label(self):
         """Test plot_timeseries with label onsets"""
         fig = plt.figure()
-        self.data.plot.plot_timeseries(plot_onsets="label")
+        self.data.plot.plot_timeseries(show_onsets="label")
         self.assertIsNotNone(plt.gcf())
     
-    def test_plot_onsets_both(self):
+    def test_show_onsets_both(self):
         """Test plot_timeseries with both line and label onsets"""
         fig = plt.figure()
-        self.data.plot.plot_timeseries(plot_onsets="both")
+        self.data.plot.plot_timeseries(show_onsets="both")
         self.assertIsNotNone(plt.gcf())
     
-    def test_plot_onsets_none(self):
+    def test_show_onsets_none(self):
         """Test plot_timeseries with no onsets"""
         fig = plt.figure()
-        self.data.plot.plot_timeseries(plot_onsets="none")
+        self.data.plot.plot_timeseries(show_onsets="none")
         self.assertIsNotNone(plt.gcf())
     
-    def test_plot_masked_true(self):
-        """Test plot_timeseries with masked regions highlighted"""
+    def test_show_masked_true(self):
+        """Test plot_timeseries with show_masked=True (plots all data including masked regions)"""
         fig = plt.figure()
-        self.data.plot.plot_timeseries(plot_masked=True)
+        self.data.plot.plot_timeseries(show_masked=True)
         self.assertIsNotNone(plt.gcf())
     
-    def test_plot_masked_false(self):
-        """Test plot_timeseries without masked regions"""
+    def test_show_masked_false(self):
+        """Test plot_timeseries with show_masked=False (creates gaps at masked regions)"""
         fig = plt.figure()
-        self.data.plot.plot_timeseries(plot_masked=False)
+        self.data.plot.plot_timeseries(show_masked=False)
+        self.assertIsNotNone(plt.gcf())
+    
+    def test_show_mask_highlight_true(self):
+        """Test plot_timeseries with mask highlighting enabled"""
+        fig = plt.figure()
+        self.data.plot.plot_timeseries(show_mask_highlight=True)
+        self.assertIsNotNone(plt.gcf())
+    
+    def test_show_mask_highlight_false(self):
+        """Test plot_timeseries with mask highlighting disabled"""
+        fig = plt.figure()
+        self.data.plot.plot_timeseries(show_mask_highlight=False)
+        self.assertIsNotNone(plt.gcf())
+    
+    def test_show_masked_false_with_highlight(self):
+        """Test plot_timeseries with gaps at masked regions but still highlighting"""
+        fig = plt.figure()
+        self.data.plot.plot_timeseries(show_masked=False, show_mask_highlight=True)
+        self.assertIsNotNone(plt.gcf())
+    
+    def test_show_masked_true_no_highlight(self):
+        """Test plot_timeseries with masked data plotted but no highlighting"""
+        fig = plt.figure()
+        self.data.plot.plot_timeseries(show_masked=True, show_mask_highlight=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_units_none(self):

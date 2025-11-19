@@ -76,11 +76,11 @@ class TestPlottingErrorHandling(unittest.TestCase):
         """Clean up after each test"""
         plt.close('all')
     
-    def test_plot_onsets_invalid_option(self):
-        """Test that invalid plot_onsets raises ValueError"""
+    def test_show_onsets_invalid_option(self):
+        """Test that invalid show_onsets raises ValueError"""
         fig = plt.figure()
         with self.assertRaises(ValueError):
-            self.data.plot.plot_timeseries(plot_onsets="invalid_option")
+            self.data.plot.plot_timeseries(show_onsets="invalid_option")
     
     def test_plot_intervals_invalid_type(self):
         """Test that invalid input type raises TypeError"""
