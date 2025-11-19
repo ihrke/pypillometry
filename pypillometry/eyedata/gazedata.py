@@ -407,3 +407,114 @@ class GazeData(GenericEyeData):
             return obj
         else:
             return intervals_obj
+    
+    @keephistory
+    def mask_offscreen_coords(self, eyes: str|list = [], apply_mask: bool = True, 
+                             ignore_existing_mask: bool = False, inplace=None):
+        """
+        Detect and mask gaze coordinates that fall outside the screen boundaries.
+        
+        This method identifies points where the (x,y) coordinates fall outside the 
+        defined screen limits. When apply_mask=True, these points are masked. 
+        When apply_mask=False, the offscreen periods are returned as Intervals objects.
+        
+        Parameters
+        ----------
+        eyes : str or list, default=[]
+            Eye(s) to check for offscreen coordinates. If empty, checks all available eyes.
+            Can be a single eye name (e.g., "left") or a list (e.g., ["left", "right"]).
+        apply_mask : bool, default=True
+            If True, apply detected offscreen periods as masks to the data and return self.
+            If False, return detected offscreen periods as dict of Intervals objects.
+        ignore_existing_mask : bool, default=False
+            If False (default), only check non-masked data points for offscreen coordinates.
+            If True, check all data points including those already masked (e.g., from blinks).
+        inplace : bool or None
+            If True, make change in-place and return the object.
+            If False, make and return copy before making changes.
+            If None, use the object-level setting.
+        
+        Returns
+        -------
+        GazeData or dict of Intervals
+            If apply_mask=True: returns self for chaining.
+            If apply_mask=False: returns dict of Intervals objects (one per eye) containing 
+            detected offscreen intervals.
+        
+        Examples
+        --------
+        >>> # Mask offscreen coordinates for all eyes
+        >>> gaze_data = gaze_data.mask_offscreen_coords()
+        
+        >>> # Detect offscreen periods without masking
+        >>> offscreen = gaze_data.mask_offscreen_coords(apply_mask=False)
+        
+        >>> # Mask offscreen coordinates for left eye only
+        >>> gaze_data = gaze_data.mask_offscreen_coords(eyes='left')
+        
+        >>> # Check all data including already masked points (e.g., during blinks)
+        >>> gaze_data = gaze_data.mask_offscreen_coords(ignore_existing_mask=True)
+        """
+        obj = self._get_inplace(inplace)
+        
+        # Get eyes to check
+        eyes_list, _ = obj._get_eye_var(eyes, [])
+        
+        # Dictionary to store intervals per eye
+        intervals_dict = {}
+        
+        # Check each eye
+        for eye in eyes_list:
+            vx = f"{eye}_x"
+            vy = f"{eye}_y"
+            
+            # Check if this eye has x and y data
+            if vx not in obj.data.keys() or vy not in obj.data.keys():
+                logger.warning(f"Eye '{eye}' does not have both x and y coordinates. Skipping.")
+                continue
+            
+            # Get coordinates
+            if ignore_existing_mask:
+                # Use raw data, ignoring existing masks
+                x = obj.data[vx]
+                y = obj.data[vy]
+            else:
+                # Use masked arrays (respects existing masks)
+                x = obj[vx]
+                y = obj[vy]
+
+
+            # Check all points including already masked ones
+            offscreen_mask = (
+                (x < obj.screen_xlim[0]) | 
+                (x > obj.screen_xlim[1]) | 
+                (y < obj.screen_ylim[0]) | 
+                (y > obj.screen_ylim[1])
+            )
+            
+            # Convert masked array to regular boolean array if needed
+            if isinstance(offscreen_mask, np.ma.MaskedArray):
+                offscreen_mask = offscreen_mask.filled(False)
+
+            # Convert mask to intervals
+            intervals_list = obj._mask_to_intervals_list(offscreen_mask)
+            
+            # Create Intervals object for this eye
+            intervals_obj = Intervals(
+                intervals=intervals_list,
+                units=None,  # Using index units
+                label=f"{eye}_offscreen",
+                data_time_range=(0, len(obj.tx))
+            )
+            
+            intervals_dict[eye] = intervals_obj
+            
+            logger.debug(f"Detected {len(intervals_obj)} offscreen intervals for {eye} eye")
+        
+        # Apply mask if requested
+        if apply_mask:
+            for eye, intervals_obj in intervals_dict.items():
+                obj.mask_intervals(intervals_obj, eyes=[eye], variables=['x', 'y'])
+            return obj
+        else:
+            return intervals_dict
