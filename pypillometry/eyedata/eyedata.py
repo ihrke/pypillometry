@@ -227,6 +227,7 @@ class EyeData(GazeData,PupilData):
             ydist=np.abs(self.data[vy]-midpoint[1])*scaling_factor_y
             dist=np.sqrt(xdist**2 + ydist**2)
             corr=np.sqrt( (dist**2)/(self.screen_eye_distance**2) + 1)  # correction factor
-            obj.data["_".join([eye, store_as])]=self.data["_".join([eye, "pupil"])]*corr
+            # Use masked array access to preserve masks from blinks/artifacts
+            obj[eye, store_as] = self[eye, "pupil"] * corr
 
         return obj

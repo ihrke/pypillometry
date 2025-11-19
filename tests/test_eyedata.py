@@ -304,6 +304,93 @@ class TestEyeData(unittest.TestCase):
         self.assertNotIn('left_pupil', merged_no_keep.data)
         self.assertNotIn('right_pupil', merged_no_keep.data)
         self.assertIn('mean_pupil', merged_no_keep.data)
+    
+    def test_merge_eyes_preserves_masks(self):
+        """Test that merge_eyes handles masks correctly when averaging eyes
+        
+        When averaging binocular data:
+        - If one eye is masked, use the other eye's value (not masked in result)
+        - If both eyes are masked, result is masked
+        - This allows using good data from one eye when the other has a blink
+        """
+        # Make a copy to avoid modifying the shared test data
+        data = self.eyedata.copy()
+        
+        # Manually mask some points in both eyes
+        data.data.mask['left_pupil'][10] = 1   # Masked in left only
+        data.data.mask['left_pupil'][20] = 1   # Masked in both
+        data.data.mask['right_pupil'][15] = 1  # Masked in right only
+        data.data.mask['right_pupil'][20] = 1  # Masked in both
+        
+        # Merge eyes
+        merged = data.merge_eyes(eyes=['left', 'right'], variables=['pupil'], inplace=False)
+        
+        # Points masked in ONE eye should NOT be masked (uses the other eye's data)
+        self.assertEqual(merged.data.mask['mean_pupil'][10], 0)  # Masked in left only -> use right
+        self.assertEqual(merged.data.mask['mean_pupil'][15], 0)  # Masked in right only -> use left
+        
+        # Points masked in BOTH eyes should be masked
+        self.assertEqual(merged.data.mask['mean_pupil'][20], 1)  # Masked in both
+        
+        # Non-masked points should remain unmasked
+        self.assertEqual(merged.data.mask['mean_pupil'][0], 0)
+        self.assertEqual(merged.data.mask['mean_pupil'][5], 0)
+        
+        # Verify the actual values make sense (using non-masked eye data)
+        # At index 10: left is masked, so mean should equal right value
+        np.testing.assert_almost_equal(
+            merged.data['mean_pupil'][10],
+            data.data['right_pupil'][10]
+        )
+        # At index 15: right is masked, so mean should equal left value  
+        np.testing.assert_almost_equal(
+            merged.data['mean_pupil'][15],
+            data.data['left_pupil'][15]
+        )
+    
+    def test_correct_pupil_foreshortening_preserves_masks(self):
+        """Test that correct_pupil_foreshortening preserves masks from blinks/artifacts"""
+        # Make a copy to avoid modifying the shared test data
+        data = self.eyedata.copy()
+        
+        # Manually mask some points (simulating blinks)
+        data.data.mask['left_pupil'][10] = 1
+        data.data.mask['left_pupil'][20] = 1
+        data.data.mask['right_pupil'][15] = 1
+        
+        # Apply foreshortening correction
+        corrected = data.correct_pupil_foreshortening(
+            eyes=['left', 'right'], 
+            inplace=False
+        )
+        
+        # Masks should be preserved
+        self.assertEqual(corrected.data.mask['left_pupil'][10], 1)
+        self.assertEqual(corrected.data.mask['left_pupil'][20], 1)
+        self.assertEqual(corrected.data.mask['right_pupil'][15], 1)
+        
+        # Non-masked points should remain unmasked
+        self.assertEqual(corrected.data.mask['left_pupil'][0], 0)
+        self.assertEqual(corrected.data.mask['right_pupil'][0], 0)
+    
+    def test_correct_pupil_foreshortening_with_store_as_preserves_masks(self):
+        """Test mask preservation when storing to a different variable"""
+        # Make a copy to avoid modifying the shared test data
+        data = self.eyedata.copy()
+        
+        # Manually mask some points
+        data.data.mask['left_pupil'][10] = 1
+        
+        # Apply correction and store as new variable
+        corrected = data.correct_pupil_foreshortening(
+            eyes=['left'], 
+            store_as='pupil_corrected',
+            inplace=False
+        )
+        
+        # New variable should have the same mask as original
+        self.assertEqual(corrected.data.mask['left_pupil_corrected'][10], 1)
+        self.assertEqual(corrected.data.mask['left_pupil_corrected'][0], 0)
 
     def test_blinks_merge_close(self):
         """Test merging of close blinks"""

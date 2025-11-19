@@ -1822,15 +1822,23 @@ class GenericEyeData(ABC):
 
         if method=="mean":            
             for var in variables:
-                meanval = np.zeros(len(obj.tx))
+                # Collect masked arrays from all eyes
+                eye_data = []
                 for eye in eyes:
                     if var not in obj.variables:
                         raise ValueError("No data for variable %s available" % var)
                     if eye not in obj.eyes:
                         raise ValueError("No data for eye %s available" % eye)
-                    meanval += obj.data[eye,var]
-                meanval /= len(eyes)
-                obj.data["mean",var]=meanval
+                    eye_data.append(obj[eye, var])
+                
+                # Stack and compute mean, preserving masks
+                # If any eye has a masked value, that timepoint is masked in the mean
+                stacked = np.ma.stack(eye_data, axis=0)
+                meanval = np.ma.mean(stacked, axis=0)
+                
+                # Use masked array assignment to preserve the combined mask
+                obj["mean", var] = meanval
+                
                 if not keep_eyes:
                     for eye in eyes:
                         logger.debug("Dropping eye %s for variable %s" % (eye, var))
