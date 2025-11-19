@@ -444,6 +444,115 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(len(blinks_end), 1)
         self.assertLessEqual(blinks_end.intervals[0][1], self.eyedata.tx[-1])
 
+    def test_blinks_merge_close_apply_mask_true(self):
+        """Test that blinks_merge_close with apply_mask=True applies masks to data"""
+        from pypillometry.intervals import Intervals
+        
+        data = self.eyedata.copy()
+        
+        # Create artificial blinks that are close together
+        intervals = Intervals([(100, 200), (250, 350)], units=None, 
+                             data_time_range=(0, len(data.tx)))
+        data.set_blinks(intervals, eyes=['left'], variables=['pupil'], apply_mask=False)
+        
+        # Verify no masks are applied initially (except any pre-existing ones)
+        initial_mask_count = np.sum(data.data.mask['left_pupil'])
+        
+        # Merge blinks with apply_mask=True (default)
+        merged = data.blinks_merge_close(eyes=['left'], variables=['pupil'], 
+                                         distance=100, units="ms", apply_mask=True)
+        
+        # Should return the modified object
+        self.assertIs(merged, data)
+        
+        # Verify masks are applied - the entire range from 100 to 350 should be masked
+        final_mask_count = np.sum(data.data.mask['left_pupil'])
+        self.assertGreater(final_mask_count, initial_mask_count)
+        
+        # Check that the merged region is masked
+        self.assertTrue(np.all(data.data.mask['left_pupil'][100:350]))
+        
+        # Verify the blinks are stored
+        blinks = data.get_blinks('left', 'pupil')
+        self.assertEqual(len(blinks), 1)
+        blinks_ix = blinks.as_index(data)
+        self.assertEqual(blinks_ix[0, 0], 100)
+        self.assertEqual(blinks_ix[0, 1], 350)
+
+    def test_blinks_merge_close_apply_mask_false(self):
+        """Test that blinks_merge_close with apply_mask=False returns Intervals without applying masks"""
+        from pypillometry.intervals import Intervals
+        
+        data = self.eyedata.copy()
+        
+        # Create artificial blinks that are close together
+        intervals = Intervals([(100, 200), (250, 350)], units=None, 
+                             data_time_range=(0, len(data.tx)))
+        data.set_blinks(intervals, eyes=['left'], variables=['pupil'], apply_mask=False)
+        
+        # Get initial mask state
+        initial_mask = data.data.mask['left_pupil'].copy()
+        
+        # Merge blinks with apply_mask=False
+        result = data.blinks_merge_close(eyes=['left'], variables=['pupil'], 
+                                         distance=100, units="ms", apply_mask=False)
+        
+        # Should return a dictionary of Intervals
+        self.assertIsInstance(result, dict)
+        self.assertIn('left_pupil', result)
+        self.assertIsInstance(result['left_pupil'], Intervals)
+        
+        # Verify the merged intervals are correct
+        merged_intervals = result['left_pupil']
+        self.assertEqual(len(merged_intervals), 1)
+        merged_ix = merged_intervals.as_index(data)
+        self.assertEqual(merged_ix[0, 0], 100)
+        self.assertEqual(merged_ix[0, 1], 350)
+        
+        # Verify masks were NOT applied to the data
+        np.testing.assert_array_equal(data.data.mask['left_pupil'], initial_mask)
+        
+        # Verify stored blinks were not updated
+        stored_blinks = data.get_blinks('left', 'pupil')
+        self.assertEqual(len(stored_blinks), 2)  # Original two blinks still there
+
+    def test_blinks_merge_close_multiple_eyes_apply_mask_false(self):
+        """Test that apply_mask=False returns correct dictionary for multiple eyes"""
+        from pypillometry.intervals import Intervals
+        
+        data = self.eyedata.copy()
+        
+        # Create blinks for both eyes
+        intervals_left = Intervals([(100, 200), (250, 350)], units=None, 
+                                   data_time_range=(0, len(data.tx)))
+        intervals_right = Intervals([(150, 250), (400, 500)], units=None, 
+                                    data_time_range=(0, len(data.tx)))
+        
+        data.set_blinks(intervals_left, eyes=['left'], variables=['pupil'], apply_mask=False)
+        data.set_blinks(intervals_right, eyes=['right'], variables=['pupil'], apply_mask=False)
+        
+        # Merge blinks for both eyes with apply_mask=False
+        result = data.blinks_merge_close(eyes=['left', 'right'], variables=['pupil'], 
+                                         distance=100, units="ms", apply_mask=False)
+        
+        # Should have both eyes in the result
+        self.assertIn('left_pupil', result)
+        self.assertIn('right_pupil', result)
+        
+        # Check left eye merging (100-200 and 250-350 should merge)
+        left_merged = result['left_pupil']
+        self.assertEqual(len(left_merged), 1)
+        left_ix = left_merged.as_index(data)
+        self.assertEqual(left_ix[0, 0], 100)
+        self.assertEqual(left_ix[0, 1], 350)
+        
+        # Check right eye (150-250 and 400-500 should NOT merge as they're 150ms apart)
+        right_merged = result['right_pupil']
+        self.assertEqual(len(right_merged), 2)
+        right_ix = right_merged.as_index(data)
+        np.testing.assert_array_equal(right_ix[0], [150, 250])
+        np.testing.assert_array_equal(right_ix[1], [400, 500])
+
     def test_pupil_blinks_detect_updates_mask(self):
         """Test that blink detection updates data mask correctly."""
         # Create artificial signal with values set to 0 indicating blinks

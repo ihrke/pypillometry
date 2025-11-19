@@ -1856,6 +1856,7 @@ class GenericEyeData(ABC):
         variables: list = [],
         distance: float = 100,
         units: str = "ms",
+        apply_mask: bool = True,
         inplace: bool | None = None,
     ):
         """
@@ -1871,13 +1872,18 @@ class GenericEyeData(ABC):
             Merge blinks closer than this distance (in units specified by ``units``)
         units : str
             Units for ``distance``. Can be "ms", "sec", "min", or "h". Default "ms".
+        apply_mask : bool, default=True
+            If True, apply merged blinks as masks to the data and return self.
+            If False, return merged blinks as dict of Intervals objects without applying masks.
         inplace : bool or None
             If True, modify in place. If False, return copy.
+            Only relevant when apply_mask=True.
             
         Returns
         -------
-        GenericEyeData
-            Modified object
+        GenericEyeData or dict of Intervals
+            If apply_mask=True: returns modified object for chaining.
+            If apply_mask=False: returns dict of Intervals objects (one per eye/variable combination).
         """
         obj = self._get_inplace(inplace)
         eyes, variables = obj._get_eye_var(eyes, variables)
@@ -1886,6 +1892,9 @@ class GenericEyeData(ABC):
         distance_ix = (distance / fac) * (obj.fs / 1000.0)        
 
         logger.debug(f"Distance '{distance} {units}' in index units: {distance_ix}")
+
+        # Dictionary to store merged intervals
+        merged_dict = {}
 
         for eye, var in itertools.product(eyes, variables):
             blinks = obj.get_blinks(eye, var, units=None)
@@ -1913,9 +1922,19 @@ class GenericEyeData(ABC):
                 label=f"{eye}_{var}_blinks",
                 data_time_range=(0, len(obj.tx))
             )
-            obj.set_blinks(merged_intervals, eyes=[eye], variables=[var], apply_mask=True)
+            
+            key = f"{eye}_{var}"
+            merged_dict[key] = merged_intervals
+            
+            # Apply mask if requested
+            if apply_mask:
+                obj.set_blinks(merged_intervals, eyes=[eye], variables=[var], apply_mask=True)
 
-        return obj    
+        # Return appropriate result
+        if apply_mask:
+            return obj
+        else:
+            return merged_dict    
             
     def stat_per_event(self, 
                        intervals=None,
