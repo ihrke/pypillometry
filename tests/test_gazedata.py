@@ -43,6 +43,45 @@ class TestGazeData(unittest.TestCase):
         self.assertEqual(d.data["left","x"].mean(), 1.5)
         self.assertEqual(d.data["left","y"].mean(), 3.5)
     
+    def test_scale_preserves_mask(self):
+        """Test that scale() preserves existing masks"""
+        d = pp.GazeData(sampling_rate=10, left_x=[1, 2, 3, 4], left_y=[5, 6, 7, 8])
+        
+        # Manually mask some points
+        d.data.mask['left_x'][1] = 1
+        d.data.mask['left_y'][2] = 1
+        
+        # Scale the data
+        d_scaled = d.scale(['x', 'y'], inplace=False)
+        
+        # Verify masks are preserved
+        self.assertEqual(d_scaled.data.mask['left_x'][1], 1)
+        self.assertEqual(d_scaled.data.mask['left_y'][2], 1)
+        
+        # Verify other points are not masked
+        self.assertEqual(d_scaled.data.mask['left_x'][0], 0)
+        self.assertEqual(d_scaled.data.mask['left_y'][0], 0)
+    
+    def test_unscale_preserves_mask(self):
+        """Test that unscale() preserves existing masks"""
+        d = pp.GazeData(sampling_rate=10, left_x=[1, 2, 3, 4], left_y=[5, 6, 7, 8])
+        
+        # Manually mask some points
+        d.data.mask['left_x'][1] = 1
+        d.data.mask['left_y'][2] = 1
+        
+        # Scale and then unscale
+        d_scaled = d.scale(['x', 'y'], inplace=False)
+        d_unscaled = d_scaled.unscale(['x', 'y'], inplace=False)
+        
+        # Verify masks are preserved through both operations
+        self.assertEqual(d_unscaled.data.mask['left_x'][1], 1)
+        self.assertEqual(d_unscaled.data.mask['left_y'][2], 1)
+        
+        # Verify other points are not masked
+        self.assertEqual(d_unscaled.data.mask['left_x'][0], 0)
+        self.assertEqual(d_unscaled.data.mask['left_y'][0], 0)
+    
     def test_mask_eye_divergences_percentile(self):
         """Test masking eye divergences with percentile threshold"""
         # Create data with both eyes where some points have large divergence
@@ -615,20 +654,18 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             screen_resolution=(1280, 1024)
         )
         
-        # Test that mask_offscreen_coords returns a GazeData object that can be chained
-        d_masked = d.mask_offscreen_coords(eyes='left', inplace=False)
+        # Chain operations
+        d_processed = (d
+            .mask_offscreen_coords(eyes='left', inplace=False)
+            .scale(['x', 'y'])
+        )
         
-        # Verify masks were applied by mask_offscreen_coords
-        self.assertEqual(d_masked.data.mask['left_x'][1], 1)
-        self.assertEqual(d_masked.data.mask['left_y'][2], 1)
+        # Verify masks were applied and preserved through chaining
+        self.assertEqual(d_processed.data.mask['left_x'][1], 1)
+        self.assertEqual(d_processed.data.mask['left_y'][2], 1)
         
-        # Verify it's chainable by calling another method
-        d_processed = d_masked.scale(['x', 'y'])
-        
-        # Verify the chained operation completed (scale was applied)
+        # Verify scaling was applied
         self.assertIn('scale', d_processed.params)
-        
-        # Note: Whether subsequent operations preserve masks is their own responsibility
     
     def test_mask_offscreen_coords_at_boundary(self):
         """Test that coordinates exactly at screen boundaries are not masked"""
