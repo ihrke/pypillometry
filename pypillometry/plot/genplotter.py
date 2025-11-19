@@ -151,9 +151,10 @@ class GenericPlotter:
             plot_range: tuple=(-np.inf, +np.inf),
             variables: list=[], 
             eyes: list=[],
-            plot_onsets: str="line",
             units: Union[str, None]=None,
-            plot_masked: bool=False,
+            show_onsets: str="line",
+            show_masked: bool=True,
+            show_mask_highlight: bool=True,
             label_prefix: str="",
             style: dict=None
             ) -> None:
@@ -173,13 +174,16 @@ class GenericPlotter:
         eyes: list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             "average", "regression", ...)
-        plot_onsets: str
+        show_onsets: str
             Whether to plot markers for the event onsets. One of "line" (vertical lines),
             "label" (text label), "both" (both lines and labels), or "none" (no markers).
         units: str
             The units to plot. Default is "sec". If None, use the units in the time vector.
-        plot_masked: bool
-            Whether to highlight masked regions with a light red background. Default is False.
+        show_masked: bool
+            Whether to plot the data in masked regions. If True (default), plots all data including
+            masked regions. If False, masked data points are not plotted (gaps in the line).
+        show_mask_highlight: bool
+            Whether to highlight masked regions with a light red background. Default is True.
         label_prefix: str
             Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
             Default is "" (no prefix).
@@ -218,20 +222,20 @@ class GenericPlotter:
         variables = [v for v in variables if v not in getattr(self, 'ignore_vars', [])]
 
         # how to plot onsets
-        if plot_onsets=="line":
+        if show_onsets=="line":
             ev_line=True
             ev_label=False
-        elif plot_onsets=="label":
+        elif show_onsets=="label":
             ev_line=False
             ev_label=True
-        elif plot_onsets=="both":
+        elif show_onsets=="both":
             ev_line=True
             ev_label=True
-        elif plot_onsets=="none":
+        elif show_onsets=="none":
             ev_line=False
             ev_label=False
         else:
-            raise ValueError("plot_onsets must be one of 'line', 'label', 'both', or 'none'")
+            raise ValueError("show_onsets must be one of 'line', 'label', 'both', or 'none'")
         
         tx=tx[startix:endix]
         ixx=np.logical_and(evon>=start, evon<end)
@@ -302,8 +306,18 @@ class GenericPlotter:
                         # No style provided but multiple eyes: use default colors with varied linestyles
                         plot_kwargs['linestyle'] = linestyles[idx % len(linestyles)]
                     
-                    ax.plot(tx, obj.data[vname][startix:endix], **plot_kwargs)
-                    if plot_masked and vname in obj.data.mask:
+                    # Plot the data - use masked array if show_masked is False
+                    if show_masked:
+                        # Plot all data including masked regions
+                        data_to_plot = obj.data[vname][startix:endix]
+                    else:
+                        # Use masked array - gaps will appear where data is masked
+                        data_to_plot = obj[eye, var][startix:endix]
+                    
+                    ax.plot(tx, data_to_plot, **plot_kwargs)
+                    
+                    # Optionally highlight masked regions with red background
+                    if show_mask_highlight and vname in obj.data.mask:
                         mask = obj.data.mask[vname][startix:endix]
                         ax.fill_between(tx, ax.get_ylim()[0], ax.get_ylim()[1], 
                                       where=mask, color='red', alpha=0.2)
