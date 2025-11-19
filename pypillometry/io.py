@@ -101,6 +101,12 @@ def _osf_client_url_to_download_url(url: str, session: Optional[requests.Session
     if not url.startswith("https://osf.io/"):
         logger.debug(f"URL is not an OSF client URL: {url!r}")
         return url
+    
+    # Check if it's already a download URL
+    if "/download/" in url:
+        logger.debug(f"URL is already a download URL: {url!r}")
+        return url
+    
     # get the project ID
     from urllib.parse import urlsplit
     parts = [segment for segment in urlsplit(url).path.split('/') if segment]
