@@ -398,7 +398,7 @@ class GenericPlotter:
 
     def plot_masked(self, eyes: str|list = [], variables: str|list = [], 
                     units: str = "min", merge: bool = False, 
-                    show_labels: bool = True, **kwargs):
+                    show_labels: bool = True, show_events: bool = False, **kwargs):
         """
         Plot masked intervals for specified eyes and variables.
         
@@ -422,6 +422,8 @@ class GenericPlotter:
             Default is False.
         show_labels : bool, optional
             Whether to show labels for each interval group. Default is True.
+        show_events : bool, optional
+            Whether to show vertical grey stripes at event positions. Default is False.
         **kwargs : dict
             Additional keyword arguments passed to matplotlib plot()
             
@@ -443,6 +445,10 @@ class GenericPlotter:
         Merge all masks and plot as one:
         
         >>> data.plot.plot_masked(['left', 'right'], 'pupil', merge=True)
+        
+        Plot with event markers:
+        
+        >>> data.plot.plot_masked('left', 'pupil', show_events=True)
         """
         from ..intervals import merge_intervals
         
@@ -532,6 +538,16 @@ class GenericPlotter:
             # Set title
             if show_labels:
                 ax.set_title('Masked Intervals')
+        
+        # Plot event markers as vertical grey lines
+        if show_events:
+            # Get events in appropriate units
+            events = obj.get_events(units=units if units is not None else "ms")
+            
+            # Plot vertical lines at event positions
+            if len(events) > 0:
+                for ev in events.onsets:
+                    ax.axvline(ev, color='grey', alpha=0.5, zorder=0)
         
         # Set x-axis label based on units
         if units is not None:
