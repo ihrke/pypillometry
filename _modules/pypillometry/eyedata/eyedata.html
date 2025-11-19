@@ -98,12 +98,6 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        sometimes, when the eyetracker loses signal, no entry in the EDF is made; </span>
 <span class="sd">        when this option is True, such entries will be made and the signal set to 0 there</span>
 <span class="sd">        (or do it later using `fill_time_discontinuities()`)</span>
-<span class="sd">    use_cache: bool</span>
-<span class="sd">        Whether to use cached storage for data arrays. Default is False.</span>
-<span class="sd">    cache_dir: str, optional</span>
-<span class="sd">        Directory to store cache files. If None, creates a temporary directory.</span>
-<span class="sd">    max_memory_mb: float, optional</span>
-<span class="sd">        Maximum memory usage in MB when using cache. Default is 100MB.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -132,10 +126,7 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                     <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
                     <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                    <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+                    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the EyeData class.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating EyeData object&quot;</span><span class="p">)</span>
@@ -148,10 +139,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_common</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> 
                           <span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="p">,</span> 
                           <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> 
-                          <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">,</span>
-                          <span class="n">use_cache</span><span class="o">=</span><span class="n">use_cache</span><span class="p">,</span>
-                          <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
-                          <span class="n">max_memory_mb</span><span class="o">=</span><span class="n">max_memory_mb</span><span class="p">)</span>
+                          <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="o">=</span><span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims_set</span><span class="o">=</span><span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance_set</span><span class="o">=</span><span class="kc">False</span>
@@ -282,7 +270,8 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">ydist</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vy</span><span class="p">]</span><span class="o">-</span><span class="n">midpoint</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">*</span><span class="n">scaling_factor_y</span>
             <span class="n">dist</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">xdist</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">ydist</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="n">corr</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="p">(</span><span class="n">dist</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">screen_eye_distance</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># correction factor</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">eye</span><span class="p">,</span> <span class="n">store_as</span><span class="p">])]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">])]</span><span class="o">*</span><span class="n">corr</span>
+            <span class="c1"># Use masked array access to preserve masks from blinks/artifacts</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">store_as</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">corr</span>
 
         <span class="k">return</span> <span class="n">obj</span></div>
 </div>

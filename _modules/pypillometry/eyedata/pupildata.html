@@ -108,12 +108,6 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        if True, the object is modified in place; if False, a new object is returned</span>
 <span class="sd">        this object-level property can be overwritten by the method-level `inplace` argument</span>
 <span class="sd">        default is &quot;False&quot;</span>
-<span class="sd">    use_cache: bool</span>
-<span class="sd">        Whether to use cached storage for data arrays. Default is False.</span>
-<span class="sd">    cache_dir: str</span>
-<span class="sd">        Directory to store cache files. If None, creates a temporary directory.</span>
-<span class="sd">    max_memory_mb: float</span>
-<span class="sd">        Maximum memory usage in MB when using cache. Default is 100MB.</span>
 <span class="sd">    &quot;&quot;&quot;</span>    
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -126,10 +120,7 @@ window.addEventListener("load", () => mermaid.run());
                  <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                  <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                 <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                 <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+                 <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for PupilData object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -141,10 +132,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_common</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> 
                           <span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="p">,</span> 
                           <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> 
-                          <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">,</span>
-                          <span class="n">use_cache</span><span class="o">=</span><span class="n">use_cache</span><span class="p">,</span>
-                          <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
-                          <span class="n">max_memory_mb</span><span class="o">=</span><span class="n">max_memory_mb</span><span class="p">)</span>
+                          <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">)</span>
 
         <span class="c1"># store original</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">original</span><span class="o">=</span><span class="kc">None</span>

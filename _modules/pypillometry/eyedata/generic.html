@@ -55,7 +55,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">sizeof_fmt</span><span class="p">,</span> <span class="n">ByteSize</span><span class="p">,</span> <span class="n">requires_package</span><span class="p">,</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">suppress_all_output</span><span class="p">,</span> <span class="n">normalize_unit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..io</span><span class="w"> </span><span class="kn">import</span> <span class="n">download</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">CachedEyeDataDict</span><span class="p">,</span> <span class="n">EyeDataDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">baseline</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">stat_event_interval</span><span class="p">,</span> <span class="n">get_interval_stats</span><span class="p">,</span> <span class="n">Intervals</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_get_level</span>
@@ -134,10 +134,7 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                     <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-                    <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+                    <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Common code for the child-classes of GenericEyeData.</span>
 <span class="sd">        Assumes that self.data is already set and filled.</span>
@@ -184,21 +181,6 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="c1">## set info</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="n">info</span> <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
-
-        <span class="c1">## Initialize caching if requested</span>
-        <span class="k">if</span> <span class="n">use_cache</span><span class="p">:</span>
-            <span class="c1"># Create cache directory if it doesn&#39;t exist</span>
-            <span class="k">if</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created cache directory at </span><span class="si">{</span><span class="n">cache_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            
-            <span class="c1"># Convert to cached version</span>
-            <span class="n">old_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">CachedEyeDataDict</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">max_memory_mb</span><span class="o">=</span><span class="n">max_memory_mb</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
 
         <span class="c1">## fill in time discontinuities</span>
         <span class="k">if</span> <span class="n">fill_time_discontinuities</span><span class="p">:</span>
@@ -1822,7 +1804,8 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data for eye </span><span class="si">%s</span><span class="s2"> available&quot;</span> <span class="o">%</span> <span class="n">eye</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data for variable </span><span class="si">%s</span><span class="s2"> available&quot;</span> <span class="o">%</span> <span class="n">var</span><span class="p">)</span>
-                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span><span class="o">-</span><span class="n">mean</span><span class="p">[</span><span class="n">eye</span><span class="p">][</span><span class="n">var</span><span class="p">])</span><span class="o">/</span><span class="n">sd</span><span class="p">[</span><span class="n">eye</span><span class="p">][</span><span class="n">var</span><span class="p">]</span>
+                <span class="c1"># Use masked array access to preserve masks</span>
+                <span class="n">obj</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean</span><span class="p">[</span><span class="n">eye</span><span class="p">][</span><span class="n">var</span><span class="p">])</span> <span class="o">/</span> <span class="n">sd</span><span class="p">[</span><span class="n">eye</span><span class="p">][</span><span class="n">var</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">obj</span></div>
 
         
@@ -1874,7 +1857,8 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>                
                 <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data for variable </span><span class="si">%s</span><span class="s2"> available&quot;</span> <span class="o">%</span> <span class="n">var</span><span class="p">)</span>
-                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span><span class="o">*</span><span class="n">sd</span><span class="p">[</span><span class="n">eye</span><span class="p">][</span><span class="n">var</span><span class="p">])</span><span class="o">+</span><span class="n">mean</span><span class="p">[</span><span class="n">eye</span><span class="p">][</span><span class="n">var</span><span class="p">]</span>
+                <span class="c1"># Use masked array access to preserve masks</span>
+                <span class="n">obj</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span> <span class="o">*</span> <span class="n">sd</span><span class="p">[</span><span class="n">eye</span><span class="p">][</span><span class="n">var</span><span class="p">])</span> <span class="o">+</span> <span class="n">mean</span><span class="p">[</span><span class="n">eye</span><span class="p">][</span><span class="n">var</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">obj</span>    </div>
 
 
@@ -1947,15 +1931,23 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="k">if</span> <span class="n">method</span><span class="o">==</span><span class="s2">&quot;mean&quot;</span><span class="p">:</span>            
             <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
-                <span class="n">meanval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+                <span class="c1"># Collect masked arrays from all eyes</span>
+                <span class="n">eye_data</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data for variable </span><span class="si">%s</span><span class="s2"> available&quot;</span> <span class="o">%</span> <span class="n">var</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">eye</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">eyes</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data for eye </span><span class="si">%s</span><span class="s2"> available&quot;</span> <span class="o">%</span> <span class="n">eye</span><span class="p">)</span>
-                    <span class="n">meanval</span> <span class="o">+=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">var</span><span class="p">]</span>
-                <span class="n">meanval</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span>
-                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span><span class="n">var</span><span class="p">]</span><span class="o">=</span><span class="n">meanval</span>
+                    <span class="n">eye_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">])</span>
+                
+                <span class="c1"># Stack and compute mean, preserving masks</span>
+                <span class="c1"># If any eye has a masked value, that timepoint is masked in the mean</span>
+                <span class="n">stacked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">eye_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">meanval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">stacked</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                
+                <span class="c1"># Use masked array assignment to preserve the combined mask</span>
+                <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">meanval</span>
+                
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_eyes</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Dropping eye </span><span class="si">%s</span><span class="s2"> for variable </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
@@ -1976,6 +1968,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">variables</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span>
         <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
         <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span><span class="p">,</span>
+        <span class="n">apply_mask</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1991,13 +1984,18 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">            Merge blinks closer than this distance (in units specified by ``units``)</span>
 <span class="sd">        units : str</span>
 <span class="sd">            Units for ``distance``. Can be &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, or &quot;h&quot;. Default &quot;ms&quot;.</span>
+<span class="sd">        apply_mask : bool, default=True</span>
+<span class="sd">            If True, apply merged blinks as masks to the data and return self.</span>
+<span class="sd">            If False, return merged blinks as dict of Intervals objects without applying masks.</span>
 <span class="sd">        inplace : bool or None</span>
 <span class="sd">            If True, modify in place. If False, return copy.</span>
+<span class="sd">            Only relevant when apply_mask=True.</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        GenericEyeData</span>
-<span class="sd">            Modified object</span>
+<span class="sd">        GenericEyeData or dict of Intervals</span>
+<span class="sd">            If apply_mask=True: returns modified object for chaining.</span>
+<span class="sd">            If apply_mask=False: returns dict of Intervals objects (one per eye/variable combination).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">)</span>
@@ -2006,6 +2004,9 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">distance_ix</span> <span class="o">=</span> <span class="p">(</span><span class="n">distance</span> <span class="o">/</span> <span class="n">fac</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">)</span>        
 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Distance &#39;</span><span class="si">{</span><span class="n">distance</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">&#39; in index units: </span><span class="si">{</span><span class="n">distance_ix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Dictionary to store merged intervals</span>
+        <span class="n">merged_dict</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">):</span>
             <span class="n">blinks</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -2033,9 +2034,19 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">_blinks&quot;</span><span class="p">,</span>
                 <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
             <span class="p">)</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">set_blinks</span><span class="p">(</span><span class="n">merged_intervals</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">eye</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            
+            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">merged_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">merged_intervals</span>
+            
+            <span class="c1"># Apply mask if requested</span>
+            <span class="k">if</span> <span class="n">apply_mask</span><span class="p">:</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">set_blinks</span><span class="p">(</span><span class="n">merged_intervals</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">eye</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">obj</span>    </div>
+        <span class="c1"># Return appropriate result</span>
+        <span class="k">if</span> <span class="n">apply_mask</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">obj</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">merged_dict</span>    </div>
 
             
 <div class="viewcode-block" id="GenericEyeData.stat_per_event">
@@ -2101,72 +2112,6 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">stat</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">var</span><span class="p">]</span><span class="o">=</span><span class="n">stat_event_interval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">var</span><span class="p">],</span> <span class="n">intervals_list</span><span class="p">,</span> <span class="n">statfct</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">stat</span></div>
-
-
-<div class="viewcode-block" id="GenericEyeData.set_cache_options">
-<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.set_cache_options">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_cache_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update cache settings.</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        use_cache : bool, optional</span>
-<span class="sd">            Whether to use cached storage.</span>
-<span class="sd">        cache_dir : str, optional</span>
-<span class="sd">            Directory to store cache files.</span>
-<span class="sd">        max_memory_mb : float, optional</span>
-<span class="sd">            Maximum memory usage in MB.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">use_cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">use_cache</span> <span class="o">=</span> <span class="n">use_cache</span>
-        <span class="k">if</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span>
-        <span class="k">if</span> <span class="n">max_memory_mb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">max_memory_mb</span> <span class="o">=</span> <span class="n">max_memory_mb</span>
-            
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cache</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">EyeDataDict</span><span class="p">):</span>
-            <span class="c1"># Convert to cached version</span>
-            <span class="n">old_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">CachedEyeDataDict</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">max_memory_mb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_memory_mb</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cache</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span><span class="p">):</span>
-            <span class="c1"># Convert to in-memory version</span>
-            <span class="n">old_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">old_data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-            <span class="n">old_data</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span></div>
-
-            
-<div class="viewcode-block" id="GenericEyeData.get_cache_stats">
-<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.get_cache_stats">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_cache_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get cache statistics if using cached storage.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_cache_stats</span><span class="p">()</span>
-        <span class="k">return</span> <span class="kc">None</span></div>
-
-        
-<div class="viewcode-block" id="GenericEyeData.clear_cache">
-<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.clear_cache">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">clear_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear memory cache if using cached storage.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span></div>
-
-            
-<div class="viewcode-block" id="GenericEyeData.set_max_memory">
-<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.set_max_memory">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_max_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set maximum memory usage in MB if using cached storage.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">CachedEyeDataDict</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_max_memory</span><span class="p">(</span><span class="n">max_memory_mb</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">max_memory_mb</span> <span class="o">=</span> <span class="n">max_memory_mb</span></div>
 
 
 <div class="viewcode-block" id="GenericEyeData.get_size">

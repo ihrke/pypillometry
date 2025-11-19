@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.plot.pupilplotter &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/nature.css?v=279e0f84" />
+    <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.plot.pupilplotter</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pypillometry.plot.pupilplotter</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..eyedata</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericEyeData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.genplotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericPlotter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.axes_grid1</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_axes_locatable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.backends.backend_pdf</span><span class="w"> </span><span class="kn">import</span> <span class="n">PdfPages</span>
+
+<div class="viewcode-block" id="PupilPlotter">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilPlotter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PupilPlotter</span><span class="p">(</span><span class="n">GenericPlotter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for plotting pupil data. The class is initialized with a GenericEyeData object</span>
+<span class="sd">    and provides methods to plot the data in various ways.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">GenericEyeData</span> <span class="c1"># link to the data object</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">GenericEyeData</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span>
+    
+<div class="viewcode-block" id="PupilPlotter.pupil_plot">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilPlotter.pupil_plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                   <span class="n">eyes</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">list</span><span class="o">=</span><span class="p">[],</span>
+                   <span class="n">plot_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
+                   <span class="n">plot_events</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">highlight_blinks</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">,</span>
+                   <span class="n">label_prefix</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                   <span class="n">style</span><span class="p">:</span> <span class="nb">dict</span><span class="o">=</span><span class="kc">None</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make a plot of the pupil data using `matplotlib`.</span>
+
+<span class="sd">        Has pupil-specific options which makes it different from </span>
+<span class="sd">        :func:`GazePlotter.plot_timeseries()`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes: list  </span>
+<span class="sd">            list of eyes to plot; if empty, all available eyes are plotted            </span>
+<span class="sd">        plot_range: tuple (start,end)</span>
+<span class="sd">            plot from start to end (in units of `units`)</span>
+<span class="sd">        units: str</span>
+<span class="sd">            one of &quot;sec&quot;=seconds, &quot;ms&quot;=millisec, &quot;min&quot;=minutes, &quot;h&quot;=hours</span>
+<span class="sd">        plot_events: bool</span>
+<span class="sd">            plot events as vertical lines with labels</span>
+<span class="sd">        highlight_blinks: bool</span>
+<span class="sd">            highlight detected blinks</span>
+<span class="sd">        label_prefix: str</span>
+<span class="sd">            Prefix to add to labels in the legend. Useful for overlaying multiple datasets.</span>
+<span class="sd">            Default is &quot;&quot; (no prefix).</span>
+<span class="sd">        style: dict or dict of dicts</span>
+<span class="sd">            Styling for plotted lines. Can be:</span>
+<span class="sd">            - Single dict: Applied to all eyes with automatic differentiation (e.g., {&#39;color&#39;: &#39;red&#39;})</span>
+<span class="sd">            - Dict of dicts: Per-eye styling (e.g., {&#39;left&#39;: {&#39;linestyle&#39;: &#39;-&#39;}, &#39;right&#39;: {&#39;linestyle&#39;: &#39;--&#39;}})</span>
+<span class="sd">            Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">eyes</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">eyes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_available_eyes</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Plotting eyes </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">eyes</span><span class="p">)</span>
+
+        <span class="n">fac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Plotting in units </span><span class="si">%s</span><span class="s2"> (fac=</span><span class="si">%f</span><span class="s2">)&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">fac</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">units</span><span class="o">==</span><span class="s2">&quot;sec&quot;</span><span class="p">:</span>
+            <span class="n">xlab</span><span class="o">=</span><span class="s2">&quot;seconds&quot;</span>
+        <span class="k">elif</span> <span class="n">units</span><span class="o">==</span><span class="s2">&quot;min&quot;</span><span class="p">:</span>
+            <span class="n">xlab</span><span class="o">=</span><span class="s2">&quot;minutes&quot;</span>
+        <span class="k">elif</span> <span class="n">units</span><span class="o">==</span><span class="s2">&quot;h&quot;</span><span class="p">:</span>
+            <span class="n">xlab</span><span class="o">=</span><span class="s2">&quot;hours&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xlab</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span>
+        <span class="n">tx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="o">*</span><span class="n">fac</span>
+        <span class="n">evon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">*</span><span class="n">fac</span>
+
+        <span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="n">plot_range</span>
+        <span class="k">if</span> <span class="n">start</span><span class="o">==-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
+            <span class="n">startix</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">startix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tx</span><span class="o">-</span><span class="n">start</span><span class="p">))</span>
+            
+        <span class="k">if</span> <span class="n">end</span><span class="o">==</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
+            <span class="n">endix</span><span class="o">=</span><span class="n">tx</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">endix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tx</span><span class="o">-</span><span class="n">end</span><span class="p">))</span>
+                
+        <span class="n">ixx</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">evon</span><span class="o">&gt;=</span><span class="n">start</span><span class="p">,</span> <span class="n">evon</span><span class="o">&lt;</span><span class="n">end</span><span class="p">)</span>
+        <span class="n">evlab</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">event_labels</span><span class="p">[</span><span class="n">ixx</span><span class="p">]</span>
+        <span class="n">evon</span><span class="o">=</span><span class="n">evon</span><span class="p">[</span><span class="n">ixx</span><span class="p">]</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Plotting from </span><span class="si">%.2f</span><span class="s2"> to </span><span class="si">%.2f</span><span class="s2"> </span><span class="si">%s</span><span class="s2">, (</span><span class="si">%i</span><span class="s2"> to </span><span class="si">%i</span><span class="s2">)&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="p">,</span><span class="n">units</span><span class="p">,</span><span class="n">startix</span><span class="p">,</span><span class="n">endix</span><span class="p">))</span>
+
+        <span class="n">tx</span><span class="o">=</span><span class="n">tx</span><span class="p">[</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span>
+
+        <span class="c1"># Determine if style is per-eye or global</span>
+        <span class="n">per_eye_style</span> <span class="o">=</span> <span class="p">(</span><span class="n">style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> 
+                         <span class="nb">isinstance</span><span class="p">(</span><span class="n">style</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> 
+                         <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">style</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+        
+        <span class="c1"># Define differentiation properties for multiple eyes</span>
+        <span class="c1"># These cycle through different linestyles to keep eyes distinguishable</span>
+        <span class="n">linestyles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="s1">&#39;-.&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># plot timeseries</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">eye</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">eyes</span><span class="p">):</span>
+            <span class="c1"># Build label with optional prefix</span>
+            <span class="k">if</span> <span class="n">label_prefix</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label_prefix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="n">eye</span>
+            
+            <span class="c1"># Prepare plot kwargs with style</span>
+            <span class="n">plot_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">label</span><span class="p">}</span>
+            
+            <span class="k">if</span> <span class="n">style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">per_eye_style</span><span class="p">:</span>
+                    <span class="c1"># Per-eye styling: use eye-specific style if available</span>
+                    <span class="k">if</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">style</span><span class="p">:</span>
+                        <span class="n">plot_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">style</span><span class="p">[</span><span class="n">eye</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Global style: apply to all, but add differentiation for multiple eyes</span>
+                    <span class="n">plot_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
+                    
+                    <span class="c1"># If multiple eyes and no explicit differentiation, vary linestyle</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># Only add differentiation if not explicitly set in style</span>
+                        <span class="k">if</span> <span class="s1">&#39;linestyle&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">style</span> <span class="ow">and</span> <span class="s1">&#39;ls&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">style</span><span class="p">:</span>
+                            <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;linestyle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">linestyles</span><span class="p">[</span><span class="n">idx</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">linestyles</span><span class="p">)]</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># No style provided but multiple eyes: use default colors with varied linestyles</span>
+                <span class="n">plot_kwargs</span><span class="p">[</span><span class="s1">&#39;linestyle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">linestyles</span><span class="p">[</span><span class="n">idx</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">linestyles</span><span class="p">)]</span>
+            
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">],</span> <span class="o">**</span><span class="n">plot_kwargs</span><span class="p">)</span>
+
+        <span class="c1"># plot grey lines for events</span>
+        <span class="k">if</span> <span class="n">plot_events</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Plotting events, </span><span class="si">%i</span><span class="s2"> in range&quot;</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">evon</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">evon</span><span class="p">,</span> <span class="o">*</span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">ll</span><span class="p">,</span><span class="n">ul</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">ev</span><span class="p">,</span><span class="n">lab</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">evon</span><span class="p">,</span><span class="n">evlab</span><span class="p">):</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">ll</span><span class="o">+</span><span class="p">(</span><span class="n">ul</span><span class="o">-</span><span class="n">ll</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">lab</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+        
+        <span class="c1"># highlight if a blink in any of the eyes</span>
+        <span class="k">if</span> <span class="n">highlight_blinks</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">masked_segment</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span>
+                <span class="n">blink_spans</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">in_blink</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">span_start</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">masked_segment</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">value</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">in_blink</span><span class="p">:</span>
+                        <span class="n">in_blink</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">span_start</span> <span class="o">=</span> <span class="n">idx</span>
+                    <span class="k">elif</span> <span class="ow">not</span> <span class="n">value</span> <span class="ow">and</span> <span class="n">in_blink</span><span class="p">:</span>
+                        <span class="n">blink_spans</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">span_start</span><span class="p">,</span> <span class="n">idx</span><span class="p">))</span>
+                        <span class="n">in_blink</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">in_blink</span><span class="p">:</span>
+                    <span class="n">blink_spans</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">span_start</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">masked_segment</span><span class="p">)))</span>
+
+                <span class="k">for</span> <span class="n">sblink</span><span class="p">,</span> <span class="n">eblink</span> <span class="ow">in</span> <span class="n">blink_spans</span><span class="p">:</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">axvspan</span><span class="p">(</span><span class="n">tx</span><span class="p">[</span><span class="n">sblink</span><span class="p">],</span> <span class="n">tx</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">eblink</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">xlab</span><span class="p">)</span>        </div>
+
+
+
+<div class="viewcode-block" id="PupilPlotter.pupil_plot_segments">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilPlotter.pupil_plot_segments">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_plot_segments</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pdf_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">interv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+        <span class="n">ylim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;min&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot the whole dataset chunked up into segments (usually to a PDF file).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        pdf_file: str or None</span>
+<span class="sd">            file name to store the PDF; if None, no PDF is written </span>
+<span class="sd">        interv: float</span>
+<span class="sd">            duration of each of the segments to be plotted (in units specified by ``units``)</span>
+<span class="sd">        figsize: Tuple[int,int]</span>
+<span class="sd">            dimensions of the figures</span>
+<span class="sd">        units: str, optional</span>
+<span class="sd">            Time units for segment boundaries passed to :func:`PupilData.pupil_plot`. Default &quot;min&quot;.</span>
+<span class="sd">        kwargs:</span>
+<span class="sd">            arguments passed to :func:`PupilData.pupil_plot()`</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        figs: list of :class:`matplotlib.Figure` objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
+        <span class="n">unit_factor</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span> <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">1.0</span>
+        <span class="n">start_unit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span> <span class="o">*</span> <span class="n">unit_factor</span><span class="p">)</span>
+        <span class="n">end_unit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span> <span class="o">*</span> <span class="n">unit_factor</span><span class="p">)</span>
+
+        <span class="n">segments</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">cstart</span><span class="o">=</span><span class="n">start_unit</span>
+        <span class="n">cend</span><span class="o">=</span><span class="n">start_unit</span>
+        <span class="k">while</span> <span class="n">cend</span> <span class="o">&lt;</span> <span class="n">end_unit</span><span class="p">:</span>
+            <span class="n">cend</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">end_unit</span><span class="p">,</span> <span class="n">cstart</span> <span class="o">+</span> <span class="n">interv</span><span class="p">)</span>
+            <span class="n">segments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">cstart</span><span class="p">,</span><span class="n">cend</span><span class="p">)</span> <span class="p">)</span>
+            <span class="n">cstart</span><span class="o">=</span><span class="n">cend</span>
+
+        <span class="n">figs</span><span class="o">=</span><span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">start</span><span class="p">,</span><span class="n">end</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ylim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">*</span><span class="n">ylim</span><span class="p">)</span>
+            <span class="n">figs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+            
+            <span class="c1"># Close figure immediately after creation if saving to PDF to prevent display and memory issues</span>
+            <span class="k">if</span> <span class="n">pdf_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pdf_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Create parent directories if they don&#39;t exist</span>
+            <span class="n">pdf_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">pdf_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pdf_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">!=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pdf_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">pdf_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Created directory: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pdf_path</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+            
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing PDF file &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">pdf_file</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">PdfPages</span><span class="p">(</span><span class="n">pdf_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">pdf</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">fig</span> <span class="ow">in</span> <span class="n">figs</span><span class="p">:</span>
+                    <span class="n">pdf</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">figs</span> <span class="k">if</span> <span class="n">pdf_file</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="PupilPlotter.plot_blinks">
+<a class="viewcode-back" href="../../../api.html#pypillometry.PupilPlotter.plot_blinks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_blinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">variables</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">list</span> <span class="o">=</span> <span class="s2">&quot;pupil&quot;</span><span class="p">,</span>
+                   <span class="n">pdf_file</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nrow</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ncol</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> 
+                   <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                   <span class="n">pre_blink</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">post_blink</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> 
+                   <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">plot_index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot detected blinks in separate subplots.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes : str or list</span>
+<span class="sd">            Eyes to plot</span>
+<span class="sd">        variables : str or list</span>
+<span class="sd">            Variables to plot</span>
+<span class="sd">        pdf_file : str or None</span>
+<span class="sd">            Save to PDF file if provided</span>
+<span class="sd">        nrow : int</span>
+<span class="sd">            Number of rows per figure</span>
+<span class="sd">        ncol : int</span>
+<span class="sd">            Number of columns per figure</span>
+<span class="sd">        figsize : tuple</span>
+<span class="sd">            Figure size (width, height)</span>
+<span class="sd">        pre_blink : float</span>
+<span class="sd">            Time before blink to include (in ms)</span>
+<span class="sd">        post_blink : float</span>
+<span class="sd">            Time after blink to include (in ms)</span>
+<span class="sd">        units : str</span>
+<span class="sd">            Display units for time axis</span>
+<span class="sd">        plot_index : bool</span>
+<span class="sd">            Show blink index numbers</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            List of matplotlib Figure objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get blinks for specified eyes and variables</span>
+        <span class="n">blinks_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        
+        <span class="c1"># Handle dict or single Intervals</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">blinks_result</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># Merge all blinks from dict</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">merge_intervals</span>
+            <span class="n">all_blinks_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">blinks_result</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">all_blinks_list</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No blinks to plot&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="n">blinks</span> <span class="o">=</span> <span class="n">merge_intervals</span><span class="p">(</span><span class="o">*</span><span class="n">all_blinks_list</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">blinks</span> <span class="o">=</span> <span class="n">blinks_result</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No blinks to plot&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        
+        <span class="n">blinks_ix</span> <span class="o">=</span> <span class="n">blinks</span><span class="o">.</span><span class="n">as_index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="p">)</span>
+        
+        <span class="n">pre_blink_ix</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pre_blink</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">post_blink_ix</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">post_blink</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        
+        <span class="n">padded</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">s</span> <span class="o">-</span> <span class="n">pre_blink_ix</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">),</span> <span class="n">e</span> <span class="o">+</span> <span class="n">post_blink_ix</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">blinks_ix</span>
+        <span class="p">]</span>
+        
+        <span class="n">intervals</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span><span class="n">padded</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;blinks&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_intervals</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span>
+                                  <span class="n">pdf_file</span><span class="p">,</span> <span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span><span class="p">,</span> <span class="n">figsize</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">plot_index</span><span class="p">)</span></div>
+</div>
+
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.plot.pupilplotter</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

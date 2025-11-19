@@ -55,6 +55,7 @@ window.addEventListener("load", () => mermaid.run());
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
@@ -104,8 +105,6 @@ window.addEventListener("load", () => mermaid.run());
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GenericEyeData.clear_cache">clear_cache() (pypillometry.GenericEyeData method)</a>
-</li>
       <li><a href="api.html#pypillometry.EyeDataDict.copy">copy() (pypillometry.EyeDataDict method)</a>
 
       <ul>
@@ -176,15 +175,17 @@ window.addEventListener("load", () => mermaid.run());
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pypillometry.GazeData">GazeData (class in pypillometry)</a>
 </li>
+      <li><a href="api.html#pypillometry.GazePlotter">GazePlotter (class in pypillometry)</a>
+</li>
       <li><a href="api.html#pypillometry.GenericEyeData">GenericEyeData (class in pypillometry)</a>
+</li>
+      <li><a href="api.html#pypillometry.example_data.get_available_datasets">get_available_datasets() (in module pypillometry.example_data)</a>
 </li>
       <li><a href="api.html#pypillometry.EyeDataDict.get_available_eyes">get_available_eyes() (pypillometry.EyeDataDict method)</a>
 </li>
       <li><a href="api.html#pypillometry.EyeDataDict.get_available_variables">get_available_variables() (pypillometry.EyeDataDict method)</a>
 </li>
       <li><a href="api.html#pypillometry.GenericEyeData.get_blinks">get_blinks() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.GenericEyeData.get_cache_stats">get_cache_stats() (pypillometry.GenericEyeData method)</a>
 </li>
       <li><a href="api.html#pypillometry.GenericEyeData.get_duration">get_duration() (pypillometry.GenericEyeData method)</a>
 </li>
@@ -193,6 +194,8 @@ window.addEventListener("load", () => mermaid.run());
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pypillometry.GenericEyeData.get_events">get_events() (pypillometry.GenericEyeData method)</a>
+</li>
+      <li><a href="api.html#pypillometry.example_data.get_example_data">get_example_data() (in module pypillometry.example_data)</a>
 </li>
       <li><a href="api.html#pypillometry.EyeDataDict.get_eye">get_eye() (pypillometry.EyeDataDict method)</a>
 </li>
@@ -216,10 +219,14 @@ window.addEventListener("load", () => mermaid.run());
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.logging_disable">logging_disable() (in module pypillometry)</a>
+      <li><a href="api.html#pypillometry.io.load_study_local">load_study_local() (in module pypillometry.io)</a>
+</li>
+      <li><a href="api.html#pypillometry.io.load_study_osf">load_study_osf() (in module pypillometry.io)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#pypillometry.logging_disable">logging_disable() (in module pypillometry)</a>
+</li>
       <li><a href="api.html#pypillometry.logging_enable">logging_enable() (in module pypillometry)</a>
 </li>
       <li><a href="api.html#pypillometry.logging_set_level">logging_set_level() (in module pypillometry)</a>
@@ -236,6 +243,8 @@ window.addEventListener("load", () => mermaid.run());
 </li>
       <li><a href="api.html#pypillometry.GenericEyeData.mask_intervals">mask_intervals() (pypillometry.GenericEyeData method)</a>
 </li>
+      <li><a href="api.html#pypillometry.GazeData.mask_offscreen_coords">mask_offscreen_coords() (pypillometry.GazeData method)</a>
+</li>
       <li><a href="api.html#pypillometry.GenericEyeData.merge_eyes">merge_eyes() (pypillometry.GenericEyeData method)</a>
 </li>
   </ul></td>
@@ -247,6 +256,10 @@ window.addEventListener("load", () => mermaid.run());
 
       <ul>
         <li><a href="api.html#module-pypillometry">pypillometry</a>
+</li>
+        <li><a href="api.html#module-pypillometry.example_data">pypillometry.example_data</a>
+</li>
+        <li><a href="api.html#module-pypillometry.io">pypillometry.io</a>
 </li>
         <li><a href="api.html#module-pypillometry.signal.baseline">pypillometry.signal.baseline</a>
 </li>
@@ -266,6 +279,14 @@ window.addEventListener("load", () => mermaid.run());
   </ul></td>
 </tr></table>
 
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#pypillometry.io.osf_authenticate">osf_authenticate() (in module pypillometry.io)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -275,6 +296,14 @@ window.addEventListener("load", () => mermaid.run());
 </li>
       <li><a href="api.html#pypillometry.GazeData.physical_screen_width">physical_screen_width (pypillometry.GazeData property)</a>
 </li>
+      <li><a href="api.html#pypillometry.PupilPlotter.plot_blinks">plot_blinks() (pypillometry.PupilPlotter method)</a>
+</li>
+      <li><a href="api.html#pypillometry.GazePlotter.plot_heatmap">plot_heatmap() (pypillometry.GazePlotter method)</a>
+</li>
+      <li><a href="api.html#pypillometry.EyePlotter.plot_pupil_foreshortening_error_surface">plot_pupil_foreshortening_error_surface() (pypillometry.EyePlotter method)</a>
+</li>
+      <li><a href="api.html#pypillometry.GazePlotter.plot_scanpath">plot_scanpath() (pypillometry.GazePlotter method)</a>
+</li>
       <li><a href="api.html#pypillometry.GenericEyeData.print_history">print_history() (pypillometry.GenericEyeData method)</a>
 </li>
       <li><a href="api.html#pypillometry.PupilData.pupil_blinks_detect">pupil_blinks_detect() (pypillometry.PupilData method)</a>
@@ -283,21 +312,41 @@ window.addEventListener("load", () => mermaid.run());
 </li>
       <li><a href="api.html#pypillometry.PupilData.pupil_estimate_baseline">pupil_estimate_baseline() (pypillometry.PupilData method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pypillometry.PupilData.pupil_estimate_response">pupil_estimate_response() (pypillometry.PupilData method)</a>
 </li>
       <li><a href="api.html#pypillometry.PupilData.pupil_lowpass_filter">pupil_lowpass_filter() (pypillometry.PupilData method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#pypillometry.PupilPlotter.pupil_plot">pupil_plot() (pypillometry.PupilPlotter method)</a>
+</li>
+      <li><a href="api.html#pypillometry.PupilPlotter.pupil_plot_segments">pupil_plot_segments() (pypillometry.PupilPlotter method)</a>
+</li>
       <li><a href="api.html#pypillometry.PupilData.pupil_smooth_window">pupil_smooth_window() (pypillometry.PupilData method)</a>
 </li>
       <li><a href="api.html#pypillometry.PupilData">PupilData (class in pypillometry)</a>
+</li>
+      <li><a href="api.html#pypillometry.PupilPlotter">PupilPlotter (class in pypillometry)</a>
 </li>
       <li>
     pypillometry
 
       <ul>
         <li><a href="api.html#module-pypillometry">module</a>
+</li>
+      </ul></li>
+      <li>
+    pypillometry.example_data
+
+      <ul>
+        <li><a href="api.html#module-pypillometry.example_data">module</a>
+</li>
+      </ul></li>
+      <li>
+    pypillometry.io
+
+      <ul>
+        <li><a href="api.html#module-pypillometry.io">module</a>
 </li>
       </ul></li>
       <li>
@@ -312,6 +361,10 @@ window.addEventListener("load", () => mermaid.run());
 
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#pypillometry.io.read_eyelink">read_eyelink() (in module pypillometry.io)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pypillometry.GenericEyeData.reset_time">reset_time() (pypillometry.GenericEyeData method)</a>
 </li>
@@ -335,8 +388,6 @@ window.addEventListener("load", () => mermaid.run());
 </li>
       <li><a href="api.html#pypillometry.GenericEyeData.set_blinks">set_blinks() (pypillometry.GenericEyeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.set_cache_options">set_cache_options() (pypillometry.GenericEyeData method)</a>
-</li>
       <li><a href="api.html#pypillometry.GenericEyeData.set_event_onsets">set_event_onsets() (pypillometry.GenericEyeData method)</a>
 </li>
       <li><a href="api.html#pypillometry.GenericEyeData.set_events">set_events() (pypillometry.GenericEyeData method)</a>
@@ -346,8 +397,6 @@ window.addEventListener("load", () => mermaid.run());
       <li><a href="api.html#pypillometry.GazeData.set_experiment_info">set_experiment_info() (pypillometry.GazeData method)</a>
 </li>
       <li><a href="api.html#pypillometry.EyeDataDict.set_mask">set_mask() (pypillometry.EyeDataDict method)</a>
-</li>
-      <li><a href="api.html#pypillometry.GenericEyeData.set_max_memory">set_max_memory() (pypillometry.GenericEyeData method)</a>
 </li>
       <li><a href="api.html#pypillometry.EyeDataDict.set_with_mask">set_with_mask() (pypillometry.EyeDataDict method)</a>
 </li>
@@ -392,6 +441,10 @@ window.addEventListener("load", () => mermaid.run());
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api.html#pypillometry.GenericEyeData.write_file">write_file() (pypillometry.GenericEyeData method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#pypillometry.io.write_pickle">write_pickle() (in module pypillometry.io)</a>
 </li>
   </ul></td>
 </tr></table>

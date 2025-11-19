@@ -45,11 +45,204 @@ window.addEventListener("load", () => mermaid.run());
   <h1>Source code for pypillometry.plot.eyeplotter</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">..plot.gazeplotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">GazePlotter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..plot.pupilplotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilPlotter</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.axes_grid1</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_axes_locatable</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 
 <div class="viewcode-block" id="EyePlotter">
 <a class="viewcode-back" href="../../../api.html#pypillometry.EyePlotter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EyePlotter</span><span class="p">(</span><span class="n">GazePlotter</span><span class="p">,</span><span class="n">PupilPlotter</span><span class="p">):</span>
-    <span class="k">pass</span></div>
+<div class="viewcode-block" id="EyePlotter.plot_pupil_foreshortening_error_surface">
+<a class="viewcode-back" href="../../../api.html#pypillometry.EyePlotter.plot_pupil_foreshortening_error_surface">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_pupil_foreshortening_error_surface</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">eyes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">plot_range</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span>
+        <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sec&quot;</span><span class="p">,</span>
+        <span class="n">show_screen</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
+        <span class="n">gridsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+        <span class="n">vmin</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">vmax</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot a heatmap showing average pupil size across x/y gaze positions.</span>
+<span class="sd">        </span>
+<span class="sd">        This visualizes how pupil size varies across different gaze positions,</span>
+<span class="sd">        which can reveal foreshortening effects (pupils appear smaller when</span>
+<span class="sd">        looking away from the camera) or other spatial artifacts.</span>
+<span class="sd">        Each eye is plotted in a separate subplot.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes : str or list, optional</span>
+<span class="sd">            Which eye(s) to plot: &quot;left&quot;, &quot;right&quot;, &quot;average&quot;, or a list of these.</span>
+<span class="sd">            Default is [] which plots all available eyes.</span>
+<span class="sd">        plot_range : tuple, optional</span>
+<span class="sd">            The time range to include in the analysis. Default is (-np.inf, +np.inf),</span>
+<span class="sd">            i.e. all data.</span>
+<span class="sd">        units : str, optional</span>
+<span class="sd">            Time units for plot_range. Default is &quot;sec&quot;.</span>
+<span class="sd">        show_screen : bool, optional</span>
+<span class="sd">            Whether to plot the screen limits. Default is True.</span>
+<span class="sd">        cmap : str, optional</span>
+<span class="sd">            Colormap to use. Default is &quot;viridis&quot;.</span>
+<span class="sd">        gridsize : int, optional</span>
+<span class="sd">            Number of hexagonal bins in each direction. Default is 30.</span>
+<span class="sd">        vmin : float, optional</span>
+<span class="sd">            Minimum value for color scale. If None, uses data minimum.</span>
+<span class="sd">        vmax : float, optional</span>
+<span class="sd">            Maximum value for color scale. If None, uses data maximum.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">            Creates a matplotlib figure with the heatmap(s)</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        Plot foreshortening effect for left eye:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; data.plot.plot_pupil_foreshortening_error_surface(&#39;left&#39;)</span>
+<span class="sd">        </span>
+<span class="sd">        Plot for multiple eyes:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; data.plot.plot_pupil_foreshortening_error_surface([&#39;left&#39;, &#39;right&#39;])</span>
+<span class="sd">        </span>
+<span class="sd">        Plot all available eyes with custom color range:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; data.plot.plot_pupil_foreshortening_error_surface(vmin=3, vmax=5)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
+        
+        <span class="c1"># Handle eyes parameter</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">eyes</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">eyes</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">eyes</span> <span class="o">=</span> <span class="p">[</span><span class="n">eyes</span><span class="p">]</span>
+        
+        <span class="c1"># Handle time range</span>
+        <span class="n">fac</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+        <span class="n">tx</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">tx</span> <span class="o">*</span> <span class="n">fac</span>
+        
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">plot_range</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
+            <span class="n">startix</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">startix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tx</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+            
+        <span class="k">if</span> <span class="n">end</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
+            <span class="n">endix</span> <span class="o">=</span> <span class="n">tx</span><span class="o">.</span><span class="n">size</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">endix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tx</span> <span class="o">-</span> <span class="n">end</span><span class="p">))</span>
+        
+        <span class="c1"># Use current figure or create new one if none exists</span>
+        <span class="n">nplots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span>
+        
+        <span class="c1"># Check if current figure is empty/new</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Create subplots in the current figure</span>
+            <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nplots</span><span class="p">)</span>
+            <span class="c1"># Make axs iterable even for single plot</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+                <span class="n">axs</span> <span class="o">=</span> <span class="p">[</span><span class="n">axs</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Use existing axes</span>
+            <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">axes</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">axs</span><span class="p">)</span> <span class="o">!=</span> <span class="n">nplots</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current figure has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">axs</span><span class="p">)</span><span class="si">}</span><span class="s2"> axes but </span><span class="si">{</span><span class="n">nplots</span><span class="si">}</span><span class="s2"> eyes to plot. Creating new subplots.&quot;</span><span class="p">)</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nplots</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+                    <span class="n">axs</span> <span class="o">=</span> <span class="p">[</span><span class="n">axs</span><span class="p">]</span>
+        
+        <span class="c1"># Plot each eye</span>
+        <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">axs</span><span class="p">):</span>
+            <span class="c1"># Get variable names</span>
+            <span class="n">vx</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x&quot;</span>
+            <span class="n">vy</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_y&quot;</span>
+            <span class="n">vpupil</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil&quot;</span>
+            
+            <span class="c1"># Check if the data exists for this eye</span>
+            <span class="k">if</span> <span class="n">vx</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="n">vy</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Gaze data not available</span><span class="se">\n</span><span class="s2">for &#39;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&#39; eye&quot;</span><span class="p">,</span> 
+                       <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s1"> eye&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+                
+            <span class="k">if</span> <span class="n">vpupil</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Pupil data not available</span><span class="se">\n</span><span class="s2">for &#39;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&#39; eye&quot;</span><span class="p">,</span> 
+                       <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s1"> eye&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            
+            <span class="c1"># Get masked arrays (automatically filters masked data)</span>
+            <span class="n">x_masked</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="n">vx</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span>
+            <span class="n">y_masked</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="n">vy</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span>
+            <span class="n">pupil_masked</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="n">vpupil</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span>
+            
+            <span class="c1"># Combine masks from all three variables</span>
+            <span class="n">combined_mask</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">x_masked</span><span class="p">)</span> <span class="o">|</span> 
+                <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">y_masked</span><span class="p">)</span> <span class="o">|</span> 
+                <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">pupil_masked</span><span class="p">)</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Extract only non-masked data</span>
+            <span class="n">x_plot</span> <span class="o">=</span> <span class="n">x_masked</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">combined_mask</span><span class="p">]</span>
+            <span class="n">y_plot</span> <span class="o">=</span> <span class="n">y_masked</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">combined_mask</span><span class="p">]</span>
+            <span class="n">pupil_plot</span> <span class="o">=</span> <span class="n">pupil_masked</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">combined_mask</span><span class="p">]</span>
+            
+            <span class="c1"># Check if we have any data to plot</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_plot</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No non-masked data</span><span class="se">\n</span><span class="s2">available for &#39;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&#39; eye&quot;</span><span class="p">,</span> 
+                       <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s1"> eye&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            
+            <span class="c1"># Create hexbin plot with average pupil size</span>
+            <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">hexbin</span><span class="p">(</span>
+                <span class="n">x_plot</span><span class="p">,</span> 
+                <span class="n">y_plot</span><span class="p">,</span> 
+                <span class="n">C</span><span class="o">=</span><span class="n">pupil_plot</span><span class="p">,</span>
+                <span class="n">gridsize</span><span class="o">=</span><span class="n">gridsize</span><span class="p">,</span> 
+                <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+                <span class="n">reduce_C_function</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+                <span class="n">mincnt</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span>
+                <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Add colorbar</span>
+            <span class="n">divider</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+            <span class="n">cax</span> <span class="o">=</span> <span class="n">divider</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;5%&#39;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+            <span class="n">cbar</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+            <span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Avg Pupil Size&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Set title and labels</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s1"> eye&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Gaze X Position&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Gaze Y Position&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Plot screen boundaries</span>
+            <span class="k">if</span> <span class="n">show_screen</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;screen_xlim&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;screen_ylim&#39;</span><span class="p">):</span>
+                <span class="n">screenrect</span> <span class="o">=</span> <span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> 
+                    <span class="n">obj</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">obj</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">obj</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">obj</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+                    <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> 
+                    <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span>
+                <span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">screenrect</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
 

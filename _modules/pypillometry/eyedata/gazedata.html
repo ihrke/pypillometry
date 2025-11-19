@@ -95,12 +95,6 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        if True, the object is modified in place; if False, a new object is returned</span>
 <span class="sd">        this object-level property can be overwritten by the method-level `inplace` argument</span>
 <span class="sd">        default is &quot;False&quot;</span>
-<span class="sd">    use_cache: bool</span>
-<span class="sd">        Whether to use cached storage for data arrays. Default is False.</span>
-<span class="sd">    cache_dir: str</span>
-<span class="sd">        Directory to store cache files. If None, creates a temporary directory.</span>
-<span class="sd">    max_memory_mb: float</span>
-<span class="sd">        Maximum memory usage in MB when using cache. Default is 100MB.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                     <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -118,20 +112,8 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                     <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                     <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                    <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">max_memory_mb</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+                    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the GazeData class.</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        use_cache : bool, optional</span>
-<span class="sd">            Whether to use cached storage for data arrays. Default is False.</span>
-<span class="sd">        cache_dir : str, optional</span>
-<span class="sd">            Directory to store cache files. If None, creates a temporary directory.</span>
-<span class="sd">        max_memory_mb : float, optional</span>
-<span class="sd">            Maximum memory usage in MB when using cache. Default is 100MB.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">left_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">left_y</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">right_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">right_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one eye-trace (both x and y coordinates) must be provided&quot;</span><span class="p">)</span>
@@ -142,10 +124,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_common</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> 
                           <span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="p">,</span> 
                           <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> 
-                          <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">,</span>
-                          <span class="n">use_cache</span><span class="o">=</span><span class="n">use_cache</span><span class="p">,</span>
-                          <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
-                          <span class="n">max_memory_mb</span><span class="o">=</span><span class="n">max_memory_mb</span><span class="p">)</span>
+                          <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="o">=</span><span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims_set</span><span class="o">=</span><span class="kc">False</span>
@@ -462,6 +441,120 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">return</span> <span class="n">obj</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">intervals_obj</span></div>
+
+    
+<div class="viewcode-block" id="GazeData.mask_offscreen_coords">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GazeData.mask_offscreen_coords">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mask_offscreen_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">apply_mask</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
+                             <span class="n">ignore_existing_mask</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Detect and mask gaze coordinates that fall outside the screen boundaries.</span>
+<span class="sd">        </span>
+<span class="sd">        This method identifies points where the (x,y) coordinates fall outside the </span>
+<span class="sd">        defined screen limits. When apply_mask=True, these points are masked. </span>
+<span class="sd">        When apply_mask=False, the offscreen periods are returned as Intervals objects.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes : str or list, default=[]</span>
+<span class="sd">            Eye(s) to check for offscreen coordinates. If empty, checks all available eyes.</span>
+<span class="sd">            Can be a single eye name (e.g., &quot;left&quot;) or a list (e.g., [&quot;left&quot;, &quot;right&quot;]).</span>
+<span class="sd">        apply_mask : bool, default=True</span>
+<span class="sd">            If True, apply detected offscreen periods as masks to the data and return self.</span>
+<span class="sd">            If False, return detected offscreen periods as dict of Intervals objects.</span>
+<span class="sd">        ignore_existing_mask : bool, default=False</span>
+<span class="sd">            If False (default), only check non-masked data points for offscreen coordinates.</span>
+<span class="sd">            If True, check all data points including those already masked (e.g., from blinks).</span>
+<span class="sd">        inplace : bool or None</span>
+<span class="sd">            If True, make change in-place and return the object.</span>
+<span class="sd">            If False, make and return copy before making changes.</span>
+<span class="sd">            If None, use the object-level setting.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GazeData or dict of Intervals</span>
+<span class="sd">            If apply_mask=True: returns self for chaining.</span>
+<span class="sd">            If apply_mask=False: returns dict of Intervals objects (one per eye) containing </span>
+<span class="sd">            detected offscreen intervals.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; # Mask offscreen coordinates for all eyes</span>
+<span class="sd">        &gt;&gt;&gt; gaze_data = gaze_data.mask_offscreen_coords()</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Detect offscreen periods without masking</span>
+<span class="sd">        &gt;&gt;&gt; offscreen = gaze_data.mask_offscreen_coords(apply_mask=False)</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Mask offscreen coordinates for left eye only</span>
+<span class="sd">        &gt;&gt;&gt; gaze_data = gaze_data.mask_offscreen_coords(eyes=&#39;left&#39;)</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Check all data including already masked points (e.g., during blinks)</span>
+<span class="sd">        &gt;&gt;&gt; gaze_data = gaze_data.mask_offscreen_coords(ignore_existing_mask=True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        
+        <span class="c1"># Get eyes to check</span>
+        <span class="n">eyes_list</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="p">[])</span>
+        
+        <span class="c1"># Dictionary to store intervals per eye</span>
+        <span class="n">intervals_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># Check each eye</span>
+        <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes_list</span><span class="p">:</span>
+            <span class="n">vx</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x&quot;</span>
+            <span class="n">vy</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_y&quot;</span>
+            
+            <span class="c1"># Check if this eye has x and y data</span>
+            <span class="k">if</span> <span class="n">vx</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="n">vy</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Eye &#39;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&#39; does not have both x and y coordinates. Skipping.&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            
+            <span class="c1"># Get coordinates</span>
+            <span class="k">if</span> <span class="n">ignore_existing_mask</span><span class="p">:</span>
+                <span class="c1"># Use raw data, ignoring existing masks</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vx</span><span class="p">]</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vy</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Use masked arrays (respects existing masks)</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="n">vx</span><span class="p">]</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="n">vy</span><span class="p">]</span>
+
+
+            <span class="c1"># Check all points including already masked ones</span>
+            <span class="n">offscreen_mask</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">obj</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">|</span> 
+                <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">obj</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">|</span> 
+                <span class="p">(</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">obj</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">|</span> 
+                <span class="p">(</span><span class="n">y</span> <span class="o">&gt;</span> <span class="n">obj</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Convert masked array to regular boolean array if needed</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">offscreen_mask</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+                <span class="n">offscreen_mask</span> <span class="o">=</span> <span class="n">offscreen_mask</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+            <span class="c1"># Convert mask to intervals</span>
+            <span class="n">intervals_list</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_mask_to_intervals_list</span><span class="p">(</span><span class="n">offscreen_mask</span><span class="p">)</span>
+            
+            <span class="c1"># Create Intervals object for this eye</span>
+            <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
+                <span class="n">intervals</span><span class="o">=</span><span class="n">intervals_list</span><span class="p">,</span>
+                <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Using index units</span>
+                <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_offscreen&quot;</span><span class="p">,</span>
+                <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+            <span class="p">)</span>
+            
+            <span class="n">intervals_dict</span><span class="p">[</span><span class="n">eye</span><span class="p">]</span> <span class="o">=</span> <span class="n">intervals_obj</span>
+            
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">intervals_obj</span><span class="p">)</span><span class="si">}</span><span class="s2"> offscreen intervals for </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> eye&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Apply mask if requested</span>
+        <span class="k">if</span> <span class="n">apply_mask</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">intervals_obj</span> <span class="ow">in</span> <span class="n">intervals_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">intervals_obj</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">eye</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">obj</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">intervals_dict</span></div>
 </div>
 
 </pre></div>
