@@ -776,6 +776,62 @@ class TestFitAndCorrection:
         
         # Should be consistent
         assert np.allclose(A0_array[0], A0_array[1])
+    
+    def test_fit_with_attributes_from_eyedata(self):
+        """Test that r and d can be retrieved from EyeData attributes."""
+        data, theta_true, phi_true, r_true, d_true, _, _ = \
+            self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
+        
+        # Set the attributes
+        data.set_experiment_info(
+            camera_eye_distance=r_true,
+            screen_eye_distance=d_true / 10.0  # Convert mm to cm
+        )
+        
+        # Fit without providing r and d (should use attributes)
+        calib = data.fit_foreshortening(
+            eye='left',
+            verbose=False
+        )
+        
+        # Should have used the correct values
+        assert calib.r == r_true
+        assert np.isclose(calib.d, d_true, rtol=1e-6)
+        
+        # Fit quality should be good
+        assert calib.fit_metrics['r2'] > 0.8
+    
+    def test_fit_without_attributes_raises_error(self):
+        """Test that fitting without r/d or attributes raises error."""
+        data, theta_true, phi_true, r_true, d_true, _, _ = \
+            self.create_synthetic_data_with_variation(n_samples=100, fs=100.0)
+        
+        # Don't set attributes, don't provide r/d
+        with pytest.raises(ValueError, match="Camera-eye distance not set"):
+            data.fit_foreshortening(eye='left', verbose=False)
+    
+    def test_fit_explicit_overrides_attributes(self):
+        """Test that explicit r and d override attributes."""
+        data, theta_true, phi_true, r_true, d_true, _, _ = \
+            self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
+        
+        # Set different values in attributes
+        data.set_experiment_info(
+            camera_eye_distance=500.0,  # Different from r_true
+            screen_eye_distance=60.0    # Different from d_true
+        )
+        
+        # Fit with explicit values (should override attributes)
+        calib = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            verbose=False
+        )
+        
+        # Should have used the explicit values
+        assert calib.r == r_true
+        assert calib.d == d_true
 
 
 if __name__ == '__main__':

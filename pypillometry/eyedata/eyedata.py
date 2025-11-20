@@ -251,8 +251,8 @@ class EyeData(GazeData,PupilData):
     def fit_foreshortening(
         self,
         eye: str,
-        r: float,
-        d: float,
+        r: Optional[float] = None,
+        d: Optional[float] = None,
         intervals: Optional[Intervals] = None,
         target_fs: float = 50.0,
         lowpass_freq: float = 4.0,
@@ -274,13 +274,12 @@ class EyeData(GazeData,PupilData):
         ----------
         eye : str
             Which eye to fit ('left' or 'right')
-        r : float
-            Eye-to-camera distance in mm (required). This is the distance from
-            the eye to the camera sensor and can typically be found in the
-            eye-tracker specifications.
-        d : float
-            Eye-to-screen distance in mm (required). This is the distance from
-            the eye to the screen plane, measured along the viewing axis.
+        r : float, optional
+            Eye-to-camera distance in mm. If not provided, uses the 
+            `camera_eye_distance` attribute of the EyeData object.
+        d : float, optional
+            Eye-to-screen distance in mm. If not provided, uses the 
+            `screen_eye_distance` attribute (converted from cm to mm).
         intervals : Intervals, optional
             Time intervals to use for fitting. If None, uses all available data.
             Useful for fitting only on calibration periods.
@@ -334,12 +333,24 @@ class EyeData(GazeData,PupilData):
         >>> import pypillometry as pp
         >>> data = pp.EyeData.from_eyelink('recording.edf')
         >>> 
+        >>> # Set experimental parameters (optional but recommended)
+        >>> data.set_experiment_info(  # doctest: +SKIP
+        ...     camera_eye_distance=600,  # mm
+        ...     screen_eye_distance=70    # cm
+        ... )
+        >>> 
         >>> # Fit on calibration period (first 2 minutes)
         >>> cal_intervals = data.get_intervals(end_time=120000)  # doctest: +SKIP
         >>> calib = data.fit_foreshortening(  # doctest: +SKIP
         ...     eye='left',
-        ...     r=600,  # Eye-to-camera distance in mm (required)
-        ...     d=700,  # Eye-to-screen distance in mm (required)
+        ...     intervals=cal_intervals
+        ... )
+        >>> 
+        >>> # Or provide r and d explicitly
+        >>> calib = data.fit_foreshortening(  # doctest: +SKIP
+        ...     eye='left',
+        ...     r=600,  # Eye-to-camera distance in mm
+        ...     d=700,  # Eye-to-screen distance in mm
         ...     intervals=cal_intervals
         ... )
         >>> 
@@ -372,6 +383,17 @@ class EyeData(GazeData,PupilData):
             raise ValueError(f"Gaze data (x, y) not available for {eye} eye")
         if pupil_var not in self.data:
             raise ValueError(f"Pupil data not available for {eye} eye")
+        
+        # Retrieve geometric parameters from attributes if not provided
+        if r is None:
+            r = self.camera_eye_distance  # Raises ValueError if not set
+            if verbose:
+                logger.info(f"Using camera_eye_distance from attributes: {r} mm")
+        
+        if d is None:
+            d = self.screen_eye_distance * 10.0  # Convert cm to mm (raises ValueError if not set)
+            if verbose:
+                logger.info(f"Using screen_eye_distance from attributes: {d} mm (converted from cm)")
         
         # Validate geometric parameters
         if r <= 0:
