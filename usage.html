@@ -8,9 +8,14 @@
     <title>Overview &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <script src="_static/documentation_options.js?v=5929fcd5"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -175,16 +180,42 @@ This will return a new object with the results of the operations.</p>
 <li><p><cite>apply_mask=</cite>: if <cite>True</cite>, the detected artifacts are applied as masks to the data and the object is returned; if <cite>False</cite>, the detected artifacts are returned as <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> objects.</p></li>
 </ul>
 <p>A typical workflow would be to apply each of the functions to the data and tweak the parameters until the results are satisfactory. To do that, you might choose to set <cite>apply_mask=False</cite> and inspect the detected artifacts:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<div class="jupyter_cell docutils container">
+<div class="cell_output docutils container">
+</div>
+</div>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
 <span class="n">blinks</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">blinks</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span> <span class="c1"># plot when the blinks occurred over time</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span> <span class="c1"># plot the data before and after the blinks</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span> <span class="c1"># this is a dict with the blinks detected in each eye</span>
+<span class="n">blinks</span><span class="p">[</span><span class="s2">&quot;left_pupil&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span> <span class="c1"># plot when the blinks occurred over time (in the left eye)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">[</span><span class="s2">&quot;left_pupil&quot;</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">)</span> <span class="c1"># plot the data before and after the blinks</span>
 </pre></div>
 </div>
-<p>Finally, once you are satisfied, you can apply the masks to the data:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">apply_mask</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot_timeseries</span><span class="p">()</span> <span class="c1"># plot the data after the blinks have been masked</span>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;left_pupil&#39;: Intervals &#39;left_pupil_blinks&#39; | 11 intervals, 107.73 +/- 179.42, [23.00, 673.00] | units=None (indices), &#39;right_pupil&#39;: Intervals &#39;right_pupil_blinks&#39; | 11 intervals, 50.27 +/- 35.92, [16.00, 154.00] | units=None (indices)}
 </pre></div>
+</div>
+<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>[&lt;Figure size 1000x1000 with 15 Axes&gt;]
+</pre></div>
+</div>
+<img alt="_images/usage_1_2.png" src="_images/usage_1_2.png" />
+<img alt="_images/usage_1_3.png" src="_images/usage_1_3.png" />
+</div>
+</div>
+<p>Finally, once you are satisfied, you can apply the masks to the data:</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span> <span class="c1"># mask the data in the blinks</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot_timeseries</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span> <span class="c1"># plot the data after the blinks have been masked</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/usage_2_0.png" src="_images/usage_2_0.png" />
+</div>
 </div>
 </section>
 <section id="pre-processing-data">

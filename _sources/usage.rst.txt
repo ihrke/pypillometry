@@ -126,19 +126,30 @@ Each of these functions accepts a similar set of parameters:
 
 A typical workflow would be to apply each of the functions to the data and tweak the parameters until the results are satisfactory. To do that, you might choose to set `apply_mask=False` and inspect the detected artifacts:
 
-.. code-block:: python
+
+.. jupyter-execute::
+    :hide-code:
+    :hide-output:
+
+    import sys
+    sys.path.insert(0,"..")
+    import pypillometry as pp
+
+
+.. jupyter-execute::
 
     d=pp.get_example_data("rlmw_002_short")
     blinks=d.pupil_blinks_detect(apply_mask=False)
-    blinks.plot() # plot when the blinks occurred over time
-    d.plot_intervals(blinks) # plot the data before and after the blinks
+    print(blinks) # this is a dict with the blinks detected in each eye
+    blinks["left_pupil"].plot() # plot when the blinks occurred over time (in the left eye)
+    d.plot_intervals(blinks["left_pupil"], variables="pupil") # plot the data before and after the blinks
 
 Finally, once you are satisfied, you can apply the masks to the data:
 
-.. code-block:: python
+.. jupyter-execute::
 
-    d.apply_mask(blinks)
-    d.plot_timeseries() # plot the data after the blinks have been masked
+    d.mask_intervals(blinks) # mask the data in the blinks
+    d.plot_timeseries(variables="pupil", units="sec") # plot the data after the blinks have been masked
 
 Pre-processing data
 -------------------

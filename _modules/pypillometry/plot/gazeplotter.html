@@ -7,17 +7,312 @@
     <title>pypillometry.plot.gazeplotter &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
     <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
-    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
     <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-    <script type="module">
-import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
-window.addEventListener("load", () => mermaid.run());
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+const style = document.createElement('style');
+style.textContent = `.mermaid-container {
+    position: relative !important;
+    display: inline-block;
+    width: 100%;
+}
+
+.mermaid-fullscreen-btn {
+    position: absolute !important;
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    color: #333;
+}
+
+.mermaid-fullscreen-btn:hover {
+    opacity: 100% !important;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    transform: scale(1.1);
+}
+
+.mermaid-fullscreen-btn.dark-theme {
+    background: rgba(50, 50, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #e0e0e0;
+}
+
+.mermaid-fullscreen-btn.dark-theme:hover {
+    background: rgba(60, 60, 60, 1);
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
+}
+
+.mermaid-fullscreen-modal {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.98);
+    z-index: 9999;
+    padding: 20px;
+    overflow: auto;
+}
+
+.mermaid-fullscreen-modal.dark-theme {
+    background: rgba(0, 0, 0, 0.98);
+}
+
+.mermaid-fullscreen-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-fullscreen-content {
+    position: relative;
+    width: 95vw;
+    height: 90vh;
+    max-width: 95vw;
+    max-height: 90vh;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-fullscreen-content.dark-theme {
+    background: #1a1a1a;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+}
+
+.mermaid-fullscreen-content .mermaid {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-fullscreen-content .mermaid svg {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: 85vh;
+    cursor: grab;
+}
+
+.mermaid-fullscreen-close {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+    font-size: 24px;
+    line-height: 1;
+    color: #333;
+}
+
+.mermaid-fullscreen-close:hover {
+    background: white;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    transform: scale(1.1);
+}
+
+.mermaid-fullscreen-close.dark-theme {
+    background: rgba(50, 50, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e0e0e0;
+}
+
+.mermaid-fullscreen-close.dark-theme:hover {
+    background: rgba(60, 60, 60, 1);
+    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
+}
+
+.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
+    display: none !important;
+}
+`;
+document.head.appendChild(style);
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness < 128;
+    }
+    return false;
+};
+
+const initFullscreen = async () => {
+    await mermaid.run();
+
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+
+    if(all_mermaids.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(initFullscreen, 200);
+        return;
+    }
+
+    const darkTheme = isDarkTheme();
+
+    const modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-fullscreen-content${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    const modalContent = modal.querySelector('.mermaid-fullscreen-content');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    const closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = '';
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+
+    const allButtons = [];
+
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = '⛶';
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        container.appendChild(fullscreenBtn);
+        allButtons.push(fullscreenBtn);
+    });
+
+    // Update theme classes when theme changes
+    const updateTheme = () => {
+        const dark = isDarkTheme();
+        allButtons.forEach(btn => {
+            if (dark) {
+                btn.classList.add('dark-theme');
+            } else {
+                btn.classList.remove('dark-theme');
+            }
+        });
+        if (dark) {
+            modal.classList.add('dark-theme');
+            modalContent.classList.add('dark-theme');
+            closeBtn.classList.add('dark-theme');
+        } else {
+            modal.classList.remove('dark-theme');
+            modalContent.classList.remove('dark-theme');
+            closeBtn.classList.remove('dark-theme');
+        }
+    };
+
+    // Watch for theme changes
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style']
+    });
+};
+
+window.addEventListener("load", initFullscreen);
 </script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -294,7 +589,100 @@ window.addEventListener("load", () => mermaid.run());
             <span class="bp">self</span><span class="o">.</span><span class="n">_plot_rois</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">rois</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>    </div>
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="GazePlotter.plot_calibration">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GazePlotter.plot_calibration">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_calibration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">show_surface</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
+                        <span class="n">interpolation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;rbf&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot spatial calibration data for one or more eyes in subplots.</span>
+<span class="sd">        </span>
+<span class="sd">        Creates a figure with subplots for each eye and calls the plot() method </span>
+<span class="sd">        on each SpatialCalibration object to show calibration accuracy with </span>
+<span class="sd">        target points (black X), measured points (dark blue +), and optional </span>
+<span class="sd">        interpolated error surface.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes : str, list, or None, default None</span>
+<span class="sd">            Which eye(s) to plot. If None or empty list, plots all available eyes.</span>
+<span class="sd">            Can be a single eye name (e.g., &#39;left&#39;) or list of eye names (e.g., [&#39;left&#39;, &#39;right&#39;]).</span>
+<span class="sd">        show_surface : bool, default True</span>
+<span class="sd">            If True, show interpolated error surface as background.</span>
+<span class="sd">            If False, show only the calibration points.</span>
+<span class="sd">        interpolation : str, default &#39;rbf&#39;</span>
+<span class="sd">            Interpolation method for surface (only used if show_surface=True).</span>
+<span class="sd">            Options: &#39;rbf&#39;, &#39;linear&#39;, &#39;cubic&#39;, &#39;nearest&#39;</span>
+<span class="sd">        figsize : tuple, default (10, 8)</span>
+<span class="sd">            Figure size per subplot (width, height) in inches.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : matplotlib.figure.Figure</span>
+<span class="sd">            The figure object</span>
+<span class="sd">        axes : list or matplotlib.axes.Axes</span>
+<span class="sd">            List of axis objects (or single axis if only one eye)</span>
+<span class="sd">        </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If no calibration data is available</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">        &gt;&gt;&gt; data = pp.EyeData.from_eyelink(&#39;data.edf&#39;)  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; # Plot all eyes with surface</span>
+<span class="sd">        &gt;&gt;&gt; fig, axes = data.plot.plot_calibration()  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; # Plot only left eye without surface</span>
+<span class="sd">        &gt;&gt;&gt; fig, ax = data.plot.plot_calibration(eyes=&#39;left&#39;, show_surface=False)  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; # Plot specific eyes</span>
+<span class="sd">        &gt;&gt;&gt; fig, axes = data.plot.plot_calibration(eyes=[&#39;left&#39;, &#39;right&#39;])  # doctest: +SKIP</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
+        
+        <span class="c1"># Check if calibration data exists</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;calibration&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">obj</span><span class="o">.</span><span class="n">calibration</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No calibration data available. Load data with calibration or add it manually.&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Determine which eyes to plot</span>
+        <span class="k">if</span> <span class="n">eyes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">eyes_to_plot</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">eyes_to_plot</span> <span class="o">=</span> <span class="p">[</span><span class="n">eyes</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">eyes_to_plot</span> <span class="o">=</span> <span class="n">eyes</span>
+        
+        <span class="c1"># Filter to only available eyes</span>
+        <span class="n">available_eyes</span> <span class="o">=</span> <span class="p">[</span><span class="n">eye</span> <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes_to_plot</span> <span class="k">if</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">calibration</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">available_eyes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No calibration data available for requested eyes: </span><span class="si">{</span><span class="n">eyes_to_plot</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Create figure and subplots</span>
+        <span class="n">n_eyes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">available_eyes</span><span class="p">)</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes_array</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_eyes</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">figsize</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_eyes</span><span class="p">,</span> <span class="n">figsize</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        
+        <span class="c1"># Make axes iterable even if only one subplot</span>
+        <span class="k">if</span> <span class="n">n_eyes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">axes_array</span> <span class="o">=</span> <span class="p">[</span><span class="n">axes_array</span><span class="p">]</span>
+        
+        <span class="c1"># Plot each eye by setting it as current axes and calling plot()</span>
+        <span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">eye</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes_array</span><span class="p">,</span> <span class="n">available_eyes</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>  <span class="c1"># Set current axes</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">calibration</span><span class="p">[</span><span class="n">eye</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">show_surface</span><span class="o">=</span><span class="n">show_surface</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">interpolation</span><span class="p">)</span>
+        
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+        
+        <span class="c1"># Return single axis if only one eye, otherwise return list</span>
+        <span class="k">if</span> <span class="n">n_eyes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes_array</span>    </div>
 </div>
 
 </pre></div>
