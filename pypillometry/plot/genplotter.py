@@ -321,7 +321,8 @@ class GenericPlotter:
                         mask = obj.data.mask[vname][startix:endix]
                         mask_intervals = obj._mask_to_intervals_list(mask)
                         for start_ix, end_ix in mask_intervals:
-                            # Convert indices to time values
+                            # Convert indices to time values, clamp end_ix to valid range
+                            end_ix = min(end_ix, len(tx) - 1)
                             ax.axvspan(tx[start_ix], tx[end_ix], color='red', alpha=0.2, zorder=0)
             
             if ev_line:
