@@ -242,4 +242,94 @@ class GazePlotter(GenericPlotter):
             self._plot_rois(ax, rois)
         ax.legend()
         ax.set_title(title)
-        fig.tight_layout()    
+        fig.tight_layout()
+    
+    def plot_calibration(self, eyes: Union[str, list, None] = None, show_surface: bool = True, 
+                        interpolation: str = 'rbf', figsize: tuple = (10, 8)):
+        """
+        Plot spatial calibration data for one or more eyes in subplots.
+        
+        Creates a figure with subplots for each eye and calls the plot() method 
+        on each SpatialCalibration object to show calibration accuracy with 
+        target points (black X), measured points (dark blue +), and optional 
+        interpolated error surface.
+        
+        Parameters
+        ----------
+        eyes : str, list, or None, default None
+            Which eye(s) to plot. If None or empty list, plots all available eyes.
+            Can be a single eye name (e.g., 'left') or list of eye names (e.g., ['left', 'right']).
+        show_surface : bool, default True
+            If True, show interpolated error surface as background.
+            If False, show only the calibration points.
+        interpolation : str, default 'rbf'
+            Interpolation method for surface (only used if show_surface=True).
+            Options: 'rbf', 'linear', 'cubic', 'nearest'
+        figsize : tuple, default (10, 8)
+            Figure size per subplot (width, height) in inches.
+        
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The figure object
+        axes : list or matplotlib.axes.Axes
+            List of axis objects (or single axis if only one eye)
+        
+        Raises
+        ------
+        ValueError
+            If no calibration data is available
+        
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> data = pp.EyeData.from_eyelink('data.edf')  # doctest: +SKIP
+        >>> # Plot all eyes with surface
+        >>> fig, axes = data.plot.plot_calibration()  # doctest: +SKIP
+        >>> 
+        >>> # Plot only left eye without surface
+        >>> fig, ax = data.plot.plot_calibration(eyes='left', show_surface=False)  # doctest: +SKIP
+        >>> 
+        >>> # Plot specific eyes
+        >>> fig, axes = data.plot.plot_calibration(eyes=['left', 'right'])  # doctest: +SKIP
+        """
+        obj = self.obj
+        
+        # Check if calibration data exists
+        if not hasattr(obj, 'calibration') or obj.calibration is None:
+            raise ValueError("No calibration data available. Load data with calibration or add it manually.")
+        
+        # Determine which eyes to plot
+        if eyes is None or (isinstance(eyes, list) and len(eyes) == 0):
+            eyes_to_plot = list(obj.calibration.keys())
+        elif isinstance(eyes, str):
+            eyes_to_plot = [eyes]
+        else:
+            eyes_to_plot = eyes
+        
+        # Filter to only available eyes
+        available_eyes = [eye for eye in eyes_to_plot if eye in obj.calibration]
+        
+        if len(available_eyes) == 0:
+            raise ValueError(f"No calibration data available for requested eyes: {eyes_to_plot}")
+        
+        # Create figure and subplots
+        n_eyes = len(available_eyes)
+        fig, axes_array = plt.subplots(1, n_eyes, figsize=(figsize[0] * n_eyes, figsize[1]))
+        
+        # Make axes iterable even if only one subplot
+        if n_eyes == 1:
+            axes_array = [axes_array]
+        
+        # Plot each eye by setting it as current axes and calling plot()
+        for ax, eye in zip(axes_array, available_eyes):
+            plt.sca(ax)  # Set current axes
+            obj.calibration[eye].plot(show_surface=show_surface, interpolation=interpolation)
+        
+        fig.tight_layout()
+        
+        # Return single axis if only one eye, otherwise return list
+        if n_eyes == 1:
+            return fig, axes_array[0]
+        else:
+            return fig, axes_array    

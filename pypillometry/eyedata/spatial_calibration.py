@@ -248,7 +248,8 @@ class SpatialCalibration:
         """
         import matplotlib.pyplot as plt
         
-        fig, ax = plt.subplots(figsize=(10, 8))
+        ax = plt.gca()  # Get current axes
+        fig = ax.figure  # Get the figure from the axes
         
         # Plot error surface if requested
         if show_surface:
