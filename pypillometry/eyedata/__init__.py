@@ -17,12 +17,20 @@ of type :class:`EyeDataDict`.
 
 Each of these classes provides access to a matching plotter object (from module :mod:`pypillometry.plot`) 
 that is stored in the `plot` attribute.
+
+Calibration classes:
+
+- :class:`SpatialCalibration`: Container for eye-tracker spatial calibration data.
+- :class:`ForeshorteningCalibration`: Container for foreshortening correction parameters.
 """
 
-__all__ = ["EyeDataDict", "GenericEyeData","GazeData","PupilData", "EyeData"]
+__all__ = ["EyeDataDict", "GenericEyeData","GazeData","PupilData", "EyeData", 
+           "SpatialCalibration", "ForeshorteningCalibration"]
 
 from .eyedatadict import EyeDataDict
 from .generic import GenericEyeData
 from .gazedata import GazeData
 from .pupildata import PupilData
 from .eyedata import EyeData
+from .spatial_calibration import SpatialCalibration
+from .foreshortening_calibration import ForeshorteningCalibration
