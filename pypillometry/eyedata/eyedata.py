@@ -50,6 +50,10 @@ class EyeData(GazeData,PupilData):
         (width, height) of the screen in cm; if None, the screen size is not used
     screen_eye_distance: float
         distance from the screen to the eye in cm
+    camera_eye_distance: float
+        distance from the camera to the eye in mm
+    eye_to_eye_distance: float
+        distance between the two eyes (inter-pupillary distance) in mm
     name: 
         name of the dataset or `None` (in which case a random string is selected)
     event_onsets: 
@@ -89,6 +93,8 @@ class EyeData(GazeData,PupilData):
                     screen_resolution: tuple = None,
                     physical_screen_size: tuple = None,
                     screen_eye_distance: float = None,
+                    camera_eye_distance: float = None,
+                    eye_to_eye_distance: float = None,
                     name: str = None,
                     calibration: Optional[Dict[str, SpatialCalibration]] = None,
                     fill_time_discontinuities: bool = True,
@@ -111,11 +117,15 @@ class EyeData(GazeData,PupilData):
         self._screen_size_set=False
         self._physical_screen_dims_set=False
         self._screen_eye_distance_set=False
+        self._camera_eye_distance_set=False
+        self._eye_to_eye_distance_set=False
 
-        ## screen limits, physical screen size, screen-eye distance
+        ## screen limits, physical screen size, screen-eye distance, camera-eye distance, eye-to-eye distance
         self.set_experiment_info(screen_resolution=screen_resolution, 
                                  physical_screen_size=physical_screen_size,
-                                 screen_eye_distance=screen_eye_distance)
+                                 screen_eye_distance=screen_eye_distance,
+                                 camera_eye_distance=camera_eye_distance,
+                                 eye_to_eye_distance=eye_to_eye_distance)
         
         ## Spatial calibration data
         self.calibration = calibration
