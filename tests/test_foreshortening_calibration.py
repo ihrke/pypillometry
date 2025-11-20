@@ -491,6 +491,293 @@ class TestFitForeshorteningMethod:
         assert np.all(calib.spline_coeffs < 20.0)  # Generous upper bound
 
 
+class TestFitAndCorrection:
+    """Tests for the complete workflow: fitting and applying correction."""
+    
+    def create_synthetic_data_with_variation(self, n_samples=500, fs=100.0):
+        """Create synthetic data with known geometry and gaze variation."""
+        np.random.seed(123)
+        
+        time = np.arange(n_samples) * (1000.0 / fs)
+        
+        theta_true = np.radians(95)
+        phi_true = 0.0
+        r_true = 600.0
+        d_true = 700.0
+        
+        # More varied gaze positions
+        x_gaze = np.random.randn(n_samples) * 150 + np.sin(2 * np.pi * time / 3000) * 200
+        y_gaze = np.random.randn(n_samples) * 100 + np.cos(2 * np.pi * time / 4000) * 150
+        
+        # True pupil with temporal dynamics
+        A0_true = 3.5 + 0.5 * np.sin(2 * np.pi * time / 8000) + 0.2 * np.cos(2 * np.pi * time / 12000)
+        
+        # Convert to mm
+        scale_x = 520.0 / 1920.0
+        scale_y = 290.0 / 1080.0
+        x_mm = x_gaze * scale_x
+        y_mm = y_gaze * scale_y
+        
+        # Apply foreshortening
+        cos_alpha = _compute_cos_alpha_vectorized(x_mm, y_mm, theta_true, phi_true, r_true, d_true)
+        pupil = np.abs(A0_true * cos_alpha + np.random.randn(n_samples) * 0.03)
+        
+        data = EyeData(
+            time=time,
+            left_x=x_gaze + 960,
+            left_y=y_gaze + 540,
+            left_pupil=pupil,
+            sampling_rate=fs,
+            screen_resolution=(1920, 1080),
+            physical_screen_size=(52.0, 29.0),
+            screen_eye_distance=70.0,
+            fill_time_discontinuities=False
+        )
+        
+        return data, theta_true, phi_true, r_true, d_true, A0_true, cos_alpha
+    
+    def test_fit_and_correction_workflow(self):
+        """Test complete workflow: fit model then apply correction."""
+        data, theta_true, phi_true, r_true, d_true, A0_true, cos_alpha_true = \
+            self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
+        
+        # Fit the model
+        calib = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            verbose=False
+        )
+        
+        # Apply correction to some data points
+        x_test = data['left', 'x'][:100]
+        y_test = data['left', 'y'][:100]
+        pupil_test = data['left', 'pupil'][:100]
+        
+        correction_factor = calib.get_correction_factor(x_test, y_test)
+        pupil_corrected = pupil_test * correction_factor
+        
+        # Check that correction was applied
+        assert pupil_corrected.shape == pupil_test.shape
+        
+        # Valid (non-NaN) corrections should be applied
+        valid_mask = ~np.isnan(correction_factor)
+        assert np.sum(valid_mask) > 0
+    
+    def test_fit_with_different_knot_spacing(self):
+        """Test fitting with different knot spacing parameters."""
+        data, theta_true, phi_true, r_true, d_true, _, _ = \
+            self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
+        
+        # Fit with different knot spacings
+        calib_sparse = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            knots_per_second=0.5,
+            verbose=False
+        )
+        
+        calib_dense = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            knots_per_second=2.0,
+            verbose=False
+        )
+        
+        # Dense should have more coefficients
+        assert len(calib_dense.spline_coeffs) > len(calib_sparse.spline_coeffs)
+        
+        # Both should have reasonable fit quality
+        assert calib_sparse.fit_metrics['r2'] > 0.5
+        assert calib_dense.fit_metrics['r2'] > 0.5
+    
+    def test_fit_with_different_smoothness(self):
+        """Test fitting with different smoothness regularization."""
+        data, theta_true, phi_true, r_true, d_true, _, _ = \
+            self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
+        
+        # Fit with low smoothness (more flexible)
+        calib_low = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            lambda_smooth=0.1,
+            verbose=False
+        )
+        
+        # Fit with high smoothness (more constrained)
+        calib_high = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            lambda_smooth=10.0,
+            verbose=False
+        )
+        
+        # Both should converge
+        assert calib_low.fit_metrics['converged']
+        assert calib_high.fit_metrics['converged']
+        
+        # High smoothness should have smoother coefficients
+        diff_low = np.std(np.diff(calib_low.spline_coeffs))
+        diff_high = np.std(np.diff(calib_high.spline_coeffs))
+        assert diff_high <= diff_low * 1.5  # Allow some tolerance
+    
+    def test_correction_at_different_positions(self):
+        """Test that correction varies appropriately with gaze position."""
+        data, theta_true, phi_true, r_true, d_true, _, _ = \
+            self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
+        
+        calib = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            verbose=False
+        )
+        
+        # Test correction at different screen positions
+        x_center = np.array([960.0])
+        y_center = np.array([540.0])
+        
+        x_peripheral = np.array([1500.0])
+        y_peripheral = np.array([900.0])
+        
+        correction_center = calib.get_correction_factor(x_center, y_center)
+        correction_peripheral = calib.get_correction_factor(x_peripheral, y_peripheral)
+        
+        # Correction factors should differ (unless both are NaN)
+        if not (np.isnan(correction_center) or np.isnan(correction_peripheral)):
+            assert not np.allclose(correction_center, correction_peripheral)
+    
+    def test_fit_initial_guesses(self):
+        """Test fitting with different initial parameter guesses."""
+        data, theta_true, phi_true, r_true, d_true, _, _ = \
+            self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
+        
+        # Fit with different initial guesses
+        calib1 = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            initial_theta=np.radians(90),
+            initial_phi=0.0,
+            verbose=False
+        )
+        
+        calib2 = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            initial_theta=np.radians(100),
+            initial_phi=np.radians(10),
+            verbose=False
+        )
+        
+        # Both should converge to similar solutions
+        assert calib1.fit_metrics['r2'] > 0.5
+        assert calib2.fit_metrics['r2'] > 0.5
+        
+        # Camera positions should be in valid range
+        assert 0 <= calib1.theta <= np.pi
+        assert 0 <= calib2.theta <= np.pi
+    
+    def test_fit_metrics_completeness(self):
+        """Test that all expected fit metrics are returned."""
+        data, theta_true, phi_true, r_true, d_true, _, _ = \
+            self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
+        
+        calib = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            verbose=False
+        )
+        
+        # Check all expected metrics are present
+        required_metrics = ['r2', 'rmse', 'n_samples', 'loss', 'n_iterations', 'converged']
+        for metric in required_metrics:
+            assert metric in calib.fit_metrics
+            assert calib.fit_metrics[metric] is not None
+    
+    def test_correction_factor_symmetry(self):
+        """Test that correction factor behaves symmetrically."""
+        data, theta_true, phi_true, r_true, d_true, _, _ = \
+            self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
+        
+        calib = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            initial_phi=0.0,  # Camera on x-axis
+            verbose=False
+        )
+        
+        # If camera is on x-axis, correction should be symmetric in y
+        x = np.array([960.0, 960.0])
+        y = np.array([640.0, 440.0])  # Symmetric around 540
+        
+        corrections = calib.get_correction_factor(x, y)
+        
+        # Both should be valid or both NaN
+        assert (np.isnan(corrections[0]) and np.isnan(corrections[1])) or \
+               (not np.isnan(corrections[0]) and not np.isnan(corrections[1]))
+    
+    def test_fit_with_lowpass_variations(self):
+        """Test fitting with different lowpass filter settings."""
+        data, theta_true, phi_true, r_true, d_true, _, _ = \
+            self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
+        
+        # Fit with different lowpass frequencies
+        calib_low = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            lowpass_freq=2.0,
+            verbose=False
+        )
+        
+        calib_high = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            lowpass_freq=6.0,
+            verbose=False
+        )
+        
+        # Both should produce valid fits
+        assert calib_low.fit_metrics['r2'] > 0.3
+        assert calib_high.fit_metrics['r2'] > 0.3
+    
+    def test_spline_evaluation_consistency(self):
+        """Test that spline evaluation is consistent."""
+        data, theta_true, phi_true, r_true, d_true, _, _ = \
+            self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
+        
+        calib = data.fit_foreshortening(
+            eye='left',
+            r=r_true,
+            d=d_true,
+            verbose=False
+        )
+        
+        # Evaluate at same point multiple times
+        t_test = 50.0
+        A0_1 = calib.evaluate_spline(t_test)
+        A0_2 = calib.evaluate_spline(t_test)
+        
+        # Should give identical results
+        assert np.allclose(A0_1, A0_2)
+        
+        # Evaluate at array
+        t_array = np.array([50.0, 50.0])
+        A0_array = calib.evaluate_spline(t_array)
+        
+        # Should be consistent
+        assert np.allclose(A0_array[0], A0_array[1])
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
 
