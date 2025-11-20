@@ -5,7 +5,8 @@ from ..plot import GazePlotter
 from ..intervals import Intervals
 import numpy as np
 import json
-from typing import Optional
+from typing import Optional, Dict
+from .spatial_calibration import SpatialCalibration
 
 class GazeData(GenericEyeData):
     """
@@ -37,6 +38,8 @@ class GazeData(GenericEyeData):
         time-onsets of any events in the data (in ms, matched in `time` vector)
     event_labels:
         for each event in `event_onsets`, provide a label
+    calibration: dict, optional
+        Dictionary of SpatialCalibration objects, one per eye (keys: 'left', 'right')
     keep_orig: bool
         keep a copy of the original dataset? If `True`, a copy of the object
         as initiated in the constructor is stored in member `original`
@@ -62,6 +65,7 @@ class GazeData(GenericEyeData):
                     physical_screen_size: tuple = None,
                     screen_eye_distance: float = None,
                     name: str = None,
+                    calibration: Optional[Dict[str, SpatialCalibration]] = None,
                     fill_time_discontinuities: bool = True,
                     keep_orig: bool = False,
                     info: dict = None,
@@ -87,6 +91,9 @@ class GazeData(GenericEyeData):
         self.set_experiment_info(screen_resolution=screen_resolution, 
                                 physical_screen_size=physical_screen_size,
                                 screen_eye_distance=screen_eye_distance)
+        
+        ## Spatial calibration data
+        self.calibration = calibration
 
         self.original=None
         if keep_orig: 
@@ -115,6 +122,14 @@ class GazeData(GenericEyeData):
             else:
                 phys_dims="not set"
 
+            # Calibration info
+            if self.calibration is not None:
+                calibration_info = {
+                    eye: cal.get_stats() for eye, cal in self.calibration.items()
+                }
+            else:
+                calibration_info = "not available"
+            
             summary=dict(
                 name=self.name, 
                 n=len(self.data),
@@ -124,6 +139,7 @@ class GazeData(GenericEyeData):
                 screen_limits=screen_limits,
                 physical_screen_size=phys_dims,
                 screen_eye_distance="not set",
+                calibration=calibration_info,
                 duration_minutes=self.get_duration("min"),
                 start_min=self.tx.min()/1000./60.,
                 end_min=self.tx.max()/1000./60.,
