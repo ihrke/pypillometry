@@ -198,6 +198,168 @@ class SpatialCalibration:
             'min': float(np.min(self.errors[:, 0]))
         }
     
+    def plot_points(self, ax=None):
+        """
+        Plot calibration points with crosses.
+        
+        Target points shown as black crosses, measured points as colored markers
+        (colored by error magnitude).
+        
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            Axis to plot on. If None, uses plt.gca()
+        
+        Returns
+        -------
+        matplotlib.axes.Axes
+            The axis object used for plotting
+        
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import matplotlib.pyplot as plt
+        >>> from pypillometry.eyedata.spatial_calibration import SpatialCalibration
+        >>> 
+        >>> points = np.array([[640, 512], [640, 87], [640, 936]])
+        >>> errors = np.array([[0.3, -13, -2], [0.5, 13, -1], [0.42, 16, 9]])
+        >>> measured = points + errors[:, 1:]
+        >>> 
+        >>> cal = SpatialCalibration('left', 'HV9', points, measured, errors, (1920, 1080))
+        >>> 
+        >>> fig, ax = plt.subplots()  # doctest: +SKIP
+        >>> ax = cal.plot_points(ax=ax)  # doctest: +SKIP
+        >>> ax.set_title('Calibration Accuracy')  # doctest: +SKIP
+        >>> plt.show()  # doctest: +SKIP
+        """
+        import matplotlib.pyplot as plt
+        
+        if ax is None:
+            ax = plt.gca()
+        
+        # Plot target points as black crosses
+        ax.scatter(self.points[:, 0], self.points[:, 1], 
+                   marker='x', s=100, c='black', label='Target', zorder=3)
+        
+        # Plot measured points colored by error
+        scatter = ax.scatter(self.measured[:, 0], self.measured[:, 1],
+                            c=self.errors[:, 0], cmap='coolwarm',
+                            s=100, marker='o', label='Measured',
+                            edgecolors='black', linewidth=0.5, zorder=3)
+        
+        # Add lines connecting target to measured
+        for i in range(len(self.points)):
+            ax.plot([self.points[i, 0], self.measured[i, 0]],
+                    [self.points[i, 1], self.measured[i, 1]],
+                    'k-', alpha=0.3, linewidth=0.5, zorder=1)
+        
+        # Colorbar
+        cbar = plt.colorbar(scatter, ax=ax)
+        cbar.set_label('Error (degrees)', rotation=270, labelpad=15)
+        
+        # Labels and limits
+        ax.set_xlabel('X position (pixels)')
+        ax.set_ylabel('Y position (pixels)')
+        ax.set_title(f'{self.eye.capitalize()} Eye Calibration ({self.model})')
+        
+        if self.screen_resolution is not None:
+            ax.set_xlim(0, self.screen_resolution[0])
+            ax.set_ylim(0, self.screen_resolution[1])
+            ax.invert_yaxis()  # Match screen coordinates
+        
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        
+        return ax
+    
+    def plot_heatmap(self, ax=None, interpolation='rbf'):
+        """
+        Plot interpolated accuracy surface.
+        
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            Axis to plot on. If None, uses plt.gca()
+        interpolation : str, default 'rbf'
+            Interpolation method. Options:
+            - 'rbf': Radial basis function (smooth, good for scattered data)
+            - 'linear', 'cubic', 'nearest': griddata methods
+        
+        Returns
+        -------
+        matplotlib.axes.Axes
+            The axis object used for plotting
+        
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import matplotlib.pyplot as plt
+        >>> from pypillometry.eyedata.spatial_calibration import SpatialCalibration
+        >>> 
+        >>> # Create calibration with more points for better interpolation
+        >>> points = np.array([[640, 512], [640, 87], [640, 936],
+        ...                    [96, 512], [1183, 512], [161, 138],
+        ...                    [1118, 138], [161, 885], [1118, 885]])
+        >>> errors = np.array([[0.3, -13, -2], [0.3, 13, -0.2], [0.42, 16, 9],
+        ...                    [0.79, -19, 30], [0.62, 13, 24], [0.69, 22, 22],
+        ...                    [0.5, 22, 0.8], [0.05, -2, 0.6], [0.24, -9, -6]])
+        >>> measured = points + errors[:, 1:]
+        >>> 
+        >>> cal = SpatialCalibration('left', 'HV9', points, measured, errors, (1920, 1080))
+        >>> 
+        >>> fig, ax = plt.subplots()  # doctest: +SKIP
+        >>> ax = cal.plot_heatmap(ax=ax)  # doctest: +SKIP
+        >>> plt.show()  # doctest: +SKIP
+        """
+        import matplotlib.pyplot as plt
+        
+        if ax is None:
+            ax = plt.gca()
+        
+        if self.screen_resolution is None:
+            raise ValueError("screen_resolution must be set to plot heatmap")
+        
+        # Create grid for interpolation
+        grid_x, grid_y = np.meshgrid(
+            np.linspace(0, self.screen_resolution[0], 100),
+            np.linspace(0, self.screen_resolution[1], 100)
+        )
+        
+        # Interpolate error values
+        if interpolation == 'rbf':
+            from scipy.interpolate import Rbf
+            rbf = Rbf(self.points[:, 0], self.points[:, 1], 
+                     self.errors[:, 0], function='multiquadric', smooth=0.1)
+            grid_z = rbf(grid_x, grid_y)
+        else:
+            from scipy.interpolate import griddata
+            grid_z = griddata(
+                self.points, self.errors[:, 0],
+                (grid_x, grid_y), method=interpolation
+            )
+        
+        # Plot heatmap
+        im = ax.imshow(grid_z, extent=[0, self.screen_resolution[0],
+                                         self.screen_resolution[1], 0],
+                       aspect='auto', cmap='YlOrRd', alpha=0.7)
+        
+        # Overlay calibration points
+        ax.scatter(self.points[:, 0], self.points[:, 1],
+                   c='blue', s=50, marker='x', linewidths=2,
+                   label='Calibration points', zorder=3)
+        
+        # Colorbar
+        cbar = plt.colorbar(im, ax=ax)
+        cbar.set_label('Error (degrees)', rotation=270, labelpad=15)
+        
+        # Labels
+        ax.set_xlabel('X position (pixels)')
+        ax.set_ylabel('Y position (pixels)')
+        ax.set_title(f'{self.eye.capitalize()} Eye Accuracy Map ({self.model})')
+        ax.legend()
+        
+        return ax
+    
     def __repr__(self) -> str:
         """
         String representation with key statistics.
