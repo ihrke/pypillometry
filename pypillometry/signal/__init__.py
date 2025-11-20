@@ -4,8 +4,12 @@ __all__ = [
     # from preproc.py
     "smooth_window", "detect_blinks_velocity", "detect_blinks_zero",
     # from pupil.py  
+    # from fake.py
+    "fake_pupil_baseline", "fake_gaze_fixations", "add_measurement_noise", 
+    "generate_foreshortening_data",
     ]
 
 from .baseline import *
 from .preproc import *
 from .pupil import *
+from .fake import *

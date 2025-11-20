@@ -22,10 +22,14 @@ Calibration classes:
 
 - :class:`SpatialCalibration`: Container for eye-tracker spatial calibration data.
 - :class:`ForeshorteningCalibration`: Container for foreshortening correction parameters.
+
+Simulation classes:
+
+- :class:`FakeEyeData`: Synthetic eye-tracking data for testing and validation.
 """
 
 __all__ = ["EyeDataDict", "GenericEyeData","GazeData","PupilData", "EyeData", 
-           "SpatialCalibration", "ForeshorteningCalibration"]
+           "SpatialCalibration", "ForeshorteningCalibration", "FakeEyeData"]
 
 from .eyedatadict import EyeDataDict
 from .generic import GenericEyeData
@@ -34,3 +38,4 @@ from .pupildata import PupilData
 from .eyedata import EyeData
 from .spatial_calibration import SpatialCalibration
 from .foreshortening_calibration import ForeshorteningCalibration
+from .fake_eyedata import FakeEyeData
