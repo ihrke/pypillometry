@@ -209,6 +209,196 @@ def _create_bspline_basis(
     return basis_matrix
 
 
+def _split_params(
+    params: np.ndarray, 
+    n_basis: int
+) -> Tuple[np.ndarray, float, float]:
+    """
+    Split parameter vector into spline coefficients and camera angles.
+    
+    Parameters
+    ----------
+    params : np.ndarray
+        Full parameter vector [a_1, ..., a_K, theta, phi]
+    n_basis : int
+        Number of basis functions (K)
+    
+    Returns
+    -------
+    spline_coeffs : np.ndarray
+        B-spline coefficients (length K)
+    theta : float
+        Camera polar angle
+    phi : float
+        Camera azimuthal angle
+    """
+    spline_coeffs = params[:n_basis]
+    theta = params[n_basis]
+    phi = params[n_basis + 1]
+    return spline_coeffs, theta, phi
+
+
+def _objective_function(
+    params: np.ndarray,
+    x: np.ndarray,
+    y: np.ndarray,
+    t: np.ndarray,
+    A: np.ndarray,
+    basis_matrix: np.ndarray,
+    r: float,
+    d: float,
+    lambda_smooth: float,
+    eye_offset: float = 0.0
+) -> float:
+    """
+    Objective function for foreshortening model optimization.
+    
+    Computes the sum of squared residuals between measured and predicted
+    pupil sizes, plus a smoothness regularization term on the spline coefficients.
+    
+    Parameters
+    ----------
+    params : np.ndarray
+        Parameter vector [a_1, ..., a_K, theta, phi]
+    x : np.ndarray
+        Gaze x-coordinates in mm (shape: (n,))
+    y : np.ndarray
+        Gaze y-coordinates in mm (shape: (n,))
+    t : np.ndarray
+        Time points in ms (shape: (n,))
+    A : np.ndarray
+        Measured pupil sizes (shape: (n,))
+    basis_matrix : np.ndarray
+        B-spline basis evaluation matrix (shape: (n, K))
+    r : float
+        Eye-to-camera distance in mm
+    d : float
+        Eye-to-screen distance in mm
+    lambda_smooth : float
+        Smoothness regularization weight
+    eye_offset : float, default 0.0
+        Eye x-offset for binocular setups
+    
+    Returns
+    -------
+    loss : float
+        Total loss (data fidelity + smoothness regularization)
+    
+    Notes
+    -----
+    Model: A_predicted = (sum_k a_k * B_k(t)) * cos(alpha(x, y; theta, phi))
+    
+    Loss = sum_i (A_i - A_predicted_i)^2 + lambda_smooth * sum_k (a_{k+1} - a_k)^2
+    """
+    n_basis = basis_matrix.shape[1]
+    spline_coeffs, theta, phi = _split_params(params, n_basis)
+    
+    # Compute A0(t) from spline
+    A0 = basis_matrix @ spline_coeffs
+    
+    # Compute foreshortening factor
+    cos_alpha = _compute_cos_alpha_vectorized(x, y, theta, phi, r, d, eye_offset)
+    
+    # Predicted measured pupil size
+    A_pred = A0 * cos_alpha
+    
+    # Data fidelity term
+    residuals = A - A_pred
+    data_loss = np.sum(residuals ** 2)
+    
+    # Smoothness regularization
+    spline_diffs = np.diff(spline_coeffs)
+    smooth_loss = lambda_smooth * np.sum(spline_diffs ** 2)
+    
+    total_loss = data_loss + smooth_loss
+    
+    return total_loss
+
+
+def _objective_gradient(
+    params: np.ndarray,
+    x: np.ndarray,
+    y: np.ndarray,
+    t: np.ndarray,
+    A: np.ndarray,
+    basis_matrix: np.ndarray,
+    r: float,
+    d: float,
+    lambda_smooth: float,
+    eye_offset: float = 0.0
+) -> np.ndarray:
+    """
+    Gradient of objective function for faster optimization.
+    
+    Computes analytical gradient of the loss with respect to all parameters.
+    
+    Parameters
+    ----------
+    params : np.ndarray
+        Parameter vector [a_1, ..., a_K, theta, phi]
+    x, y, t, A : np.ndarray
+        Data arrays
+    basis_matrix : np.ndarray
+        B-spline basis matrix
+    r, d : float
+        Geometric parameters
+    lambda_smooth : float
+        Smoothness weight
+    eye_offset : float, default 0.0
+        Eye x-offset
+    
+    Returns
+    -------
+    gradient : np.ndarray
+        Gradient vector (same shape as params)
+    
+    Notes
+    -----
+    Using chain rule:
+    dL/da_k = -2 * sum_i (A_i - A_pred_i) * cos_alpha_i * B_k(t_i) + smoothness_gradient
+    dL/dtheta = -2 * sum_i (A_i - A_pred_i) * A0_i * d(cos_alpha)/dtheta
+    dL/dphi = -2 * sum_i (A_i - A_pred_i) * A0_i * d(cos_alpha)/dphi
+    """
+    n_basis = basis_matrix.shape[1]
+    spline_coeffs, theta, phi = _split_params(params, n_basis)
+    
+    # Forward pass
+    A0 = basis_matrix @ spline_coeffs
+    cos_alpha = _compute_cos_alpha_vectorized(x, y, theta, phi, r, d, eye_offset)
+    A_pred = A0 * cos_alpha
+    residuals = A - A_pred  # Shape: (n,)
+    
+    # Gradient w.r.t. spline coefficients
+    grad_coeffs = -2 * (basis_matrix.T @ (residuals * cos_alpha))  # Shape: (K,)
+    
+    # Add smoothness gradient
+    # d/da_k of sum_{j} (a_{j+1} - a_j)^2
+    smooth_grad = np.zeros(n_basis)
+    smooth_grad[:-1] += -2 * lambda_smooth * np.diff(spline_coeffs)
+    smooth_grad[1:] += 2 * lambda_smooth * np.diff(spline_coeffs)
+    grad_coeffs += smooth_grad
+    
+    # Gradient w.r.t. theta and phi (numerical approximation for simplicity)
+    eps = 1e-6
+    
+    # Theta gradient
+    cos_alpha_theta_plus = _compute_cos_alpha_vectorized(x, y, theta + eps, phi, r, d, eye_offset)
+    A_pred_theta_plus = A0 * cos_alpha_theta_plus
+    residuals_theta_plus = A - A_pred_theta_plus
+    grad_theta = (np.sum(residuals_theta_plus ** 2) - np.sum(residuals ** 2)) / eps
+    
+    # Phi gradient
+    cos_alpha_phi_plus = _compute_cos_alpha_vectorized(x, y, theta, phi + eps, r, d, eye_offset)
+    A_pred_phi_plus = A0 * cos_alpha_phi_plus
+    residuals_phi_plus = A - A_pred_phi_plus
+    grad_phi = (np.sum(residuals_phi_plus ** 2) - np.sum(residuals ** 2)) / eps
+    
+    # Combine gradients
+    gradient = np.concatenate([grad_coeffs, [grad_theta], [grad_phi]])
+    
+    return gradient
+
+
 class ForeshorteningCalibration:
     """
     Container for foreshortening correction calibration parameters.
