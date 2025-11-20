@@ -47,6 +47,111 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(self.eyedata.physical_screen_width, 30.0)  # Updated to match actual physical size
         self.assertEqual(self.eyedata.physical_screen_height, 20.0)
         self.assertEqual(self.eyedata.screen_eye_distance, 60.0)
+    
+    def test_camera_eye_distance_initialization(self):
+        """Test initialization with camera_eye_distance"""
+        # Test with camera_eye_distance during initialization
+        d = pp.EyeData(
+            left_x=[1,2,3], 
+            left_y=[3,4,5], 
+            sampling_rate=1000,
+            camera_eye_distance=600.0
+        )
+        self.assertEqual(d.camera_eye_distance, 600.0)
+        
+        # Test that it appears in summary
+        summary = d.summary()
+        self.assertIn('camera_eye_distance', summary)
+        self.assertEqual(summary['camera_eye_distance'], 600.0)
+    
+    def test_camera_eye_distance_via_set_experiment_info(self):
+        """Test setting camera_eye_distance via set_experiment_info"""
+        d = pp.EyeData(left_x=[1,2,3], left_y=[3,4,5], sampling_rate=1000)
+        
+        # Should raise error when not set
+        with self.assertRaises(ValueError) as cm:
+            _ = d.camera_eye_distance
+        self.assertIn("Camera-eye distance not set", str(cm.exception))
+        
+        # Set via set_experiment_info
+        d.set_experiment_info(camera_eye_distance=550.0)
+        self.assertEqual(d.camera_eye_distance, 550.0)
+        
+        # Should appear in summary
+        summary = d.summary()
+        self.assertEqual(summary['camera_eye_distance'], 550.0)
+    
+    def test_eye_to_eye_distance_initialization(self):
+        """Test initialization with eye_to_eye_distance"""
+        # Test with eye_to_eye_distance during initialization
+        d = pp.EyeData(
+            left_x=[1,2,3], 
+            left_y=[3,4,5], 
+            right_x=[4,5,6],
+            right_y=[7,8,9],
+            sampling_rate=1000,
+            eye_to_eye_distance=65.0
+        )
+        self.assertEqual(d.eye_to_eye_distance, 65.0)
+        
+        # Test that it appears in summary
+        summary = d.summary()
+        self.assertIn('eye_to_eye_distance', summary)
+        self.assertEqual(summary['eye_to_eye_distance'], 65.0)
+    
+    def test_eye_to_eye_distance_via_set_experiment_info(self):
+        """Test setting eye_to_eye_distance via set_experiment_info"""
+        d = pp.EyeData(left_x=[1,2,3], left_y=[3,4,5], sampling_rate=1000)
+        
+        # Should raise error when not set
+        with self.assertRaises(ValueError) as cm:
+            _ = d.eye_to_eye_distance
+        self.assertIn("Eye-to-eye distance not set", str(cm.exception))
+        
+        # Set via set_experiment_info
+        d.set_experiment_info(eye_to_eye_distance=63.0)
+        self.assertEqual(d.eye_to_eye_distance, 63.0)
+        
+        # Should appear in summary
+        summary = d.summary()
+        self.assertEqual(summary['eye_to_eye_distance'], 63.0)
+    
+    def test_all_distance_parameters_together(self):
+        """Test setting all distance parameters together"""
+        d = pp.EyeData(
+            left_x=[1,2,3], 
+            left_y=[3,4,5], 
+            right_x=[4,5,6],
+            right_y=[7,8,9],
+            sampling_rate=1000,
+            screen_resolution=(1920, 1080),
+            physical_screen_size=(50.0, 30.0),
+            screen_eye_distance=70.0,
+            camera_eye_distance=600.0,
+            eye_to_eye_distance=65.0
+        )
+        
+        # Check all parameters are set
+        self.assertEqual(d.screen_eye_distance, 70.0)
+        self.assertEqual(d.camera_eye_distance, 600.0)
+        self.assertEqual(d.eye_to_eye_distance, 65.0)
+        self.assertEqual(d.physical_screen_width, 50.0)
+        self.assertEqual(d.physical_screen_height, 30.0)
+        
+        # Check all appear in summary
+        summary = d.summary()
+        self.assertEqual(summary['screen_eye_distance'], 70.0)
+        self.assertEqual(summary['camera_eye_distance'], 600.0)
+        self.assertEqual(summary['eye_to_eye_distance'], 65.0)
+    
+    def test_distance_parameters_not_set_in_summary(self):
+        """Test that unset distance parameters show as 'not set' in summary"""
+        d = pp.EyeData(left_x=[1,2,3], left_y=[3,4,5], sampling_rate=1000)
+        
+        summary = d.summary()
+        self.assertEqual(summary['camera_eye_distance'], 'not set')
+        self.assertEqual(summary['eye_to_eye_distance'], 'not set')
+        self.assertEqual(summary['screen_eye_distance'], 'not set')
 
         # Test pupil data initialization
         # Check that pupil data exists for both eyes

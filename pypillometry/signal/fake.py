@@ -119,7 +119,7 @@ def add_measurement_noise(signal, noise_level=0.05, seed=None):
 def generate_foreshortening_data(duration=120, fs=1000, eye='left',
                                 theta=np.radians(95), phi=0.0, r=600, d=700,
                                 A0_mean=3.5, A0_amplitude=0.5, A0_freq=3.0,
-                                fixation_duration_mean=300, 
+                                fixation_duration_mean=500, 
                                 fixation_duration_std=100,
                                 screen_resolution=(1920, 1080),
                                 physical_screen_size=(520, 290),
