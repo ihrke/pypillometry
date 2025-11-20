@@ -181,16 +181,16 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
         - sim_fct: reference to this function
         - sim_fct_name: 'generate_foreshortening_data'
         - sim_params: all generation parameters
-        - sim_data: EyeDataDict with 'A0' and 'cos_alpha' ground truth
+        - sim_data: EyeDataDict with '{eye}_A0' and '{eye}_cosalpha' ground truth
     
     Examples
     --------
     >>> from pypillometry.signal.fake import generate_foreshortening_data
-    >>> data = generate_foreshortening_data(duration=60, seed=42)
+    >>> data = generate_foreshortening_data(duration=60, eye='left', seed=42)
     >>> 
     >>> # Access ground truth
-    >>> A0_true = data.sim_data['A0']
-    >>> cos_alpha_true = data.sim_data['cos_alpha']
+    >>> A0_true = data.sim_data['left_A0']
+    >>> cos_alpha_true = data.sim_data['left_cosalpha']
     >>> 
     >>> # Print generation call
     >>> print(data.get_generation_call())
@@ -263,16 +263,17 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
         'seed': seed,
     }
     
-    # Store ground truth in EyeDataDict
+    # Store ground truth in EyeDataDict (use eye-specific keys)
     sim_data = EyeDataDict()
-    sim_data['A0'] = A0  # Algorithm-specific name
-    sim_data['cos_alpha'] = cos_alpha  # Algorithm-specific name
+    sim_data[f'{eye}_A0'] = A0  # True pupil size
+    sim_data[f'{eye}_cosalpha'] = cos_alpha  # Foreshortening factor
     
     return FakeEyeData(
         time=t,
         **eye_data_kwargs,
         sampling_rate=fs,
         screen_resolution=screen_resolution,
+        physical_screen_size=physical_screen_size,
         screen_eye_distance=screen_eye_distance,
         sim_fct=generate_foreshortening_data,
         sim_fct_name='generate_foreshortening_data',
