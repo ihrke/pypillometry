@@ -1070,12 +1070,12 @@ class GenericEyeData(ABC):
 
         # Parse calibration data (use validations, which are post-calibration checks)
         calibration = None
-        if 'validations' in edf and len(edf['validations']) > 0:
+        if 'calibrations' in edf["info"] and len(edf["info"]["calibrations"]) > 0:
             from .spatial_calibration import SpatialCalibration
             calibration = {}
             screen_res = edf["info"].get("screen_coords", None)
             
-            for val_data in edf['validations']:
+            for val_data in edf["info"]["calibrations"]:
                 eye = val_data.get('eye', 'unknown').lower()
                 # Use most recent validation for each eye (overwrite if multiple)
                 calibration[eye] = SpatialCalibration.from_eyelink(
