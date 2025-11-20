@@ -4,6 +4,7 @@ sphinxcontrib-mermaid
 sphinx-math-dollar
 #sphinx-mdinclude
 myst-parser
+jupyter_sphinx
 nbsphinx
 numpydoc
 ipykernel
