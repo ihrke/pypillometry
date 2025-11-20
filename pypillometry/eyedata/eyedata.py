@@ -8,7 +8,8 @@ from loguru import logger
 from .pupildata import PupilData
 import numpy as np
 from collections.abc import Iterable
-from typing import Optional
+from typing import Optional, Dict
+from .spatial_calibration import SpatialCalibration
 
 
 
@@ -44,6 +45,8 @@ class EyeData(GazeData,PupilData):
         time-onsets of any events in the data (in ms, matched in `time` vector)
     event_labels:
         for each event in `event_onsets`, provide a label
+    calibration: dict, optional
+        Dictionary of SpatialCalibration objects, one per eye (keys: 'left', 'right')
     keep_orig: bool
         keep a copy of the original dataset? If `True`, a copy of the object
         as initiated in the constructor is stored in member `original`
@@ -76,6 +79,7 @@ class EyeData(GazeData,PupilData):
                     physical_screen_size: tuple = None,
                     screen_eye_distance: float = None,
                     name: str = None,
+                    calibration: Optional[Dict[str, SpatialCalibration]] = None,
                     fill_time_discontinuities: bool = True,
                     keep_orig: bool = False, 
                     info: dict = None,
@@ -101,6 +105,9 @@ class EyeData(GazeData,PupilData):
         self.set_experiment_info(screen_resolution=screen_resolution, 
                                  physical_screen_size=physical_screen_size,
                                  screen_eye_distance=screen_eye_distance)
+        
+        ## Spatial calibration data
+        self.calibration = calibration
 
         self.original=None
         if keep_orig: 

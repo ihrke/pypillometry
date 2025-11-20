@@ -1008,8 +1008,11 @@ class GenericEyeData(ABC):
 
         All "messages" are stored as event_labels (can be filtered later) and
         it tries to be smart to detect different information from the EDF file.
+        Spatial calibration/validation data is automatically parsed and stored
+        in the `calibration` attribute as SpatialCalibration objects.
+        
         However, the EDF file may contain other information of interest, e.g.,
-        calibration data, eyelink-detected saccades, etc.
+        eyelink-detected saccades, etc.
         If you need more control, use the "eyelinkio" package directly and 
         create the object manually. 
 
@@ -1029,6 +1032,14 @@ class GenericEyeData(ABC):
         -------
         :class:`.GenericEyedata` or tuple
             object of class :class:`.GenericEyedata` or tuple with the object of class :class:`.GenericEyedata` and the object returned by the "eyelinkio" package
+        
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> d = pp.EyeData.from_eyelink('data.edf')  # doctest: +SKIP
+        >>> # Access calibration data
+        >>> print(d.calibration['left'])  # doctest: +SKIP
+        <SpatialCalibration: left eye, HV9, n=9, error=0.45±0.23° (max=0.79°)>
 
         """
         edf = io.read_eyelink(fname, **kwargs)
@@ -1057,9 +1068,23 @@ class GenericEyeData(ABC):
         sfreq = edf["info"]["sfreq"]
         tx = edf["times"]*1000
 
+        # Parse calibration data (use validations, which are post-calibration checks)
+        calibration = None
+        if 'validations' in edf and len(edf['validations']) > 0:
+            from .spatial_calibration import SpatialCalibration
+            calibration = {}
+            screen_res = edf["info"].get("screen_coords", None)
+            
+            for val_data in edf['validations']:
+                eye = val_data.get('eye', 'unknown').lower()
+                # Use most recent validation for each eye (overwrite if multiple)
+                calibration[eye] = SpatialCalibration.from_eyelink(
+                    val_data, screen_res
+                )
+        
         # build the object
         obj = cls(time=tx, **d, event_onsets=evon, event_labels=evlab, 
-            sampling_rate=sfreq, info=info, 
+            sampling_rate=sfreq, info=info, calibration=calibration,
             screen_resolution=edf["info"]["screen_coords"], name=edf["info"]["filename"])
 
         # filter out irrelevant triggers
