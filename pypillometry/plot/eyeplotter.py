@@ -203,7 +203,7 @@ class EyePlotter(GazePlotter,PupilPlotter):
         show_gaze_samples: bool = True,
         n_gaze_samples: int = 9,
         ax: Optional[plt.Axes] = None,
-        viewing_angle: tuple = ("90 deg", "-90 deg"),
+        viewing_angle: tuple = ("-49 deg", "50 deg", "45 deg"),
         projection: str = '2d'
     ) -> tuple:
         """
@@ -408,6 +408,69 @@ class EyePlotter(GazePlotter,PupilPlotter):
                 [eye_pos[2], screen_center[2]], 
                 'g--', linewidth=2, alpha=0.6, label=f'E-S: {d:.0f}mm')
         
+        # Draw angle annotations
+        # Theta: angle between z-axis and eye-to-camera vector
+        arc_radius = r * 0.3
+        n_arc_points = 20
+        
+        # Theta arc: in the plane containing both z-axis and camera vector
+        # We'll draw it in the vertical plane that contains the camera
+        theta_angles = np.linspace(0, theta, n_arc_points)
+        # Project camera position onto x-y plane to get the azimuthal direction
+        camera_xy_norm = np.linalg.norm(camera_pos[:2])
+        if camera_xy_norm > 0:
+            # Direction in x-y plane
+            phi_unit = camera_pos[:2] / camera_xy_norm
+        else:
+            phi_unit = np.array([1, 0])  # Default to x-axis if camera on z-axis
+        
+        theta_arc_x = arc_radius * np.sin(theta_angles) * phi_unit[0]
+        theta_arc_y = arc_radius * np.sin(theta_angles) * phi_unit[1]
+        theta_arc_z = arc_radius * np.cos(theta_angles)
+        
+        ax.plot(theta_arc_x, theta_arc_y, theta_arc_z, 
+                'orange', linewidth=2.5, alpha=0.8)
+        
+        # Theta label at midpoint of arc
+        mid_theta = theta / 2
+        label_r = arc_radius * 1.3
+        theta_label_pos = np.array([
+            label_r * np.sin(mid_theta) * phi_unit[0],
+            label_r * np.sin(mid_theta) * phi_unit[1],
+            label_r * np.cos(mid_theta)
+        ])
+        ax.text(theta_label_pos[0], theta_label_pos[1], theta_label_pos[2],
+                f'θ={np.degrees(theta):.1f}°', fontsize=11, color='orange',
+                fontweight='bold', ha='center', va='center',
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', 
+                         edgecolor='orange', alpha=0.8))
+        
+        # Phi: angle in x-y plane from x-axis
+        # Only draw if camera is not on z-axis
+        if camera_xy_norm > 1e-6:  # Avoid numerical issues
+            phi_angles = np.linspace(0, phi, n_arc_points)
+            phi_arc_radius = arc_radius * 0.8
+            phi_arc_x = phi_arc_radius * np.cos(phi_angles)
+            phi_arc_y = phi_arc_radius * np.sin(phi_angles)
+            phi_arc_z = np.zeros(n_arc_points)
+            
+            ax.plot(phi_arc_x, phi_arc_y, phi_arc_z,
+                    'purple', linewidth=2.5, alpha=0.8)
+            
+            # Phi label
+            mid_phi = phi / 2
+            phi_label_r = phi_arc_radius * 1.4
+            phi_label_pos = np.array([
+                phi_label_r * np.cos(mid_phi),
+                phi_label_r * np.sin(mid_phi),
+                0
+            ])
+            ax.text(phi_label_pos[0], phi_label_pos[1], phi_label_pos[2],
+                    f'φ={np.degrees(phi):.1f}°', fontsize=11, color='purple',
+                    fontweight='bold', ha='center', va='center',
+                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
+                             edgecolor='purple', alpha=0.8))
+        
         # Show sample gaze vectors
         if show_gaze_samples:
             grid_size = int(np.sqrt(n_gaze_samples))
@@ -455,8 +518,16 @@ class EyePlotter(GazePlotter,PupilPlotter):
         
         # Initial viewing angle: behind the eye looking at the screen
         # elev=10 gives slight top-down view, azim=0 aligns with viewing axis
-        elev, azim = (parse_angle(va) for va in viewing_angle) # comes back in radians
-        ax.view_init(elev=np.degrees(elev), azim=np.degrees(azim))
+        # Support both 2-tuple (elev, azim) and 3-tuple (elev, azim, roll)
+        parsed_angles = tuple(parse_angle(va) for va in viewing_angle)
+        if len(parsed_angles) == 2:
+            elev, azim = parsed_angles
+            ax.view_init(elev=np.degrees(elev), azim=np.degrees(azim))
+        elif len(parsed_angles) == 3:
+            elev, azim, roll = parsed_angles
+            ax.view_init(elev=np.degrees(elev), azim=np.degrees(azim), roll=np.degrees(roll))
+        else:
+            raise ValueError(f"viewing_angle must be a 2-tuple (elev, azim) or 3-tuple (elev, azim, roll), got {len(parsed_angles)} values")
         
         plt.tight_layout()
         
@@ -565,6 +636,32 @@ class EyePlotter(GazePlotter,PupilPlotter):
         # Eye-camera line
         ax.plot([E[0], C[0]], [E[1], C[1]], 'r--', alpha=0.5, linewidth=1.5)
         
+        # Phi angle annotation (azimuthal angle in x-y plane)
+        # Only draw if camera has non-zero x-y projection
+        camera_xy_dist = np.sqrt(C[0]**2 + C[1]**2)
+        if camera_xy_dist > 1e-6:
+            from matplotlib.patches import Arc
+            arc_radius = min(camera_xy_dist, max(w, h)) * 0.3
+            # Arc from x-axis (0°) to phi
+            # Ensure theta1 < theta2 for correct arc direction
+            phi_deg = np.degrees(phi)
+            theta1, theta2 = (0, phi_deg) if phi_deg > 0 else (phi_deg, 0)
+            arc = Arc((E[0], E[1]), 2*arc_radius, 2*arc_radius, 
+                     angle=0, theta1=theta1, theta2=theta2,
+                     color='purple', linewidth=2.5, zorder=5)
+            ax.add_patch(arc)
+            
+            # Phi label
+            mid_phi = phi / 2
+            label_r = arc_radius * 1.3
+            phi_label_x = E[0] + label_r * np.cos(mid_phi)
+            phi_label_y = E[1] + label_r * np.sin(mid_phi)
+            ax.text(phi_label_x, phi_label_y, f'φ={phi_deg:.1f}°',
+                   fontsize=10, color='purple', fontweight='bold',
+                   ha='center', va='center',
+                   bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+                            edgecolor='purple', alpha=0.9))
+        
         # Gaze samples
         if show_gaze_samples:
             n = int(np.sqrt(n_gaze_samples))
@@ -617,6 +714,33 @@ class EyePlotter(GazePlotter,PupilPlotter):
         ax.plot([E[2], d], [E[0], 0], 'g--', alpha=0.5, linewidth=1.5,
                 label=f'E-S: {d:.0f}mm')
         
+        # Theta angle annotation (in z-x plane, showing x-component)
+        # This shows the projection of theta onto the z-x plane
+        from matplotlib.patches import Arc
+        # Calculate the angle in the z-x plane
+        theta_zx = np.arctan2(C[0], C[2])  # angle from z-axis in z-x plane
+        if abs(theta_zx) > 1e-6:
+            arc_radius = min(r, d) * 0.3
+            # Arc from z-axis (0° in this view) to the camera direction
+            # Ensure theta1 < theta2 for correct arc direction
+            theta_zx_deg = np.degrees(theta_zx)
+            theta1, theta2 = (0, theta_zx_deg) if theta_zx_deg > 0 else (theta_zx_deg, 0)
+            arc = Arc((E[2], E[0]), 2*arc_radius, 2*arc_radius,
+                     angle=0, theta1=theta1, theta2=theta2,
+                     color='orange', linewidth=2.5, zorder=5)
+            ax.add_patch(arc)
+            
+            # Label
+            mid_angle = theta_zx / 2
+            label_r = arc_radius * 1.4
+            label_z = E[2] + label_r * np.cos(mid_angle)
+            label_x = E[0] + label_r * np.sin(mid_angle)
+            ax.text(label_z, label_x, f'θ(x)={theta_zx_deg:.1f}°',
+                   fontsize=9, color='orange', fontweight='bold',
+                   ha='center', va='center',
+                   bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+                            edgecolor='orange', alpha=0.9))
+        
         ax.set_xlabel('z (mm)', fontsize=10)
         ax.set_ylabel('x (mm)', fontsize=10)
         ax.set_title('Top View (z-x plane)', fontsize=11, fontweight='bold')
@@ -657,6 +781,33 @@ class EyePlotter(GazePlotter,PupilPlotter):
         
         # Eye-screen line (swap coordinates)
         ax.plot([E[2], d], [E[1], 0], 'g--', alpha=0.5, linewidth=1.5)
+        
+        # Theta angle annotation (in z-y plane, showing y-component)
+        # This shows the projection of theta onto the z-y plane
+        from matplotlib.patches import Arc
+        # Calculate the angle in the z-y plane
+        theta_zy = np.arctan2(C[1], C[2])  # angle from z-axis in z-y plane
+        if abs(theta_zy) > 1e-6:
+            arc_radius = min(r, d) * 0.3
+            # Arc from z-axis (0° in this view) to the camera direction
+            # Ensure theta1 < theta2 for correct arc direction
+            theta_zy_deg = np.degrees(theta_zy)
+            theta1, theta2 = (0, theta_zy_deg) if theta_zy_deg > 0 else (theta_zy_deg, 0)
+            arc = Arc((E[2], E[1]), 2*arc_radius, 2*arc_radius,
+                     angle=0, theta1=theta1, theta2=theta2,
+                     color='orange', linewidth=2.5, zorder=5)
+            ax.add_patch(arc)
+            
+            # Label
+            mid_angle = theta_zy / 2
+            label_r = arc_radius * 1.4
+            label_z = E[2] + label_r * np.cos(mid_angle)
+            label_y = E[1] + label_r * np.sin(mid_angle)
+            ax.text(label_z, label_y, f'θ(y)={theta_zy_deg:.1f}°',
+                   fontsize=9, color='orange', fontweight='bold',
+                   ha='center', va='center',
+                   bbox=dict(boxstyle='round,pad=0.2', facecolor='white',
+                            edgecolor='orange', alpha=0.9))
         
         ax.set_xlabel('z (mm)', fontsize=10)
         ax.set_ylabel('y (mm)', fontsize=10)
