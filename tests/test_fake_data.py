@@ -436,7 +436,7 @@ class TestIntegration:
             phi=true_phi,
             r=true_r,
             d=true_d,
-            physical_screen_size=(520, 290),
+            physical_screen_size=(52.0, 29.0),
             measurement_noise=0.01,
             seed=42
         )
@@ -456,7 +456,7 @@ class TestIntegration:
         """Test that correction reduces spatial variance in pupil."""
         data = generate_foreshortening_data(
             duration=30, fs=1000, 
-            physical_screen_size=(520, 290),
+            physical_screen_size=(52.0, 29.0),
             measurement_noise=0.01, seed=42
         )
         

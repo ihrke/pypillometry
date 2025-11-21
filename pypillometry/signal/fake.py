@@ -128,12 +128,12 @@ def add_measurement_noise(signal, noise_level=0.05, seed=None):
 
 
 def generate_foreshortening_data(duration=120, fs=1000, eye='left',
-                                theta=np.radians(70), phi=0.0, r=600, d=700,
+                                theta=np.radians(20), phi=-90, r=600, d=700,
                                 A0_mean=750, A0_amplitude=100, A0_freq=0.5,
                                 fixation_duration_mean=500, 
                                 fixation_duration_std=100,
                                 screen_resolution=(1920, 1080),
-                                physical_screen_size=(520, 290),
+                                physical_screen_size=(52.0, 29.0),
                                 screen_eye_distance=70.0,
                                 measurement_noise=5.0,
                                 seed=None, **kwargs):
@@ -155,10 +155,12 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
         Duration in seconds
     fs : float
         Sampling rate in Hz
-    eye : str
+    eye : strs
         Which eye ('left' or 'right')
     theta, phi : float
-        Camera position angles (radians)
+        Camera position angles (radians); phi is angle on xy-plane (-90 down, +90 up);
+        theta is angle from eye-screen axis towards phi. default is slightly below the
+        center of the screens
     r : float
         Eye-to-camera distance (mm)
     d : float
@@ -176,8 +178,8 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
         Standard deviation of fixation duration in ms
     screen_resolution : tuple, default (1920, 1080)
         Screen size in pixels (width, height)
-    physical_screen_size : tuple, default (520, 290)
-        Physical screen size in mm (width, height)
+    physical_screen_size : tuple, default (52.0, 29.0)
+        Physical screen size in cm (width, height)
     screen_eye_distance : float, default 70.0
         Eye-to-screen distance in cm (for EyeData metadata)
     measurement_noise : float, default 5.0
@@ -232,8 +234,9 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
     from ..eyedata.foreshortening_calibration import _compute_cos_alpha_vectorized
     
     # Convert pixels to mm (centered coordinates)
-    x_mm = (x - screen_resolution[0]/2) * physical_screen_size[0] / screen_resolution[0]
-    y_mm = (y - screen_resolution[1]/2) * physical_screen_size[1] / screen_resolution[1]
+    # physical_screen_size is in cm, so multiply by 10 to get mm
+    x_mm = (x - screen_resolution[0]/2) * (physical_screen_size[0] * 10) / screen_resolution[0]
+    y_mm = (y - screen_resolution[1]/2) * (physical_screen_size[1] * 10) / screen_resolution[1]
     
     # Compute foreshortening factor
     cos_alpha = _compute_cos_alpha_vectorized(x_mm, y_mm, theta, phi, r, d, eye_offset=0.0)
@@ -287,6 +290,7 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
         screen_resolution=screen_resolution,
         physical_screen_size=physical_screen_size,
         screen_eye_distance=screen_eye_distance,
+        camera_eye_distance=r,
         sim_fct=generate_foreshortening_data,
         sim_fct_name='generate_foreshortening_data',
         sim_params=sim_params,

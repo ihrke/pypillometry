@@ -3,7 +3,7 @@
 - [ ] https://github.com/psychoinformatics-de/remodnav 
 - [ ] `FakePupilData` (and `FakeGazeData`?)
 
-
+- [ ] find a good way to implement units so that we don't constantly get confused by mm/cm etc.s
 - [ ] plot_timeseries should rename show_onsets to show_events (and accept True/False in addition to "none", "line", "both")
 - [ ] merge_mask should take eye= and variables=
 - [ ] make blink-detection better by also using x-y data (implement an EyeData.blinks_detect() function that uses both gaze and pupil)

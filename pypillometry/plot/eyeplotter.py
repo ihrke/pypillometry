@@ -193,3 +193,221 @@ class EyePlotter(GazePlotter,PupilPlotter):
                     linewidth=2
                 )
                 ax.add_patch(screenrect)
+    
+    def plot_experimental_setup(
+        self,
+        theta: Optional[float] = None,
+        phi: Optional[float] = None,
+        calibration = None,
+        show_gaze_samples: bool = True,
+        n_gaze_samples: int = 9,
+        ax: Optional[plt.Axes] = None
+    ) -> tuple:
+        """
+        Plot 3D visualization of eye-tracking experimental setup geometry.
+        
+        Shows the spatial relationship between eye, camera, and screen using
+        the experimental parameters stored in the EyeData object. Camera
+        angles (theta, phi) relative to the eye-screen axis must be provided 
+        explicitly or via a ForeshorteningCalibration object.
+        
+        Parameters
+        ----------
+        theta : float, optional
+            Camera polar angle in radians (from +z axis). Required if
+            calibration is not provided.
+        phi : float, optional
+            Camera azimuthal angle in radians (from +x axis in xy-plane).
+            Required if calibration is not provided.
+        calibration : ForeshorteningCalibration, optional
+            Fitted calibration object containing theta and phi. If provided,
+            theta and phi will be extracted from this object (unless explicitly
+            overridden by theta/phi parameters).
+        show_gaze_samples : bool, default True
+            Show sample gaze vectors to screen positions
+        n_gaze_samples : int, default 9
+            Number of sample gaze positions (3x3 grid)
+        ax : matplotlib 3D axis, optional
+            Existing 3D axis to plot on. If None, creates new figure.
+        
+        Returns
+        -------
+        fig : matplotlib Figure
+            Figure object (interactive rotation enabled)
+        ax : matplotlib 3D axis
+            3D axis object
+        
+        Raises
+        ------
+        ValueError
+            If camera_eye_distance, screen_eye_distance, or physical_screen_size
+            are not set in the EyeData object, or if theta and phi are not 
+            provided (either explicitly or via calibration parameter).
+        
+        Examples
+        --------
+        >>> # Set experimental parameters first
+        >>> data.set_experiment_info(
+        ...     camera_eye_distance=600,
+        ...     screen_eye_distance=70,
+        ...     physical_screen_size=(52, 29)
+        ... )
+        >>> 
+        >>> # Specify camera angles explicitly
+        >>> data.plot.plot_experimental_setup(theta=np.radians(20), phi=np.radians(-90))
+        >>> 
+        >>> # Or use fitted camera geometry from foreshortening calibration
+        >>> calib = data.fit_foreshortening(eye='left')
+        >>> data.plot.plot_experimental_setup(calibration=calib)
+        >>> 
+        >>> # Compare different angles
+        >>> import numpy as np
+        >>> fig, axes = plt.subplots(1, 2, subplot_kw={'projection': '3d'}, 
+        ...                          figsize=(14, 6))
+        >>> data.plot.plot_experimental_setup(theta=np.radians(20), phi=np.radians(-90), ax=axes[0])
+        >>> data.plot.plot_experimental_setup(theta=np.radians(75), phi=0, ax=axes[1])
+        """
+        from mpl_toolkits.mplot3d import Axes3D
+        from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+        
+        obj = self.obj
+        
+        # Get required parameters from object (raises ValueError if not set)
+        r = obj.camera_eye_distance  # mm
+        d = obj.screen_eye_distance * 10  # Convert cm to mm
+        screen_size_cm = obj.physical_screen_dims  # (width, height) in cm
+        screen_size = tuple(s * 10 for s in screen_size_cm)  # Convert to mm
+        
+        # Get theta and phi from calibration if provided
+        if calibration is not None:
+            if theta is None:
+                theta = calibration.theta
+                logger.info(f"plot_experimental_setup: Using theta={np.degrees(theta):.1f}° from calibration ({calibration.eye} eye)")
+            if phi is None:
+                phi = calibration.phi
+                logger.info(f"plot_experimental_setup: Using phi={np.degrees(phi):.1f}° from calibration ({calibration.eye} eye)")
+        
+        # Check that we have both theta and phi
+        if theta is None or phi is None:
+            missing = []
+            if theta is None:
+                missing.append("theta")
+            if phi is None:
+                missing.append("phi")
+            
+            raise ValueError(
+                f"Camera angle(s) {', '.join(missing)} not provided. "
+                "Either provide theta and phi explicitly, or pass a ForeshorteningCalibration "
+                "object via the calibration parameter."
+            )
+        
+        # Create figure if needed
+        if ax is None:
+            fig = plt.figure(figsize=(10, 8))
+            ax = fig.add_subplot(111, projection='3d')
+        else:
+            fig = ax.figure
+        
+        # Eye at origin
+        eye_pos = np.array([0, 0, 0])
+        
+        # Camera position from spherical coordinates
+        camera_pos = np.array([
+            r * np.sin(theta) * np.cos(phi),
+            r * np.sin(theta) * np.sin(phi),
+            r * np.cos(theta)
+        ])
+        
+        # Screen corners
+        w, h = screen_size
+        screen_corners = np.array([
+            [-w/2, -h/2, d],  # Bottom-left
+            [w/2, -h/2, d],   # Bottom-right
+            [w/2, h/2, d],    # Top-right
+            [-w/2, h/2, d],   # Top-left
+            [-w/2, -h/2, d],  # Back to start
+        ])
+        
+        # Plot eye
+        ax.scatter(*eye_pos, color='blue', s=200, marker='o', 
+                   label='Eye (E)', edgecolors='darkblue', linewidths=2, alpha=0.8)
+        
+        # Plot camera
+        ax.scatter(*camera_pos, color='red', s=200, marker='^', 
+                   label='Camera (C)', edgecolors='darkred', linewidths=2, alpha=0.8)
+        
+        # Plot screen
+        ax.plot(screen_corners[:, 0], screen_corners[:, 1], screen_corners[:, 2],
+                'k-', linewidth=2, label='Screen (S)')
+        
+        # Fill screen with semi-transparent surface
+        screen_surface = [[screen_corners[0], screen_corners[1], 
+                           screen_corners[2], screen_corners[3]]]
+        ax.add_collection3d(Poly3DCollection(screen_surface, alpha=0.2, 
+                                             facecolor='gray', edgecolor='black'))
+        
+        # Plot eye-to-camera line
+        ax.plot([eye_pos[0], camera_pos[0]], 
+                [eye_pos[1], camera_pos[1]], 
+                [eye_pos[2], camera_pos[2]], 
+                'r--', linewidth=2, alpha=0.6, label=f'E-C: {r:.0f}mm')
+        
+        # Plot eye-to-screen center line (viewing axis)
+        screen_center = np.array([0, 0, d])
+        ax.plot([eye_pos[0], screen_center[0]], 
+                [eye_pos[1], screen_center[1]], 
+                [eye_pos[2], screen_center[2]], 
+                'g--', linewidth=2, alpha=0.6, label=f'E-S: {d:.0f}mm')
+        
+        # Show sample gaze vectors
+        if show_gaze_samples:
+            grid_size = int(np.sqrt(n_gaze_samples))
+            x_positions = np.linspace(-w/2, w/2, grid_size)
+            y_positions = np.linspace(-h/2, h/2, grid_size)
+            
+            for x in x_positions:
+                for y in y_positions:
+                    gaze_point = np.array([x, y, d])
+                    ax.plot([eye_pos[0], gaze_point[0]], 
+                           [eye_pos[1], gaze_point[1]], 
+                           [eye_pos[2], gaze_point[2]], 
+                           'c-', linewidth=0.5, alpha=0.3)
+                    ax.scatter(*gaze_point, color='cyan', s=20, alpha=0.5)
+        
+        # Labels and formatting
+        ax.set_xlabel('X (mm, right →)', fontsize=10)
+        ax.set_ylabel('Y (mm, up ↑)', fontsize=10)
+        ax.set_zlabel('Z (mm, forward →)', fontsize=10)
+        
+        # Title with geometry info
+        theta_deg = np.degrees(theta)
+        phi_deg = np.degrees(phi)
+        title = f'Eye-Tracking Setup Geometry\n'
+        title += f'θ={theta_deg:.1f}°, φ={phi_deg:.1f}°, r={r:.0f}mm, d={d:.0f}mm'
+        ax.set_title(title, fontsize=12, fontweight='bold')
+        
+        # Set equal aspect ratio for better visualization
+        max_range = max(r, d, w/2, h/2) * 1.2
+        ax.set_xlim([-max_range, max_range])
+        ax.set_ylim([-max_range, max_range])
+        ax.set_zlim([-max_range/4, d + max_range/4])
+        
+        # Legend
+        ax.legend(loc='upper left', fontsize=9)
+        
+        # Add coordinate system arrows at origin
+        arrow_length = max_range / 4
+        ax.quiver(0, 0, 0, arrow_length, 0, 0, color='r', alpha=0.3, 
+                  arrow_length_ratio=0.1, linewidth=1.5)
+        ax.quiver(0, 0, 0, 0, arrow_length, 0, color='g', alpha=0.3, 
+                  arrow_length_ratio=0.1, linewidth=1.5)
+        ax.quiver(0, 0, 0, 0, 0, arrow_length, color='b', alpha=0.3, 
+                  arrow_length_ratio=0.1, linewidth=1.5)
+        
+        # Initial viewing angle: behind the eye looking at the screen
+        # elev=10 gives slight top-down view, azim=0 aligns with viewing axis
+        ax.view_init(elev=10, azim=0)
+        
+        plt.tight_layout()
+        
+        return fig, ax
