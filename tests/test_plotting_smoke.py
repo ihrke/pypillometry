@@ -248,6 +248,161 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         self.assertIsNotNone(plt.gcf())
 
 
+class TestPlottingExperimentalSetup(unittest.TestCase):
+    """Smoke tests for plot_experimental_setup"""
+    
+    def setUp(self):
+        """Create test data with experimental setup parameters"""
+        # Create minimal EyeData with gaze and pupil
+        self.data = pp.EyeData(
+            left_x=np.random.uniform(500, 1400, 100),
+            left_y=np.random.uniform(200, 800, 100),
+            left_pupil=np.random.uniform(700, 800, 100),
+            sampling_rate=100.0
+        )
+        # Set experimental parameters
+        self.data.set_experiment_info(
+            camera_eye_distance="600 mm",
+            screen_eye_distance="700 mm",
+            physical_screen_size=("520 mm", "290 mm"),
+            screen_resolution=(1920, 1080)
+        )
+        plt.close('all')
+    
+    def tearDown(self):
+        """Clean up after each test"""
+        plt.close('all')
+    
+    def test_plot_experimental_setup_3d_with_explicit_angles(self):
+        """Test 3D plot with explicit theta and phi"""
+        fig, ax = self.data.plot.plot_experimental_setup(
+            theta="20 degrees",
+            phi="-90 degrees",
+            projection='3d'
+        )
+        self.assertIsNotNone(fig)
+        self.assertIsNotNone(ax)
+    
+    def test_plot_experimental_setup_3d_default_projection(self):
+        """Test that 3D is the default projection"""
+        fig, ax = self.data.plot.plot_experimental_setup(
+            theta=np.radians(20),
+            phi=np.radians(-90)
+        )
+        self.assertIsNotNone(fig)
+        self.assertIsNotNone(ax)
+    
+    def test_plot_experimental_setup_2d_with_explicit_angles(self):
+        """Test 2D orthogonal projections with explicit angles"""
+        fig, axes = self.data.plot.plot_experimental_setup(
+            theta="20 degrees",
+            phi="-90 degrees",
+            projection='2d'
+        )
+        self.assertIsNotNone(fig)
+        self.assertEqual(len(axes), 3)  # Should return 3 axes
+    
+    def test_plot_experimental_setup_with_pint_quantities(self):
+        """Test with Pint quantities for angles"""
+        fig, axes = self.data.plot.plot_experimental_setup(
+            theta=20 * pp.ureg.degree,
+            phi=-90 * pp.ureg.degree,
+            projection='2d'
+        )
+        self.assertIsNotNone(fig)
+        self.assertEqual(len(axes), 3)
+    
+    def test_plot_experimental_setup_with_calibration(self):
+        """Test with ForeshorteningCalibration object"""
+        from pypillometry.eyedata.foreshortening_calibration import ForeshorteningCalibration
+        
+        # Create a mock calibration object
+        calib = ForeshorteningCalibration(
+            eye='left',
+            theta=np.radians(20),
+            phi=np.radians(-90),
+            r=600.0,
+            d=700.0,
+            spline_coeffs=np.array([750.0] * 10),
+            spline_knots=np.linspace(0, 10, 14),
+            spline_degree=3,
+            fit_intervals=None,
+            fit_metrics={'R2': 0.95, 'RMSE': 10.0}
+        )
+        
+        fig, axes = self.data.plot.plot_experimental_setup(
+            calibration=calib,
+            projection='2d'
+        )
+        self.assertIsNotNone(fig)
+        self.assertEqual(len(axes), 3)
+    
+    def test_plot_experimental_setup_missing_angles_raises_error(self):
+        """Test that missing theta/phi raises ValueError"""
+        with self.assertRaises(ValueError) as context:
+            self.data.plot.plot_experimental_setup(projection='3d')
+        
+        self.assertIn("Camera angle", str(context.exception))
+    
+    def test_plot_experimental_setup_missing_theta_raises_error(self):
+        """Test that missing theta raises ValueError"""
+        with self.assertRaises(ValueError) as context:
+            self.data.plot.plot_experimental_setup(phi="-90 degrees", projection='3d')
+        
+        self.assertIn("theta", str(context.exception))
+    
+    def test_plot_experimental_setup_missing_phi_raises_error(self):
+        """Test that missing phi raises ValueError"""
+        with self.assertRaises(ValueError) as context:
+            self.data.plot.plot_experimental_setup(theta="20 degrees", projection='3d')
+        
+        self.assertIn("phi", str(context.exception))
+    
+    def test_plot_experimental_setup_invalid_projection_raises_error(self):
+        """Test that invalid projection type raises ValueError"""
+        with self.assertRaises(ValueError) as context:
+            self.data.plot.plot_experimental_setup(
+                theta="20 degrees",
+                phi="-90 degrees",
+                projection='invalid'
+            )
+        
+        self.assertIn("projection must be '3d' or '2d'", str(context.exception))
+    
+    def test_plot_experimental_setup_without_gaze_samples(self):
+        """Test 2D plot without gaze samples"""
+        fig, axes = self.data.plot.plot_experimental_setup(
+            theta="20 degrees",
+            phi="-90 degrees",
+            projection='2d',
+            show_gaze_samples=False
+        )
+        self.assertIsNotNone(fig)
+        self.assertEqual(len(axes), 3)
+    
+    def test_plot_experimental_setup_custom_gaze_samples(self):
+        """Test with custom number of gaze samples"""
+        fig, axes = self.data.plot.plot_experimental_setup(
+            theta="20 degrees",
+            phi="-90 degrees",
+            projection='2d',
+            n_gaze_samples=16  # 4x4 grid
+        )
+        self.assertIsNotNone(fig)
+        self.assertEqual(len(axes), 3)
+    
+    def test_plot_experimental_setup_custom_viewing_angle_3d(self):
+        """Test 3D with custom viewing angle"""
+        fig, ax = self.data.plot.plot_experimental_setup(
+            theta="20 degrees",
+            phi="-90 degrees",
+            projection='3d',
+            viewing_angle=("60 degrees", "-45 degrees")
+        )
+        self.assertIsNotNone(fig)
+        self.assertIsNotNone(ax)
+
+
 if __name__ == '__main__':
     unittest.main()
 
