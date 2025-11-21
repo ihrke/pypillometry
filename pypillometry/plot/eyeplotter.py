@@ -202,7 +202,8 @@ class EyePlotter(GazePlotter,PupilPlotter):
         calibration = None,
         show_gaze_samples: bool = True,
         n_gaze_samples: int = 9,
-        ax: Optional[plt.Axes] = None
+        ax: Optional[plt.Axes] = None,
+        viewing_angle: tuple = ("90 deg", "-90 deg")
     ) -> tuple:
         """
         Plot 3D visualization of eye-tracking experimental setup geometry.
@@ -236,6 +237,11 @@ class EyePlotter(GazePlotter,PupilPlotter):
             Number of sample gaze positions (3x3 grid)
         ax : matplotlib 3D axis, optional
             Existing 3D axis to plot on. If None, creates new figure.
+        viewing_angle : tuple, optional
+            Viewing angle (elev, azim). Default is ("90 deg", "-90 deg").
+            - Plain number: assumed to be radians (with warning)
+            - String: e.g., "90 degrees", "1.57 radians"
+            - Quantity: e.g., 90 * ureg.degree
         
         Returns
         -------
@@ -418,7 +424,8 @@ class EyePlotter(GazePlotter,PupilPlotter):
         
         # Initial viewing angle: behind the eye looking at the screen
         # elev=10 gives slight top-down view, azim=0 aligns with viewing axis
-        ax.view_init(elev=10, azim=0)
+        elev, azim = parse_angle(viewing_angle) # come back in radians
+        ax.view_init(elev=np.degrees(elev), azim=np.degrees(azim))
         
         plt.tight_layout()
         
