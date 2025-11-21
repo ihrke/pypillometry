@@ -234,24 +234,6 @@ class TestForeshorteningCalibration:
         assert 'left' in repr_str
         assert 'R²' in repr_str or 'R2' in repr_str
     
-    def test_compute_cos_alpha_scalar(self):
-        """Test computing cos(alpha) for scalar input."""
-        cos_alpha = self.cal.compute_cos_alpha(0.0, 0.0)
-        
-        assert isinstance(cos_alpha, (float, np.floating))
-        assert -1 <= cos_alpha <= 1
-    
-    def test_compute_cos_alpha_array(self):
-        """Test computing cos(alpha) for array input."""
-        x = np.array([0.0, 100.0, -100.0])
-        y = np.array([0.0, 50.0, -50.0])
-        
-        cos_alpha = self.cal.compute_cos_alpha(x, y)
-        
-        assert cos_alpha.shape == (3,)
-        assert np.all(cos_alpha >= -1)
-        assert np.all(cos_alpha <= 1)
-    
     def test_evaluate_spline_scalar(self):
         """Test spline evaluation at single time point."""
         A0 = self.cal.evaluate_spline(50.0)
@@ -270,14 +252,15 @@ class TestForeshorteningCalibration:
         assert np.sum(A0 > 0) >= 45
     
     def test_get_correction_factor_no_threshold(self):
-        """Test correction factor computation (may return NaN if below threshold)."""
-        correction = self.cal.get_correction_factor(0.0, 0.0, threshold=0.15)
+        """Test correction factor computation returns masked array."""
+        # Using mm coordinates (from_pixels=False)
+        correction = self.cal.get_correction_factor(0.0, 0.0, threshold=0.15, from_pixels=False)
         
-        # Can return array or scalar
-        assert isinstance(correction, (float, np.floating, np.ndarray))
+        # Should return masked array
+        assert isinstance(correction, np.ma.MaskedArray)
         
-        # If not NaN, correction factor should be >= 1
-        if not np.isnan(correction):
+        # If not masked, correction factor should be >= 1
+        if not correction.mask:
             assert correction >= 1.0
     
     def test_get_correction_factor_with_threshold(self):
@@ -286,22 +269,27 @@ class TestForeshorteningCalibration:
         x_extreme = 500.0  # mm
         y_extreme = 400.0  # mm
         
-        correction = self.cal.get_correction_factor(x_extreme, y_extreme, threshold=0.5)
+        # Using mm coordinates (from_pixels=False)
+        correction = self.cal.get_correction_factor(x_extreme, y_extreme, threshold=0.5, from_pixels=False)
         
-        # Can return array or scalar, may be NaN depending on geometry
-        assert isinstance(correction, (float, np.floating, np.ndarray))
+        # Should return masked array
+        assert isinstance(correction, np.ma.MaskedArray)
     
     def test_get_correction_factor_vectorized(self):
         """Test vectorized correction factor computation."""
+        # Using mm coordinates (from_pixels=False)
         x = np.array([0.0, 100.0, 200.0])
         y = np.array([0.0, 50.0, 100.0])
         
-        correction = self.cal.get_correction_factor(x, y)
+        correction = self.cal.get_correction_factor(x, y, from_pixels=False)
         
+        # Should return masked array
+        assert isinstance(correction, np.ma.MaskedArray)
         assert correction.shape == (3,)
-        # Valid corrections should be >= 1, NaN for invalid
-        valid_mask = ~np.isnan(correction)
-        assert np.all(correction[valid_mask] >= 1.0)
+        # Valid (unmasked) corrections should be >= 1
+        valid_data = correction[~correction.mask]
+        if len(valid_data) > 0:
+            assert np.all(valid_data >= 1.0)
 
 
 class TestFitForeshorteningMethod:

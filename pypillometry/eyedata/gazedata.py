@@ -195,6 +195,7 @@ class GazeData(GenericEyeData):
         if screen_resolution is not None:
             self.screen_xlim=(0,screen_resolution[0])
             self.screen_ylim=(0,screen_resolution[1])
+            self._screen_size_set = True
         
         if physical_screen_size is not None:
             self.physical_screen_dims = physical_screen_size
@@ -284,6 +285,17 @@ class GazeData(GenericEyeData):
             ymax-ymin
         """        
         return self.screen_ylim[1]-self.screen_ylim[0]
+    
+    @property
+    def screen_resolution(self):
+        """Screen resolution (pixels).
+
+        Returns
+        -------
+        tuple
+            (width, height) in pixels
+        """        
+        return (int(self.screen_width), int(self.screen_height))
     
     @property
     def physical_screen_dims(self):

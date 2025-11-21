@@ -8,6 +8,7 @@ cos(alpha), where alpha is this viewing angle.
 """
 
 import numpy as np
+import numpy.ma as ma
 from scipy.interpolate import BSpline
 from typing import Optional, Union, Tuple, Dict
 from ..intervals import Intervals
@@ -459,13 +460,12 @@ class ForeshorteningCalibration:
     ...     fit_metrics={'r2': 0.95, 'rmse': 0.12}
     ... )
     >>> 
-    >>> # Compute foreshortening factor at screen center
-    >>> cos_alpha = cal.compute_cos_alpha(0, 0)
-    >>> print(f"cos(alpha) at center: {cos_alpha:.3f}")  # doctest: +SKIP
-    >>> 
-    >>> # Get correction factor
-    >>> correction = cal.get_correction_factor(0, 0)
+    >>> # Get correction factor at screen center (using pixel coordinates)
+    >>> correction = cal.get_correction_factor(960, 540)  # screen center in pixels
     >>> print(f"Correction factor: {correction:.3f}")  # doctest: +SKIP
+    >>> 
+    >>> # Apply correction to pupil measurements
+    >>> corrected_pupil = measured_pupil * correction  # doctest: +SKIP
     """
     
     def __init__(
@@ -479,7 +479,9 @@ class ForeshorteningCalibration:
         spline_knots: np.ndarray,
         spline_degree: int = 3,
         fit_intervals: Optional[Intervals] = None,
-        fit_metrics: Optional[Dict] = None
+        fit_metrics: Optional[Dict] = None,
+        screen_resolution: Optional[tuple] = None,
+        physical_screen_size: Optional[tuple] = None
     ):
         """
         Initialize ForeshorteningCalibration.
@@ -506,6 +508,10 @@ class ForeshorteningCalibration:
             Intervals used for fitting
         fit_metrics : dict or None
             Fit quality metrics
+        screen_resolution : tuple, optional
+            Screen resolution in pixels (width, height) for pixel-to-mm conversion
+        physical_screen_size : tuple, optional
+            Physical screen size in mm (width, height) for pixel-to-mm conversion
         """
         self.eye = eye
         self.theta = theta
@@ -517,6 +523,8 @@ class ForeshorteningCalibration:
         self.spline_degree = spline_degree
         self.fit_intervals = fit_intervals
         self.fit_metrics = fit_metrics if fit_metrics is not None else {}
+        self.screen_resolution = screen_resolution
+        self.physical_screen_size = physical_screen_size
         
         # Create BSpline object for efficient evaluation
         self._spline = BSpline(
@@ -524,36 +532,6 @@ class ForeshorteningCalibration:
             self.spline_coeffs, 
             self.spline_degree,
             extrapolate=True
-        )
-    
-    def compute_cos_alpha(
-        self, 
-        x: Union[float, np.ndarray], 
-        y: Union[float, np.ndarray]
-    ) -> Union[float, np.ndarray]:
-        """
-        Compute foreshortening factor cos(alpha) for given gaze position(s).
-        
-        Parameters
-        ----------
-        x : float or array
-            Gaze x-coordinate(s) in mm
-        y : float or array
-            Gaze y-coordinate(s) in mm
-        
-        Returns
-        -------
-        cos_alpha : float or array
-            Foreshortening factor(s)
-        
-        Examples
-        --------
-        >>> cos_alpha = cal.compute_cos_alpha(0, 0)  # doctest: +SKIP
-        >>> cos_alpha_array = cal.compute_cos_alpha([0, 100], [0, 50])  # doctest: +SKIP
-        """
-        eye_offset = 0.0  # Monocular for now
-        return _compute_cos_alpha_vectorized(
-            x, y, self.theta, self.phi, self.r, self.d, eye_offset
         )
     
     def evaluate_spline(
@@ -584,49 +562,81 @@ class ForeshorteningCalibration:
         self, 
         x: Union[float, np.ndarray], 
         y: Union[float, np.ndarray],
-        threshold: float = 0.15
-    ) -> Union[float, np.ndarray]:
+        threshold: float = 0.15,
+        from_pixels: bool = True
+    ) -> ma.MaskedArray:
         """
         Compute correction factor 1/cos(alpha) with quality control thresholding.
         
         When cos(alpha) is very small (extreme viewing angles), the correction
         factor becomes very large and amplifies measurement noise. This method
-        returns NaN for samples where cos(alpha) < threshold.
+        returns a masked array where values below threshold are masked.
         
         Parameters
         ----------
         x : float or array
-            Gaze x-coordinate(s) in mm
+            Gaze x-coordinate(s) in pixels (default) or mm (relative to screen center)
         y : float or array
-            Gaze y-coordinate(s) in mm
+            Gaze y-coordinate(s) in pixels (default) or mm (relative to screen center)
         threshold : float, default 0.15
             Minimum cos(alpha) for reliable correction
             (0.15 corresponds to ~81° viewing angle)
+        from_pixels : bool, default True
+            If True (default), x and y are in pixels and will be converted to mm.
+            If False, x and y are already in mm relative to screen center.
+            Requires screen_resolution and physical_screen_size when True.
         
         Returns
         -------
-        correction_factor : float or array
-            Correction factor(s), with NaN where cos(alpha) < threshold
+        correction_factor : numpy.ma.MaskedArray
+            Correction factor(s), with values masked where cos(alpha) < threshold.
         
         Notes
         -----
         To apply correction: A0_corrected = A_measured * correction_factor
         
+        Masked arrays multiply cleanly with other masked arrays, combining masks
+        automatically (union of masks).
+        
         Examples
         --------
-        >>> correction = cal.get_correction_factor(0, 0)  # doctest: +SKIP
+        >>> # Using pixel coordinates (typical use case - default)
+        >>> correction = cal.get_correction_factor(960, 540)  # doctest: +SKIP
+        >>> corrected_pupil = measured_pupil * correction  # doctest: +SKIP
+        >>> 
+        >>> # Using mm coordinates (relative to screen center)
+        >>> correction = cal.get_correction_factor(0, 0, from_pixels=False)  # doctest: +SKIP
         >>> corrected_pupil = measured_pupil * correction  # doctest: +SKIP
         """
-        cos_alpha = self.compute_cos_alpha(x, y)
+        # Convert pixels to mm if needed
+        if from_pixels:
+            if self.screen_resolution is None or self.physical_screen_size is None:
+                raise ValueError(
+                    "Cannot convert from pixels: screen_resolution and physical_screen_size "
+                    "must be provided during calibration initialization."
+                )
+            
+            # Convert pixels to mm (centered coordinates)
+            x_mm = (x - self.screen_resolution[0]/2) * self.physical_screen_size[0] / self.screen_resolution[0]
+            y_mm = (y - self.screen_resolution[1]/2) * self.physical_screen_size[1] / self.screen_resolution[1]
+        else:
+            x_mm = x
+            y_mm = y
         
-        # Apply threshold for quality control
-        correction_factor = np.where(
-            cos_alpha >= threshold,
-            1.0 / cos_alpha,
-            np.nan
+        # Compute cos(alpha)
+        eye_offset = 0.0  # Monocular for now
+        cos_alpha = _compute_cos_alpha_vectorized(
+            x_mm, y_mm, self.theta, self.phi, self.r, self.d, eye_offset
         )
         
-        return correction_factor
+        # Compute correction factor
+        correction_factor = 1.0 / cos_alpha
+        
+        # Apply threshold for quality control (mask values below threshold)
+        mask = cos_alpha < threshold
+        
+        # Return masked array
+        return ma.array(correction_factor, mask=mask)
     
     def __repr__(self) -> str:
         """Concise one-line representation."""
