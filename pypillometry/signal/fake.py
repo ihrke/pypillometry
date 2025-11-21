@@ -12,13 +12,13 @@ from scipy import signal as sp_signal
 
 
 def fake_pupil_baseline(duration, fs, mean=3.5, amplitude=0.5, 
-                       freq=3.0, seed=None):
+                       freq=0.5, filter_order=4, seed=None):
     """
     Generate smooth baseline pupil size via filtered noise.
     
     Creates pupil size time series by:
     1. Generating white noise
-    2. Low-pass filtering at specified frequency
+    2. Low-pass filtering at specified frequency with edge handling
     3. Scaling to desired amplitude and mean
     
     Parameters
@@ -31,8 +31,13 @@ def fake_pupil_baseline(duration, fs, mean=3.5, amplitude=0.5,
         Mean pupil size (mm or arbitrary units)
     amplitude : float
         Amplitude of slow fluctuations
-    freq : float
-        Cutoff frequency for low-pass filter (Hz), controls fluctuation speed
+    freq : float, default 0.5
+        Cutoff frequency for low-pass filter (Hz), controls fluctuation speed.
+        Typical values: 0.1-0.5 Hz for spontaneous fluctuations, 0.5-1 Hz for 
+        cognitive load changes, 1-3 Hz for fast responses.
+    filter_order : int, default 4
+        Order of Butterworth filter. Higher order = sharper cutoff.
+        Roll-off is (filter_order * 6) dB/octave.
     seed : int, optional
         Random seed for reproducibility
     
@@ -56,10 +61,14 @@ def fake_pupil_baseline(duration, fs, mean=3.5, amplitude=0.5,
     # Generate white noise
     noise = rng.randn(n_samples)
     
-    # Low-pass filter
+    # Low-pass filter with edge handling to reduce transient artifacts
     nyquist = fs / 2
-    b, a = sp_signal.butter(4, freq / nyquist, btype='low')
-    filtered = sp_signal.filtfilt(b, a, noise)
+    b, a = sp_signal.butter(filter_order, freq / nyquist, btype='low')
+    
+    # Use padding to reduce edge effects
+    # Pad length based on filter characteristics (3 cycles of lowest frequency)
+    padlen = min(int(3 * fs / freq), n_samples - 1)
+    filtered = sp_signal.filtfilt(b, a, noise, padlen=padlen, padtype='even')
     
     # Scale to desired amplitude and mean
     filtered = filtered / np.std(filtered) * amplitude
@@ -74,6 +83,7 @@ def fake_pupil_baseline(duration, fs, mean=3.5, amplitude=0.5,
         'mean': mean,
         'amplitude': amplitude,
         'freq': freq,
+        'filter_order': filter_order,
         'seed': seed,
     }
     
@@ -118,7 +128,7 @@ def add_measurement_noise(signal, noise_level=0.05, seed=None):
 
 def generate_foreshortening_data(duration=120, fs=1000, eye='left',
                                 theta=np.radians(95), phi=0.0, r=600, d=700,
-                                A0_mean=3.5, A0_amplitude=0.5, A0_freq=3.0,
+                                A0_mean=3.5, A0_amplitude=0.5, A0_freq=0.5,
                                 fixation_duration_mean=500, 
                                 fixation_duration_std=100,
                                 screen_resolution=(1920, 1080),
@@ -130,7 +140,7 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
     Generate complete synthetic dataset for testing foreshortening correction algorithm.
     
     Orchestrates:
-    1. Generate true pupil size A0(t) with slow fluctuations (~3 Hz)
+    1. Generate true pupil size A0(t) with slow fluctuations (~0.5 Hz by default)
     2. Generate fixation-based gaze positions (x, y)
     3. Apply foreshortening: measured_pupil = A0 * cos(alpha(x,y))
     4. Package into FakeEyeData with all metadata and ground truth
