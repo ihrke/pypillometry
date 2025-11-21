@@ -22,7 +22,7 @@ class TestHelperFunctions:
     def test_compute_cos_alpha_center(self):
         """Test cos(alpha) computation at screen center."""
         # Camera below screen (theta=95°, phi=0°)
-        theta = np.radians(95)  # Slightly below horizontal
+        theta = np.radians(85)  # Slightly offset from perpendicular
         phi = 0.0
         r = 600.0  # mm
         d = 700.0  # mm
@@ -193,7 +193,7 @@ class TestForeshorteningCalibration:
     
     def setup_method(self):
         """Create a simple calibration object for testing."""
-        self.theta = np.radians(95)
+        self.theta = np.radians(85)
         self.phi = 0.0
         self.r = 600.0
         self.d = 700.0
@@ -315,7 +315,7 @@ class TestFitForeshorteningMethod:
         time = np.arange(n_samples) * (1000.0 / fs)  # ms
         
         # Known camera geometry
-        theta_true = np.radians(95)
+        theta_true = np.radians(85)
         phi_true = 0.0
         r_true = 600.0
         d_true = 700.0
@@ -477,11 +477,11 @@ class TestFitForeshorteningMethod:
             verbose=False
         )
         
-        # Check theta is in valid range [0, pi]
-        assert 0 <= calib.theta <= np.pi
+        # Check theta is in valid range [0, pi/2] (camera must be forward of eye)
+        assert 0 <= calib.theta <= np.pi/2
         
-        # Check phi is in valid range [0, 2*pi]
-        assert 0 <= calib.phi <= 2 * np.pi
+        # Check phi is in valid range [-pi, pi]
+        assert -np.pi <= calib.phi <= np.pi
         
         # Check spline coefficients are positive
         assert np.all(calib.spline_coeffs > 0)
@@ -500,7 +500,7 @@ class TestFitAndCorrection:
         
         time = np.arange(n_samples) * (1000.0 / fs)
         
-        theta_true = np.radians(95)
+        theta_true = np.radians(85)
         phi_true = 0.0
         r_true = 600.0
         d_true = 700.0
@@ -670,7 +670,7 @@ class TestFitAndCorrection:
             eye='left',
             r=r_true,
             d=d_true,
-            initial_theta=np.radians(100),
+            initial_theta=np.radians(80),
             initial_phi=np.radians(10),
             verbose=False
         )

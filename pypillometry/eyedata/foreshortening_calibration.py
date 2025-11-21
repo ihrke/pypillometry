@@ -35,9 +35,11 @@ def _compute_cos_alpha_vectorized(
     y : float or array
         Gaze y-coordinate(s) on screen in mm (relative to screen center)
     theta : float
-        Camera polar angle in radians (0 to pi)
+        Camera polar angle from +z axis in radians [0, π/2]
+        (0=on viewing axis, π/2=perpendicular/side; camera must be forward of eye)
     phi : float
-        Camera azimuthal angle in radians (0 to 2*pi)
+        Camera azimuthal angle in x-y plane in radians [-π, π]
+        (0=right/+x, π/2=up/+y, -π/2=down/-y, ±π=left/-x)
     r : float
         Eye-to-camera distance in mm
     d : float
@@ -67,8 +69,8 @@ def _compute_cos_alpha_vectorized(
     Examples
     --------
     >>> # Camera below screen center, 600mm from eye, screen at 700mm
-    >>> theta = np.radians(95)  # Slightly below horizontal
-    >>> phi = 0.0  # Centered horizontally
+    >>> theta = np.radians(85)  # Slightly offset from perpendicular
+    >>> phi = np.radians(-90)  # Below screen (negative y direction)
     >>> x, y = 0.0, 0.0  # Looking at screen center
     >>> cos_alpha = _compute_cos_alpha_vectorized(x, y, theta, phi, 600, 700)
     >>> print(f"cos(alpha) = {cos_alpha:.3f}")  # doctest: +SKIP

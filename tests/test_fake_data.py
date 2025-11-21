@@ -427,7 +427,7 @@ class TestIntegration:
     def test_fit_recovery(self):
         """Test that fitting recovers true geometry (approximately)."""
         # Generate data with known geometry
-        true_theta = np.radians(95)
+        true_theta = np.radians(85)
         true_phi = np.radians(5)
         true_camera_eye_distance = 600
         true_screen_eye_distance = 700

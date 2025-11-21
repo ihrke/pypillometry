@@ -519,9 +519,15 @@ class EyeData(GazeData,PupilData):
         
         # Setup bounds for L-BFGS-B
         bounds = [(0.1 * np.mean(pupil_filt), 10 * np.mean(pupil_filt))] * n_basis  # Spline coeffs > 0
-        bounds += [(0, np.pi)]  # theta in [0, pi]
-        bounds += [(0, 2 * np.pi)]  # phi in [0, 2*pi]
+        bounds += [(0, np.pi/2)]  # theta: polar angle from z-axis, camera must be forward of eye (0=on-axis, π/2=perpendicular)
+        bounds += [(-np.pi, np.pi)]  # phi: azimuthal in x-y plane (-π/2=below, 0=right, π/2=above, ±π=left)
         
+        # check that the initial values are within the bounds
+        for i, (lb, ub) in enumerate(bounds):
+            if params_init[i] < lb or params_init[i] > ub:
+                logger.warning(f"Initial parameter {i} is out of bounds: {params_init[i]} not in [{lb}, {ub}]")
+                params_init[i] = (lb + ub) / 2
+
         # Run optimization
         if verbose:
             logger.info("Starting optimization...")
