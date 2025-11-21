@@ -370,17 +370,20 @@ class TestGenerateForeshorteningData:
         """Test that all parameters are stored in sim_params."""
         theta = np.radians(90)
         phi = np.radians(10)
-        r = 550
-        d = 650
+        camera_eye_distance = 550
+        screen_eye_distance = 650
         
         data = generate_foreshortening_data(
-            duration=5, fs=500, theta=theta, phi=phi, r=r, d=d, seed=42
+            duration=5, fs=500, theta=theta, phi=phi, 
+            camera_eye_distance=camera_eye_distance, 
+            screen_eye_distance=screen_eye_distance, 
+            seed=42
         )
         
         assert data.sim_params['theta'] == theta
         assert data.sim_params['phi'] == phi
-        assert data.sim_params['r'] == r
-        assert data.sim_params['d'] == d
+        assert data.sim_params['camera_eye_distance'] == camera_eye_distance
+        assert data.sim_params['screen_eye_distance'] == screen_eye_distance
         assert data.sim_params['duration'] == 5
         assert data.sim_params['fs'] == 500
     
@@ -426,23 +429,23 @@ class TestIntegration:
         # Generate data with known geometry
         true_theta = np.radians(95)
         true_phi = np.radians(5)
-        true_r = 600
-        true_d = 700
+        true_camera_eye_distance = 600
+        true_screen_eye_distance = 700
         
         data = generate_foreshortening_data(
             duration=60,
             fs=1000,
             theta=true_theta,
             phi=true_phi,
-            r=true_r,
-            d=true_d,
+            camera_eye_distance=true_camera_eye_distance,
+            screen_eye_distance=true_screen_eye_distance,
             physical_screen_size=(520.0, 290.0),  # mm
             measurement_noise=0.01,
             seed=42
         )
         
-        # Fit foreshortening
-        calib = data.fit_foreshortening(eye='left', r=true_r, d=true_d)
+        # Fit foreshortening (r and d retrieved from data attributes)
+        calib = data.fit_foreshortening(eye='left')
         
         # Check that fitted angles are close to true angles
         theta_error = np.abs(np.degrees(calib.theta - true_theta))
@@ -494,10 +497,9 @@ def test_generate_foreshortening_data_with_string_units():
         eye='left',
         theta="20 degrees",
         phi="-90 degrees",
-        r="600 mm",
-        d="70 cm",
+        camera_eye_distance="600 mm",
+        screen_eye_distance="70 cm",
         physical_screen_size=("52 cm", "29 cm"),
-        screen_eye_distance="700 mm",
         seed=42
     )
     
@@ -507,10 +509,9 @@ def test_generate_foreshortening_data_with_string_units():
     # Parameters should be stored as floats in canonical units (radians, mm)
     assert np.isclose(data.sim_params['theta'], np.radians(20))
     assert np.isclose(data.sim_params['phi'], np.radians(-90))
-    assert data.sim_params['r'] == 600.0
-    assert data.sim_params['d'] == 700.0
-    assert data.sim_params['physical_screen_size'] == (520.0, 290.0)
+    assert data.sim_params['camera_eye_distance'] == 600.0
     assert data.sim_params['screen_eye_distance'] == 700.0
+    assert data.sim_params['physical_screen_size'] == (520.0, 290.0)
 
 
 def test_generate_foreshortening_data_with_pint_quantities():
@@ -523,8 +524,8 @@ def test_generate_foreshortening_data_with_pint_quantities():
         eye='left',
         theta=20 * pp.ureg.degree,
         phi=-90 * pp.ureg.degree,
-        r=60 * pp.ureg.cm,
-        d=0.7 * pp.ureg.m,
+        camera_eye_distance=60 * pp.ureg.cm,
+        screen_eye_distance=0.7 * pp.ureg.m,
         seed=42
     )
     
@@ -534,8 +535,8 @@ def test_generate_foreshortening_data_with_pint_quantities():
     # Parameters should be stored as floats in canonical units
     assert np.isclose(data.sim_params['theta'], np.radians(20))
     assert np.isclose(data.sim_params['phi'], np.radians(-90))
-    assert data.sim_params['r'] == 600.0
-    assert data.sim_params['d'] == 700.0
+    assert data.sim_params['camera_eye_distance'] == 600.0
+    assert data.sim_params['screen_eye_distance'] == 700.0
 
 
 def test_generate_foreshortening_data_mixed_units():
@@ -548,8 +549,8 @@ def test_generate_foreshortening_data_mixed_units():
         eye='left',
         theta="20 degrees",  # String
         phi=np.radians(-90),  # Plain (radians)
-        r=60 * pp.ureg.cm,  # Quantity
-        d="700 mm",  # String
+        camera_eye_distance=60 * pp.ureg.cm,  # Quantity
+        screen_eye_distance="700 mm",  # String
         physical_screen_size=(520.0, "29 cm"),  # Mixed plain and string
         seed=42
     )
@@ -558,7 +559,7 @@ def test_generate_foreshortening_data_mixed_units():
     assert isinstance(data, FakeEyeData)
     assert np.isclose(data.sim_params['theta'], np.radians(20))
     assert np.isclose(data.sim_params['phi'], np.radians(-90))
-    assert data.sim_params['r'] == 600.0
-    assert data.sim_params['d'] == 700.0
+    assert data.sim_params['camera_eye_distance'] == 600.0
+    assert data.sim_params['screen_eye_distance'] == 700.0
     assert data.sim_params['physical_screen_size'] == (520.0, 290.0)
 

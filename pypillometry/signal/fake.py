@@ -129,13 +129,14 @@ def add_measurement_noise(signal, noise_level=0.05, seed=None):
 
 
 def generate_foreshortening_data(duration=120, fs=1000, eye='left',
-                                theta=np.radians(20), phi=np.radians(-90), r=600, d=700,
+                                theta="20 deg", phi="-90 deg", 
                                 A0_mean=750, A0_amplitude=100, A0_freq=0.5,
                                 fixation_duration_mean=500, 
                                 fixation_duration_std=100,
                                 screen_resolution=(1920, 1080),
-                                physical_screen_size=(520.0, 290.0),
-                                screen_eye_distance=700.0,
+                                physical_screen_size=("52 cm", "29 cm"),
+                                screen_eye_distance="60 cm",
+                                camera_eye_distance="70 cm",
                                 measurement_noise=5.0,
                                 seed=None, **kwargs):
     """
@@ -168,16 +169,11 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
         - Plain number: assumed to be radians (with warning)
         - String: e.g., "-90 degrees", "-1.57 radians"
         - Quantity: e.g., -90 * ureg.degree
-    r : float, str, or pint.Quantity
+    camera_eye_distance : float, str, or pint.Quantity, default 600
         Eye-to-camera distance
         - Plain number: assumed to be mm (with warning)
         - String: e.g., "600 mm", "60 cm"
         - Quantity: e.g., 600 * ureg.mm
-    d : float, str, or pint.Quantity
-        Eye-to-screen distance
-        - Plain number: assumed to be mm (with warning)
-        - String: e.g., "700 mm", "70 cm"
-        - Quantity: e.g., 700 * ureg.mm
     A0_mean : float, default 750
         Mean true pupil size in arbitrary units (typical EyeLink range: 500-1000 AU).
         Corresponds to area-proportional measurements, not diameter.
@@ -231,7 +227,7 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
     >>> print(data.get_generation_call())
     >>> 
     >>> # Fit and validate
-    >>> calib = data.fit_foreshortening(eye='left', r=600, d=700)
+    >>> calib = data.fit_foreshortening(eye='left')
     >>> theta_error = np.degrees(calib.theta - data.sim_params['theta'])
     >>> print(f"Theta estimation error: {theta_error:.2f}°")
     >>> 
@@ -241,8 +237,7 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
     # Parse unit parameters
     theta = parse_angle(theta)
     phi = parse_angle(phi)
-    r = parse_distance(r)
-    d = parse_distance(d)
+    camera_eye_distance = parse_distance(camera_eye_distance)
     screen_eye_distance = parse_distance(screen_eye_distance)
     
     # Parse physical_screen_size (each element)
@@ -273,7 +268,7 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
     y_mm = (y - screen_resolution[1]/2) * physical_screen_size[1] / screen_resolution[1]
     
     # Compute foreshortening factor
-    cos_alpha = _compute_cos_alpha_vectorized(x_mm, y_mm, theta, phi, r, d, eye_offset=0.0)
+    cos_alpha = _compute_cos_alpha_vectorized(x_mm, y_mm, theta, phi, camera_eye_distance, screen_eye_distance, eye_offset=0.0)
     
     # Apply foreshortening: measured = A0 * cos(alpha)
     pupil_measured = A0 * cos_alpha
@@ -298,8 +293,7 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
         'eye': eye,
         'theta': theta,
         'phi': phi,
-        'r': r,
-        'd': d,
+        'camera_eye_distance': camera_eye_distance,
         'A0_mean': A0_mean,
         'A0_amplitude': A0_amplitude,
         'A0_freq': A0_freq,
@@ -324,7 +318,7 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
         screen_resolution=screen_resolution,
         physical_screen_size=physical_screen_size,
         screen_eye_distance=screen_eye_distance,
-        camera_eye_distance=r,
+        camera_eye_distance=camera_eye_distance,
         sim_fct=generate_foreshortening_data,
         sim_fct_name='generate_foreshortening_data',
         sim_params=sim_params,
