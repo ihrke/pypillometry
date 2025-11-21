@@ -1,5 +1,6 @@
 from ..plot.gazeplotter import GazePlotter
 from ..plot.pupilplotter import PupilPlotter
+from ..units import parse_angle
 import numpy as np
 import pylab as plt
 from matplotlib import cm
@@ -213,12 +214,18 @@ class EyePlotter(GazePlotter,PupilPlotter):
         
         Parameters
         ----------
-        theta : float, optional
-            Camera polar angle in radians (from +z axis). Required if
+        theta : float, str, or pint.Quantity, optional
+            Camera polar angle (from +z axis). Required if
             calibration is not provided.
-        phi : float, optional
-            Camera azimuthal angle in radians (from +x axis in xy-plane).
+            - Plain number: assumed to be radians (with warning)
+            - String: e.g., "20 degrees", "0.349 radians"
+            - Quantity: e.g., 20 * ureg.degree
+        phi : float, str, or pint.Quantity, optional
+            Camera azimuthal angle (from +x axis in xy-plane).
             Required if calibration is not provided.
+            - Plain number: assumed to be radians (with warning)
+            - String: e.g., "-90 degrees", "-1.57 radians"
+            - Quantity: e.g., -90 * ureg.degree
         calibration : ForeshorteningCalibration, optional
             Fitted calibration object containing theta and phi. If provided,
             theta and phi will be extracted from this object (unless explicitly
@@ -277,7 +284,13 @@ class EyePlotter(GazePlotter,PupilPlotter):
         d = obj.screen_eye_distance  # mm
         screen_size = obj.physical_screen_dims  # (width, height) in mm
         
-        # Get theta and phi from calibration if provided
+        # Parse theta and phi if provided explicitly
+        if theta is not None:
+            theta = parse_angle(theta)
+        if phi is not None:
+            phi = parse_angle(phi)
+        
+        # Get theta and phi from calibration if not provided explicitly
         if calibration is not None:
             if theta is None:
                 theta = calibration.theta
