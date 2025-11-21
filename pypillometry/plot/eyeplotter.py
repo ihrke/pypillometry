@@ -203,10 +203,11 @@ class EyePlotter(GazePlotter,PupilPlotter):
         show_gaze_samples: bool = True,
         n_gaze_samples: int = 9,
         ax: Optional[plt.Axes] = None,
-        viewing_angle: tuple = ("90 deg", "-90 deg")
+        viewing_angle: tuple = ("90 deg", "-90 deg"),
+        projection: str = '2d'
     ) -> tuple:
         """
-        Plot 3D visualization of eye-tracking experimental setup geometry.
+        Plot visualization of eye-tracking experimental setup geometry.
         
         Shows the spatial relationship between eye, camera, and screen using
         the experimental parameters stored in the EyeData object. Camera
@@ -238,17 +239,21 @@ class EyePlotter(GazePlotter,PupilPlotter):
         ax : matplotlib 3D axis, optional
             Existing 3D axis to plot on. If None, creates new figure.
         viewing_angle : tuple, optional
-            Viewing angle (elev, azim). Default is ("90 deg", "-90 deg").
+            Viewing angle (elev, azim) for 3D projection. Default is ("90 deg", "-90 deg").
             - Plain number: assumed to be radians (with warning)
             - String: e.g., "90 degrees", "1.57 radians"
             - Quantity: e.g., 90 * ureg.degree
+        projection : str, default '2d'
+            Type of projection:
+            - '3d': Interactive 3D view with rotation
+            - '2d': Three orthogonal 2D projections (x-y, x-z, y-z planes)
         
         Returns
         -------
         fig : matplotlib Figure
-            Figure object (interactive rotation enabled)
-        ax : matplotlib 3D axis
-            3D axis object
+            Figure object
+        ax : matplotlib axis or array of axes
+            Single 3D axis (if projection='3d') or array of 3 2D axes (if projection='2d')
         
         Raises
         ------
@@ -279,7 +284,33 @@ class EyePlotter(GazePlotter,PupilPlotter):
         ...                          figsize=(14, 6))
         >>> data.plot.plot_experimental_setup(theta=np.radians(20), phi=np.radians(-90), ax=axes[0])
         >>> data.plot.plot_experimental_setup(theta=np.radians(75), phi=0, ax=axes[1])
+        >>> 
+        >>> # 2D orthogonal projections
+        >>> data.plot.plot_experimental_setup(calibration=calib, projection='2d')
         """
+        # Route to appropriate projection method
+        if projection.lower() == '2d':
+            return self._plot_experimental_setup_2d(
+                theta, phi, calibration, show_gaze_samples, n_gaze_samples
+            )
+        elif projection.lower() == '3d':
+            return self._plot_experimental_setup_3d(
+                theta, phi, calibration, show_gaze_samples, n_gaze_samples, ax, viewing_angle
+            )
+        else:
+            raise ValueError(f"projection must be '3d' or '2d', got '{projection}'")
+    
+    def _plot_experimental_setup_3d(
+        self,
+        theta: Optional[float] = None,
+        phi: Optional[float] = None,
+        calibration = None,
+        show_gaze_samples: bool = True,
+        n_gaze_samples: int = 9,
+        ax: Optional[plt.Axes] = None,
+        viewing_angle: tuple = ("90 deg", "-90 deg")
+    ) -> tuple:
+        """3D projection helper for plot_experimental_setup."""
         from mpl_toolkits.mplot3d import Axes3D
         from mpl_toolkits.mplot3d.art3d import Poly3DCollection
         
@@ -424,9 +455,220 @@ class EyePlotter(GazePlotter,PupilPlotter):
         
         # Initial viewing angle: behind the eye looking at the screen
         # elev=10 gives slight top-down view, azim=0 aligns with viewing axis
-        elev, azim = parse_angle(viewing_angle) # come back in radians
+        elev, azim = (parse_angle(va) for va in viewing_angle) # comes back in radians
         ax.view_init(elev=np.degrees(elev), azim=np.degrees(azim))
         
         plt.tight_layout()
         
         return fig, ax
+    
+    def _plot_experimental_setup_2d(
+        self,
+        theta: Optional[float] = None,
+        phi: Optional[float] = None,
+        calibration = None,
+        show_gaze_samples: bool = True,
+        n_gaze_samples: int = 9
+    ) -> tuple:
+        """2D orthogonal projections helper for plot_experimental_setup."""
+        import matplotlib.patches as mpatches
+        
+        obj = self.obj
+        
+        # Get required parameters from object
+        r = obj.camera_eye_distance  # mm
+        d = obj.screen_eye_distance  # mm
+        screen_size = obj.physical_screen_dims  # (width, height) in mm
+        
+        # Parse theta and phi if provided explicitly
+        if theta is not None:
+            theta = parse_angle(theta)
+        if phi is not None:
+            phi = parse_angle(phi)
+        
+        # Get theta and phi from calibration if not provided explicitly
+        if calibration is not None:
+            if theta is None:
+                theta = calibration.theta
+            if phi is None:
+                phi = calibration.phi
+        
+        # Check that we have both theta and phi
+        if theta is None or phi is None:
+            missing = []
+            if theta is None:
+                missing.append("theta")
+            if phi is None:
+                missing.append("phi")
+            
+            raise ValueError(
+                f"Camera angle(s) {', '.join(missing)} not provided. "
+                "Either provide theta and phi explicitly, or pass a ForeshorteningCalibration "
+                "object via the calibration parameter."
+            )
+        
+        # Calculate positions
+        E = np.array([0, 0, 0])  # Eye at origin
+        C = np.array([  # Camera position from spherical coordinates
+            r * np.sin(theta) * np.cos(phi),
+            r * np.sin(theta) * np.sin(phi),
+            r * np.cos(theta)
+        ])
+        
+        # Screen corners
+        w, h = screen_size
+        screen_corners = np.array([
+            [-w/2, -h/2, d],  # bottom-left
+            [ w/2, -h/2, d],  # bottom-right
+            [ w/2,  h/2, d],  # top-right
+            [-w/2,  h/2, d],  # top-left
+            [-w/2, -h/2, d],  # close the rectangle
+        ])
+        
+        # Create figure with 3 subplots
+        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+        
+        # Icon sizes
+        eye_radius = max(r, d, w/2, h/2) * 0.03
+        cam_size = eye_radius * 1.5
+        
+        # --- Subplot 1: x-y plane (top view) ---
+        ax = axes[0]
+        ax.set_aspect('equal')
+        ax.axhline(0, color='k', linestyle=':', alpha=0.3, linewidth=0.5)
+        ax.axvline(0, color='k', linestyle=':', alpha=0.3, linewidth=0.5)
+        
+        # Screen (x-y projection)
+        ax.plot(screen_corners[:, 0], screen_corners[:, 1], 'k-', linewidth=2, label='Screen')
+        ax.fill(screen_corners[:-1, 0], screen_corners[:-1, 1], 
+                color='lightgray', alpha=0.3)
+        
+        # Eye (pictogram: circle with pupil)
+        eye_circle = plt.Circle((E[0], E[1]), eye_radius, color='steelblue', 
+                                ec='black', linewidth=2, zorder=10)
+        ax.add_patch(eye_circle)
+        ax.plot(E[0], E[1], 'k.', markersize=6, zorder=11)  # pupil
+        ax.text(E[0], E[1] - eye_radius*1.5, 'E', ha='center', va='top', 
+                fontsize=10, fontweight='bold')
+        
+        # Camera (pictogram: rectangle with lens)
+        cam_rect = mpatches.FancyBboxPatch(
+            (C[0]-cam_size*0.6, C[1]-cam_size*0.4), cam_size*1.2, cam_size*0.8,
+            boxstyle="round,pad=0.05", 
+            ec='black', fc='darkred', linewidth=2, zorder=10, alpha=0.7
+        )
+        ax.add_patch(cam_rect)
+        ax.plot(C[0], C[1], 'wo', markersize=8, zorder=11)  # lens
+        ax.text(C[0], C[1] - cam_size*0.7, 'C', ha='center', va='top',
+                fontsize=10, fontweight='bold', color='white')
+        
+        # Eye-camera line
+        ax.plot([E[0], C[0]], [E[1], C[1]], 'r--', alpha=0.5, linewidth=1.5)
+        
+        # Gaze samples
+        if show_gaze_samples:
+            n = int(np.sqrt(n_gaze_samples))
+            x_positions = np.linspace(-w/2*0.8, w/2*0.8, n)
+            y_positions = np.linspace(-h/2*0.8, h/2*0.8, n)
+            for x_pos in x_positions:
+                for y_pos in y_positions:
+                    ax.plot([E[0], x_pos], [E[1], y_pos], 
+                           'g-', alpha=0.2, linewidth=0.5)
+        
+        ax.set_xlabel('x (mm)', fontsize=10)
+        ax.set_ylabel('y (mm)', fontsize=10)
+        ax.set_title('Front View (x-y plane)', fontsize=11, fontweight='bold')
+        ax.grid(True, alpha=0.2)
+        
+        # --- Subplot 2: x-z plane (side view from y-axis) ---
+        ax = axes[1]
+        ax.set_aspect('equal')
+        ax.axhline(0, color='k', linestyle=':', alpha=0.3, linewidth=0.5)
+        ax.axvline(0, color='k', linestyle=':', alpha=0.3, linewidth=0.5)
+        
+        # Screen (z-x projection, rotated: z horizontal, x vertical)
+        screen_zx = screen_corners[:, [2, 0]]  # Swap to [z, x]
+        ax.plot(screen_zx[:, 0], screen_zx[:, 1], 'k-', linewidth=2, label='Screen')
+        
+        # Eye (swap coordinates: z on x-axis, x on y-axis)
+        eye_circle = plt.Circle((E[2], E[0]), eye_radius, color='steelblue', 
+                                ec='black', linewidth=2, zorder=10)
+        ax.add_patch(eye_circle)
+        ax.plot(E[2], E[0], 'k.', markersize=6, zorder=11)
+        ax.text(E[2] - eye_radius*1.5, E[0], 'E', ha='right', va='center',
+                fontsize=10, fontweight='bold')
+        
+        # Camera (swap coordinates)
+        cam_rect = mpatches.FancyBboxPatch(
+            (C[2]-cam_size*0.4, C[0]-cam_size*0.6), cam_size*0.8, cam_size*1.2,
+            boxstyle="round,pad=0.05",
+            ec='black', fc='darkred', linewidth=2, zorder=10, alpha=0.7
+        )
+        ax.add_patch(cam_rect)
+        ax.plot(C[2], C[0], 'wo', markersize=8, zorder=11)
+        ax.text(C[2], C[0] - cam_size*0.7, 'C', ha='center', va='top',
+                fontsize=10, fontweight='bold', color='white')
+        
+        # Eye-camera line (swap coordinates)
+        ax.plot([E[2], C[2]], [E[0], C[0]], 'r--', alpha=0.5, linewidth=1.5,
+                label=f'E-C: {r:.0f}mm')
+        
+        # Eye-screen line (swap coordinates)
+        ax.plot([E[2], d], [E[0], 0], 'g--', alpha=0.5, linewidth=1.5,
+                label=f'E-S: {d:.0f}mm')
+        
+        ax.set_xlabel('z (mm)', fontsize=10)
+        ax.set_ylabel('x (mm)', fontsize=10)
+        ax.set_title('Top View (z-x plane)', fontsize=11, fontweight='bold')
+        ax.grid(True, alpha=0.2)
+        ax.legend(loc='upper left', fontsize=8)
+        
+        # --- Subplot 3: y-z plane (front view from x-axis) ---
+        ax = axes[2]
+        ax.set_aspect('equal')
+        ax.axhline(0, color='k', linestyle=':', alpha=0.3, linewidth=0.5)
+        ax.axvline(0, color='k', linestyle=':', alpha=0.3, linewidth=0.5)
+        
+        # Screen (z-y projection, rotated: z horizontal, y vertical)
+        screen_zy = screen_corners[:, [2, 1]]  # Swap to [z, y]
+        ax.plot(screen_zy[:, 0], screen_zy[:, 1], 'k-', linewidth=2, label='Screen')
+        
+        # Eye (swap coordinates: z on x-axis, y on y-axis)
+        eye_circle = plt.Circle((E[2], E[1]), eye_radius, color='steelblue',
+                                ec='black', linewidth=2, zorder=10)
+        ax.add_patch(eye_circle)
+        ax.plot(E[2], E[1], 'k.', markersize=6, zorder=11)
+        ax.text(E[2] - eye_radius*1.5, E[1], 'E', ha='right', va='center',
+                fontsize=10, fontweight='bold')
+        
+        # Camera (swap coordinates)
+        cam_rect = mpatches.FancyBboxPatch(
+            (C[2]-cam_size*0.4, C[1]-cam_size*0.6), cam_size*0.8, cam_size*1.2,
+            boxstyle="round,pad=0.05",
+            ec='black', fc='darkred', linewidth=2, zorder=10, alpha=0.7
+        )
+        ax.add_patch(cam_rect)
+        ax.plot(C[2], C[1], 'wo', markersize=8, zorder=11)
+        ax.text(C[2], C[1] - cam_size*0.7, 'C', ha='center', va='top',
+                fontsize=10, fontweight='bold', color='white')
+        
+        # Eye-camera line (swap coordinates)
+        ax.plot([E[2], C[2]], [E[1], C[1]], 'r--', alpha=0.5, linewidth=1.5)
+        
+        # Eye-screen line (swap coordinates)
+        ax.plot([E[2], d], [E[1], 0], 'g--', alpha=0.5, linewidth=1.5)
+        
+        ax.set_xlabel('z (mm)', fontsize=10)
+        ax.set_ylabel('y (mm)', fontsize=10)
+        ax.set_title('Side View (z-y plane)', fontsize=11, fontweight='bold')
+        ax.grid(True, alpha=0.2)
+        
+        # Overall title
+        theta_deg = np.degrees(theta)
+        phi_deg = np.degrees(phi)
+        fig.suptitle(f'Eye-Tracking Setup Geometry: θ={theta_deg:.1f}°, φ={phi_deg:.1f}°',
+                     fontsize=13, fontweight='bold', y=0.98)
+        
+        plt.tight_layout()
+        
+        return fig, axes
