@@ -782,10 +782,10 @@ class TestFitAndCorrection:
         data, theta_true, phi_true, r_true, d_true, _, _ = \
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
-        # Set the attributes
+        # Set the attributes (all in mm now)
         data.set_experiment_info(
             camera_eye_distance=r_true,
-            screen_eye_distance=d_true / 10.0  # Convert mm to cm
+            screen_eye_distance=d_true  # Now in mm (was cm before)
         )
         
         # Fit without providing r and d (should use attributes)
