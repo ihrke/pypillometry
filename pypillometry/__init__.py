@@ -3,6 +3,15 @@
 This package provides classes for handling pupillometric and eyetracking data
 as well as tools for plotting and analyzing these data.
 
+Unit Handling:
+--------------
+Distance and angle parameters accept three formats:
+1. Plain numbers (assumed to be mm for distances, radians for angles - with warning)
+2. String format: "600 mm", "60 cm", "20 degrees", "-90 degrees"
+3. Pint Quantity: 600 * ureg.mm, 20 * ureg.degree
+
+The unit registry is available as `pypillometry.ureg` for advanced users.
+
 - Github: https://github.com/ihrke/pypillometry
 - Documentation: https://ihrke.github.io/pypillometry
 
@@ -60,11 +69,17 @@ def _collect_and_import_submodules() -> Dict[str, Any]:
 
 # Collect all public names and import everything
 __all__, _imported_objects = _collect_and_import_submodules()
-__all__ = sorted(list(__all__))
 
 # Add imported objects to the global namespace
 globals().update(_imported_objects)
 
+
+## ------------------------------------- 
+# --------- units ----------------------
+# Import unit registry for advanced users
+from .units import ureg
+__all__.add('ureg')
+__all__ = sorted(list(__all__))
 
 ## ------------------------------------- 
 # --------- logging --------------------
