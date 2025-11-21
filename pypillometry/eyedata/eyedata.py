@@ -2,6 +2,7 @@ from .generic import keephistory
 from .gazedata import GazeData
 from .eyedatadict import EyeDataDict
 from ..plot import EyePlotter
+from ..units import parse_distance, parse_angle
 import numpy as np
 from loguru import logger
 
@@ -274,12 +275,18 @@ class EyeData(GazeData,PupilData):
         ----------
         eye : str
             Which eye to fit ('left' or 'right')
-        r : float, optional
-            Eye-to-camera distance in mm. If not provided, uses the 
+        r : float, str, or pint.Quantity, optional
+            Eye-to-camera distance. If not provided, uses the 
             `camera_eye_distance` attribute of the EyeData object.
-        d : float, optional
-            Eye-to-screen distance in mm. If not provided, uses the 
-            `screen_eye_distance` attribute (converted from cm to mm).
+            - Plain number: assumed to be mm (with warning)
+            - String: e.g., "600 mm", "60 cm"
+            - Quantity: e.g., 600 * ureg.mm
+        d : float, str, or pint.Quantity, optional
+            Eye-to-screen distance. If not provided, uses the 
+            `screen_eye_distance` attribute.
+            - Plain number: assumed to be mm (with warning)
+            - String: e.g., "700 mm", "70 cm"
+            - Quantity: e.g., 700 * ureg.mm
         intervals : Intervals, optional
             Time intervals to use for fitting. If None, uses all available data.
             Useful for fitting only on calibration periods.
@@ -295,12 +302,18 @@ class EyeData(GazeData,PupilData):
         knots_per_second : float, default 1.0
             Number of B-spline knots per second. Controls temporal resolution
             of A0(t) model. Typical values: 0.5-2.0.
-        initial_theta : float, optional
-            Initial guess for camera polar angle in radians. If None, uses
+        initial_theta : float, str, or pint.Quantity, optional
+            Initial guess for camera polar angle. If None, uses
             pi/2 (horizontal) as starting point.
-        initial_phi : float, optional
-            Initial guess for camera azimuthal angle in radians. If None,
+            - Plain number: assumed to be radians (with warning)
+            - String: e.g., "20 degrees", "0.349 radians"
+            - Quantity: e.g., 20 * ureg.degree
+        initial_phi : float, str, or pint.Quantity, optional
+            Initial guess for camera azimuthal angle. If None,
             uses 0 (camera on x-axis) as starting point.
+            - Plain number: assumed to be radians (with warning)
+            - String: e.g., "-90 degrees", "-1.57 radians"
+            - Quantity: e.g., -90 * ureg.degree
         verbose : bool, default True
             Print optimization progress and fit statistics.
         
@@ -384,16 +397,27 @@ class EyeData(GazeData,PupilData):
         if pupil_var not in self.data:
             raise ValueError(f"Pupil data not available for {eye} eye")
         
-        # Retrieve geometric parameters from attributes if not provided
+        # Parse and retrieve geometric parameters
         if r is None:
             r = self.camera_eye_distance  # Raises ValueError if not set
             if verbose:
                 logger.info(f"Using camera_eye_distance from attributes: {r} mm")
+        else:
+            r = parse_distance(r)
         
         if d is None:
             d = self.screen_eye_distance  # mm (raises ValueError if not set)
             if verbose:
                 logger.info(f"Using screen_eye_distance from attributes: {d} mm")
+        else:
+            d = parse_distance(d)
+        
+        # Parse angle parameters if provided
+        if initial_theta is not None:
+            initial_theta = parse_angle(initial_theta)
+        
+        if initial_phi is not None:
+            initial_phi = parse_angle(initial_phi)
         
         # Validate geometric parameters
         if r <= 0:
