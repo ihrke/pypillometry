@@ -11,7 +11,7 @@ import numpy as np
 from scipy import signal as sp_signal
 
 
-def fake_pupil_baseline(duration, fs, mean=3.5, amplitude=0.5, 
+def fake_pupil_baseline(duration, fs, mean=750, amplitude=100, 
                        freq=0.5, filter_order=4, seed=None):
     """
     Generate smooth baseline pupil size via filtered noise.
@@ -27,10 +27,11 @@ def fake_pupil_baseline(duration, fs, mean=3.5, amplitude=0.5,
         Duration in seconds
     fs : float
         Sampling rate in Hz
-    mean : float
-        Mean pupil size (mm or arbitrary units)
-    amplitude : float
-        Amplitude of slow fluctuations
+    mean : float, default 750
+        Mean pupil size in arbitrary units (typical EyeLink range: 500-1000 AU).
+        Corresponds to area-proportional measurements, not diameter.
+    amplitude : float, default 100
+        Amplitude of slow fluctuations (standard deviation of baseline variations)
     freq : float, default 0.5
         Cutoff frequency for low-pass filter (Hz), controls fluctuation speed.
         Typical values: 0.1-0.5 Hz for spontaneous fluctuations, 0.5-1 Hz for 
@@ -127,14 +128,14 @@ def add_measurement_noise(signal, noise_level=0.05, seed=None):
 
 
 def generate_foreshortening_data(duration=120, fs=1000, eye='left',
-                                theta=np.radians(95), phi=0.0, r=600, d=700,
-                                A0_mean=3.5, A0_amplitude=0.5, A0_freq=0.5,
+                                theta=np.radians(70), phi=0.0, r=600, d=700,
+                                A0_mean=750, A0_amplitude=100, A0_freq=0.5,
                                 fixation_duration_mean=500, 
                                 fixation_duration_std=100,
                                 screen_resolution=(1920, 1080),
                                 physical_screen_size=(520, 290),
                                 screen_eye_distance=70.0,
-                                measurement_noise=0.03,
+                                measurement_noise=5.0,
                                 seed=None, **kwargs):
     """
     Generate complete synthetic dataset for testing foreshortening correction algorithm.
@@ -162,24 +163,25 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
         Eye-to-camera distance (mm)
     d : float
         Eye-to-screen distance (mm)
-    A0_mean : float
-        Mean true pupil size
-    A0_amplitude : float
-        Amplitude of pupil fluctuations
-    A0_freq : float
-        Frequency of pupil fluctuations (Hz)
-    fixation_duration_mean : float
-        Mean fixation duration (ms)
-    fixation_duration_std : float
-        Std of fixation duration (ms)
-    screen_resolution : tuple
+    A0_mean : float, default 750
+        Mean true pupil size in arbitrary units (typical EyeLink range: 500-1000 AU).
+        Corresponds to area-proportional measurements, not diameter.
+    A0_amplitude : float, default 100
+        Amplitude of pupil fluctuations (standard deviation of slow variations)
+    A0_freq : float, default 0.5
+        Frequency of pupil fluctuations in Hz (controls speed of baseline changes)
+    fixation_duration_mean : float, default 500
+        Mean fixation duration in ms
+    fixation_duration_std : float, default 100
+        Standard deviation of fixation duration in ms
+    screen_resolution : tuple, default (1920, 1080)
         Screen size in pixels (width, height)
-    physical_screen_size : tuple
+    physical_screen_size : tuple, default (520, 290)
         Physical screen size in mm (width, height)
-    screen_eye_distance : float
+    screen_eye_distance : float, default 70.0
         Eye-to-screen distance in cm (for EyeData metadata)
-    measurement_noise : float
-        Std of measurement noise added to pupil
+    measurement_noise : float, default 5.0
+        Standard deviation of Gaussian measurement noise added to pupil signal (in AU)
     seed : int, optional
         Random seed for reproducibility
     **kwargs : additional parameters for FakeEyeData
