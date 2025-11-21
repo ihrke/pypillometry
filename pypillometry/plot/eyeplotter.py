@@ -274,9 +274,8 @@ class EyePlotter(GazePlotter,PupilPlotter):
         
         # Get required parameters from object (raises ValueError if not set)
         r = obj.camera_eye_distance  # mm
-        d = obj.screen_eye_distance * 10  # Convert cm to mm
-        screen_size_cm = obj.physical_screen_dims  # (width, height) in cm
-        screen_size = tuple(s * 10 for s in screen_size_cm)  # Convert to mm
+        d = obj.screen_eye_distance  # mm
+        screen_size = obj.physical_screen_dims  # (width, height) in mm
         
         # Get theta and phi from calibration if provided
         if calibration is not None:

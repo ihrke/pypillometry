@@ -3,6 +3,7 @@ from .generic import GenericEyeData, keephistory
 from .eyedatadict import EyeDataDict
 from ..plot import GazePlotter
 from ..intervals import Intervals
+from ..units import parse_distance
 import numpy as np
 import json
 from typing import Optional, Dict
@@ -167,32 +168,45 @@ class GazeData(GenericEyeData):
 
         Parameters
         ----------
-        screen_eye_distance: float
-            distance from the screen to the eye in cm
+        screen_eye_distance: float, str, or pint.Quantity
+            distance from the screen to the eye
+            - Plain number: assumed to be mm (with warning)
+            - String: e.g., "70 cm", "700 mm"
+            - Quantity: e.g., 70 * ureg.cm
         screen_resolution: tuple
             (width, height) of the screen in pixels
         physical_screen_size: tuple
-            (width, height) of the screen in cm
-        camera_eye_distance: float
-            distance from the camera to the eye in mm
-        eye_to_eye_distance: float
-            distance between the two eyes (inter-pupillary distance) in mm
+            (width, height) of the screen
+            Each element can be:
+            - Plain number: assumed to be mm (with warning)
+            - String: e.g., "52 cm", "520 mm"
+            - Quantity: e.g., 52 * ureg.cm
+        camera_eye_distance: float, str, or pint.Quantity
+            distance from the camera to the eye
+            - Plain number: assumed to be mm (with warning)
+            - String: e.g., "600 mm", "60 cm"
+            - Quantity: e.g., 600 * ureg.mm
+        eye_to_eye_distance: float, str, or pint.Quantity
+            distance between the two eyes (inter-pupillary distance)
+            - Plain number: assumed to be mm (with warning)
+            - String: e.g., "65 mm", "6.5 cm"
+            - Quantity: e.g., 65 * ureg.mm
         """
         if screen_resolution is not None:
             self.screen_xlim=(0,screen_resolution[0])
             self.screen_ylim=(0,screen_resolution[1])
+        
         if physical_screen_size is not None:
-            self.physical_screen_dims=physical_screen_size
-            self._physical_screen_dims_set=True
+            self.physical_screen_dims = physical_screen_size
+        
         if screen_eye_distance is not None:
-            self._screen_eye_distance=screen_eye_distance
-            self._screen_eye_distance_set=True
+            self.screen_eye_distance = screen_eye_distance
+        
         if camera_eye_distance is not None:
-            self._camera_eye_distance=camera_eye_distance
-            self._camera_eye_distance_set=True
+            self.camera_eye_distance = camera_eye_distance
+        
         if eye_to_eye_distance is not None:
-            self._eye_to_eye_distance=eye_to_eye_distance
-            self._eye_to_eye_distance_set=True
+            self.eye_to_eye_distance = eye_to_eye_distance
 
     @property
     def screen_xlim(self):
@@ -272,43 +286,79 @@ class GazeData(GenericEyeData):
         return self.screen_ylim[1]-self.screen_ylim[0]
     
     @property
+    def physical_screen_dims(self):
+        """Physical dimensions of screen (mm).
+
+        Returns
+        -------
+        tuple
+            (width, height) of screen in mm
+        """
+        if not self._physical_screen_dims_set:
+            raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
+        return self._physical_screen_dims
+    
+    @physical_screen_dims.setter
+    def physical_screen_dims(self, value):
+        """Set physical screen dimensions.
+
+        Parameters
+        ----------
+        value : tuple
+            (width, height) - each can be float, str, or pint.Quantity
+        """
+        parsed_size = []
+        for val in value:
+            parsed_size.append(parse_distance(val))
+        self._physical_screen_dims = tuple(parsed_size)
+        self._physical_screen_dims_set = True
+
+    @property
     def physical_screen_width(self):
-        """Physical width of screen (cm).
+        """Physical width of screen (mm).
 
         Returns
         -------
         float
-            width of screen in cm
+            width of screen in mm
         """        
-        if not self._physical_screen_dims_set:
-            raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
         return self.physical_screen_dims[0]
 
     @property
     def physical_screen_height(self):
-        """Physical height of screen (cm).
+        """Physical height of screen (mm).
 
         Returns
         -------
         float
-            height of screen in cm
+            height of screen in mm
         """
-        if not self._physical_screen_dims_set:
-            raise ValueError("Physical screen size not set! Use `set_experiment_info()` to set it.")
         return self.physical_screen_dims[1]
 
     @property
     def screen_eye_distance(self):
-        """Distance from screen to eye (cm).
+        """Distance from screen to eye (mm).
 
         Returns
         -------
         float
-            distance from screen to eye in cm
+            distance from screen to eye in mm
         """
         if not self._screen_eye_distance_set:
             raise ValueError("Screen-eye distance not set! Use `set_experiment_info()` to set it.")
         return self._screen_eye_distance
+    
+    @screen_eye_distance.setter
+    def screen_eye_distance(self, value):
+        """Set screen-eye distance.
+
+        Parameters
+        ----------
+        value : float, str, or pint.Quantity
+            Distance - plain number assumed to be mm
+        """
+        self._screen_eye_distance = parse_distance(value)
+        self._screen_eye_distance_set = True
 
     @property
     def camera_eye_distance(self):
@@ -322,6 +372,18 @@ class GazeData(GenericEyeData):
         if not self._camera_eye_distance_set:
             raise ValueError("Camera-eye distance not set! Use `set_experiment_info()` to set it.")
         return self._camera_eye_distance
+    
+    @camera_eye_distance.setter
+    def camera_eye_distance(self, value):
+        """Set camera-eye distance.
+
+        Parameters
+        ----------
+        value : float, str, or pint.Quantity
+            Distance - plain number assumed to be mm
+        """
+        self._camera_eye_distance = parse_distance(value)
+        self._camera_eye_distance_set = True
 
     @property
     def eye_to_eye_distance(self):
@@ -335,6 +397,18 @@ class GazeData(GenericEyeData):
         if not self._eye_to_eye_distance_set:
             raise ValueError("Eye-to-eye distance not set! Use `set_experiment_info()` to set it.")
         return self._eye_to_eye_distance
+    
+    @eye_to_eye_distance.setter
+    def eye_to_eye_distance(self, value):
+        """Set eye-to-eye distance.
+
+        Parameters
+        ----------
+        value : float, str, or pint.Quantity
+            Distance - plain number assumed to be mm
+        """
+        self._eye_to_eye_distance = parse_distance(value)
+        self._eye_to_eye_distance_set = True
 
     @keephistory
     def mask_eye_divergences(self, threshold: float = .99, thr_type: str = "percentile", 

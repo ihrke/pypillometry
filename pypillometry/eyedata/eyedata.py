@@ -391,9 +391,9 @@ class EyeData(GazeData,PupilData):
                 logger.info(f"Using camera_eye_distance from attributes: {r} mm")
         
         if d is None:
-            d = self.screen_eye_distance * 10.0  # Convert cm to mm (raises ValueError if not set)
+            d = self.screen_eye_distance  # mm (raises ValueError if not set)
             if verbose:
-                logger.info(f"Using screen_eye_distance from attributes: {d} mm (converted from cm)")
+                logger.info(f"Using screen_eye_distance from attributes: {d} mm")
         
         # Validate geometric parameters
         if r <= 0:
