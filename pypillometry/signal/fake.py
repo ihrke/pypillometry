@@ -9,6 +9,7 @@ and use algorithm-specific names (e.g., A0, cos_alpha for foreshortening).
 
 import numpy as np
 from scipy import signal as sp_signal
+from ..units import parse_distance, parse_angle
 
 
 def fake_pupil_baseline(duration, fs, mean=750, amplitude=100, 
@@ -128,13 +129,13 @@ def add_measurement_noise(signal, noise_level=0.05, seed=None):
 
 
 def generate_foreshortening_data(duration=120, fs=1000, eye='left',
-                                theta=np.radians(20), phi=-90, r=600, d=700,
+                                theta=np.radians(20), phi=np.radians(-90), r=600, d=700,
                                 A0_mean=750, A0_amplitude=100, A0_freq=0.5,
                                 fixation_duration_mean=500, 
                                 fixation_duration_std=100,
                                 screen_resolution=(1920, 1080),
-                                physical_screen_size=(52.0, 29.0),
-                                screen_eye_distance=70.0,
+                                physical_screen_size=(520.0, 290.0),
+                                screen_eye_distance=700.0,
                                 measurement_noise=5.0,
                                 seed=None, **kwargs):
     """
@@ -155,16 +156,28 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
         Duration in seconds
     fs : float
         Sampling rate in Hz
-    eye : strs
+    eye : str
         Which eye ('left' or 'right')
-    theta, phi : float
-        Camera position angles (radians); phi is angle on xy-plane (-90 down, +90 up);
-        theta is angle from eye-screen axis towards phi. default is slightly below the
-        center of the screens
-    r : float
-        Eye-to-camera distance (mm)
-    d : float
-        Eye-to-screen distance (mm)
+    theta : float, str, or pint.Quantity
+        Camera polar angle (from eye-screen axis)
+        - Plain number: assumed to be radians (with warning)
+        - String: e.g., "20 degrees", "0.349 radians"
+        - Quantity: e.g., 20 * ureg.degree
+    phi : float, str, or pint.Quantity
+        Camera azimuthal angle on xy-plane (-90 down, +90 up)
+        - Plain number: assumed to be radians (with warning)
+        - String: e.g., "-90 degrees", "-1.57 radians"
+        - Quantity: e.g., -90 * ureg.degree
+    r : float, str, or pint.Quantity
+        Eye-to-camera distance
+        - Plain number: assumed to be mm (with warning)
+        - String: e.g., "600 mm", "60 cm"
+        - Quantity: e.g., 600 * ureg.mm
+    d : float, str, or pint.Quantity
+        Eye-to-screen distance
+        - Plain number: assumed to be mm (with warning)
+        - String: e.g., "700 mm", "70 cm"
+        - Quantity: e.g., 700 * ureg.mm
     A0_mean : float, default 750
         Mean true pupil size in arbitrary units (typical EyeLink range: 500-1000 AU).
         Corresponds to area-proportional measurements, not diameter.
@@ -178,10 +191,18 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
         Standard deviation of fixation duration in ms
     screen_resolution : tuple, default (1920, 1080)
         Screen size in pixels (width, height)
-    physical_screen_size : tuple, default (52.0, 29.0)
-        Physical screen size in cm (width, height)
-    screen_eye_distance : float, default 70.0
-        Eye-to-screen distance in cm (for EyeData metadata)
+    physical_screen_size : tuple, default (520.0, 290.0)
+        Physical screen size - each element can be:
+        - Plain number: assumed to be mm (with warning)
+        - String: e.g., "52 cm", "520 mm"
+        - Quantity: e.g., 52 * ureg.cm
+        Default: (520.0, 290.0) mm = (52, 29) cm
+    screen_eye_distance : float, str, or pint.Quantity, default 700.0
+        Eye-to-screen distance (for EyeData metadata)
+        - Plain number: assumed to be mm (with warning)
+        - String: e.g., "700 mm", "70 cm"
+        - Quantity: e.g., 700 * ureg.mm
+        Default: 700.0 mm = 70 cm
     measurement_noise : float, default 5.0
         Standard deviation of Gaussian measurement noise added to pupil signal (in AU)
     seed : int, optional
@@ -217,6 +238,19 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
     >>> # Regenerate with different seed
     >>> data2 = data.regenerate(seed=43)
     """
+    # Parse unit parameters
+    theta = parse_angle(theta)
+    phi = parse_angle(phi)
+    r = parse_distance(r)
+    d = parse_distance(d)
+    screen_eye_distance = parse_distance(screen_eye_distance)
+    
+    # Parse physical_screen_size (each element)
+    parsed_screen_size = []
+    for val in physical_screen_size:
+        parsed_screen_size.append(parse_distance(val))
+    physical_screen_size = tuple(parsed_screen_size)
+    
     # 1. Generate true pupil size A0(t)
     t, A0, _ = fake_pupil_baseline(
         duration, fs, mean=A0_mean, amplitude=A0_amplitude, 
@@ -234,9 +268,9 @@ def generate_foreshortening_data(duration=120, fs=1000, eye='left',
     from ..eyedata.foreshortening_calibration import _compute_cos_alpha_vectorized
     
     # Convert pixels to mm (centered coordinates)
-    # physical_screen_size is in cm, so multiply by 10 to get mm
-    x_mm = (x - screen_resolution[0]/2) * (physical_screen_size[0] * 10) / screen_resolution[0]
-    y_mm = (y - screen_resolution[1]/2) * (physical_screen_size[1] * 10) / screen_resolution[1]
+    # physical_screen_size is now in mm after parsing
+    x_mm = (x - screen_resolution[0]/2) * physical_screen_size[0] / screen_resolution[0]
+    y_mm = (y - screen_resolution[1]/2) * physical_screen_size[1] / screen_resolution[1]
     
     # Compute foreshortening factor
     cos_alpha = _compute_cos_alpha_vectorized(x_mm, y_mm, theta, phi, r, d, eye_offset=0.0)
