@@ -481,3 +481,80 @@ class TestIntegration:
         # (since spatial variation due to foreshortening is removed)
         assert corrected_valid.std() < measured_valid.std()
 
+
+def test_generate_foreshortening_data_with_string_units():
+    """Test generate_foreshortening_data with string format units."""
+    data = generate_foreshortening_data(
+        duration=5,
+        fs=100,
+        eye='left',
+        theta="20 degrees",
+        phi="-90 degrees",
+        r="600 mm",
+        d="70 cm",
+        physical_screen_size=("52 cm", "29 cm"),
+        screen_eye_distance="700 mm",
+        seed=42
+    )
+    
+    # Should create FakeEyeData
+    assert isinstance(data, FakeEyeData)
+    
+    # Parameters should be stored as floats in canonical units (radians, mm)
+    assert np.isclose(data.sim_params['theta'], np.radians(20))
+    assert np.isclose(data.sim_params['phi'], np.radians(-90))
+    assert data.sim_params['r'] == 600.0
+    assert data.sim_params['d'] == 700.0
+    assert data.sim_params['physical_screen_size'] == (520.0, 290.0)
+    assert data.sim_params['screen_eye_distance'] == 700.0
+
+
+def test_generate_foreshortening_data_with_pint_quantities():
+    """Test generate_foreshortening_data with Pint Quantities."""
+    import pypillometry as pp
+    
+    data = generate_foreshortening_data(
+        duration=5,
+        fs=100,
+        eye='left',
+        theta=20 * pp.ureg.degree,
+        phi=-90 * pp.ureg.degree,
+        r=60 * pp.ureg.cm,
+        d=0.7 * pp.ureg.m,
+        seed=42
+    )
+    
+    # Should create FakeEyeData
+    assert isinstance(data, FakeEyeData)
+    
+    # Parameters should be stored as floats in canonical units
+    assert np.isclose(data.sim_params['theta'], np.radians(20))
+    assert np.isclose(data.sim_params['phi'], np.radians(-90))
+    assert data.sim_params['r'] == 600.0
+    assert data.sim_params['d'] == 700.0
+
+
+def test_generate_foreshortening_data_mixed_units():
+    """Test generate_foreshortening_data with mixed unit formats."""
+    import pypillometry as pp
+    
+    data = generate_foreshortening_data(
+        duration=5,
+        fs=100,
+        eye='left',
+        theta="20 degrees",  # String
+        phi=np.radians(-90),  # Plain (radians)
+        r=60 * pp.ureg.cm,  # Quantity
+        d="700 mm",  # String
+        physical_screen_size=(520.0, "29 cm"),  # Mixed plain and string
+        seed=42
+    )
+    
+    # Should create FakeEyeData with consistent units
+    assert isinstance(data, FakeEyeData)
+    assert np.isclose(data.sim_params['theta'], np.radians(20))
+    assert np.isclose(data.sim_params['phi'], np.radians(-90))
+    assert data.sim_params['r'] == 600.0
+    assert data.sim_params['d'] == 700.0
+    assert data.sim_params['physical_screen_size'] == (520.0, 290.0)
+

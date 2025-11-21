@@ -1741,6 +1741,56 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         
         # Should have entries for multiple combinations
         self.assertGreater(len(intervals_dict), 1)
+    
+    def test_set_experiment_info_with_string_units(self):
+        """Test set_experiment_info with string format units"""
+        data = pp.EyeData(left_x=[1,2], left_y=[3,4], left_pupil=[5,6], sampling_rate=1000)
+        
+        # Set with string format
+        data.set_experiment_info(
+            camera_eye_distance="60 cm",
+            screen_eye_distance="70 cm",
+            physical_screen_size=("52 cm", "29 cm")
+        )
+        
+        # All should be stored in mm
+        self.assertEqual(data.camera_eye_distance, 600.0)
+        self.assertEqual(data.screen_eye_distance, 700.0)
+        self.assertEqual(data.physical_screen_width, 520.0)
+        self.assertEqual(data.physical_screen_height, 290.0)
+    
+    def test_set_experiment_info_with_pint_quantities(self):
+        """Test set_experiment_info with Pint Quantities"""
+        data = pp.EyeData(left_x=[1,2], left_y=[3,4], left_pupil=[5,6], sampling_rate=1000)
+        
+        # Set with Pint Quantities
+        data.set_experiment_info(
+            camera_eye_distance=60 * pp.ureg.cm,
+            eye_to_eye_distance=65 * pp.ureg.mm,
+            screen_eye_distance=70 * pp.ureg.cm
+        )
+        
+        # All should be stored in mm
+        self.assertEqual(data.camera_eye_distance, 600.0)
+        self.assertEqual(data.eye_to_eye_distance, 65.0)
+        self.assertEqual(data.screen_eye_distance, 700.0)
+    
+    def test_set_experiment_info_mixed_units(self):
+        """Test set_experiment_info with mixed unit formats"""
+        data = pp.EyeData(left_x=[1,2], left_y=[3,4], left_pupil=[5,6], sampling_rate=1000)
+        
+        # Mix plain numbers, strings, and Quantities
+        data.set_experiment_info(
+            camera_eye_distance=600,  # Plain (mm, will warn)
+            screen_eye_distance="0.7 m",  # String (m to mm)
+            physical_screen_size=(52 * pp.ureg.cm, "290 mm")  # Mixed Quantity and string
+        )
+        
+        # All should be stored in mm
+        self.assertEqual(data.camera_eye_distance, 600.0)
+        self.assertEqual(data.screen_eye_distance, 700.0)
+        self.assertEqual(data.physical_screen_width, 520.0)
+        self.assertEqual(data.physical_screen_height, 290.0)
 
 
 if __name__ == '__main__':
