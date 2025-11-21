@@ -129,8 +129,10 @@ def _determine_knots(
     
     Notes
     -----
-    For cubic B-splines (degree 3), we need to repeat the boundary knots
-    4 times (degree + 1) to ensure the spline interpolates at the boundaries.
+    Creates clamped/restricted B-splines by repeating boundary knots (degree + 1) times.
+    For cubic B-splines (degree 3), boundary knots are repeated 4 times.
+    Interior knots are placed strictly between boundaries to avoid edge effects.
+    This ensures the spline is well-defined and doesn't drop to zero at boundaries.
     
     Examples
     --------
@@ -140,17 +142,19 @@ def _determine_knots(
     duration_ms = t_max - t_min
     duration_sec = duration_ms / 1000.0
     
-    # Number of interior knots
+    # Number of interior knots (excluding boundaries)
     n_interior_knots = max(int(np.ceil(duration_sec * knots_per_second)), 2)
     
-    # Interior knot positions (uniformly spaced)
-    interior_knots = np.linspace(t_min, t_max, n_interior_knots)
+    # Interior knot positions (uniformly spaced, excluding boundaries)
+    # This creates clamped/restricted B-splines that don't go to zero at edges
+    interior_knots = np.linspace(t_min, t_max, n_interior_knots + 2)[1:-1]
     
-    # For cubic B-splines (degree 3), repeat boundary knots 4 times
+    # For cubic B-splines (degree 3), repeat boundary knots 4 times (degree + 1)
+    # This ensures the spline is well-defined and doesn't drop to zero at boundaries
     knots = np.concatenate([
-        [t_min] * 4,  # Left boundary knots
-        interior_knots,  # Interior knots
-        [t_max] * 4   # Right boundary knots
+        [t_min] * 4,  # Left boundary knots (degree + 1 repetitions)
+        interior_knots,  # Interior knots (strictly between boundaries)
+        [t_max] * 4   # Right boundary knots (degree + 1 repetitions)
     ])
     
     return knots
@@ -202,7 +206,8 @@ def _create_bspline_basis(
         coeffs[k] = 1.0
         
         # Create BSpline object and evaluate
-        spline = BSpline(knots, coeffs, degree, extrapolate=False)
+        # Use extrapolate=True to ensure basis functions are non-zero at boundaries
+        spline = BSpline(knots, coeffs, degree, extrapolate=True)
         basis_matrix[:, k] = spline(t)
     
     # Replace NaN with 0 (can happen at boundaries with extrapolate=False)
