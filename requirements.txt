@@ -3,6 +3,7 @@ scipy
 cmdstanpy
 matplotlib
 pandas
+pint>=0.20
 typing
 requests
 loguru
