@@ -1047,14 +1047,33 @@ class GenericEyeData(ABC):
         # convert data from EDF to EyeDataDict
         avail_data_fields = edf["info"]["sample_fields"]
         d = {}
-        if 'xpos_left' and 'ypos_left' and 'ps_left' in avail_data_fields:
+        
+        # Check for binocular data (separate left/right fields)
+        left_fields = ['xpos_left', 'ypos_left', 'ps_left']
+        right_fields = ['xpos_right', 'ypos_right', 'ps_right']
+        
+        if all(field in avail_data_fields for field in left_fields):
             d['left_x'] = edf["samples"][avail_data_fields.index("xpos_left")]
             d['left_y'] = edf["samples"][avail_data_fields.index("ypos_left")]
             d['left_pupil'] = edf["samples"][avail_data_fields.index("ps_left")]
-        if 'xpos_right' and 'ypos_right' and 'ps_right' in avail_data_fields:
+        
+        if all(field in avail_data_fields for field in right_fields):
             d['right_x'] = edf["samples"][avail_data_fields.index("xpos_right")]
             d['right_y'] = edf["samples"][avail_data_fields.index("ypos_right")]
             d['right_pupil'] = edf["samples"][avail_data_fields.index("ps_right")]
+        
+        # Check for monocular data (no left/right suffix)
+        monocular_fields = ['xpos', 'ypos', 'ps']
+        if all(field in avail_data_fields for field in monocular_fields):
+            # Determine which eye was tracked (usually stored in edf["info"]["eye"])
+            # Map to 'left' by default, but check if eye info is available
+            tracked_eye = edf["info"].get("eye", "left").lower()
+            if tracked_eye not in ['left', 'right']:
+                tracked_eye = 'left'  # Default to left if unclear
+            
+            d[f'{tracked_eye}_x'] = edf["samples"][avail_data_fields.index("xpos")]
+            d[f'{tracked_eye}_y'] = edf["samples"][avail_data_fields.index("ypos")]
+            d[f'{tracked_eye}_pupil'] = edf["samples"][avail_data_fields.index("ps")]
         
         # get events (Eyelink stores in seconds, convert to ms)
         evon = edf["discrete"]["messages"]["stime"]*1000
