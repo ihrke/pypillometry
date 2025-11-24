@@ -309,5 +309,98 @@ class TestEyeDataDict(unittest.TestCase):
         np.testing.assert_array_equal(d2.get_mask('left_pupil'), np.zeros(3, dtype=int))
         np.testing.assert_array_equal(d2.get_mask(), np.zeros(3, dtype=int))
 
+    def test_zero_pupil_values_converted_to_nan(self):
+        """Test that zero pupil values are automatically converted to NaN"""
+        d = EyeDataDict()
+        
+        # Set pupil data with zero values
+        pupil_data = np.array([100.0, 0.0, 500.0, 0.0, 800.0])
+        d['left_pupil'] = pupil_data
+        
+        # Verify zeros are converted to NaN
+        expected_data = np.array([100.0, np.nan, 500.0, np.nan, 800.0])
+        np.testing.assert_array_equal(d['left_pupil'], expected_data)
+        
+        # Verify zeros are marked in mask
+        expected_mask = np.array([0, 1, 0, 1, 0])
+        np.testing.assert_array_equal(d.mask['left_pupil'], expected_mask)
+        
+        # Test with right eye as well
+        d['right_pupil'] = np.array([0.0, 600.0, 0.0, 700.0, 0.0])
+        expected_right = np.array([np.nan, 600.0, np.nan, 700.0, np.nan])
+        np.testing.assert_array_equal(d['right_pupil'], expected_right)
+        np.testing.assert_array_equal(d.mask['right_pupil'], np.array([1, 0, 1, 0, 1]))
+
+    def test_zero_pupil_values_in_set_with_mask(self):
+        """Test that zero pupil values are converted to NaN in set_with_mask"""
+        d = EyeDataDict()
+        
+        # Set pupil data with zero values using set_with_mask
+        pupil_data = np.array([100.0, 0.0, 500.0, 0.0, 800.0])
+        d.set_with_mask('left_pupil', pupil_data)
+        
+        # Verify zeros are converted to NaN
+        expected_data = np.array([100.0, np.nan, 500.0, np.nan, 800.0])
+        np.testing.assert_array_equal(d['left_pupil'], expected_data)
+        
+        # Verify zeros are marked in mask
+        expected_mask = np.array([0, 1, 0, 1, 0])
+        np.testing.assert_array_equal(d.mask['left_pupil'], expected_mask)
+
+    def test_zero_non_pupil_values_not_converted(self):
+        """Test that zero values in non-pupil variables are NOT converted to NaN"""
+        d = EyeDataDict()
+        
+        # Set gaze data with zero values (legitimate for x/y coordinates)
+        x_data = np.array([0.0, 100.0, 0.0, 200.0, 0.0])
+        y_data = np.array([50.0, 0.0, 150.0, 0.0, 250.0])
+        
+        d['left_x'] = x_data
+        d['left_y'] = y_data
+        
+        # Verify zeros are NOT converted to NaN
+        np.testing.assert_array_equal(d['left_x'], x_data)
+        np.testing.assert_array_equal(d['left_y'], y_data)
+        
+        # Verify masks are all zeros (no missing values)
+        np.testing.assert_array_equal(d.mask['left_x'], np.zeros(5, dtype=int))
+        np.testing.assert_array_equal(d.mask['left_y'], np.zeros(5, dtype=int))
+
+    def test_zero_pupil_with_explicit_mask(self):
+        """Test that zero pupil values are converted even with explicit mask"""
+        d = EyeDataDict()
+        
+        # Set pupil data with zero values and explicit mask
+        pupil_data = np.array([100.0, 0.0, 500.0, 0.0, 800.0])
+        explicit_mask = np.array([0, 0, 1, 0, 0])  # Only third value explicitly masked
+        
+        d.set_with_mask('left_pupil', pupil_data, mask=explicit_mask)
+        
+        # Verify zeros are still converted to NaN in the data
+        expected_data = np.array([100.0, np.nan, 500.0, np.nan, 800.0])
+        np.testing.assert_array_equal(d['left_pupil'], expected_data)
+        
+        # Verify explicit mask is used (zeros might not be marked if mask doesn't include them)
+        # But the data should still have NaN values
+        np.testing.assert_array_equal(d.mask['left_pupil'], explicit_mask)
+
+    def test_zero_pupil_all_variants(self):
+        """Test zero pupil handling for various eye identifiers"""
+        d = EyeDataDict()
+        
+        # Test with different eye identifiers that should all work
+        for eye in ['left', 'right', 'mean', 'median']:
+            key = f'{eye}_pupil'
+            data = np.array([100.0, 0.0, 200.0])
+            d[key] = data
+            
+            # Verify zero is converted to NaN
+            expected = np.array([100.0, np.nan, 200.0])
+            np.testing.assert_array_equal(d[key], expected)
+            
+            # Verify mask
+            expected_mask = np.array([0, 1, 0])
+            np.testing.assert_array_equal(d.mask[key], expected_mask)
+
 if __name__ == '__main__':
     unittest.main()

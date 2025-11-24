@@ -94,7 +94,7 @@ class EyeDataDict(MutableMapping):
     def __setitem__(self, key: str, value: NDArray) -> None:
         if value is None or len(value) == 0:
             return
-        value = np.array(value)
+        value = np.array(value).astype(float)
         if self.length > 0 and self.shape is not None:
             if value.shape != self.shape:
                 raise ValueError(
@@ -106,7 +106,12 @@ class EyeDataDict(MutableMapping):
         if np.any(np.array(self.shape)!=np.array(value.shape)):
             raise ValueError("Array must have same dimensions as existing arrays")
         key = self._validate_key(key)  # Only validate key when setting values
-        self.data[key] = value.astype(float)
+        
+        # For pupil variables, convert 0 values to NaN (0 pupil size is invalid)
+        if 'pupil' in key:
+            value = np.where(value == 0, np.nan, value)
+        
+        self.data[key] = value
         self.mask[key] = np.zeros(self.shape, dtype=int)
         self.mask[key][np.isnan(value)] = 1 # set mask to 1 for missing values
 
@@ -161,8 +166,13 @@ class EyeDataDict(MutableMapping):
         
         key = self._validate_key(key)
         
+        # For pupil variables, convert 0 values to NaN (0 pupil size is invalid)
+        value_float = value.astype(float)
+        if 'pupil' in key:
+            value_float = np.where(value_float == 0, np.nan, value_float)
+        
         # Store data
-        self.data[key] = value.astype(float)
+        self.data[key] = value_float
         
         # Handle mask
         if mask is not None:
@@ -174,7 +184,7 @@ class EyeDataDict(MutableMapping):
         else:
             # Create new mask (default behavior, same as __setitem__)
             self.mask[key] = np.zeros(self.shape, dtype=int)
-            self.mask[key][np.isnan(value)] = 1
+            self.mask[key][np.isnan(value_float)] = 1
 
     def __delitem__(self, key):
         if isinstance(key, tuple):

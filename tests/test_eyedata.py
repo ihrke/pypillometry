@@ -162,13 +162,16 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(len(self.eyedata.data['left_pupil']), len(self.eyedata.tx))
         self.assertEqual(len(self.eyedata.data['right_pupil']), len(self.eyedata.tx))
         
-        # Check pupil data contains valid values (not NaN or infinite)
-        self.assertTrue(np.all(np.isfinite(self.eyedata.data['left_pupil'])))
-        self.assertTrue(np.all(np.isfinite(self.eyedata.data['right_pupil'])))
+        # Check pupil data contains valid values (finite or NaN for missing/zero values)
+        # Note: zeros are automatically converted to NaN as they represent invalid pupil sizes
+        left_finite = self.eyedata.data['left_pupil'][np.isfinite(self.eyedata.data['left_pupil'])]
+        right_finite = self.eyedata.data['right_pupil'][np.isfinite(self.eyedata.data['right_pupil'])]
+        self.assertTrue(len(left_finite) > 0)  # At least some valid data
+        self.assertTrue(len(right_finite) > 0)
         
-        # Check pupil data is non-negative
-        self.assertTrue(np.all(self.eyedata.data['left_pupil'] >= 0))
-        self.assertTrue(np.all(self.eyedata.data['right_pupil'] >= 0))
+        # Check finite pupil data is positive (no zeros, as they're converted to NaN)
+        self.assertTrue(np.all(left_finite > 0))
+        self.assertTrue(np.all(right_finite > 0))
 
     def test_initialization_combinations(self):
         """Test initialization with different combinations of eye data"""
@@ -398,9 +401,15 @@ class TestEyeData(unittest.TestCase):
         # Test merging with mean method
         merged = self.eyedata.merge_eyes(eyes=['left', 'right'], variables=['pupil'])
         self.assertIn('mean_pupil', merged.data)
-        np.testing.assert_array_almost_equal(
+        # Use masked array mean to match what merge_eyes does
+        # Note: merge_eyes uses np.ma.mean which averages non-masked values
+        left_ma = self.eyedata['left', 'pupil']
+        right_ma = self.eyedata['right', 'pupil']
+        stacked = np.ma.stack([left_ma, right_ma], axis=0)
+        expected_mean = np.ma.mean(stacked, axis=0)
+        np.testing.assert_array_equal(
             merged.data['mean_pupil'],
-            (self.eyedata.data['left_pupil'] + self.eyedata.data['right_pupil']) / 2
+            expected_mean.data
         )
         
         # Test merging without keeping original eyes
@@ -1685,8 +1694,14 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         
     def test_mask_as_intervals_empty_mask(self):
         """Test mask_as_intervals with empty mask (no masked data)"""
-        data = self.data.copy()
-        # Don't detect blinks, so mask should be all zeros
+        # Create data without zero pupil values to test truly empty mask
+        data = pp.EyeData(
+            left_x=np.arange(100),
+            left_y=np.arange(100),
+            left_pupil=np.ones(100) * 500,  # No zeros, all valid pupil sizes
+            sampling_rate=1000
+        )
+        # Don't detect blinks, so mask should be all zeros (no zero pupil values)
         
         intervals = data.mask_as_intervals('left', 'pupil')
         self.assertEqual(len(intervals), 0)

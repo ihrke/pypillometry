@@ -12,3 +12,5 @@ pytest
 pytest-cov
 h5py
 eyelinkio
+pyqtgraph>=0.13
+PyQt5
