@@ -537,8 +537,11 @@ class GenericPlotter:
                     # Each interval gets its own y-level (1, 2, 3, ...)
                     # Plus a small offset based on which eye/variable group it's in
                     y_level = (i + 1) + base_offset
+                    # Set default linewidth but allow override via kwargs
+                    plot_kwargs = {'linewidth': 2}
+                    plot_kwargs.update(kwargs)
                     line, = ax.plot([start, end], [y_level, y_level], 
-                                   color=color, linewidth=2, **kwargs)
+                                   color=color, **plot_kwargs)
                     
                     # Only add to legend once per group
                     if i == 0:
