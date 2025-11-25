@@ -34,6 +34,7 @@ Features
 """
 
 import sys
+import locale
 from typing import Optional, Callable
 from pyqtgraph.Qt import QtWidgets
 
@@ -120,10 +121,30 @@ def view(
     
     >>> intervals = pp.view(data, separate_plots=False)  # doctest: +SKIP
     """
+    # Save LC_TIME locale before Qt initialization (Qt may change it)
+    # This prevents issues with date parsing in EDF files after viewer is opened
+    try:
+        saved_lc_time = locale.getlocale(locale.LC_TIME)
+    except:
+        saved_lc_time = None
+    
     # Get or create QApplication
     app = QtWidgets.QApplication.instance()
     if app is None:
         app = QtWidgets.QApplication(sys.argv)
+    
+    # Restore LC_TIME locale after Qt initialization
+    # Qt can change the locale (e.g., to system locale like nb_NO), which breaks
+    # date parsing in eyelinkio that expects English month/day abbreviations
+    if saved_lc_time is not None:
+        try:
+            locale.setlocale(locale.LC_TIME, saved_lc_time)
+        except:
+            # If restoring fails, force English locale for date parsing
+            try:
+                locale.setlocale(locale.LC_TIME, 'C')
+            except:
+                pass  # If all else fails, continue with whatever Qt set
     
     # Create viewer window
     viewer = ViewerWindow(eyedata, separate_plots=separate_plots, callback=callback)
