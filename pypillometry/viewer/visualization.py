@@ -203,9 +203,12 @@ def setup_plot_appearance(plot_widget, title: str, ylabel: str, show_x_axis: boo
     plot_widget.setLabel('left', ylabel, color='k')
     
     if show_x_axis:
-        plot_widget.setLabel('bottom', 'Time', units='s', color='k')
-        plot_widget.getAxis('bottom').setPen('k')
-        plot_widget.getAxis('bottom').setTextPen('k')
+        axis = plot_widget.getAxis('bottom')
+        plot_widget.setLabel('bottom', 'Time (s)', color='k')  # Don't use units parameter
+        axis.setPen('k')
+        axis.setTextPen('k')
+        axis.enableAutoSIPrefix(False)  # Disable SI prefixes to prevent ks, mmin, etc.
+        axis.autoSIPrefixScale = 1.0  # Force the SI prefix scale to 1.0
         plot_widget.showAxis('bottom')
     else:
         # Hide x-axis labels for upper plots

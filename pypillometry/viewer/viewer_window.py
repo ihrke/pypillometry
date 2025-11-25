@@ -159,15 +159,22 @@ class ViewerWindow(QtWidgets.QMainWindow):
             self.plot_widgets.append(plot)
             self.plot_types.append('all')
         
-        # Set up navigation handler with exact time bounds
-        self.navigation = NavigationHandler(self.plot_widgets, time_data=self.eyedata.tx)
+        # Disable SI prefixes on time axis to prevent ks, mmin, etc.
+        for i, plot_widget in enumerate(self.plot_widgets):
+            if i == len(self.plot_widgets) - 1:  # Only the bottom plot has visible x-axis
+                axis = plot_widget.getAxis('bottom')
+                axis.enableAutoSIPrefix(False)
+                axis.autoSIPrefixScale = 1.0  # Force the SI prefix scale to 1.0
+        
+        # Set up navigation handler with exact time bounds (scaled)
+        scaled_time = self.eyedata.tx * self.time_scale
+        self.navigation = NavigationHandler(self.plot_widgets, time_data=scaled_time)
         
         # Set view limits to data bounds for all plots
-        time = self.eyedata.tx
         for plot_widget in self.plot_widgets:
             vb = plot_widget.getViewBox()
             # Set limits so view cannot go beyond data
-            vb.setLimits(xMin=time[0], xMax=time[-1])
+            vb.setLimits(xMin=scaled_time[0], xMax=scaled_time[-1])
         
         # Set up region selector on primary plot
         self.region_selector = RegionSelector(
@@ -216,9 +223,11 @@ class ViewerWindow(QtWidgets.QMainWindow):
     
     def _plot_data(self):
         """Plot the eye-tracking data."""
-        time = self.eyedata.tx
+        # Apply time scale conversion
+        time = self.eyedata.tx * self.time_scale
         mask_mode = self.control_panel.get_mask_mode()
-        connect_mode = 'finite' if mask_mode == 'gaps' else 'all'
+        # Always use 'finite' to prevent interpolation through masked data
+        connect_mode = 'finite'
         
         if self.separate_plots:
             # Plot modalities grouped by type (pupil, x, y)
@@ -350,14 +359,15 @@ class ViewerWindow(QtWidgets.QMainWindow):
             return
         
         plot_widget = self.plot_widgets[plot_idx]
-        # Get current x-axis range
+        # Get current x-axis range (in current time scale)
         x_range = plot_widget.viewRange()[0]
         
         # Find y-data bounds in visible x range
         plot_type = self.plot_types[plot_idx] if plot_idx < len(self.plot_types) else None
         if plot_type and plot_type in self.available_modalities:
             y_min, y_max = float('inf'), float('-inf')
-            time = self.eyedata.tx
+            # Use scaled time to match the plotted data
+            time = self.eyedata.tx * self.time_scale
             
             for modality in self.available_modalities[plot_type]:
                 if modality in self.plot_curves and self.plot_curves[modality].isVisible():
@@ -393,18 +403,81 @@ class ViewerWindow(QtWidgets.QMainWindow):
             'min': (1.0 / 60000.0, 'min')
         }
         
+        if not self.plot_widgets:
+            return
+        
+        # Store current region selections (before clearing)
+        old_scale = self.time_scale
+        old_intervals = None
+        if self.region_selector.regions:
+            old_intervals = self.region_selector.get_intervals()
+        
+        # Update scale
         self.time_scale, self.time_unit = unit_map[unit]
         
-        # Update x-axis label for bottom plot only
+        # Clear and replot everything
+        self._clear_plots()
+        self._plot_data()
+        
+        # Update navigation handler bounds with new scale
+        scaled_time = self.eyedata.tx * self.time_scale
+        self.navigation.data_min = float(scaled_time[0])
+        self.navigation.data_max = float(scaled_time[-1])
+        
+        # Temporarily unlink all axes to prevent interference during update
         for i, plot_widget in enumerate(self.plot_widgets):
-            # Only update the last plot (bottom one with x-axis visible)
+            if i > 0:
+                plot_widget.setXLink(None)
+        
+        # Update view limits for all plots
+        for plot_widget in self.plot_widgets:
+            vb = plot_widget.getViewBox()
+            vb.setLimits(xMin=scaled_time[0], xMax=scaled_time[-1])
+            # Set the range explicitly for each plot
+            vb.setXRange(scaled_time[0], scaled_time[-1], padding=0)
+        
+        # Update x-axis for all plots (especially bottom one)
+        for i, plot_widget in enumerate(self.plot_widgets):
+            axis = plot_widget.getAxis('bottom')
+            
+            # Reset the axis scale to 1.0 (no scaling)
+            axis.setScale(1.0)
+            
+            # Disable SI prefix and reset its scale
+            axis.enableAutoSIPrefix(False)
+            axis.autoSIPrefixScale = 1.0  # Force the SI prefix scale to 1.0
+            
+            # Clear any cached rendering
+            axis.picture = None
+            
             if i == len(self.plot_widgets) - 1:
-                axis = plot_widget.getAxis('bottom')
-                # Disable SI prefix (prevents ks, kmin, etc.)
-                axis.enableAutoSIPrefix(False)
-                plot_widget.setLabel('bottom', 'Time', units=self.time_unit, color='k')
-                # Force update of axis scale
-                axis.setScale(self.time_scale)
+                # Update label for bottom plot only (without units parameter to avoid PyQtGraph auto-scaling)
+                plot_widget.setLabel('bottom', f'Time ({self.time_unit})', color='k')
+            
+            # Force redraw
+            axis.update()
+        
+        # Re-link the axes
+        for i, plot_widget in enumerate(self.plot_widgets):
+            if i > 0:
+                plot_widget.setXLink(self.plot_widgets[0])
+        
+        # Restore region selections (scaled to new units)
+        if old_intervals:
+            scale_ratio = self.time_scale / old_scale
+            scaled_intervals = Intervals(
+                starts=old_intervals.starts * scale_ratio,
+                ends=old_intervals.ends * scale_ratio
+            )
+            self.region_selector.set_intervals(scaled_intervals)
+        
+        # Show whole signal after unit change
+        self._on_show_whole_signal()
+        
+        # Force a complete update of all widgets
+        for plot_widget in self.plot_widgets:
+            plot_widget.update()
+            plot_widget.getViewBox().update()
     
     def _on_show_whole_signal(self):
         """Show the entire signal."""
