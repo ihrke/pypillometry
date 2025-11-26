@@ -146,6 +146,7 @@ class GPUViewerCanvas(SceneCanvas):
             x_axis.stretch = (1, 0.12)
             self.grid.add_widget(x_axis, row=row, col=1)
             x_axis.link_view(self.viewboxes[-1])
+            self._x_axis_row = row
     
     def _plot_all_data(self):
         time = self.time_seconds
@@ -281,15 +282,21 @@ class GPUViewerCanvas(SceneCanvas):
         if not self.overlay_info:
             return
         
-        # Find the row after x-axis
-        legend_row = len(self.view_types) + 1  # After plots and x-axis
+        # Get the row after x-axis
+        legend_row = getattr(self, '_x_axis_row', len(self.view_types)) + 1
+        
+        # Add a spacer row for separation
+        spacer = scene.Widget()
+        spacer.stretch = (1, 0.02)
+        self.grid.add_widget(spacer, row=legend_row, col=0, col_span=2)
+        legend_row += 1
         
         # Create a viewbox for the legend (no camera interaction)
         legend_view = self.grid.add_view(row=legend_row, col=0, col_span=2, border_color=None)
         legend_view.camera = scene.PanZoomCamera(aspect=None)
         legend_view.camera.interactive = False
         legend_view.camera.set_range(x=(0, 1), y=(0, 1))
-        legend_view.stretch = (1, 0.08)  # More visible height
+        legend_view.stretch = (1, 0.06)  # Legend height
         
         # Calculate positions for horizontal layout
         n_items = len(self.overlay_info)
