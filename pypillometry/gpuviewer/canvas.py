@@ -122,13 +122,13 @@ class GPUViewerCanvas(SceneCanvas):
             self.grid.add_widget(y_axis, row=row, col=0)
             
             viewbox = self.grid.add_view(row=row, col=1, border_color='#cccccc')
-            viewbox.stretch = (1, 0.28)  # Reduced so axis/legend have guaranteed space
+            viewbox.stretch = (1, 0.30)  # Plots get most space
             camera = scene.PanZoomCamera(aspect=None)
             camera.interactive = False
             viewbox.camera = camera
             
             y_axis.link_view(viewbox)
-            y_axis.stretch = (0.08, 0.28)  # Match viewbox height
+            y_axis.stretch = (0.08, 0.30)  # Match viewbox height
             
             self.viewboxes.append(viewbox)
             self.view_types.append(var_type)
@@ -145,7 +145,7 @@ class GPUViewerCanvas(SceneCanvas):
                 axis_color='black',
                 tick_color='black',
             )
-            x_axis.stretch = (1, 0.1)  # Larger stretch = more guaranteed space
+            x_axis.stretch = (1, 0.06)  # Compact but visible
             self.grid.add_widget(x_axis, row=row, col=1)
             x_axis.link_view(self.viewboxes[-1])
             self._x_axis_row = row
@@ -289,7 +289,7 @@ class GPUViewerCanvas(SceneCanvas):
         legend_view.camera = scene.PanZoomCamera(aspect=None)
         legend_view.camera.interactive = False
         legend_view.camera.set_range(x=(0, 1), y=(0, 1))
-        legend_view.stretch = (1, 0.08)  # Guaranteed space for legend
+        legend_view.stretch = (1, 0.04)  # Compact legend
         
         # Build legend items: eye colors first, then overlays
         legend_items = []
