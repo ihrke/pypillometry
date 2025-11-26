@@ -72,13 +72,13 @@ class LODLine:
         
         # Masked line: show data where IS masked (lighter color)
         masked_data = data_lod.copy()
-        masked_data[~mask_lod] = np.nan
+        masked_data[~mask_lod] = np.nan  # Hide UNmasked data
         pos_masked = np.column_stack([time_lod, masked_data])
         
         self.line_masked = scene.Line(
             pos=pos_masked,
             color=self.masked_color,
-            width=self.width,
+            width=self.width + 1,  # Slightly thicker to be visible
             connect='strip',
             antialias=False,
             parent=self.viewbox.scene
@@ -295,7 +295,7 @@ class DynamicEventMarkers:
         self.text_visuals: List[scene.Text] = []
         self._last_update_hash = None
         
-        # Pre-create rotated text labels
+        # Pre-create rotated text labels (read bottom-to-top, anchored at bottom)
         if self.show_labels:
             for _ in range(self.MAX_LABELS):
                 text = scene.Text(
@@ -304,8 +304,8 @@ class DynamicEventMarkers:
                     color=self.color,
                     font_size=8,
                     anchor_x='left',
-                    anchor_y='top',
-                    rotation=90,
+                    anchor_y='bottom',
+                    rotation=-90,  # -90 to read from bottom to top
                     parent=self.viewbox.scene
                 )
                 text.order = 10
@@ -337,26 +337,26 @@ class DynamicEventMarkers:
         )
         self.line.order = -5
     
-    def update_for_view(self, x_min: float, x_max: float, y_top: float = None):
+    def update_for_view(self, x_min: float, x_max: float, y_bottom: float = None):
         """Update labels - show when <=10 events visible."""
         if not self.show_labels:
             return
         
-        # Get y_top from camera if not provided
-        if y_top is None:
+        # Get y_bottom from camera if not provided
+        if y_bottom is None:
             try:
                 rect = self.viewbox.camera.rect
-                y_top = rect.top
+                y_bottom = rect.bottom
             except:
-                y_top = 0
-        self._current_y_top = y_top
+                y_bottom = 0
+        self._current_y_bottom = y_bottom
         
         visible_mask = (self.event_times >= x_min) & (self.event_times <= x_max)
         vis_indices = np.where(visible_mask)[0]
         n_visible = len(vis_indices)
         
         # Hash to avoid redundant updates
-        update_hash = (round(x_min, 1), round(x_max, 1), n_visible, round(y_top, 0))
+        update_hash = (round(x_min, 1), round(x_max, 1), n_visible, round(y_bottom, 0))
         if update_hash == self._last_update_hash:
             return
         self._last_update_hash = update_hash
@@ -365,8 +365,8 @@ class DynamicEventMarkers:
         for text in self.text_visuals:
             text.visible = False
         
-        # Show labels only if <= MAX_LABELS visible
-        if n_visible == 0 or n_visible > self.MAX_LABELS:
+        # Only show labels if visible AND <= MAX_LABELS AND parent is visible
+        if not self.visible or n_visible == 0 or n_visible > self.MAX_LABELS:
             return
         
         for i, event_idx in enumerate(vis_indices[:self.MAX_LABELS]):
@@ -375,13 +375,18 @@ class DynamicEventMarkers:
             
             text = self.text_visuals[i]
             text.text = str(label)[:25]
-            text.pos = (t, y_top)  # Position at top of view
+            text.pos = (t, y_bottom)  # Position at bottom of view
             text.visible = True
     
     def set_visible(self, visible: bool):
         self.visible = visible
         if self.line is not None:
             self.line.visible = visible
-        for text in self.text_visuals:
-            if not visible:
+        
+        # Hide all labels when hiding, or reset hash to force update when showing
+        if not visible:
+            for text in self.text_visuals:
                 text.visible = False
+        else:
+            # Reset hash to force label update on next view update
+            self._last_update_hash = None
