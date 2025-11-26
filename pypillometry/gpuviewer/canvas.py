@@ -9,14 +9,14 @@ from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers
 from .navigation import NavigationHandler
 
 
-# Color scheme for different data modalities
+# Color scheme for different data modalities (with lighter versions for masked)
 MODALITY_COLORS = {
-    'left_pupil': '#0066CC',    # Blue (left eye)
-    'right_pupil': '#CC0000',   # Red (right eye)
-    'left_x': '#0066CC',
-    'left_y': '#0066CC',
-    'right_x': '#CC0000',
-    'right_y': '#CC0000',
+    'left_pupil': ('#0066CC', '#99CCFF'),    # Blue, light blue
+    'right_pupil': ('#CC0000', '#FF9999'),   # Red, light red
+    'left_x': ('#0066CC', '#99CCFF'),
+    'left_y': ('#0066CC', '#99CCFF'),
+    'right_x': ('#CC0000', '#FF9999'),
+    'right_y': ('#CC0000', '#FF9999'),
 }
 
 
@@ -103,19 +103,38 @@ class GPUViewerCanvas(SceneCanvas):
         return {k: v for k, v in grouped.items() if v}
     
     def _create_subplots(self):
-        """Create subplot viewboxes with x-axis."""
+        """Create subplot viewboxes with axes."""
         row = 0
+        plot_labels = {'pupil': 'Pupil', 'x': 'Gaze X', 'y': 'Gaze Y'}
         
         for var_type in ['pupil', 'x', 'y']:
             if var_type not in self.available_modalities:
                 continue
             
-            viewbox = self.grid.add_view(row=row, col=0, border_color='#cccccc')
+            # Add y-axis widget
+            y_axis = scene.AxisWidget(
+                orientation='left',
+                axis_font_size=7,
+                axis_label=plot_labels[var_type],
+                axis_label_margin=50,
+                tick_label_margin=5,
+                text_color='black',
+                axis_color='black',
+                tick_color='black',
+            )
+            y_axis.stretch = (0.08, 1)
+            self.grid.add_widget(y_axis, row=row, col=0)
+            
+            # Add viewbox
+            viewbox = self.grid.add_view(row=row, col=1, border_color='#cccccc')
             
             # Create camera - disable all mouse interaction
             camera = scene.PanZoomCamera(aspect=None)
-            camera.interactive = False  # Disable mouse pan/zoom
+            camera.interactive = False
             viewbox.camera = camera
+            
+            # Link y-axis to viewbox
+            y_axis.link_view(viewbox)
             
             self.viewboxes.append(viewbox)
             self.view_types.append(var_type)
@@ -127,14 +146,14 @@ class GPUViewerCanvas(SceneCanvas):
                 orientation='bottom',
                 axis_label='Time (s)',
                 axis_font_size=8,
-                axis_label_margin=40,
+                axis_label_margin=35,
                 tick_label_margin=5,
                 text_color='black',
                 axis_color='black',
                 tick_color='black',
             )
             x_axis.stretch = (1, 0.12)
-            self.grid.add_widget(x_axis, row=row, col=0)
+            self.grid.add_widget(x_axis, row=row, col=1)
             x_axis.link_view(self.viewboxes[-1])
     
     def _plot_all_data(self):
@@ -152,10 +171,17 @@ class GPUViewerCanvas(SceneCanvas):
         else:
             lod_factors = (1,)
         
+        # Get event data once (for all plots)
+        event_times = None
+        event_labels = None
+        if self.has_events:
+            event_times = self.eyedata.event_onsets.astype(np.float32) * 0.001
+            event_labels = list(self.eyedata.event_labels)
+        
         for viewbox, var_type in zip(self.viewboxes, self.view_types):
             modalities = self.available_modalities.get(var_type, [])
             
-            # Add mask regions (dynamic)
+            # Add mask regions first (behind everything)
             for modality in modalities:
                 try:
                     mask = self.eyedata.data.mask.get(modality)
@@ -166,18 +192,30 @@ class GPUViewerCanvas(SceneCanvas):
                 except (AttributeError, KeyError):
                     pass
             
-            # Add event markers (dynamic) - only to first plot to avoid slowness
-            if self.has_events and var_type == self.view_types[0]:
-                event_times = self.eyedata.event_onsets.astype(np.float32) * 0.001
-                event_labels = list(self.eyedata.event_labels)
+            # Add event markers to ALL plots
+            if event_times is not None:
                 event_vis = DynamicEventMarkers(viewbox, event_times, event_labels)
                 self.event_markers.append(event_vis)
             
-            # Add LOD lines
+            # Add LOD lines (on top) - with masked color support
             for modality in modalities:
                 data = self.eyedata[modality]
-                color = MODALITY_COLORS.get(modality, '#666666')
-                lod_line = LODLine(viewbox, time, data, color, lod_factors=lod_factors)
+                colors = MODALITY_COLORS.get(modality, ('#666666', '#AAAAAA'))
+                color, masked_color = colors
+                
+                # Get mask for this modality
+                mask = None
+                try:
+                    mask = self.eyedata.data.mask.get(modality)
+                except (AttributeError, KeyError):
+                    pass
+                
+                lod_line = LODLine(
+                    viewbox, time, data, color, 
+                    masked_color=masked_color,
+                    mask=mask,
+                    lod_factors=lod_factors
+                )
                 self.lod_lines.append(lod_line)
     
     def _set_initial_view(self):
@@ -234,15 +272,15 @@ class GPUViewerCanvas(SceneCanvas):
     
     def _update_lod_visuals(self, x_min: float, x_max: float):
         """Update all LOD visuals for current view."""
-        # Update lines (fast)
+        # Update lines
         for lod_line in self.lod_lines:
             lod_line.update_for_view(x_min, x_max)
         
-        # Update masks (medium speed)
+        # Update masks
         for mask_vis in self.mask_regions:
             mask_vis.update_for_view(x_min, x_max)
         
-        # Update events (slower due to labels - throttle more)
+        # Update events
         for event_vis in self.event_markers:
             event_vis.update_for_view(x_min, x_max)
     

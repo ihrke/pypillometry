@@ -8,11 +8,7 @@ import numpy.ma as ma
 
 
 class LODLine:
-    """Line visual with Level of Detail support.
-    
-    Pre-computes multiple downsampled versions of the data and switches
-    between them based on the current view range.
-    """
+    """Line visual with Level of Detail support and masked color."""
     
     def __init__(
         self,
@@ -20,94 +16,118 @@ class LODLine:
         time: np.ndarray,
         data: np.ndarray,
         color: str = '#0000FF',
+        masked_color: str = '#9999FF',
+        mask: np.ndarray = None,
         width: float = 1.0,
         lod_factors: Tuple[int, ...] = (1, 10, 100, 1000)
     ):
         self.viewbox = viewbox
         self.time_full = time.astype(np.float32)
         self.color = color
+        self.masked_color = masked_color
         self.width = width
         self.lod_factors = lod_factors
         self.n_points = len(time)
         
-        # Handle masked arrays
+        # Handle masked arrays - get raw data
         if ma.is_masked(data):
             self.data_full = data.data.copy().astype(np.float32)
-            self.data_full[data.mask] = np.nan
+            # Store mask separately (True = masked/invalid)
+            self.mask = data.mask.copy() if mask is None else mask
         else:
             self.data_full = np.asarray(data, dtype=np.float32)
+            self.mask = mask if mask is not None else np.zeros(len(data), dtype=bool)
         
         # Pre-compute LOD levels
-        self.lod_data: Dict[int, Tuple[np.ndarray, np.ndarray]] = {}
+        self.lod_data: Dict[int, Tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
         self._precompute_lods()
         
-        # Create line visual (start with most downsampled)
+        # Create TWO line visuals: one for normal, one for masked
         self.current_lod = max(lod_factors)
-        time_lod, data_lod = self.lod_data[self.current_lod]
-        pos = np.column_stack([time_lod, data_lod])
+        time_lod, data_lod, mask_lod = self.lod_data[self.current_lod]
         
-        self.line = scene.Line(
-            pos=pos,
+        # Normal line (non-masked data)
+        normal_data = data_lod.copy()
+        normal_data[mask_lod] = np.nan
+        pos_normal = np.column_stack([time_lod, normal_data])
+        
+        self.line_normal = scene.Line(
+            pos=pos_normal,
             color=color,
             width=width,
             connect='strip',
             antialias=False,
             parent=viewbox.scene
         )
+        self.line_normal.order = 5  # On top
+        
+        # Masked line (masked data in lighter color)
+        masked_data = data_lod.copy()
+        masked_data[~mask_lod] = np.nan
+        pos_masked = np.column_stack([time_lod, masked_data])
+        
+        self.line_masked = scene.Line(
+            pos=pos_masked,
+            color=masked_color,
+            width=width,
+            connect='strip',
+            antialias=False,
+            parent=viewbox.scene
+        )
+        self.line_masked.order = 4  # Below normal line
     
     def _precompute_lods(self):
         """Pre-compute downsampled versions using min-max decimation."""
         for factor in self.lod_factors:
             if factor == 1:
-                # Full resolution
-                self.lod_data[1] = (self.time_full, self.data_full)
+                self.lod_data[1] = (self.time_full, self.data_full, self.mask)
             else:
-                # Downsample using min-max to preserve peaks
                 n_out = max(1, self.n_points // factor)
                 time_ds = np.zeros(n_out * 2, dtype=np.float32)
                 data_ds = np.zeros(n_out * 2, dtype=np.float32)
+                mask_ds = np.zeros(n_out * 2, dtype=bool)
                 
                 for i in range(n_out):
                     start = i * factor
                     end = min(start + factor, self.n_points)
                     chunk = self.data_full[start:end]
+                    chunk_mask = self.mask[start:end]
                     
-                    # Handle NaN chunks
+                    # If all NaN, skip
                     if np.all(np.isnan(chunk)):
                         time_ds[i*2] = self.time_full[start]
-                        time_ds[i*2+1] = self.time_full[end-1] if end > start else self.time_full[start]
+                        time_ds[i*2+1] = self.time_full[end-1]
                         data_ds[i*2] = np.nan
                         data_ds[i*2+1] = np.nan
+                        mask_ds[i*2] = True
+                        mask_ds[i*2+1] = True
                     else:
                         min_idx = np.nanargmin(chunk)
                         max_idx = np.nanargmax(chunk)
                         
-                        # Order by time (min first if it comes first)
                         if min_idx <= max_idx:
                             time_ds[i*2] = self.time_full[start + min_idx]
                             time_ds[i*2+1] = self.time_full[start + max_idx]
                             data_ds[i*2] = chunk[min_idx]
                             data_ds[i*2+1] = chunk[max_idx]
+                            mask_ds[i*2] = chunk_mask[min_idx]
+                            mask_ds[i*2+1] = chunk_mask[max_idx]
                         else:
                             time_ds[i*2] = self.time_full[start + max_idx]
                             time_ds[i*2+1] = self.time_full[start + min_idx]
                             data_ds[i*2] = chunk[max_idx]
                             data_ds[i*2+1] = chunk[min_idx]
+                            mask_ds[i*2] = chunk_mask[max_idx]
+                            mask_ds[i*2+1] = chunk_mask[min_idx]
                 
-                self.lod_data[factor] = (time_ds, data_ds)
+                self.lod_data[factor] = (time_ds, data_ds, mask_ds)
     
     def update_for_view(self, x_min: float, x_max: float):
         """Update LOD based on current view range."""
         view_span = x_max - x_min
         total_span = self.time_full[-1] - self.time_full[0]
-        
-        # Choose LOD based on how much of the data is visible
-        # More zoomed in = lower LOD factor (more detail)
         zoom_ratio = total_span / max(view_span, 1e-6)
         
-        # Select appropriate LOD
-        # If zoom_ratio > 100, we're very zoomed in -> use full res
-        # If zoom_ratio < 2, we're zoomed out -> use heavy downsampling
         if zoom_ratio > 50:
             target_lod = 1
         elif zoom_ratio > 10:
@@ -117,15 +137,24 @@ class LODLine:
         else:
             target_lod = 1000
         
-        # Find closest available LOD
         available = [f for f in self.lod_factors if f <= target_lod]
         new_lod = max(available) if available else min(self.lod_factors)
         
         if new_lod != self.current_lod:
             self.current_lod = new_lod
-            time_lod, data_lod = self.lod_data[new_lod]
-            pos = np.column_stack([time_lod, data_lod])
-            self.line.set_data(pos=pos)
+            time_lod, data_lod, mask_lod = self.lod_data[new_lod]
+            
+            # Update normal line
+            normal_data = data_lod.copy()
+            normal_data[mask_lod] = np.nan
+            pos_normal = np.column_stack([time_lod, normal_data])
+            self.line_normal.set_data(pos=pos_normal)
+            
+            # Update masked line
+            masked_data = data_lod.copy()
+            masked_data[~mask_lod] = np.nan
+            pos_masked = np.column_stack([time_lod, masked_data])
+            self.line_masked.set_data(pos=pos_masked)
 
 
 class DynamicMaskRegions:
@@ -137,7 +166,7 @@ class DynamicMaskRegions:
         time: np.ndarray,
         mask: np.ndarray,
         color: str = '#FFA500',
-        alpha: float = 0.3
+        alpha: float = 0.25
     ):
         self.viewbox = viewbox
         self.time = time.astype(np.float32)
@@ -159,7 +188,6 @@ class DynamicMaskRegions:
     
     def _create_mesh_for_range(self, x_min: float, x_max: float, max_regions: int = 500):
         """Create mesh for regions visible in the given range."""
-        # Find regions that overlap with view
         visible = (self.end_times >= x_min) & (self.start_times <= x_max)
         vis_starts = self.start_times[visible]
         vis_ends = self.end_times[visible]
@@ -169,29 +197,24 @@ class DynamicMaskRegions:
                 self.mesh.visible = False
             return
         
-        # Limit for performance, but prioritize regions in center of view
         if len(vis_starts) > max_regions:
-            # Keep all regions, just subsample evenly
             indices = np.linspace(0, len(vis_starts)-1, max_regions, dtype=int)
             vis_starts = vis_starts[indices]
             vis_ends = vis_ends[indices]
         
         n_rects = len(vis_starts)
-        
-        # Build mesh vertices (vectorized)
         y_min, y_max = -1e9, 1e9
         
         vertices = np.zeros((n_rects * 4, 2), dtype=np.float32)
-        vertices[0::4, 0] = vis_starts  # bottom-left x
-        vertices[0::4, 1] = y_min       # bottom-left y
-        vertices[1::4, 0] = vis_ends    # bottom-right x
-        vertices[1::4, 1] = y_min       # bottom-right y
-        vertices[2::4, 0] = vis_ends    # top-right x
-        vertices[2::4, 1] = y_max       # top-right y
-        vertices[3::4, 0] = vis_starts  # top-left x
-        vertices[3::4, 1] = y_max       # top-left y
+        vertices[0::4, 0] = vis_starts
+        vertices[0::4, 1] = y_min
+        vertices[1::4, 0] = vis_ends
+        vertices[1::4, 1] = y_min
+        vertices[2::4, 0] = vis_ends
+        vertices[2::4, 1] = y_max
+        vertices[3::4, 0] = vis_starts
+        vertices[3::4, 1] = y_max
         
-        # Build faces (vectorized)
         base_indices = np.arange(n_rects, dtype=np.uint32) * 4
         faces = np.zeros((n_rects * 2, 3), dtype=np.uint32)
         faces[0::2, 0] = base_indices
@@ -201,7 +224,6 @@ class DynamicMaskRegions:
         faces[1::2, 1] = base_indices + 2
         faces[1::2, 2] = base_indices + 3
         
-        # Parse color
         c = Color(self.color)
         rgba = list(c.rgba)
         rgba[3] = self.alpha
@@ -224,17 +246,17 @@ class DynamicMaskRegions:
 
 
 class DynamicEventMarkers:
-    """Event markers with labels that update based on visible range."""
+    """Event markers with labels that appear when zoomed in (<10 events)."""
     
-    MAX_LABELS = 15  # Reduced for performance
+    MAX_LABELS = 10  # Show labels when <= this many events visible
     
     def __init__(
         self,
         viewbox: scene.ViewBox,
         event_times: np.ndarray,
         event_labels: List[str],
-        color: str = '#888888',
-        alpha: float = 0.6
+        color: str = '#666666',
+        alpha: float = 0.7
     ):
         self.viewbox = viewbox
         self.event_times = np.asarray(event_times, dtype=np.float32)
@@ -242,36 +264,33 @@ class DynamicEventMarkers:
         self.color = color
         self.alpha = alpha
         
-        # Parse color once
         c = Color(self.color)
         self.rgba = list(c.rgba)
         self.rgba[3] = self.alpha
         
-        # Visual elements
         self.line = None
         self.text_visuals: List[scene.Text] = []
         
-        # Pre-create a fixed pool of text labels (reuse to avoid allocation)
+        # Pre-create text labels
         for _ in range(self.MAX_LABELS):
             text = scene.Text(
                 text='',
                 pos=(0, 0),
                 color=self.color,
-                font_size=7,
+                font_size=8,
                 anchor_x='left',
-                anchor_y='top',
+                anchor_y='bottom',
                 parent=self.viewbox.scene
             )
             text.order = 10
             text.visible = False
             self.text_visuals.append(text)
         
-        # Create line visual (will be updated)
         self._last_visible_hash = None
         self._create_line_for_all()
     
     def _create_line_for_all(self):
-        """Create line for all events (always show all lines)."""
+        """Create line for all events."""
         if len(self.event_times) == 0:
             return
         
@@ -297,39 +316,33 @@ class DynamicEventMarkers:
         self.line.order = -5
     
     def update_for_view(self, x_min: float, x_max: float):
-        """Update event labels for current view (lines always visible)."""
-        # Find visible events
+        """Update event labels - show when <10 events visible."""
         visible_mask = (self.event_times >= x_min) & (self.event_times <= x_max)
         vis_indices = np.where(visible_mask)[0]
+        n_visible = len(vis_indices)
         
-        # Create hash to avoid unnecessary updates
-        view_hash = (round(x_min, 2), round(x_max, 2), len(vis_indices))
+        view_hash = (round(x_min, 2), round(x_max, 2), n_visible)
         if view_hash == self._last_visible_hash:
             return
         self._last_visible_hash = view_hash
         
-        # Hide all labels first
+        # Hide all labels
         for text in self.text_visuals:
             text.visible = False
         
-        if len(vis_indices) == 0:
+        # Only show labels if <= MAX_LABELS events visible
+        if n_visible == 0 or n_visible > self.MAX_LABELS:
             return
         
-        # Show up to MAX_LABELS, evenly distributed
-        n_visible = len(vis_indices)
-        label_step = max(1, n_visible // self.MAX_LABELS)
-        
-        label_idx = 0
-        for i in range(0, n_visible, label_step):
-            if label_idx >= self.MAX_LABELS:
+        # Show labels for all visible events
+        for i, event_idx in enumerate(vis_indices):
+            if i >= self.MAX_LABELS:
                 break
             
-            event_idx = vis_indices[i]
             t = self.event_times[event_idx]
             label = self.event_labels[event_idx]
             
-            text = self.text_visuals[label_idx]
-            text.text = str(label)[:12]
+            text = self.text_visuals[i]
+            text.text = str(label)[:20]
             text.pos = (t, 0)
             text.visible = True
-            label_idx += 1
