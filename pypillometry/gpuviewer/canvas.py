@@ -264,11 +264,11 @@ class GPUViewerCanvas(SceneCanvas):
                 color = overlay_colors[color_idx % len(overlay_colors)]
                 color_idx += 1
                 
-                # Create overlay line (no mask, different width/style)
+                # Create overlay line (no mask, slightly thinner than main signal)
                 overlay_line = LODLine(
                     viewbox, time, data, color,
                     mask=None,
-                    width=1.0,  # Thinner than main signal
+                    width=1.5,
                     lod_factors=lod_factors
                 )
                 self.overlay_lines.append(overlay_line)
@@ -289,7 +289,7 @@ class GPUViewerCanvas(SceneCanvas):
         legend_view.camera = scene.PanZoomCamera(aspect=None)
         legend_view.camera.interactive = False
         legend_view.camera.set_range(x=(0, 1), y=(0, 1))
-        legend_view.stretch = (1, 0.04)  # Short height
+        legend_view.stretch = (1, 0.08)  # More visible height
         
         # Calculate positions for horizontal layout
         n_items = len(self.overlay_info)

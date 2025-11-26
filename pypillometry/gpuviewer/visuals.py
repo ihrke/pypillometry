@@ -17,7 +17,7 @@ class LODLine:
         data: np.ndarray,
         color: str = '#0000FF',
         mask: np.ndarray = None,
-        width: float = 1.5,
+        width: float = 2.0,
         lod_factors: Tuple[int, ...] = (1, 10, 100, 1000)
     ):
         self.viewbox = viewbox
