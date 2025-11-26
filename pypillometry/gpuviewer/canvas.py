@@ -189,6 +189,10 @@ class GPUViewerCanvas(SceneCanvas):
         
         x_min = self.data_min
         x_max = x_min + initial_window
+        
+        # Set navigation state
+        self.navigation.set_view(x_min, x_max)
+        
         self._set_view_range(x_min, x_max)
     
     def _set_view_range(self, x_min: float, x_max: float):
@@ -244,17 +248,16 @@ class GPUViewerCanvas(SceneCanvas):
     
     def on_key_press(self, event):
         """Handle keyboard events - only way to navigate."""
-        if self.navigation.handle_key_press(event):
-            # Navigation updated the view, now update y-axes and LOD
-            if self.viewboxes:
-                rect = self.viewboxes[0].camera.rect
-                x_min, x_max = rect.left, rect.right
-                
-                # Update y-ranges for all plots
-                for viewbox, var_type in zip(self.viewboxes, self.view_types):
-                    y_min, y_max = self._get_y_range(var_type, x_min, x_max)
-                    viewbox.camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
-                
-                # Update LOD
-                self._update_lod_visuals(x_min, x_max)
-                self._last_x_range = (x_min, x_max)
+        result = self.navigation.handle_key_press(event)
+        
+        if result is not None:
+            x_min, x_max = result
+            
+            # Apply the new view range to all viewboxes
+            for viewbox, var_type in zip(self.viewboxes, self.view_types):
+                y_min, y_max = self._get_y_range(var_type, x_min, x_max)
+                viewbox.camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
+            
+            # Update LOD
+            self._update_lod_visuals(x_min, x_max)
+            self._last_x_range = (x_min, x_max)
