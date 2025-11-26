@@ -29,58 +29,62 @@ class LODLine:
         self.lod_factors = lod_factors
         self.n_points = len(time)
         
-        # Handle masked arrays - get raw data
+        # Get raw data and mask
         if ma.is_masked(data):
             self.data_full = data.data.copy().astype(np.float32)
-            # Store mask separately (True = masked/invalid)
-            self.mask = data.mask.copy() if mask is None else mask
+            # Use provided mask or fall back to masked array's mask
+            self.mask = np.asarray(mask if mask is not None else data.mask, dtype=bool)
         else:
             self.data_full = np.asarray(data, dtype=np.float32)
-            self.mask = mask if mask is not None else np.zeros(len(data), dtype=bool)
+            self.mask = np.asarray(mask, dtype=bool) if mask is not None else np.zeros(len(data), dtype=bool)
         
         # Pre-compute LOD levels
         self.lod_data: Dict[int, Tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
         self._precompute_lods()
         
-        # Create TWO line visuals: one for normal, one for masked
+        # Create line visuals
         self.current_lod = max(lod_factors)
+        self._create_lines()
+    
+    def _create_lines(self):
+        """Create the normal and masked line visuals."""
         time_lod, data_lod, mask_lod = self.lod_data[self.current_lod]
         
-        # Normal line (non-masked data)
+        # Normal line: show data where NOT masked
         normal_data = data_lod.copy()
         normal_data[mask_lod] = np.nan
         pos_normal = np.column_stack([time_lod, normal_data])
         
         self.line_normal = scene.Line(
             pos=pos_normal,
-            color=color,
-            width=width,
+            color=self.color,
+            width=self.width,
             connect='strip',
             antialias=False,
-            parent=viewbox.scene
+            parent=self.viewbox.scene
         )
-        self.line_normal.order = 5  # On top
+        self.line_normal.order = 5
         
-        # Masked line (masked data in lighter color)
+        # Masked line: show data where IS masked (lighter color)
         masked_data = data_lod.copy()
         masked_data[~mask_lod] = np.nan
         pos_masked = np.column_stack([time_lod, masked_data])
         
         self.line_masked = scene.Line(
             pos=pos_masked,
-            color=masked_color,
-            width=width,
+            color=self.masked_color,
+            width=self.width,
             connect='strip',
             antialias=False,
-            parent=viewbox.scene
+            parent=self.viewbox.scene
         )
-        self.line_masked.order = 4  # Below normal line
+        self.line_masked.order = 4
     
     def _precompute_lods(self):
-        """Pre-compute downsampled versions using min-max decimation."""
+        """Pre-compute downsampled versions."""
         for factor in self.lod_factors:
             if factor == 1:
-                self.lod_data[1] = (self.time_full, self.data_full, self.mask)
+                self.lod_data[1] = (self.time_full.copy(), self.data_full.copy(), self.mask.copy())
             else:
                 n_out = max(1, self.n_points // factor)
                 time_ds = np.zeros(n_out * 2, dtype=np.float32)
@@ -93,8 +97,8 @@ class LODLine:
                     chunk = self.data_full[start:end]
                     chunk_mask = self.mask[start:end]
                     
-                    # If all NaN, skip
-                    if np.all(np.isnan(chunk)):
+                    valid = np.isfinite(chunk)
+                    if not np.any(valid):
                         time_ds[i*2] = self.time_full[start]
                         time_ds[i*2+1] = self.time_full[end-1]
                         data_ds[i*2] = np.nan
@@ -102,8 +106,9 @@ class LODLine:
                         mask_ds[i*2] = True
                         mask_ds[i*2+1] = True
                     else:
-                        min_idx = np.nanargmin(chunk)
-                        max_idx = np.nanargmax(chunk)
+                        valid_chunk = np.where(valid, chunk, np.nan)
+                        min_idx = np.nanargmin(valid_chunk)
+                        max_idx = np.nanargmax(valid_chunk)
                         
                         if min_idx <= max_idx:
                             time_ds[i*2] = self.time_full[start + min_idx]
@@ -147,14 +152,16 @@ class LODLine:
             # Update normal line
             normal_data = data_lod.copy()
             normal_data[mask_lod] = np.nan
-            pos_normal = np.column_stack([time_lod, normal_data])
-            self.line_normal.set_data(pos=pos_normal)
+            self.line_normal.set_data(pos=np.column_stack([time_lod, normal_data]))
             
             # Update masked line
             masked_data = data_lod.copy()
             masked_data[~mask_lod] = np.nan
-            pos_masked = np.column_stack([time_lod, masked_data])
-            self.line_masked.set_data(pos=pos_masked)
+            self.line_masked.set_data(pos=np.column_stack([time_lod, masked_data]))
+    
+    def set_mask_visible(self, visible: bool):
+        """Show/hide the masked portion of the line."""
+        self.line_masked.visible = visible
 
 
 class DynamicMaskRegions:
@@ -172,14 +179,14 @@ class DynamicMaskRegions:
         self.time = time.astype(np.float32)
         self.color = color
         self.alpha = alpha
+        self.visible = True
         
-        # Pre-compute all mask intervals once
+        # Pre-compute all mask intervals
         mask_arr = np.asarray(mask, dtype=bool)
         mask_diff = np.diff(np.concatenate([[False], mask_arr, [False]]).astype(int))
         self.starts = np.where(mask_diff == 1)[0]
         self.ends = np.where(mask_diff == -1)[0]
         
-        # Convert to time values
         self.start_times = self.time[np.clip(self.starts, 0, len(self.time)-1)]
         self.end_times = self.time[np.clip(self.ends - 1, 0, len(self.time)-1)]
         
@@ -187,7 +194,12 @@ class DynamicMaskRegions:
         self._create_mesh_for_range(self.time[0], self.time[-1])
     
     def _create_mesh_for_range(self, x_min: float, x_max: float, max_regions: int = 500):
-        """Create mesh for regions visible in the given range."""
+        """Create mesh for visible regions."""
+        if not self.visible:
+            if self.mesh is not None:
+                self.mesh.visible = False
+            return
+        
         visible = (self.end_times >= x_min) & (self.start_times <= x_max)
         vis_starts = self.start_times[visible]
         vis_ends = self.end_times[visible]
@@ -230,9 +242,7 @@ class DynamicMaskRegions:
         
         if self.mesh is None:
             self.mesh = scene.Mesh(
-                vertices=vertices,
-                faces=faces,
-                color=rgba,
+                vertices=vertices, faces=faces, color=rgba,
                 parent=self.viewbox.scene
             )
             self.mesh.order = -10
@@ -241,14 +251,18 @@ class DynamicMaskRegions:
             self.mesh.visible = True
     
     def update_for_view(self, x_min: float, x_max: float):
-        """Update mask regions for current view."""
         self._create_mesh_for_range(x_min, x_max)
+    
+    def set_visible(self, visible: bool):
+        self.visible = visible
+        if self.mesh is not None:
+            self.mesh.visible = visible
 
 
 class DynamicEventMarkers:
-    """Event markers with labels that appear when zoomed in (<10 events)."""
+    """Event markers with rotated labels when zoomed in."""
     
-    MAX_LABELS = 10  # Show labels when <= this many events visible
+    MAX_LABELS = 10
     
     def __init__(
         self,
@@ -256,13 +270,16 @@ class DynamicEventMarkers:
         event_times: np.ndarray,
         event_labels: List[str],
         color: str = '#666666',
-        alpha: float = 0.7
+        alpha: float = 0.7,
+        show_labels: bool = False  # Only first viewbox shows labels
     ):
         self.viewbox = viewbox
         self.event_times = np.asarray(event_times, dtype=np.float32)
         self.event_labels = list(event_labels)
         self.color = color
         self.alpha = alpha
+        self.show_labels = show_labels
+        self.visible = True
         
         c = Color(self.color)
         self.rgba = list(c.rgba)
@@ -270,23 +287,25 @@ class DynamicEventMarkers:
         
         self.line = None
         self.text_visuals: List[scene.Text] = []
+        self._last_update_hash = None
         
-        # Pre-create text labels
-        for _ in range(self.MAX_LABELS):
-            text = scene.Text(
-                text='',
-                pos=(0, 0),
-                color=self.color,
-                font_size=8,
-                anchor_x='left',
-                anchor_y='bottom',
-                parent=self.viewbox.scene
-            )
-            text.order = 10
-            text.visible = False
-            self.text_visuals.append(text)
+        # Pre-create rotated text labels (only if this viewbox shows labels)
+        if self.show_labels:
+            for _ in range(self.MAX_LABELS):
+                text = scene.Text(
+                    text='',
+                    pos=(0, 0),
+                    color=self.color,
+                    font_size=8,
+                    anchor_x='left',
+                    anchor_y='bottom',
+                    rotation=90,  # Rotated to read bottom-to-top
+                    parent=self.viewbox.scene
+                )
+                text.order = 10
+                text.visible = False
+                self.text_visuals.append(text)
         
-        self._last_visible_hash = None
         self._create_line_for_all()
     
     def _create_line_for_all(self):
@@ -306,43 +325,48 @@ class DynamicEventMarkers:
         pos[2::3, 1] = np.nan
         
         self.line = scene.Line(
-            pos=pos,
-            color=self.rgba,
-            width=1.0,
-            connect='strip',
-            antialias=False,
+            pos=pos, color=self.rgba, width=1.0,
+            connect='strip', antialias=False,
             parent=self.viewbox.scene
         )
         self.line.order = -5
     
     def update_for_view(self, x_min: float, x_max: float):
-        """Update event labels - show when <10 events visible."""
+        """Update labels - show when <=10 events visible."""
+        if not self.show_labels:
+            return
+        
         visible_mask = (self.event_times >= x_min) & (self.event_times <= x_max)
         vis_indices = np.where(visible_mask)[0]
         n_visible = len(vis_indices)
         
-        view_hash = (round(x_min, 2), round(x_max, 2), n_visible)
-        if view_hash == self._last_visible_hash:
+        # Hash to avoid redundant updates
+        update_hash = (round(x_min, 1), round(x_max, 1), n_visible)
+        if update_hash == self._last_update_hash:
             return
-        self._last_visible_hash = view_hash
+        self._last_update_hash = update_hash
         
-        # Hide all labels
+        # Hide all labels first
         for text in self.text_visuals:
             text.visible = False
         
-        # Only show labels if <= MAX_LABELS events visible
+        # Show labels only if <= MAX_LABELS visible
         if n_visible == 0 or n_visible > self.MAX_LABELS:
             return
         
-        # Show labels for all visible events
-        for i, event_idx in enumerate(vis_indices):
-            if i >= self.MAX_LABELS:
-                break
-            
+        for i, event_idx in enumerate(vis_indices[:self.MAX_LABELS]):
             t = self.event_times[event_idx]
             label = self.event_labels[event_idx]
             
             text = self.text_visuals[i]
-            text.text = str(label)[:20]
+            text.text = str(label)[:25]
             text.pos = (t, 0)
             text.visible = True
+    
+    def set_visible(self, visible: bool):
+        self.visible = visible
+        if self.line is not None:
+            self.line.visible = visible
+        for text in self.text_visuals:
+            if not visible:
+                text.visible = False

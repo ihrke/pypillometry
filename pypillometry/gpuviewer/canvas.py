@@ -3,16 +3,16 @@
 import numpy as np
 from vispy import app, scene
 from vispy.scene import SceneCanvas
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers
 from .navigation import NavigationHandler
 
 
-# Color scheme for different data modalities (with lighter versions for masked)
+# Color scheme (normal, masked)
 MODALITY_COLORS = {
-    'left_pupil': ('#0066CC', '#99CCFF'),    # Blue, light blue
-    'right_pupil': ('#CC0000', '#FF9999'),   # Red, light red
+    'left_pupil': ('#0066CC', '#99CCFF'),
+    'right_pupil': ('#CC0000', '#FF9999'),
     'left_x': ('#0066CC', '#99CCFF'),
     'left_y': ('#0066CC', '#99CCFF'),
     'right_x': ('#CC0000', '#FF9999'),
@@ -34,54 +34,47 @@ class GPUViewerCanvas(SceneCanvas):
         self.unfreeze()
         self.eyedata = eyedata
         
-        # Convert time to seconds
         self.time_seconds = eyedata.tx.astype(np.float32) * 0.001
         self.data_min = float(self.time_seconds[0])
         self.data_max = float(self.time_seconds[-1])
         
-        # Detect available modalities
         self.available_modalities = self._detect_modalities()
         
-        # Check for events
         self.has_events = (
             hasattr(eyedata, 'event_onsets') and 
             eyedata.event_onsets is not None and 
             len(eyedata.event_onsets) > 0
         )
         
-        # Storage for LOD visuals
+        # Visibility states
+        self.events_visible = True
+        self.masks_visible = True
+        
+        # Storage for visuals
         self.lod_lines: List[LODLine] = []
         self.mask_regions: List[DynamicMaskRegions] = []
         self.event_markers: List[DynamicEventMarkers] = []
         
-        # Create grid layout
         self.grid = self.central_widget.add_grid(spacing=0)
         
-        # Create viewboxes
         self.viewboxes: List[scene.ViewBox] = []
         self.view_types: List[str] = []
         self._create_subplots()
         
-        # Set up navigation handler
         self.navigation = NavigationHandler(
             self.viewboxes, 
             data_min=self.data_min,
             data_max=self.data_max
         )
         
-        # Plot data with LOD
         self._plot_all_data()
-        
-        # Set initial view
         self._set_initial_view()
         
-        # Track last view range for LOD updates
         self._last_x_range = (self.data_min, self.data_max)
         
         self.freeze()
     
     def _detect_modalities(self) -> Dict[str, List[str]]:
-        """Detect available data modalities grouped by type."""
         available_data = {}
         for modality in ['left_pupil', 'right_pupil', 'left_x', 'right_x', 'left_y', 'right_y']:
             try:
@@ -103,7 +96,6 @@ class GPUViewerCanvas(SceneCanvas):
         return {k: v for k, v in grouped.items() if v}
     
     def _create_subplots(self):
-        """Create subplot viewboxes with axes."""
         row = 0
         plot_labels = {'pupil': 'Pupil', 'x': 'Gaze X', 'y': 'Gaze Y'}
         
@@ -111,7 +103,6 @@ class GPUViewerCanvas(SceneCanvas):
             if var_type not in self.available_modalities:
                 continue
             
-            # Add y-axis widget
             y_axis = scene.AxisWidget(
                 orientation='left',
                 axis_font_size=7,
@@ -125,22 +116,17 @@ class GPUViewerCanvas(SceneCanvas):
             y_axis.stretch = (0.08, 1)
             self.grid.add_widget(y_axis, row=row, col=0)
             
-            # Add viewbox
             viewbox = self.grid.add_view(row=row, col=1, border_color='#cccccc')
-            
-            # Create camera - disable all mouse interaction
             camera = scene.PanZoomCamera(aspect=None)
             camera.interactive = False
             viewbox.camera = camera
             
-            # Link y-axis to viewbox
             y_axis.link_view(viewbox)
             
             self.viewboxes.append(viewbox)
             self.view_types.append(var_type)
             row += 1
         
-        # Add x-axis at the bottom
         if self.viewboxes:
             x_axis = scene.AxisWidget(
                 orientation='bottom',
@@ -157,10 +143,8 @@ class GPUViewerCanvas(SceneCanvas):
             x_axis.link_view(self.viewboxes[-1])
     
     def _plot_all_data(self):
-        """Plot all data with LOD support."""
         time = self.time_seconds
         
-        # Determine LOD factors based on data size
         n_points = len(time)
         if n_points > 1000000:
             lod_factors = (1, 10, 100, 1000)
@@ -171,39 +155,42 @@ class GPUViewerCanvas(SceneCanvas):
         else:
             lod_factors = (1,)
         
-        # Get event data once (for all plots)
         event_times = None
         event_labels = None
         if self.has_events:
             event_times = self.eyedata.event_onsets.astype(np.float32) * 0.001
             event_labels = list(self.eyedata.event_labels)
         
-        for viewbox, var_type in zip(self.viewboxes, self.view_types):
+        for idx, (viewbox, var_type) in enumerate(zip(self.viewboxes, self.view_types)):
             modalities = self.available_modalities.get(var_type, [])
             
-            # Add mask regions first (behind everything)
+            # Add mask regions
             for modality in modalities:
                 try:
                     mask = self.eyedata.data.mask.get(modality)
                     if mask is not None and np.any(mask):
                         mask_vis = DynamicMaskRegions(viewbox, time, mask)
                         self.mask_regions.append(mask_vis)
-                        break  # One mask per plot
+                        break
                 except (AttributeError, KeyError):
                     pass
             
-            # Add event markers to ALL plots
+            # Add event markers (labels only in first plot)
             if event_times is not None:
-                event_vis = DynamicEventMarkers(viewbox, event_times, event_labels)
+                show_labels = (idx == 0)  # Only first viewbox shows labels
+                event_vis = DynamicEventMarkers(
+                    viewbox, event_times, event_labels, 
+                    show_labels=show_labels
+                )
                 self.event_markers.append(event_vis)
             
-            # Add LOD lines (on top) - with masked color support
+            # Add LOD lines
             for modality in modalities:
                 data = self.eyedata[modality]
                 colors = MODALITY_COLORS.get(modality, ('#666666', '#AAAAAA'))
                 color, masked_color = colors
                 
-                # Get mask for this modality
+                # Get mask
                 mask = None
                 try:
                     mask = self.eyedata.data.mask.get(modality)
@@ -211,7 +198,7 @@ class GPUViewerCanvas(SceneCanvas):
                     pass
                 
                 lod_line = LODLine(
-                    viewbox, time, data, color, 
+                    viewbox, time, data, color,
                     masked_color=masked_color,
                     mask=mask,
                     lod_factors=lod_factors
@@ -219,7 +206,6 @@ class GPUViewerCanvas(SceneCanvas):
                 self.lod_lines.append(lod_line)
     
     def _set_initial_view(self):
-        """Set initial view range."""
         total_duration = self.data_max - self.data_min
         initial_window = min(30.0, total_duration * 0.05)
         if total_duration > 10.0:
@@ -228,23 +214,18 @@ class GPUViewerCanvas(SceneCanvas):
         x_min = self.data_min
         x_max = x_min + initial_window
         
-        # Set navigation state
         self.navigation.set_view(x_min, x_max)
-        
         self._set_view_range(x_min, x_max)
     
     def _set_view_range(self, x_min: float, x_max: float):
-        """Set view range for all viewboxes with auto y-scaling."""
         for viewbox, var_type in zip(self.viewboxes, self.view_types):
             y_min, y_max = self._get_y_range(var_type, x_min, x_max)
             viewbox.camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
         
-        # Update LOD visuals
         self._update_lod_visuals(x_min, x_max)
         self._last_x_range = (x_min, x_max)
     
     def _get_y_range(self, var_type: str, x_min: float, x_max: float) -> tuple:
-        """Get y-range for data in the given x-range."""
         time = self.time_seconds
         start_idx = np.searchsorted(time, x_min, side='left')
         end_idx = np.searchsorted(time, x_max, side='right')
@@ -271,31 +252,54 @@ class GPUViewerCanvas(SceneCanvas):
         return (y_min - padding, y_max + padding)
     
     def _update_lod_visuals(self, x_min: float, x_max: float):
-        """Update all LOD visuals for current view."""
-        # Update lines
         for lod_line in self.lod_lines:
             lod_line.update_for_view(x_min, x_max)
         
-        # Update masks
         for mask_vis in self.mask_regions:
             mask_vis.update_for_view(x_min, x_max)
         
-        # Update events
         for event_vis in self.event_markers:
             event_vis.update_for_view(x_min, x_max)
     
+    def _toggle_events(self):
+        """Toggle event markers visibility."""
+        self.events_visible = not self.events_visible
+        for event_vis in self.event_markers:
+            event_vis.set_visible(self.events_visible)
+        self.update()
+    
+    def _toggle_masks(self):
+        """Toggle mask regions and masked signal visibility."""
+        self.masks_visible = not self.masks_visible
+        for mask_vis in self.mask_regions:
+            mask_vis.set_visible(self.masks_visible)
+        for lod_line in self.lod_lines:
+            lod_line.set_mask_visible(self.masks_visible)
+        self.update()
+    
     def on_key_press(self, event):
-        """Handle keyboard events - only way to navigate."""
+        """Handle keyboard events."""
+        key = event.key
+        
+        # Toggle events with 'o'
+        if key in ['o', 'O']:
+            self._toggle_events()
+            return
+        
+        # Toggle masks with 'm'
+        if key in ['m', 'M']:
+            self._toggle_masks()
+            return
+        
+        # Navigation keys
         result = self.navigation.handle_key_press(event)
         
         if result is not None:
             x_min, x_max = result
             
-            # Apply the new view range to all viewboxes
             for viewbox, var_type in zip(self.viewboxes, self.view_types):
                 y_min, y_max = self._get_y_range(var_type, x_min, x_max)
                 viewbox.camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
             
-            # Update LOD
             self._update_lod_visuals(x_min, x_max)
             self._last_x_range = (x_min, x_max)
