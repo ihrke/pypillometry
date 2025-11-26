@@ -147,7 +147,7 @@ class GPUViewerCanvas(SceneCanvas):
             )
             x_axis.height_min = 50  # Fixed minimum height in pixels
             x_axis.height_max = 50  # Fixed maximum height
-            x_axis.stretch = (1, 0)
+            x_axis.stretch = (1, 0.001)  # Near-zero stretch (0 not allowed)
             self.grid.add_widget(x_axis, row=row, col=1)
             x_axis.link_view(self.viewboxes[-1])
             self._x_axis_row = row
@@ -293,7 +293,7 @@ class GPUViewerCanvas(SceneCanvas):
         legend_view.camera.set_range(x=(0, 1), y=(0, 1))
         legend_view.height_min = 25  # Fixed height in pixels
         legend_view.height_max = 25
-        legend_view.stretch = (1, 0)
+        legend_view.stretch = (1, 0.001)  # Near-zero stretch
         
         # Build legend items: eye colors first, then overlays
         legend_items = []
