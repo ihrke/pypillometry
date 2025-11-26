@@ -290,9 +290,62 @@ class GPUViewerCanvas(SceneCanvas):
             lod_line.set_mask_visible(self.masks_visible)
         self.update()
     
+    def _show_help(self):
+        """Show help dialog with keybindings."""
+        try:
+            from PyQt6.QtWidgets import QMessageBox
+        except ImportError:
+            try:
+                from PyQt5.QtWidgets import QMessageBox
+            except ImportError:
+                print("Help: arrows=navigate, +/-=zoom, m=masks, o=events, q=quit")
+                return
+        
+        help_text = """
+<h2>GPU Viewer - Keyboard Controls</h2>
+
+<h3>Navigation</h3>
+<table>
+<tr><td><b>←  →</b></td><td>Pan left / right (10%)</td></tr>
+<tr><td><b>PgUp  PgDn</b></td><td>Pan left / right (50%)</td></tr>
+<tr><td><b>Home  End</b></td><td>Jump to start / end</td></tr>
+<tr><td><b>Space</b></td><td>Show full signal</td></tr>
+</table>
+
+<h3>Zoom</h3>
+<table>
+<tr><td><b>↑  or  +</b></td><td>Zoom in</td></tr>
+<tr><td><b>↓  or  -</b></td><td>Zoom out</td></tr>
+</table>
+
+<h3>Display</h3>
+<table>
+<tr><td><b>M</b></td><td>Toggle mask regions</td></tr>
+<tr><td><b>O</b></td><td>Toggle event markers</td></tr>
+</table>
+
+<h3>Other</h3>
+<table>
+<tr><td><b>H  or  ?</b></td><td>Show this help</td></tr>
+<tr><td><b>Q  or  Esc</b></td><td>Close viewer</td></tr>
+</table>
+"""
+        
+        msg = QMessageBox(self.native)
+        msg.setWindowTitle("GPU Viewer Help")
+        msg.setTextFormat(1)  # Rich text
+        msg.setText(help_text)
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg.exec()
+    
     def on_key_press(self, event):
         """Handle keyboard events."""
         key = event.key
+        
+        # Help with 'h' or '?'
+        if key in ['h', 'H', '?']:
+            self._show_help()
+            return
         
         # Toggle events with 'o'
         if key in ['o', 'O']:
