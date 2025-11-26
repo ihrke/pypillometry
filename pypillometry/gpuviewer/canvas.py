@@ -9,14 +9,14 @@ from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers
 from .navigation import NavigationHandler
 
 
-# Color scheme (normal, masked)
+# Color scheme (normal, masked) - masked in bright colors for visibility
 MODALITY_COLORS = {
-    'left_pupil': ('#0066CC', '#99CCFF'),
-    'right_pupil': ('#CC0000', '#FF9999'),
-    'left_x': ('#0066CC', '#99CCFF'),
-    'left_y': ('#0066CC', '#99CCFF'),
-    'right_x': ('#CC0000', '#FF9999'),
-    'right_y': ('#CC0000', '#FF9999'),
+    'left_pupil': ('#0066CC', '#FF00FF'),   # Blue, MAGENTA for masked
+    'right_pupil': ('#CC0000', '#00FF00'),  # Red, GREEN for masked
+    'left_x': ('#0066CC', '#FF00FF'),
+    'left_y': ('#0066CC', '#FF00FF'),
+    'right_x': ('#CC0000', '#00FF00'),
+    'right_y': ('#CC0000', '#00FF00'),
 }
 
 
