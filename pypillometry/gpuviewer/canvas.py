@@ -81,9 +81,8 @@ class GPUViewerCanvas(SceneCanvas):
         # Set initial view
         self._set_initial_view()
         
-        # Connect to view change events for LOD updates
-        for viewbox in self.viewboxes:
-            viewbox.camera.rect_changed.connect(self._on_view_changed)
+        # Track last view range for LOD updates
+        self._last_x_range = (self.data_min, self.data_max)
         
         self.freeze()
     
@@ -227,12 +226,22 @@ class GPUViewerCanvas(SceneCanvas):
         for event_vis in self.event_markers:
             event_vis.update_for_view(x_min, x_max)
     
-    def _on_view_changed(self, event=None):
-        """Called when view changes - update LOD."""
+    def on_draw(self, event):
+        """Called on each draw - check if view changed and update LOD."""
+        super().on_draw(event)
+        
         if self.viewboxes:
             rect = self.viewboxes[0].camera.rect
             x_min, x_max = rect.left, rect.right
-            self._update_lod_visuals(x_min, x_max)
+            
+            # Only update LOD if view changed significantly (>1% change)
+            last_min, last_max = self._last_x_range
+            last_span = last_max - last_min
+            if last_span > 0:
+                change = abs(x_min - last_min) + abs(x_max - last_max)
+                if change / last_span > 0.01:
+                    self._last_x_range = (x_min, x_max)
+                    self._update_lod_visuals(x_min, x_max)
     
     def on_key_press(self, event):
         """Handle keyboard events."""
