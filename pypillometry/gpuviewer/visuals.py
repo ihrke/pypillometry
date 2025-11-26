@@ -12,46 +12,30 @@ def add_line_visual(
     time: np.ndarray,
     data: np.ndarray,
     color: str = '#0000FF',
-    width: float = 1.5
+    width: float = 1.0
 ) -> scene.Line:
     """Add a line visual to a viewbox.
     
-    Parameters
-    ----------
-    viewbox : scene.ViewBox
-        The viewbox to add the line to
-    time : np.ndarray
-        Time array in seconds
-    data : np.ndarray
-        Data values (can be masked array)
-    color : str
-        Line color as hex string
-    width : float
-        Line width in pixels
-    
-    Returns
-    -------
-    scene.Line
-        The created line visual
+    Uses vispy.scene.Line which handles GPU upload efficiently.
     """
     # Handle masked arrays - get underlying data
     if ma.is_masked(data):
-        plot_data = data.data.copy().astype(np.float32)
-        # Set masked values to NaN so lines break there
-        plot_data[data.mask] = np.nan
+        plot_data = data.data.astype(np.float32, copy=True)
+        plot_data[data.mask] = np.nan  # NaN breaks the line
     else:
         plot_data = np.asarray(data, dtype=np.float32)
     
-    # Create position array (N x 2)
-    pos = np.column_stack([time.astype(np.float32), plot_data])
+    # Create position array (N x 2) - use float32 for GPU efficiency
+    time_f32 = time.astype(np.float32) if time.dtype != np.float32 else time
+    pos = np.column_stack([time_f32, plot_data])
     
-    # Create line visual
+    # Create line visual with GL_LINE_STRIP mode
     line = scene.Line(
         pos=pos,
         color=color,
         width=width,
-        connect='strip',  # Connect adjacent points, break at NaN
-        antialias=False,  # Faster rendering
+        connect='strip',
+        antialias=False,
         parent=viewbox.scene
     )
     
@@ -65,87 +49,71 @@ def add_mask_regions(
     color: str = '#FFA500',
     alpha: float = 0.3
 ) -> Optional[scene.Mesh]:
-    """Add semi-transparent mesh for all masked data regions (single draw call).
-    
-    Parameters
-    ----------
-    viewbox : scene.ViewBox
-        The viewbox to add regions to
-    time : np.ndarray
-        Time array in seconds
-    mask : np.ndarray
-        Boolean mask array (True = masked)
-    color : str
-        Fill color as hex string
-    alpha : float
-        Transparency (0-1)
-    
-    Returns
-    -------
-    scene.Mesh or None
-        Single mesh visual for all regions, or None if no masked regions
-    """
-    # Find contiguous masked regions
+    """Add semi-transparent mesh for masked regions using vectorized numpy."""
     mask_arr = np.asarray(mask, dtype=bool)
     if not np.any(mask_arr):
         return None
     
-    mask_diff = np.diff(np.concatenate([[False], mask_arr, [False]]).astype(int))
-    starts = np.where(mask_diff == 1)[0]
-    ends = np.where(mask_diff == -1)[0]
+    # Find region boundaries using numpy diff
+    padded = np.concatenate([[False], mask_arr, [False]])
+    diff = np.diff(padded.astype(np.int8))
+    starts = np.where(diff == 1)[0]
+    ends = np.where(diff == -1)[0]
     
     if len(starts) == 0:
         return None
     
-    # Limit number of regions for performance
-    max_regions = 200
+    # Limit regions
+    max_regions = 100
     if len(starts) > max_regions:
-        # Sample evenly across the recording
-        indices = np.linspace(0, len(starts)-1, max_regions, dtype=int)
-        starts = starts[indices]
-        ends = ends[indices]
+        idx = np.linspace(0, len(starts)-1, max_regions, dtype=np.intp)
+        starts, ends = starts[idx], ends[idx]
     
-    # Build single mesh with all rectangles as triangles
-    # Each rectangle = 4 vertices, 2 triangles (6 indices)
-    n_rects = len(starts)
-    vertices = np.zeros((n_rects * 4, 2), dtype=np.float32)
-    faces = np.zeros((n_rects * 2, 3), dtype=np.uint32)
+    n = len(starts)
     
-    # Large y-range to cover any data
+    # Vectorized vertex creation
     y_min, y_max = -1e6, 1e6
     
-    for i, (start_idx, end_idx) in enumerate(zip(starts, ends)):
-        if start_idx >= len(time) or end_idx > len(time):
-            continue
-        
-        x0 = time[start_idx]
-        x1 = time[min(end_idx, len(time)-1)]
-        
-        # 4 vertices per rectangle
-        base = i * 4
-        vertices[base] = [x0, y_min]      # bottom-left
-        vertices[base+1] = [x1, y_min]    # bottom-right
-        vertices[base+2] = [x1, y_max]    # top-right
-        vertices[base+3] = [x0, y_max]    # top-left
-        
-        # 2 triangles per rectangle
-        face_base = i * 2
-        faces[face_base] = [base, base+1, base+2]
-        faces[face_base+1] = [base, base+2, base+3]
+    # Clip indices to valid range
+    starts = np.clip(starts, 0, len(time)-1)
+    ends = np.clip(ends, 1, len(time)) - 1
     
-    # Parse color with alpha
+    x0 = time[starts].astype(np.float32)
+    x1 = time[ends].astype(np.float32)
+    
+    # Build vertices: 4 per rectangle [bl, br, tr, tl]
+    vertices = np.zeros((n * 4, 2), dtype=np.float32)
+    vertices[0::4, 0] = x0  # bottom-left x
+    vertices[0::4, 1] = y_min
+    vertices[1::4, 0] = x1  # bottom-right x
+    vertices[1::4, 1] = y_min
+    vertices[2::4, 0] = x1  # top-right x
+    vertices[2::4, 1] = y_max
+    vertices[3::4, 0] = x0  # top-left x
+    vertices[3::4, 1] = y_max
+    
+    # Build faces: 2 triangles per rectangle
+    base_idx = np.arange(n, dtype=np.uint32) * 4
+    faces = np.zeros((n * 2, 3), dtype=np.uint32)
+    faces[0::2, 0] = base_idx
+    faces[0::2, 1] = base_idx + 1
+    faces[0::2, 2] = base_idx + 2
+    faces[1::2, 0] = base_idx
+    faces[1::2, 1] = base_idx + 2
+    faces[1::2, 2] = base_idx + 3
+    
+    # Color with alpha
     c = Color(color)
     rgba = list(c.rgba)
     rgba[3] = alpha
     
-    # Create single mesh for all rectangles
     mesh = scene.Mesh(
         vertices=vertices,
         faces=faces,
         color=rgba,
         parent=viewbox.scene
     )
-    mesh.order = -10  # Behind curves
+    mesh.order = -10
     
     return mesh
 
@@ -156,61 +124,34 @@ def add_event_markers(
     event_labels: List[str],
     color: str = '#888888',
     alpha: float = 0.5,
-    width: float = 2.0
+    width: float = 1.0
 ) -> List:
-    """Add vertical lines for event markers using a single Line visual with NaN breaks.
-    
-    Parameters
-    ----------
-    viewbox : scene.ViewBox
-        The viewbox to add markers to
-    event_times : np.ndarray
-        Event onset times in seconds
-    event_labels : list of str
-        Labels for each event
-    color : str
-        Line color as hex string
-    alpha : float
-        Transparency (0-1)
-    width : float
-        Line width in pixels
-    
-    Returns
-    -------
-    list
-        List containing the line visual and text visuals
-    """
+    """Add vertical lines for event markers - NO text labels for performance."""
     if len(event_times) == 0:
         return []
     
-    # Limit number of events for performance
-    max_events = 500
+    # Limit events
+    max_events = 200
     if len(event_times) > max_events:
-        indices = np.linspace(0, len(event_times)-1, max_events, dtype=int)
-        event_times = event_times[indices]
-        event_labels = [event_labels[i] for i in indices]
+        idx = np.linspace(0, len(event_times)-1, max_events, dtype=np.intp)
+        event_times = event_times[idx]
     
-    # Parse color with alpha
+    n = len(event_times)
+    y_min, y_max = -1e6, 1e6
+    
+    # Vectorized position array: [bottom, top, nan] for each event
+    pos = np.empty((n * 3, 2), dtype=np.float32)
+    pos[0::3, 0] = event_times  # bottom x
+    pos[0::3, 1] = y_min        # bottom y
+    pos[1::3, 0] = event_times  # top x
+    pos[1::3, 1] = y_max        # top y
+    pos[2::3, 0] = np.nan       # break x
+    pos[2::3, 1] = np.nan       # break y
+    
     c = Color(color)
     rgba = list(c.rgba)
     rgba[3] = alpha
     
-    # Build single line array with NaN breaks between segments
-    # Each vertical line: 2 points + 1 NaN break = 3 points
-    y_min, y_max = -1e6, 1e6
-    n_events = len(event_times)
-    
-    # Create positions: for each event, add bottom point, top point, then NaN
-    pos = np.zeros((n_events * 3, 2), dtype=np.float32)
-    for i, t in enumerate(event_times):
-        base = i * 3
-        pos[base] = [t, y_min]
-        pos[base + 1] = [t, y_max]
-        pos[base + 2] = [np.nan, np.nan]  # Break line
-    
-    markers = []
-    
-    # Single line visual for all event markers
     line = scene.Line(
         pos=pos,
         color=rgba,
@@ -219,27 +160,6 @@ def add_event_markers(
         antialias=False,
         parent=viewbox.scene
     )
-    line.order = -5  # Behind curves but in front of mask
-    markers.append(line)
+    line.order = -5
     
-    # Add text labels (limit to avoid too many)
-    max_labels = 100
-    label_step = max(1, len(event_times) // max_labels)
-    
-    for i in range(0, len(event_times), label_step):
-        t = event_times[i]
-        label = event_labels[i]
-        
-        text = scene.Text(
-            text=str(label)[:20],  # Truncate long labels
-            pos=(t, 0),
-            color=color,
-            font_size=8,
-            anchor_x='left',
-            anchor_y='bottom',
-            parent=viewbox.scene
-        )
-        text.order = 10
-        markers.append(text)
-    
-    return markers
+    return [line]

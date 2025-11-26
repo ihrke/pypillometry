@@ -106,7 +106,6 @@ class GPUViewerCanvas(SceneCanvas):
     
     def _create_subplots(self):
         """Create subplot viewboxes."""
-        labels = {'pupil': 'Pupil', 'x': 'Gaze X', 'y': 'Gaze Y'}
         row = 0
         
         for var_type in ['pupil', 'x', 'y']:
@@ -118,17 +117,7 @@ class GPUViewerCanvas(SceneCanvas):
             viewbox.camera = scene.PanZoomCamera(aspect=None)
             viewbox.camera.interactive = True
             
-            # Add title text inside the viewbox scene
-            title = scene.Text(
-                labels[var_type],
-                pos=(self.data_min + 1, 0),  # Will be positioned in data coords
-                font_size=10,
-                color='black',
-                anchor_x='left',
-                anchor_y='bottom',
-                parent=viewbox.scene
-            )
-            
+            # Note: Text labels removed for performance - use window title instead
             self.viewboxes.append(viewbox)
             self.view_types.append(var_type)
             row += 1
