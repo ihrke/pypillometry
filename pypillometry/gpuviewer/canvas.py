@@ -9,14 +9,14 @@ from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers
 from .navigation import NavigationHandler
 
 
-# Color scheme (normal, masked) - masked in bright colors for visibility
+# Color scheme - signal drawn on top of orange mask regions
 MODALITY_COLORS = {
-    'left_pupil': ('#0066CC', '#FF00FF'),   # Blue, MAGENTA for masked
-    'right_pupil': ('#CC0000', '#00FF00'),  # Red, GREEN for masked
-    'left_x': ('#0066CC', '#FF00FF'),
-    'left_y': ('#0066CC', '#FF00FF'),
-    'right_x': ('#CC0000', '#00FF00'),
-    'right_y': ('#CC0000', '#00FF00'),
+    'left_pupil': '#0066CC',   # Blue (left eye)
+    'right_pupil': '#CC0000',  # Red (right eye)
+    'left_x': '#0066CC',
+    'left_y': '#0066CC',
+    'right_x': '#CC0000',
+    'right_y': '#CC0000',
 }
 
 
@@ -187,20 +187,10 @@ class GPUViewerCanvas(SceneCanvas):
             # Add LOD lines
             for modality in modalities:
                 data = self.eyedata[modality]
-                colors = MODALITY_COLORS.get(modality, ('#666666', '#AAAAAA'))
-                color, masked_color = colors
-                
-                # Get mask
-                mask = None
-                try:
-                    mask = self.eyedata.data.mask.get(modality)
-                except (AttributeError, KeyError):
-                    pass
+                color = MODALITY_COLORS.get(modality, '#666666')
                 
                 lod_line = LODLine(
                     viewbox, time, data, color,
-                    masked_color=masked_color,
-                    mask=mask,
                     lod_factors=lod_factors
                 )
                 self.lod_lines.append(lod_line)
