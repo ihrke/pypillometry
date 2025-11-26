@@ -294,9 +294,11 @@ class GPUViewerCanvas(SceneCanvas):
         """Show help dialog with keybindings."""
         try:
             from PyQt6.QtWidgets import QMessageBox
+            from PyQt6.QtCore import Qt
         except ImportError:
             try:
                 from PyQt5.QtWidgets import QMessageBox
+                from PyQt5.QtCore import Qt
             except ImportError:
                 print("Help: arrows=navigate, +/-=zoom, m=masks, o=events, q=quit")
                 return
@@ -333,7 +335,7 @@ class GPUViewerCanvas(SceneCanvas):
         
         msg = QMessageBox(self.native)
         msg.setWindowTitle("GPU Viewer Help")
-        msg.setTextFormat(1)  # Rich text
+        msg.setTextFormat(Qt.TextFormat.RichText)
         msg.setText(help_text)
         msg.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg.exec()
