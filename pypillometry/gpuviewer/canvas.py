@@ -2,8 +2,8 @@
 
 import numpy as np
 from vispy import app, scene
-from vispy.scene import SceneCanvas, Grid
-from typing import List, Dict, Optional, Any
+from vispy.scene import SceneCanvas
+from typing import List, Dict, Optional
 
 from .visuals import add_line_visual, add_mask_regions, add_event_markers
 from .navigation import NavigationHandler
@@ -26,11 +26,6 @@ class GPUViewerCanvas(SceneCanvas):
     Uses VisPy's scene graph with a grid layout for multiple subplots,
     each showing a different variable type (pupil, x, y) with curves
     for left and right eye data.
-    
-    Parameters
-    ----------
-    eyedata : EyeData-like object
-        Eye-tracking data with tx, data dictionary, events, and masks
     """
     
     def __init__(self, eyedata):
@@ -38,14 +33,15 @@ class GPUViewerCanvas(SceneCanvas):
             keys='interactive',
             size=(1400, 800),
             bgcolor='white',
-            title=f'GPU Viewer - {getattr(eyedata, "name", "Unknown")}'
+            title=f'GPU Viewer - {getattr(eyedata, "name", "Unknown")}',
+            show=False  # Don't show yet
         )
         
-        self.unfreeze()  # Allow adding attributes (must be before setting any)
+        self.unfreeze()  # Allow adding attributes
         self.eyedata = eyedata
         
-        # Convert time to seconds
-        self.time_seconds = eyedata.tx * 0.001
+        # Convert time to seconds (as float32 for GPU efficiency)
+        self.time_seconds = (eyedata.tx * 0.001).astype(np.float32)
         self.data_min = float(self.time_seconds[0])
         self.data_max = float(self.time_seconds[-1])
         
@@ -59,12 +55,12 @@ class GPUViewerCanvas(SceneCanvas):
             len(eyedata.event_onsets) > 0
         )
         
-        # Create grid layout
-        self.grid = self.central_widget.add_grid(spacing=0)
+        # Create grid layout for subplots
+        self.grid = self.central_widget.add_grid(spacing=10, margin=10)
         
         # Create viewboxes for each variable type
         self.viewboxes: List[scene.ViewBox] = []
-        self.view_types: List[str] = []  # Track which variable type each viewbox shows
+        self.view_types: List[str] = []
         self._create_subplots()
         
         # Set up navigation handler
@@ -77,19 +73,13 @@ class GPUViewerCanvas(SceneCanvas):
         # Plot data
         self._plot_all_data()
         
-        # Set initial view to first 30 seconds or 5% of data
+        # Set initial view
         self._set_initial_view()
         
-        self.freeze()  # Freeze again
+        self.freeze()
     
     def _detect_modalities(self) -> Dict[str, List[str]]:
-        """Detect available data modalities grouped by type.
-        
-        Returns
-        -------
-        dict
-            Maps plot types ('pupil', 'x', 'y') to lists of available modalities
-        """
+        """Detect available data modalities grouped by type."""
         available_data = {}
         for modality in ['left_pupil', 'right_pupil', 'left_x', 'right_x', 'left_y', 'right_y']:
             try:
@@ -99,12 +89,7 @@ class GPUViewerCanvas(SceneCanvas):
             except (KeyError, AttributeError):
                 pass
         
-        # Group by plot type
-        grouped = {
-            'pupil': [],
-            'x': [],
-            'y': []
-        }
+        grouped = {'pupil': [], 'x': [], 'y': []}
         
         for modality in available_data.keys():
             if 'pupil' in modality:
@@ -114,59 +99,36 @@ class GPUViewerCanvas(SceneCanvas):
             elif '_y' in modality:
                 grouped['y'].append(modality)
         
-        # Remove empty groups
         return {k: v for k, v in grouped.items() if v}
     
     def _create_subplots(self):
-        """Create subplot viewboxes with linked x-axes."""
+        """Create subplot viewboxes."""
+        labels = {'pupil': 'Pupil', 'x': 'Gaze X', 'y': 'Gaze Y'}
         row = 0
-        labels = {'pupil': 'Pupil Size', 'x': 'Gaze X', 'y': 'Gaze Y'}
         
         for var_type in ['pupil', 'x', 'y']:
             if var_type not in self.available_modalities:
                 continue
             
-            # Create viewbox
-            viewbox = self.grid.add_view(row=row, col=0, border_color='black')
+            # Create viewbox with border
+            viewbox = self.grid.add_view(row=row, col=0, border_color='gray')
             viewbox.camera = scene.PanZoomCamera(aspect=None)
             viewbox.camera.interactive = True
             
-            # Add axes
-            axis_left = scene.AxisWidget(
-                orientation='left',
-                text_color='black',
-                axis_color='black',
-                tick_color='black'
+            # Add title text inside the viewbox
+            title = scene.Text(
+                labels[var_type],
+                pos=(10, 10),
+                font_size=12,
+                color='black',
+                anchor_x='left',
+                anchor_y='top',
+                parent=viewbox
             )
-            axis_left.stretch = (0.1, 1)
-            self.grid.add_widget(axis_left, row=row, col=1)
-            axis_left.link_view(viewbox)
-            
-            # Add title/label as text
-            title = scene.Label(labels[var_type], color='black', font_size=10)
-            title.stretch = (0.1, 0.05)
-            self.grid.add_widget(title, row=row, col=2)
             
             self.viewboxes.append(viewbox)
             self.view_types.append(var_type)
             row += 1
-        
-        # Add bottom x-axis to the last plot
-        if self.viewboxes:
-            axis_bottom = scene.AxisWidget(
-                orientation='bottom',
-                text_color='black',
-                axis_color='black',
-                tick_color='black'
-            )
-            axis_bottom.stretch = (1, 0.1)
-            self.grid.add_widget(axis_bottom, row=row, col=0)
-            axis_bottom.link_view(self.viewboxes[-1])
-            
-            # Add time label
-            time_label = scene.Label('Time (s)', color='black', font_size=10)
-            time_label.stretch = (1, 0.05)
-            self.grid.add_widget(time_label, row=row+1, col=0)
     
     def _plot_all_data(self):
         """Plot all data modalities in their respective subplots."""
@@ -175,88 +137,78 @@ class GPUViewerCanvas(SceneCanvas):
         for viewbox, var_type in zip(self.viewboxes, self.view_types):
             modalities = self.available_modalities.get(var_type, [])
             
-            # First, add mask regions (behind curves)
+            # Add mask regions (behind curves)
             for modality in modalities:
                 try:
                     mask = self.eyedata.data.mask.get(modality)
                     if mask is not None and np.any(mask):
                         add_mask_regions(viewbox, time, mask)
-                        break  # Only add mask once per plot
+                        break  # Only one mask per plot
                 except (AttributeError, KeyError):
                     pass
             
             # Add event markers if available
             if self.has_events:
-                event_times = self.eyedata.event_onsets * 0.001
-                event_labels = self.eyedata.event_labels
+                event_times = (self.eyedata.event_onsets * 0.001).astype(np.float32)
+                event_labels = list(self.eyedata.event_labels)
                 add_event_markers(viewbox, event_times, event_labels)
             
-            # Then add line curves (on top)
+            # Add line curves
             for modality in modalities:
                 data = self.eyedata[modality]
                 color = MODALITY_COLORS.get(modality, '#7f7f7f')
                 add_line_visual(viewbox, time, data, color)
     
     def _set_initial_view(self):
-        """Set initial zoomed view for fast startup."""
+        """Set initial zoomed view."""
         total_duration = self.data_max - self.data_min
         
-        # Show first 30 seconds or 5% of data, whichever is smaller
+        # Show first 30 seconds or 5%, minimum 10 seconds
         initial_window = min(30.0, total_duration * 0.05)
-        
-        # But show at least 10 seconds if data is longer
         if total_duration > 10.0:
             initial_window = max(initial_window, 10.0)
         
         x_min = self.data_min
         x_max = x_min + initial_window
         
-        # Set the view range for the primary viewbox (others will follow via linking)
         if self.viewboxes:
-            # Calculate y-range from visible data
             self._set_view_range(x_min, x_max)
     
     def _set_view_range(self, x_min: float, x_max: float):
         """Set the x-range for all viewboxes and auto-scale y."""
+        time = self.time_seconds
+        start_idx = max(0, np.searchsorted(time, x_min, side='left'))
+        end_idx = min(len(time), np.searchsorted(time, x_max, side='right'))
+        
         for viewbox, var_type in zip(self.viewboxes, self.view_types):
-            # Find data indices in range
-            time = self.time_seconds
-            start_idx = np.searchsorted(time, x_min, side='left')
-            end_idx = np.searchsorted(time, x_max, side='right')
-            
-            # Get y-range from visible data
             y_min, y_max = float('inf'), float('-inf')
             modalities = self.available_modalities.get(var_type, [])
             
             for modality in modalities:
                 data = self.eyedata[modality]
                 if hasattr(data, 'data'):
-                    # Masked array
                     visible_data = data.data[start_idx:end_idx]
                 else:
                     visible_data = data[start_idx:end_idx]
                 
                 valid = np.isfinite(visible_data)
                 if np.any(valid):
-                    y_min = min(y_min, np.nanmin(visible_data[valid]))
-                    y_max = max(y_max, np.nanmax(visible_data[valid]))
+                    y_min = min(y_min, float(np.nanmin(visible_data[valid])))
+                    y_max = max(y_max, float(np.nanmax(visible_data[valid])))
             
             # Add padding
             if y_min != float('inf') and y_max != float('-inf'):
-                padding_y = (y_max - y_min) * 0.1
-                y_min -= padding_y
-                y_max += padding_y
+                padding = (y_max - y_min) * 0.1
+                y_min -= padding
+                y_max += padding
             else:
-                y_min, y_max = 0, 1
+                y_min, y_max = 0.0, 1.0
             
-            # Set camera range
             viewbox.camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
     
     def on_key_press(self, event):
         """Handle keyboard events."""
         if self.navigation.handle_key_press(event):
-            # Update view range with auto y-scaling
             if self.viewboxes:
-                x_range = self.viewboxes[0].camera.get_state()['rect']
-                self._set_view_range(x_range.left, x_range.right)
-
+                rect = self.viewboxes[0].camera.get_state()['rect']
+                self._set_view_range(rect.left, rect.right)

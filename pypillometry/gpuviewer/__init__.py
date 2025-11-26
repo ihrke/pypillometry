@@ -80,8 +80,17 @@ def gpuview(eyedata) -> None:
     # Import here to avoid circular imports and defer vispy loading
     from .canvas import GPUViewerCanvas
     
-    # Create and run the viewer
+    # Create the viewer
     canvas = GPUViewerCanvas(eyedata)
+    
+    # Show and ensure window is visible
     canvas.show()
+    canvas.native.raise_()  # Bring to front
+    canvas.native.activateWindow()  # Activate
+    
+    # Process initial events
+    canvas.app.process_events()
+    
+    # Run the event loop (blocking)
     app.run()
 
