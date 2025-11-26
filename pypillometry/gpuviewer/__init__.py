@@ -22,7 +22,7 @@ Features
 __all__ = ['gpuview']
 
 
-def gpuview(eyedata) -> None:
+def gpuview(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None:
     """View eye-tracking data with GPU-accelerated rendering.
     
     Opens an interactive viewer window using VisPy for fast GPU-based
@@ -35,6 +35,15 @@ def gpuview(eyedata) -> None:
         - `tx` attribute: time vector in ms
         - Dictionary-like access to data: eyedata['left_pupil'], etc.
         - Optional: `event_onsets`, `event_labels` for event markers
+    overlay_pupil : dict, optional
+        Additional timeseries to overlay on the pupil plot.
+        Keys are labels for legend, values are either:
+        - str: name of data in eyedata.data (e.g., 'left_pupil_filtered')
+        - array-like: timeseries of same length as eyedata
+    overlay_x : dict, optional
+        Additional timeseries to overlay on the gaze X plot.
+    overlay_y : dict, optional
+        Additional timeseries to overlay on the gaze Y plot.
     
     Notes
     -----
@@ -45,6 +54,9 @@ def gpuview(eyedata) -> None:
     - Home/End: Jump to start/end
     - Space: Reset to full view
     - +/-: Zoom in/out
+    - M: Toggle mask regions
+    - O: Toggle event markers
+    - H/?: Show help
     - Q/Esc: Close viewer
     
     Examples
@@ -52,6 +64,11 @@ def gpuview(eyedata) -> None:
     >>> import pypillometry as pp
     >>> data = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP
     >>> pp.gpuview(data)  # doctest: +SKIP
+    
+    # With overlays
+    >>> import numpy as np  # doctest: +SKIP
+    >>> smoothed = np.convolve(data['left_pupil'], np.ones(100)/100, 'same')  # doctest: +SKIP
+    >>> pp.gpuview(data, overlay_pupil={'smoothed': smoothed})  # doctest: +SKIP
     """
     import sys
     import locale
@@ -88,8 +105,17 @@ def gpuview(eyedata) -> None:
     # Import here to avoid circular imports and defer vispy loading
     from .canvas import GPUViewerCanvas
     
+    # Build overlays dict
+    overlays = {}
+    if overlay_pupil:
+        overlays['pupil'] = overlay_pupil
+    if overlay_x:
+        overlays['x'] = overlay_x
+    if overlay_y:
+        overlays['y'] = overlay_y
+    
     # Create the viewer
-    canvas = GPUViewerCanvas(eyedata)
+    canvas = GPUViewerCanvas(eyedata, overlays=overlays)
     
     # Show canvas
     canvas.show()

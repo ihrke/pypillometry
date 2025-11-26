@@ -23,7 +23,7 @@ MODALITY_COLORS = {
 class GPUViewerCanvas(SceneCanvas):
     """GPU-accelerated viewer canvas with Level of Detail support."""
     
-    def __init__(self, eyedata):
+    def __init__(self, eyedata, overlays=None):
         super().__init__(
             keys='interactive',
             size=(1400, 800),
@@ -33,6 +33,7 @@ class GPUViewerCanvas(SceneCanvas):
         
         self.unfreeze()
         self.eyedata = eyedata
+        self.overlays = overlays or {}
         
         self.time_seconds = eyedata.tx.astype(np.float32) * 0.001
         self.data_min = float(self.time_seconds[0])
@@ -52,6 +53,7 @@ class GPUViewerCanvas(SceneCanvas):
         
         # Storage for visuals
         self.lod_lines: List[LODLine] = []
+        self.overlay_lines: List[LODLine] = []
         self.mask_regions: List[DynamicMaskRegions] = []
         self.event_markers: List[DynamicEventMarkers] = []
         
@@ -68,6 +70,7 @@ class GPUViewerCanvas(SceneCanvas):
         )
         
         self._plot_all_data()
+        self._plot_overlays()
         self._set_initial_view()
         
         self._last_x_range = (self.data_min, self.data_max)
@@ -203,6 +206,91 @@ class GPUViewerCanvas(SceneCanvas):
                 )
                 self.lod_lines.append(lod_line)
     
+    def _plot_overlays(self):
+        """Plot overlay timeseries on top of existing data."""
+        if not self.overlays:
+            return
+        
+        time = self.time_seconds
+        n_points = len(time)
+        
+        # Determine LOD factors based on data length
+        if n_points > 1000000:
+            lod_factors = (1, 10, 100, 1000)
+        elif n_points > 100000:
+            lod_factors = (1, 10, 100)
+        elif n_points > 10000:
+            lod_factors = (1, 10)
+        else:
+            lod_factors = (1,)
+        
+        # Colors for overlays (distinct from main signal colors)
+        overlay_colors = [
+            '#00AA00',  # Green
+            '#AA00AA',  # Purple  
+            '#00AAAA',  # Cyan
+            '#AAAA00',  # Yellow
+            '#FF6600',  # Orange
+            '#6600FF',  # Violet
+            '#FF0066',  # Pink
+            '#006666',  # Teal
+        ]
+        
+        for viewbox, var_type in zip(self.viewboxes, self.view_types):
+            overlay_dict = self.overlays.get(var_type, {})
+            if not overlay_dict:
+                continue
+            
+            color_idx = 0
+            for label, data_spec in overlay_dict.items():
+                # Get the data
+                if isinstance(data_spec, str):
+                    # It's a key in eyedata.data
+                    try:
+                        data = self.eyedata.data[data_spec]
+                    except (KeyError, AttributeError):
+                        print(f"Warning: overlay '{label}' key '{data_spec}' not found in data")
+                        continue
+                else:
+                    # It's an array
+                    data = np.asarray(data_spec)
+                
+                if len(data) != n_points:
+                    print(f"Warning: overlay '{label}' has {len(data)} points, expected {n_points}")
+                    continue
+                
+                color = overlay_colors[color_idx % len(overlay_colors)]
+                color_idx += 1
+                
+                # Create overlay line (no mask, different width/style)
+                overlay_line = LODLine(
+                    viewbox, time, data, color,
+                    mask=None,
+                    width=1.0,  # Thinner than main signal
+                    lod_factors=lod_factors
+                )
+                self.overlay_lines.append(overlay_line)
+                
+                # Add a label for this overlay
+                self._add_overlay_label(viewbox, label, color)
+    
+    def _add_overlay_label(self, viewbox, label, color):
+        """Add a small label for an overlay in the corner of the viewbox."""
+        # Count existing labels in this viewbox to offset position
+        n_existing = sum(1 for vb in self.viewboxes[:self.viewboxes.index(viewbox)+1] 
+                        for _ in self.overlays.get(self.view_types[self.viewboxes.index(vb)], {}))
+        
+        text = scene.Text(
+            text=f"― {label}",
+            pos=(10, 20 + (n_existing - 1) * 15),
+            color=color,
+            font_size=9,
+            anchor_x='left',
+            anchor_y='top',
+            parent=viewbox.scene
+        )
+        text.order = 2000  # On top of everything
+    
     def _set_initial_view(self):
         total_duration = self.data_max - self.data_min
         initial_window = min(30.0, total_duration * 0.05)
@@ -243,6 +331,26 @@ class GPUViewerCanvas(SceneCanvas):
                 y_min = min(y_min, np.nanmin(visible_data[valid]))
                 y_max = max(y_max, np.nanmax(visible_data[valid]))
         
+        # Include overlay data in y-range
+        overlay_dict = self.overlays.get(var_type, {})
+        for label, data_spec in overlay_dict.items():
+            if isinstance(data_spec, str):
+                try:
+                    data = self.eyedata.data[data_spec]
+                except (KeyError, AttributeError):
+                    continue
+            else:
+                data = np.asarray(data_spec)
+            
+            if len(data) == len(time):
+                visible_data = data[start_idx:end_idx]
+                if hasattr(visible_data, 'data'):
+                    visible_data = visible_data.data
+                valid = np.isfinite(visible_data)
+                if np.any(valid):
+                    y_min = min(y_min, np.nanmin(visible_data[valid]))
+                    y_max = max(y_max, np.nanmax(visible_data[valid]))
+        
         if y_min == float('inf'):
             return (0, 1)
         
@@ -252,6 +360,9 @@ class GPUViewerCanvas(SceneCanvas):
     def _update_lod_visuals(self, x_min: float, x_max: float):
         for lod_line in self.lod_lines:
             lod_line.update_for_view(x_min, x_max)
+        
+        for overlay_line in self.overlay_lines:
+            overlay_line.update_for_view(x_min, x_max)
         
         for mask_vis in self.mask_regions:
             mask_vis.update_for_view(x_min, x_max)
