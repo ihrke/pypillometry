@@ -30,12 +30,13 @@ class LODLine:
         # Create lighter version of color for masked regions
         c = Color(color)
         # Blend with white to make lighter
-        self.light_color = Color(rgba=(
+        light_rgba = (
             min(1.0, c.rgba[0] * 0.5 + 0.5),
             min(1.0, c.rgba[1] * 0.5 + 0.5),
             min(1.0, c.rgba[2] * 0.5 + 0.5),
             1.0
-        ))
+        )
+        self.light_color = Color(light_rgba)
         
         # Get raw data and mask
         if ma.is_masked(data):
