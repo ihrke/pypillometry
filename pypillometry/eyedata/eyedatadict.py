@@ -51,7 +51,11 @@ class EyeDataDict(MutableMapping):
         """
         Return a list of available variables.
         """
-        variables=[k.split("_")[1] for k in self.data.keys()]
+        variables = []
+        for k in self.data.keys():
+            parts = k.split("_", 1)  # Split only on first underscore
+            if len(parts) > 1:
+                variables.append(parts[1])
         return list(set(variables))
 
     def get_eye(self, eye: str) -> 'EyeDataDict':
