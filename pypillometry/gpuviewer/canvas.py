@@ -75,9 +75,8 @@ class GPUViewerCanvas(SceneCanvas):
         # Set initial view
         self._set_initial_view()
         
-        # Track last view range for LOD updates (with throttling)
+        # Track last view range for LOD updates
         self._last_x_range = (self.data_min, self.data_max)
-        self._lod_update_counter = 0
         
         self.freeze()
     
@@ -106,7 +105,6 @@ class GPUViewerCanvas(SceneCanvas):
     def _create_subplots(self):
         """Create subplot viewboxes with x-axis."""
         row = 0
-        n_plots = len([v for v in ['pupil', 'x', 'y'] if v in self.available_modalities])
         
         for var_type in ['pupil', 'x', 'y']:
             if var_type not in self.available_modalities:
@@ -114,13 +112,10 @@ class GPUViewerCanvas(SceneCanvas):
             
             viewbox = self.grid.add_view(row=row, col=0, border_color='#cccccc')
             
-            # Create camera with limits to prevent panning outside data
+            # Create camera - disable all mouse interaction
             camera = scene.PanZoomCamera(aspect=None)
-            camera.interactive = True
+            camera.interactive = False  # Disable mouse pan/zoom
             viewbox.camera = camera
-            
-            # Set hard limits on the camera to prevent showing empty space
-            viewbox.camera.set_range(x=(self.data_min, self.data_max))
             
             self.viewboxes.append(viewbox)
             self.view_types.append(var_type)
@@ -196,33 +191,8 @@ class GPUViewerCanvas(SceneCanvas):
         x_max = x_min + initial_window
         self._set_view_range(x_min, x_max)
     
-    def _clamp_to_bounds(self, x_min: float, x_max: float) -> tuple:
-        """Clamp view range to data bounds, snapping to full view if needed."""
-        x_span = x_max - x_min
-        
-        # If span exceeds data, snap to full data range
-        if x_span >= (self.data_max - self.data_min) * 0.95:
-            return (self.data_min, self.data_max)
-        
-        # Clamp to bounds
-        if x_min < self.data_min:
-            x_min = self.data_min
-            x_max = self.data_min + x_span
-        if x_max > self.data_max:
-            x_max = self.data_max
-            x_min = self.data_max - x_span
-        
-        # Final clamp
-        x_min = max(x_min, self.data_min)
-        x_max = min(x_max, self.data_max)
-        
-        return (x_min, x_max)
-    
     def _set_view_range(self, x_min: float, x_max: float):
-        """Set view range for all viewboxes."""
-        # Clamp to data bounds
-        x_min, x_max = self._clamp_to_bounds(x_min, x_max)
-        
+        """Set view range for all viewboxes with auto y-scaling."""
         for viewbox, var_type in zip(self.viewboxes, self.view_types):
             y_min, y_max = self._get_y_range(var_type, x_min, x_max)
             viewbox.camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
@@ -272,45 +242,19 @@ class GPUViewerCanvas(SceneCanvas):
         for event_vis in self.event_markers:
             event_vis.update_for_view(x_min, x_max)
     
-    def on_draw(self, event):
-        """Called on each draw - check if view changed and update LOD."""
-        super().on_draw(event)
-        
-        if not self.viewboxes:
-            return
-        
-        rect = self.viewboxes[0].camera.rect
-        x_min, x_max = rect.left, rect.right
-        
-        # Clamp view to data bounds (for mouse interactions)
-        clamped_min, clamped_max = self._clamp_to_bounds(x_min, x_max)
-        
-        # If view is outside bounds, reset it
-        if abs(x_min - clamped_min) > 0.001 or abs(x_max - clamped_max) > 0.001:
-            for viewbox, var_type in zip(self.viewboxes, self.view_types):
-                y_range = viewbox.camera.rect
-                viewbox.camera.set_range(
-                    x=(clamped_min, clamped_max), 
-                    y=(y_range.bottom, y_range.top)
-                )
-            x_min, x_max = clamped_min, clamped_max
-        
-        # Throttle LOD updates - only every 5th draw and if view changed >1%
-        self._lod_update_counter += 1
-        if self._lod_update_counter >= 5:
-            self._lod_update_counter = 0
-            
-            last_min, last_max = self._last_x_range
-            last_span = last_max - last_min
-            if last_span > 0:
-                change = abs(x_min - last_min) + abs(x_max - last_max)
-                if change / last_span > 0.01:
-                    self._last_x_range = (x_min, x_max)
-                    self._update_lod_visuals(x_min, x_max)
-    
     def on_key_press(self, event):
-        """Handle keyboard events."""
+        """Handle keyboard events - only way to navigate."""
         if self.navigation.handle_key_press(event):
+            # Navigation updated the view, now update y-axes and LOD
             if self.viewboxes:
                 rect = self.viewboxes[0].camera.rect
-                self._set_view_range(rect.left, rect.right)
+                x_min, x_max = rect.left, rect.right
+                
+                # Update y-ranges for all plots
+                for viewbox, var_type in zip(self.viewboxes, self.view_types):
+                    y_min, y_max = self._get_y_range(var_type, x_min, x_max)
+                    viewbox.camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
+                
+                # Update LOD
+                self._update_lod_visuals(x_min, x_max)
+                self._last_x_range = (x_min, x_max)
