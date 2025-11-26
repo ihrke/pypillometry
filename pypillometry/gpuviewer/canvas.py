@@ -340,16 +340,21 @@ class GPUViewerCanvas(SceneCanvas):
                 except (KeyError, AttributeError):
                     continue
             else:
-                data = np.asarray(data_spec)
+                data = data_spec
+            
+            # Convert to numpy array, handling masked arrays
+            if hasattr(data, 'data'):
+                data = np.asarray(data.data)
+            else:
+                data = np.asarray(data)
             
             if len(data) == len(time):
                 visible_data = data[start_idx:end_idx]
-                if hasattr(visible_data, 'data'):
-                    visible_data = visible_data.data
                 valid = np.isfinite(visible_data)
                 if np.any(valid):
-                    y_min = min(y_min, np.nanmin(visible_data[valid]))
-                    y_max = max(y_max, np.nanmax(visible_data[valid]))
+                    valid_data = visible_data[valid]
+                    y_min = min(y_min, float(np.nanmin(valid_data)))
+                    y_max = max(y_max, float(np.nanmax(valid_data)))
         
         if y_min == float('inf'):
             return (0, 1)
