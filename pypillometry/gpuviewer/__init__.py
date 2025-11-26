@@ -53,9 +53,29 @@ def gpuview(eyedata) -> None:
     >>> data = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP
     >>> pp.gpuview(data)  # doctest: +SKIP
     """
-    # Force PyQt5 backend (works from both Jupyter and standalone)
+    # Configure vispy to use an available Qt backend
+    import sys
+    import vispy
+    
+    # Detect which Qt is already imported and use that, or try in order
+    if 'PyQt6' in sys.modules or 'PyQt6.QtCore' in sys.modules:
+        vispy.use(app='pyqt6')
+    elif 'PyQt5' in sys.modules or 'PyQt5.QtCore' in sys.modules:
+        vispy.use(app='pyqt5')
+    elif 'PySide6' in sys.modules:
+        vispy.use(app='pyside6')
+    elif 'PySide2' in sys.modules:
+        vispy.use(app='pyside2')
+    else:
+        # Try PyQt6 first (more modern), then PyQt5
+        for backend in ['pyqt6', 'pyqt5', 'pyside6', 'pyside2']:
+            try:
+                vispy.use(app=backend)
+                break
+            except RuntimeError:
+                continue
+    
     from vispy import app
-    app.use_app('pyqt5')
     
     # Import here to avoid circular imports and defer vispy loading
     from .canvas import GPUViewerCanvas
@@ -63,5 +83,5 @@ def gpuview(eyedata) -> None:
     # Create and run the viewer
     canvas = GPUViewerCanvas(eyedata)
     canvas.show()
-    canvas.app.run()
+    app.run()
 

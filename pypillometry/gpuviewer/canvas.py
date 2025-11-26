@@ -41,8 +41,8 @@ class GPUViewerCanvas(SceneCanvas):
             title=f'GPU Viewer - {getattr(eyedata, "name", "Unknown")}'
         )
         
+        self.unfreeze()  # Allow adding attributes (must be before setting any)
         self.eyedata = eyedata
-        self.unfreeze()  # Allow adding attributes
         
         # Convert time to seconds
         self.time_seconds = eyedata.tx * 0.001
