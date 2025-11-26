@@ -20,7 +20,7 @@ MODALITY_COLORS = {
 }
 
 
-class GPUViewerCanvas(SceneCanvas):
+class ViewerCanvas(SceneCanvas):
     """GPU-accelerated viewer canvas with Level of Detail support."""
     
     def __init__(self, eyedata, overlays=None):
@@ -28,7 +28,7 @@ class GPUViewerCanvas(SceneCanvas):
             keys='interactive',
             size=(1400, 800),
             bgcolor='white',
-            title=f'GPU Viewer - {getattr(eyedata, "name", "Unknown")}'
+            title=f'Viewer - {getattr(eyedata, "name", "Unknown")}'
         )
         
         self.unfreeze()
@@ -466,7 +466,7 @@ class GPUViewerCanvas(SceneCanvas):
                 return
         
         help_text = """
-<h2>GPU Viewer - Keyboard Controls</h2>
+<h2>Viewer - Keyboard Controls</h2>
 
 <h3>Navigation</h3>
 <table>
@@ -496,7 +496,7 @@ class GPUViewerCanvas(SceneCanvas):
 """
         
         msg = QMessageBox(self.native)
-        msg.setWindowTitle("GPU Viewer Help")
+        msg.setWindowTitle("Viewer Help")
         msg.setTextFormat(Qt.TextFormat.RichText)
         msg.setText(help_text)
         msg.setStandardButtons(QMessageBox.StandardButton.Ok)

@@ -7,7 +7,7 @@ Usage
 -----
 >>> import pypillometry as pp
 >>> data = pp.EyeData.from_eyelink('data.edf')  # doctest: +SKIP
->>> pp.gpuview(data)  # doctest: +SKIP
+>>> pp.view(data)  # doctest: +SKIP
 
 Features
 --------
@@ -19,10 +19,10 @@ Features
 - Different colors for left (blue) and right (red) eye data
 """
 
-__all__ = ['gpuview']
+__all__ = ['view']
 
 
-def gpuview(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None:
+def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None:
     """View eye-tracking data with GPU-accelerated rendering.
     
     Opens an interactive viewer window using VisPy for fast GPU-based
@@ -63,12 +63,12 @@ def gpuview(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None
     --------
     >>> import pypillometry as pp
     >>> data = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP
-    >>> pp.gpuview(data)  # doctest: +SKIP
+    >>> pp.view(data)  # doctest: +SKIP
     
     # With overlays
     >>> import numpy as np  # doctest: +SKIP
     >>> smoothed = np.convolve(data['left_pupil'], np.ones(100)/100, 'same')  # doctest: +SKIP
-    >>> pp.gpuview(data, overlay_pupil={'smoothed': smoothed})  # doctest: +SKIP
+    >>> pp.view(data, overlay_pupil={'smoothed': smoothed})  # doctest: +SKIP
     """
     import sys
     import locale
@@ -103,7 +103,7 @@ def gpuview(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None
     from vispy import app
     
     # Import here to avoid circular imports and defer vispy loading
-    from .canvas import GPUViewerCanvas
+    from .canvas import ViewerCanvas
     
     # Build overlays dict
     overlays = {}
@@ -115,7 +115,7 @@ def gpuview(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None
         overlays['y'] = overlay_y
     
     # Create the viewer
-    canvas = GPUViewerCanvas(eyedata, overlays=overlays)
+    canvas = ViewerCanvas(eyedata, overlays=overlays)
     
     # Show canvas
     canvas.show()
@@ -157,4 +157,3 @@ def gpuview(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None
                 locale.setlocale(locale.LC_TIME, 'C')
             except Exception:
                 pass  # If all else fails, continue with whatever Qt set
-

@@ -44,7 +44,7 @@ def _collect_and_import_submodules() -> Dict[str, Any]:
         '.plot',
         '.roi',
         '.signal',
-        '.gpuviewer'
+        '.viewer'
     ]
     
     for module_name in submodules:
