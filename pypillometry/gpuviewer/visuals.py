@@ -95,7 +95,7 @@ class LODLine:
             antialias=False,
             parent=self.viewbox.scene
         )
-        self.line.order = 10  # On top of mask regions (order=-10)
+        self.line.order = 1000  # Way in front of mask regions
     
     def update_for_view(self, x_min: float, x_max: float):
         """Update LOD based on current view range."""
@@ -199,11 +199,14 @@ class DynamicMaskRegions:
         rgba[3] = self.alpha
         
         if self.mesh is None:
+            from vispy.visuals.filters import Alpha
             self.mesh = scene.Mesh(
                 vertices=vertices, faces=faces, color=rgba,
                 parent=self.viewbox.scene
             )
-            self.mesh.order = -10
+            self.mesh.order = -1000  # Way behind
+            # Enable proper alpha blending
+            self.mesh.set_gl_state('translucent', depth_test=False)
         else:
             self.mesh.set_data(vertices=vertices, faces=faces, color=rgba)
             self.mesh.visible = True
