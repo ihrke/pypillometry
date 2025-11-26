@@ -34,9 +34,35 @@ Features
 """
 
 import sys
+import os
 import locale
 from typing import Optional, Callable
-from pyqtgraph.Qt import QtWidgets
+
+# Suppress Qt platform warnings before importing Qt
+os.environ.setdefault('QT_LOGGING_RULES', 'qt.qpa.*=false;qt.glx=false')
+
+from pyqtgraph.Qt import QtWidgets, QtGui
+import pyqtgraph as pg
+
+# Try to configure Qt for better OpenGL support on Wayland/XWayland
+try:
+    fmt = QtGui.QSurfaceFormat()
+    fmt.setRenderableType(QtGui.QSurfaceFormat.OpenGL)
+    fmt.setSwapBehavior(QtGui.QSurfaceFormat.DoubleBuffer)
+    QtGui.QSurfaceFormat.setDefaultFormat(fmt)
+except:
+    pass
+
+# Configure PyQtGraph for performance
+# Note: useOpenGL only affects 3D plots, not 2D line plots
+# 2D performance comes from downsampling and clipToView
+try:
+    pg.setConfigOptions(
+        antialias=False,    # Disable antialiasing for speed
+        enableExperimental=False
+    )
+except Exception:
+    pass  # Ignore configuration errors
 
 from .viewer_window import ViewerWindow
 from ..intervals import Intervals
@@ -147,18 +173,67 @@ def view(
                 pass  # If all else fails, continue with whatever Qt set
     
     # Create viewer window
-    viewer = ViewerWindow(eyedata, separate_plots=separate_plots, callback=callback)
-    viewer.show()
+    try:
+        viewer = ViewerWindow(eyedata, separate_plots=separate_plots, callback=callback)
+        viewer.show()
+    except Exception as e:
+        import traceback
+        print("Error creating viewer window:")
+        traceback.print_exc()
+        raise
+    
+    # Check if running in Jupyter/IPython
+    try:
+        from IPython import get_ipython
+        ipython = get_ipython()
+        in_jupyter = ipython is not None
+        
+        # Enable Qt event loop integration in Jupyter automatically
+        if in_jupyter and ipython is not None:
+            try:
+                current_loop = getattr(ipython, 'active_eventloop', None)
+                
+                if current_loop not in ['qt', 'qt5']:
+                    # Silently enable Qt event loop
+                    try:
+                        ipython.run_line_magic('gui', 'qt5')
+                    except:
+                        try:
+                            ipython.run_line_magic('gui', 'qt')
+                        except:
+                            pass
+            except:
+                pass
+    except:
+        in_jupyter = False
+    
+    # Process initial events to render the window properly
+    try:
+        app.processEvents()
+    except:
+        pass
     
     # Blocking mode: wait for window to close
+    # Note: In Jupyter, blocking mode may not work well - use callback instead
     if callback is None:
-        app.exec_()
-        
-        # Return selected intervals if accepted
-        if viewer.accepted:
-            return viewer.selected_intervals
+        if in_jupyter:
+            # In Jupyter, don't block - just return viewer and let event loop run
+            import warnings
+            warnings.warn(
+                "Running viewer in Jupyter in blocking mode. "
+                "Window will open but may not block properly. "
+                "For better control in Jupyter, use: viewer = pp.view(data, callback=lambda x: None)",
+                UserWarning
+            )
+            return viewer
         else:
-            return None
+            app.exec_()
+            
+            # Return selected intervals if accepted
+            if viewer.accepted:
+                return viewer.selected_intervals
+            else:
+                return None
     
     # Non-blocking mode: return viewer object
     else:

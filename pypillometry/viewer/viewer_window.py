@@ -48,6 +48,15 @@ class ViewerWindow(QtWidgets.QMainWindow):
         self.event_markers: List = []
         self.mask_regions: List = []
         
+        # Timer for throttling auto y-axis updates
+        self.auto_y_update_timer = QtCore.QTimer()
+        self.auto_y_update_timer.setSingleShot(True)
+        self.auto_y_update_timer.timeout.connect(self._update_auto_y_axes)
+        self.auto_y_throttle_ms = 300  # Update only after 300ms of no interaction for smooth panning
+        
+        # Cache time array in seconds for performance
+        self._time_seconds_cache = eyedata.tx * 0.001
+        
         # Detect available data modalities (grouped by type)
         self.available_modalities = self._detect_modalities()
         
@@ -64,15 +73,35 @@ class ViewerWindow(QtWidgets.QMainWindow):
             len(eyedata.event_onsets) > 0
         )
         
-        self._setup_ui()
-        self._plot_data()
+        try:
+            self._setup_ui()
+        except Exception as e:
+            print(f"Error in _setup_ui: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
+        
+        try:
+            self._plot_data()
+        except Exception as e:
+            print(f"Error in _plot_data: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
         
         # Set window title
         name = getattr(eyedata, 'name', 'Unknown')
         self.setWindowTitle(f'Eye Tracking Viewer - {name}')
         
-        # Show whole signal at start
-        self._on_show_whole_signal()
+        # Start with an initial zoomed view for fast rendering
+        # Show first 30 seconds or 5% of data, whichever is smaller
+        try:
+            self._set_initial_view()
+        except Exception as e:
+            print(f"Error in _set_initial_view: {e}")
+            import traceback
+            traceback.print_exc()
+            # Don't raise - initial view is not critical
     
     def _detect_modalities(self) -> Dict[str, List[str]]:
         """Detect available data modalities in eyedata, grouped by type.
@@ -120,15 +149,20 @@ class ViewerWindow(QtWidgets.QMainWindow):
         # Create graphics layout for plots with light background
         self.graphics_layout = pg.GraphicsLayoutWidget()
         self.graphics_layout.setBackground('w')  # White background
+        
+        # Note: OpenGL viewport doesn't accelerate 2D line plots in PyQtGraph
+        # Performance comes from downsampling and clipToView instead
+        self._opengl_enabled = False
+        
         main_layout.addWidget(self.graphics_layout)
         
         # Create plots (max 3: pupil, x, y)
         self.plot_widgets = []
         self.plot_types = []  # Track which plot type each widget represents
         
-        # Track current time unit
+        # Track current time unit and axis scale
         self.time_unit = 's'  # Default to seconds
-        self.time_scale = 0.001  # Convert ms to seconds
+        self.time_scale = 1.0  # Default axis scale (data is in seconds)
         
         if self.separate_plots:
             # Create one plot per data type (pupil, x, y)
@@ -148,6 +182,11 @@ class ViewerWindow(QtWidgets.QMainWindow):
                     if row > 0:
                         plot.setXLink(self.plot_widgets[0])
                     
+                    # Optimize ViewBox for better performance with large datasets
+                    vb = plot.getViewBox()
+                    vb.setLimits(minXRange=0.001)  # Prevent zooming in too far
+                    vb.disableAutoRange()  # Disable auto-ranging during mouse interaction
+                    
                     self.plot_widgets.append(plot)
                     self.plot_types.append(plot_type)
                     row += 1
@@ -156,6 +195,12 @@ class ViewerWindow(QtWidgets.QMainWindow):
             plot = self.graphics_layout.addPlot(row=0, col=0)
             setup_plot_appearance(plot, "Eye Tracking Data", "Value", show_x_axis=True)
             plot.addLegend()
+            
+            # Optimize ViewBox for better performance with large datasets
+            vb = plot.getViewBox()
+            vb.setLimits(minXRange=0.001)  # Prevent zooming in too far
+            vb.disableAutoRange()  # Disable auto-ranging during mouse interaction
+            
             self.plot_widgets.append(plot)
             self.plot_types.append('all')
         
@@ -166,15 +211,15 @@ class ViewerWindow(QtWidgets.QMainWindow):
                 axis.enableAutoSIPrefix(False)
                 axis.autoSIPrefixScale = 1.0  # Force the SI prefix scale to 1.0
         
-        # Set up navigation handler with exact time bounds (scaled)
-        scaled_time = self.eyedata.tx * self.time_scale
-        self.navigation = NavigationHandler(self.plot_widgets, time_data=scaled_time)
+        # Set up navigation handler with time in seconds
+        time_in_seconds = self.eyedata.tx * 0.001
+        self.navigation = NavigationHandler(self.plot_widgets, time_data=time_in_seconds)
         
-        # Set view limits to data bounds for all plots
+        # Set view limits to data bounds for all plots (in seconds)
         for plot_widget in self.plot_widgets:
             vb = plot_widget.getViewBox()
             # Set limits so view cannot go beyond data
-            vb.setLimits(xMin=scaled_time[0], xMax=scaled_time[-1])
+            vb.setLimits(xMin=time_in_seconds[0], xMax=time_in_seconds[-1])
         
         # Set up region selector on primary plot
         self.region_selector = RegionSelector(
@@ -182,10 +227,11 @@ class ViewerWindow(QtWidgets.QMainWindow):
             callback=self._on_regions_changed
         )
         
-        # Connect x-range changed signal for auto y-axis
+        # Connect x-range changed signal for auto y-axis with throttling
         for i, plot_widget in enumerate(self.plot_widgets):
-            plot_widget.sigRangeChanged.connect(
-                lambda: self._update_auto_y_axes()
+            # Throttle updates to prevent excessive computation during fast panning
+            plot_widget.getViewBox().sigRangeChangedManually.connect(
+                lambda: self.auto_y_update_timer.start(self.auto_y_throttle_ms)
             )
         
         # Create control panel (pass flattened list of all modalities)
@@ -203,7 +249,7 @@ class ViewerWindow(QtWidgets.QMainWindow):
         self.control_panel.modality_toggled.connect(self._on_modality_toggled)
         if self.has_events:
             self.control_panel.events_toggled.connect(self._on_events_toggled)
-        self.control_panel.mask_mode_changed.connect(self._on_mask_mode_changed)
+        self.control_panel.mask_display_toggled.connect(self._on_mask_display_toggled)
         self.control_panel.region_added.connect(self._on_add_region)
         self.control_panel.regions_cleared.connect(self._on_clear_regions)
         self.control_panel.accept_clicked.connect(self._on_accept)
@@ -223,11 +269,13 @@ class ViewerWindow(QtWidgets.QMainWindow):
     
     def _plot_data(self):
         """Plot the eye-tracking data."""
-        # Apply time scale conversion
-        time = self.eyedata.tx * self.time_scale
-        mask_mode = self.control_panel.get_mask_mode()
-        # Always use 'finite' to prevent interpolation through masked data
-        connect_mode = 'finite'
+        # Always plot in seconds (time_scale is applied via axis scaling)
+        time = self.eyedata.tx * 0.001  # Convert ms to seconds
+        mask_display_enabled = self.control_panel.get_mask_display_enabled()
+        # Always show masked data values (no gaps)
+        # Mask shading optionally indicates which values are masked
+        connect_mode = 'finite'  # Always use finite to prevent line interpolation
+        show_masked_data = True  # Always plot masked data values
         
         if self.separate_plots:
             # Plot modalities grouped by type (pupil, x, y)
@@ -235,17 +283,20 @@ class ViewerWindow(QtWidgets.QMainWindow):
                 # Get modalities for this plot type
                 modalities = self.available_modalities.get(plot_type, [])
                 
+                # Add ALL mask regions FIRST (before any curves) if mask display is enabled
+                if mask_display_enabled:
+                    for modality in modalities:
+                        data = self.eyedata[modality]
+                        if ma.is_masked(data):
+                            regions = add_mask_regions(plot_widget, time, data.mask, alpha=0.2)
+                            self.mask_regions.extend(regions)
+                            break  # Only need to add mask once per plot (mask is same for all modalities)
+                
+                # Then plot ALL curves (so they appear on top)
                 for modality in modalities:
                     data = self.eyedata[modality]
-                    
-                    # Add mask regions FIRST (so they appear behind) if shaded mode
-                    if mask_mode == 'shaded' and ma.is_masked(data):
-                        regions = add_mask_regions(plot_widget, time, data.mask, alpha=0.8)
-                        self.mask_regions.extend(regions)
-                    
-                    # Then plot the curve
                     curve = plot_timeseries(
-                        plot_widget, time, data, modality, connect_mode
+                        plot_widget, time, data, modality, connect_mode, show_masked_data
                     )
                     self.plot_curves[modality] = curve
         else:
@@ -257,25 +308,26 @@ class ViewerWindow(QtWidgets.QMainWindow):
             for modalities in self.available_modalities.values():
                 all_modalities.extend(modalities)
             
-            # Add mask regions first
-            if mask_mode == 'shaded' and all_modalities:
+            # Add mask regions first if mask display is enabled
+            if mask_display_enabled and all_modalities:
                 first_modality = all_modalities[0]
                 data = self.eyedata[first_modality]
                 if ma.is_masked(data):
-                    regions = add_mask_regions(plot_widget, time, data.mask, alpha=0.8)
+                    regions = add_mask_regions(plot_widget, time, data.mask, alpha=0.2)
                     self.mask_regions.extend(regions)
             
             # Then plot curves
             for modality in all_modalities:
                 data = self.eyedata[modality]
                 curve = plot_timeseries(
-                    plot_widget, time, data, modality, connect_mode
+                    plot_widget, time, data, modality, connect_mode, show_masked_data
                 )
                 self.plot_curves[modality] = curve
         
         # Add event markers to all plots (on top, but hidden by default)
         if self.has_events:
-            event_onsets = self.eyedata.event_onsets
+            # Convert event onsets to seconds (axis scaling will handle display units)
+            event_onsets = self.eyedata.event_onsets * 0.001
             event_labels = self.eyedata.event_labels
             
             for plot_widget in self.plot_widgets:
@@ -284,6 +336,14 @@ class ViewerWindow(QtWidgets.QMainWindow):
                 for marker in markers:
                     marker.setVisible(False)
                 self.event_markers.extend(markers)
+        
+        # Ensure all plots auto-range to show the data
+        for plot_widget in self.plot_widgets:
+            plot_widget.enableAutoRange(axis='y')
+            plot_widget.autoRange()
+        
+        # Trigger auto y-axis update for all plots
+        self._update_auto_y_axes()
     
     def _clear_plots(self):
         """Clear all plots."""
@@ -305,9 +365,9 @@ class ViewerWindow(QtWidgets.QMainWindow):
         for marker in self.event_markers:
             marker.setVisible(visible)
     
-    def _on_mask_mode_changed(self, mode: str):
-        """Handle mask visualization mode change."""
-        # Redraw plots with new mask mode
+    def _on_mask_display_toggled(self, enabled: bool):
+        """Handle mask display toggle."""
+        # Redraw plots with new mask display state
         self._clear_plots()
         self._plot_data()
         
@@ -359,25 +419,31 @@ class ViewerWindow(QtWidgets.QMainWindow):
             return
         
         plot_widget = self.plot_widgets[plot_idx]
-        # Get current x-axis range (in current time scale)
+        # Get current x-axis range (displayed units, need to convert to seconds)
         x_range = plot_widget.viewRange()[0]
+        # Convert displayed range back to seconds (data coordinates)
+        x_range_seconds = [x_range[0] / self.time_scale, x_range[1] / self.time_scale]
         
         # Find y-data bounds in visible x range
         plot_type = self.plot_types[plot_idx] if plot_idx < len(self.plot_types) else None
         if plot_type and plot_type in self.available_modalities:
             y_min, y_max = float('inf'), float('-inf')
-            # Use scaled time to match the plotted data
-            time = self.eyedata.tx * self.time_scale
+            
+            # Use cached time array for performance
+            time = self._time_seconds_cache
+            
+            # Use searchsorted for fast index lookup (much faster than boolean masking)
+            start_idx = np.searchsorted(time, x_range_seconds[0], side='left')
+            end_idx = np.searchsorted(time, x_range_seconds[1], side='right')
             
             for modality in self.available_modalities[plot_type]:
                 if modality in self.plot_curves and self.plot_curves[modality].isVisible():
                     data = self.eyedata[modality]
-                    # Find data in visible range
-                    mask = (time >= x_range[0]) & (time <= x_range[1])
+                    # Slice data using indices (much faster than boolean mask)
                     if ma.is_masked(data):
-                        visible_data = data[mask].compressed()
+                        visible_data = data[start_idx:end_idx].compressed()
                     else:
-                        visible_data = data[mask]
+                        visible_data = data[start_idx:end_idx]
                     
                     if len(visible_data) > 0:
                         y_min = min(y_min, np.nanmin(visible_data))
@@ -395,94 +461,72 @@ class ViewerWindow(QtWidgets.QMainWindow):
                 self._update_auto_y_axis(plot_idx)
     
     def _on_time_unit_changed(self, unit: str):
-        """Handle time unit change."""
-        # Map unit to scale factor (from ms)
+        """Handle time unit change by rescaling the axis."""
+        # Map unit to scale factor (from seconds)
         unit_map = {
-            'ms': (1.0, 'ms'),
-            's': (0.001, 's'),
-            'min': (1.0 / 60000.0, 'min')
+            'ms': (1000.0, 'ms'),      # 1 second = 1000 ms
+            's': (1.0, 's'),            # 1 second = 1 second
+            'min': (1.0 / 60.0, 'min')  # 1 second = 1/60 minutes
         }
         
         if not self.plot_widgets:
             return
         
-        # Store current region selections (before clearing)
-        old_scale = self.time_scale
-        old_intervals = None
-        if self.region_selector.regions:
-            old_intervals = self.region_selector.get_intervals()
+        # Update scale and unit
+        axis_scale, self.time_unit = unit_map[unit]
+        self.time_scale = axis_scale
         
-        # Update scale
-        self.time_scale, self.time_unit = unit_map[unit]
-        
-        # Clear and replot everything
-        self._clear_plots()
-        self._plot_data()
-        
-        # Update navigation handler bounds with new scale
-        scaled_time = self.eyedata.tx * self.time_scale
-        self.navigation.data_min = float(scaled_time[0])
-        self.navigation.data_max = float(scaled_time[-1])
-        
-        # Temporarily unlink all axes to prevent interference during update
-        for i, plot_widget in enumerate(self.plot_widgets):
-            if i > 0:
-                plot_widget.setXLink(None)
-        
-        # Update view limits for all plots
-        for plot_widget in self.plot_widgets:
-            vb = plot_widget.getViewBox()
-            vb.setLimits(xMin=scaled_time[0], xMax=scaled_time[-1])
-            # Set the range explicitly for each plot
-            vb.setXRange(scaled_time[0], scaled_time[-1], padding=0)
-        
-        # Update x-axis for all plots (especially bottom one)
+        # Update x-axis scaling for all plots
         for i, plot_widget in enumerate(self.plot_widgets):
             axis = plot_widget.getAxis('bottom')
             
-            # Reset the axis scale to 1.0 (no scaling)
-            axis.setScale(1.0)
+            # Set the axis scale to convert seconds to the target unit
+            axis.setScale(axis_scale)
             
-            # Disable SI prefix and reset its scale
+            # Ensure SI prefix is disabled
             axis.enableAutoSIPrefix(False)
-            axis.autoSIPrefixScale = 1.0  # Force the SI prefix scale to 1.0
-            
-            # Clear any cached rendering
-            axis.picture = None
+            axis.autoSIPrefixScale = 1.0
             
             if i == len(self.plot_widgets) - 1:
-                # Update label for bottom plot only (without units parameter to avoid PyQtGraph auto-scaling)
+                # Update label for bottom plot only
                 plot_widget.setLabel('bottom', f'Time ({self.time_unit})', color='k')
-            
-            # Force redraw
-            axis.update()
-        
-        # Re-link the axes
-        for i, plot_widget in enumerate(self.plot_widgets):
-            if i > 0:
-                plot_widget.setXLink(self.plot_widgets[0])
-        
-        # Restore region selections (scaled to new units)
-        if old_intervals:
-            scale_ratio = self.time_scale / old_scale
-            scaled_intervals = Intervals(
-                starts=old_intervals.starts * scale_ratio,
-                ends=old_intervals.ends * scale_ratio
-            )
-            self.region_selector.set_intervals(scaled_intervals)
-        
-        # Show whole signal after unit change
-        self._on_show_whole_signal()
         
         # Force a complete update of all widgets
         for plot_widget in self.plot_widgets:
             plot_widget.update()
             plot_widget.getViewBox().update()
     
+    def _set_initial_view(self):
+        """Set initial zoomed view for fast startup."""
+        if not self.navigation:
+            return
+        
+        # Time is in seconds
+        time_in_seconds = self.eyedata.tx * 0.001
+        total_duration = time_in_seconds[-1] - time_in_seconds[0]
+        
+        # Show first 30 seconds or 5% of data, whichever is smaller
+        initial_window = min(30.0, total_duration * 0.05)
+        
+        # But show at least 10 seconds if data is longer
+        if total_duration > 10.0:
+            initial_window = max(initial_window, 10.0)
+        
+        # Set the view to show the initial window
+        x_min = time_in_seconds[0]
+        x_max = x_min + initial_window
+        
+        if self.plot_widgets:
+            self.plot_widgets[0].setXRange(x_min, x_max, padding=0)
+            # Update auto y-axis for the initial view
+            self._update_auto_y_axes()
+    
     def _on_show_whole_signal(self):
         """Show the entire signal."""
         if self.navigation:
             self.navigation.reset_view()
+            # Update auto y-axis for the full view
+            self._update_auto_y_axes()
     
     def keyPressEvent(self, event: QtGui.QKeyEvent):
         """Handle keyboard events."""

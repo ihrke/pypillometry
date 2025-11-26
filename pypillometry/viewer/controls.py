@@ -3,6 +3,20 @@
 from pyqtgraph.Qt import QtCore, QtWidgets
 from typing import Dict, Callable, Optional
 
+# PyQt5/PyQt6 compatibility
+try:
+    # PyQt6 style enums
+    _AlignCenter = QtCore.Qt.AlignmentFlag.AlignCenter
+    _Checked = QtCore.Qt.CheckState.Checked
+    _HLine = QtWidgets.QFrame.Shape.HLine
+    _Sunken = QtWidgets.QFrame.Shadow.Sunken
+except AttributeError:
+    # PyQt5 style enums
+    _AlignCenter = QtCore.Qt.AlignCenter
+    _Checked = _Checked
+    _HLine = _HLine
+    _Sunken = _Sunken
+
 
 class ControlPanel(QtWidgets.QWidget):
     """Control panel with checkboxes and buttons for viewer configuration.
@@ -30,7 +44,7 @@ class ControlPanel(QtWidgets.QWidget):
     eye_toggled = QtCore.Signal(str, bool)  # 'left' or 'right', enabled
     variable_toggled = QtCore.Signal(str, bool)  # 'pupil', 'x', or 'y', enabled
     events_toggled = QtCore.Signal(bool)
-    mask_mode_changed = QtCore.Signal(str)
+    mask_display_toggled = QtCore.Signal(bool)  # show/hide mask shading
     region_added = QtCore.Signal()
     regions_cleared = QtCore.Signal()
     accept_clicked = QtCore.Signal()
@@ -82,13 +96,13 @@ class ControlPanel(QtWidgets.QWidget):
         
         # Title
         title = QtWidgets.QLabel("<b>Controls</b>")
-        title.setAlignment(QtCore.Qt.AlignCenter)
+        title.setAlignment(_AlignCenter)
         layout.addWidget(title)
         
         # Separator
         line = QtWidgets.QFrame()
-        line.setFrameShape(QtWidgets.QFrame.HLine)
-        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        line.setFrameShape(_HLine)
+        line.setFrameShadow(_Sunken)
         layout.addWidget(line)
         
         # Time unit selector
@@ -114,7 +128,7 @@ class ControlPanel(QtWidgets.QWidget):
                 checkbox = QtWidgets.QCheckBox(eye_labels[eye])
                 checkbox.setChecked(True)
                 checkbox.stateChanged.connect(
-                    lambda state, e=eye: self._on_eye_toggled(e, state == QtCore.Qt.Checked)
+                    lambda state, e=eye: self._on_eye_toggled(e, state == _Checked)
                 )
                 self.eye_checkboxes[eye] = checkbox
                 layout.addWidget(checkbox)
@@ -130,7 +144,7 @@ class ControlPanel(QtWidgets.QWidget):
                 checkbox = QtWidgets.QCheckBox(var_labels[var])
                 checkbox.setChecked(True)
                 checkbox.stateChanged.connect(
-                    lambda state, v=var: self._on_variable_toggled(v, state == QtCore.Qt.Checked)
+                    lambda state, v=var: self._on_variable_toggled(v, state == _Checked)
                 )
                 self.variable_checkboxes[var] = checkbox
                 layout.addWidget(checkbox)
@@ -146,7 +160,7 @@ class ControlPanel(QtWidgets.QWidget):
                 checkbox = QtWidgets.QCheckBox(f"Auto {label}")
                 checkbox.setChecked(True)  # Default to enabled
                 checkbox.stateChanged.connect(
-                    lambda state, idx=i: self.auto_y_toggled.emit(idx, state == QtCore.Qt.Checked)
+                    lambda state, idx=i: self.auto_y_toggled.emit(idx, state == _Checked)
                 )
                 self.auto_y_checkboxes[i] = checkbox
                 layout.addWidget(checkbox)
@@ -158,28 +172,19 @@ class ControlPanel(QtWidgets.QWidget):
             self.events_checkbox = QtWidgets.QCheckBox("Show Events")
             self.events_checkbox.setChecked(False)  # Default to hidden
             self.events_checkbox.stateChanged.connect(
-                lambda state: self.events_toggled.emit(state == QtCore.Qt.Checked)
+                lambda state: self.events_toggled.emit(state == _Checked)
             )
             layout.addWidget(self.events_checkbox)
             layout.addWidget(self._create_separator())
         
-        # Mask visualization mode
+        # Mask display toggle
         layout.addWidget(QtWidgets.QLabel("<b>Mask Display:</b>"))
-        self.mask_mode_group = QtWidgets.QButtonGroup()
-        
-        self.mask_shaded_radio = QtWidgets.QRadioButton("Shaded regions")
-        self.mask_gaps_radio = QtWidgets.QRadioButton("Gaps in lines")
-        
-        self.mask_shaded_radio.setChecked(True)
-        self.mask_mode_group.addButton(self.mask_shaded_radio)
-        self.mask_mode_group.addButton(self.mask_gaps_radio)
-        
-        self.mask_shaded_radio.toggled.connect(
-            lambda checked: self.mask_mode_changed.emit('shaded' if checked else 'gaps')
+        self.mask_display_checkbox = QtWidgets.QCheckBox("Show Mask Shading")
+        self.mask_display_checkbox.setChecked(True)  # Default to showing mask
+        self.mask_display_checkbox.stateChanged.connect(
+            lambda state: self.mask_display_toggled.emit(state == _Checked)
         )
-        
-        layout.addWidget(self.mask_shaded_radio)
-        layout.addWidget(self.mask_gaps_radio)
+        layout.addWidget(self.mask_display_checkbox)
         
         # Separator
         layout.addWidget(self._create_separator())
@@ -222,8 +227,8 @@ class ControlPanel(QtWidgets.QWidget):
     def _create_separator(self) -> QtWidgets.QFrame:
         """Create a horizontal separator line."""
         line = QtWidgets.QFrame()
-        line.setFrameShape(QtWidgets.QFrame.HLine)
-        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        line.setFrameShape(_HLine)
+        line.setFrameShadow(_Sunken)
         return line
     
     def _on_eye_toggled(self, eye: str, enabled: bool):
@@ -263,15 +268,15 @@ class ControlPanel(QtWidgets.QWidget):
                     eye_enabled = self.eye_checkboxes[eye].isChecked()
                     self.modality_toggled.emit(modality, enabled and eye_enabled)
     
-    def get_mask_mode(self) -> str:
-        """Get current mask visualization mode.
+    def get_mask_display_enabled(self) -> bool:
+        """Get current mask display state.
         
         Returns
         -------
-        str
-            'shaded' or 'gaps'
+        bool
+            True if mask shading should be displayed
         """
-        return 'shaded' if self.mask_shaded_radio.isChecked() else 'gaps'
+        return self.mask_display_checkbox.isChecked()
     
     def get_modality_states(self) -> Dict[str, bool]:
         """Get current state of all modality checkboxes.

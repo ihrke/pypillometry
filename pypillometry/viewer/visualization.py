@@ -5,6 +5,14 @@ import numpy.ma as ma
 import pyqtgraph as pg
 from typing import Optional, Dict, List, Tuple
 
+# PyQt5/PyQt6 compatibility
+try:
+    # PyQt6 style enums
+    _DashLine = pg.QtCore.Qt.PenStyle.DashLine
+except AttributeError:
+    # PyQt5 style enums
+    _DashLine = _DashLine
+
 
 # Color scheme for different data modalities (consistent left=blue, right=red)
 MODALITY_COLORS = {
@@ -38,7 +46,8 @@ def plot_timeseries(
     time: np.ndarray,
     data: np.ndarray,
     modality: str,
-    connect_mode: str = 'finite'
+    connect_mode: str = 'finite',
+    show_masked_data: bool = False
 ) -> pg.PlotDataItem:
     """Plot a timeseries with proper handling of masked arrays.
     
@@ -54,6 +63,9 @@ def plot_timeseries(
         Data modality name for coloring
     connect_mode : str
         Connection mode: 'finite' for gaps at masked values, 'all' for continuous
+    show_masked_data : bool
+        If True, plot masked data values (for shaded mode).
+        If False, replace masked values with NaN to create gaps (for gaps mode).
     
     Returns
     -------
@@ -64,18 +76,19 @@ def plot_timeseries(
     
     # Handle masked arrays
     if ma.is_masked(data):
-        if connect_mode == 'finite':
-            # Replace masked values with NaN for gaps
-            plot_data = data.filled(np.nan)
+        if show_masked_data:
+            # Show all data including masked values (shading will indicate mask)
+            plot_data = data.data  # Get underlying array without applying mask
         else:
-            # Use only unmasked data
-            plot_data = data.compressed()
-            time = time[~data.mask]
+            # Replace masked values with NaN to create gaps
+            plot_data = data.filled(np.nan)
     else:
         plot_data = data
     
     # Create plot with performance optimizations
-    pen = pg.mkPen(color=color, width=2)  # Thicker lines for better visibility
+    # Use thinner pen for large datasets to improve rendering speed
+    pen_width = 1 if len(time) > 500000 else 2
+    pen = pg.mkPen(color=color, width=pen_width)
     curve = plot_widget.plot(
         time, plot_data,
         pen=pen,
@@ -83,9 +96,37 @@ def plot_timeseries(
         connect=connect_mode
     )
     
-    # Enable downsampling for performance
-    curve.setDownsampling(ds=True, auto=True, method='peak')
+    # Set z-value to ensure curve appears above masked regions
+    curve.setZValue(1000)
+    
+    # Enable aggressive downsampling and clipping for performance
+    # Calculate downsampling factor based on data size
+    n_points = len(time)
+    if n_points > 10000:
+        # For large datasets, downsample aggressively to ~1000-2000 points max
+        ds_factor = max(1, int(n_points / 1500))
+    else:
+        ds_factor = 1
+    
+    try:
+        # Set explicit downsampling factor for better performance
+        curve.setDownsampling(ds=ds_factor, auto=False, method='subsample')
+    except:
+        try:
+            curve.setDownsampling(auto=True, method='subsample')
+        except:
+            pass
+    
     curve.setClipToView(True)
+    
+    # Disable anti-aliasing for faster rendering
+    curve.opts['antialias'] = False
+    
+    # Skip finite check for even faster rendering (if supported)
+    try:
+        curve.opts['skipFiniteCheck'] = True
+    except:
+        pass
     
     return curve
 
@@ -120,7 +161,7 @@ def add_event_markers(
         line = pg.InfiniteLine(
             pos=onset,
             angle=90,
-            pen=pg.mkPen(color=color, width=1, style=pg.QtCore.Qt.DashLine),
+            pen=pg.mkPen(color=color, width=1, style=_DashLine),
             movable=False,
             label=label,
             labelOpts={'position': 0.95, 'color': color, 'rotateAxis': (1, 0)}  # Rotate 90 degrees
@@ -136,7 +177,8 @@ def add_mask_regions(
     time: np.ndarray,
     mask: np.ndarray,
     color: str = '#FFA500',  # Orange
-    alpha: float = 0.8
+    alpha: float = 0.2,
+    max_regions: int = 100  # Strict limit for performance
 ) -> List[pg.LinearRegionItem]:
     """Add shaded regions for masked data intervals.
     
@@ -152,6 +194,8 @@ def add_mask_regions(
         Color for shaded regions
     alpha : float
         Transparency (0-1), default 0.2
+    max_regions : int
+        Maximum number of regions to create (for performance)
     
     Returns
     -------
@@ -165,19 +209,41 @@ def add_mask_regions(
     starts = np.where(mask_diff == 1)[0]
     ends = np.where(mask_diff == -1)[0]
     
+    # Limit number of regions for performance
+    if len(starts) > max_regions:
+        # Sample evenly across the recording
+        indices = np.linspace(0, len(starts)-1, max_regions, dtype=int)
+        starts = starts[indices]
+        ends = ends[indices]
+    
     for start_idx, end_idx in zip(starts, ends):
         if start_idx < len(time) and end_idx <= len(time):
             start_time = time[start_idx]
             end_time = time[end_idx - 1] if end_idx > 0 else time[-1]
             
+            # Create brush with proper alpha using QColor
+            from pyqtgraph.Qt import QtGui
+            qcolor = QtGui.QColor(color)
+            qcolor.setAlpha(int(alpha * 255))
+            
             region = pg.LinearRegionItem(
                 values=[start_time, end_time],
                 movable=False,
-                brush=pg.mkBrush(color=color, alpha=int(alpha * 255)),
-                pen=None  # No border
+                brush=pg.mkBrush(qcolor),
+                swapMode='none'  # Disable swap behavior for performance
             )
+            # Remove border lines by making them invisible
+            region.lines[0].setPen(None)
+            region.lines[1].setPen(None)
+            
+            # Disable all interactivity for performance
+            region.lines[0].setMovable(False)
+            region.lines[1].setMovable(False)
+            region.setAcceptHoverEvents(False)
+            
             # Send to back so it appears behind curves
-            region.setZValue(-10)
+            region.setZValue(-100)
+            
             plot_widget.addItem(region)
             regions.append(region)
     

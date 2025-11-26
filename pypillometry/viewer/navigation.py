@@ -4,6 +4,40 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtWidgets, QtGui
 from typing import List
 
+# PyQt5/PyQt6 compatibility for key constants
+try:
+    # PyQt6 style enums
+    _Key_Left = QtCore.Qt.Key.Key_Left
+    _Key_Right = QtCore.Qt.Key.Key_Right
+    _Key_PageUp = QtCore.Qt.Key.Key_PageUp
+    _Key_PageDown = QtCore.Qt.Key.Key_PageDown
+    _Key_Up = QtCore.Qt.Key.Key_Up
+    _Key_Down = QtCore.Qt.Key.Key_Down
+    _Key_Home = QtCore.Qt.Key.Key_Home
+    _Key_End = QtCore.Qt.Key.Key_End
+    _Key_Plus = QtCore.Qt.Key.Key_Plus
+    _Key_Equal = QtCore.Qt.Key.Key_Equal
+    _Key_Minus = QtCore.Qt.Key.Key_Minus
+    _Key_Space = QtCore.Qt.Key.Key_Space
+    _Key_H = QtCore.Qt.Key.Key_H
+    _RichText = QtCore.Qt.TextFormat.RichText
+except AttributeError:
+    # PyQt5 style enums
+    _Key_Left = _Key_Left
+    _Key_Right = _Key_Right
+    _Key_PageUp = _Key_PageUp
+    _Key_PageDown = _Key_PageDown
+    _Key_Up = _Key_Up
+    _Key_Down = _Key_Down
+    _Key_Home = _Key_Home
+    _Key_End = _Key_End
+    _Key_Plus = _Key_Plus
+    _Key_Equal = _Key_Equal
+    _Key_Minus = _Key_Minus
+    _Key_Space = _Key_Space
+    _Key_H = _Key_H
+    _RichText = _RichText
+
 
 class NavigationHandler:
     """Handles keyboard and mouse navigation for the viewer.
@@ -139,7 +173,7 @@ class NavigationHandler:
         handled = False
         
         # Arrow key navigation - pan left/right
-        if key == QtCore.Qt.Key_Left:
+        if key == _Key_Left:
             # Pan left (10% of span), stop at boundary
             shift = x_span * 0.1
             new_min = x_range[0] - shift
@@ -151,7 +185,7 @@ class NavigationHandler:
             self.set_x_range(new_min, new_max)
             handled = True
         
-        elif key == QtCore.Qt.Key_Right:
+        elif key == _Key_Right:
             # Pan right (10% of span), stop at boundary
             shift = x_span * 0.1
             new_min = x_range[0] + shift
@@ -163,7 +197,7 @@ class NavigationHandler:
             self.set_x_range(new_min, new_max)
             handled = True
         
-        elif key == QtCore.Qt.Key_PageUp:
+        elif key == _Key_PageUp:
             # Pan left faster (50% of span)
             shift = x_span * 0.5
             new_min = x_range[0] - shift
@@ -175,7 +209,7 @@ class NavigationHandler:
             self.set_x_range(new_min, new_max)
             handled = True
         
-        elif key == QtCore.Qt.Key_PageDown:
+        elif key == _Key_PageDown:
             # Pan right faster (50% of span)
             shift = x_span * 0.5
             new_min = x_range[0] + shift
@@ -187,7 +221,7 @@ class NavigationHandler:
             self.set_x_range(new_min, new_max)
             handled = True
         
-        elif key == QtCore.Qt.Key_Up:
+        elif key == _Key_Up:
             # Zoom in (reduce span by 20%)
             new_span = x_span * 0.8
             new_min = x_center - new_span/2
@@ -195,7 +229,7 @@ class NavigationHandler:
             self.set_x_range(new_min, new_max)
             handled = True
         
-        elif key == QtCore.Qt.Key_Down:
+        elif key == _Key_Down:
             # Zoom out (increase span by 20%), stop at full data view
             new_span = x_span * 1.2
             
@@ -220,14 +254,14 @@ class NavigationHandler:
             handled = True
         
         # Home/End keys
-        elif key == QtCore.Qt.Key_Home:
+        elif key == _Key_Home:
             # Jump to start
             new_min = data_min
             new_max = min(data_min + x_span, data_max)
             self.set_x_range(new_min, new_max)
             handled = True
         
-        elif key == QtCore.Qt.Key_End:
+        elif key == _Key_End:
             # Jump to end
             new_max = data_max
             new_min = max(data_max - x_span, data_min)
@@ -235,7 +269,7 @@ class NavigationHandler:
             handled = True
         
         # Plus/minus zoom
-        elif key in [QtCore.Qt.Key_Plus, QtCore.Qt.Key_Equal]:
+        elif key in [_Key_Plus, _Key_Equal]:
             # Zoom in
             new_span = x_span * 0.8
             new_min = x_center - new_span/2
@@ -243,7 +277,7 @@ class NavigationHandler:
             self.set_x_range(new_min, new_max)
             handled = True
         
-        elif key == QtCore.Qt.Key_Minus:
+        elif key == _Key_Minus:
             # Zoom out, stop at full data view
             new_span = x_span * 1.2
             
@@ -268,12 +302,12 @@ class NavigationHandler:
             handled = True
         
         # Space to reset view
-        elif key == QtCore.Qt.Key_Space:
+        elif key == _Key_Space:
             self.reset_view()
             handled = True
         
         # H for help
-        elif key == QtCore.Qt.Key_H:
+        elif key == _Key_H:
             self.show_help_dialog()
             handled = True
         
@@ -343,7 +377,7 @@ class NavigationHandler:
         
         msg_box = QtWidgets.QMessageBox()
         msg_box.setWindowTitle("Viewer Help")
-        msg_box.setTextFormat(QtCore.Qt.RichText)
+        msg_box.setTextFormat(_RichText)
         msg_box.setText(help_text)
         msg_box.exec_()
 
