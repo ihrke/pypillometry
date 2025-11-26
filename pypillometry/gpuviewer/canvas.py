@@ -54,6 +54,7 @@ class GPUViewerCanvas(SceneCanvas):
         # Storage for visuals
         self.lod_lines: List[LODLine] = []
         self.overlay_lines: List[LODLine] = []
+        self.overlay_info: List[tuple] = []  # [(label, color, var_type), ...]
         self.mask_regions: List[DynamicMaskRegions] = []
         self.event_markers: List[DynamicEventMarkers] = []
         
@@ -71,6 +72,7 @@ class GPUViewerCanvas(SceneCanvas):
         
         self._plot_all_data()
         self._plot_overlays()
+        self._create_legend()
         self._set_initial_view()
         
         self._last_x_range = (self.data_min, self.data_max)
@@ -271,25 +273,49 @@ class GPUViewerCanvas(SceneCanvas):
                 )
                 self.overlay_lines.append(overlay_line)
                 
-                # Add a label for this overlay
-                self._add_overlay_label(viewbox, label, color)
+                # Store info for legend
+                self.overlay_info.append((label, color, var_type))
     
-    def _add_overlay_label(self, viewbox, label, color):
-        """Add a small label for an overlay in the corner of the viewbox."""
-        # Count existing labels in this viewbox to offset position
-        n_existing = sum(1 for vb in self.viewboxes[:self.viewboxes.index(viewbox)+1] 
-                        for _ in self.overlays.get(self.view_types[self.viewboxes.index(vb)], {}))
+    def _create_legend(self):
+        """Create a fixed legend bar below the plots."""
+        if not self.overlay_info:
+            return
         
-        text = scene.Text(
-            text=f"― {label}",
-            pos=(10, 20 + (n_existing - 1) * 15),
-            color=color,
-            font_size=9,
-            anchor_x='left',
-            anchor_y='top',
-            parent=viewbox.scene
-        )
-        text.order = 2000  # On top of everything
+        # Find the row after x-axis
+        legend_row = len(self.view_types) + 1  # After plots and x-axis
+        
+        # Create a viewbox for the legend (no camera interaction)
+        legend_view = self.grid.add_view(row=legend_row, col=0, col_span=2, border_color=None)
+        legend_view.camera = scene.PanZoomCamera(aspect=None)
+        legend_view.camera.interactive = False
+        legend_view.camera.set_range(x=(0, 1), y=(0, 1))
+        legend_view.stretch = (1, 0.04)  # Short height
+        
+        # Calculate positions for horizontal layout
+        n_items = len(self.overlay_info)
+        spacing = 1.0 / (n_items + 1)
+        
+        for i, (label, color, var_type) in enumerate(self.overlay_info):
+            x_pos = spacing * (i + 1)
+            
+            # Add colored line segment
+            line_pos = np.array([
+                [x_pos - 0.02, 0.5],
+                [x_pos + 0.02, 0.5]
+            ], dtype=np.float32)
+            line = scene.Line(pos=line_pos, color=color, width=3, parent=legend_view.scene)
+            
+            # Add label text
+            plot_label = {'pupil': 'P', 'x': 'X', 'y': 'Y'}.get(var_type, '')
+            text = scene.Text(
+                text=f"{label} [{plot_label}]",
+                pos=(x_pos + 0.03, 0.5),
+                color='black',
+                font_size=8,
+                anchor_x='left',
+                anchor_y='center',
+                parent=legend_view.scene
+            )
     
     def _set_initial_view(self):
         total_duration = self.data_max - self.data_min
