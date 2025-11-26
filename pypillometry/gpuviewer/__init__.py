@@ -53,10 +53,18 @@ def gpuview(eyedata) -> None:
     >>> data = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP
     >>> pp.gpuview(data)  # doctest: +SKIP
     """
-    # Configure vispy to use an available Qt backend
     import sys
+    import locale
     import vispy
     
+    # Save LC_TIME locale before Qt initialization (Qt may change it)
+    # This prevents issues with date parsing in EDF files after viewer is opened
+    try:
+        saved_lc_time = locale.getlocale(locale.LC_TIME)
+    except Exception:
+        saved_lc_time = None
+    
+    # Configure vispy to use an available Qt backend
     # Detect which Qt is already imported and use that, or try in order
     if 'PyQt6' in sys.modules or 'PyQt6.QtCore' in sys.modules:
         vispy.use(app='pyqt6')
@@ -110,4 +118,17 @@ def gpuview(eyedata) -> None:
         qt_app.exec()  # PyQt6
     else:
         app.run()  # Fallback
+    
+    # Restore LC_TIME locale after Qt event loop ends
+    # Qt can change the locale (e.g., to system locale like nb_NO), which breaks
+    # date parsing in eyelinkio that expects English month/day abbreviations
+    if saved_lc_time is not None:
+        try:
+            locale.setlocale(locale.LC_TIME, saved_lc_time)
+        except Exception:
+            # If restoring fails, force C locale for date parsing
+            try:
+                locale.setlocale(locale.LC_TIME, 'C')
+            except Exception:
+                pass  # If all else fails, continue with whatever Qt set
 
