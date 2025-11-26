@@ -21,13 +21,7 @@ MODALITY_COLORS = {
 
 
 class GPUViewerCanvas(SceneCanvas):
-    """GPU-accelerated viewer canvas with Level of Detail support.
-    
-    Features:
-    - LOD for lines: switches between resolutions based on zoom
-    - Dynamic masks: shows all mask regions when zoomed in
-    - Dynamic events: shows labels when zoomed in
-    """
+    """GPU-accelerated viewer canvas with Level of Detail support."""
     
     def __init__(self, eyedata):
         super().__init__(
@@ -81,8 +75,9 @@ class GPUViewerCanvas(SceneCanvas):
         # Set initial view
         self._set_initial_view()
         
-        # Track last view range for LOD updates
+        # Track last view range for LOD updates (with throttling)
         self._last_x_range = (self.data_min, self.data_max)
+        self._lod_update_counter = 0
         
         self.freeze()
     
@@ -109,20 +104,43 @@ class GPUViewerCanvas(SceneCanvas):
         return {k: v for k, v in grouped.items() if v}
     
     def _create_subplots(self):
-        """Create subplot viewboxes."""
+        """Create subplot viewboxes with x-axis."""
         row = 0
+        n_plots = len([v for v in ['pupil', 'x', 'y'] if v in self.available_modalities])
         
         for var_type in ['pupil', 'x', 'y']:
             if var_type not in self.available_modalities:
                 continue
             
             viewbox = self.grid.add_view(row=row, col=0, border_color='#cccccc')
-            viewbox.camera = scene.PanZoomCamera(aspect=None)
-            viewbox.camera.interactive = True
+            
+            # Create camera with limits to prevent panning outside data
+            camera = scene.PanZoomCamera(aspect=None)
+            camera.interactive = True
+            viewbox.camera = camera
+            
+            # Set hard limits on the camera to prevent showing empty space
+            viewbox.camera.set_range(x=(self.data_min, self.data_max))
             
             self.viewboxes.append(viewbox)
             self.view_types.append(var_type)
             row += 1
+        
+        # Add x-axis at the bottom
+        if self.viewboxes:
+            x_axis = scene.AxisWidget(
+                orientation='bottom',
+                axis_label='Time (s)',
+                axis_font_size=8,
+                axis_label_margin=40,
+                tick_label_margin=5,
+                text_color='black',
+                axis_color='black',
+                tick_color='black',
+            )
+            x_axis.stretch = (1, 0.12)
+            self.grid.add_widget(x_axis, row=row, col=0)
+            x_axis.link_view(self.viewboxes[-1])
     
     def _plot_all_data(self):
         """Plot all data with LOD support."""
@@ -153,8 +171,8 @@ class GPUViewerCanvas(SceneCanvas):
                 except (AttributeError, KeyError):
                     pass
             
-            # Add event markers (dynamic)
-            if self.has_events:
+            # Add event markers (dynamic) - only to first plot to avoid slowness
+            if self.has_events and var_type == self.view_types[0]:
                 event_times = self.eyedata.event_onsets.astype(np.float32) * 0.001
                 event_labels = list(self.eyedata.event_labels)
                 event_vis = DynamicEventMarkers(viewbox, event_times, event_labels)
@@ -178,15 +196,40 @@ class GPUViewerCanvas(SceneCanvas):
         x_max = x_min + initial_window
         self._set_view_range(x_min, x_max)
     
+    def _clamp_to_bounds(self, x_min: float, x_max: float) -> tuple:
+        """Clamp view range to data bounds, snapping to full view if needed."""
+        x_span = x_max - x_min
+        
+        # If span exceeds data, snap to full data range
+        if x_span >= (self.data_max - self.data_min) * 0.95:
+            return (self.data_min, self.data_max)
+        
+        # Clamp to bounds
+        if x_min < self.data_min:
+            x_min = self.data_min
+            x_max = self.data_min + x_span
+        if x_max > self.data_max:
+            x_max = self.data_max
+            x_min = self.data_max - x_span
+        
+        # Final clamp
+        x_min = max(x_min, self.data_min)
+        x_max = min(x_max, self.data_max)
+        
+        return (x_min, x_max)
+    
     def _set_view_range(self, x_min: float, x_max: float):
-        """Set view range for all viewboxes and update LOD."""
+        """Set view range for all viewboxes."""
+        # Clamp to data bounds
+        x_min, x_max = self._clamp_to_bounds(x_min, x_max)
+        
         for viewbox, var_type in zip(self.viewboxes, self.view_types):
-            # Calculate y-range from data
             y_min, y_max = self._get_y_range(var_type, x_min, x_max)
             viewbox.camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
         
         # Update LOD visuals
         self._update_lod_visuals(x_min, x_max)
+        self._last_x_range = (x_min, x_max)
     
     def _get_y_range(self, var_type: str, x_min: float, x_max: float) -> tuple:
         """Get y-range for data in the given x-range."""
@@ -217,12 +260,15 @@ class GPUViewerCanvas(SceneCanvas):
     
     def _update_lod_visuals(self, x_min: float, x_max: float):
         """Update all LOD visuals for current view."""
+        # Update lines (fast)
         for lod_line in self.lod_lines:
             lod_line.update_for_view(x_min, x_max)
         
+        # Update masks (medium speed)
         for mask_vis in self.mask_regions:
             mask_vis.update_for_view(x_min, x_max)
         
+        # Update events (slower due to labels - throttle more)
         for event_vis in self.event_markers:
             event_vis.update_for_view(x_min, x_max)
     
@@ -230,11 +276,30 @@ class GPUViewerCanvas(SceneCanvas):
         """Called on each draw - check if view changed and update LOD."""
         super().on_draw(event)
         
-        if self.viewboxes:
-            rect = self.viewboxes[0].camera.rect
-            x_min, x_max = rect.left, rect.right
+        if not self.viewboxes:
+            return
+        
+        rect = self.viewboxes[0].camera.rect
+        x_min, x_max = rect.left, rect.right
+        
+        # Clamp view to data bounds (for mouse interactions)
+        clamped_min, clamped_max = self._clamp_to_bounds(x_min, x_max)
+        
+        # If view is outside bounds, reset it
+        if abs(x_min - clamped_min) > 0.001 or abs(x_max - clamped_max) > 0.001:
+            for viewbox, var_type in zip(self.viewboxes, self.view_types):
+                y_range = viewbox.camera.rect
+                viewbox.camera.set_range(
+                    x=(clamped_min, clamped_max), 
+                    y=(y_range.bottom, y_range.top)
+                )
+            x_min, x_max = clamped_min, clamped_max
+        
+        # Throttle LOD updates - only every 5th draw and if view changed >1%
+        self._lod_update_counter += 1
+        if self._lod_update_counter >= 5:
+            self._lod_update_counter = 0
             
-            # Only update LOD if view changed significantly (>1% change)
             last_min, last_max = self._last_x_range
             last_span = last_max - last_min
             if last_span > 0:

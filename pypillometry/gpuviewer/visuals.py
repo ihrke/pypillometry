@@ -226,6 +226,8 @@ class DynamicMaskRegions:
 class DynamicEventMarkers:
     """Event markers with labels that update based on visible range."""
     
+    MAX_LABELS = 15  # Reduced for performance
+    
     def __init__(
         self,
         viewbox: scene.ViewBox,
@@ -240,98 +242,94 @@ class DynamicEventMarkers:
         self.color = color
         self.alpha = alpha
         
+        # Parse color once
+        c = Color(self.color)
+        self.rgba = list(c.rgba)
+        self.rgba[3] = self.alpha
+        
         # Visual elements
         self.line = None
         self.text_visuals: List[scene.Text] = []
         
-        # Create initial visuals
-        self._update_visuals(self.event_times[0] if len(self.event_times) > 0 else 0,
-                            self.event_times[-1] if len(self.event_times) > 0 else 1)
-    
-    def _update_visuals(self, x_min: float, x_max: float, max_labels: int = 30):
-        """Update event markers and labels for current view."""
-        # Find visible events
-        visible = (self.event_times >= x_min) & (self.event_times <= x_max)
-        vis_times = self.event_times[visible]
-        vis_labels = [self.event_labels[i] for i, v in enumerate(visible) if v]
+        # Pre-create a fixed pool of text labels (reuse to avoid allocation)
+        for _ in range(self.MAX_LABELS):
+            text = scene.Text(
+                text='',
+                pos=(0, 0),
+                color=self.color,
+                font_size=7,
+                anchor_x='left',
+                anchor_y='top',
+                parent=self.viewbox.scene
+            )
+            text.order = 10
+            text.visible = False
+            self.text_visuals.append(text)
         
-        if len(vis_times) == 0:
-            if self.line is not None:
-                self.line.visible = False
-            for t in self.text_visuals:
-                t.visible = False
+        # Create line visual (will be updated)
+        self._last_visible_hash = None
+        self._create_line_for_all()
+    
+    def _create_line_for_all(self):
+        """Create line for all events (always show all lines)."""
+        if len(self.event_times) == 0:
             return
         
-        # Parse color
-        c = Color(self.color)
-        rgba = list(c.rgba)
-        rgba[3] = self.alpha
-        
-        # Build line positions (vectorized)
         y_min, y_max = -1e9, 1e9
-        n_events = len(vis_times)
+        n_events = len(self.event_times)
         
         pos = np.zeros((n_events * 3, 2), dtype=np.float32)
-        pos[0::3, 0] = vis_times
+        pos[0::3, 0] = self.event_times
         pos[0::3, 1] = y_min
-        pos[1::3, 0] = vis_times
+        pos[1::3, 0] = self.event_times
         pos[1::3, 1] = y_max
         pos[2::3, 0] = np.nan
         pos[2::3, 1] = np.nan
         
-        if self.line is None:
-            self.line = scene.Line(
-                pos=pos,
-                color=rgba,
-                width=1.0,
-                connect='strip',
-                antialias=False,
-                parent=self.viewbox.scene
-            )
-            self.line.order = -5
-        else:
-            self.line.set_data(pos=pos, color=rgba)
-            self.line.visible = True
-        
-        # Update text labels
-        # Show up to max_labels, evenly distributed
-        label_step = max(1, len(vis_times) // max_labels)
-        n_labels_to_show = min(len(vis_times), max_labels)
-        
-        # Reuse or create text visuals
-        for i, text in enumerate(self.text_visuals):
-            text.visible = False
-        
-        label_idx = 0
-        for i in range(0, len(vis_times), label_step):
-            if label_idx >= n_labels_to_show:
-                break
-            
-            t = vis_times[i]
-            label = vis_labels[i]
-            
-            if label_idx < len(self.text_visuals):
-                # Reuse existing
-                text = self.text_visuals[label_idx]
-                text.text = str(label)[:15]
-                text.pos = (t, 0)
-                text.visible = True
-            else:
-                # Create new
-                text = scene.Text(
-                    text=str(label)[:15],
-                    pos=(t, 0),
-                    color=self.color,
-                    font_size=7,
-                    anchor_x='left',
-                    anchor_y='top',
-                    parent=self.viewbox.scene
-                )
-                text.order = 10
-                self.text_visuals.append(text)
-            
-            label_idx += 1
+        self.line = scene.Line(
+            pos=pos,
+            color=self.rgba,
+            width=1.0,
+            connect='strip',
+            antialias=False,
+            parent=self.viewbox.scene
+        )
+        self.line.order = -5
     
     def update_for_view(self, x_min: float, x_max: float):
-        """Update event markers for current view."""
-        self._update_visuals(x_min, x_max)
+        """Update event labels for current view (lines always visible)."""
+        # Find visible events
+        visible_mask = (self.event_times >= x_min) & (self.event_times <= x_max)
+        vis_indices = np.where(visible_mask)[0]
+        
+        # Create hash to avoid unnecessary updates
+        view_hash = (round(x_min, 2), round(x_max, 2), len(vis_indices))
+        if view_hash == self._last_visible_hash:
+            return
+        self._last_visible_hash = view_hash
+        
+        # Hide all labels first
+        for text in self.text_visuals:
+            text.visible = False
+        
+        if len(vis_indices) == 0:
+            return
+        
+        # Show up to MAX_LABELS, evenly distributed
+        n_visible = len(vis_indices)
+        label_step = max(1, n_visible // self.MAX_LABELS)
+        
+        label_idx = 0
+        for i in range(0, n_visible, label_step):
+            if label_idx >= self.MAX_LABELS:
+                break
+            
+            event_idx = vis_indices[i]
+            t = self.event_times[event_idx]
+            label = self.event_labels[event_idx]
+            
+            text = self.text_visuals[label_idx]
+            text.text = str(label)[:12]
+            text.pos = (t, 0)
+            text.visible = True
+            label_idx += 1
