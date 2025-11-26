@@ -122,6 +122,7 @@ class GPUViewerCanvas(SceneCanvas):
             self.grid.add_widget(y_axis, row=row, col=0)
             
             viewbox = self.grid.add_view(row=row, col=1, border_color='#cccccc')
+            viewbox.stretch = (1, 1)  # Plots take most space
             camera = scene.PanZoomCamera(aspect=None)
             camera.interactive = False
             viewbox.camera = camera
@@ -137,13 +138,13 @@ class GPUViewerCanvas(SceneCanvas):
                 orientation='bottom',
                 axis_label='Time (s)',
                 axis_font_size=8,
-                axis_label_margin=35,
+                axis_label_margin=30,
                 tick_label_margin=5,
                 text_color='black',
                 axis_color='black',
                 tick_color='black',
             )
-            x_axis.stretch = (1, 0.12)
+            x_axis.stretch = (1, 0.08)  # Reduced from 0.12
             self.grid.add_widget(x_axis, row=row, col=1)
             x_axis.link_view(self.viewboxes[-1])
             self._x_axis_row = row
@@ -278,45 +279,52 @@ class GPUViewerCanvas(SceneCanvas):
                 self.overlay_info.append((label, color, var_type))
     
     def _create_legend(self):
-        """Create a fixed legend bar below the plots."""
-        if not self.overlay_info:
-            return
-        
+        """Create a fixed legend bar below the plots with eye colors and overlays."""
         # Get the row after x-axis
         legend_row = getattr(self, '_x_axis_row', len(self.view_types)) + 1
-        
-        # Add a spacer row for separation
-        spacer = scene.Widget()
-        spacer.stretch = (1, 0.02)
-        self.grid.add_widget(spacer, row=legend_row, col=0, col_span=2)
-        legend_row += 1
         
         # Create a viewbox for the legend (no camera interaction)
         legend_view = self.grid.add_view(row=legend_row, col=0, col_span=2, border_color=None)
         legend_view.camera = scene.PanZoomCamera(aspect=None)
         legend_view.camera.interactive = False
         legend_view.camera.set_range(x=(0, 1), y=(0, 1))
-        legend_view.stretch = (1, 0.06)  # Legend height
+        legend_view.stretch = (1, 0.06)  # Fixed small height
+        
+        # Build legend items: eye colors first, then overlays
+        legend_items = []
+        
+        # Add eye color entries
+        if any('left' in m for mods in self.available_modalities.values() for m in mods):
+            legend_items.append(('Left eye', '#0066CC', None))
+        if any('right' in m for mods in self.available_modalities.values() for m in mods):
+            legend_items.append(('Right eye', '#CC0000', None))
+        
+        # Add overlay entries
+        for label, color, var_type in self.overlay_info:
+            plot_label = {'pupil': 'P', 'x': 'X', 'y': 'Y'}.get(var_type, '')
+            legend_items.append((f"{label} [{plot_label}]", color, var_type))
+        
+        if not legend_items:
+            return
         
         # Calculate positions for horizontal layout
-        n_items = len(self.overlay_info)
+        n_items = len(legend_items)
         spacing = 1.0 / (n_items + 1)
         
-        for i, (label, color, var_type) in enumerate(self.overlay_info):
+        for i, (label, color, var_type) in enumerate(legend_items):
             x_pos = spacing * (i + 1)
             
             # Add colored line segment
             line_pos = np.array([
-                [x_pos - 0.02, 0.5],
-                [x_pos + 0.02, 0.5]
+                [x_pos - 0.015, 0.5],
+                [x_pos + 0.015, 0.5]
             ], dtype=np.float32)
-            line = scene.Line(pos=line_pos, color=color, width=3, parent=legend_view.scene)
+            line = scene.Line(pos=line_pos, color=color, width=4, parent=legend_view.scene)
             
             # Add label text
-            plot_label = {'pupil': 'P', 'x': 'X', 'y': 'Y'}.get(var_type, '')
             text = scene.Text(
-                text=f"{label} [{plot_label}]",
-                pos=(x_pos + 0.03, 0.5),
+                text=label,
+                pos=(x_pos + 0.02, 0.5),
                 color='black',
                 font_size=8,
                 anchor_x='left',
