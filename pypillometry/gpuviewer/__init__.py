@@ -53,6 +53,10 @@ def gpuview(eyedata) -> None:
     >>> data = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP
     >>> pp.gpuview(data)  # doctest: +SKIP
     """
+    # Force PyQt5 backend (works from both Jupyter and standalone)
+    from vispy import app
+    app.use_app('pyqt5')
+    
     # Import here to avoid circular imports and defer vispy loading
     from .canvas import GPUViewerCanvas
     
