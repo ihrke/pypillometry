@@ -1,31 +1,32 @@
-"""Main VisPy canvas with subplot grid for GPU viewer."""
+"""Main VisPy canvas with subplot grid for GPU viewer with LOD support."""
 
 import numpy as np
 from vispy import app, scene
 from vispy.scene import SceneCanvas
 from typing import List, Dict, Optional
 
-from .visuals import add_line_visual, add_mask_regions, add_event_markers
+from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers
 from .navigation import NavigationHandler
 
 
-# Color scheme for different data modalities (consistent left=blue, right=red)
+# Color scheme for different data modalities
 MODALITY_COLORS = {
-    'left_pupil': '#0000FF',    # Blue (left eye)
-    'right_pupil': '#FF0000',   # Red (right eye)
-    'left_x': '#0000FF',        # Blue (left eye)
-    'left_y': '#0000FF',        # Blue (left eye)
-    'right_x': '#FF0000',       # Red (right eye)
-    'right_y': '#FF0000',       # Red (right eye)
+    'left_pupil': '#0066CC',    # Blue (left eye)
+    'right_pupil': '#CC0000',   # Red (right eye)
+    'left_x': '#0066CC',
+    'left_y': '#0066CC',
+    'right_x': '#CC0000',
+    'right_y': '#CC0000',
 }
 
 
 class GPUViewerCanvas(SceneCanvas):
-    """GPU-accelerated viewer canvas for eye-tracking data.
+    """GPU-accelerated viewer canvas with Level of Detail support.
     
-    Uses VisPy's scene graph with a grid layout for multiple subplots,
-    each showing a different variable type (pupil, x, y) with curves
-    for left and right eye data.
+    Features:
+    - LOD for lines: switches between resolutions based on zoom
+    - Dynamic masks: shows all mask regions when zoomed in
+    - Dynamic events: shows labels when zoomed in
     """
     
     def __init__(self, eyedata):
@@ -33,15 +34,14 @@ class GPUViewerCanvas(SceneCanvas):
             keys='interactive',
             size=(1400, 800),
             bgcolor='white',
-            title=f'GPU Viewer - {getattr(eyedata, "name", "Unknown")}',
-            show=False  # Don't show yet
+            title=f'GPU Viewer - {getattr(eyedata, "name", "Unknown")}'
         )
         
-        self.unfreeze()  # Allow adding attributes
+        self.unfreeze()
         self.eyedata = eyedata
         
-        # Convert time to seconds (as float32 for GPU efficiency)
-        self.time_seconds = (eyedata.tx * 0.001).astype(np.float32)
+        # Convert time to seconds
+        self.time_seconds = eyedata.tx.astype(np.float32) * 0.001
         self.data_min = float(self.time_seconds[0])
         self.data_max = float(self.time_seconds[-1])
         
@@ -55,10 +55,15 @@ class GPUViewerCanvas(SceneCanvas):
             len(eyedata.event_onsets) > 0
         )
         
-        # Create grid layout for subplots
-        self.grid = self.central_widget.add_grid(spacing=10, margin=10)
+        # Storage for LOD visuals
+        self.lod_lines: List[LODLine] = []
+        self.mask_regions: List[DynamicMaskRegions] = []
+        self.event_markers: List[DynamicEventMarkers] = []
         
-        # Create viewboxes for each variable type
+        # Create grid layout
+        self.grid = self.central_widget.add_grid(spacing=0)
+        
+        # Create viewboxes
         self.viewboxes: List[scene.ViewBox] = []
         self.view_types: List[str] = []
         self._create_subplots()
@@ -70,14 +75,15 @@ class GPUViewerCanvas(SceneCanvas):
             data_max=self.data_max
         )
         
-        # Plot data
+        # Plot data with LOD
         self._plot_all_data()
         
         # Set initial view
         self._set_initial_view()
         
-        # Force update to render
-        self.update()
+        # Connect to view change events for LOD updates
+        for viewbox in self.viewboxes:
+            viewbox.camera.rect_changed.connect(self._on_view_changed)
         
         self.freeze()
     
@@ -93,7 +99,6 @@ class GPUViewerCanvas(SceneCanvas):
                 pass
         
         grouped = {'pupil': [], 'x': [], 'y': []}
-        
         for modality in available_data.keys():
             if 'pupil' in modality:
                 grouped['pupil'].append(modality)
@@ -112,95 +117,126 @@ class GPUViewerCanvas(SceneCanvas):
             if var_type not in self.available_modalities:
                 continue
             
-            # Create viewbox with border
-            viewbox = self.grid.add_view(row=row, col=0, border_color='gray')
+            viewbox = self.grid.add_view(row=row, col=0, border_color='#cccccc')
             viewbox.camera = scene.PanZoomCamera(aspect=None)
             viewbox.camera.interactive = True
             
-            # Note: Text labels removed for performance - use window title instead
             self.viewboxes.append(viewbox)
             self.view_types.append(var_type)
             row += 1
     
     def _plot_all_data(self):
-        """Plot all data modalities in their respective subplots."""
+        """Plot all data with LOD support."""
         time = self.time_seconds
+        
+        # Determine LOD factors based on data size
+        n_points = len(time)
+        if n_points > 1000000:
+            lod_factors = (1, 10, 100, 1000)
+        elif n_points > 100000:
+            lod_factors = (1, 10, 100)
+        elif n_points > 10000:
+            lod_factors = (1, 10)
+        else:
+            lod_factors = (1,)
         
         for viewbox, var_type in zip(self.viewboxes, self.view_types):
             modalities = self.available_modalities.get(var_type, [])
             
-            # Add mask regions (behind curves)
+            # Add mask regions (dynamic)
             for modality in modalities:
                 try:
                     mask = self.eyedata.data.mask.get(modality)
                     if mask is not None and np.any(mask):
-                        add_mask_regions(viewbox, time, mask)
-                        break  # Only one mask per plot
+                        mask_vis = DynamicMaskRegions(viewbox, time, mask)
+                        self.mask_regions.append(mask_vis)
+                        break  # One mask per plot
                 except (AttributeError, KeyError):
                     pass
             
-            # Add event markers if available
+            # Add event markers (dynamic)
             if self.has_events:
-                event_times = (self.eyedata.event_onsets * 0.001).astype(np.float32)
+                event_times = self.eyedata.event_onsets.astype(np.float32) * 0.001
                 event_labels = list(self.eyedata.event_labels)
-                add_event_markers(viewbox, event_times, event_labels)
+                event_vis = DynamicEventMarkers(viewbox, event_times, event_labels)
+                self.event_markers.append(event_vis)
             
-            # Add line curves
+            # Add LOD lines
             for modality in modalities:
                 data = self.eyedata[modality]
-                color = MODALITY_COLORS.get(modality, '#7f7f7f')
-                add_line_visual(viewbox, time, data, color)
+                color = MODALITY_COLORS.get(modality, '#666666')
+                lod_line = LODLine(viewbox, time, data, color, lod_factors=lod_factors)
+                self.lod_lines.append(lod_line)
     
     def _set_initial_view(self):
-        """Set initial zoomed view."""
+        """Set initial view range."""
         total_duration = self.data_max - self.data_min
-        
-        # Show first 30 seconds or 5%, minimum 10 seconds
         initial_window = min(30.0, total_duration * 0.05)
         if total_duration > 10.0:
             initial_window = max(initial_window, 10.0)
         
         x_min = self.data_min
         x_max = x_min + initial_window
-        
-        if self.viewboxes:
-            self._set_view_range(x_min, x_max)
+        self._set_view_range(x_min, x_max)
     
     def _set_view_range(self, x_min: float, x_max: float):
-        """Set the x-range for all viewboxes and auto-scale y."""
-        time = self.time_seconds
-        start_idx = max(0, np.searchsorted(time, x_min, side='left'))
-        end_idx = min(len(time), np.searchsorted(time, x_max, side='right'))
-        
+        """Set view range for all viewboxes and update LOD."""
         for viewbox, var_type in zip(self.viewboxes, self.view_types):
-            y_min, y_max = float('inf'), float('-inf')
-            modalities = self.available_modalities.get(var_type, [])
-            
-            for modality in modalities:
-                data = self.eyedata[modality]
-                if hasattr(data, 'data'):
-                    visible_data = data.data[start_idx:end_idx]
-                else:
-                    visible_data = data[start_idx:end_idx]
-                
-                valid = np.isfinite(visible_data)
-                if np.any(valid):
-                    y_min = min(y_min, float(np.nanmin(visible_data[valid])))
-                    y_max = max(y_max, float(np.nanmax(visible_data[valid])))
-            
-            # Add padding
-            if y_min != float('inf') and y_max != float('-inf'):
-                padding = (y_max - y_min) * 0.1
-                y_min -= padding
-                y_max += padding
-            else:
-                y_min, y_max = 0.0, 1.0
-            
+            # Calculate y-range from data
+            y_min, y_max = self._get_y_range(var_type, x_min, x_max)
             viewbox.camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
+        
+        # Update LOD visuals
+        self._update_lod_visuals(x_min, x_max)
+    
+    def _get_y_range(self, var_type: str, x_min: float, x_max: float) -> tuple:
+        """Get y-range for data in the given x-range."""
+        time = self.time_seconds
+        start_idx = np.searchsorted(time, x_min, side='left')
+        end_idx = np.searchsorted(time, x_max, side='right')
+        
+        y_min, y_max = float('inf'), float('-inf')
+        modalities = self.available_modalities.get(var_type, [])
+        
+        for modality in modalities:
+            data = self.eyedata[modality]
+            if hasattr(data, 'data'):
+                visible_data = data.data[start_idx:end_idx]
+            else:
+                visible_data = data[start_idx:end_idx]
+            
+            valid = np.isfinite(visible_data)
+            if np.any(valid):
+                y_min = min(y_min, np.nanmin(visible_data[valid]))
+                y_max = max(y_max, np.nanmax(visible_data[valid]))
+        
+        if y_min == float('inf'):
+            return (0, 1)
+        
+        padding = (y_max - y_min) * 0.1
+        return (y_min - padding, y_max + padding)
+    
+    def _update_lod_visuals(self, x_min: float, x_max: float):
+        """Update all LOD visuals for current view."""
+        for lod_line in self.lod_lines:
+            lod_line.update_for_view(x_min, x_max)
+        
+        for mask_vis in self.mask_regions:
+            mask_vis.update_for_view(x_min, x_max)
+        
+        for event_vis in self.event_markers:
+            event_vis.update_for_view(x_min, x_max)
+    
+    def _on_view_changed(self, event=None):
+        """Called when view changes - update LOD."""
+        if self.viewboxes:
+            rect = self.viewboxes[0].camera.rect
+            x_min, x_max = rect.left, rect.right
+            self._update_lod_visuals(x_min, x_max)
     
     def on_key_press(self, event):
         """Handle keyboard events."""
         if self.navigation.handle_key_press(event):
             if self.viewboxes:
-                rect = self.viewboxes[0].camera.get_state()['rect']
+                rect = self.viewboxes[0].camera.rect
                 self._set_view_range(rect.left, rect.right)
