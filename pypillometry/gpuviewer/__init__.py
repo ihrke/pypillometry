@@ -83,14 +83,31 @@ def gpuview(eyedata) -> None:
     # Create the viewer
     canvas = GPUViewerCanvas(eyedata)
     
-    # Show and ensure window is visible
+    # Show canvas
     canvas.show()
-    canvas.native.raise_()  # Bring to front
-    canvas.native.activateWindow()  # Activate
     
-    # Process initial events
+    # Ensure window is visible and focused
+    if hasattr(canvas, 'native') and canvas.native is not None:
+        canvas.native.raise_()
+        canvas.native.activateWindow()
+    
+    # Force an initial draw
+    canvas.update()
     canvas.app.process_events()
     
-    # Run the event loop (blocking)
-    app.run()
+    # Run the Qt event loop directly (blocks until window closed)
+    # vispy's app.run() doesn't block properly in Jupyter
+    qt_app = canvas.native.parent() if hasattr(canvas.native, 'parent') else None
+    if qt_app is None:
+        # Get the QApplication instance
+        try:
+            from PyQt6.QtWidgets import QApplication
+        except ImportError:
+            from PyQt5.QtWidgets import QApplication
+        qt_app = QApplication.instance()
+    
+    if qt_app is not None:
+        qt_app.exec()  # PyQt6
+    else:
+        app.run()  # Fallback
 

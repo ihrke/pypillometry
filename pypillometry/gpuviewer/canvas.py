@@ -76,6 +76,9 @@ class GPUViewerCanvas(SceneCanvas):
         # Set initial view
         self._set_initial_view()
         
+        # Force update to render
+        self.update()
+        
         self.freeze()
     
     def _detect_modalities(self) -> Dict[str, List[str]]:
@@ -115,15 +118,15 @@ class GPUViewerCanvas(SceneCanvas):
             viewbox.camera = scene.PanZoomCamera(aspect=None)
             viewbox.camera.interactive = True
             
-            # Add title text inside the viewbox
+            # Add title text inside the viewbox scene
             title = scene.Text(
                 labels[var_type],
-                pos=(10, 10),
-                font_size=12,
+                pos=(self.data_min + 1, 0),  # Will be positioned in data coords
+                font_size=10,
                 color='black',
                 anchor_x='left',
-                anchor_y='top',
-                parent=viewbox
+                anchor_y='bottom',
+                parent=viewbox.scene
             )
             
             self.viewboxes.append(viewbox)
