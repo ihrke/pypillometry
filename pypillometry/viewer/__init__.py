@@ -1,241 +1,159 @@
-"""Interactive viewer for eye-tracking data.
+"""GPU-accelerated viewer for eye-tracking data using VisPy.
 
-This module provides a fast, interactive viewer for eye-tracking data using PyQtGraph.
+This module provides a fast, GPU-accelerated viewer for long eye-tracking
+recordings using VisPy for OpenGL rendering.
 
 Usage
 -----
-Simple API (blocking mode, waits for user to accept/cancel):
-
 >>> import pypillometry as pp
 >>> data = pp.EyeData.from_eyelink('data.edf')  # doctest: +SKIP
->>> intervals = pp.view(data)  # doctest: +SKIP
-
-With callback for non-blocking mode:
-
->>> def on_regions_changed(intervals):  # doctest: +SKIP
-...     print(f"Selected {len(intervals)} regions")  # doctest: +SKIP
->>> viewer = pp.view(data, callback=on_regions_changed)  # doctest: +SKIP
->>> selected = viewer.get_intervals()  # doctest: +SKIP
-
-Single plot mode:
-
->>> intervals = pp.view(data, separate_plots=False)  # doctest: +SKIP
+>>> pp.view(data)  # doctest: +SKIP
 
 Features
 --------
-- Fast rendering with automatic downsampling for large datasets
-- Mouse navigation: wheel zoom, drag pan, right-click zoom box
-- Keyboard shortcuts: arrows for pan/zoom, Home/End, Space to reset
-- Toggle data modalities on/off
-- Toggle event markers
-- Mask visualization (shaded regions or gaps)
-- Interactive region selection returning Intervals objects
-- Works from Jupyter notebooks (opens separate window)
+- GPU-accelerated rendering for smooth navigation of large datasets
+- Keyboard-only navigation (no GUI controls needed)
+- Masked data highlighted with colored background
+- Event markers shown as vertical grey stripes with labels
+- Separate plots for each variable type (pupil, x, y)
+- Different colors for left (blue) and right (red) eye data
 """
 
-import sys
-import os
-import locale
-from typing import Optional, Callable
-
-# Suppress Qt platform warnings before importing Qt
-os.environ.setdefault('QT_LOGGING_RULES', 'qt.qpa.*=false;qt.glx=false')
-
-from pyqtgraph.Qt import QtWidgets, QtGui
-import pyqtgraph as pg
-
-# Try to configure Qt for better OpenGL support on Wayland/XWayland
-try:
-    fmt = QtGui.QSurfaceFormat()
-    fmt.setRenderableType(QtGui.QSurfaceFormat.OpenGL)
-    fmt.setSwapBehavior(QtGui.QSurfaceFormat.DoubleBuffer)
-    QtGui.QSurfaceFormat.setDefaultFormat(fmt)
-except:
-    pass
-
-# Configure PyQtGraph for performance
-# Note: useOpenGL only affects 3D plots, not 2D line plots
-# 2D performance comes from downsampling and clipToView
-try:
-    pg.setConfigOptions(
-        antialias=False,    # Disable antialiasing for speed
-        enableExperimental=False
-    )
-except Exception:
-    pass  # Ignore configuration errors
-
-from .viewer_window import ViewerWindow
-from ..intervals import Intervals
-
-__all__ = ['view', 'ViewerWindow']
+__all__ = ['view']
 
 
-def view(
-    eyedata,
-    separate_plots: bool = True,
-    callback: Optional[Callable[[Intervals], None]] = None
-) -> Optional[Intervals]:
-    """View eye-tracking data interactively.
+def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None:
+    """View eye-tracking data with GPU-accelerated rendering.
     
-    Opens an interactive viewer window for exploring eye-tracking data.
-    Supports fast navigation, data toggling, and region selection.
-    
-    In blocking mode (default, no callback), the function waits until the user
-    clicks "Accept" or "Cancel", then returns the selected Intervals object.
-    
-    In non-blocking mode (with callback), the window stays open and the callback
-    is called whenever the region selection changes. The window object is returned
-    for programmatic access.
+    Opens an interactive viewer window using VisPy for fast GPU-based
+    rendering. Suitable for long recordings (60+ minutes at 1000 Hz).
     
     Parameters
     ----------
     eyedata : EyeData-like object
-        Eye-tracking data object. Must have:
+        Eye-tracking data object with:
         - `tx` attribute: time vector in ms
         - Dictionary-like access to data: eyedata['left_pupil'], etc.
         - Optional: `event_onsets`, `event_labels` for event markers
-    separate_plots : bool, default True
-        If True, create separate vertically-stacked plots for each data modality
-        with linked x-axes. If False, plot all modalities in a single plot.
-    callback : callable, optional
-        Callback function with signature `callback(intervals)` that is called
-        whenever region selection changes. If provided, enables non-blocking mode.
-    
-    Returns
-    -------
-    Intervals or None (blocking mode)
-        Selected time intervals when user clicks "Accept", or None if "Cancel".
-    ViewerWindow (non-blocking mode)
-        The viewer window object. Use `viewer.get_intervals()` to get selections.
+    overlay_pupil : dict, optional
+        Additional timeseries to overlay on the pupil plot.
+        Keys are labels for legend, values are either:
+        - str: name of data in eyedata.data (e.g., 'left_pupil_filtered')
+        - array-like: timeseries of same length as eyedata
+    overlay_x : dict, optional
+        Additional timeseries to overlay on the gaze X plot.
+    overlay_y : dict, optional
+        Additional timeseries to overlay on the gaze Y plot.
     
     Notes
     -----
-    The viewer requires PyQtGraph and PyQt5/PySide2 to be installed.
-    
-    Mouse controls:
-    - Left drag: Pan
-    - Right drag: Zoom to rectangle
-    - Wheel: Zoom in/out
-    - Right click: Context menu
-    
-    Keyboard shortcuts:
-    - Arrow keys: Pan (left/right), zoom (up/down)
+    Keyboard controls:
+    - Left/Right arrows: Pan 10% of view
+    - Up/Down arrows: Zoom in/out 20%
+    - PgUp/PgDn: Pan 50% of view  
     - Home/End: Jump to start/end
+    - Space: Reset to full view
     - +/-: Zoom in/out
-    - Space: Reset view
-    - H: Show help
+    - M: Toggle mask regions
+    - O: Toggle event markers
+    - H/?: Show help
+    - Q/Esc: Close viewer
     
     Examples
     --------
-    Simple blocking usage:
-    
     >>> import pypillometry as pp
-    >>> data = pp.EyeData.from_eyelink('data.edf')  # doctest: +SKIP
-    >>> intervals = pp.view(data)  # Opens window, waits for user  # doctest: +SKIP
-    >>> if intervals:  # doctest: +SKIP
-    ...     print(f"Selected {len(intervals)} regions")  # doctest: +SKIP
+    >>> data = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP
+    >>> pp.view(data)  # doctest: +SKIP
     
-    Non-blocking with callback:
-    
-    >>> def on_change(intervals):  # doctest: +SKIP
-    ...     if intervals:  # doctest: +SKIP
-    ...         print(f"Current: {len(intervals)} regions")  # doctest: +SKIP
-    >>> viewer = pp.view(data, callback=on_change)  # doctest: +SKIP
-    >>> # Window stays open, callback is called on changes  # doctest: +SKIP
-    
-    Single plot mode:
-    
-    >>> intervals = pp.view(data, separate_plots=False)  # doctest: +SKIP
+    # With overlays
+    >>> import numpy as np  # doctest: +SKIP
+    >>> smoothed = np.convolve(data['left_pupil'], np.ones(100)/100, 'same')  # doctest: +SKIP
+    >>> pp.view(data, overlay_pupil={'smoothed': smoothed})  # doctest: +SKIP
     """
+    import sys
+    import locale
+    import vispy
+    
     # Save LC_TIME locale before Qt initialization (Qt may change it)
     # This prevents issues with date parsing in EDF files after viewer is opened
     try:
         saved_lc_time = locale.getlocale(locale.LC_TIME)
-    except:
+    except Exception:
         saved_lc_time = None
     
-    # Get or create QApplication
-    app = QtWidgets.QApplication.instance()
-    if app is None:
-        app = QtWidgets.QApplication(sys.argv)
+    # Configure vispy to use an available Qt backend
+    # Detect which Qt is already imported and use that, or try in order
+    if 'PyQt6' in sys.modules or 'PyQt6.QtCore' in sys.modules:
+        vispy.use(app='pyqt6')
+    elif 'PyQt5' in sys.modules or 'PyQt5.QtCore' in sys.modules:
+        vispy.use(app='pyqt5')
+    elif 'PySide6' in sys.modules:
+        vispy.use(app='pyside6')
+    elif 'PySide2' in sys.modules:
+        vispy.use(app='pyside2')
+    else:
+        # Try PyQt6 first (more modern), then PyQt5
+        for backend in ['pyqt6', 'pyqt5', 'pyside6', 'pyside2']:
+            try:
+                vispy.use(app=backend)
+                break
+            except RuntimeError:
+                continue
     
-    # Restore LC_TIME locale after Qt initialization
+    from vispy import app
+    
+    # Import here to avoid circular imports and defer vispy loading
+    from .canvas import ViewerCanvas
+    
+    # Build overlays dict
+    overlays = {}
+    if overlay_pupil:
+        overlays['pupil'] = overlay_pupil
+    if overlay_x:
+        overlays['x'] = overlay_x
+    if overlay_y:
+        overlays['y'] = overlay_y
+    
+    # Create the viewer
+    canvas = ViewerCanvas(eyedata, overlays=overlays)
+    
+    # Show canvas
+    canvas.show()
+    
+    # Ensure window is visible and focused
+    if hasattr(canvas, 'native') and canvas.native is not None:
+        canvas.native.raise_()
+        canvas.native.activateWindow()
+    
+    # Force an initial draw
+    canvas.update()
+    canvas.app.process_events()
+    
+    # Run the Qt event loop directly (blocks until window closed)
+    # vispy's app.run() doesn't block properly in Jupyter
+    qt_app = canvas.native.parent() if hasattr(canvas.native, 'parent') else None
+    if qt_app is None:
+        # Get the QApplication instance
+        try:
+            from PyQt6.QtWidgets import QApplication
+        except ImportError:
+            from PyQt5.QtWidgets import QApplication
+        qt_app = QApplication.instance()
+    
+    if qt_app is not None:
+        qt_app.exec()  # PyQt6
+    else:
+        app.run()  # Fallback
+    
+    # Restore LC_TIME locale after Qt event loop ends
     # Qt can change the locale (e.g., to system locale like nb_NO), which breaks
     # date parsing in eyelinkio that expects English month/day abbreviations
     if saved_lc_time is not None:
         try:
             locale.setlocale(locale.LC_TIME, saved_lc_time)
-        except:
-            # If restoring fails, force English locale for date parsing
+        except Exception:
+            # If restoring fails, force C locale for date parsing
             try:
                 locale.setlocale(locale.LC_TIME, 'C')
-            except:
+            except Exception:
                 pass  # If all else fails, continue with whatever Qt set
-    
-    # Create viewer window
-    try:
-        viewer = ViewerWindow(eyedata, separate_plots=separate_plots, callback=callback)
-        viewer.show()
-    except Exception as e:
-        import traceback
-        print("Error creating viewer window:")
-        traceback.print_exc()
-        raise
-    
-    # Check if running in Jupyter/IPython
-    try:
-        from IPython import get_ipython
-        ipython = get_ipython()
-        in_jupyter = ipython is not None
-        
-        # Enable Qt event loop integration in Jupyter automatically
-        if in_jupyter and ipython is not None:
-            try:
-                current_loop = getattr(ipython, 'active_eventloop', None)
-                
-                if current_loop not in ['qt', 'qt5']:
-                    # Silently enable Qt event loop
-                    try:
-                        ipython.run_line_magic('gui', 'qt5')
-                    except:
-                        try:
-                            ipython.run_line_magic('gui', 'qt')
-                        except:
-                            pass
-            except:
-                pass
-    except:
-        in_jupyter = False
-    
-    # Process initial events to render the window properly
-    try:
-        app.processEvents()
-    except:
-        pass
-    
-    # Blocking mode: wait for window to close
-    # Note: In Jupyter, blocking mode may not work well - use callback instead
-    if callback is None:
-        if in_jupyter:
-            # In Jupyter, don't block - just return viewer and let event loop run
-            import warnings
-            warnings.warn(
-                "Running viewer in Jupyter in blocking mode. "
-                "Window will open but may not block properly. "
-                "For better control in Jupyter, use: viewer = pp.view(data, callback=lambda x: None)",
-                UserWarning
-            )
-            return viewer
-        else:
-            app.exec_()
-            
-            # Return selected intervals if accepted
-            if viewer.accepted:
-                return viewer.selected_intervals
-            else:
-                return None
-    
-    # Non-blocking mode: return viewer object
-    else:
-        return viewer
-
