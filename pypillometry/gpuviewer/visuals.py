@@ -8,7 +8,7 @@ import numpy.ma as ma
 
 
 class LODLine:
-    """Simple line visual with LOD - draws FULL signal, mask regions shown separately."""
+    """Line visual with LOD - normal color + lighter color in masked regions."""
     
     def __init__(
         self,
@@ -16,6 +16,7 @@ class LODLine:
         time: np.ndarray,
         data: np.ndarray,
         color: str = '#0000FF',
+        mask: np.ndarray = None,
         width: float = 1.5,
         lod_factors: Tuple[int, ...] = (1, 10, 100, 1000)
     ):
@@ -26,43 +27,72 @@ class LODLine:
         self.n_points = len(time)
         self.color = color
         
-        # Get raw data (including masked values)
+        # Create lighter version of color for masked regions
+        c = Color(color)
+        # Blend with white to make lighter
+        self.light_color = Color(rgba=(
+            min(1.0, c.rgba[0] * 0.5 + 0.5),
+            min(1.0, c.rgba[1] * 0.5 + 0.5),
+            min(1.0, c.rgba[2] * 0.5 + 0.5),
+            1.0
+        ))
+        
+        # Get raw data and mask
         if ma.is_masked(data):
             self.data_full = data.data.copy().astype(np.float32)
+            self.mask = np.asarray(data.mask, dtype=bool)
         else:
             self.data_full = np.asarray(data, dtype=np.float32)
+            self.mask = np.zeros(len(data), dtype=bool)
         
-        # Pre-compute LOD levels
-        self.lod_data: Dict[int, np.ndarray] = {}
+        # Override with explicit mask if provided
+        if mask is not None:
+            self.mask = np.asarray(mask, dtype=bool)
+        
+        # Pre-compute LOD levels for both normal and masked
+        self.lod_normal: Dict[int, np.ndarray] = {}
+        self.lod_masked: Dict[int, np.ndarray] = {}
         self._precompute_lods()
         
-        # Create line
+        # Create lines
         self.current_lod = max(lod_factors)
-        self.line = None
-        self._create_line()
+        self.line_normal = None
+        self.line_masked = None
+        self._create_lines()
     
     def _precompute_lods(self):
-        """Pre-compute downsampled versions using min-max decimation."""
+        """Pre-compute downsampled versions for normal and masked."""
         for factor in self.lod_factors:
             if factor == 1:
-                pos = np.column_stack([self.time_full, self.data_full]).astype(np.float32)
-                self.lod_data[1] = pos
+                # Full resolution
+                data_normal = self.data_full.copy()
+                data_normal[self.mask] = np.nan
+                
+                data_masked = self.data_full.copy()
+                data_masked[~self.mask] = np.nan
+                
+                self.lod_normal[1] = np.column_stack([self.time_full, data_normal]).astype(np.float32)
+                self.lod_masked[1] = np.column_stack([self.time_full, data_masked]).astype(np.float32)
             else:
                 n_out = max(1, self.n_points // factor)
                 time_ds = np.zeros(n_out * 2, dtype=np.float32)
-                data_ds = np.zeros(n_out * 2, dtype=np.float32)
+                data_normal_ds = np.zeros(n_out * 2, dtype=np.float32)
+                data_masked_ds = np.zeros(n_out * 2, dtype=np.float32)
                 
                 for i in range(n_out):
                     start = i * factor
                     end = min(start + factor, self.n_points)
                     chunk = self.data_full[start:end]
+                    chunk_mask = self.mask[start:end]
                     
                     valid = np.isfinite(chunk)
                     if not np.any(valid):
                         time_ds[i*2] = self.time_full[start]
                         time_ds[i*2+1] = self.time_full[end-1]
-                        data_ds[i*2] = np.nan
-                        data_ds[i*2+1] = np.nan
+                        data_normal_ds[i*2] = np.nan
+                        data_normal_ds[i*2+1] = np.nan
+                        data_masked_ds[i*2] = np.nan
+                        data_masked_ds[i*2+1] = np.nan
                     else:
                         valid_chunk = np.where(valid, chunk, np.inf)
                         min_idx = np.argmin(valid_chunk)
@@ -72,30 +102,47 @@ class LODLine:
                         if min_idx <= max_idx:
                             time_ds[i*2] = self.time_full[start + min_idx]
                             time_ds[i*2+1] = self.time_full[start + max_idx]
-                            data_ds[i*2] = chunk[min_idx]
-                            data_ds[i*2+1] = chunk[max_idx]
+                            v1, v2 = chunk[min_idx], chunk[max_idx]
+                            m1, m2 = chunk_mask[min_idx], chunk_mask[max_idx]
                         else:
                             time_ds[i*2] = self.time_full[start + max_idx]
                             time_ds[i*2+1] = self.time_full[start + min_idx]
-                            data_ds[i*2] = chunk[max_idx]
-                            data_ds[i*2+1] = chunk[min_idx]
+                            v1, v2 = chunk[max_idx], chunk[min_idx]
+                            m1, m2 = chunk_mask[max_idx], chunk_mask[min_idx]
+                        
+                        # Normal: NaN where masked
+                        data_normal_ds[i*2] = np.nan if m1 else v1
+                        data_normal_ds[i*2+1] = np.nan if m2 else v2
+                        # Masked: NaN where NOT masked
+                        data_masked_ds[i*2] = v1 if m1 else np.nan
+                        data_masked_ds[i*2+1] = v2 if m2 else np.nan
                 
-                pos = np.column_stack([time_ds, data_ds]).astype(np.float32)
-                self.lod_data[factor] = pos
+                self.lod_normal[factor] = np.column_stack([time_ds, data_normal_ds]).astype(np.float32)
+                self.lod_masked[factor] = np.column_stack([time_ds, data_masked_ds]).astype(np.float32)
     
-    def _create_line(self):
-        """Create the line visual."""
-        pos = self.lod_data[self.current_lod]
-        
-        self.line = scene.Line(
-            pos=pos,
+    def _create_lines(self):
+        """Create two line visuals - normal and masked (lighter)."""
+        # Normal line (full color)
+        self.line_normal = scene.Line(
+            pos=self.lod_normal[self.current_lod],
             color=self.color,
             width=self.width,
             connect='strip',
             antialias=False,
             parent=self.viewbox.scene
         )
-        self.line.order = 1000  # Way in front of mask regions
+        self.line_normal.order = 1000
+        
+        # Masked line (lighter color)
+        self.line_masked = scene.Line(
+            pos=self.lod_masked[self.current_lod],
+            color=self.light_color.rgba,
+            width=self.width,
+            connect='strip',
+            antialias=False,
+            parent=self.viewbox.scene
+        )
+        self.line_masked.order = 1000
     
     def update_for_view(self, x_min: float, x_max: float):
         """Update LOD based on current view range."""
@@ -117,11 +164,13 @@ class LODLine:
         
         if new_lod != self.current_lod:
             self.current_lod = new_lod
-            self.line.set_data(pos=self.lod_data[self.current_lod])
+            self.line_normal.set_data(pos=self.lod_normal[self.current_lod])
+            self.line_masked.set_data(pos=self.lod_masked[self.current_lod])
     
     def set_mask_visible(self, visible: bool):
-        """No-op for compatibility - mask regions handled separately."""
-        pass
+        """Show/hide the masked (lighter) line."""
+        if self.line_masked is not None:
+            self.line_masked.visible = visible
 
 
 class DynamicMaskRegions:

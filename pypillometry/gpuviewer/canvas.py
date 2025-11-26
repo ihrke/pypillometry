@@ -189,8 +189,16 @@ class GPUViewerCanvas(SceneCanvas):
                 data = self.eyedata[modality]
                 color = MODALITY_COLORS.get(modality, '#666666')
                 
+                # Get mask for this modality
+                mask = None
+                try:
+                    mask = self.eyedata.data.mask.get(modality)
+                except (AttributeError, KeyError):
+                    pass
+                
                 lod_line = LODLine(
                     viewbox, time, data, color,
+                    mask=mask,
                     lod_factors=lod_factors
                 )
                 self.lod_lines.append(lod_line)
