@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Foreshortening Correction for Pupil Size Measurements &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Foreshortening Correction for Pupil Size Measurements</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="foreshortening-correction-for-pupil-size-measurements">
+<h1>Foreshortening Correction for Pupil Size Measurements<a class="headerlink" href="#foreshortening-correction-for-pupil-size-measurements" title="Link to this heading">¶</a></h1>
+<section id="problem-statement">
+<h2>1. Problem Statement<a class="headerlink" href="#problem-statement" title="Link to this heading">¶</a></h2>
+<section id="physical-setup">
+<h3>1.1 Physical Setup<a class="headerlink" href="#physical-setup" title="Link to this heading">¶</a></h3>
+<p><strong>Eye-tracking measurement scenario:</strong></p>
+<ul class="simple">
+<li><p><strong>E</strong> = (0,0,0): Eye position (origin)</p></li>
+<li><p><strong>C</strong> = (c_x, c_y, c_z): Camera position (fixed, unknown direction, known distance r from eye)</p></li>
+<li><p><strong>S</strong>: Computer screen (plane at fixed distance d from eye along z-axis)</p></li>
+<li><p><strong>T(x,y)</strong> = (x, y, d): Gaze position on screen in mm from screen center</p></li>
+</ul>
+</section>
+<section id="foreshortening-effect">
+<h3>1.2 Foreshortening Effect<a class="headerlink" href="#foreshortening-effect" title="Link to this heading">¶</a></h3>
+<p>The camera measures apparent pupil size A(x,y,t), which is foreshortened relative to true pupil size A_0(t) depending on viewing angle:</p>
+<p><div class="math notranslate nohighlight">
+\[A(x,y,t) = A_0(t) \cdot \cos(\alpha(x,y))\]</div>
+</p>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(A_0(t)\)</span>: <strong>True pupil diameter/area</strong> (intrinsic, viewing-angle independent)</p></li>
+<li><p><span class="math notranslate nohighlight">\(A(x,y,t)\)</span>: <strong>Measured pupil size</strong> (affected by foreshortening)</p></li>
+<li><p><span class="math notranslate nohighlight">\(\alpha(x,y)\)</span>: Angle between eye→camera vector (<span class="math notranslate nohighlight">\(\vec{EC}\)</span>) and eye→gaze vector (<span class="math notranslate nohighlight">\(\vec{ET}\)</span>)</p></li>
+</ul>
+<p><strong>Physical interpretation:</strong> When gaze direction <span class="math notranslate nohighlight">\(\vec{ET}\)</span> is not aligned with camera direction <span class="math notranslate nohighlight">\(\vec{EC}\)</span>, the pupil appears elliptical/smaller to the camera. Maximum apparent size occurs when gazing directly toward camera (<span class="math notranslate nohighlight">\(\alpha = 0\)</span>).</p>
+</section>
+<section id="geometric-relationship">
+<h3>1.3 Geometric Relationship<a class="headerlink" href="#geometric-relationship" title="Link to this heading">¶</a></h3>
+<p><div class="math notranslate nohighlight">
+\[\cos(\alpha(x,y)) = \frac{\vec{EC} \cdot \vec{ET}}{|\vec{EC}| \cdot |\vec{ET}|} = \frac{c_x x + c_y y + c_z d}{r\sqrt{x^2 + y^2 + d^2}}\]</div>
+</p>
+<p><strong>Known parameters:</strong></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(r = |\vec{EC}|\)</span>: Eye-to-camera distance (measurable, typically 500-700 mm)</p></li>
+<li><p><span class="math notranslate nohighlight">\(d\)</span>: Eye-to-screen distance (measurable, typically 600-800 mm)</p></li>
+</ul>
+<p><strong>Unknown parameters:</strong></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\((c_x, c_y, c_z)\)</span>: Camera position with constraint <span class="math notranslate nohighlight">\(c_x^2 + c_y^2 + c_z^2 = r^2\)</span></p></li>
+</ul>
+</section>
+<section id="camera-position-parameterization">
+<h3>1.4 Camera Position Parameterization<a class="headerlink" href="#camera-position-parameterization" title="Link to this heading">¶</a></h3>
+<p>Since r is known, camera position C has 2 degrees of freedom (spherical coordinates):</p>
+<p>$$\begin{aligned}
+c_x &amp;= r \sin(\theta) \cos(\varphi) \
+c_y &amp;= r \sin(\theta) \sin(\varphi) \
+c_z &amp;= r \cos(\theta)
+\end{aligned}$$</p>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\theta \in [0, \pi]\)</span>: Polar angle (elevation relative to z-axis)</p></li>
+<li><p><span class="math notranslate nohighlight">\(\varphi \in [0, 2\pi)\)</span>: Azimuthal angle (horizontal direction)</p></li>
+</ul>
+<p>Then:
+<div class="math notranslate nohighlight">
+\[\cos(\alpha(x,y; \theta, \varphi)) = \frac{\sin(\theta)\cos(\varphi) \cdot x + \sin(\theta)\sin(\varphi) \cdot y + \cos(\theta) \cdot d}{\sqrt{x^2 + y^2 + d^2}}\]</div>
+</p>
+</section>
+</section>
+<section id="experimental-protocol">
+<h2>2. Experimental Protocol<a class="headerlink" href="#experimental-protocol" title="Link to this heading">¶</a></h2>
+<section id="two-phase-design">
+<h3>2.1 Two-Phase Design<a class="headerlink" href="#two-phase-design" title="Link to this heading">¶</a></h3>
+<p><strong>Phase 1: Calibration</strong> (Duration: ~2 minutes)</p>
+<ul class="simple">
+<li><p>Subject follows systematic gaze targets across screen</p></li>
+<li><p>Goal: Explore diverse gaze positions (x,y) to estimate camera geometry</p></li>
+<li><p>Spatial coverage: Full or majority of screen area</p></li>
+</ul>
+<p><strong>Phase 2: Free Viewing / Task</strong> (Duration: ~30 minutes)</p>
+<ul class="simple">
+<li><p>Subject performs natural task (reading, viewing, search, etc.)</p></li>
+<li><p>Gaze may be restricted to task-relevant screen regions</p></li>
+<li><p>Goal: Record pupil dynamics corrected for foreshortening</p></li>
+</ul>
+</section>
+<section id="data-structure">
+<h3>2.2 Data Structure<a class="headerlink" href="#data-structure" title="Link to this heading">¶</a></h3>
+<p><strong>Measurements:</strong> <span class="math notranslate nohighlight">\(\mathcal{D} = {(x_i, y_i, t_i, A_i)}_{i=1}^N\)</span></p>
+<p>where for each sample i:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\((x_i, y_i)\)</span>: Gaze coordinates on screen (mm from center)</p></li>
+<li><p><span class="math notranslate nohighlight">\(t_i\)</span>: Timestamp</p></li>
+<li><p><span class="math notranslate nohighlight">\(A_i\)</span>: Measured pupil size (pixels, mm, or arbitrary units)</p></li>
+</ul>
+<p><strong>Partition:</strong></p>
+<ul class="simple">
+<li><p>$\mathcal{D}<em>{\text{cal}}<span class="math notranslate nohighlight">\(: Calibration phase \)</span>(t \leq T</em>{\text{cal}} \approx 2 \text{ min})$</p></li>
+<li><p>$\mathcal{D}<em>{\text{task}}<span class="math notranslate nohighlight">\(: Task phase \)</span>(t &gt; T</em>{\text{cal}})$</p></li>
+</ul>
+</section>
+</section>
+<section id="data-preprocessing">
+<h2>3. Data Preprocessing<a class="headerlink" href="#data-preprocessing" title="Link to this heading">¶</a></h2>
+<section id="quality-control">
+<h3>3.1 Quality Control<a class="headerlink" href="#quality-control" title="Link to this heading">¶</a></h3>
+<p>For raw pupil data sampled at 1000 Hz:</p>
+<ol class="arabic simple">
+<li><p><strong>Blink removal</strong>: Exclude samples during blinks (pupil not visible)</p></li>
+<li><p><strong>Artifact rejection</strong>: Remove physically implausible values</p></li>
+<li><p><strong>Gaze validation</strong>: Ensure gaze coordinates are on screen</p></li>
+</ol>
+</section>
+<section id="temporal-filtering">
+<h3>3.2 Temporal Filtering<a class="headerlink" href="#temporal-filtering" title="Link to this heading">¶</a></h3>
+<p>Pupil dynamics of interest typically &lt; 5 Hz (slow changes due to light, cognition, arousal):</p>
+<ol class="arabic simple">
+<li><p><strong>Low-pass filter</strong>: Butterworth filter, cutoff <span class="math notranslate nohighlight">\(f_c = 3\text{-}5\)</span> Hz</p></li>
+<li><p><strong>Downsample</strong>: 1000 Hz → 50 Hz (reduces computation 20×)</p></li>
+</ol>
+</section>
+<section id="valid-measurement-set">
+<h3>3.3 Valid Measurement Set<a class="headerlink" href="#valid-measurement-set" title="Link to this heading">¶</a></h3>
+<p><div class="math notranslate nohighlight">
+\[\mathcal{M} = {(x_i, y_i, t_i, A_i) : \text{valid after preprocessing}}\]</div>
+</p>
+<p>Partition: $\mathcal{M} = \mathcal{M}<em>{\text{cal}} \cup \mathcal{M}</em>{\text{task}}$</p>
+<p><strong>Data completeness:</strong>
+<div class="math notranslate nohighlight">
+\[\rho = \frac{|\mathcal{M}|}{N_{\text{total}}} \times 100%\]</div>
+</p>
+<p>Typical: <span class="math notranslate nohighlight">\(\rho = 70\text{-}90%\)</span> (missing data due to blinks, track loss)</p>
+</section>
+</section>
+<section id="temporal-model-true-pupil-size">
+<h2>4. Temporal Model: True Pupil Size<a class="headerlink" href="#temporal-model-true-pupil-size" title="Link to this heading">¶</a></h2>
+<section id="b-spline-basis-representation">
+<h3>4.1 B-Spline Basis Representation<a class="headerlink" href="#b-spline-basis-representation" title="Link to this heading">¶</a></h3>
+<p>Model smooth variation of true pupil size:</p>
+<p><div class="math notranslate nohighlight">
+\[A_0(t; \mathbf{a}) = \sum_{k=1}^{K} a_k B_k(t)\]</div>
+</p>
+<p>where:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\({B_k(t)}_{k=1}^K\)</span>: Cubic B-spline basis functions</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathbf{a} = (a_1, \ldots, a_K)^T\)</span>: Basis coefficients (to be estimated)</p></li>
+<li><p><span class="math notranslate nohighlight">\(K\)</span>: Number of basis functions (knots spaced 0.5-1 second apart)</p></li>
+</ul>
+<p><strong>Knot placement:</strong></p>
+<ul class="simple">
+<li><p>For 2 min calibration: <span class="math notranslate nohighlight">\(K_{\text{cal}} \approx 120\text{-}240\)</span> knots</p></li>
+<li><p>For 32 min total: <span class="math notranslate nohighlight">\(K_{\text{total}} \approx 1920\text{-}3840\)</span> knots</p></li>
+</ul>
+</section>
+<section id="predicted-measurement-model">
+<h3>4.2 Predicted Measurement Model<a class="headerlink" href="#predicted-measurement-model" title="Link to this heading">¶</a></h3>
+<p><div class="math notranslate nohighlight">
+\[\hat{A}(x,y,t; \mathbf{a}, \theta, \varphi) = \left(\sum_{k=1}^K a_k B_k(t)\right) \cdot \cos(\alpha(x,y; \theta, \varphi))\]</div>
+</p>
+<p><strong>Parameter vector:</strong>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{\xi} = (\mathbf{a}, \theta, \varphi) = (a_1, \ldots, a_K, \theta, \varphi) \in \mathbb{R}^{K+2}\]</div>
+</p>
+</section>
+</section>
+<section id="two-stage-calibration-algorithm">
+<h2>5. Two-Stage Calibration Algorithm<a class="headerlink" href="#two-stage-calibration-algorithm" title="Link to this heading">¶</a></h2>
+<section id="stage-1-initial-camera-geometry-estimation">
+<h3>5.1 Stage 1: Initial Camera Geometry Estimation<a class="headerlink" href="#stage-1-initial-camera-geometry-estimation" title="Link to this heading">¶</a></h3>
+<p><strong>Objective:</strong> Estimate camera position from calibration data with good spatial coverage.</p>
+<p>$$\boldsymbol{\xi}<em>{\text{cal}}^* = \arg\min</em>{\boldsymbol{\xi}} \left[ L_{\text{data}}(\boldsymbol{\xi}; \mathcal{M}<em>{\text{cal}}) + \lambda</em>{\text{smooth}} R_{\text{smooth}}(\mathbf{a}) \right]$$</p>
+<p><strong>Data fidelity term:</strong>
+<div class="math notranslate nohighlight">
+\[L_{\text{data}}(\boldsymbol{\xi}; \mathcal{M}) = \sum_{(x_i,y_i,t_i,A_i) \in \mathcal{M}} \left[A_i - \hat{A}(x_i, y_i, t_i; \boldsymbol{\xi})\right]^2\]</div>
+</p>
+<p><strong>Smoothness regularization</strong> (penalizes rapid pupil size changes):
+<div class="math notranslate nohighlight">
+\[R_{\text{smooth}}(\mathbf{a}) = \sum_{k=1}^{K-1} (a_{k+1} - a_k)^2\]</div>
+</p>
+<p><strong>Constraints:</strong></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(a_k &gt; 0\)</span> for all k (pupil size is positive)</p></li>
+<li><p><span class="math notranslate nohighlight">\(0 \leq \theta \leq \pi\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(0 \leq \varphi &lt; 2\pi\)</span></p></li>
+</ul>
+<p><strong>Optimization:</strong> Use L-BFGS-B with box constraints</p>
+<p><strong>Output:</strong>
+$$\boldsymbol{\xi}<em>{\text{cal}}^* = (\mathbf{a}</em>{\text{cal}}^<em>, \theta_{\text{cal}}^</em>, \varphi_{\text{cal}}^*)$$</p>
+</section>
+<section id="stage-2-refinement-using-full-dataset">
+<h3>5.2 Stage 2: Refinement Using Full Dataset<a class="headerlink" href="#stage-2-refinement-using-full-dataset" title="Link to this heading">¶</a></h3>
+<p><strong>Objective:</strong> Improve estimates using all data while preventing camera geometry from drifting due to sparse spatial sampling in task phase.</p>
+<p>$$\boldsymbol{\xi}<em>{\text{full}}^* = \arg\min</em>{\boldsymbol{\xi}} \Bigg[ w_{\text{cal}} L_{\text{data}}(\boldsymbol{\xi}; \mathcal{M}<em>{\text{cal}}) + w</em>{\text{task}} L_{\text{data}}(\boldsymbol{\xi}; \mathcal{M}<em>{\text{task}}) + \lambda</em>{\text{smooth}} R_{\text{smooth}}(\mathbf{a}) + \lambda_{\text{prior}} R_{\text{prior}}(\theta, \varphi) \Bigg]$$</p>
+<p><strong>Weighted data terms:</strong></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(w_{\text{cal}} = 2\text{-}5\)</span>: Higher weight on calibration (diverse spatial sampling)</p></li>
+<li><p><span class="math notranslate nohighlight">\(w_{\text{task}} = 1\)</span>: Standard weight on task data</p></li>
+</ul>
+<p><strong>Geometric prior</strong> (anchor camera position to Stage 1 estimate):
+$$R_{\text{prior}}(\theta, \varphi) = (\theta - \theta_{\text{cal}}^<em>)^2 + (\varphi - \varphi_{\text{cal}}^</em>)^2$$</p>
+<p><strong>Prior weight:</strong>
+<div class="math notranslate nohighlight">
+\[\lambda_{\text{prior}} \approx 0.1 \times |\mathcal{M}_{\text{cal}}|\]</div>
+</p>
+<p><strong>Temporal basis:</strong> Use <span class="math notranslate nohighlight">\(K_{\text{total}}\)</span> basis functions spanning entire session</p>
+<p><strong>Output:</strong>
+$$\boldsymbol{\xi}<em>{\text{full}}^* = (\mathbf{a}</em>{\text{full}}^<em>, \theta_{\text{full}}^</em>, \varphi_{\text{full}}^*)$$</p>
+</section>
+<section id="final-camera-calibration">
+<h3>5.3 Final Camera Calibration<a class="headerlink" href="#final-camera-calibration" title="Link to this heading">¶</a></h3>
+<p>Store estimated camera geometry:</p>
+<p>$$\begin{aligned}
+\theta_{\text{camera}} &amp;= \theta_{\text{full}}^* \
+\varphi_{\text{camera}} &amp;= \varphi_{\text{full}}^* \
+\mathbf{C}<em>{\text{camera}} &amp;= r \cdot (\sin\theta</em>{\text{camera}}\cos\varphi_{\text{camera}}, , \sin\theta_{\text{camera}}\sin\varphi_{\text{camera}}, , \cos\theta_{\text{camera}})
+\end{aligned}$$</p>
+</section>
+</section>
+<section id="foreshortening-correction">
+<h2>6. Foreshortening Correction<a class="headerlink" href="#foreshortening-correction" title="Link to this heading">¶</a></h2>
+<section id="correction-formula">
+<h3>6.1 Correction Formula<a class="headerlink" href="#correction-formula" title="Link to this heading">¶</a></h3>
+<p>For any measured pupil size <span class="math notranslate nohighlight">\(A(x,y,t)\)</span> at gaze position (x,y):</p>
+<p><div class="math notranslate nohighlight">
+\[A_0(t) = \frac{A(x,y,t)}{\cos(\alpha(x,y; \theta_{\text{camera}}, \varphi_{\text{camera}}))}\]</div>
+</p>
+<p><strong>Interpretation:</strong> Dividing by <span class="math notranslate nohighlight">\(\cos(\alpha)\)</span> “un-does” the foreshortening to recover true pupil size.</p>
+</section>
+<section id="practical-implementation">
+<h3>6.2 Practical Implementation<a class="headerlink" href="#practical-implementation" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compute_foreshortening_factor</span><span class="p">(</span><span class="n">x_gaze</span><span class="p">,</span> <span class="n">y_gaze</span><span class="p">,</span> <span class="n">theta_cam</span><span class="p">,</span> <span class="n">phi_cam</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute cos(alpha) for given gaze position and camera geometry.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x_gaze, y_gaze : float</span>
+<span class="sd">        Gaze coordinates on screen (mm from center)</span>
+<span class="sd">    theta_cam, phi_cam : float</span>
+<span class="sd">        Camera position in spherical coordinates</span>
+<span class="sd">    r : float</span>
+<span class="sd">        Eye-to-camera distance (mm)</span>
+<span class="sd">    d : float</span>
+<span class="sd">        Eye-to-screen distance (mm)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cos_alpha : float</span>
+<span class="sd">        Foreshortening factor (1.0 = no foreshortening)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Camera position</span>
+    <span class="n">cx</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_cam</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi_cam</span><span class="p">)</span>
+    <span class="n">cy</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_cam</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi_cam</span><span class="p">)</span>
+    <span class="n">cz</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_cam</span><span class="p">)</span>
+    
+    <span class="c1"># Dot product of eye→camera and eye→gaze vectors</span>
+    <span class="n">numerator</span> <span class="o">=</span> <span class="n">cx</span> <span class="o">*</span> <span class="n">x_gaze</span> <span class="o">+</span> <span class="n">cy</span> <span class="o">*</span> <span class="n">y_gaze</span> <span class="o">+</span> <span class="n">cz</span> <span class="o">*</span> <span class="n">d</span>
+    
+    <span class="c1"># Product of vector magnitudes</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x_gaze</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y_gaze</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">correct_pupil_size</span><span class="p">(</span><span class="n">A_measured</span><span class="p">,</span> <span class="n">x_gaze</span><span class="p">,</span> <span class="n">y_gaze</span><span class="p">,</span> <span class="n">calibration</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.15</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Correct measured pupil size for foreshortening.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    A_measured : float or array</span>
+<span class="sd">        Measured pupil size</span>
+<span class="sd">    x_gaze, y_gaze : float or array</span>
+<span class="sd">        Gaze coordinates (mm)</span>
+<span class="sd">    calibration : dict</span>
+<span class="sd">        Contains &#39;theta&#39;, &#39;phi&#39;, &#39;r&#39;, &#39;d&#39; from calibration</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        Minimum cos(alpha) for reliable correction (default 0.15)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A0_corrected : float or array</span>
+<span class="sd">        True pupil size (corrected for foreshortening)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cos_alpha</span> <span class="o">=</span> <span class="n">compute_foreshortening_factor</span><span class="p">(</span>
+        <span class="n">x_gaze</span><span class="p">,</span> <span class="n">y_gaze</span><span class="p">,</span>
+        <span class="n">calibration</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">],</span> <span class="n">calibration</span><span class="p">[</span><span class="s1">&#39;phi&#39;</span><span class="p">],</span>
+        <span class="n">calibration</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">],</span> <span class="n">calibration</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># Only correct when angle is not too oblique</span>
+    <span class="n">A0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cos_alpha</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">,</span> 
+                  <span class="n">A_measured</span> <span class="o">/</span> <span class="n">cos_alpha</span><span class="p">,</span>
+                  <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">A0</span>
+</pre></div>
+</div>
+</section>
+<section id="id1">
+<h3>6.3 Quality Control<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p><strong>Reliability criterion:</strong> Only apply correction when viewing angle is reasonable:</p>
+<p>$$A_0^{\text{corrected}}(x,y,t) =
+\begin{cases}
+\dfrac{A(x,y,t)}{\cos(\alpha(x,y))} &amp; \text{if } \cos(\alpha(x,y)) &gt; \epsilon \[1em]
+\text{NaN} &amp; \text{otherwise}
+\end{cases}$$</p>
+<p><strong>Threshold selection:</strong> <span class="math notranslate nohighlight">\(\epsilon = 0.15\)</span> corresponds to <span class="math notranslate nohighlight">\(\alpha \approx 81°\)</span></p>
+<p><strong>Rationale:</strong></p>
+<ul class="simple">
+<li><p>Small <span class="math notranslate nohighlight">\(\cos(\alpha)\)</span> means extreme oblique viewing angle</p></li>
+<li><p>Correction factor <span class="math notranslate nohighlight">\(1/\cos(\alpha)\)</span> becomes very large (e.g., &gt; 6.7 for <span class="math notranslate nohighlight">\(\epsilon = 0.15\)</span>)</p></li>
+<li><p>Amplifies measurement noise substantially</p></li>
+<li><p>May indicate physiological limit where pupil is barely visible to camera</p></li>
+</ul>
+</section>
+</section>
+<section id="validation">
+<h2>7. Validation<a class="headerlink" href="#validation" title="Link to this heading">¶</a></h2>
+<section id="model-fit-quality">
+<h3>7.1 Model Fit Quality<a class="headerlink" href="#model-fit-quality" title="Link to this heading">¶</a></h3>
+<p><strong>Residual analysis:</strong>
+<div class="math notranslate nohighlight">
+\[e_i = A_i - \hat{A}(x_i, y_i, t_i; \boldsymbol{\xi}^*)\]</div>
+</p>
+<p><strong>Metrics:</strong></p>
+<ul class="simple">
+<li><p>Root mean square error: <span class="math notranslate nohighlight">\(\text{RMSE} = \sqrt{\frac{1}{|\mathcal{M}|}\sum_{i} e_i^2}\)</span></p></li>
+<li><p>Coefficient of determination: <span class="math notranslate nohighlight">\(R^2 = 1 - \frac{\sum_i e_i^2}{\sum_i (A_i - \bar{A})^2}\)</span></p></li>
+<li><p>Mean bias: <span class="math notranslate nohighlight">\(\bar{e} = \frac{1}{|\mathcal{M}|}\sum_i e_i\)</span> (should be ≈ 0)</p></li>
+</ul>
+<p><strong>Typical values:</strong> <span class="math notranslate nohighlight">\(R^2 &gt; 0.90\)</span> indicates good fit</p>
+</section>
+<section id="spatial-consistency-check">
+<h3>7.2 Spatial Consistency Check<a class="headerlink" href="#spatial-consistency-check" title="Link to this heading">¶</a></h3>
+<p><strong>Test:</strong> Corrected pupil size should be independent of gaze position.</p>
+<p>For overlapping time periods with different gaze positions:
+<div class="math notranslate nohighlight">
+\[\text{Var}_{x,y}\left[A_0^{\text{corrected}}(x,y,t)\right] \ll \text{Var}_t\left[A_0^{\text{corrected}}(t)\right]\]</div>
+</p>
+<p><strong>Quantitative check:</strong> Compute intra-class correlation:
+<div class="math notranslate nohighlight">
+\[\text{ICC} = \frac{\sigma_{\text{temporal}}^2}{\sigma_{\text{temporal}}^2 + \sigma_{\text{spatial}}^2}\]</div>
+</p>
+<p>Good correction: ICC &gt; 0.95 (temporal variance dominates)</p>
+</section>
+<section id="camera-geometry-stability">
+<h3>7.3 Camera Geometry Stability<a class="headerlink" href="#camera-geometry-stability" title="Link to this heading">¶</a></h3>
+<p><strong>Compare Stage 1 and Stage 2 estimates:</strong>
+$$\Delta\theta = |\theta_{\text{full}}^* - \theta_{\text{cal}}^<em>|, \quad \Delta\varphi = |\varphi_{\text{full}}^</em> - \varphi_{\text{cal}}^*|$$</p>
+<p><strong>Interpretation:</strong></p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\Delta\theta, \Delta\varphi &lt; 5°\)</span>: Excellent stability</p></li>
+<li><p><span class="math notranslate nohighlight">\(5° - 10°\)</span>: Acceptable (minor head movement or systematic drift)</p></li>
+<li><p><span class="math notranslate nohighlight">\(&gt; 10°\)</span>: Concerning (check for head motion, setup changes, or model violation)</p></li>
+</ul>
+</section>
+<section id="visual-inspection">
+<h3>7.4 Visual Inspection<a class="headerlink" href="#visual-inspection" title="Link to this heading">¶</a></h3>
+<p>Plot corrected vs. uncorrected pupil traces:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Uncorrected</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">A_measured</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Measured (uncorrected)&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Measured pupil size&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="c1"># Corrected</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">A0_corrected</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Corrected&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;True pupil size A₀(t)&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Expected:</strong></p>
+<ul class="simple">
+<li><p>Corrected trace should be smoother</p></li>
+<li><p>Gaze-dependent artifacts should be removed</p></li>
+<li><p>Physiological dynamics preserved</p></li>
+</ul>
+</section>
+</section>
+<section id="typical-parameter-values">
+<h2>8. Typical Parameter Values<a class="headerlink" href="#typical-parameter-values" title="Link to this heading">¶</a></h2>
+<section id="geometric-setup">
+<h3>8.1 Geometric Setup<a class="headerlink" href="#geometric-setup" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Eye-to-screen distance: <span class="math notranslate nohighlight">\(d = 600\text{-}800\)</span> mm</p></li>
+<li><p>Eye-to-camera distance: <span class="math notranslate nohighlight">\(r = 500\text{-}700\)</span> mm (depends on eye-tracker model)</p></li>
+<li><p>Screen dimensions: <span class="math notranslate nohighlight">\(\pm 300\text{-}400\)</span> mm horizontally, <span class="math notranslate nohighlight">\(\pm 200\text{-}300\)</span> mm vertically</p></li>
+</ul>
+</section>
+<section id="camera-position">
+<h3>8.2 Camera Position<a class="headerlink" href="#camera-position" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Typical remote eye-trackers: Camera below screen center</p>
+<ul>
+<li><p><span class="math notranslate nohighlight">\(\theta \approx 90°\text{-}100°\)</span> (slightly below horizontal)</p></li>
+<li><p><span class="math notranslate nohighlight">\(\varphi \approx 0°\)</span> (centered horizontally)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="hyperparameters">
+<h3>8.3 Hyperparameters<a class="headerlink" href="#hyperparameters" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Smoothness weight: <span class="math notranslate nohighlight">\(\lambda_{\text{smooth}} = 10^{-2} \text{-} 10^{2}\)</span> (tune via cross-validation)</p></li>
+<li><p>Prior weight: <span class="math notranslate nohighlight">\(\lambda_{\text{prior}} = 0.1 \times |\mathcal{M}_{\text{cal}}|\)</span></p></li>
+<li><p>Calibration weight ratio: <span class="math notranslate nohighlight">\(w_{\text{cal}} / w_{\text{task}} = 2\text{-}5\)</span></p></li>
+<li><p>Spline knots: 1-2 per second (adapt to signal bandwidth)</p></li>
+</ul>
+</section>
+</section>
+<section id="complete-workflow">
+<h2>9. Complete Workflow<a class="headerlink" href="#complete-workflow" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>═══════════════════════════════════════════════════════════════
+                    FORESHORTENING CORRECTION
+                      FOR PUPIL SIZE MEASUREMENTS
+═══════════════════════════════════════════════════════════════
+
+INPUT:
+  • Raw pupil data: {(x,y,t,A)} at 1000 Hz
+  • Eye-to-camera distance: r (mm)
+  • Eye-to-screen distance: d (mm)
+
+STEP 1: PREPROCESSING
+  ├─ Remove blinks and artifacts
+  ├─ Low-pass filter (3-5 Hz)
+  ├─ Downsample to 50 Hz
+  └─ Create valid measurement set M
+
+STEP 2: PARTITION DATA
+  ├─ M_cal: Calibration phase (first ~2 min, diverse gaze)
+  └─ M_task: Task phase (remaining ~30 min)
+
+STEP 3: STAGE 1 CALIBRATION
+  ├─ Fit model to M_cal only
+  ├─ Estimate camera geometry: θ*_cal, φ*_cal
+  └─ Validate fit quality (R² &gt; 0.90)
+
+STEP 4: STAGE 2 REFINEMENT
+  ├─ Fit model to full dataset M = M_cal ∪ M_task
+  ├─ Use Stage 1 geometry as prior
+  ├─ Weight calibration data higher (w_cal = 2-5)
+  └─ Output: θ*_full, φ*_full, full A₀(t)
+
+STEP 5: APPLY CORRECTION
+  For each measurement A(x,y,t):
+    ├─ Compute: cos(α(x,y)) using θ*_full, φ*_full
+    ├─ Correct: A₀(t) = A(x,y,t) / cos(α(x,y))
+    └─ Flag unreliable: if cos(α) &lt; 0.15, set to NaN
+
+STEP 6: VALIDATION
+  ├─ Check residuals (RMSE, R²)
+  ├─ Verify spatial consistency (ICC &gt; 0.95)
+  ├─ Assess geometry stability (Δθ, Δφ &lt; 10°)
+  └─ Visual inspection of corrected traces
+
+OUTPUT:
+  • Corrected pupil size time series: A₀(t)
+  • Camera calibration: (θ, φ, r, d)
+  • Quality metrics and validation results
+
+═══════════════════════════════════════════════════════════════
+</pre></div>
+</div>
+</section>
+<section id="extensions-and-considerations">
+<h2>10. Extensions and Considerations<a class="headerlink" href="#extensions-and-considerations" title="Link to this heading">¶</a></h2>
+<section id="head-movement">
+<h3>10.1 Head Movement<a class="headerlink" href="#head-movement" title="Link to this heading">¶</a></h3>
+<p>If subject moves head during session:</p>
+<ul class="simple">
+<li><p>Eye-camera distance r changes → violates fixed-geometry assumption</p></li>
+<li><p><strong>Solution 1:</strong> Track head position and update r, d in real-time</p></li>
+<li><p><strong>Solution 2:</strong> Use head-mounted eye-tracker (r, d constant in head reference frame)</p></li>
+<li><p><strong>Solution 3:</strong> Model time-varying camera position (advanced)</p></li>
+</ul>
+</section>
+<section id="binocular-eye-tracking-with-nose-centered-coordinates">
+<h3>10.2 Binocular Eye-Tracking with Nose-Centered Coordinates<a class="headerlink" href="#binocular-eye-tracking-with-nose-centered-coordinates" title="Link to this heading">¶</a></h3>
+<p>For dual-eye systems, using both eyes simultaneously provides significant advantages for geometry estimation and correction reliability.</p>
+<section id="coordinate-system">
+<h4>10.2.1 Coordinate System<a class="headerlink" href="#coordinate-system" title="Link to this heading">¶</a></h4>
+<p><strong>Nose-centered reference frame:</strong></p>
+<ul class="simple">
+<li><p>Origin at nose midpoint: <span class="math notranslate nohighlight">\(N = (0,0,0)\)</span></p></li>
+<li><p>Left eye: <span class="math notranslate nohighlight">\(E_L = (-\text{IPD}/2, 0, 0)\)</span></p></li>
+<li><p>Right eye: <span class="math notranslate nohighlight">\(E_R = (+\text{IPD}/2, 0, 0)\)</span></p></li>
+<li><p>Inter-pupillary distance (IPD): typically 60-65 mm (measurable)</p></li>
+<li><p>Camera: <span class="math notranslate nohighlight">\(C = (c_x, c_y, c_z)\)</span> with <span class="math notranslate nohighlight">\(|\vec{NC}| = r\)</span></p></li>
+<li><p>Screen: plane at distance <span class="math notranslate nohighlight">\(d\)</span> from nose (assumes frontal viewing)</p></li>
+</ul>
+<p><strong>Key advantage:</strong> Both eyes constrain the same camera position <span class="math notranslate nohighlight">\(C\)</span>, providing stereo-like geometric information.</p>
+</section>
+<section id="modified-geometric-model">
+<h4>10.2.2 Modified Geometric Model<a class="headerlink" href="#modified-geometric-model" title="Link to this heading">¶</a></h4>
+<p>For eye <span class="math notranslate nohighlight">\(i \in {L, R}\)</span> viewing screen position <span class="math notranslate nohighlight">\((x,y)\)</span>:</p>
+<p>$$\vec{E_i} = \begin{cases}
+(-\text{IPD}/2, 0, 0) &amp; \text{if } i = L \
+(+\text{IPD}/2, 0, 0) &amp; \text{if } i = R
+\end{cases}$$</p>
+<p><div class="math notranslate nohighlight">
+\[\vec{E_iC} = \vec{C} - \vec{E_i} = (c_x - e_{i,x}, c_y, c_z)\]</div>
+</p>
+<p><div class="math notranslate nohighlight">
+\[\vec{E_iT} = (x, y, d) - \vec{E_i} = (x - e_{i,x}, y, d)\]</div>
+</p>
+<p><strong>Foreshortening factor:</strong>
+<div class="math notranslate nohighlight">
+\[\cos(\alpha_i(x,y)) = \frac{\vec{E_iC} \cdot \vec{E_iT}}{|\vec{E_iC}| \cdot |\vec{E_iT}|}\]</div>
+</p>
+<p><div class="math notranslate nohighlight">
+\[= \frac{(c_x - e_{i,x})(x - e_{i,x}) + c_y y + c_z d}{\sqrt{(c_x - e_{i,x})^2 + c_y^2 + c_z^2} \cdot \sqrt{(x - e_{i,x})^2 + y^2 + d^2}}\]</div>
+</p>
+<p><strong>Camera parameterization</strong> (still 2 DOF):
+$$\begin{aligned}
+c_x &amp;= r \sin(\theta) \cos(\varphi) \
+c_y &amp;= r \sin(\theta) \sin(\varphi) \
+c_z &amp;= r \cos(\theta)
+\end{aligned}$$</p>
+<p>where <span class="math notranslate nohighlight">\(r\)</span> is now the nose-to-camera distance.</p>
+</section>
+<section id="pupil-dynamics-model">
+<h4>10.2.3 Pupil Dynamics Model<a class="headerlink" href="#pupil-dynamics-model" title="Link to this heading">¶</a></h4>
+<p>Both pupils respond identically to cognitive/arousal state (physiologically coupled):</p>
+<p>$$\begin{aligned}
+A_L(x,y,t) &amp;= A_0(t) \cdot \cos(\alpha_L(x,y; \theta, \varphi)) \
+A_R(x,y,t) &amp;= A_0(t) \cdot \cos(\alpha_R(x,y; \theta, \varphi))
+\end{aligned}$$</p>
+<ul class="simple">
+<li><p>Single shared spline: <span class="math notranslate nohighlight">\(A_0(t) = \sum_{k=1}^K a_k B_k(t)\)</span></p></li>
+<li><p>Parameter count: <span class="math notranslate nohighlight">\(K + 2\)</span> (same as monocular)</p></li>
+<li><p>Physiologically plausible for normal binocular vision</p></li>
+</ul>
+</section>
+<section id="modified-optimization-problem">
+<h4>10.2.4 Modified Optimization Problem<a class="headerlink" href="#modified-optimization-problem" title="Link to this heading">¶</a></h4>
+<p><strong>Objective function:</strong></p>
+<p>$$\min_{\mathbf{a}, \theta, \varphi} \left[ \sum_{i \in {L,R}} L_{\text{data}}(\mathbf{a}, \theta, \varphi; \mathcal{M}<em>i) + \lambda</em>{\text{smooth}} R_{\text{smooth}}(\mathbf{a}) \right]$$</p>
+<p>where:
+$$L_{\text{data}}(\mathbf{a}, \theta, \varphi; \mathcal{M}<em>i) = \sum</em>{(x,y,t,A) \in \mathcal{M}_i} \left[A - \left(\sum_k a_k B_k(t)\right) \cos(\alpha_i(x,y; \theta, \varphi))\right]^2$$</p>
+<p><strong>Measurement set:</strong>
+$$\mathcal{M} = \mathcal{M}_L \cup \mathcal{M}<em>R = {(i, x_j, y_j, t_j, A</em>{i,j})}$$</p>
+<p>where <span class="math notranslate nohighlight">\(i \in {L, R}\)</span> indicates eye.</p>
+<p><strong>Two-stage approach:</strong></p>
+<ul class="simple">
+<li><p>Stage 1: Fit calibration data from both eyes → $(\theta^<em>_{\text{cal}}, \varphi^</em>_{\text{cal}})$</p></li>
+<li><p>Stage 2: Fit full dataset with geometric prior</p></li>
+<li><p>Both eyes constrain same <span class="math notranslate nohighlight">\((\theta, \varphi)\)</span> throughout</p></li>
+</ul>
+</section>
+<section id="advantages-of-binocular-approach">
+<h4>10.2.5 Advantages of Binocular Approach<a class="headerlink" href="#advantages-of-binocular-approach" title="Link to this heading">¶</a></h4>
+<ol class="arabic simple">
+<li><p><strong>More data, same parameters:</strong></p>
+<ul class="simple">
+<li><p>~2× measurements for same screen locations</p></li>
+<li><p>Better statistical power</p></li>
+<li><p>Expected: 20-40% reduction in parameter uncertainty</p></li>
+</ul>
+</li>
+<li><p><strong>Geometric cross-validation:</strong></p>
+<ul class="simple">
+<li><p>Both eyes must agree on camera position</p></li>
+<li><p>Natural consistency check</p></li>
+<li><p>Reduces local minima in optimization</p></li>
+</ul>
+</li>
+<li><p><strong>Complementary viewing angles:</strong></p>
+<ul class="simple">
+<li><p>For same screen point, left/right eyes have different <span class="math notranslate nohighlight">\(\alpha\)</span></p></li>
+<li><p>Provides stereo-like constraints on <span class="math notranslate nohighlight">\(C\)</span></p></li>
+<li><p>Especially valuable when task-phase gaze is spatially restricted</p></li>
+</ul>
+</li>
+<li><p><strong>Robustness to missing data:</strong></p>
+<ul class="simple">
+<li><p>If one eye has blinks/artifacts, other eye still provides information</p></li>
+<li><p>Better temporal coverage</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="implementation-notes">
+<h4>10.2.6 Implementation Notes<a class="headerlink" href="#implementation-notes" title="Link to this heading">¶</a></h4>
+<p><strong>Known parameters:</strong></p>
+<ul class="simple">
+<li><p>IPD: Measure from calibration data or use typical value (62-64 mm)</p></li>
+<li><p><span class="math notranslate nohighlight">\(d\)</span>: Eye-to-screen distance (assumes frontal viewing, equal for both eyes)</p></li>
+<li><p><span class="math notranslate nohighlight">\(r\)</span>: Nose-to-camera distance (eye-tracker specification or measured)</p></li>
+</ul>
+<p><strong>Assumptions:</strong></p>
+<ul class="simple">
+<li><p>Head is frontal (nose perpendicular to screen)</p></li>
+<li><p>Both eyes equidistant from screen</p></li>
+<li><p>Single camera (or symmetric dual-camera setup)</p></li>
+<li><p>If head is tilted, IPD vector rotates → requires head pose tracking</p></li>
+</ul>
+<p><strong>Validation:</strong></p>
+<ul class="simple">
+<li><p>Check <span class="math notranslate nohighlight">\(A_{0,L}^{\text{corrected}}(t) \approx A_{0,R}^{\text{corrected}}(t)\)</span> (should be highly correlated)</p></li>
+<li><p>Strong disagreement may indicate anisocoria or model violation</p></li>
+</ul>
+<p><strong>Correction application:</strong>
+Each eye corrected using the same geometric parameters:
+$$A_{0,i}^{\text{corrected}}(t) = \frac{A_i(x,y,t)}{\cos(\alpha_i(x,y; \theta^<em>, \varphi^</em>))}$$</p>
+<p><strong>Final estimate:</strong>
+<div class="math notranslate nohighlight">
+\[A_0^{\text{final}}(t) = \frac{1}{2}\left[A_{0,L}^{\text{corrected}}(t) + A_{0,R}^{\text{corrected}}(t)\right]\]</div>
+</p>
+<p>Averaging provides noise reduction and validates that both eyes yield consistent estimates.</p>
+</section>
+<section id="comparison-with-monocular-approach">
+<h4>10.2.7 Comparison with Monocular Approach<a class="headerlink" href="#comparison-with-monocular-approach" title="Link to this heading">¶</a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspect</p></th>
+<th class="head"><p>Monocular</p></th>
+<th class="head"><p>Binocular</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Coordinate origin</p></td>
+<td><p>Eye</p></td>
+<td><p>Nose</p></td>
+</tr>
+<tr class="row-odd"><td><p>Parameters</p></td>
+<td><p><span class="math notranslate nohighlight">\(K + 2\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(K + 2\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p>Data per timepoint</p></td>
+<td><p>1 measurement</p></td>
+<td><p>2 measurements</p></td>
+</tr>
+<tr class="row-odd"><td><p>Geometry uncertainty</p></td>
+<td><p>Baseline</p></td>
+<td><p>~30% lower</p></td>
+</tr>
+<tr class="row-even"><td><p>Computational cost</p></td>
+<td><p>1×</p></td>
+<td><p>~1.5×</p></td>
+</tr>
+<tr class="row-odd"><td><p>Physiological validity</p></td>
+<td><p>N/A</p></td>
+<td><p>High (coupled pupils)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recommendation:</strong> Use the binocular approach when both eyes are tracked. It provides better geometric constraints with minimal additional computational cost and maintains physiological plausibility by assuming coupled pupil responses.</p>
+</section>
+<section id="example-left-eye-correction-factor">
+<h4>10.2.8 Example: Left Eye Correction Factor<a class="headerlink" href="#example-left-eye-correction-factor" title="Link to this heading">¶</a></h4>
+<p>For left eye at gaze position <span class="math notranslate nohighlight">\((x,y)\)</span> with IPD = 63 mm:</p>
+<p><div class="math notranslate nohighlight">
+\[e_{L,x} = -31.5 \text{ mm}\]</div>
+</p>
+<p><div class="math notranslate nohighlight">
+\[\cos(\alpha_L(x,y)) = \frac{[r\sin\theta\cos\varphi + 31.5](x + 31.5) + r\sin\theta\sin\varphi \cdot y + r\cos\theta \cdot d}{\sqrt{[r\sin\theta\cos\varphi + 31.5]^2 + [r\sin\theta\sin\varphi]^2 + [r\cos\theta]^2} \cdot \sqrt{(x+31.5)^2 + y^2 + d^2}}\]</div>
+</p>
+<p>Right eye analogous with <span class="math notranslate nohighlight">\(e_{R,x} = +31.5\)</span> mm.</p>
+</section>
+</section>
+<section id="alternative-pupil-metrics">
+<h3>10.3 Alternative Pupil Metrics<a class="headerlink" href="#alternative-pupil-metrics" title="Link to this heading">¶</a></h3>
+<p>Algorithm generalizes to:</p>
+<ul class="simple">
+<li><p><strong>Pupil diameter</strong> (most common)</p></li>
+<li><p><strong>Pupil area</strong> (more robust to ellipse fitting)</p></li>
+<li><p><strong>Pupil aspect ratio</strong> (additional correction may be needed)</p></li>
+</ul>
+</section>
+<section id="multi-session-stability">
+<h3>10.4 Multi-Session Stability<a class="headerlink" href="#multi-session-stability" title="Link to this heading">¶</a></h3>
+<p>For longitudinal studies:</p>
+<ul class="simple">
+<li><p><strong>Recalibrate</strong> if setup changes (camera moved, new subject session)</p></li>
+<li><p><strong>Reuse calibration</strong> if setup is mechanically stable</p></li>
+<li><p><strong>Track geometry drift</strong> across days/weeks</p></li>
+</ul>
+</section>
+<section id="computational-efficiency">
+<h3>10.5 Computational Efficiency<a class="headerlink" href="#computational-efficiency" title="Link to this heading">¶</a></h3>
+<p>For very long recordings (hours):</p>
+<ul class="simple">
+<li><p>Use sparse temporal basis (fewer knots)</p></li>
+<li><p>Consider piecewise fitting (segment into chunks)</p></li>
+<li><p>Parallelize across segments</p></li>
+</ul>
+</section>
+<section id="incorporating-gaze-calibration-uncertainty">
+<h3>10.6 Incorporating Gaze Calibration Uncertainty<a class="headerlink" href="#incorporating-gaze-calibration-uncertainty" title="Link to this heading">¶</a></h3>
+<p>If eye-tracker calibration quality estimates are available (i.e., spatial uncertainty in gaze position measurements), this information can significantly improve the robustness and statistical optimality of the foreshortening correction.</p>
+<section id="weighted-least-squares-formulation">
+<h4>10.6.1 Weighted Least Squares Formulation<a class="headerlink" href="#weighted-least-squares-formulation" title="Link to this heading">¶</a></h4>
+<p><strong>Standard objective function:</strong>
+<div class="math notranslate nohighlight">
+\[L_{\text{data}} = \sum_i \left[A_i - \hat{A}(x_i, y_i, t_i)\right]^2\]</div>
+</p>
+<p><strong>Weighted objective function:</strong>
+<div class="math notranslate nohighlight">
+\[L_{\text{weighted}} = \sum_i w_i \left[A_i - \hat{A}(x_i, y_i, t_i)\right]^2\]</div>
+</p>
+<p>where <span class="math notranslate nohighlight">\(w_i\)</span> accounts for measurement uncertainty at sample <span class="math notranslate nohighlight">\(i\)</span>.</p>
+</section>
+<section id="uncertainty-propagation">
+<h4>10.6.2 Uncertainty Propagation<a class="headerlink" href="#uncertainty-propagation" title="Link to this heading">¶</a></h4>
+<p>Gaze position uncertainty propagates to the foreshortening factor through the chain rule:</p>
+<p><div class="math notranslate nohighlight">
+\[\sigma_{\cos\alpha}^2 \approx \left(\frac{\partial \cos\alpha}{\partial x}\right)^2 \sigma_x^2 + \left(\frac{\partial \cos\alpha}{\partial y}\right)^2 \sigma_y^2\]</div>
+</p>
+<p>where <span class="math notranslate nohighlight">\(\sigma_x\)</span> and <span class="math notranslate nohighlight">\(\sigma_y\)</span> are gaze position uncertainties (typically provided by eye-tracker calibration).</p>
+<p><strong>Key insight:</strong> Gaze measurements with higher uncertainty contribute less reliable information about the foreshortening factor and should receive lower weight in the optimization.</p>
+</section>
+<section id="optimal-weighting">
+<h4>10.6.3 Optimal Weighting<a class="headerlink" href="#optimal-weighting" title="Link to this heading">¶</a></h4>
+<p>For sample <span class="math notranslate nohighlight">\(i\)</span> with gaze uncertainty <span class="math notranslate nohighlight">\((\sigma_{x,i}, \sigma_{y,i})\)</span>:</p>
+<p><div class="math notranslate nohighlight">
+\[w_i = \frac{1}{\sigma_{\text{total},i}^2}\]</div>
+</p>
+<p>where the total measurement variance combines pupil and gaze-induced uncertainty:</p>
+<p><div class="math notranslate nohighlight">
+\[\sigma_{\text{total},i}^2 = \sigma_{A}^2 + \left[\frac{\partial \hat{A}}{\partial \cos\alpha}\right]^2 \sigma_{\cos\alpha,i}^2\]</div>
+</p>
+<p><strong>Simplified approximation</strong> (assuming pupil measurement noise dominates or is constant):</p>
+<p><div class="math notranslate nohighlight">
+\[w_i \propto \frac{1}{\sigma_{\cos\alpha,i}^2} \propto \frac{1}{\left(\frac{\partial \cos\alpha}{\partial x}\right)^2 \sigma_{x,i}^2 + \left(\frac{\partial \cos\alpha}{\partial y}\right)^2 \sigma_{y,i}^2}\]</div>
+</p>
+</section>
+<section id="id2">
+<h4>10.6.4 Practical Implementation<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
+<p><strong>Modified optimization problem:</strong></p>
+<p><div class="math notranslate nohighlight">
+\[\min_{\boldsymbol{\xi}} \left[ \sum_i w_i \left[A_i - \hat{A}(x_i, y_i, t_i; \boldsymbol{\xi})\right]^2 + \lambda_{\text{smooth}} R_{\text{smooth}}(\mathbf{a}) + \lambda_{\text{prior}} R_{\text{prior}}(\theta, \varphi) \right]\]</div>
+</p>
+<p><strong>Weight computation algorithm:</strong></p>
+<ol class="arabic simple">
+<li><p>For each measurement, obtain gaze uncertainty <span class="math notranslate nohighlight">\((\sigma_x, \sigma_y)\)</span> from eye-tracker calibration</p></li>
+<li><p>Compute gradients of <span class="math notranslate nohighlight">\(\cos(\alpha(x,y))\)</span> with respect to gaze position</p></li>
+<li><p>Propagate uncertainty to <span class="math notranslate nohighlight">\(\sigma_{\cos\alpha}\)</span></p></li>
+<li><p>Set weight <span class="math notranslate nohighlight">\(w = 1/\sigma_{\cos\alpha}^2\)</span> (normalized across all samples)</p></li>
+</ol>
+<p><strong>Thresholding:</strong> Optionally exclude samples where gaze uncertainty exceeds a threshold (e.g., <span class="math notranslate nohighlight">\(\sigma_{\text{gaze}} &gt; 2°\)</span> visual angle or 50-100 pixels), indicating very poor tracking quality.</p>
+</section>
+<section id="benefits">
+<h4>10.6.5 Benefits<a class="headerlink" href="#benefits" title="Link to this heading">¶</a></h4>
+<p><strong>1. Better geometry estimation:</strong></p>
+<ul class="simple">
+<li><p>Downweight samples with poor gaze tracking</p></li>
+<li><p>Prevents miscalibrated gaze points from biasing camera position estimates</p></li>
+<li><p>Especially important during calibration phase where spatial diversity is critical</p></li>
+</ul>
+<p><strong>2. Robustness to outliers:</strong></p>
+<ul class="simple">
+<li><p>Automatically reduces influence of poorly tracked samples</p></li>
+<li><p>Natural quality control without hard thresholds</p></li>
+</ul>
+<p><strong>3. Spatially-varying quality:</strong></p>
+<ul class="simple">
+<li><p>If gaze tracking is worse at screen periphery (common), central fixations naturally receive higher weight</p></li>
+<li><p>Optimal use of available information</p></li>
+</ul>
+<p><strong>4. Eye-specific weighting (binocular):</strong></p>
+<ul class="simple">
+<li><p>If left/right eyes have different calibration quality, weight appropriately</p></li>
+<li><p>Still estimate shared <span class="math notranslate nohighlight">\(A_0(t)\)</span> but with statistically optimal weighting</p></li>
+</ul>
+<p><strong>5. Temporal degradation:</strong></p>
+<ul class="simple">
+<li><p>If gaze quality degrades over long recordings, later data automatically downweighted</p></li>
+<li><p>More robust parameter estimates</p></li>
+</ul>
+</section>
+<section id="when-this-extension-helps-most">
+<h4>10.6.6 When This Extension Helps Most<a class="headerlink" href="#when-this-extension-helps-most" title="Link to this heading">¶</a></h4>
+<p><strong>High impact scenarios:</strong>
+✓ Calibration quality varies spatially (worse at screen edges)<br />
+✓ Some calibration trials failed or were marginal<br />
+✓ One eye tracks better than the other (binocular case)<br />
+✓ Long recordings where tracking quality degrades<br />
+✓ Subjects with poor eye-tracking (e.g., elderly, clinical populations)</p>
+<p><strong>Lower impact scenarios:</strong></p>
+<ul class="simple">
+<li><p>Uniform high-quality gaze tracking across all samples</p></li>
+<li><p>Gaze uncertainty &lt;&lt; variation in foreshortening effect across viewing angles</p></li>
+</ul>
+</section>
+<section id="id3">
+<h4>10.6.7 Validation<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
+<p><strong>Check improvement:</strong></p>
+<ul class="simple">
+<li><p>Compare weighted vs. unweighted fit quality (R², residuals)</p></li>
+<li><p>Plot residuals vs. gaze uncertainty (should see no correlation after weighting)</p></li>
+<li><p>Check if parameter uncertainty estimates decrease</p></li>
+</ul>
+<p><strong>Expected improvement:</strong></p>
+<ul class="simple">
+<li><p>10-30% reduction in parameter uncertainty if gaze errors are spatially heterogeneous</p></li>
+<li><p>Improved fit quality (R²) by 2-5% typically</p></li>
+<li><p>More stable geometry estimates across multiple fits</p></li>
+</ul>
+</section>
+<section id="id4">
+<h4>10.6.8 Implementation Notes<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<p><strong>Obtaining gaze uncertainty:</strong></p>
+<ul class="simple">
+<li><p>Most eye-trackers provide calibration/validation accuracy metrics</p></li>
+<li><p>Can be global (single value) or spatially-varying (map across screen)</p></li>
+<li><p>Typical values: 0.5° (excellent) to 2° (poor) visual angle</p></li>
+</ul>
+<p><strong>Gradient computation:</strong>
+For efficient implementation, compute gradients analytically:</p>
+<p><div class="math notranslate nohighlight">
+\[\frac{\partial \cos\alpha}{\partial x} = \frac{c_x}{r \cdot |\vec{ET}|} - \frac{\cos\alpha \cdot (x - e_x)}{|\vec{ET}|^2}\]</div>
+</p>
+<p><div class="math notranslate nohighlight">
+\[\frac{\partial \cos\alpha}{\partial y} = \frac{c_y}{r \cdot |\vec{ET}|} - \frac{\cos\alpha \cdot y}{|\vec{ET}|^2}\]</div>
+</p>
+<p>where <span class="math notranslate nohighlight">\(|\vec{ET}| = \sqrt{(x - e_x)^2 + y^2 + d^2}\)</span> and <span class="math notranslate nohighlight">\(e_x\)</span> is the eye x-position (0 for monocular, ±IPD/2 for binocular).</p>
+<p><strong>Computational cost:</strong></p>
+<ul class="simple">
+<li><p>Minimal overhead (~5-10% increase in optimization time)</p></li>
+<li><p>Gradient computations are vectorizable</p></li>
+</ul>
+<p><strong>Alternative: Robust regression:</strong>
+If explicit uncertainty estimates are unavailable, consider robust M-estimators (e.g., Huber loss) that automatically downweight outliers.</p>
+</section>
+</section>
+<section id="extended-geometry-screen-misalignment-and-eye-offset">
+<h3>10.7 Extended Geometry: Screen Misalignment and Eye Offset<a class="headerlink" href="#extended-geometry-screen-misalignment-and-eye-offset" title="Link to this heading">¶</a></h3>
+<p>Real experimental setups involve unavoidable geometric imperfections: the eye is rarely perfectly centered with the screen midpoint, and the screen plane is typically not perfectly perpendicular to the primary viewing direction. This section extends the algorithm to estimate these alignment parameters from calibration data.</p>
+<section id="problem-motivation">
+<h4>10.7.1 Problem Motivation<a class="headerlink" href="#problem-motivation" title="Link to this heading">¶</a></h4>
+<p><strong>Idealized assumptions</strong> (Sections 1-9):</p>
+<ul class="simple">
+<li><p>Eye positioned at screen center: <span class="math notranslate nohighlight">\(\vec{ET}(0,0) = (0, 0, d)\)</span></p></li>
+<li><p>Screen perpendicular to z-axis: points <span class="math notranslate nohighlight">\((x, y)\)</span> map to 3D positions <span class="math notranslate nohighlight">\((x, y, d)\)</span></p></li>
+</ul>
+<p><strong>Realistic setup imperfections</strong>:</p>
+<ul class="simple">
+<li><p>Eye offset from screen center by <span class="math notranslate nohighlight">\((\Delta x, \Delta y)\)</span> (typically 0-100 mm)</p></li>
+<li><p>Screen tilted by small angles relative to eye-perpendicular orientation</p>
+<ul>
+<li><p>Pitch <span class="math notranslate nohighlight">\(\alpha\)</span>: tilt about horizontal axis (screen leans forward/back)</p></li>
+<li><p>Yaw <span class="math notranslate nohighlight">\(\beta\)</span>: tilt about vertical axis (screen rotates left/right)</p></li>
+<li><p>Typical: <span class="math notranslate nohighlight">\(|\alpha|, |\beta| &lt; 10°\)</span></p></li>
+</ul>
+</li>
+</ul>
+<p><strong>Consequences if ignored</strong>:</p>
+<ul class="simple">
+<li><p>Systematic bias in corrected pupil size</p></li>
+<li><p>Residual gaze-dependent artifacts</p></li>
+<li><p>Poorer model fit quality</p></li>
+</ul>
+<p><strong>Solution</strong>: Jointly estimate 4 additional geometric parameters <span class="math notranslate nohighlight">\((\Delta x, \Delta y, \alpha, \beta)\)</span> from calibration data with diverse spatial coverage.</p>
+<p><strong>Note on roll angle</strong>: A screen has 3 rotational degrees of freedom (pitch, yaw, roll), but roll (rotation about the depth axis) has negligible effect on foreshortening and is omitted for parsimony.</p>
+</section>
+<section id="coordinate-system-and-reference-frame">
+<h4>10.7.2 Coordinate System and Reference Frame<a class="headerlink" href="#coordinate-system-and-reference-frame" title="Link to this heading">¶</a></h4>
+<p><strong>Eye-centered reference frame</strong> (unchanged):</p>
+<ul class="simple">
+<li><p>Origin: <strong>E</strong> = (0, 0, 0)</p></li>
+<li><p>Z-axis: Primary viewing direction (perpendicular to screen in idealized case)</p></li>
+<li><p>X-axis: Rightward (subject’s perspective)</p></li>
+<li><p>Y-axis: Upward</p></li>
+</ul>
+<p><strong>Screen coordinate system</strong>:</p>
+<ul class="simple">
+<li><p>Measured gaze coordinates <span class="math notranslate nohighlight">\((x, y)\)</span> are in the screen’s intrinsic 2D coordinate system</p></li>
+<li><p>Origin at screen center (by convention)</p></li>
+<li><p>Units: millimeters</p></li>
+</ul>
+<p><strong>Screen pose in eye frame</strong>: Defined by:</p>
+<ol class="arabic simple">
+<li><p><strong>Translation</strong>: Screen center position <span class="math notranslate nohighlight">\(\vec{S}_0 = (\Delta x, \Delta y, d)\)</span></p></li>
+<li><p><strong>Orientation</strong>: Euler angles <span class="math notranslate nohighlight">\((\alpha, \beta)\)</span> relative to frontal (eye-perpendicular)</p></li>
+</ol>
+</section>
+<section id="practical-measurement-of-eye-screen-distance">
+<h4>10.7.2.1 Practical Measurement of Eye-Screen Distance<a class="headerlink" href="#practical-measurement-of-eye-screen-distance" title="Link to this heading">¶</a></h4>
+<p><strong>Challenge</strong>: If eye offset <span class="math notranslate nohighlight">\((\Delta x, \Delta y)\)</span> is unknown, measuring the “eye-to-screen distance” is ambiguous.</p>
+<p><strong>Recommended approach: Perpendicular distance</strong></p>
+<p>Define <span class="math notranslate nohighlight">\(d\)</span> as the <strong>perpendicular distance</strong> from eye to screen plane:</p>
+<ul class="simple">
+<li><p>Measure with a ruler held perpendicular to the screen surface</p></li>
+<li><p>Independent of horizontal/vertical eye position</p></li>
+<li><p>Geometrically: <span class="math notranslate nohighlight">\(d\)</span> is the projection of the eye position onto the screen normal vector</p></li>
+</ul>
+<p><strong>Alternative: Fixed reference point measurement</strong></p>
+<p>If perpendicular measurement is impractical, measure eye distance to a <strong>fixed screen reference point</strong> and adjust the model:</p>
+<p><strong>Option A: Eye to screen center</strong></p>
+<p>Measure: <span class="math notranslate nohighlight">\(d_{\text{measured}} = |\vec{ES}_0|\)</span> (eye to physical screen center)</p>
+<p>Relationship:
+<div class="math notranslate nohighlight">
+\[d_{\text{measured}}^2 = \Delta x^2 + \Delta y^2 + d^2\]</div>
+</p>
+<p>In optimization, <strong>fix</strong> <span class="math notranslate nohighlight">\(d_{\text{measured}}\)</span> and treat <span class="math notranslate nohighlight">\(d\)</span> as an additional parameter:
+<div class="math notranslate nohighlight">
+\[d = \sqrt{d_{\text{measured}}^2 - \Delta x^2 - \Delta y^2}\]</div>
+</p>
+<p>Constraint: <span class="math notranslate nohighlight">\(\Delta x^2 + \Delta y^2 &lt; d_{\text{measured}}^2\)</span> (eye cannot be beyond screen distance)</p>
+<p><strong>Option B: Eye to screen corner</strong> (e.g., upper-left)</p>
+<p>Measure: <span class="math notranslate nohighlight">\(d_{\text{corner}} = |\vec{E} - \vec{P}_{\text{corner}}|\)</span></p>
+<p>For upper-left corner at screen coordinates <span class="math notranslate nohighlight">\((-w/2, h/2)\)</span> where <span class="math notranslate nohighlight">\(w, h\)</span> are screen width/height:</p>
+<p><div class="math notranslate nohighlight">
+\[d_{\text{corner}}^2 = (\Delta x - w/2)^2 + (\Delta y + h/2)^2 + d^2\]</div>
+</p>
+<p>Solve for <span class="math notranslate nohighlight">\(d\)</span>:
+<div class="math notranslate nohighlight">
+\[d = \sqrt{d_{\text{corner}}^2 - (\Delta x - w/2)^2 - (\Delta y + h/2)^2}\]</div>
+</p>
+<p><strong>Option C: Estimate <span class="math notranslate nohighlight">\(d\)</span> from calibration data</strong></p>
+<p>Treat <span class="math notranslate nohighlight">\(d\)</span> as an <strong>additional free parameter</strong> (not pre-measured):</p>
+<ul class="simple">
+<li><p>Parameter vector: <span class="math notranslate nohighlight">\(\boldsymbol{\xi}_{\text{geo}} = (\theta, \varphi, \Delta x, \Delta y, \alpha, \beta, d)\)</span> (7 parameters)</p></li>
+<li><p>Requires strong spatial diversity in calibration</p></li>
+<li><p>Prior: <span class="math notranslate nohighlight">\(d \sim \mathcal{N}(650, 100^2)\)</span> mm (typical viewing distance ± uncertainty)</p></li>
+<li><p>Validation: Compare estimated <span class="math notranslate nohighlight">\(d\)</span> to physical measurement</p></li>
+</ul>
+<p><strong>Recommendation by setup type</strong>:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Setup</p></th>
+<th class="head"><p>Recommended approach</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Chin rest (fixed head)</p></td>
+<td><p>Perpendicular distance</p></td>
+<td><p>Most accurate; easy to measure with ruler</p></td>
+</tr>
+<tr class="row-odd"><td><p>Remote eye-tracker (free head)</p></td>
+<td><p>Estimate from calibration</p></td>
+<td><p><span class="math notranslate nohighlight">\(d\)</span> varies with head position anyway</p></td>
+</tr>
+<tr class="row-even"><td><p>Fixed monitor</p></td>
+<td><p>Screen center distance</p></td>
+<td><p>Easy to measure; apply Option A</p></td>
+</tr>
+<tr class="row-odd"><td><p>Laptop/tablet</p></td>
+<td><p>Corner distance + estimate</p></td>
+<td><p>Screen size known; Option B or C</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implementation note</strong>: For small offsets (<span class="math notranslate nohighlight">\(|\Delta x|, |\Delta y| &lt; 50\)</span> mm) and typical viewing distances (<span class="math notranslate nohighlight">\(d \approx 600\text{-}700\)</span> mm), the difference between perpendicular distance and center distance is small (<span class="math notranslate nohighlight">\(&lt; 5\)</span> mm). For most applications, measuring approximate eye-to-screen-center distance and treating it as <span class="math notranslate nohighlight">\(d\)</span> introduces negligible error.</p>
+</section>
+<section id="mathematical-model-screen-tilt-transformation">
+<h4>10.7.3 Mathematical Model: Screen Tilt Transformation<a class="headerlink" href="#mathematical-model-screen-tilt-transformation" title="Link to this heading">¶</a></h4>
+<p>For a gaze point at screen coordinates <span class="math notranslate nohighlight">\((x_s, y_s)\)</span> (screen frame), compute 3D position in eye frame:</p>
+<p><strong>Step 1: Homogeneous coordinates in screen frame</strong></p>
+<p><div class="math notranslate nohighlight">
+\[\vec{P}_{\text{screen}} = \begin{pmatrix} x_s \ y_s \ 0 \end{pmatrix}\]</div>
+</p>
+<p><strong>Step 2: Rotation matrices</strong> (applied in order: pitch then yaw)</p>
+<p>Pitch rotation about x-axis:</p>
+<p>$$\mathbf{R}_{\text{pitch}}(\alpha) = \begin{pmatrix}
+1 &amp; 0 &amp; 0 \
+0 &amp; \cos\alpha &amp; -\sin\alpha \
+0 &amp; \sin\alpha &amp; \cos\alpha
+\end{pmatrix}$$</p>
+<p>Yaw rotation about y-axis:</p>
+<p>$$\mathbf{R}_{\text{yaw}}(\beta) = \begin{pmatrix}
+\cos\beta &amp; 0 &amp; \sin\beta \
+0 &amp; 1 &amp; 0 \
+-\sin\beta &amp; 0 &amp; \cos\beta
+\end{pmatrix}$$</p>
+<p>Combined rotation:</p>
+<p>$$\mathbf{R}(\alpha, \beta) = \mathbf{R}<em>{\text{yaw}}(\beta) \cdot \mathbf{R}</em>{\text{pitch}}(\alpha)$$</p>
+<p><strong>Step 3: Transform to eye frame</strong></p>
+<p>Screen normal in eye frame (initially <span class="math notranslate nohighlight">\(\hat{z} = (0,0,1)\)</span> for perpendicular screen):</p>
+<p><div class="math notranslate nohighlight">
+\[\hat{n}_{\text{screen}} = \mathbf{R}(\alpha, \beta) \begin{pmatrix} 0 \ 0 \ 1 \end{pmatrix}\]</div>
+</p>
+<p>Point on screen in eye frame:</p>
+<p><div class="math notranslate nohighlight">
+\[\vec{T}(x_s, y_s) = \mathbf{R}(\alpha, \beta) \begin{pmatrix} x_s \ y_s \ 0 \end{pmatrix} + \begin{pmatrix} \Delta x \ \Delta y \ d \end{pmatrix}\]</div>
+</p>
+<p><strong>Expanded form</strong>:</p>
+<p>$$\begin{aligned}
+T_x(x_s, y_s) &amp;= x_s \cos\beta + y_s \sin\alpha \sin\beta + \Delta x \
+T_y(x_s, y_s) &amp;= y_s \cos\alpha - x_s \sin\alpha \sin\beta + \Delta y \
+T_z(x_s, y_s) &amp;= -x_s \sin\beta + y_s \sin\alpha \cos\beta + d \cos\alpha \cos\beta
+\end{aligned}$$</p>
+<p><strong>Small-angle approximation</strong> (valid for <span class="math notranslate nohighlight">\(|\alpha|, |\beta| &lt; 0.2\)</span> rad <span class="math notranslate nohighlight">\(\approx 11°\)</span>):</p>
+<p><div class="math notranslate nohighlight">
+\[\cos\alpha \approx 1 - \frac{\alpha^2}{2}, \quad \sin\alpha \approx \alpha\]</div>
+</p>
+<p><div class="math notranslate nohighlight">
+\[\cos\beta \approx 1 - \frac{\beta^2}{2}, \quad \sin\beta \approx \beta\]</div>
+</p>
+<p>Linearized (first-order):</p>
+<p>$$\begin{aligned}
+T_x &amp;\approx x_s + y_s \alpha \beta + \Delta x \
+T_y &amp;\approx y_s + \Delta y \
+T_z &amp;\approx d - x_s \beta + y_s \alpha
+\end{aligned}$$</p>
+</section>
+<section id="modified-foreshortening-model">
+<h4>10.7.4 Modified Foreshortening Model<a class="headerlink" href="#modified-foreshortening-model" title="Link to this heading">¶</a></h4>
+<p><strong>Gaze vector</strong> (eye to screen point):</p>
+<p><div class="math notranslate nohighlight">
+\[\vec{ET}(x_s, y_s) = \vec{T}(x_s, y_s) - \vec{E} = \vec{T}(x_s, y_s)\]</div>
+</p>
+<p><strong>Camera vector</strong> (eye to camera, unchanged):</p>
+<p><div class="math notranslate nohighlight">
+\[\vec{EC} = (c_x, c_y, c_z) = r(\sin\theta\cos\varphi, \sin\theta\sin\varphi, \cos\theta)\]</div>
+</p>
+<p><strong>Foreshortening factor</strong>:</p>
+<p><div class="math notranslate nohighlight">
+\[\cos(\alpha_{\text{view}}(x_s, y_s; \boldsymbol{\xi}_{\text{geo}})) = \frac{\vec{EC} \cdot \vec{ET}(x_s, y_s)}{|\vec{EC}| \cdot |\vec{ET}(x_s, y_s)|}\]</div>
+</p>
+<p>where geometric parameter vector:</p>
+<p><div class="math notranslate nohighlight">
+\[\boldsymbol{\xi}_{\text{geo}} = (\theta, \varphi, \Delta x, \Delta y, \alpha, \beta)\]</div>
+</p>
+<p><strong>Note</strong>: <span class="math notranslate nohighlight">\(\alpha\)</span> here is the screen pitch angle; <span class="math notranslate nohighlight">\(\alpha_{\text{view}}\)</span> is the viewing angle (foreshortening).</p>
+<p><strong>Full predicted measurement</strong>:</p>
+<p>$$\hat{A}(x_s, y_s, t; \mathbf{a}, \boldsymbol{\xi}<em>{\text{geo}}) = \left(\sum</em>{k=1}^K a_k B_k(t)\right) \cdot \cos(\alpha_{\text{view}}(x_s, y_s; \boldsymbol{\xi}_{\text{geo}}))$$</p>
+</section>
+<section id="fixed-camera-screen-rig-recommended-parameterization">
+<h4>10.7.5 Fixed Camera-Screen Rig (Recommended Parameterization)<a class="headerlink" href="#fixed-camera-screen-rig-recommended-parameterization" title="Link to this heading">¶</a></h4>
+<p><strong>Physical setup</strong>: Camera rigidly mounted to screen (common for remote eye-trackers).</p>
+<p><strong>Implication</strong>: Camera position relative to screen is constant in the <strong>screen reference frame</strong>.</p>
+<p><strong>Parameterization</strong>:</p>
+<ul class="simple">
+<li><p>Camera position in screen frame: <span class="math notranslate nohighlight">\(\vec{C}_{\text{rel}} = (c_x^{\text{rel}}, c_y^{\text{rel}}, c_z^{\text{rel}})\)</span></p></li>
+<li><p>Typically: camera below/above screen center</p>
+<ul>
+<li><p>Example: <span class="math notranslate nohighlight">\(c_x^{\text{rel}} = 0\)</span> (centered horizontally)</p></li>
+<li><p><span class="math notranslate nohighlight">\(c_y^{\text{rel}} = -300\)</span> mm (below screen)</p></li>
+<li><p><span class="math notranslate nohighlight">\(c_z^{\text{rel}} = 0\)</span> (flush with screen)</p></li>
+</ul>
+</li>
+<li><p>Constraint: $|\vec{C}<em>{\text{rel}}| = r</em>{\text{rel}}$ (known from eye-tracker specs)</p></li>
+</ul>
+<p><strong>Camera position in eye frame</strong>:</p>
+<p>$$\vec{C}<em>{\text{eye}} = \mathbf{R}(\alpha, \beta) \vec{C}</em>{\text{rel}} + \begin{pmatrix} \Delta x \ \Delta y \ d \end{pmatrix}$$</p>
+<p><strong>Advantage</strong>: Camera orientation automatically consistent with screen orientation. Reduces parameter correlations.</p>
+<p><strong>Parameter vector</strong> (if using fixed rig parameterization):</p>
+<p>$$\boldsymbol{\xi}<em>{\text{geo}} = (\theta</em>{\text{rel}}, \varphi_{\text{rel}}, \Delta x, \Delta y, \alpha, \beta)$$</p>
+<p>where <span class="math notranslate nohighlight">\((\theta_{\text{rel}}, \varphi_{\text{rel}})\)</span> define camera position in screen-centered spherical coordinates.</p>
+</section>
+<section id="prior-distributions-for-soft-constraints">
+<h4>10.7.6 Prior Distributions for Soft Constraints<a class="headerlink" href="#prior-distributions-for-soft-constraints" title="Link to this heading">¶</a></h4>
+<p>Instead of hard bounds, use <strong>probabilistic priors</strong> that encode expected parameter ranges while allowing data-driven deviations.</p>
+<p><strong>Prior specification</strong>:</p>
+<p><strong>1. Eye offset from screen center</strong>:</p>
+<p><div class="math notranslate nohighlight">
+\[\Delta x \sim \mathcal{N}(0, \sigma_{\Delta x}^2), \quad \Delta y \sim \mathcal{N}(0, \sigma_{\Delta y}^2)\]</div>
+</p>
+<p>Typical: <span class="math notranslate nohighlight">\(\sigma_{\Delta x} = \sigma_{\Delta y} = 50\)</span> mm (allows ±100 mm at 2σ)</p>
+<p><strong>2. Screen tilt angles</strong>:</p>
+<p>If tilt direction unknown (symmetric):</p>
+<p><div class="math notranslate nohighlight">
+\[\alpha \sim \mathcal{N}(0, \sigma_{\alpha}^2), \quad \beta \sim \mathcal{N}(0, \sigma_{\beta}^2)\]</div>
+</p>
+<p>If tilt direction known (e.g., screen typically leans back):</p>
+<p><div class="math notranslate nohighlight">
+\[\alpha \sim \mathcal{N}(\mu_{\alpha}, \sigma_{\alpha}^2)\]</div>
+</p>
+<p>where <span class="math notranslate nohighlight">\(\mu_{\alpha} &lt; 0\)</span> (negative pitch = backward tilt)</p>
+<p>For one-sided constraints (e.g., “screen cannot tilt forward”):</p>
+<p><div class="math notranslate nohighlight">
+\[\alpha \sim -\text{HalfNormal}(\sigma_{\alpha}^2) \quad \text{(constrained to } \alpha \leq 0\text{)}\]</div>
+</p>
+<p>Typical: <span class="math notranslate nohighlight">\(\sigma_{\alpha} = \sigma_{\beta} = 5° = 0.087\)</span> rad (allows ±10° at 2σ)</p>
+<p><strong>3. Camera position</strong> (if not using fixed rig):</p>
+<p>Weakly informative priors on spherical coordinates:</p>
+<p><div class="math notranslate nohighlight">
+\[\theta \sim \mathcal{N}(\mu_{\theta}, \sigma_{\theta}^2), \quad \varphi \sim \mathcal{N}(0, \sigma_{\varphi}^2)\]</div>
+</p>
+<p>Example: Camera known to be below screen</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\mu_{\theta} = 100° = 1.75\)</span> rad (slightly below horizontal)</p></li>
+<li><p><span class="math notranslate nohighlight">\(\sigma_{\theta} = 20° = 0.35\)</span> rad (loose constraint)</p></li>
+</ul>
+<p><strong>Prior regularization term</strong>:</p>
+<p>$$R_{\text{prior}}(\boldsymbol{\xi}<em>{\text{geo}}) = \frac{(\Delta x - \mu</em>{\Delta x})^2}{2\sigma_{\Delta x}^2} + \frac{(\Delta y - \mu_{\Delta y})^2}{2\sigma_{\Delta y}^2} + \frac{(\alpha - \mu_{\alpha})^2}{2\sigma_{\alpha}^2} + \frac{(\beta - \mu_{\beta})^2}{2\sigma_{\beta}^2}$$</p>
+<p>(Assumes Gaussian priors; for HalfNormal or other distributions, modify accordingly)</p>
+<p><strong>Interpretation</strong>: This is equivalent to adding a scaled negative log-prior to the loss function, implementing <strong>maximum a posteriori (MAP)</strong> estimation.</p>
+</section>
+<section id="id5">
+<h4>10.7.7 Modified Optimization Problem<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
+<p><strong>Full parameter vector</strong>:</p>
+<p><div class="math notranslate nohighlight">
+\[\boldsymbol{\xi} = (\mathbf{a}, \boldsymbol{\xi}_{\text{geo}}) = (a_1, \ldots, a_K, \theta, \varphi, \Delta x, \Delta y, \alpha, \beta) \in \mathbb{R}^{K+6}\]</div>
+</p>
+<p><strong>Stage 1: Calibration phase estimation</strong></p>
+<p>$$\boldsymbol{\xi}<em>{\text{cal}}^* = \arg\min</em>{\boldsymbol{\xi}} \Bigg[ L_{\text{data}}(\boldsymbol{\xi}; \mathcal{M}<em>{\text{cal}}) + \lambda</em>{\text{smooth}} R_{\text{smooth}}(\mathbf{a}) + \lambda_{\text{prior}} R_{\text{prior}}(\boldsymbol{\xi}_{\text{geo}}) \Bigg]$$</p>
+<p><strong>Stage 2: Full dataset refinement</strong></p>
+<p>$$\boldsymbol{\xi}<em>{\text{full}}^* = \arg\min</em>{\boldsymbol{\xi}} \Bigg[ w_{\text{cal}} L_{\text{data}}(\boldsymbol{\xi}; \mathcal{M}<em>{\text{cal}}) + w</em>{\text{task}} L_{\text{data}}(\boldsymbol{\xi}; \mathcal{M}<em>{\text{task}}) + \lambda</em>{\text{smooth}} R_{\text{smooth}}(\mathbf{a}) + \lambda_{\text{prior}}^{(2)} R_{\text{prior}}(\boldsymbol{\xi}_{\text{geo}}) \Bigg]$$</p>
+<p>where:</p>
+<ul class="simple">
+<li><p>Stage 1 prior weight: <span class="math notranslate nohighlight">\(\lambda_{\text{prior}} = 1\)</span> (normalized with data term)</p></li>
+<li><p>Stage 2 prior weight: <span class="math notranslate nohighlight">\(\lambda_{\text{prior}}^{(2)} = 0.1 \times |\mathcal{M}_{\text{cal}}|\)</span> (stronger anchoring)</p></li>
+</ul>
+<p><strong>Prior mean specification</strong>:</p>
+<ul class="simple">
+<li><p>Stage 1: Use weakly informative priors (broad <span class="math notranslate nohighlight">\(\sigma\)</span>, uninformative <span class="math notranslate nohighlight">\(\mu\)</span>)</p></li>
+<li><p>Stage 2: Optionally center priors at Stage 1 estimates: <span class="math notranslate nohighlight">\(\mu_{\alpha} = \alpha_{\text{cal}}^*\)</span>, etc.</p></li>
+</ul>
+</section>
+<section id="identifiability-and-parameter-correlations">
+<h4>10.7.8 Identifiability and Parameter Correlations<a class="headerlink" href="#identifiability-and-parameter-correlations" title="Link to this heading">¶</a></h4>
+<p><strong>Concern</strong>: Are 6 geometric parameters uniquely identifiable, or do some trade off?</p>
+<p><strong>Potential correlations</strong>:</p>
+<ol class="arabic simple">
+<li><p><span class="math notranslate nohighlight">\(\Delta x \leftrightarrow \varphi\)</span>: Horizontal eye offset vs. camera azimuth</p></li>
+<li><p><span class="math notranslate nohighlight">\(\Delta y \leftrightarrow \theta\)</span>: Vertical eye offset vs. camera elevation</p></li>
+<li><p><span class="math notranslate nohighlight">\(\alpha, \beta \leftrightarrow \theta, \varphi\)</span>: Screen tilt vs. camera position</p></li>
+</ol>
+<p><strong>Mitigation strategies</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>Spatial diversity in calibration</strong>:</p>
+<ul class="simple">
+<li><p>Gaze positions spanning full screen break degeneracies</p></li>
+<li><p>Different <span class="math notranslate nohighlight">\((x_s, y_s)\)</span> probe different aspects of geometry</p></li>
+</ul>
+</li>
+<li><p><strong>Temporal information</strong>:</p>
+<ul class="simple">
+<li><p>Pupil dynamics <span class="math notranslate nohighlight">\(A_0(t)\)</span> are independent of geometry</p></li>
+<li><p>Separates temporal (pupil) from spatial (geometry) effects</p></li>
+</ul>
+</li>
+<li><p><strong>Prior regularization</strong>:</p>
+<ul class="simple">
+<li><p>Soft constraints prevent extreme parameter values</p></li>
+<li><p>Priors encode approximate knowledge of setup</p></li>
+</ul>
+</li>
+<li><p><strong>Fixed rig constraint</strong> (if applicable):</p>
+<ul class="simple">
+<li><p>Reduces degrees of freedom</p></li>
+<li><p>Camera and screen orientations coupled</p></li>
+</ul>
+</li>
+</ol>
+<p><strong>Validation</strong>: Check parameter uncertainty estimates from optimization:</p>
+<ul class="simple">
+<li><p>Compute Hessian at optimum: <span class="math notranslate nohighlight">\(\mathbf{H} = \nabla^2 L(\boldsymbol{\xi}^*)\)</span></p></li>
+<li><p>Parameter covariance: <span class="math notranslate nohighlight">\(\text{Cov}(\boldsymbol{\xi}) \approx \mathbf{H}^{-1}\)</span></p></li>
+<li><p>Standard errors: <span class="math notranslate nohighlight">\(\text{SE}(\xi_i) = \sqrt{[\mathbf{H}^{-1}]_{ii}}\)</span></p></li>
+</ul>
+<p><strong>Rule of thumb</strong>: If <span class="math notranslate nohighlight">\(\text{SE}(\xi_i) &lt; 0.5 |\xi_i^*|\)</span>, parameter is well-identified.</p>
+</section>
+<section id="interpretation-and-physical-validation">
+<h4>10.7.9 Interpretation and Physical Validation<a class="headerlink" href="#interpretation-and-physical-validation" title="Link to this heading">¶</a></h4>
+<p><strong>Output of extended calibration</strong>:</p>
+<p>$$\boldsymbol{\xi}_{\text{geo}}^* = (\theta^<em>, \varphi^</em>, \Delta x^<em>, \Delta y^</em>, \alpha^<em>, \beta^</em>)$$</p>
+<p><strong>Interpretation</strong>:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\Delta x^* = -35\)</span> mm: “Eye is 35 mm left of screen center”</p></li>
+<li><p><span class="math notranslate nohighlight">\(\Delta y^* = +12\)</span> mm: “Eye is 12 mm above screen center”</p></li>
+<li><p><span class="math notranslate nohighlight">\(\alpha^* = -0.09\)</span> rad <span class="math notranslate nohighlight">\(= -5.2°\)</span>: “Screen tilts backward (top away from eye)”</p></li>
+<li><p><span class="math notranslate nohighlight">\(\beta^* = +0.03\)</span> rad <span class="math notranslate nohighlight">\(= +1.7°\)</span>: “Screen rotates clockwise (right edge closer)”</p></li>
+</ul>
+<p><strong>Physical validation</strong>:</p>
+<ol class="arabic simple">
+<li><p>Measure eye position relative to screen center (ruler, calipers)</p></li>
+<li><p>Measure screen tilt with inclinometer or digital level</p></li>
+<li><p>Compare measurements to estimates <span class="math notranslate nohighlight">\(\boldsymbol{\xi}_{\text{geo}}^*\)</span></p></li>
+<li><p>Expect agreement within 10-20 mm for position, 2-5° for angles</p></li>
+</ol>
+<p><strong>Consistency checks</strong>:</p>
+<ul class="simple">
+<li><p>Estimates should be stable across multiple calibrations with same setup</p></li>
+<li><p>If setup physically changed (screen moved), estimates should reflect this</p></li>
+<li><p>Within-session stability: Stage 1 vs. Stage 2 estimates similar</p></li>
+</ul>
+</section>
+<section id="impact-on-correction-quality">
+<h4>10.7.10 Impact on Correction Quality<a class="headerlink" href="#impact-on-correction-quality" title="Link to this heading">¶</a></h4>
+<p><strong>Expected improvements</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>Residual reduction</strong>:</p>
+<ul class="simple">
+<li><p>Extended model typically reduces RMSE by 5-15%</p></li>
+<li><p>Especially if misalignment is substantial (<span class="math notranslate nohighlight">\(|\Delta x|, |\Delta y| &gt; 30\)</span> mm or <span class="math notranslate nohighlight">\(|\alpha|, |\beta| &gt; 5°\)</span>)</p></li>
+</ul>
+</li>
+<li><p><strong>Removal of systematic bias</strong>:</p>
+<ul class="simple">
+<li><p>Corrected pupil <span class="math notranslate nohighlight">\(A_0(t)\)</span> should show no residual correlation with gaze position</p></li>
+<li><p>Check: <span class="math notranslate nohighlight">\(\text{Corr}(A_0^{\text{corrected}}, x_s) \approx 0\)</span> and <span class="math notranslate nohighlight">\(\text{Corr}(A_0^{\text{corrected}}, y_s) \approx 0\)</span></p></li>
+</ul>
+</li>
+<li><p><strong>Improved spatial consistency</strong>:</p>
+<ul class="simple">
+<li><p>ICC (intra-class correlation) should increase</p></li>
+<li><p>Target: ICC &gt; 0.95</p></li>
+</ul>
+</li>
+</ol>
+<p><strong>When extended model helps most</strong>:</p>
+<ul class="simple">
+<li><p>Naturalistic setups (laptops, home testing)</p></li>
+<li><p>Clinical populations with postural differences</p></li>
+<li><p>Large screens where positioning errors are common</p></li>
+<li><p>Multi-session studies (detects setup drift)</p></li>
+</ul>
+</section>
+<section id="simplified-model-selection">
+<h4>10.7.11 Simplified Model Selection<a class="headerlink" href="#simplified-model-selection" title="Link to this heading">¶</a></h4>
+<p><strong>Question</strong>: Is the added complexity (6 vs. 2 geometric parameters) justified?</p>
+<p><strong>Model comparison</strong>:</p>
+<ul class="simple">
+<li><p>Fit both simplified (Section 5) and extended (10.7) models</p></li>
+<li><p>Compare via Akaike Information Criterion (AIC) or Bayesian Information Criterion (BIC):</p></li>
+</ul>
+<p><div class="math notranslate nohighlight">
+\[\text{AIC} = 2k + N \ln(\text{RSS}/N)\]</div>
+</p>
+<p>where <span class="math notranslate nohighlight">\(k\)</span> is parameter count, <span class="math notranslate nohighlight">\(N\)</span> is sample size, RSS is residual sum of squares.</p>
+<p><strong>Decision rule</strong>:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\Delta\text{AIC} &gt; 10\)</span>: Extended model strongly preferred</p></li>
+<li><p><span class="math notranslate nohighlight">\(2 &lt; \Delta\text{AIC} &lt; 10\)</span>: Extended model weakly preferred</p></li>
+<li><p><span class="math notranslate nohighlight">\(\Delta\text{AIC} &lt; 2\)</span>: Models equivalent; use simpler</p></li>
+</ul>
+<p><strong>Practical recommendation</strong>:</p>
+<ul class="simple">
+<li><p>Start with extended model (6 parameters)</p></li>
+<li><p>If estimates are small and uncertain (<span class="math notranslate nohighlight">\(|\Delta x|, |\Delta y| &lt; 10\)</span> mm, <span class="math notranslate nohighlight">\(|\alpha|, |\beta| &lt; 2°\)</span> with large SE), consider simplified model</p></li>
+<li><p>Most real setups benefit from extended model</p></li>
+</ul>
+</section>
+<section id="binocular-extension-with-alignment-parameters">
+<h4>10.7.12 Binocular Extension with Alignment Parameters<a class="headerlink" href="#binocular-extension-with-alignment-parameters" title="Link to this heading">¶</a></h4>
+<p>For binocular tracking with nose-centered coordinates (Section 10.2):</p>
+<p><strong>Modified geometry</strong>:</p>
+<ul class="simple">
+<li><p>Nose at origin: <span class="math notranslate nohighlight">\(N = (0,0,0)\)</span></p></li>
+<li><p>Eyes: <span class="math notranslate nohighlight">\(E_L = (-\text{IPD}/2, 0, 0)\)</span>, <span class="math notranslate nohighlight">\(E_R = (+\text{IPD}/2, 0, 0)\)</span></p></li>
+<li><p>Screen center offset: <span class="math notranslate nohighlight">\(\vec{S}_0 = (\Delta x, \Delta y, d)\)</span> relative to nose</p></li>
+<li><p>Screen tilt: <span class="math notranslate nohighlight">\((\alpha, \beta)\)</span> as before</p></li>
+</ul>
+<p><strong>Eye-specific gaze vectors</strong>:</p>
+<p><div class="math notranslate nohighlight">
+\[\vec{E_iT}(x_s, y_s) = \vec{T}(x_s, y_s) - \vec{E_i}\]</div>
+</p>
+<p>where <span class="math notranslate nohighlight">\(\vec{T}(x_s, y_s)\)</span> includes screen transformation (Section 10.7.3).</p>
+<p><strong>Shared geometry parameters</strong>: Both eyes constrain same <span class="math notranslate nohighlight">\((\Delta x, \Delta y, \alpha, \beta)\)</span></p>
+<p><strong>Advantage</strong>: Dual eyes provide independent information about screen geometry, improving parameter identifiability.</p>
+</section>
+<section id="summary">
+<h4>10.7.13 Summary<a class="headerlink" href="#summary" title="Link to this heading">¶</a></h4>
+<p><strong>Extended model adds 4 geometric parameters</strong>:</p>
+<ul class="simple">
+<li><p>Eye offset: <span class="math notranslate nohighlight">\((\Delta x, \Delta y)\)</span></p></li>
+<li><p>Screen tilt: <span class="math notranslate nohighlight">\((\alpha, \beta)\)</span> for pitch and yaw</p></li>
+<li><p>Roll angle <span class="math notranslate nohighlight">\(\gamma\)</span> omitted (negligible effect on foreshortening)</p></li>
+</ul>
+<p><strong>Estimation via</strong>:</p>
+<ul class="simple">
+<li><p>Joint optimization with temporal basis coefficients</p></li>
+<li><p>Soft priors (Gaussian or HalfNormal) for regularization</p></li>
+<li><p>Two-stage calibration maintains robustness</p></li>
+</ul>
+<p><strong>Benefits</strong>:</p>
+<ul class="simple">
+<li><p>Accounts for realistic experimental imperfections</p></li>
+<li><p>Improves correction accuracy (5-15% residual reduction)</p></li>
+<li><p>Provides interpretable diagnostic information</p></li>
+<li><p>Physically validatable estimates</p></li>
+</ul>
+<p><strong>Computational cost</strong>: Negligible (adds 4 parameters to existing optimization)</p>
+<p><strong>Recommendation</strong>: Use extended model by default for real experimental data.</p>
+</section>
+</section>
+</section>
+<section id="references-and-further-reading">
+<h2>11. References and Further Reading<a class="headerlink" href="#references-and-further-reading" title="Link to this heading">¶</a></h2>
+<p><strong>Foreshortening in pupillometry:</strong></p>
+<ul class="simple">
+<li><p>Hayes &amp; Petrov (2016). Mapping and correcting the influence of gaze position on pupil size measurements. <em>Behavior Research Methods</em></p></li>
+<li><p>Brisson et al. (2013). Pupil diameter measurement errors as a function of gaze direction in corneal reflection eyetrackers. <em>Behavior Research Methods</em></p></li>
+</ul>
+<p><strong>B-spline basis functions:</strong></p>
+<ul class="simple">
+<li><p>de Boor (1978). <em>A Practical Guide to Splines</em>. Springer.</p></li>
+</ul>
+<p><strong>Optimization methods:</strong></p>
+<ul class="simple">
+<li><p>Nocedal &amp; Wright (2006). <em>Numerical Optimization</em>. Springer.</p></li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Foreshortening Correction for Pupil Size Measurements</a><ul>
+<li><a class="reference internal" href="#problem-statement">1. Problem Statement</a><ul>
+<li><a class="reference internal" href="#physical-setup">1.1 Physical Setup</a></li>
+<li><a class="reference internal" href="#foreshortening-effect">1.2 Foreshortening Effect</a></li>
+<li><a class="reference internal" href="#geometric-relationship">1.3 Geometric Relationship</a></li>
+<li><a class="reference internal" href="#camera-position-parameterization">1.4 Camera Position Parameterization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#experimental-protocol">2. Experimental Protocol</a><ul>
+<li><a class="reference internal" href="#two-phase-design">2.1 Two-Phase Design</a></li>
+<li><a class="reference internal" href="#data-structure">2.2 Data Structure</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#data-preprocessing">3. Data Preprocessing</a><ul>
+<li><a class="reference internal" href="#quality-control">3.1 Quality Control</a></li>
+<li><a class="reference internal" href="#temporal-filtering">3.2 Temporal Filtering</a></li>
+<li><a class="reference internal" href="#valid-measurement-set">3.3 Valid Measurement Set</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#temporal-model-true-pupil-size">4. Temporal Model: True Pupil Size</a><ul>
+<li><a class="reference internal" href="#b-spline-basis-representation">4.1 B-Spline Basis Representation</a></li>
+<li><a class="reference internal" href="#predicted-measurement-model">4.2 Predicted Measurement Model</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#two-stage-calibration-algorithm">5. Two-Stage Calibration Algorithm</a><ul>
+<li><a class="reference internal" href="#stage-1-initial-camera-geometry-estimation">5.1 Stage 1: Initial Camera Geometry Estimation</a></li>
+<li><a class="reference internal" href="#stage-2-refinement-using-full-dataset">5.2 Stage 2: Refinement Using Full Dataset</a></li>
+<li><a class="reference internal" href="#final-camera-calibration">5.3 Final Camera Calibration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#foreshortening-correction">6. Foreshortening Correction</a><ul>
+<li><a class="reference internal" href="#correction-formula">6.1 Correction Formula</a></li>
+<li><a class="reference internal" href="#practical-implementation">6.2 Practical Implementation</a></li>
+<li><a class="reference internal" href="#id1">6.3 Quality Control</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#validation">7. Validation</a><ul>
+<li><a class="reference internal" href="#model-fit-quality">7.1 Model Fit Quality</a></li>
+<li><a class="reference internal" href="#spatial-consistency-check">7.2 Spatial Consistency Check</a></li>
+<li><a class="reference internal" href="#camera-geometry-stability">7.3 Camera Geometry Stability</a></li>
+<li><a class="reference internal" href="#visual-inspection">7.4 Visual Inspection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#typical-parameter-values">8. Typical Parameter Values</a><ul>
+<li><a class="reference internal" href="#geometric-setup">8.1 Geometric Setup</a></li>
+<li><a class="reference internal" href="#camera-position">8.2 Camera Position</a></li>
+<li><a class="reference internal" href="#hyperparameters">8.3 Hyperparameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#complete-workflow">9. Complete Workflow</a></li>
+<li><a class="reference internal" href="#extensions-and-considerations">10. Extensions and Considerations</a><ul>
+<li><a class="reference internal" href="#head-movement">10.1 Head Movement</a></li>
+<li><a class="reference internal" href="#binocular-eye-tracking-with-nose-centered-coordinates">10.2 Binocular Eye-Tracking with Nose-Centered Coordinates</a><ul>
+<li><a class="reference internal" href="#coordinate-system">10.2.1 Coordinate System</a></li>
+<li><a class="reference internal" href="#modified-geometric-model">10.2.2 Modified Geometric Model</a></li>
+<li><a class="reference internal" href="#pupil-dynamics-model">10.2.3 Pupil Dynamics Model</a></li>
+<li><a class="reference internal" href="#modified-optimization-problem">10.2.4 Modified Optimization Problem</a></li>
+<li><a class="reference internal" href="#advantages-of-binocular-approach">10.2.5 Advantages of Binocular Approach</a></li>
+<li><a class="reference internal" href="#implementation-notes">10.2.6 Implementation Notes</a></li>
+<li><a class="reference internal" href="#comparison-with-monocular-approach">10.2.7 Comparison with Monocular Approach</a></li>
+<li><a class="reference internal" href="#example-left-eye-correction-factor">10.2.8 Example: Left Eye Correction Factor</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#alternative-pupil-metrics">10.3 Alternative Pupil Metrics</a></li>
+<li><a class="reference internal" href="#multi-session-stability">10.4 Multi-Session Stability</a></li>
+<li><a class="reference internal" href="#computational-efficiency">10.5 Computational Efficiency</a></li>
+<li><a class="reference internal" href="#incorporating-gaze-calibration-uncertainty">10.6 Incorporating Gaze Calibration Uncertainty</a><ul>
+<li><a class="reference internal" href="#weighted-least-squares-formulation">10.6.1 Weighted Least Squares Formulation</a></li>
+<li><a class="reference internal" href="#uncertainty-propagation">10.6.2 Uncertainty Propagation</a></li>
+<li><a class="reference internal" href="#optimal-weighting">10.6.3 Optimal Weighting</a></li>
+<li><a class="reference internal" href="#id2">10.6.4 Practical Implementation</a></li>
+<li><a class="reference internal" href="#benefits">10.6.5 Benefits</a></li>
+<li><a class="reference internal" href="#when-this-extension-helps-most">10.6.6 When This Extension Helps Most</a></li>
+<li><a class="reference internal" href="#id3">10.6.7 Validation</a></li>
+<li><a class="reference internal" href="#id4">10.6.8 Implementation Notes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#extended-geometry-screen-misalignment-and-eye-offset">10.7 Extended Geometry: Screen Misalignment and Eye Offset</a><ul>
+<li><a class="reference internal" href="#problem-motivation">10.7.1 Problem Motivation</a></li>
+<li><a class="reference internal" href="#coordinate-system-and-reference-frame">10.7.2 Coordinate System and Reference Frame</a></li>
+<li><a class="reference internal" href="#practical-measurement-of-eye-screen-distance">10.7.2.1 Practical Measurement of Eye-Screen Distance</a></li>
+<li><a class="reference internal" href="#mathematical-model-screen-tilt-transformation">10.7.3 Mathematical Model: Screen Tilt Transformation</a></li>
+<li><a class="reference internal" href="#modified-foreshortening-model">10.7.4 Modified Foreshortening Model</a></li>
+<li><a class="reference internal" href="#fixed-camera-screen-rig-recommended-parameterization">10.7.5 Fixed Camera-Screen Rig (Recommended Parameterization)</a></li>
+<li><a class="reference internal" href="#prior-distributions-for-soft-constraints">10.7.6 Prior Distributions for Soft Constraints</a></li>
+<li><a class="reference internal" href="#id5">10.7.7 Modified Optimization Problem</a></li>
+<li><a class="reference internal" href="#identifiability-and-parameter-correlations">10.7.8 Identifiability and Parameter Correlations</a></li>
+<li><a class="reference internal" href="#interpretation-and-physical-validation">10.7.9 Interpretation and Physical Validation</a></li>
+<li><a class="reference internal" href="#impact-on-correction-quality">10.7.10 Impact on Correction Quality</a></li>
+<li><a class="reference internal" href="#simplified-model-selection">10.7.11 Simplified Model Selection</a></li>
+<li><a class="reference internal" href="#binocular-extension-with-alignment-parameters">10.7.12 Binocular Extension with Alignment Parameters</a></li>
+<li><a class="reference internal" href="#summary">10.7.13 Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references-and-further-reading">11. References and Further Reading</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/algorithms/foreshortening_correction_algorithm.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Foreshortening Correction for Pupil Size Measurements</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>
