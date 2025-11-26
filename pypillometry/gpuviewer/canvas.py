@@ -258,8 +258,17 @@ class GPUViewerCanvas(SceneCanvas):
         for mask_vis in self.mask_regions:
             mask_vis.update_for_view(x_min, x_max)
         
+        # Get y_top from first viewbox for label positioning
+        y_top = None
+        if self.viewboxes:
+            try:
+                rect = self.viewboxes[0].camera.rect
+                y_top = rect.top
+            except:
+                pass
+        
         for event_vis in self.event_markers:
-            event_vis.update_for_view(x_min, x_max)
+            event_vis.update_for_view(x_min, x_max, y_top=y_top)
     
     def _toggle_events(self):
         """Toggle event markers visibility."""

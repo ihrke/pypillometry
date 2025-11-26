@@ -33,10 +33,15 @@ class LODLine:
         if ma.is_masked(data):
             self.data_full = data.data.copy().astype(np.float32)
             # Use provided mask or fall back to masked array's mask
-            self.mask = np.asarray(mask if mask is not None else data.mask, dtype=bool)
+            raw_mask = mask if mask is not None else data.mask
+            self.mask = np.asarray(raw_mask, dtype=bool)  # Convert 0/1 int to bool
         else:
             self.data_full = np.asarray(data, dtype=np.float32)
-            self.mask = np.asarray(mask, dtype=bool) if mask is not None else np.zeros(len(data), dtype=bool)
+            if mask is not None:
+                self.mask = np.asarray(mask, dtype=bool)  # Convert 0/1 int to bool
+            else:
+                self.mask = np.zeros(len(data), dtype=bool)
+        
         
         # Pre-compute LOD levels
         self.lod_data: Dict[int, Tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
@@ -271,7 +276,7 @@ class DynamicEventMarkers:
         event_labels: List[str],
         color: str = '#666666',
         alpha: float = 0.7,
-        show_labels: bool = False  # Only first viewbox shows labels
+        show_labels: bool = False
     ):
         self.viewbox = viewbox
         self.event_times = np.asarray(event_times, dtype=np.float32)
@@ -280,6 +285,7 @@ class DynamicEventMarkers:
         self.alpha = alpha
         self.show_labels = show_labels
         self.visible = True
+        self._current_y_top = 0  # Will be updated with actual y range
         
         c = Color(self.color)
         self.rgba = list(c.rgba)
@@ -289,7 +295,7 @@ class DynamicEventMarkers:
         self.text_visuals: List[scene.Text] = []
         self._last_update_hash = None
         
-        # Pre-create rotated text labels (only if this viewbox shows labels)
+        # Pre-create rotated text labels
         if self.show_labels:
             for _ in range(self.MAX_LABELS):
                 text = scene.Text(
@@ -298,8 +304,8 @@ class DynamicEventMarkers:
                     color=self.color,
                     font_size=8,
                     anchor_x='left',
-                    anchor_y='bottom',
-                    rotation=90,  # Rotated to read bottom-to-top
+                    anchor_y='top',
+                    rotation=90,
                     parent=self.viewbox.scene
                 )
                 text.order = 10
@@ -331,17 +337,26 @@ class DynamicEventMarkers:
         )
         self.line.order = -5
     
-    def update_for_view(self, x_min: float, x_max: float):
+    def update_for_view(self, x_min: float, x_max: float, y_top: float = None):
         """Update labels - show when <=10 events visible."""
         if not self.show_labels:
             return
+        
+        # Get y_top from camera if not provided
+        if y_top is None:
+            try:
+                rect = self.viewbox.camera.rect
+                y_top = rect.top
+            except:
+                y_top = 0
+        self._current_y_top = y_top
         
         visible_mask = (self.event_times >= x_min) & (self.event_times <= x_max)
         vis_indices = np.where(visible_mask)[0]
         n_visible = len(vis_indices)
         
         # Hash to avoid redundant updates
-        update_hash = (round(x_min, 1), round(x_max, 1), n_visible)
+        update_hash = (round(x_min, 1), round(x_max, 1), n_visible, round(y_top, 0))
         if update_hash == self._last_update_hash:
             return
         self._last_update_hash = update_hash
@@ -360,7 +375,7 @@ class DynamicEventMarkers:
             
             text = self.text_visuals[i]
             text.text = str(label)[:25]
-            text.pos = (t, 0)
+            text.pos = (t, y_top)  # Position at top of view
             text.visible = True
     
     def set_visible(self, visible: bool):
