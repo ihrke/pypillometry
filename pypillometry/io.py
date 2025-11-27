@@ -191,7 +191,7 @@ def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optio
 
     return fname
 
-def get_osf_project_files(osf_id: str) -> Dict[str, Dict[str, str]]:
+def get_osf_project_files(osf_id: str, session: Optional[requests.Session] = None) -> Dict[str, Dict[str, str]]:
     """
     Get all file IDs from an OSF project.
     
@@ -199,6 +199,8 @@ def get_osf_project_files(osf_id: str) -> Dict[str, Dict[str, str]]:
     ----------
     osf_id : str
         The OSF project ID
+    session : requests.Session, optional
+        Authenticated session for accessing private projects. If None, uses unauthenticated requests.
         
     Returns
     -------
@@ -223,7 +225,10 @@ def get_osf_project_files(osf_id: str) -> Dict[str, Dict[str, str]]:
         """
         nonlocal estimated_files
         
-        response = requests.get(url)
+        if session is not None:
+            response = session.get(url)
+        else:
+            response = requests.get(url)
         if response.status_code != 200:
             raise ValueError(f"Could not access project files: {response.status_code}")
             
@@ -276,7 +281,7 @@ def get_osf_project_files(osf_id: str) -> Dict[str, Dict[str, str]]:
 
 
 
-def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False, config_file: str = "pypillometry_conf.py"):
+def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_download: bool = False, config_file: str = "pypillometry_conf.py", session: Optional[requests.Session] = None):
     """
     Read a study from OSF using the configuration file.
     Example: https://osf.io/p2u74/
@@ -294,6 +299,8 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         If True, force re-download even if files exist locally. Default False.
     config_file : str, optional
         Name of the configuration file. Default is "pypillometry_conf.py"
+    session : requests.Session, optional
+        Authenticated session for accessing private projects. If None, uses unauthenticated requests.
         
     Returns
     -------
@@ -315,7 +322,7 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     else:
         # Get all files in the project and estimate total download size
         print(f"Getting info on all files in project '{osf_id}'")
-        files = get_osf_project_files(osf_id)
+        files = get_osf_project_files(osf_id, session=session)
         
         # Cache the file information
         with open(cache_file, 'wb') as f:
@@ -339,7 +346,10 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         raise ValueError(f"Could not find {config_file} in project")
         
     if not os.path.exists(config_path) or force_download:
-        response = requests.get(files[config_file_osf]['download_url'])
+        if session is not None:
+            response = session.get(files[config_file_osf]['download_url'])
+        else:
+            response = requests.get(files[config_file_osf]['download_url'])
         if response.status_code == 200:
             with open(config_path, 'wb') as f:
                 f.write(response.content)
@@ -378,7 +388,10 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
             # Create directory if it doesn't exist
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             
-            response = requests.get(files[matching_file]['download_url'], stream=True)
+            if session is not None:
+                response = session.get(files[matching_file]['download_url'], stream=True)
+            else:
+                response = requests.get(files[matching_file]['download_url'], stream=True)
             if response.status_code == 200:
                 total = int(response.headers.get('content-length', 0))
                 with open(file_path, 'wb') as f, tqdm(
