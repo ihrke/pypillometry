@@ -475,3 +475,70 @@ class SelectionRegion:
     def get_intervals(self) -> List[Tuple[float, float]]:
         """Return list of (start, end) intervals in seconds."""
         return list(self.intervals)
+
+
+class HighlightRegion:
+    """Visual for pre-defined highlight regions (semi-transparent rectangles)."""
+    
+    def __init__(self, viewbox: scene.ViewBox, intervals: List[Tuple[float, float]], 
+                 color: str = 'lightblue', alpha: float = 0.3):
+        """
+        Initialize highlight region visual with pre-defined intervals.
+        
+        Parameters
+        ----------
+        viewbox : scene.ViewBox
+            The viewbox to draw highlights in
+        intervals : list of tuples
+            List of (start, end) tuples in seconds
+        color : str
+            Color for highlight regions (default 'lightblue')
+        alpha : float
+            Transparency (0-1)
+        """
+        self.viewbox = viewbox
+        self.color = color
+        self.alpha = alpha
+        self.intervals = [(min(s, e), max(s, e)) for s, e in intervals]
+        self.mesh = None
+        self._create_mesh()
+    
+    def _create_mesh(self):
+        """Create mesh from intervals."""
+        if not self.intervals:
+            return
+        
+        n_rects = len(self.intervals)
+        y_min, y_max = -1e9, 1e9
+        
+        vertices = np.zeros((n_rects * 4, 2), dtype=np.float32)
+        for i, (start, end) in enumerate(self.intervals):
+            vertices[i*4 + 0] = [start, y_min]
+            vertices[i*4 + 1] = [end, y_min]
+            vertices[i*4 + 2] = [end, y_max]
+            vertices[i*4 + 3] = [start, y_max]
+        
+        base_indices = np.arange(n_rects, dtype=np.uint32) * 4
+        faces = np.zeros((n_rects * 2, 3), dtype=np.uint32)
+        faces[0::2, 0] = base_indices
+        faces[0::2, 1] = base_indices + 1
+        faces[0::2, 2] = base_indices + 2
+        faces[1::2, 0] = base_indices
+        faces[1::2, 1] = base_indices + 2
+        faces[1::2, 2] = base_indices + 3
+        
+        c = Color(self.color)
+        rgba = list(c.rgba)
+        rgba[3] = self.alpha
+        
+        self.mesh = scene.Mesh(
+            vertices=vertices, faces=faces, color=rgba,
+            parent=self.viewbox.scene
+        )
+        self.mesh.order = 400  # Below selection regions, above mask regions
+        self.mesh.set_gl_state('translucent', depth_test=False)
+    
+    def set_visible(self, visible: bool):
+        """Show/hide the highlight regions."""
+        if self.mesh is not None:
+            self.mesh.visible = visible

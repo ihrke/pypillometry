@@ -19,12 +19,13 @@ Features
 - Different colors for left (blue) and right (red) eye data
 """
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 __all__ = ['view']
 
 
-def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> Optional[Dict[str, 'Intervals']]:
+def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None,
+         highlight=None, highlight_color='lightblue') -> Optional[Dict[str, 'Intervals']]:
     """View eye-tracking data with GPU-accelerated rendering.
     
     Opens an interactive viewer window using VisPy for fast GPU-based
@@ -46,6 +47,12 @@ def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> Optiona
         Additional timeseries to overlay on the gaze X plot.
     overlay_y : dict, optional
         Additional timeseries to overlay on the gaze Y plot.
+    highlight : Intervals or dict, optional
+        Intervals to highlight in the plots. Can be:
+        - An Intervals object (applied to all plots)
+        - A dict mapping variable type ('pupil', 'x', 'y') to Intervals objects
+    highlight_color : str, optional
+        Color for highlighted regions (default: 'lightblue')
     
     Returns
     -------
@@ -82,9 +89,15 @@ def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> Optiona
     >>> pp.view(data, overlay_pupil={'smoothed': smoothed})  # doctest: +SKIP
     
     # Select regions interactively
-    >>> selections = pp.view(data)  # Press 's', click twice to select  # doctest: +SKIP
+    >>> selections = pp.view(data)  # Press 's', drag to select  # doctest: +SKIP
     >>> if selections:  # doctest: +SKIP
     ...     print(selections['pupil'])  # Intervals object with selected regions
+    
+    # Highlight specific intervals
+    >>> from pypillometry import Intervals  # doctest: +SKIP
+    >>> intervals = Intervals([(1.0, 2.0), (5.0, 6.0)], units='sec')  # doctest: +SKIP
+    >>> pp.view(data, highlight=intervals)  # doctest: +SKIP
+    >>> pp.view(data, highlight={'pupil': intervals}, highlight_color='yellow')  # doctest: +SKIP
     """
     import sys
     import locale
@@ -131,7 +144,8 @@ def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> Optiona
         overlays['y'] = overlay_y
     
     # Create the viewer
-    canvas = ViewerCanvas(eyedata, overlays=overlays)
+    canvas = ViewerCanvas(eyedata, overlays=overlays, 
+                          highlight=highlight, highlight_color=highlight_color)
     
     # Show canvas
     canvas.show()

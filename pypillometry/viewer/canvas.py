@@ -3,9 +3,9 @@
 import numpy as np
 from vispy import app, scene
 from vispy.scene import SceneCanvas
-from typing import List, Dict
+from typing import List, Dict, Union, Optional
 
-from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers, SelectionRegion
+from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers, SelectionRegion, HighlightRegion
 from .navigation import NavigationHandler
 
 
@@ -23,7 +23,7 @@ MODALITY_COLORS = {
 class ViewerCanvas(SceneCanvas):
     """GPU-accelerated viewer canvas with Level of Detail support."""
     
-    def __init__(self, eyedata, overlays=None):
+    def __init__(self, eyedata, overlays=None, highlight=None, highlight_color='lightblue'):
         super().__init__(
             keys='interactive',
             size=(1400, 800),
@@ -34,6 +34,8 @@ class ViewerCanvas(SceneCanvas):
         self.unfreeze()
         self.eyedata = eyedata
         self.overlays = overlays or {}
+        self.highlight = highlight
+        self.highlight_color = highlight_color
         
         self.time_seconds = eyedata.tx.astype(np.float32) * 0.001
         self.data_min = float(self.time_seconds[0])
@@ -63,6 +65,7 @@ class ViewerCanvas(SceneCanvas):
         self.overlay_info: List[tuple] = []  # [(label, color, var_type), ...]
         self.mask_regions: List[DynamicMaskRegions] = []
         self.event_markers: List[DynamicEventMarkers] = []
+        self.highlight_regions: Dict[str, HighlightRegion] = {}  # var_type -> HighlightRegion
         
         self.grid = self.central_widget.add_grid(spacing=0)
         
@@ -79,6 +82,7 @@ class ViewerCanvas(SceneCanvas):
         self._plot_all_data()
         self._plot_overlays()
         self._create_selection_regions()
+        self._create_highlight_regions()
         self._create_legend()
         self._set_initial_view()
         
@@ -463,6 +467,45 @@ class ViewerCanvas(SceneCanvas):
         """Create SelectionRegion visual for each viewbox."""
         for viewbox, var_type in zip(self.viewboxes, self.view_types):
             self.selection_regions[var_type] = SelectionRegion(viewbox)
+    
+    def _create_highlight_regions(self):
+        """Create highlight regions from the highlight parameter."""
+        if self.highlight is None:
+            return
+        
+        # Import Intervals here to check type
+        from ..intervals import Intervals
+        
+        # Normalize highlight to a dict
+        if isinstance(self.highlight, Intervals):
+            # Apply to all plots
+            highlight_dict = {var_type: self.highlight for var_type in self.view_types}
+        elif isinstance(self.highlight, dict):
+            highlight_dict = self.highlight
+        else:
+            return
+        
+        # Create highlight regions for each viewbox
+        for viewbox, var_type in zip(self.viewboxes, self.view_types):
+            intervals = highlight_dict.get(var_type)
+            if intervals is None:
+                continue
+            
+            # Get the intervals list and convert to seconds if needed
+            if hasattr(intervals, 'intervals'):
+                interval_list = intervals.intervals
+                # Convert units if necessary
+                if hasattr(intervals, 'units') and intervals.units == 'ms':
+                    interval_list = [(s/1000, e/1000) for s, e in interval_list]
+            else:
+                # Assume it's already a list of tuples
+                interval_list = list(intervals)
+            
+            if interval_list:
+                highlight_region = HighlightRegion(
+                    viewbox, interval_list, color=self.highlight_color
+                )
+                self.highlight_regions[var_type] = highlight_region
     
     def _get_viewbox_at_pos(self, canvas_pos):
         """Find which viewbox contains the given canvas position and return x in data coords."""
