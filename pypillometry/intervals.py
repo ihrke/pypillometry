@@ -604,7 +604,7 @@ class Intervals:
             y_level = i + 1
             
             # Plot horizontal black line for the interval
-            ax.plot([start, end], [y_level, y_level], color='black', **kwargs)
+            ax.plot([start, end], [y_level, y_level], **kwargs)
             
             # Optionally add event label centered on the line
             if show_labels and self.event_labels is not None and i < len(self.event_labels):

@@ -132,21 +132,21 @@ class ExperimentalSetup:
     
     def __init__(
         self,
-        screen_resolution: Tuple[int, int],
-        physical_screen_size: Tuple[Union[float, str], Union[float, str]],
+        screen_resolution: Optional[Tuple[int, int]] = None,
+        physical_screen_size: Optional[Tuple[Union[float, str], Union[float, str]]] = None,
         eye_to_screen_perpendicular: Optional[Union[float, str]] = None,
         eye_offset: Optional[Tuple[Union[float, str], Union[float, str]]] = None,
         eye_to_screen_center: Optional[Union[float, str]] = None,
-        screen_pitch: Union[float, str] = 0.0,
-        screen_yaw: Union[float, str] = 0.0,
+        screen_pitch: Optional[Union[float, str]] = None,
+        screen_yaw: Optional[Union[float, str]] = None,
         camera_position_relative_to: str = "screen",
         camera_offset: Optional[Tuple[Union[float, str], Union[float, str], Union[float, str]]] = None,
         camera_spherical: Optional[Tuple[Union[float, str], Union[float, str], Union[float, str]]] = None,
         ipd: Optional[Union[float, str]] = None,
     ):
-        # Screen geometry
-        self._screen_resolution = tuple(screen_resolution)
-        self._physical_screen_size = self._parse_screen_size(physical_screen_size)
+        # Screen geometry (optional)
+        self._screen_resolution = tuple(screen_resolution) if screen_resolution is not None else None
+        self._physical_screen_size = self._parse_screen_size(physical_screen_size) if physical_screen_size is not None else None
         
         # Eye position
         self._eye_offset = self._parse_eye_offset(eye_offset)
@@ -157,7 +157,7 @@ class ExperimentalSetup:
         self._beta_tilt = parse_angle(screen_yaw) if screen_yaw else 0.0
         
         # Camera position
-        self._camera_relative_to = camera_position_relative_to
+        self._camera_relative_to = camera_position_relative_to if camera_position_relative_to else "screen"
         self._camera_offset, self._camera_spherical = self._parse_camera_position(
             camera_offset, camera_spherical
         )
@@ -165,7 +165,7 @@ class ExperimentalSetup:
         # Binocular
         self._ipd = parse_distance(ipd) if ipd is not None else None
         
-        # Validate
+        # Validate (only if there's something to validate)
         self.validate()
     
     # =========================================================================
@@ -252,54 +252,74 @@ class ExperimentalSetup:
     # Screen properties
     # =========================================================================
     
+    def _require_screen_resolution(self):
+        """Raise error if screen resolution is not set."""
+        if self._screen_resolution is None:
+            raise ValueError("Screen resolution not set.")
+    
+    def _require_physical_screen_size(self):
+        """Raise error if physical screen size is not set."""
+        if self._physical_screen_size is None:
+            raise ValueError("Physical screen size not set.")
+    
     @property
-    def screen_resolution(self) -> Tuple[int, int]:
-        """Screen resolution (width, height) in pixels."""
+    def screen_resolution(self) -> Optional[Tuple[int, int]]:
+        """Screen resolution (width, height) in pixels, or None if not set."""
         return self._screen_resolution
     
     @property
     def screen_width(self) -> int:
         """Screen width in pixels."""
+        self._require_screen_resolution()
         return self._screen_resolution[0]
     
     @property
     def screen_height(self) -> int:
         """Screen height in pixels."""
+        self._require_screen_resolution()
         return self._screen_resolution[1]
     
     @property
-    def physical_screen_size(self) -> Tuple[float, float]:
-        """Physical screen size (width, height) in mm."""
+    def physical_screen_size(self) -> Optional[Tuple[float, float]]:
+        """Physical screen size (width, height) in mm, or None if not set."""
         return self._physical_screen_size
     
     @property
     def physical_screen_width(self) -> float:
         """Physical screen width in mm."""
+        self._require_physical_screen_size()
         return self._physical_screen_size[0]
     
     @property
     def physical_screen_height(self) -> float:
         """Physical screen height in mm."""
+        self._require_physical_screen_size()
         return self._physical_screen_size[1]
     
     @property
     def screen_xlim(self) -> Tuple[int, int]:
         """Screen x-limits in pixels (0, width)."""
+        self._require_screen_resolution()
         return (0, self._screen_resolution[0])
     
     @property
     def screen_ylim(self) -> Tuple[int, int]:
         """Screen y-limits in pixels (0, height)."""
+        self._require_screen_resolution()
         return (0, self._screen_resolution[1])
     
     @property
     def mm_per_pixel_x(self) -> float:
         """Conversion factor: mm per pixel in x direction."""
+        self._require_screen_resolution()
+        self._require_physical_screen_size()
         return self._physical_screen_size[0] / self._screen_resolution[0]
     
     @property
     def mm_per_pixel_y(self) -> float:
         """Conversion factor: mm per pixel in y direction."""
+        self._require_screen_resolution()
+        self._require_physical_screen_size()
         return self._physical_screen_size[1] / self._screen_resolution[1]
     
     # =========================================================================
@@ -581,18 +601,22 @@ class ExperimentalSetup:
     def validate(self) -> None:
         """
         Validate parameter consistency. Raises ValueError if invalid.
-        """
-        # Screen resolution must be positive
-        if self._screen_resolution[0] <= 0 or self._screen_resolution[1] <= 0:
-            raise ValueError(
-                f"Screen resolution must be positive, got {self._screen_resolution}"
-            )
         
-        # Physical screen size must be positive
-        if self._physical_screen_size[0] <= 0 or self._physical_screen_size[1] <= 0:
-            raise ValueError(
-                f"Physical screen size must be positive, got {self._physical_screen_size}"
-            )
+        Only validates parameters that are set; incomplete setups are allowed.
+        """
+        # Screen resolution must be positive (if set)
+        if self._screen_resolution is not None:
+            if self._screen_resolution[0] <= 0 or self._screen_resolution[1] <= 0:
+                raise ValueError(
+                    f"Screen resolution must be positive, got {self._screen_resolution}"
+                )
+        
+        # Physical screen size must be positive (if set)
+        if self._physical_screen_size is not None:
+            if self._physical_screen_size[0] <= 0 or self._physical_screen_size[1] <= 0:
+                raise ValueError(
+                    f"Physical screen size must be positive, got {self._physical_screen_size}"
+                )
         
         # Tilt angles should be reasonable (< 45 degrees)
         if abs(self._alpha_tilt) > np.pi/4:
@@ -641,6 +665,52 @@ class ExperimentalSetup:
     def has_camera_position(self) -> bool:
         """Check if camera position is set."""
         return self._camera_offset is not None or self._camera_spherical is not None
+    
+    def summary(self) -> Dict[str, Any]:
+        """
+        Return a summary of the experimental setup as a dictionary.
+        
+        Returns
+        -------
+        dict
+            Dictionary containing setup parameters in human-readable form.
+        """
+        summary = {
+            'screen_resolution': self._screen_resolution,
+            'physical_screen_size_mm': self._physical_screen_size,
+        }
+        
+        # Eye position
+        if self._d is not None:
+            summary['eye_to_screen_distance_mm'] = self._d
+        else:
+            summary['eye_to_screen_distance_mm'] = "not set"
+        
+        if self._eye_offset != (0.0, 0.0):
+            summary['eye_offset_mm'] = self._eye_offset
+        
+        # Screen tilt
+        if self._alpha_tilt != 0.0 or self._beta_tilt != 0.0:
+            summary['screen_tilt_deg'] = (
+                np.degrees(self._alpha_tilt),
+                np.degrees(self._beta_tilt)
+            )
+        
+        # Camera
+        if self.has_camera_position():
+            summary['camera_distance_mm'] = self.r
+            summary['camera_angles_deg'] = (
+                np.degrees(self.theta),
+                np.degrees(self.phi)
+            )
+        else:
+            summary['camera_position'] = "not set"
+        
+        # IPD
+        if self._ipd is not None:
+            summary['ipd_mm'] = self._ipd
+        
+        return summary
     
     # =========================================================================
     # Serialization
@@ -831,9 +901,13 @@ class ExperimentalSetup:
     
     def __repr__(self) -> str:
         """Concise representation."""
-        parts = [f"ExperimentalSetup("]
-        parts.append(f"  screen={self._screen_resolution[0]}x{self._screen_resolution[1]}px")
-        parts.append(f"  physical={self._physical_screen_size[0]:.0f}x{self._physical_screen_size[1]:.0f}mm")
+        parts = ["ExperimentalSetup("]
+        
+        if self._screen_resolution is not None:
+            parts.append(f"  screen={self._screen_resolution[0]}x{self._screen_resolution[1]}px")
+        
+        if self._physical_screen_size is not None:
+            parts.append(f"  physical={self._physical_screen_size[0]:.0f}x{self._physical_screen_size[1]:.0f}mm")
         
         if self._d is not None:
             parts.append(f"  d={self._d:.0f}mm")
@@ -849,6 +923,9 @@ class ExperimentalSetup:
         
         if self._ipd is not None:
             parts.append(f"  ipd={self._ipd:.0f}mm")
+        
+        if len(parts) == 1:
+            parts.append("  <empty>")
         
         parts.append(")")
         return "\n".join(parts)

@@ -9,8 +9,9 @@ from loguru import logger
 from .pupildata import PupilData
 import numpy as np
 from collections.abc import Iterable
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 from .spatial_calibration import SpatialCalibration
+from .experimental_setup import ExperimentalSetup
 from .foreshortening_calibration import (
     ForeshorteningCalibration,
     _determine_knots,
@@ -45,16 +46,9 @@ class EyeData(GazeData,PupilData):
         pupil is optional
     sampling_rate: float
         sampling-rate of the pupillary signal in Hz; if None, 
-    screen_resolution: tuple
-        (xmax, ymax) screen resolution in pixels
-    physical_screen_size: tuple
-        (width, height) of the screen in cm; if None, the screen size is not used
-    screen_eye_distance: float
-        distance from the screen to the eye in cm
-    camera_eye_distance: float
-        distance from the camera to the eye in mm
-    eye_to_eye_distance: float
-        distance between the two eyes (inter-pupillary distance) in mm
+    experimental_setup: ExperimentalSetup, optional
+        Geometric model of the experimental setup including screen geometry,
+        eye position, camera position, and screen orientation.
     name: 
         name of the dataset or `None` (in which case a random string is selected)
     event_onsets: 
@@ -91,11 +85,7 @@ class EyeData(GazeData,PupilData):
                     event_onsets: np.ndarray = None,
                     event_labels: np.ndarray = None,
                     sampling_rate: float = None,
-                    screen_resolution: tuple = None,
-                    physical_screen_size: tuple = None,
-                    screen_eye_distance: float = None,
-                    camera_eye_distance: float = None,
-                    eye_to_eye_distance: float = None,
+                    experimental_setup: Optional[ExperimentalSetup] = None,
                     name: str = None,
                     calibration: Optional[Dict[str, SpatialCalibration]] = None,
                     fill_time_discontinuities: bool = True,
@@ -115,20 +105,11 @@ class EyeData(GazeData,PupilData):
                           event_onsets, event_labels, 
                           name, fill_time_discontinuities, 
                           info=info, inplace=inplace)
-        self._screen_size_set=False
-        self._physical_screen_dims_set=False
-        self._screen_eye_distance_set=False
-        self._camera_eye_distance_set=False
-        self._eye_to_eye_distance_set=False
-
-        ## screen limits, physical screen size, screen-eye distance, camera-eye distance, eye-to-eye distance
-        self.set_experiment_info(screen_resolution=screen_resolution, 
-                                 physical_screen_size=physical_screen_size,
-                                 screen_eye_distance=screen_eye_distance,
-                                 camera_eye_distance=camera_eye_distance,
-                                 eye_to_eye_distance=eye_to_eye_distance)
         
-        ## Spatial calibration data
+        # Experimental setup (geometry)
+        self.experimental_setup = experimental_setup
+        
+        # Spatial calibration data
         self.calibration = calibration
 
         self.original=None
@@ -211,7 +192,7 @@ class EyeData(GazeData,PupilData):
         midpoint: tuple
             The center of the screen (x,y) where it is assumed that the pupil is completely circular.
             If None, the midpoint is taken to be the center of the screen as registered
-            in the EyeData object. 
+            in the experimental_setup. 
         inplace: bool
             Whether to modify the object in place or return a new object.
             `true`: modify in place
@@ -230,20 +211,28 @@ class EyeData(GazeData,PupilData):
             logger.warning("store_as must be a string; using 'pupil' instead")
             store_as="pupil"
 
+        # Require experimental_setup for this correction
+        if self.experimental_setup is None:
+            raise ValueError(
+                "Cannot correct pupil foreshortening: experimental_setup not set. "
+                "Use set_experimental_setup() to configure it."
+            )
+        setup = self.experimental_setup
+
         if midpoint is None:
-            midpoint=(self.screen_width/2, self.screen_height/2)
+            midpoint = (setup.screen_width / 2, setup.screen_height / 2)
         
-        scaling_factor_x=self.physical_screen_width/self.screen_width
-        scaling_factor_y=self.physical_screen_height/self.screen_height
+        scaling_factor_x = setup.mm_per_pixel_x
+        scaling_factor_y = setup.mm_per_pixel_y
 
         # calculate distance of x,y from midpoint
         for eye in eyes:
             vx="_".join([eye, "x"])
             vy="_".join([eye, "y"])
-            xdist=np.abs(self.data[vx]-midpoint[0])*scaling_factor_x
-            ydist=np.abs(self.data[vy]-midpoint[1])*scaling_factor_y
-            dist=np.sqrt(xdist**2 + ydist**2)
-            corr=np.sqrt( (dist**2)/(self.screen_eye_distance**2) + 1)  # correction factor
+            xdist = np.abs(self.data[vx] - midpoint[0]) * scaling_factor_x
+            ydist = np.abs(self.data[vy] - midpoint[1]) * scaling_factor_y
+            dist = np.sqrt(xdist**2 + ydist**2)
+            corr = np.sqrt((dist**2) / (setup.d**2) + 1)  # correction factor
             # Use masked array access to preserve masks from blinks/artifacts
             obj[eye, store_as] = self[eye, "pupil"] * corr
 
@@ -252,15 +241,15 @@ class EyeData(GazeData,PupilData):
     def fit_foreshortening(
         self,
         eye: str,
-        r: Optional[float] = None,
-        d: Optional[float] = None,
+        r: Optional[Union[float, str]] = None,
+        d: Optional[Union[float, str]] = None,
         intervals: Optional[Intervals] = None,
         target_fs: float = 50.0,
         lowpass_freq: float = 4.0,
         lambda_smooth: float = 1.0,
         knots_per_second: float = 1.0,
-        initial_theta: Optional[float] = None,
-        initial_phi: Optional[float] = None,
+        initial_theta: Optional[Union[float, str]] = None,
+        initial_phi: Optional[Union[float, str]] = None,
         verbose: bool = True
     ) -> ForeshorteningCalibration:
         """
@@ -277,13 +266,13 @@ class EyeData(GazeData,PupilData):
             Which eye to fit ('left' or 'right')
         r : float, str, or pint.Quantity, optional
             Eye-to-camera distance. If not provided, uses the 
-            `camera_eye_distance` attribute of the EyeData object.
+            `r` from experimental_setup.
             - Plain number: assumed to be mm (with warning)
             - String: e.g., "600 mm", "60 cm"
             - Quantity: e.g., 600 * ureg.mm
         d : float, str, or pint.Quantity, optional
             Eye-to-screen distance. If not provided, uses the 
-            `screen_eye_distance` attribute.
+            `d` from experimental_setup.
             - Plain number: assumed to be mm (with warning)
             - String: e.g., "700 mm", "70 cm"
             - Quantity: e.g., 700 * ureg.mm
@@ -346,10 +335,12 @@ class EyeData(GazeData,PupilData):
         >>> import pypillometry as pp
         >>> data = pp.EyeData.from_eyelink('recording.edf')
         >>> 
-        >>> # Set experimental parameters (optional but recommended)
-        >>> data.set_experiment_info(  # doctest: +SKIP
-        ...     camera_eye_distance=600,  # mm
-        ...     screen_eye_distance=70    # cm
+        >>> # Set experimental setup
+        >>> data.set_experimental_setup(  # doctest: +SKIP
+        ...     screen_resolution=(1920, 1080),
+        ...     physical_screen_size=("52 cm", "29 cm"),
+        ...     eye_to_screen_perpendicular="65 cm",
+        ...     camera_offset=("0 cm", "-30 cm", "0 cm"),
         ... )
         >>> 
         >>> # Fit on calibration period (first 2 minutes)
@@ -362,8 +353,8 @@ class EyeData(GazeData,PupilData):
         >>> # Or provide r and d explicitly
         >>> calib = data.fit_foreshortening(  # doctest: +SKIP
         ...     eye='left',
-        ...     r=600,  # Eye-to-camera distance in mm
-        ...     d=700,  # Eye-to-screen distance in mm
+        ...     r="60 cm",
+        ...     d="70 cm",
         ...     intervals=cal_intervals
         ... )
         >>> 
@@ -397,18 +388,36 @@ class EyeData(GazeData,PupilData):
         if pupil_var not in self.data:
             raise ValueError(f"Pupil data not available for {eye} eye")
         
-        # Parse and retrieve geometric parameters
+        # Require experimental_setup for screen dimensions
+        if self.experimental_setup is None:
+            raise ValueError(
+                "Cannot fit foreshortening: experimental_setup not set. "
+                "Use set_experimental_setup() to configure it."
+            )
+        setup = self.experimental_setup
+        
+        # Get geometric parameters from experimental_setup or explicit args
         if r is None:
-            r = self.camera_eye_distance  # Raises ValueError if not set
+            if not setup.has_camera_position():
+                raise ValueError(
+                    "Camera position not set in experimental_setup. "
+                    "Either provide r explicitly or set camera_offset in experimental_setup."
+                )
+            r = setup.r
             if verbose:
-                logger.info(f"Using camera_eye_distance from attributes: {r} mm")
+                logger.info(f"Using camera distance from experimental_setup: {r:.1f} mm")
         else:
             r = parse_distance(r)
         
         if d is None:
-            d = self.screen_eye_distance  # mm (raises ValueError if not set)
+            if not setup.has_eye_distance():
+                raise ValueError(
+                    "Eye-to-screen distance not set in experimental_setup. "
+                    "Either provide d explicitly or set eye_to_screen_perpendicular in experimental_setup."
+                )
+            d = setup.d
             if verbose:
-                logger.info(f"Using screen_eye_distance from attributes: {d} mm")
+                logger.info(f"Using screen distance from experimental_setup: {d:.1f} mm")
         else:
             d = parse_distance(d)
         
@@ -449,12 +458,12 @@ class EyeData(GazeData,PupilData):
             if verbose:
                 logger.info(f"Using {np.sum(mask)} samples from specified intervals")
         
-        # Scale and center
-        scale_x = self.physical_screen_width / self.screen_width  # mm/pixel
-        scale_y = self.physical_screen_height / self.screen_height  # mm/pixel
+        # Scale and center using experimental_setup
+        scale_x = setup.mm_per_pixel_x
+        scale_y = setup.mm_per_pixel_y
         
-        x_gaze_mm = (x_gaze - self.screen_width / 2) * scale_x
-        y_gaze_mm = (y_gaze - self.screen_height / 2) * scale_y
+        x_gaze_mm = (x_gaze - setup.screen_width / 2) * scale_x
+        y_gaze_mm = (y_gaze - setup.screen_height / 2) * scale_y
         
         # Remove invalid samples (NaN, masked, etc.)
         valid = np.isfinite(x_gaze_mm) & np.isfinite(y_gaze_mm) & np.isfinite(pupil) & (pupil > 0)
@@ -578,10 +587,7 @@ class EyeData(GazeData,PupilData):
             logger.info(f"Camera position: theta = {np.degrees(theta_opt):.1f}°, phi = {np.degrees(phi_opt):.1f}°")
         
         # Create ForeshorteningCalibration object
-        # Include screen info if available for pixel-to-mm conversion
-        screen_res = getattr(self, 'screen_resolution', None) if hasattr(self, '_screen_size_set') and self._screen_size_set else None
-        phys_size = getattr(self, 'physical_screen_dims', None) if hasattr(self, '_physical_screen_dims_set') and self._physical_screen_dims_set else None
-        
+        # Pass screen info from experimental_setup
         calibration = ForeshorteningCalibration(
             eye=eye,
             theta=theta_opt,
@@ -591,8 +597,8 @@ class EyeData(GazeData,PupilData):
             spline_coeffs=spline_coeffs_opt,
             spline_knots=knots,
             spline_degree=3,
-            screen_resolution=screen_res,
-            physical_screen_size=phys_size,
+            screen_resolution=setup.screen_resolution,
+            physical_screen_size=setup.physical_screen_size,
             fit_intervals=intervals,
             fit_metrics=fit_metrics
         )
