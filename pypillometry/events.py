@@ -81,18 +81,23 @@ class Events:
         
         Parameters
         ----------
-        idx : int or slice
-            Index or slice to retrieve
+        idx : int, slice, or array-like
+            Index, slice, or boolean/integer array to retrieve
             
         Returns
         -------
-        tuple or Events
-            If idx is int: returns (onset, label) tuple
-            If idx is slice: returns new Events object with subset
+        Events
+            New Events object with the selected event(s)
         """
         if isinstance(idx, (int, np.integer)):
-            return (self.onsets[idx], self.labels[idx])
-        elif isinstance(idx, slice):
+            # Wrap single index in a list to get 1-element arrays
+            return Events(
+                onsets=self.onsets[[idx]],
+                labels=self.labels[[idx]],
+                units=self.units,
+                data_time_range=self.data_time_range
+            )
+        elif isinstance(idx, (slice, np.ndarray, list)):
             return Events(
                 onsets=self.onsets[idx],
                 labels=self.labels[idx],
@@ -100,7 +105,7 @@ class Events:
                 data_time_range=self.data_time_range
             )
         else:
-            raise TypeError(f"indices must be integers or slices, not {type(idx)}")
+            raise TypeError(f"indices must be integers, slices, or array-like, not {type(idx)}")
     
     def to_array(self) -> Tuple[np.ndarray, np.ndarray]:
         """

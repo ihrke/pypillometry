@@ -93,10 +93,23 @@ class TestEventsAccessors(unittest.TestCase):
         self.assertEqual(result[3], (1500, "resp2"))
     
     def test_events_indexing_int(self):
-        """Test integer indexing Events"""
-        self.assertEqual(self.events[0], (100, "stim1"))
-        self.assertEqual(self.events[1], (500, "stim2"))
-        self.assertEqual(self.events[-1], (1500, "resp2"))
+        """Test integer indexing Events returns Events object"""
+        subset = self.events[0]
+        self.assertIsInstance(subset, Events)
+        self.assertEqual(len(subset), 1)
+        np.testing.assert_array_equal(subset.onsets, [100])
+        np.testing.assert_array_equal(subset.labels, ["stim1"])
+        self.assertEqual(subset.units, "ms")
+        
+        subset = self.events[1]
+        self.assertIsInstance(subset, Events)
+        np.testing.assert_array_equal(subset.onsets, [500])
+        np.testing.assert_array_equal(subset.labels, ["stim2"])
+        
+        subset = self.events[-1]
+        self.assertIsInstance(subset, Events)
+        np.testing.assert_array_equal(subset.onsets, [1500])
+        np.testing.assert_array_equal(subset.labels, ["resp2"])
     
     def test_events_indexing_slice(self):
         """Test slice indexing Events"""
