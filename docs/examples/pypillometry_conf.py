@@ -18,9 +18,9 @@ study_info = {
     "date": "2024-04-10",
     "sampling_rate": 1000.0,  # Hz
     "time_unit": "ms",
-    "screen_eye_distance": 60, # cm (distance between screen and eye)
-    "screen_resolution": (1280,1024),  # pixels (width, height)
-    "physical_screen_size": (30, 20) # cm (width, height)
+    "eye_to_screen_perpendicular": "60 cm",  # distance between screen and eye
+    "screen_resolution": (1280, 1024),  # pixels (width, height)
+    "physical_screen_size": ("30 cm", "20 cm")  # (width, height)
 }
 
 
@@ -330,17 +330,17 @@ def read_subject(info):
 
     # Creating EyeData object that contains both X-Y coordinates
     # and pupil data
+    setup = pp.ExperimentalSetup(
+        screen_resolution=study_info["screen_resolution"],
+        physical_screen_size=study_info["physical_screen_size"],
+        eye_to_screen_perpendicular=study_info["eye_to_screen_perpendicular"]
+    )
     d = pp.EyeData(time=df.time, name=info["subject"],
-                screen_resolution=study_info["screen_resolution"], 
-                physical_screen_size=study_info["physical_screen_size"],
-                screen_eye_distance=study_info["screen_eye_distance"],
+                experimental_setup=setup,
                 left_x=left_x, left_y=left_y, left_pupil=df.left_p,
                 right_x=right_x, right_y=right_y, right_pupil=df.right_p,
                 event_onsets=df_ev.time, event_labels=df_ev.event, 
                 info={**study_info, "notes": notes[info["subject"]]},
                 keep_orig=True)\
                 .reset_time()
-    d.set_experiment_info(screen_eye_distance=study_info["screen_eye_distance"], 
-                        screen_resolution=study_info["screen_resolution"], 
-                        physical_screen_size=study_info["physical_screen_size"])
     return d    
