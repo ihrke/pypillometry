@@ -297,14 +297,16 @@ EyeData(002_ceylin_va, 65.0MiB):
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span>
 <span class="c1"># clean pupil data using XY saccade data</span>
-<span class="n">d</span><span class="o">.</span><span class="n">set_experiment_info</span><span class="p">(</span><span class="n">screen_eye_distance</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
-                      <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span>
-                      <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">set_experimental_setup</span><span class="p">(</span>
+    <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span>
+    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;30 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;20 cm&quot;</span><span class="p">),</span>
+    <span class="n">eye_screen_distance</span><span class="o">=</span><span class="s2">&quot;60 cm&quot;</span>
+<span class="p">)</span>
 <span class="n">pd1</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
 <span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">correct_pupil_foreshortening</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
 <span class="n">pd2</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>

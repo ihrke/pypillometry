@@ -410,11 +410,12 @@ window.addEventListener("load", load);
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">GazePlotter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..units</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_distance</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.spatial_calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpatialCalibration</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.experimental_setup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperimentalSetup</span>
+
 
 <div class="viewcode-block" id="GazeData">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GazeData">[docs]</a>
@@ -436,12 +437,9 @@ window.addEventListener("load", load);
 <span class="sd">        data from right eye (at least one of the eyes must be provided, both x and y)</span>
 <span class="sd">    sampling_rate: float</span>
 <span class="sd">        sampling-rate of the signal in Hz; if None, </span>
-<span class="sd">    screen_resolution: tuple</span>
-<span class="sd">        (xmax, ymax) screen resolution in pixels</span>
-<span class="sd">    physical_screen_size: tuple</span>
-<span class="sd">        (width, height) of the screen in cm; if None, the screen size is not used</span>
-<span class="sd">    screen_eye_distance: float</span>
-<span class="sd">        distance from the screen to the eye in cm</span>
+<span class="sd">    experimental_setup: ExperimentalSetup, optional</span>
+<span class="sd">        Geometric model of the experimental setup including screen geometry,</span>
+<span class="sd">        eye position, camera position, and screen orientation.</span>
 <span class="sd">    name: </span>
 <span class="sd">        name of the dataset or `None` (in which case a random string is selected)</span>
 <span class="sd">    event_onsets: </span>
@@ -471,9 +469,7 @@ window.addEventListener("load", load);
                     <span class="n">event_onsets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">event_labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">screen_resolution</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">physical_screen_size</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">screen_eye_distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">experimental_setup</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ExperimentalSetup</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">calibration</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SpatialCalibration</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -493,16 +489,10 @@ window.addEventListener("load", load);
                           <span class="n">name</span><span class="p">,</span> <span class="n">fill_time_discontinuities</span><span class="p">,</span> 
                           <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">inplace</span><span class="p">)</span>
         
-        <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="o">=</span><span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims_set</span><span class="o">=</span><span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance_set</span><span class="o">=</span><span class="kc">False</span>
-
-        <span class="c1">## screen limits, physical screen size, screen-eye distance</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_experiment_info</span><span class="p">(</span><span class="n">screen_resolution</span><span class="o">=</span><span class="n">screen_resolution</span><span class="p">,</span> 
-                                <span class="n">physical_screen_size</span><span class="o">=</span><span class="n">physical_screen_size</span><span class="p">,</span>
-                                <span class="n">screen_eye_distance</span><span class="o">=</span><span class="n">screen_eye_distance</span><span class="p">)</span>
+        <span class="c1"># Experimental setup (geometry)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="o">=</span> <span class="n">experimental_setup</span>
         
-        <span class="c1">## Spatial calibration data</span>
+        <span class="c1"># Spatial calibration data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">calibration</span> <span class="o">=</span> <span class="n">calibration</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">original</span><span class="o">=</span><span class="kc">None</span>
@@ -513,329 +503,109 @@ window.addEventListener("load", load);
     <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">GazePlotter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-
 <div class="viewcode-block" id="GazeData.summary">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GazeData.summary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            Return a summary of the dataset as a dictionary.</span>
-
-<span class="sd">            Returns</span>
-<span class="sd">            -------</span>
-<span class="sd">            dict</span>
-<span class="sd">                dictionary containing description of dataset</span>
-<span class="sd">            &quot;&quot;&quot;</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="p">:</span>
-                <span class="n">screen_limits</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">screen_limits</span><span class="o">=</span><span class="s2">&quot;not set&quot;</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims_set</span><span class="p">:</span>
-                <span class="n">phys_dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">physical_screen_dims</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">phys_dims</span><span class="o">=</span><span class="s2">&quot;not set&quot;</span>
-            
-            <span class="n">screen_eye_dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance_set</span> <span class="k">else</span> <span class="s2">&quot;not set&quot;</span>
-            <span class="n">camera_eye_dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_camera_eye_distance</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_camera_eye_distance_set</span> <span class="k">else</span> <span class="s2">&quot;not set&quot;</span>
-            <span class="n">eye_to_eye_dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eye_to_eye_distance</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eye_to_eye_distance_set</span> <span class="k">else</span> <span class="s2">&quot;not set&quot;</span>
-
-            <span class="c1"># Calibration info</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">calibration_info</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="n">eye</span><span class="p">:</span> <span class="n">cal</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span> <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">cal</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                <span class="p">}</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">calibration_info</span> <span class="o">=</span> <span class="s2">&quot;not available&quot;</span>
-            
-            <span class="n">summary</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
-                <span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
-                <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
-                <span class="n">data</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
-                <span class="n">nevents</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nevents</span><span class="p">(),</span> 
-                <span class="n">screen_limits</span><span class="o">=</span><span class="n">screen_limits</span><span class="p">,</span>
-                <span class="n">physical_screen_size</span><span class="o">=</span><span class="n">phys_dims</span><span class="p">,</span>
-                <span class="n">screen_eye_distance</span><span class="o">=</span><span class="n">screen_eye_dist</span><span class="p">,</span>
-                <span class="n">camera_eye_distance</span><span class="o">=</span><span class="n">camera_eye_dist</span><span class="p">,</span>
-                <span class="n">eye_to_eye_distance</span><span class="o">=</span><span class="n">eye_to_eye_dist</span><span class="p">,</span>
-                <span class="n">calibration</span><span class="o">=</span><span class="n">calibration_info</span><span class="p">,</span>
-                <span class="n">duration_minutes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">),</span>
-                <span class="n">start_min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="p">,</span>
-                <span class="n">end_min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="p">,</span>
-                <span class="n">parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_strfy_params</span><span class="p">(),</span>
-                <span class="n">glimpse</span><span class="o">=</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-            <span class="p">)</span>
-            
-            <span class="k">return</span> <span class="n">summary</span>            </div>
-
-    
-
-<div class="viewcode-block" id="GazeData.set_experiment_info">
-<a class="viewcode-back" href="../../../api.html#pypillometry.GazeData.set_experiment_info">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_experiment_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
-                            <span class="n">screen_eye_distance</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                            <span class="n">screen_resolution</span><span class="p">:</span> <span class="nb">tuple</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                            <span class="n">physical_screen_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                            <span class="n">camera_eye_distance</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                            <span class="n">eye_to_eye_distance</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set some experimental information for the dataset.</span>
+<span class="sd">        Return a summary of the dataset as a dictionary.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        screen_eye_distance: float, str, or pint.Quantity</span>
-<span class="sd">            distance from the screen to the eye</span>
-<span class="sd">            - Plain number: assumed to be mm (with warning)</span>
-<span class="sd">            - String: e.g., &quot;70 cm&quot;, &quot;700 mm&quot;</span>
-<span class="sd">            - Quantity: e.g., 70 * ureg.cm</span>
-<span class="sd">        screen_resolution: tuple</span>
-<span class="sd">            (width, height) of the screen in pixels</span>
-<span class="sd">        physical_screen_size: tuple</span>
-<span class="sd">            (width, height) of the screen</span>
-<span class="sd">            Each element can be:</span>
-<span class="sd">            - Plain number: assumed to be mm (with warning)</span>
-<span class="sd">            - String: e.g., &quot;52 cm&quot;, &quot;520 mm&quot;</span>
-<span class="sd">            - Quantity: e.g., 52 * ureg.cm</span>
-<span class="sd">        camera_eye_distance: float, str, or pint.Quantity</span>
-<span class="sd">            distance from the camera to the eye</span>
-<span class="sd">            - Plain number: assumed to be mm (with warning)</span>
-<span class="sd">            - String: e.g., &quot;600 mm&quot;, &quot;60 cm&quot;</span>
-<span class="sd">            - Quantity: e.g., 600 * ureg.mm</span>
-<span class="sd">        eye_to_eye_distance: float, str, or pint.Quantity</span>
-<span class="sd">            distance between the two eyes (inter-pupillary distance)</span>
-<span class="sd">            - Plain number: assumed to be mm (with warning)</span>
-<span class="sd">            - String: e.g., &quot;65 mm&quot;, &quot;6.5 cm&quot;</span>
-<span class="sd">            - Quantity: e.g., 65 * ureg.mm</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            dictionary containing description of dataset</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">screen_resolution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">screen_xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">screen_resolution</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">screen_ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">screen_resolution</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Experimental setup info</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">setup_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">setup_info</span> <span class="o">=</span> <span class="s2">&quot;not set&quot;</span>
+
+        <span class="c1"># Calibration info</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">calibration_info</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">eye</span><span class="p">:</span> <span class="n">cal</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span> <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">cal</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">calibration_info</span> <span class="o">=</span> <span class="s2">&quot;not available&quot;</span>
         
-        <span class="k">if</span> <span class="n">physical_screen_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">physical_screen_dims</span> <span class="o">=</span> <span class="n">physical_screen_size</span>
+        <span class="n">summary</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
+            <span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+            <span class="n">nevents</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nevents</span><span class="p">(),</span> 
+            <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup_info</span><span class="p">,</span>
+            <span class="n">calibration</span><span class="o">=</span><span class="n">calibration_info</span><span class="p">,</span>
+            <span class="n">duration_minutes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">),</span>
+            <span class="n">start_min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="p">,</span>
+            <span class="n">end_min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="p">,</span>
+            <span class="n">parameters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_strfy_params</span><span class="p">(),</span>
+            <span class="n">glimpse</span><span class="o">=</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="p">)</span>
         
-        <span class="k">if</span> <span class="n">screen_eye_distance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">screen_eye_distance</span> <span class="o">=</span> <span class="n">screen_eye_distance</span>
-        
-        <span class="k">if</span> <span class="n">camera_eye_distance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">camera_eye_distance</span> <span class="o">=</span> <span class="n">camera_eye_distance</span>
-        
-        <span class="k">if</span> <span class="n">eye_to_eye_distance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">eye_to_eye_distance</span> <span class="o">=</span> <span class="n">eye_to_eye_distance</span></div>
+        <span class="k">return</span> <span class="n">summary</span>            </div>
 
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">screen_xlim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Limits of the screen in x-direction (pixels).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        tuple</span>
-<span class="sd">            xmin,xmax of the screen</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Screen size not set! Use `set_experiment_info()` to set it.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_xlim</span>
-
-    <span class="nd">@screen_xlim</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">screen_xlim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set x limits of the screen (pixels).</span>
+    
+<div class="viewcode-block" id="GazeData.set_experimental_setup">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GazeData.set_experimental_setup">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_experimental_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set or update the experimental setup geometry.</span>
+<span class="sd">        </span>
+<span class="sd">        Creates a new ExperimentalSetup or updates the existing one with</span>
+<span class="sd">        the provided parameters. All parameters are passed through to</span>
+<span class="sd">        ExperimentalSetup constructor.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        value : tuple (xmin, xmax)</span>
-<span class="sd">            new limits of the screen</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Screen limits must be a tuple (xmin, xmax)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_screen_xlim</span><span class="o">=</span><span class="n">value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="o">=</span><span class="kc">True</span>
-    
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">screen_ylim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Y-limits of the screen (pixels).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        typle</span>
-<span class="sd">            ymin,ymax of the screen</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Screen size not set! Use `set_experiment_info()` to set it.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_ylim</span>
-    
-    <span class="nd">@screen_ylim</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">screen_ylim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set y-limits of the screen (pixels).</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        value : tuple (ymin,ymax)</span>
-<span class="sd">            new y-limits of the screen</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Screen limits must be a tuple (ymin, ymax)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_screen_ylim</span><span class="o">=</span><span class="n">value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_screen_size_set</span><span class="o">=</span><span class="kc">True</span>
-
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">screen_width</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Width of the screen (pixels).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        float</span>
-<span class="sd">            xmax-xmin</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">screen_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Height of the screen (pixels).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        float</span>
-<span class="sd">            ymax-ymin</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">screen_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Screen resolution (pixels).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        tuple</span>
-<span class="sd">            (width, height) in pixels</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
-        <span class="k">return</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">screen_width</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">screen_height</span><span class="p">))</span>
-    
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">physical_screen_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Physical dimensions of screen (mm).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        tuple</span>
-<span class="sd">            (width, height) of screen in mm</span>
+<span class="sd">        **kwargs : </span>
+<span class="sd">            Any parameters accepted by ExperimentalSetup:</span>
+<span class="sd">            - screen_resolution: tuple (width, height) in pixels</span>
+<span class="sd">            - physical_screen_size: tuple (width, height) with units</span>
+<span class="sd">            - eye_screen_distance: distance (d)</span>
+<span class="sd">            - screen_offset: tuple (delta_x, delta_y) - offset of screen center from eye</span>
+<span class="sd">            - eye_to_screen_center: alternative distance specification</span>
+<span class="sd">            - screen_pitch: tilt angle (alpha_tilt)</span>
+<span class="sd">            - screen_yaw: tilt angle (beta_tilt)</span>
+<span class="sd">            - camera_offset: tuple (x, y, z) in eye-centric frame</span>
+<span class="sd">            - camera_spherical: tuple (theta, phi, r)</span>
+<span class="sd">            - ipd: inter-pupillary distance</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; data.set_experimental_setup(</span>
+<span class="sd">        ...     screen_resolution=(1920, 1080),</span>
+<span class="sd">        ...     physical_screen_size=(&quot;52 cm&quot;, &quot;29 cm&quot;),</span>
+<span class="sd">        ...     eye_screen_distance=&quot;65 cm&quot;,</span>
+<span class="sd">        ... )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims_set</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Physical screen size not set! Use `set_experiment_info()` to set it.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims</span>
-    
-    <span class="nd">@physical_screen_dims</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">physical_screen_dims</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set physical screen dimensions.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Create new setup</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="o">=</span> <span class="n">ExperimentalSetup</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Merge with existing setup</span>
+            <span class="n">old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            
+            <span class="c1"># Map old dict keys to ExperimentalSetup constructor params</span>
+            <span class="n">merged</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;screen_resolution&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screen_resolution&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screen_resolution&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;physical_screen_size&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;physical_screen_size&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;physical_screen_size&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;eye_screen_distance&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eye_screen_distance&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;screen_offset&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screen_offset&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screen_offset&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;eye_to_screen_center&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eye_to_screen_center&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;screen_pitch&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screen_pitch&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;alpha_tilt&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;screen_yaw&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screen_yaw&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;beta_tilt&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;camera_offset&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;camera_offset&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;camera_offset&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;camera_spherical&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;camera_spherical&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;camera_spherical&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;ipd&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ipd&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ipd&#39;</span><span class="p">)),</span>
+            <span class="p">}</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="o">=</span> <span class="n">ExperimentalSetup</span><span class="p">(</span><span class="o">**</span><span class="n">merged</span><span class="p">)</span></div>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        value : tuple</span>
-<span class="sd">            (width, height) - each can be float, str, or pint.Quantity</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">parsed_size</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
-            <span class="n">parsed_size</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parse_distance</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">parsed_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_physical_screen_dims_set</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">physical_screen_width</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Physical width of screen (mm).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        float</span>
-<span class="sd">            width of screen in mm</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">physical_screen_dims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">physical_screen_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Physical height of screen (mm).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        float</span>
-<span class="sd">            height of screen in mm</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">physical_screen_dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">screen_eye_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Distance from screen to eye (mm).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        float</span>
-<span class="sd">            distance from screen to eye in mm</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance_set</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Screen-eye distance not set! Use `set_experiment_info()` to set it.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance</span>
-    
-    <span class="nd">@screen_eye_distance</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">screen_eye_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set screen-eye distance.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        value : float, str, or pint.Quantity</span>
-<span class="sd">            Distance - plain number assumed to be mm</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance</span> <span class="o">=</span> <span class="n">parse_distance</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_screen_eye_distance_set</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">camera_eye_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Distance from camera to eye (mm).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        float</span>
-<span class="sd">            distance from camera to eye in mm</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_camera_eye_distance_set</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Camera-eye distance not set! Use `set_experiment_info()` to set it.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_camera_eye_distance</span>
-    
-    <span class="nd">@camera_eye_distance</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">camera_eye_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set camera-eye distance.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        value : float, str, or pint.Quantity</span>
-<span class="sd">            Distance - plain number assumed to be mm</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_camera_eye_distance</span> <span class="o">=</span> <span class="n">parse_distance</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_camera_eye_distance_set</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">eye_to_eye_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Distance between the two eyes (inter-pupillary distance) (mm).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        float</span>
-<span class="sd">            inter-pupillary distance in mm</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eye_to_eye_distance_set</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Eye-to-eye distance not set! Use `set_experiment_info()` to set it.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eye_to_eye_distance</span>
-    
-    <span class="nd">@eye_to_eye_distance</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">eye_to_eye_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set eye-to-eye distance.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        value : float, str, or pint.Quantity</span>
-<span class="sd">            Distance - plain number assumed to be mm</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_eye_to_eye_distance</span> <span class="o">=</span> <span class="n">parse_distance</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_eye_to_eye_distance_set</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="c1"># =========================================================================</span>
+    <span class="c1"># Methods</span>
+    <span class="c1"># =========================================================================</span>
 
 <div class="viewcode-block" id="GazeData.mask_eye_divergences">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GazeData.mask_eye_divergences">[docs]</a>
@@ -1002,11 +772,22 @@ window.addEventListener("load", load);
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         
+        <span class="c1"># Require experimental_setup for screen limits</span>
+        <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot mask offscreen coords: experimental_setup not set. &quot;</span>
+                <span class="s2">&quot;Use set_experimental_setup() to configure it.&quot;</span>
+            <span class="p">)</span>
+        
         <span class="c1"># Get eyes to check</span>
         <span class="n">eyes_list</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="p">[])</span>
         
         <span class="c1"># Dictionary to store intervals per eye</span>
         <span class="n">intervals_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="c1"># Get screen limits from experimental_setup</span>
+        <span class="n">xlim</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">experimental_setup</span><span class="o">.</span><span class="n">screen_xlim</span>
+        <span class="n">ylim</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">experimental_setup</span><span class="o">.</span><span class="n">screen_ylim</span>
         
         <span class="c1"># Check each eye</span>
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes_list</span><span class="p">:</span>
@@ -1028,13 +809,12 @@ window.addEventListener("load", load);
                 <span class="n">x</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="n">vx</span><span class="p">]</span>
                 <span class="n">y</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="n">vy</span><span class="p">]</span>
 
-
             <span class="c1"># Check all points including already masked ones</span>
             <span class="n">offscreen_mask</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">obj</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">|</span> 
-                <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">obj</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">|</span> 
-                <span class="p">(</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">obj</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">|</span> 
-                <span class="p">(</span><span class="n">y</span> <span class="o">&gt;</span> <span class="n">obj</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">|</span> 
+                <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">|</span> 
+                <span class="p">(</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">|</span> 
+                <span class="p">(</span><span class="n">y</span> <span class="o">&gt;</span> <span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
             <span class="p">)</span>
             
             <span class="c1"># Convert masked array to regular boolean array if needed</span>

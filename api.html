@@ -473,7 +473,7 @@ as well as tools for plotting and analyzing these data.</p>
 
  GazeData: +EyeDataDict data[left_x, left_y, right_x, right_y]
  GazeData: +GazePlotter plot
- GazeData: +set_experiment_info() (and other gaze-specific functions)
+ GazeData: +set_experimental_setup() (and other gaze-specific functions)
  PupilData: +EyeDataDict data[left_pupil, right_pupil]
  PupilData: +PupilPlotter plot
  PupilData: +pupil_blinks_detect() (and other pupil-specific functions)
@@ -519,7 +519,7 @@ that is stored in the <cite>plot</cite> attribute.</p>
 <h3><a class="toc-backref" href="#id4" role="doc-backlink">EyeData</a><a class="headerlink" href="#eyedata" title="Link to this heading">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="pypillometry.EyeData">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">EyeData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_pupil</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_pupil</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_onsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">screen_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">physical_screen_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">screen_eye_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_eye_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eye_to_eye_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_time_discontinuities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_orig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/eyedata.html#EyeData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeData" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">EyeData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_pupil</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_pupil</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_onsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experimental_setup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_time_discontinuities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_orig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/eyedata.html#EyeData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeData" title="Link to this definition">¶</a></dt>
 <dd><p>Class for handling eye-tracking data. This class is a subclass of GazeData
 and inherits all its methods and attributes. In addition to the methods
 in GazeData which implement functions for eye-tracking data, <cite>EyeData</cite>
@@ -542,11 +542,8 @@ pupil is optional</p></li>
 <li><p><strong>right_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided, both x and y)
 pupil is optional</p></li>
 <li><p><strong>sampling_rate</strong> (<em>float</em>) – sampling-rate of the pupillary signal in Hz; if None,</p></li>
-<li><p><strong>screen_resolution</strong> (<em>tuple</em>) – (xmax, ymax) screen resolution in pixels</p></li>
-<li><p><strong>physical_screen_size</strong> (<em>tuple</em>) – (width, height) of the screen in cm; if None, the screen size is not used</p></li>
-<li><p><strong>screen_eye_distance</strong> (<em>float</em>) – distance from the screen to the eye in cm</p></li>
-<li><p><strong>camera_eye_distance</strong> (<em>float</em>) – distance from the camera to the eye in mm</p></li>
-<li><p><strong>eye_to_eye_distance</strong> (<em>float</em>) – distance between the two eyes (inter-pupillary distance) in mm</p></li>
+<li><p><strong>experimental_setup</strong> (<em>ExperimentalSetup</em><em>, </em><em>optional</em>) – Geometric model of the experimental setup including screen geometry,
+eye position, camera position, and screen orientation.</p></li>
 <li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
 <li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
 <li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
@@ -573,31 +570,9 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <dd class="field-odd"><dl class="simple">
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">blinks</span></code></dt><dd><p>Return blinks (intervals) for all eyes.</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">camera_eye_distance</span></code></dt><dd><p>Distance from camera to eye (mm).</p>
-</dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">eye_to_eye_distance</span></code></dt><dd><p>Distance between the two eyes (inter-pupillary distance) (mm).</p>
-</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyes</span></code></dt><dd><p>Return a list of available eyes in the dataset.</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_screen_dims</span></code></dt><dd><p>Physical dimensions of screen (mm).</p>
-</dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_screen_height</span></code></dt><dd><p>Physical height of screen (mm).</p>
-</dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_screen_width</span></code></dt><dd><p>Physical width of screen (mm).</p>
-</dd>
 <dt><strong>plot</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_eye_distance</span></code></dt><dd><p>Distance from screen to eye (mm).</p>
-</dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_height</span></code></dt><dd><p>Height of the screen (pixels).</p>
-</dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_resolution</span></code></dt><dd><p>Screen resolution (pixels).</p>
-</dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_width</span></code></dt><dd><p>Width of the screen (pixels).</p>
-</dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_xlim</span></code></dt><dd><p>Limits of the screen in x-direction (pixels).</p>
-</dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_ylim</span></code></dt><dd><p>Y-limits of the screen (pixels).</p>
-</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></dt><dd><p>Return a list of available variables in the dataset.</p>
 </dd>
 </dl>
@@ -723,8 +698,8 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
 <td><p>Replace event onsets and labels from an Events object.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experiment_info</span></code>([screen_eye_distance, ...])</p></td>
-<td><p>Set some experimental information for the dataset.</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experimental_setup</span></code>(**kwargs)</p></td>
+<td><p>Set or update the experimental setup geometry.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
@@ -763,7 +738,7 @@ pupil data is not touched where x/y is missing</p></li>
 <li><p><strong>eyes</strong> (<em>list</em>) – Which eyes to correct. If None, correct all available eyes.</p></li>
 <li><p><strong>midpoint</strong> (<em>tuple</em>) – The center of the screen (x,y) where it is assumed that the pupil is completely circular.
 If None, the midpoint is taken to be the center of the screen as registered
-in the EyeData object.</p></li>
+in the experimental_setup.</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – Whether to modify the object in place or return a new object.
 <cite>true</cite>: modify in place
 <cite>false</cite>: return a new object
@@ -792,12 +767,12 @@ preprocessed (filtered and downsampled) before fitting.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eye</strong> (<em>str</em>) – Which eye to fit (‘left’ or ‘right’)</p></li>
 <li><p><strong>r</strong> (<em>float</em><em>, </em><em>str</em><em>, or </em><em>pint.Quantity</em><em>, </em><em>optional</em>) – Eye-to-camera distance. If not provided, uses the
-<cite>camera_eye_distance</cite> attribute of the EyeData object.
+<cite>r</cite> from experimental_setup.
 - Plain number: assumed to be mm (with warning)
 - String: e.g., “600 mm”, “60 cm”
 - Quantity: e.g., 600 * ureg.mm</p></li>
 <li><p><strong>d</strong> (<em>float</em><em>, </em><em>str</em><em>, or </em><em>pint.Quantity</em><em>, </em><em>optional</em>) – Eye-to-screen distance. If not provided, uses the
-<cite>screen_eye_distance</cite> attribute.
+<cite>d</cite> from experimental_setup.
 - Plain number: assumed to be mm (with warning)
 - String: e.g., “700 mm”, “70 cm”
 - Quantity: e.g., 700 * ureg.mm</p></li>
@@ -852,10 +827,12 @@ spline coefficients for A0(t), and fit quality metrics.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s1">&#39;recording.edf&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set experimental parameters (optional but recommended)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">set_experiment_info</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">camera_eye_distance</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>  <span class="c1"># mm</span>
-<span class="gp">... </span>    <span class="n">screen_eye_distance</span><span class="o">=</span><span class="mi">70</span>    <span class="c1"># cm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set experimental setup</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">set_experimental_setup</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;52 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;29 cm&quot;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">eye_screen_distance</span><span class="o">=</span><span class="s2">&quot;65 cm&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">camera_offset</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;0 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;-30 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;0 cm&quot;</span><span class="p">),</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Fit on calibration period (first 2 minutes)</span>
@@ -868,8 +845,8 @@ spline coefficients for A0(t), and fit quality metrics.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Or provide r and d explicitly</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">calib</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">fit_foreshortening</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">eye</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">r</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>  <span class="c1"># Eye-to-camera distance in mm</span>
-<span class="gp">... </span>    <span class="n">d</span><span class="o">=</span><span class="mi">700</span><span class="p">,</span>  <span class="c1"># Eye-to-screen distance in mm</span>
+<span class="gp">... </span>    <span class="n">r</span><span class="o">=</span><span class="s2">&quot;60 cm&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">d</span><span class="o">=</span><span class="s2">&quot;70 cm&quot;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">intervals</span><span class="o">=</span><span class="n">cal_intervals</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -1311,7 +1288,7 @@ if <cite>False</cite>, make and return copy before making changes</p></li>
 <h3><a class="toc-backref" href="#id6" role="doc-backlink">GazeData</a><a class="headerlink" href="#gazedata" title="Link to this heading">¶</a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="pypillometry.GazeData">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">GazeData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_onsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">screen_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">physical_screen_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">screen_eye_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_time_discontinuities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_orig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/gazedata.html#GazeData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GazeData" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">GazeData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_onsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">experimental_setup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_time_discontinuities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_orig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/gazedata.html#GazeData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GazeData" title="Link to this definition">¶</a></dt>
 <dd><p>Class representing Eye-Tracking data (x,y) from one or two eyes.</p>
 <p>If you also want to store pupil-size, use the <cite>EyeData</cite> class.
 If you only want to store pupil-size, use the <cite>PupilData</cite> class.</p>
@@ -1325,9 +1302,8 @@ using <cite>sampling_rate</cite> (in ms)</p></li>
 <li><p><strong>right_x</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided, both x and y)</p></li>
 <li><p><strong>right_y</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided, both x and y)</p></li>
 <li><p><strong>sampling_rate</strong> (<em>float</em>) – sampling-rate of the signal in Hz; if None,</p></li>
-<li><p><strong>screen_resolution</strong> (<em>tuple</em>) – (xmax, ymax) screen resolution in pixels</p></li>
-<li><p><strong>physical_screen_size</strong> (<em>tuple</em>) – (width, height) of the screen in cm; if None, the screen size is not used</p></li>
-<li><p><strong>screen_eye_distance</strong> (<em>float</em>) – distance from the screen to the eye in cm</p></li>
+<li><p><strong>experimental_setup</strong> (<em>ExperimentalSetup</em><em>, </em><em>optional</em>) – Geometric model of the experimental setup including screen geometry,
+eye position, camera position, and screen orientation.</p></li>
 <li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
 <li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
 <li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
@@ -1346,31 +1322,9 @@ default is “False”</p></li>
 <dd class="field-even"><dl class="simple">
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">blinks</span></code></dt><dd><p>Return blinks (intervals) for all eyes.</p>
 </dd>
-<dt><a class="reference internal" href="#pypillometry.GazeData.camera_eye_distance" title="pypillometry.GazeData.camera_eye_distance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">camera_eye_distance</span></code></a></dt><dd><p>Distance from camera to eye (mm).</p>
-</dd>
-<dt><a class="reference internal" href="#pypillometry.GazeData.eye_to_eye_distance" title="pypillometry.GazeData.eye_to_eye_distance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eye_to_eye_distance</span></code></a></dt><dd><p>Distance between the two eyes (inter-pupillary distance) (mm).</p>
-</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyes</span></code></dt><dd><p>Return a list of available eyes in the dataset.</p>
 </dd>
-<dt><a class="reference internal" href="#pypillometry.GazeData.physical_screen_dims" title="pypillometry.GazeData.physical_screen_dims"><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_screen_dims</span></code></a></dt><dd><p>Physical dimensions of screen (mm).</p>
-</dd>
-<dt><a class="reference internal" href="#pypillometry.GazeData.physical_screen_height" title="pypillometry.GazeData.physical_screen_height"><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_screen_height</span></code></a></dt><dd><p>Physical height of screen (mm).</p>
-</dd>
-<dt><a class="reference internal" href="#pypillometry.GazeData.physical_screen_width" title="pypillometry.GazeData.physical_screen_width"><code class="xref py py-obj docutils literal notranslate"><span class="pre">physical_screen_width</span></code></a></dt><dd><p>Physical width of screen (mm).</p>
-</dd>
 <dt><strong>plot</strong></dt><dd></dd>
-<dt><a class="reference internal" href="#pypillometry.GazeData.screen_eye_distance" title="pypillometry.GazeData.screen_eye_distance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_eye_distance</span></code></a></dt><dd><p>Distance from screen to eye (mm).</p>
-</dd>
-<dt><a class="reference internal" href="#pypillometry.GazeData.screen_height" title="pypillometry.GazeData.screen_height"><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_height</span></code></a></dt><dd><p>Height of the screen (pixels).</p>
-</dd>
-<dt><a class="reference internal" href="#pypillometry.GazeData.screen_resolution" title="pypillometry.GazeData.screen_resolution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_resolution</span></code></a></dt><dd><p>Screen resolution (pixels).</p>
-</dd>
-<dt><a class="reference internal" href="#pypillometry.GazeData.screen_width" title="pypillometry.GazeData.screen_width"><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_width</span></code></a></dt><dd><p>Width of the screen (pixels).</p>
-</dd>
-<dt><a class="reference internal" href="#pypillometry.GazeData.screen_xlim" title="pypillometry.GazeData.screen_xlim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_xlim</span></code></a></dt><dd><p>Limits of the screen in x-direction (pixels).</p>
-</dd>
-<dt><a class="reference internal" href="#pypillometry.GazeData.screen_ylim" title="pypillometry.GazeData.screen_ylim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">screen_ylim</span></code></a></dt><dd><p>Y-limits of the screen (pixels).</p>
-</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></dt><dd><p>Return a list of available variables in the dataset.</p>
 </dd>
 </dl>
@@ -1466,8 +1420,8 @@ default is “False”</p></li>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
 <td><p>Replace event onsets and labels from an Events object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GazeData.set_experiment_info" title="pypillometry.GazeData.set_experiment_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experiment_info</span></code></a>([screen_eye_distance, ...])</p></td>
-<td><p>Set some experimental information for the dataset.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GazeData.set_experimental_setup" title="pypillometry.GazeData.set_experimental_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experimental_setup</span></code></a>(**kwargs)</p></td>
+<td><p>Set or update the experimental setup geometry.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
@@ -1486,34 +1440,6 @@ default is “False”</p></li>
 </tr>
 </tbody>
 </table>
-<dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.GazeData.camera_eye_distance">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">camera_eye_distance</span></span><a class="headerlink" href="#pypillometry.GazeData.camera_eye_distance" title="Link to this definition">¶</a></dt>
-<dd><p>Distance from camera to eye (mm).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>distance from camera to eye in mm</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.GazeData.eye_to_eye_distance">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eye_to_eye_distance</span></span><a class="headerlink" href="#pypillometry.GazeData.eye_to_eye_distance" title="Link to this definition">¶</a></dt>
-<dd><p>Distance between the two eyes (inter-pupillary distance) (mm).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>inter-pupillary distance in mm</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GazeData.mask_eye_divergences">
 <span class="sig-name descname"><span class="pre">mask_eye_divergences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.99</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thr_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'percentile'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_as</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/gazedata.html#GazeData.mask_eye_divergences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GazeData.mask_eye_divergences" title="Link to this definition">¶</a></dt>
@@ -1614,160 +1540,36 @@ detected offscreen intervals.</p>
 </div>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.GazeData.physical_screen_dims">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">physical_screen_dims</span></span><a class="headerlink" href="#pypillometry.GazeData.physical_screen_dims" title="Link to this definition">¶</a></dt>
-<dd><p>Physical dimensions of screen (mm).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(width, height) of screen in mm</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>tuple</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.GazeData.physical_screen_height">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">physical_screen_height</span></span><a class="headerlink" href="#pypillometry.GazeData.physical_screen_height" title="Link to this definition">¶</a></dt>
-<dd><p>Physical height of screen (mm).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>height of screen in mm</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.GazeData.physical_screen_width">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">physical_screen_width</span></span><a class="headerlink" href="#pypillometry.GazeData.physical_screen_width" title="Link to this definition">¶</a></dt>
-<dd><p>Physical width of screen (mm).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>width of screen in mm</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.GazeData.screen_eye_distance">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">screen_eye_distance</span></span><a class="headerlink" href="#pypillometry.GazeData.screen_eye_distance" title="Link to this definition">¶</a></dt>
-<dd><p>Distance from screen to eye (mm).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>distance from screen to eye in mm</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.GazeData.screen_height">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">screen_height</span></span><a class="headerlink" href="#pypillometry.GazeData.screen_height" title="Link to this definition">¶</a></dt>
-<dd><p>Height of the screen (pixels).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ymax-ymin</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.GazeData.screen_resolution">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">screen_resolution</span></span><a class="headerlink" href="#pypillometry.GazeData.screen_resolution" title="Link to this definition">¶</a></dt>
-<dd><p>Screen resolution (pixels).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(width, height) in pixels</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>tuple</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.GazeData.screen_width">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">screen_width</span></span><a class="headerlink" href="#pypillometry.GazeData.screen_width" title="Link to this definition">¶</a></dt>
-<dd><p>Width of the screen (pixels).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>xmax-xmin</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.GazeData.screen_xlim">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">screen_xlim</span></span><a class="headerlink" href="#pypillometry.GazeData.screen_xlim" title="Link to this definition">¶</a></dt>
-<dd><p>Limits of the screen in x-direction (pixels).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>xmin,xmax of the screen</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>tuple</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="pypillometry.GazeData.screen_ylim">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">screen_ylim</span></span><a class="headerlink" href="#pypillometry.GazeData.screen_ylim" title="Link to this definition">¶</a></dt>
-<dd><p>Y-limits of the screen (pixels).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ymin,ymax of the screen</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>typle</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
-<dt class="sig sig-object py" id="pypillometry.GazeData.set_experiment_info">
-<span class="sig-name descname"><span class="pre">set_experiment_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">screen_eye_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">screen_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">physical_screen_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">camera_eye_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eye_to_eye_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/gazedata.html#GazeData.set_experiment_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GazeData.set_experiment_info" title="Link to this definition">¶</a></dt>
-<dd><p>Set some experimental information for the dataset.</p>
+<dt class="sig sig-object py" id="pypillometry.GazeData.set_experimental_setup">
+<span class="sig-name descname"><span class="pre">set_experimental_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/gazedata.html#GazeData.set_experimental_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GazeData.set_experimental_setup" title="Link to this definition">¶</a></dt>
+<dd><p>Set or update the experimental setup geometry.</p>
+<p>Creates a new ExperimentalSetup or updates the existing one with
+the provided parameters. All parameters are passed through to
+ExperimentalSetup constructor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>screen_eye_distance</strong> (<em>float</em><em>, </em><em>str</em><em>, or </em><em>pint.Quantity</em>) – distance from the screen to the eye
-- Plain number: assumed to be mm (with warning)
-- String: e.g., “70 cm”, “700 mm”
-- Quantity: e.g., 70 * ureg.cm</p></li>
-<li><p><strong>screen_resolution</strong> (<em>tuple</em>) – (width, height) of the screen in pixels</p></li>
-<li><p><strong>physical_screen_size</strong> (<em>tuple</em>) – (width, height) of the screen
-Each element can be:
-- Plain number: assumed to be mm (with warning)
-- String: e.g., “52 cm”, “520 mm”
-- Quantity: e.g., 52 * ureg.cm</p></li>
-<li><p><strong>camera_eye_distance</strong> (<em>float</em><em>, </em><em>str</em><em>, or </em><em>pint.Quantity</em>) – distance from the camera to the eye
-- Plain number: assumed to be mm (with warning)
-- String: e.g., “600 mm”, “60 cm”
-- Quantity: e.g., 600 * ureg.mm</p></li>
-<li><p><strong>eye_to_eye_distance</strong> (<em>float</em><em>, </em><em>str</em><em>, or </em><em>pint.Quantity</em>) – distance between the two eyes (inter-pupillary distance)
-- Plain number: assumed to be mm (with warning)
-- String: e.g., “65 mm”, “6.5 cm”
-- Quantity: e.g., 65 * ureg.mm</p></li>
-</ul>
+<dd class="field-odd"><p><strong>**kwargs</strong> – Any parameters accepted by ExperimentalSetup:
+- screen_resolution: tuple (width, height) in pixels
+- physical_screen_size: tuple (width, height) with units
+- eye_screen_distance: distance (d)
+- screen_offset: tuple (delta_x, delta_y) - offset of screen center from eye
+- eye_to_screen_center: alternative distance specification
+- screen_pitch: tilt angle (alpha_tilt)
+- screen_yaw: tilt angle (beta_tilt)
+- camera_offset: tuple (x, y, z) in eye-centric frame
+- camera_spherical: tuple (theta, phi, r)
+- ipd: inter-pupillary distance</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">set_experimental_setup</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;52 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;29 cm&quot;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">eye_screen_distance</span><span class="o">=</span><span class="s2">&quot;65 cm&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1836,38 +1638,22 @@ Each element can be:
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.EyePlotter.plot_experimental_setup">
-<span class="sig-name descname"><span class="pre">plot_experimental_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_gaze_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_gaze_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewing_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('-49</span> <span class="pre">deg',</span> <span class="pre">'50</span> <span class="pre">deg',</span> <span class="pre">'45</span> <span class="pre">deg')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'2d'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/eyeplotter.html#EyePlotter.plot_experimental_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyePlotter.plot_experimental_setup" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plot_experimental_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calibration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_gaze_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_gaze_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viewing_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'2d'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/eyeplotter.html#EyePlotter.plot_experimental_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyePlotter.plot_experimental_setup" title="Link to this definition">¶</a></dt>
 <dd><p>Plot visualization of eye-tracking experimental setup geometry.</p>
 <p>Shows the spatial relationship between eye, camera, and screen using
-the experimental parameters stored in the EyeData object. Camera
-angles (theta, phi) relative to the eye-screen axis must be provided
-explicitly or via a ForeshorteningCalibration object.</p>
+the experimental parameters stored in the EyeData object. Delegates
+to ExperimentalSetup.plot().</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>theta</strong> (<em>float</em><em>, </em><em>str</em><em>, or </em><em>pint.Quantity</em><em>, </em><em>optional</em>) – Camera polar angle (from +z axis). Required if
-calibration is not provided.
-- Plain number: assumed to be radians (with warning)
-- String: e.g., “20 degrees”, “0.349 radians”
-- Quantity: e.g., 20 * ureg.degree</p></li>
-<li><p><strong>phi</strong> (<em>float</em><em>, </em><em>str</em><em>, or </em><em>pint.Quantity</em><em>, </em><em>optional</em>) – Camera azimuthal angle (from +x axis in xy-plane).
-Required if calibration is not provided.
-- Plain number: assumed to be radians (with warning)
-- String: e.g., “-90 degrees”, “-1.57 radians”
-- Quantity: e.g., -90 * ureg.degree</p></li>
-<li><p><strong>calibration</strong> (<em>ForeshorteningCalibration</em><em>, </em><em>optional</em>) – Fitted calibration object containing theta and phi. If provided,
-theta and phi will be extracted from this object (unless explicitly
-overridden by theta/phi parameters).</p></li>
+<li><p><strong>theta</strong> (<em>float</em><em>, </em><em>optional</em>) – Camera polar angle in radians. If None, uses setup’s theta or calibration’s theta.</p></li>
+<li><p><strong>phi</strong> (<em>float</em><em>, </em><em>optional</em>) – Camera azimuthal angle in radians. If None, uses setup’s phi or calibration’s phi.</p></li>
+<li><p><strong>calibration</strong> (<em>ForeshorteningCalibration</em><em>, </em><em>optional</em>) – Fitted calibration object containing theta and phi.</p></li>
 <li><p><strong>show_gaze_samples</strong> (<em>bool</em><em>, </em><em>default True</em>) – Show sample gaze vectors to screen positions</p></li>
-<li><p><strong>n_gaze_samples</strong> (<em>int</em><em>, </em><em>default 9</em>) – Number of sample gaze positions (3x3 grid)</p></li>
-<li><p><strong>ax</strong> (<em>matplotlib 3D axis</em><em>, </em><em>optional</em>) – Existing 3D axis to plot on. If None, creates new figure.</p></li>
-<li><p><strong>viewing_angle</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Viewing angle (elev, azim) for 3D projection. Default is (“90 deg”, “-90 deg”).
-- Plain number: assumed to be radians (with warning)
-- String: e.g., “90 degrees”, “1.57 radians”
-- Quantity: e.g., 90 * ureg.degree</p></li>
-<li><p><strong>projection</strong> (<em>str</em><em>, </em><em>default '2d'</em>) – Type of projection:
-- ‘3d’: Interactive 3D view with rotation
-- ‘2d’: Three orthogonal 2D projections (x-y, x-z, y-z planes)</p></li>
+<li><p><strong>n_gaze_samples</strong> (<em>int</em><em>, </em><em>default 9</em>) – Number of sample gaze positions</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib axis</em><em>, </em><em>optional</em>) – Existing axis to plot on (only for ‘3d’ projection)</p></li>
+<li><p><strong>viewing_angle</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Viewing angle for 3D projection (elev, azim) or (elev, azim, roll) in degrees.</p></li>
+<li><p><strong>projection</strong> (<em>str</em><em>, </em><em>default '2d'</em>) – ‘2d’ for three orthogonal views, ‘3d’ for interactive 3D view</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -1875,41 +1661,22 @@ overridden by theta/phi parameters).</p></li>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><ul class="simple">
-<li><p><strong>fig</strong> (<em>matplotlib Figure</em>) – Figure object</p></li>
-<li><p><strong>ax</strong> (<em>matplotlib axis or array of axes</em>) – Single 3D axis (if projection=’3d’) or array of 3 2D axes (if projection=’2d’)</p></li>
+<li><p><strong>fig</strong> (<em>matplotlib Figure</em>)</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib axis or array of axes</em>)</p></li>
 </ul>
 </p>
 </dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If camera_eye_distance, screen_eye_distance, or physical_screen_size
-are not set in the EyeData object, or if theta and phi are not
-provided (either explicitly or via calibration parameter).</p>
-</dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set experimental parameters first</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">set_experiment_info</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">camera_eye_distance</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">screen_eye_distance</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="mi">52</span><span class="p">,</span> <span class="mi">29</span><span class="p">)</span>
-<span class="gp">... </span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use camera geometry from setup</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_experimental_setup</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Specify camera angles explicitly</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_experimental_setup</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">phi</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Or use fitted camera geometry from foreshortening calibration</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use fitted angles from calibration</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">calib</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">fit_foreshortening</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_experimental_setup</span><span class="p">(</span><span class="n">calibration</span><span class="o">=</span><span class="n">calib</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compare different angles</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;projection&#39;</span><span class="p">:</span> <span class="s1">&#39;3d&#39;</span><span class="p">},</span>
-<span class="gp">... </span>                         <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_experimental_setup</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">phi</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">),</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_experimental_setup</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">75</span><span class="p">),</span> <span class="n">phi</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># 2D orthogonal projections</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_experimental_setup</span><span class="p">(</span><span class="n">calibration</span><span class="o">=</span><span class="n">calib</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;2d&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Override angles</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_experimental_setup</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">phi</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">))</span>
 </pre></div>
 </div>
 </dd></dl>
