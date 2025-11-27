@@ -189,7 +189,7 @@ class PupilData(GenericEyeData):
                       winsize: float=11, vel_onset: float=-5, vel_offset: float=5, 
                       min_onset_len: int=5, min_offset_len: int=5,
                       strategies: list=["zero","velocity"],
-                      units="ms", apply_mask=True, inplace=None):
+                      units="ms", apply_mask=True, ignore_existing_mask=True, inplace=None):
         """
         Detect blinks in the pupillary signal using several strategies.
         First, blinks are detected as consecutive sequence of `blink_val` 
@@ -231,6 +231,9 @@ class PupilData(GenericEyeData):
         apply_mask: bool
             if `True`, apply detected blinks as masks to the data and return self
             if `False`, return detected blinks as Intervals (or dict of Intervals)
+        ignore_existing_mask: bool
+            if `True` (default), use raw data ignoring existing masks
+            if `False`, only detect blinks in non-masked data (already masked regions are skipped)
         inplace: bool
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
@@ -263,15 +266,22 @@ class PupilData(GenericEyeData):
         
         for eye in eyes:
             logger.debug(f"Detecting blinks for eye {eye}")
+            
+            # Get pupil data, optionally ignoring existing mask
+            if ignore_existing_mask:
+                pupil_data = self.data[eye,"pupil"]
+            else:
+                pupil_data = self[eye, "pupil"].filled(np.nan)
+            
             ## detect blinks with the different strategies
             if "velocity" in strategies:
-                blinks_vel=preproc.detect_blinks_velocity(self.data[eye,"pupil"], winsize_ix, vel_onset, vel_offset, min_onset_len, min_offset_len)
+                blinks_vel=preproc.detect_blinks_velocity(pupil_data, winsize_ix, vel_onset, vel_offset, min_onset_len, min_offset_len)
                 logger.debug(f"Detected {len(blinks_vel)} blinks with velocity strategy")
             else: 
                 blinks_vel=np.array([])
                 
             if "zero" in strategies:
-                blinks_zero=preproc.detect_blinks_zero(self.data[eye,"pupil"], 1, blink_val)
+                blinks_zero=preproc.detect_blinks_zero(pupil_data, 1, blink_val)
                 logger.debug(f"Detected {len(blinks_zero)} blinks with zero strategy")
             else:
                 blinks_zero=np.array([])
