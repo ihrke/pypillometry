@@ -54,20 +54,20 @@ class TestExperimentalSetupInitialization:
         assert setup.physical_screen_width == 520.0
         assert setup.physical_screen_height == 290.0
     
-    def test_eye_to_screen_perpendicular(self):
+    def test_eye_screen_distance(self):
         """Test initialization with eye-to-screen distance."""
-        setup = ExperimentalSetup(eye_to_screen_perpendicular="70 cm")
+        setup = ExperimentalSetup(eye_screen_distance="70 cm")
         assert setup.d == 700.0
     
-    def test_eye_offset(self):
+    def test_screen_offset(self):
         """Test initialization with eye offset."""
         setup = ExperimentalSetup(
-            eye_to_screen_perpendicular="70 cm",
-            eye_offset=("3 cm", "-2 cm")
+            eye_screen_distance="70 cm",
+            screen_offset=("3 cm", "-2 cm")
         )
         assert setup.delta_x == 30.0
         assert setup.delta_y == -20.0
-        assert setup.eye_offset == (30.0, -20.0)
+        assert setup.screen_offset == (30.0, -20.0)
     
     def test_eye_to_screen_center_computes_d(self):
         """Test that eye_to_screen_center with offset computes correct d."""
@@ -75,7 +75,7 @@ class TestExperimentalSetupInitialization:
         # d = sqrt(700^2 - 30^2 - 20^2)
         setup = ExperimentalSetup(
             eye_to_screen_center="700 mm",
-            eye_offset=("30 mm", "20 mm")
+            screen_offset=("30 mm", "20 mm")
         )
         expected_d = np.sqrt(700**2 - 30**2 - 20**2)
         assert np.isclose(setup.d, expected_d)
@@ -95,23 +95,22 @@ class TestExperimentalSetupInitialization:
     def test_camera_spherical_eye_frame(self):
         """Test initialization with camera spherical coords in eye frame."""
         setup = ExperimentalSetup(
-            eye_to_screen_perpendicular="700 mm",
+            eye_screen_distance="700 mm",
             camera_spherical=("20 deg", "-90 deg", "600 mm"),
-            camera_position_relative_to="eye"
+            
         )
         assert np.isclose(setup.r, 600.0)
         assert np.isclose(setup.theta, np.radians(20))
         assert np.isclose(setup.phi, np.radians(-90))
     
-    def test_camera_offset_screen_frame(self):
-        """Test initialization with camera offset in screen frame."""
+    def test_camera_offset(self):
+        """Test initialization with camera offset in eye frame."""
         setup = ExperimentalSetup(
-            eye_to_screen_perpendicular="700 mm",
-            camera_offset=("0 mm", "-300 mm", "0 mm"),  # Below screen
-            camera_position_relative_to="screen"
+            eye_screen_distance="700 mm",
+            camera_offset=("0 mm", "-300 mm", "500 mm")  # Below and in front of eye
         )
-        cam_screen = setup.camera_offset_screen_frame
-        assert cam_screen == (0.0, -300.0, 0.0)
+        cam = setup.camera_position
+        assert cam == (0.0, -300.0, 500.0)
     
     def test_ipd(self):
         """Test initialization with inter-pupillary distance."""
@@ -123,12 +122,11 @@ class TestExperimentalSetupInitialization:
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("52 cm", "29 cm"),
-            eye_to_screen_perpendicular="70 cm",
-            eye_offset=("0 mm", "0 mm"),
+            eye_screen_distance="70 cm",
+            screen_offset=("0 mm", "0 mm"),
             screen_pitch="-5 deg",
             screen_yaw="0 deg",
             camera_spherical=("20 deg", "-90 deg", "60 cm"),
-            camera_position_relative_to="eye",
             ipd="63 mm"
         )
         assert setup.screen_resolution == (1920, 1080)
@@ -187,17 +185,17 @@ class TestExperimentalSetupEyePosition:
     def test_eye_to_screen_center_calculation(self):
         """Test eye_to_screen_center property."""
         setup = ExperimentalSetup(
-            eye_to_screen_perpendicular="700 mm",
-            eye_offset=("30 mm", "40 mm")
+            eye_screen_distance="700 mm",
+            screen_offset=("30 mm", "40 mm")
         )
         # d = 700, delta_x = 30, delta_y = 40
         # distance = sqrt(700^2 + 30^2 + 40^2)
         expected = np.sqrt(700**2 + 30**2 + 40**2)
         assert np.isclose(setup.eye_to_screen_center, expected)
     
-    def test_default_eye_offset_is_zero(self):
+    def test_default_screen_offset_is_zero(self):
         """Test that default eye offset is (0, 0)."""
-        setup = ExperimentalSetup(eye_to_screen_perpendicular="700 mm")
+        setup = ExperimentalSetup(eye_screen_distance="700 mm")
         assert setup.delta_x == 0.0
         assert setup.delta_y == 0.0
     
@@ -213,7 +211,7 @@ class TestExperimentalSetupCameraPosition:
     
     def test_camera_not_set_raises_error(self):
         """Test that accessing camera properties when not set raises ValueError."""
-        setup = ExperimentalSetup(eye_to_screen_perpendicular="700 mm")
+        setup = ExperimentalSetup(eye_screen_distance="700 mm")
         with pytest.raises(ValueError, match="Camera position not set"):
             _ = setup.r
     
@@ -221,9 +219,9 @@ class TestExperimentalSetupCameraPosition:
         """Test conversion from spherical input to r, theta, phi properties."""
         theta_deg, phi_deg, r_mm = 20, -90, 600
         setup = ExperimentalSetup(
-            eye_to_screen_perpendicular="700 mm",
+            eye_screen_distance="700 mm",
             camera_spherical=(f"{theta_deg} deg", f"{phi_deg} deg", f"{r_mm} mm"),
-            camera_position_relative_to="eye"
+            
         )
         assert np.isclose(setup.r, r_mm)
         assert np.isclose(setup.theta, np.radians(theta_deg))
@@ -232,15 +230,15 @@ class TestExperimentalSetupCameraPosition:
     def test_has_camera_position_true(self):
         """Test has_camera_position returns True when set."""
         setup = ExperimentalSetup(
-            eye_to_screen_perpendicular="700 mm",
+            eye_screen_distance="700 mm",
             camera_spherical=("20 deg", "-90 deg", "600 mm"),
-            camera_position_relative_to="eye"
+            
         )
         assert setup.has_camera_position()
     
     def test_has_camera_position_false(self):
         """Test has_camera_position returns False when not set."""
-        setup = ExperimentalSetup(eye_to_screen_perpendicular="700 mm")
+        setup = ExperimentalSetup(eye_screen_distance="700 mm")
         assert not setup.has_camera_position()
 
 
@@ -252,7 +250,7 @@ class TestExperimentalSetupCoordinateConversion:
         self.setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular="700 mm"
+            eye_screen_distance="700 mm"
         )
     
     def test_pixels_to_mm_center(self):
@@ -285,17 +283,17 @@ class TestExperimentalSetupUnitParsing:
     
     def test_distance_mm(self):
         """Test parsing distance in mm."""
-        setup = ExperimentalSetup(eye_to_screen_perpendicular="700 mm")
+        setup = ExperimentalSetup(eye_screen_distance="700 mm")
         assert setup.d == 700.0
     
     def test_distance_cm(self):
         """Test parsing distance in cm."""
-        setup = ExperimentalSetup(eye_to_screen_perpendicular="70 cm")
+        setup = ExperimentalSetup(eye_screen_distance="70 cm")
         assert setup.d == 700.0
     
     def test_distance_m(self):
         """Test parsing distance in meters."""
-        setup = ExperimentalSetup(eye_to_screen_perpendicular="0.7 m")
+        setup = ExperimentalSetup(eye_screen_distance="0.7 m")
         assert setup.d == 700.0
     
     def test_angle_degrees(self):
@@ -321,7 +319,7 @@ class TestExperimentalSetupUnitParsing:
     def test_pint_quantity_distance(self):
         """Test parsing pint.Quantity for distance."""
         import pypillometry as pp
-        setup = ExperimentalSetup(eye_to_screen_perpendicular=70 * pp.ureg.cm)
+        setup = ExperimentalSetup(eye_screen_distance=70 * pp.ureg.cm)
         assert setup.d == 700.0
     
     def test_pint_quantity_angle(self):
@@ -357,9 +355,9 @@ class TestExperimentalSetupValidation:
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular="700 mm",
+            eye_screen_distance="700 mm",
             camera_spherical=("20 deg", "-90 deg", "600 mm"),
-            camera_position_relative_to="eye"
+            
         )
         assert setup.is_complete()
     
@@ -368,18 +366,6 @@ class TestExperimentalSetupValidation:
         setup = ExperimentalSetup(screen_resolution=(1920, 1080))
         assert not setup.is_complete()
     
-    def test_validate_invalid_camera_relative_to(self):
-        """Test validate catches invalid camera_position_relative_to."""
-        setup = ExperimentalSetup(
-            screen_resolution=(1920, 1080),
-            physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular="700 mm"
-        )
-        setup._camera_relative_to = "invalid"  # Directly set invalid value
-        with pytest.raises(ValueError, match="camera_position_relative_to"):
-            setup.validate()
-
-
 class TestExperimentalSetupSerialization:
     """Tests for serialization methods."""
     
@@ -388,7 +374,7 @@ class TestExperimentalSetupSerialization:
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular="700 mm",
+            eye_screen_distance="700 mm",
             ipd="63 mm"
         )
         d = setup.to_dict()
@@ -403,10 +389,9 @@ class TestExperimentalSetupSerialization:
             'screen_resolution': (1920, 1080),
             'physical_screen_size': (520.0, 290.0),
             'd': 700.0,
-            'eye_offset': (0.0, 0.0),
+            'screen_offset': (0.0, 0.0),
             'alpha_tilt': 0.0,
             'beta_tilt': 0.0,
-            'camera_position_relative_to': 'eye',
             'camera_spherical': (np.radians(20), np.radians(-90), 600.0),
             'ipd': 63.0,
         }
@@ -421,11 +406,10 @@ class TestExperimentalSetupSerialization:
         original = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular="700 mm",
-            eye_offset=("30 mm", "20 mm"),
+            eye_screen_distance="700 mm",
+            screen_offset=("30 mm", "20 mm"),
             screen_pitch="-5 deg",
             camera_spherical=("20 deg", "-90 deg", "600 mm"),
-            camera_position_relative_to="eye",
             ipd="63 mm"
         )
         
@@ -460,9 +444,9 @@ class TestExperimentalSetupSummary:
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular="700 mm",
+            eye_screen_distance="700 mm",
             camera_spherical=("20 deg", "-90 deg", "600 mm"),
-            camera_position_relative_to="eye"
+            
         )
         summary = setup.summary()
         assert 'camera_distance_mm' in summary
@@ -499,9 +483,9 @@ class TestExperimentalSetupRepr:
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular="700 mm",
+            eye_screen_distance="700 mm",
             camera_spherical=("20 deg", "-90 deg", "600 mm"),
-            camera_position_relative_to="eye"
+            
         )
         repr_str = repr(setup)
         assert "ExperimentalSetup" in repr_str
@@ -515,9 +499,9 @@ class TestExperimentalSetupPlot:
         self.setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular="700 mm",
+            eye_screen_distance="700 mm",
             camera_spherical=("20 deg", "-90 deg", "600 mm"),
-            camera_position_relative_to="eye"
+            
         )
         plt.close('all')
     
@@ -601,7 +585,7 @@ class TestExperimentalSetupCopy:
         original = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular="700 mm"
+            eye_screen_distance="700 mm"
         )
         
         # Copy via serialization round-trip

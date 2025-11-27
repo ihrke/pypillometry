@@ -266,9 +266,8 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
         self.data.set_experimental_setup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular="700 mm",
-            camera_spherical=("20 deg", "-90 deg", "600 mm"),
-            camera_position_relative_to="eye"
+            eye_screen_distance="700 mm",
+            camera_spherical=("20 deg", "-90 deg", "600 mm")
         )
         plt.close('all')
     
@@ -324,9 +323,8 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular="700 mm",
-            camera_spherical=("20 deg", "-90 deg", "600 mm"),
-            camera_position_relative_to="eye"
+            eye_screen_distance="700 mm",
+            camera_spherical=("20 deg", "-90 deg", "600 mm")
         )
         
         # Create a mock calibration object

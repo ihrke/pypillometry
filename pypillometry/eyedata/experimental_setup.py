@@ -38,19 +38,23 @@ class ExperimentalSetup:
         Physical screen dimensions. Each element can be:
         - float: assumed to be mm
         - str: with units, e.g., "52 cm", "520 mm"
-    eye_to_screen_perpendicular : float, str, optional
+    eye_screen_distance : float, str, optional
         Perpendicular distance from eye to screen plane (d).
         This is the cleanest geometric definition.
         - float: assumed to be mm
         - str: with units, e.g., "65 cm", "650 mm"
-    eye_offset : tuple, optional
-        Eye offset from screen center (delta_x, delta_y).
+        Note: For binocular setups, "eye" refers to the midpoint between
+        the two eyes (root of nose).
+    screen_offset : tuple, optional
+        Offset of screen center from the eye reference point (delta_x, delta_y).
         Each element can be float (mm) or str with units.
-        Positive delta_x = eye right of screen center.
-        Positive delta_y = eye above screen center.
+        Positive delta_x = screen center is to the right of eye.
+        Positive delta_y = screen center is above eye.
+        Note: For binocular setups, the reference is the midpoint between
+        the two eyes (root of nose).
     eye_to_screen_center : float, str, optional
         Alternative: direct distance from eye to screen center.
-        If provided with eye_offset, d is computed from:
+        If provided with screen_offset, d is computed from:
         d = sqrt(distance^2 - delta_x^2 - delta_y^2)
     screen_pitch : float, str, optional
         Screen pitch angle (alpha_tilt). Rotation about horizontal axis.
@@ -62,19 +66,16 @@ class ExperimentalSetup:
         Positive = right side of screen closer to eye.
         - float: assumed to be radians
         - str: with units, e.g., "3 deg", "0.052 rad"
-    camera_position_relative_to : str, optional
-        Reference frame for camera position: "screen" or "eye".
-        Default is "screen" (camera fixed to screen, moves with tilt).
     camera_offset : tuple, optional
-        Camera position as (x, y, z) offset from reference.
+        Camera position as (x, y, z) offset from eye in mm.
         Each element can be float (mm) or str with units.
-        For "screen" reference: z=0 is screen plane, negative z is toward eye.
-        For "eye" reference: z is depth (toward screen).
+        z-axis points toward screen center.
     camera_spherical : tuple, optional
-        Alternative: camera position in spherical coordinates (theta, phi, r).
+        Alternative: camera position in spherical coordinates (theta, phi, r)
+        relative to eye.
         theta: polar angle from z-axis (radians or str)
         phi: azimuthal angle in x-y plane (radians or str)
-        r: distance from reference (mm or str)
+        r: distance from eye (mm or str)
     ipd : float, str, optional
         Inter-pupillary distance for binocular setups.
         - float: assumed to be mm
@@ -89,9 +90,9 @@ class ExperimentalSetup:
     d : float
         Perpendicular eye-to-screen distance in mm
     delta_x : float
-        Eye x-offset from screen center in mm
+        Screen center x-offset from eye in mm (positive = right)
     delta_y : float
-        Eye y-offset from screen center in mm
+        Screen center y-offset from eye in mm (positive = up)
     alpha_tilt : float
         Screen pitch angle in radians
     beta_tilt : float
@@ -105,13 +106,22 @@ class ExperimentalSetup:
     ipd : float or None
         Inter-pupillary distance in mm
     
+    Notes
+    -----
+    All coordinates are in an eye-centric reference frame where:
+    - The origin is at the eye position
+    - For binocular setups, this is the midpoint between the two eyes (root of nose)
+    - z-axis points toward the screen center
+    - x-axis points to the right
+    - y-axis points upward
+    
     Examples
     --------
     >>> # Basic setup with perpendicular distance
     >>> setup = ExperimentalSetup(
     ...     screen_resolution=(1920, 1080),
     ...     physical_screen_size=("52 cm", "29 cm"),
-    ...     eye_to_screen_perpendicular="65 cm",
+    ...     eye_screen_distance="65 cm",
     ...     camera_offset=("0 cm", "-30 cm", "0 cm"),  # camera below screen
     ... )
     >>> print(f"d = {setup.d} mm")
@@ -120,8 +130,8 @@ class ExperimentalSetup:
     >>> setup = ExperimentalSetup(
     ...     screen_resolution=(1920, 1080),
     ...     physical_screen_size=("52 cm", "29 cm"),
-    ...     eye_to_screen_perpendicular="65 cm",
-    ...     eye_offset=("-3 cm", "1.5 cm"),  # eye left and above center
+    ...     eye_screen_distance="65 cm",
+    ...     screen_offset=("3 cm", "-1.5 cm"),  # screen right and below eye
     ...     screen_pitch="-5 deg",  # screen tilted back
     ...     camera_offset=("0 cm", "-30 cm", "0 cm"),
     ... )
@@ -134,12 +144,11 @@ class ExperimentalSetup:
         self,
         screen_resolution: Optional[Tuple[int, int]] = None,
         physical_screen_size: Optional[Tuple[Union[float, str], Union[float, str]]] = None,
-        eye_to_screen_perpendicular: Optional[Union[float, str]] = None,
-        eye_offset: Optional[Tuple[Union[float, str], Union[float, str]]] = None,
+        eye_screen_distance: Optional[Union[float, str]] = None,
+        screen_offset: Optional[Tuple[Union[float, str], Union[float, str]]] = None,
         eye_to_screen_center: Optional[Union[float, str]] = None,
         screen_pitch: Optional[Union[float, str]] = None,
         screen_yaw: Optional[Union[float, str]] = None,
-        camera_position_relative_to: str = "screen",
         camera_offset: Optional[Tuple[Union[float, str], Union[float, str], Union[float, str]]] = None,
         camera_spherical: Optional[Tuple[Union[float, str], Union[float, str], Union[float, str]]] = None,
         ipd: Optional[Union[float, str]] = None,
@@ -148,16 +157,15 @@ class ExperimentalSetup:
         self._screen_resolution = tuple(screen_resolution) if screen_resolution is not None else None
         self._physical_screen_size = self._parse_screen_size(physical_screen_size) if physical_screen_size is not None else None
         
-        # Eye position
-        self._eye_offset = self._parse_eye_offset(eye_offset)
-        self._d = self._compute_d(eye_to_screen_perpendicular, eye_to_screen_center)
+        # Screen offset from eye (eye-centric coordinate system)
+        self._screen_offset = self._parse_screen_offset(screen_offset)
+        self._d = self._compute_d(eye_screen_distance, eye_to_screen_center)
         
         # Screen orientation
         self._alpha_tilt = parse_angle(screen_pitch) if screen_pitch else 0.0
         self._beta_tilt = parse_angle(screen_yaw) if screen_yaw else 0.0
         
-        # Camera position
-        self._camera_relative_to = camera_position_relative_to if camera_position_relative_to else "screen"
+        # Camera position (always in eye-centric frame)
         self._camera_offset, self._camera_spherical = self._parse_camera_position(
             camera_offset, camera_spherical
         )
@@ -182,41 +190,41 @@ class ExperimentalSetup:
             parse_distance(physical_screen_size[1])
         )
     
-    def _parse_eye_offset(
+    def _parse_screen_offset(
         self, 
-        eye_offset: Optional[Tuple[Union[float, str], Union[float, str]]]
+        screen_offset: Optional[Tuple[Union[float, str], Union[float, str]]]
     ) -> Tuple[float, float]:
-        """Parse eye offset to mm, defaulting to (0, 0)."""
-        if eye_offset is None:
+        """Parse screen offset to mm, defaulting to (0, 0)."""
+        if screen_offset is None:
             return (0.0, 0.0)
         return (
-            parse_distance(eye_offset[0]),
-            parse_distance(eye_offset[1])
+            parse_distance(screen_offset[0]),
+            parse_distance(screen_offset[1])
         )
     
     def _compute_d(
         self,
-        eye_to_screen_perpendicular: Optional[Union[float, str]],
+        eye_screen_distance: Optional[Union[float, str]],
         eye_to_screen_center: Optional[Union[float, str]]
     ) -> Optional[float]:
         """
         Compute perpendicular distance d from available information.
         
-        If eye_to_screen_perpendicular is given, use it directly.
+        If eye_screen_distance is given, use it directly.
         If eye_to_screen_center is given, compute d from:
             d = sqrt(distance^2 - delta_x^2 - delta_y^2)
         """
-        if eye_to_screen_perpendicular is not None:
-            return parse_distance(eye_to_screen_perpendicular)
+        if eye_screen_distance is not None:
+            return parse_distance(eye_screen_distance)
         
         if eye_to_screen_center is not None:
             dist_center = parse_distance(eye_to_screen_center)
-            delta_x, delta_y = self._eye_offset
+            delta_x, delta_y = self._screen_offset
             d_squared = dist_center**2 - delta_x**2 - delta_y**2
             if d_squared < 0:
                 raise ValueError(
                     f"eye_to_screen_center ({dist_center} mm) is less than "
-                    f"eye_offset magnitude ({np.sqrt(delta_x**2 + delta_y**2):.1f} mm). "
+                    f"screen_offset magnitude ({np.sqrt(delta_x**2 + delta_y**2):.1f} mm). "
                     "This is geometrically impossible."
                 )
             return np.sqrt(d_squared)
@@ -332,24 +340,24 @@ class ExperimentalSetup:
         if self._d is None:
             raise ValueError(
                 "Eye-to-screen distance not set. Provide either "
-                "eye_to_screen_perpendicular or eye_to_screen_center."
+                "eye_screen_distance or eye_to_screen_center."
             )
         return self._d
     
     @property
     def delta_x(self) -> float:
-        """Eye x-offset from screen center in mm (positive = eye right of center)."""
-        return self._eye_offset[0]
+        """Screen center x-offset from eye in mm (positive = screen right of eye)."""
+        return self._screen_offset[0]
     
     @property
     def delta_y(self) -> float:
-        """Eye y-offset from screen center in mm (positive = eye above center)."""
-        return self._eye_offset[1]
+        """Screen center y-offset from eye in mm (positive = screen above eye)."""
+        return self._screen_offset[1]
     
     @property
-    def eye_offset(self) -> Tuple[float, float]:
-        """Eye offset from screen center (delta_x, delta_y) in mm."""
-        return self._eye_offset
+    def screen_offset(self) -> Tuple[float, float]:
+        """Screen center offset from eye (delta_x, delta_y) in mm."""
+        return self._screen_offset
     
     @property
     def eye_to_screen_center(self) -> float:
@@ -381,21 +389,21 @@ class ExperimentalSetup:
         return self._beta_tilt
     
     # =========================================================================
-    # Camera position properties
+    # Camera position properties (always in eye-centric frame)
     # =========================================================================
     
     @property
-    def camera_position_relative_to(self) -> str:
-        """Reference frame for camera position: 'screen' or 'eye'."""
-        return self._camera_relative_to
-    
-    @property
-    def camera_offset_screen_frame(self) -> Optional[Tuple[float, float, float]]:
-        """Camera position (x, y, z) in screen frame in mm, or None if not set."""
+    def camera_position(self) -> Optional[Tuple[float, float, float]]:
+        """
+        Camera position (cx, cy, cz) in eye-centered frame in mm.
+        
+        Eye is at origin, z-axis points toward screen center.
+        Returns Cartesian coordinates computed from either camera_offset or camera_spherical.
+        """
         if self._camera_offset is not None:
             return self._camera_offset
         if self._camera_spherical is not None:
-            # Convert spherical to Cartesian in screen frame
+            # Convert spherical to Cartesian
             theta, phi, r = self._camera_spherical
             x = r * np.sin(theta) * np.cos(phi)
             y = r * np.sin(theta) * np.sin(phi)
@@ -406,69 +414,27 @@ class ExperimentalSetup:
     @property
     def r(self) -> float:
         """Eye-to-camera distance in mm."""
-        # First, get camera position in eye frame
-        cam_eye = self.camera_position_eye_frame
-        if cam_eye is None:
+        cam = self.camera_position
+        if cam is None:
             raise ValueError("Camera position not set.")
-        return np.sqrt(cam_eye[0]**2 + cam_eye[1]**2 + cam_eye[2]**2)
+        return np.sqrt(cam[0]**2 + cam[1]**2 + cam[2]**2)
     
     @property
     def theta(self) -> float:
         """Camera polar angle from z-axis in eye-centered coords (radians)."""
-        cam_eye = self.camera_position_eye_frame
-        if cam_eye is None:
+        cam = self.camera_position
+        if cam is None:
             raise ValueError("Camera position not set.")
         r = self.r
-        return np.arccos(cam_eye[2] / r)
+        return np.arccos(cam[2] / r)
     
     @property
     def phi(self) -> float:
         """Camera azimuthal angle in eye-centered coords (radians)."""
-        cam_eye = self.camera_position_eye_frame
-        if cam_eye is None:
+        cam = self.camera_position
+        if cam is None:
             raise ValueError("Camera position not set.")
-        return np.arctan2(cam_eye[1], cam_eye[0])
-    
-    @property
-    def camera_position_eye_frame(self) -> Optional[Tuple[float, float, float]]:
-        """
-        Camera position (cx, cy, cz) in eye-centered frame in mm.
-        
-        Eye is at origin, z-axis points toward screen center (before tilt).
-        """
-        if self._camera_offset is None and self._camera_spherical is None:
-            return None
-        
-        # Get camera position in screen frame
-        cam_screen = self.camera_offset_screen_frame
-        
-        if self._camera_relative_to == "eye":
-            # Already in eye frame
-            return cam_screen
-        
-        # Camera is in screen frame - need to transform to eye frame
-        # Screen center in eye frame (before tilt) is at (delta_x, delta_y, d)
-        # Camera position in screen frame: (cx_s, cy_s, cz_s) where cz_s is 
-        # typically 0 or small (camera at/near screen plane)
-        cx_s, cy_s, cz_s = cam_screen
-        
-        # Apply screen tilt rotation
-        # The screen is rotated, so camera rotates with it
-        cos_a, sin_a = np.cos(self._alpha_tilt), np.sin(self._alpha_tilt)
-        cos_b, sin_b = np.cos(self._beta_tilt), np.sin(self._beta_tilt)
-        
-        # Rotation matrix R = R_yaw @ R_pitch (same as in algorithm doc)
-        # Transform camera offset from screen frame to eye frame
-        cx_rot = cx_s * cos_b + cy_s * sin_a * sin_b - cz_s * cos_a * sin_b
-        cy_rot = cy_s * cos_a + cz_s * sin_a
-        cz_rot = cx_s * sin_b - cy_s * sin_a * cos_b + cz_s * cos_a * cos_b
-        
-        # Add screen center position (in eye frame)
-        cx_eye = cx_rot + self.delta_x
-        cy_eye = cy_rot + self.delta_y
-        cz_eye = cz_rot + self.d
-        
-        return (cx_eye, cy_eye, cz_eye)
+        return np.arctan2(cam[1], cam[0])
     
     # =========================================================================
     # Binocular properties
@@ -630,12 +596,6 @@ class ExperimentalSetup:
                 "Check if this is intended."
             )
         
-        # Camera reference frame must be valid
-        if self._camera_relative_to not in ("screen", "eye"):
-            raise ValueError(
-                f"camera_position_relative_to must be 'screen' or 'eye', "
-                f"got '{self._camera_relative_to}'"
-            )
     
     def is_complete(self) -> bool:
         """
@@ -686,8 +646,8 @@ class ExperimentalSetup:
         else:
             summary['eye_to_screen_distance_mm'] = "not set"
         
-        if self._eye_offset != (0.0, 0.0):
-            summary['eye_offset_mm'] = self._eye_offset
+        if self._screen_offset != (0.0, 0.0):
+            summary['screen_offset_mm'] = self._screen_offset
         
         # Screen tilt
         if self._alpha_tilt != 0.0 or self._beta_tilt != 0.0:
@@ -729,10 +689,9 @@ class ExperimentalSetup:
             'screen_resolution': self._screen_resolution,
             'physical_screen_size': self._physical_screen_size,
             'd': self._d,
-            'eye_offset': self._eye_offset,
+            'screen_offset': self._screen_offset,
             'alpha_tilt': self._alpha_tilt,
             'beta_tilt': self._beta_tilt,
-            'camera_position_relative_to': self._camera_relative_to,
             'camera_offset': self._camera_offset,
             'camera_spherical': self._camera_spherical,
             'ipd': self._ipd,
@@ -755,11 +714,10 @@ class ExperimentalSetup:
         return cls(
             screen_resolution=d['screen_resolution'],
             physical_screen_size=d['physical_screen_size'],
-            eye_to_screen_perpendicular=d.get('d'),
-            eye_offset=d.get('eye_offset'),
+            eye_screen_distance=d.get('d'),
+            screen_offset=d.get('screen_offset'),
             screen_pitch=d.get('alpha_tilt', 0.0),
             screen_yaw=d.get('beta_tilt', 0.0),
-            camera_position_relative_to=d.get('camera_position_relative_to', 'screen'),
             camera_offset=d.get('camera_offset'),
             camera_spherical=d.get('camera_spherical'),
             ipd=d.get('ipd'),
@@ -812,7 +770,7 @@ class ExperimentalSetup:
         >>> setup = ExperimentalSetup(
         ...     screen_resolution=(1920, 1080),
         ...     physical_screen_size=("52 cm", "29 cm"),
-        ...     eye_to_screen_perpendicular="60 cm",
+        ...     eye_screen_distance="60 cm",
         ...     camera_spherical=("20 deg", "-90 deg", "70 cm"),
         ... )
         >>> fig, ax = setup.plot()  # 2D views
@@ -1050,8 +1008,8 @@ class ExperimentalSetup:
         if self._d is not None:
             parts.append(f"  d={self._d:.0f}mm")
         
-        if self._eye_offset != (0.0, 0.0):
-            parts.append(f"  eye_offset=({self._eye_offset[0]:.1f}, {self._eye_offset[1]:.1f})mm")
+        if self._screen_offset != (0.0, 0.0):
+            parts.append(f"  screen_offset=({self._screen_offset[0]:.1f}, {self._screen_offset[1]:.1f})mm")
         
         if self._alpha_tilt != 0.0 or self._beta_tilt != 0.0:
             parts.append(f"  tilt=({np.degrees(self._alpha_tilt):.1f}°, {np.degrees(self._beta_tilt):.1f}°)")

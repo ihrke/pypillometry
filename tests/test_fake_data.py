@@ -376,9 +376,9 @@ class TestGenerateForeshorteningData:
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular=f"{d} mm",
+            eye_screen_distance=f"{d} mm",
             camera_spherical=(f"{np.degrees(theta)} deg", f"{np.degrees(phi)} deg", f"{r} mm"),
-            camera_position_relative_to="eye"
+            
         )
         
         data = generate_foreshortening_data(
@@ -440,9 +440,9 @@ class TestIntegration:
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_to_screen_perpendicular=f"{true_d} mm",
+            eye_screen_distance=f"{true_d} mm",
             camera_spherical=(f"{np.degrees(true_theta)} deg", f"{np.degrees(true_phi)} deg", f"{true_r} mm"),
-            camera_position_relative_to="eye"
+            
         )
         
         data = generate_foreshortening_data(
@@ -503,9 +503,9 @@ def test_generate_foreshortening_data_with_string_units():
     setup = ExperimentalSetup(
         screen_resolution=(1920, 1080),
         physical_screen_size=("52 cm", "29 cm"),
-        eye_to_screen_perpendicular="70 cm",
+        eye_screen_distance="70 cm",
         camera_spherical=("20 degrees", "-90 degrees", "600 mm"),
-        camera_position_relative_to="eye"
+        
     )
     
     data = generate_foreshortening_data(
@@ -535,9 +535,9 @@ def test_generate_foreshortening_data_with_pint_quantities():
     setup = ExperimentalSetup(
         screen_resolution=(1920, 1080),
         physical_screen_size=(52 * pp.ureg.cm, 29 * pp.ureg.cm),
-        eye_to_screen_perpendicular=0.7 * pp.ureg.m,
+        eye_screen_distance=0.7 * pp.ureg.m,
         camera_spherical=(20 * pp.ureg.degree, -90 * pp.ureg.degree, 60 * pp.ureg.cm),
-        camera_position_relative_to="eye"
+        
     )
     
     data = generate_foreshortening_data(
@@ -565,9 +565,9 @@ def test_generate_foreshortening_data_mixed_units():
     setup = ExperimentalSetup(
         screen_resolution=(1920, 1080),
         physical_screen_size=(520.0, "29 cm"),  # Mixed plain (mm assumed) and string
-        eye_to_screen_perpendicular="700 mm",
+        eye_screen_distance="700 mm",
         camera_spherical=("20 degrees", np.radians(-90), 60 * pp.ureg.cm),  # Mixed formats
-        camera_position_relative_to="eye"
+        
     )
     
     data = generate_foreshortening_data(

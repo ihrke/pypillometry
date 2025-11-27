@@ -148,13 +148,12 @@ class GazeData(GenericEyeData):
             Any parameters accepted by ExperimentalSetup:
             - screen_resolution: tuple (width, height) in pixels
             - physical_screen_size: tuple (width, height) with units
-            - eye_to_screen_perpendicular: distance (d)
-            - eye_offset: tuple (delta_x, delta_y)
+            - eye_screen_distance: distance (d)
+            - screen_offset: tuple (delta_x, delta_y) - offset of screen center from eye
             - eye_to_screen_center: alternative distance specification
             - screen_pitch: tilt angle (alpha_tilt)
             - screen_yaw: tilt angle (beta_tilt)
-            - camera_position_relative_to: "screen" or "eye"
-            - camera_offset: tuple (x, y, z)
+            - camera_offset: tuple (x, y, z) in eye-centric frame
             - camera_spherical: tuple (theta, phi, r)
             - ipd: inter-pupillary distance
         
@@ -163,7 +162,7 @@ class GazeData(GenericEyeData):
         >>> data.set_experimental_setup(
         ...     screen_resolution=(1920, 1080),
         ...     physical_screen_size=("52 cm", "29 cm"),
-        ...     eye_to_screen_perpendicular="65 cm",
+        ...     eye_screen_distance="65 cm",
         ... )
         """
         if self.experimental_setup is None:
@@ -177,12 +176,11 @@ class GazeData(GenericEyeData):
             merged = {
                 'screen_resolution': kwargs.get('screen_resolution', old.get('screen_resolution')),
                 'physical_screen_size': kwargs.get('physical_screen_size', old.get('physical_screen_size')),
-                'eye_to_screen_perpendicular': kwargs.get('eye_to_screen_perpendicular', old.get('d')),
-                'eye_offset': kwargs.get('eye_offset', old.get('eye_offset')),
+                'eye_screen_distance': kwargs.get('eye_screen_distance', old.get('d')),
+                'screen_offset': kwargs.get('screen_offset', old.get('screen_offset')),
                 'eye_to_screen_center': kwargs.get('eye_to_screen_center'),
                 'screen_pitch': kwargs.get('screen_pitch', old.get('alpha_tilt')),
                 'screen_yaw': kwargs.get('screen_yaw', old.get('beta_tilt')),
-                'camera_position_relative_to': kwargs.get('camera_position_relative_to', old.get('camera_position_relative_to')),
                 'camera_offset': kwargs.get('camera_offset', old.get('camera_offset')),
                 'camera_spherical': kwargs.get('camera_spherical', old.get('camera_spherical')),
                 'ipd': kwargs.get('ipd', old.get('ipd')),
