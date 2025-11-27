@@ -3,6 +3,7 @@
 import inspect
 from .eyedata import EyeData
 from .eyedatadict import EyeDataDict
+from .experimental_setup import ExperimentalSetup
 
 
 class FakeEyeData(EyeData):
@@ -81,7 +82,8 @@ class FakeEyeData(EyeData):
         Parameters
         ----------
         **override_params : dict
-            Parameters to override from stored sim_params
+            Parameters to override from stored sim_params.
+            Can include 'experimental_setup' as ExperimentalSetup object or dict.
         
         Returns
         -------
@@ -95,7 +97,8 @@ class FakeEyeData(EyeData):
         
         Examples
         --------
-        >>> data = generate_foreshortening_data(duration=60, seed=42)
+        >>> setup = ExperimentalSetup(...)
+        >>> data = generate_foreshortening_data(setup, duration=60, seed=42)
         >>> data2 = data.regenerate(seed=43)  # Same params, different seed
         >>> data3 = data.regenerate(duration=120, seed=44)  # Different duration
         """
@@ -104,6 +107,11 @@ class FakeEyeData(EyeData):
         
         params = self.sim_params.copy()
         params.update(override_params)
+        
+        # Convert experimental_setup dict back to ExperimentalSetup object
+        if 'experimental_setup' in params and isinstance(params['experimental_setup'], dict):
+            params['experimental_setup'] = ExperimentalSetup.from_dict(params['experimental_setup'])
+        
         return self.sim_fct(**params)
     
     def __repr__(self):
