@@ -53,7 +53,8 @@ class ViewerCanvas(SceneCanvas):
         
         # Selection mode state
         self.selection_mode = False
-        self.selection_first_click = None  # (viewbox_idx, x_time) or None
+        self.selection_drag_start = None  # (viewbox_idx, x_time) or None
+        self.selection_preview = None  # Temporary preview rectangle
         self.selection_regions: Dict[str, SelectionRegion] = {}  # var_type -> SelectionRegion
         
         # Storage for visuals
@@ -483,19 +484,20 @@ class ViewerCanvas(SceneCanvas):
     def _start_selection_mode(self):
         """Enter selection mode - cursor becomes crosshair."""
         self.selection_mode = True
-        self.selection_first_click = None
+        self.selection_drag_start = None
         # Change cursor to crosshair
         try:
             from PyQt6.QtCore import Qt
         except ImportError:
             from PyQt5.QtCore import Qt
         self.native.setCursor(Qt.CursorShape.CrossCursor)
-        self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [SELECTION MODE - click to mark region]'
+        self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [SELECTION MODE - drag to select region]'
     
     def _exit_selection_mode(self):
         """Exit selection mode - restore normal cursor."""
         self.selection_mode = False
-        self.selection_first_click = None
+        self.selection_drag_start = None
+        self._clear_preview()
         # Restore normal cursor
         try:
             from PyQt6.QtCore import Qt
@@ -503,6 +505,12 @@ class ViewerCanvas(SceneCanvas):
             from PyQt5.QtCore import Qt
         self.native.setCursor(Qt.CursorShape.ArrowCursor)
         self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")}'
+    
+    def _clear_preview(self):
+        """Remove the selection preview rectangle."""
+        if self.selection_preview is not None:
+            self.selection_preview.parent = None
+            self.selection_preview = None
     
     def _remove_last_selection(self):
         """Remove the last selection from the most recently modified viewbox."""
@@ -524,7 +532,7 @@ class ViewerCanvas(SceneCanvas):
         return result
     
     def on_mouse_press(self, event):
-        """Handle mouse press events for selection mode."""
+        """Handle mouse press events for selection mode - start drag."""
         if not self.selection_mode:
             return
         
@@ -540,32 +548,96 @@ class ViewerCanvas(SceneCanvas):
         if vb_idx is None:
             return
         
-        var_type = self.view_types[vb_idx]
+        # Start drag
+        self.selection_drag_start = (vb_idx, x_time, viewbox)
+        self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [Drag to select...]'
+    
+    def on_mouse_move(self, event):
+        """Handle mouse move events for selection preview during drag."""
+        if not self.selection_mode or self.selection_drag_start is None:
+            return
         
-        if self.selection_first_click is None:
-            # First click - store position
-            self.selection_first_click = (vb_idx, x_time)
-            self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [Click again to complete selection]'
-        else:
-            # Second click - complete selection
-            first_vb_idx, first_x = self.selection_first_click
-            
-            # Only allow selection within the same viewbox
-            if first_vb_idx != vb_idx:
-                # Reset and start over in the new viewbox
-                self.selection_first_click = (vb_idx, x_time)
-                self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [Click again to complete selection]'
-                return
-            
-            # Add the selection
+        # Get current position
+        canvas_pos = event.pos
+        start_vb_idx, start_x, start_viewbox = self.selection_drag_start
+        
+        # Get current x in data space (use the same viewbox as start)
+        vb_idx, viewbox, current_x = self._get_viewbox_at_pos(canvas_pos)
+        
+        if current_x is None:
+            return
+        
+        # Update preview rectangle
+        self._update_preview(start_viewbox, start_x, current_x)
+        self.update()
+    
+    def on_mouse_release(self, event):
+        """Handle mouse release events for selection mode - complete drag."""
+        if not self.selection_mode or self.selection_drag_start is None:
+            return
+        
+        if event.button != 1:  # Only left click
+            return
+        
+        # Get end position
+        canvas_pos = event.pos
+        start_vb_idx, start_x, start_viewbox = self.selection_drag_start
+        vb_idx, viewbox, end_x = self._get_viewbox_at_pos(canvas_pos)
+        
+        # Clear preview
+        self._clear_preview()
+        
+        if end_x is None:
+            self.selection_drag_start = None
+            self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [SELECTION MODE - drag to select region]'
+            return
+        
+        # Only add selection if drag distance is meaningful (> 0.1 seconds)
+        if abs(end_x - start_x) > 0.1:
+            var_type = self.view_types[start_vb_idx]
             region = self.selection_regions.get(var_type)
             if region:
-                region.add_interval(first_x, x_time)
-            
-            # Reset for next selection (stay in selection mode)
-            self.selection_first_click = None
-            self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [SELECTION MODE - click to mark region]'
-            self.update()
+                region.add_interval(start_x, end_x)
+        
+        # Reset for next selection
+        self.selection_drag_start = None
+        self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [SELECTION MODE - drag to select region]'
+        self.update()
+    
+    def _update_preview(self, viewbox, x_start, x_end):
+        """Update the selection preview rectangle."""
+        from vispy import scene
+        from vispy.color import Color
+        
+        if x_start > x_end:
+            x_start, x_end = x_end, x_start
+        
+        y_min, y_max = -1e9, 1e9
+        
+        # Create vertices for rectangle
+        vertices = np.array([
+            [x_start, y_min],
+            [x_end, y_min],
+            [x_end, y_max],
+            [x_start, y_max]
+        ], dtype=np.float32)
+        
+        faces = np.array([[0, 1, 2], [0, 2, 3]], dtype=np.uint32)
+        
+        c = Color('#00CC00')
+        rgba = list(c.rgba)
+        rgba[3] = 0.2  # More transparent for preview
+        
+        if self.selection_preview is None:
+            self.selection_preview = scene.Mesh(
+                vertices=vertices, faces=faces, color=rgba,
+                parent=viewbox.scene
+            )
+            self.selection_preview.order = 400
+            self.selection_preview.set_gl_state('translucent', depth_test=False)
+        else:
+            self.selection_preview.set_data(vertices=vertices, faces=faces, color=rgba)
+            self.selection_preview.parent = viewbox.scene
     
     def _show_help(self):
         """Show help dialog with keybindings."""
@@ -605,7 +677,7 @@ class ViewerCanvas(SceneCanvas):
 
 <h3>Selection</h3>
 <table>
-<tr><td><b>S</b></td><td>Enter/exit selection mode</td></tr>
+<tr><td><b>S</b></td><td>Enter/exit selection mode (drag to select)</td></tr>
 <tr><td><b>D  or  Backspace</b></td><td>Remove last selection</td></tr>
 </table>
 

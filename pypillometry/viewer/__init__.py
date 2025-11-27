@@ -65,7 +65,7 @@ def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> Optiona
     - +/-: Zoom in/out
     - M: Toggle mask regions
     - O: Toggle event markers
-    - S: Enter selection mode (click twice to mark a region)
+    - S: Enter selection mode (drag to mark a region)
     - D/Backspace: Remove last selection
     - H/?: Show help
     - Q/Esc: Close viewer
