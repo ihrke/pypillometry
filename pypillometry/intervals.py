@@ -604,7 +604,11 @@ class Intervals:
             y_level = i + 1
             
             # Plot horizontal line for the interval
-            ax.plot([start, end], [y_level, y_level], **kwargs)
+            # Only use label for the first interval to avoid duplicate legend entries
+            plot_kwargs = kwargs.copy()
+            if i > 0 and 'label' in plot_kwargs:
+                del plot_kwargs['label']
+            ax.plot([start, end], [y_level, y_level], **plot_kwargs)
             
             # Optionally add event label centered on the line
             if show_labels and self.event_labels is not None and i < len(self.event_labels):
