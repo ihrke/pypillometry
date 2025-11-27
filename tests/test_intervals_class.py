@@ -216,6 +216,182 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertIn("units=None", repr_str)
 
 
+class TestIntervalsAddOperator(unittest.TestCase):
+    """Test Intervals + operator for combining intervals"""
+    
+    def test_add_same_units(self):
+        """Test adding two Intervals with same units"""
+        a = Intervals([(0, 100), (200, 300)], units="ms", label="a")
+        b = Intervals([(500, 600)], units="ms", label="b")
+        c = a + b
+        
+        self.assertEqual(len(c), 3)
+        self.assertEqual(c.intervals, [(0, 100), (200, 300), (500, 600)])
+        self.assertEqual(c.units, "ms")
+        self.assertEqual(c.label, "a + b")
+    
+    def test_add_different_units_converts(self):
+        """Test that adding with different units converts to left operand's units"""
+        a = Intervals([(0, 1), (2, 3)], units="sec")
+        b = Intervals([(4000, 5000)], units="ms")
+        c = a + b
+        
+        self.assertEqual(len(c), 3)
+        self.assertEqual(c.units, "sec")
+        # 4000ms = 4sec, 5000ms = 5sec
+        self.assertAlmostEqual(c.intervals[2][0], 4.0)
+        self.assertAlmostEqual(c.intervals[2][1], 5.0)
+    
+    def test_add_preserves_event_labels(self):
+        """Test that event_labels are concatenated"""
+        a = Intervals([(0, 100)], units="ms", event_labels=["event1"])
+        b = Intervals([(200, 300)], units="ms", event_labels=["event2"])
+        c = a + b
+        
+        self.assertEqual(c.event_labels, ["event1", "event2"])
+    
+    def test_add_preserves_event_indices(self):
+        """Test that event_indices are concatenated"""
+        a = Intervals([(0, 100)], units="ms", event_indices=np.array([0]))
+        b = Intervals([(200, 300)], units="ms", event_indices=np.array([5]))
+        c = a + b
+        
+        np.testing.assert_array_equal(c.event_indices, [0, 5])
+    
+    def test_add_preserves_event_onsets(self):
+        """Test that event_onsets are concatenated and converted"""
+        a = Intervals([(0, 100)], units="ms", event_onsets=np.array([50]))
+        b = Intervals([(200, 300)], units="ms", event_onsets=np.array([250]))
+        c = a + b
+        
+        np.testing.assert_array_equal(c.event_onsets, [50, 250])
+    
+    def test_add_expands_data_time_range(self):
+        """Test that data_time_range is expanded to cover both"""
+        a = Intervals([(0, 100)], units="ms", data_time_range=(0, 500))
+        b = Intervals([(200, 300)], units="ms", data_time_range=(100, 600))
+        c = a + b
+        
+        self.assertEqual(c.data_time_range, (0, 600))
+    
+    def test_add_partial_metadata_left_only(self):
+        """Test adding when only left operand has metadata"""
+        a = Intervals([(0, 100)], units="ms", event_labels=["a"])
+        b = Intervals([(200, 300)], units="ms")
+        c = a + b
+        
+        self.assertEqual(c.event_labels, ["a"])
+    
+    def test_add_partial_metadata_right_only(self):
+        """Test adding when only right operand has metadata"""
+        a = Intervals([(0, 100)], units="ms")
+        b = Intervals([(200, 300)], units="ms", event_labels=["b"])
+        c = a + b
+        
+        self.assertEqual(c.event_labels, ["b"])
+    
+    def test_add_no_metadata(self):
+        """Test adding when neither operand has metadata"""
+        a = Intervals([(0, 100)], units="ms")
+        b = Intervals([(200, 300)], units="ms")
+        c = a + b
+        
+        self.assertIsNone(c.event_labels)
+        self.assertIsNone(c.event_indices)
+        self.assertIsNone(c.event_onsets)
+        self.assertIsNone(c.data_time_range)
+    
+    def test_add_indices_units(self):
+        """Test adding intervals with units=None (indices)"""
+        a = Intervals([(0, 100), (200, 300)], units=None)
+        b = Intervals([(500, 600)], units=None)
+        c = a + b
+        
+        self.assertEqual(len(c), 3)
+        self.assertIsNone(c.units)
+    
+    def test_add_incompatible_units_raises_error(self):
+        """Test that mixing time units and indices raises error"""
+        a = Intervals([(0, 100)], units="ms")
+        b = Intervals([(200, 300)], units=None)
+        
+        with self.assertRaises(ValueError) as cm:
+            a + b
+        
+        self.assertIn("units", str(cm.exception).lower())
+    
+    def test_add_non_intervals_returns_notimplemented(self):
+        """Test that adding non-Intervals returns NotImplemented"""
+        a = Intervals([(0, 100)], units="ms")
+        
+        result = a.__add__("not an Intervals")
+        self.assertEqual(result, NotImplemented)
+    
+    def test_add_empty_left(self):
+        """Test adding when left operand is empty"""
+        a = Intervals([], units="ms")
+        b = Intervals([(200, 300)], units="ms")
+        c = a + b
+        
+        self.assertEqual(len(c), 1)
+        self.assertEqual(c.intervals, [(200, 300)])
+    
+    def test_add_empty_right(self):
+        """Test adding when right operand is empty"""
+        a = Intervals([(0, 100)], units="ms")
+        b = Intervals([], units="ms")
+        c = a + b
+        
+        self.assertEqual(len(c), 1)
+        self.assertEqual(c.intervals, [(0, 100)])
+    
+    def test_add_both_empty(self):
+        """Test adding when both operands are empty"""
+        a = Intervals([], units="ms")
+        b = Intervals([], units="ms")
+        c = a + b
+        
+        self.assertEqual(len(c), 0)
+        self.assertEqual(c.units, "ms")
+    
+    def test_add_label_left_only(self):
+        """Test label when only left has label"""
+        a = Intervals([(0, 100)], units="ms", label="a")
+        b = Intervals([(200, 300)], units="ms")
+        c = a + b
+        
+        self.assertEqual(c.label, "a")
+    
+    def test_add_label_right_only(self):
+        """Test label when only right has label"""
+        a = Intervals([(0, 100)], units="ms")
+        b = Intervals([(200, 300)], units="ms", label="b")
+        c = a + b
+        
+        self.assertEqual(c.label, "b")
+    
+    def test_add_chained(self):
+        """Test chaining multiple + operations"""
+        a = Intervals([(0, 100)], units="ms", label="a")
+        b = Intervals([(200, 300)], units="ms", label="b")
+        c = Intervals([(400, 500)], units="ms", label="c")
+        
+        result = a + b + c
+        
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result.intervals, [(0, 100), (200, 300), (400, 500)])
+    
+    def test_add_with_unit_conversion_preserves_data_time_range(self):
+        """Test that data_time_range is converted when units differ"""
+        a = Intervals([(0, 1)], units="sec", data_time_range=(0, 10))
+        b = Intervals([(2000, 3000)], units="ms", data_time_range=(0, 5000))
+        c = a + b
+        
+        # b's range (0, 5000ms) should be converted to (0, 5sec)
+        # Combined range should be (0, 10) expanded to include (0, 5) = (0, 10)
+        self.assertEqual(c.data_time_range, (0, 10))
+
+
 class TestIntervalsWithGetIntervals(unittest.TestCase):
     """Test Intervals class with get_intervals() method"""
     

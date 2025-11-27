@@ -301,6 +301,133 @@ class Intervals:
         """Get interval(s) by index."""
         return self.intervals[idx]
     
+    def __add__(self, other: 'Intervals') -> 'Intervals':
+        """
+        Combine two Intervals objects using the + operator.
+        
+        The intervals are concatenated and metadata is merged appropriately:
+        - Units: other is converted to self's units if different
+        - data_time_range: expanded to cover both
+        - label: combined with ' + '
+        - event_labels/indices/onsets: concatenated
+        
+        Parameters
+        ----------
+        other : Intervals
+            Another Intervals object to combine with
+            
+        Returns
+        -------
+        Intervals
+            New Intervals object containing intervals from both
+            
+        Raises
+        ------
+        TypeError
+            If other is not an Intervals object
+        ValueError
+            If units are incompatible (one is None/indices)
+            
+        Examples
+        --------
+        >>> a = Intervals([(0, 100), (200, 300)], units="ms")
+        >>> b = Intervals([(500, 600)], units="ms")
+        >>> c = a + b
+        >>> len(c)
+        3
+        >>> # Different units are converted
+        >>> a = Intervals([(0, 1)], units="sec")
+        >>> b = Intervals([(2000, 3000)], units="ms")
+        >>> c = a + b  # b converted to seconds
+        >>> c.intervals
+        [(0, 1), (2.0, 3.0)]
+        """
+        if not isinstance(other, Intervals):
+            return NotImplemented
+        
+        # Handle unit conversion
+        if self.units is None and other.units is None:
+            # Both are indices - just concatenate
+            other_converted = other
+        elif self.units is None or other.units is None:
+            raise ValueError(
+                f"Cannot combine Intervals with units={self.units} and units={other.units}. "
+                "Both must have time units or both must be indices."
+            )
+        elif self.units != other.units:
+            # Convert other to self's units
+            other_converted = other.to_units(self.units)
+        else:
+            other_converted = other
+        
+        # Combine intervals
+        combined_intervals = list(self.intervals) + list(other_converted.intervals)
+        
+        # Combine labels
+        if self.label and other.label:
+            combined_label = f"{self.label} + {other.label}"
+        else:
+            combined_label = self.label or other.label
+        
+        # Combine event_labels
+        if self.event_labels is not None and other.event_labels is not None:
+            combined_event_labels = list(self.event_labels) + list(other.event_labels)
+        elif self.event_labels is not None:
+            combined_event_labels = list(self.event_labels)
+        elif other.event_labels is not None:
+            combined_event_labels = list(other.event_labels)
+        else:
+            combined_event_labels = None
+        
+        # Combine event_indices
+        if self.event_indices is not None and other.event_indices is not None:
+            combined_event_indices = np.concatenate([
+                np.asarray(self.event_indices), 
+                np.asarray(other.event_indices)
+            ])
+        elif self.event_indices is not None:
+            combined_event_indices = np.asarray(self.event_indices)
+        elif other.event_indices is not None:
+            combined_event_indices = np.asarray(other.event_indices)
+        else:
+            combined_event_indices = None
+        
+        # Combine event_onsets (convert other's if needed)
+        if self.event_onsets is not None and other_converted.event_onsets is not None:
+            combined_event_onsets = np.concatenate([
+                np.asarray(self.event_onsets),
+                np.asarray(other_converted.event_onsets)
+            ])
+        elif self.event_onsets is not None:
+            combined_event_onsets = np.asarray(self.event_onsets)
+        elif other_converted.event_onsets is not None:
+            combined_event_onsets = np.asarray(other_converted.event_onsets)
+        else:
+            combined_event_onsets = None
+        
+        # Combine data_time_range (expand to cover both)
+        if self.data_time_range is not None and other_converted.data_time_range is not None:
+            combined_range = (
+                min(self.data_time_range[0], other_converted.data_time_range[0]),
+                max(self.data_time_range[1], other_converted.data_time_range[1])
+            )
+        elif self.data_time_range is not None:
+            combined_range = self.data_time_range
+        elif other_converted.data_time_range is not None:
+            combined_range = other_converted.data_time_range
+        else:
+            combined_range = None
+        
+        return Intervals(
+            combined_intervals,
+            self.units,
+            label=combined_label,
+            event_labels=combined_event_labels,
+            event_indices=combined_event_indices,
+            data_time_range=combined_range,
+            event_onsets=combined_event_onsets
+        )
+    
     def to_array(self):
         """
         Convert intervals to numpy array.
