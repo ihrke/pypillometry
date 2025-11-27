@@ -5,7 +5,7 @@ from vispy import app, scene
 from vispy.scene import SceneCanvas
 from typing import List, Dict
 
-from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers
+from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers, SelectionRegion
 from .navigation import NavigationHandler
 
 
@@ -51,6 +51,11 @@ class ViewerCanvas(SceneCanvas):
         self.events_visible = True
         self.masks_visible = True
         
+        # Selection mode state
+        self.selection_mode = False
+        self.selection_first_click = None  # (viewbox_idx, x_time) or None
+        self.selection_regions: Dict[str, SelectionRegion] = {}  # var_type -> SelectionRegion
+        
         # Storage for visuals
         self.lod_lines: List[LODLine] = []
         self.overlay_lines: List[LODLine] = []
@@ -72,6 +77,7 @@ class ViewerCanvas(SceneCanvas):
         
         self._plot_all_data()
         self._plot_overlays()
+        self._create_selection_regions()
         self._create_legend()
         self._set_initial_view()
         
@@ -452,6 +458,115 @@ class ViewerCanvas(SceneCanvas):
             lod_line.set_mask_visible(self.masks_visible)
         self.update()
     
+    def _create_selection_regions(self):
+        """Create SelectionRegion visual for each viewbox."""
+        for viewbox, var_type in zip(self.viewboxes, self.view_types):
+            self.selection_regions[var_type] = SelectionRegion(viewbox)
+    
+    def _get_viewbox_at_pos(self, canvas_pos):
+        """Find which viewbox contains the given canvas position."""
+        for i, viewbox in enumerate(self.viewboxes):
+            # Convert canvas position to viewbox coordinates
+            tr = self.scene.node_transform(viewbox)
+            vb_pos = tr.map(canvas_pos)[:2]
+            
+            # Check if within viewbox bounds (use camera rect)
+            try:
+                rect = viewbox.camera.rect
+                if (rect.left <= vb_pos[0] <= rect.right and 
+                    rect.bottom <= vb_pos[1] <= rect.top):
+                    return i, viewbox, vb_pos[0]  # return x in data coords
+            except:
+                pass
+        return None, None, None
+    
+    def _start_selection_mode(self):
+        """Enter selection mode - cursor becomes crosshair."""
+        self.selection_mode = True
+        self.selection_first_click = None
+        # Change cursor to crosshair
+        try:
+            from PyQt6.QtCore import Qt
+        except ImportError:
+            from PyQt5.QtCore import Qt
+        self.native.setCursor(Qt.CursorShape.CrossCursor)
+        self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [SELECTION MODE - click to mark region]'
+    
+    def _exit_selection_mode(self):
+        """Exit selection mode - restore normal cursor."""
+        self.selection_mode = False
+        self.selection_first_click = None
+        # Restore normal cursor
+        try:
+            from PyQt6.QtCore import Qt
+        except ImportError:
+            from PyQt5.QtCore import Qt
+        self.native.setCursor(Qt.CursorShape.ArrowCursor)
+        self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")}'
+    
+    def _remove_last_selection(self):
+        """Remove the last selection from the most recently modified viewbox."""
+        # Try to remove from the viewbox that had the last selection
+        for var_type in reversed(self.view_types):
+            region = self.selection_regions.get(var_type)
+            if region and region.intervals:
+                region.remove_last()
+                self.update()
+                return True
+        return False
+    
+    def get_selections(self) -> Dict[str, List[tuple]]:
+        """Get all selections as dict of var_type -> list of (start, end) tuples in seconds."""
+        result = {}
+        for var_type, region in self.selection_regions.items():
+            if region.intervals:
+                result[var_type] = region.get_intervals()
+        return result
+    
+    def on_mouse_press(self, event):
+        """Handle mouse press events for selection mode."""
+        if not self.selection_mode:
+            return
+        
+        if event.button != 1:  # Only left click
+            return
+        
+        # Get canvas position
+        canvas_pos = event.pos
+        
+        # Find which viewbox was clicked and get x coordinate in data space
+        vb_idx, viewbox, x_time = self._get_viewbox_at_pos(canvas_pos)
+        
+        if vb_idx is None:
+            return
+        
+        var_type = self.view_types[vb_idx]
+        
+        if self.selection_first_click is None:
+            # First click - store position
+            self.selection_first_click = (vb_idx, x_time)
+            self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [Click again to complete selection]'
+        else:
+            # Second click - complete selection
+            first_vb_idx, first_x = self.selection_first_click
+            
+            # Only allow selection within the same viewbox
+            if first_vb_idx != vb_idx:
+                # Reset and start over in the new viewbox
+                self.selection_first_click = (vb_idx, x_time)
+                self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [Click again to complete selection]'
+                return
+            
+            # Add the selection
+            region = self.selection_regions.get(var_type)
+            if region:
+                region.add_interval(first_x, x_time)
+            
+            # Reset for next selection (stay in selection mode)
+            self.selection_first_click = None
+            self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [SELECTION MODE - click to mark region]'
+            self.update()
+    
     def _show_help(self):
         """Show help dialog with keybindings."""
         try:
@@ -488,6 +603,12 @@ class ViewerCanvas(SceneCanvas):
 <tr><td><b>O</b></td><td>Toggle event markers</td></tr>
 </table>
 
+<h3>Selection</h3>
+<table>
+<tr><td><b>S</b></td><td>Enter/exit selection mode</td></tr>
+<tr><td><b>D  or  Backspace</b></td><td>Remove last selection</td></tr>
+</table>
+
 <h3>Other</h3>
 <table>
 <tr><td><b>H  or  ?</b></td><td>Show this help</td></tr>
@@ -520,6 +641,25 @@ class ViewerCanvas(SceneCanvas):
         if key in ['m', 'M']:
             self._toggle_masks()
             return
+        
+        # Selection mode with 's'
+        if key in ['s', 'S']:
+            if self.selection_mode:
+                self._exit_selection_mode()
+            else:
+                self._start_selection_mode()
+            return
+        
+        # Remove last selection with 'd' or Backspace
+        if key in ['d', 'D', 'Backspace']:
+            self._remove_last_selection()
+            return
+        
+        # Escape exits selection mode (or closes if not in selection mode)
+        if key == 'Escape':
+            if self.selection_mode:
+                self._exit_selection_mode()
+                return
         
         # Navigation keys
         result = self.navigation.handle_key_press(event)
