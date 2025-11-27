@@ -770,130 +770,268 @@ class ExperimentalSetup:
     # =========================================================================
     
     def plot(
-        self, 
-        ax=None, 
-        view: str = 'top',
-        show_camera: bool = True,
-        show_eye: bool = True,
-        show_screen: bool = True,
-        figsize: Tuple[float, float] = (8, 6)
+        self,
+        theta: float = None,
+        phi: float = None,
+        projection: str = '2d',
+        show_gaze_samples: bool = True,
+        n_gaze_samples: int = 9,
+        ax = None,
+        viewing_angle: tuple = None,
     ):
         """
         Visualize the experimental setup geometry.
         
         Parameters
         ----------
+        theta : float, optional
+            Camera polar angle in radians. If None, uses setup's theta.
+        phi : float, optional
+            Camera azimuthal angle in radians. If None, uses setup's phi.
+        projection : str, default '2d'
+            Type of projection:
+            - '2d': Three orthogonal 2D views (front, top, side)
+            - '3d': Interactive 3D view
+        show_gaze_samples : bool, default True
+            Whether to show sample gaze vectors to screen
+        n_gaze_samples : int, default 9
+            Number of sample gaze positions (grid)
         ax : matplotlib Axes, optional
-            Axes to plot on. If None, creates new figure.
-        view : str, default 'top'
-            View perspective: 'top' (x-z plane), 'side' (y-z plane), or '3d'
-        show_camera : bool, default True
-            Whether to show camera position
-        show_eye : bool, default True
-            Whether to show eye position
-        show_screen : bool, default True
-            Whether to show screen
-        figsize : tuple, default (8, 6)
-            Figure size if creating new figure
+            Existing axis to plot on (only for '3d' projection).
+        viewing_angle : tuple, optional
+            Viewing angle for 3D projection (elev, azim) or (elev, azim, roll) in degrees.
+            Default is (-49, 50, 45) for 3D.
         
         Returns
         -------
-        ax : matplotlib Axes
-            The axes with the plot
+        fig : matplotlib Figure
+        ax : matplotlib Axes or array of Axes
+        
+        Examples
+        --------
+        >>> setup = ExperimentalSetup(
+        ...     screen_resolution=(1920, 1080),
+        ...     physical_screen_size=("52 cm", "29 cm"),
+        ...     eye_to_screen_perpendicular="60 cm",
+        ...     camera_spherical=("20 deg", "-90 deg", "70 cm"),
+        ... )
+        >>> fig, ax = setup.plot()  # 2D views
+        >>> fig, ax = setup.plot(projection='3d')  # 3D view
         """
         import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
+        import matplotlib.patches as mpatches
+        from matplotlib.patches import Arc
+        
+        # Validate required parameters
+        if not self.has_screen_info():
+            raise ValueError("Cannot plot: physical_screen_size not set")
+        if self._d is None:
+            raise ValueError("Cannot plot: eye-to-screen distance (d) not set")
+        
+        # Get camera angles
+        if theta is None:
+            if not self.has_camera_position():
+                raise ValueError("theta not provided and camera position not set")
+            theta = self.theta
+        if phi is None:
+            if not self.has_camera_position():
+                raise ValueError("phi not provided and camera position not set")
+            phi = self.phi
+        
+        # Get distances
+        r = self.r if self.has_camera_position() else 0
+        d = self.d
+        w, h = self.physical_screen_width, self.physical_screen_height
+        
+        if projection.lower() == '3d':
+            return self._plot_3d(theta, phi, r, d, w, h, show_gaze_samples, 
+                                n_gaze_samples, ax, viewing_angle)
+        elif projection.lower() == '2d':
+            return self._plot_2d(theta, phi, r, d, w, h, show_gaze_samples, n_gaze_samples)
+        else:
+            raise ValueError(f"projection must be '2d' or '3d', got '{projection}'")
+    
+    def _plot_3d(self, theta, phi, r, d, w, h, show_gaze_samples, n_gaze_samples, ax, viewing_angle):
+        """3D visualization of experimental setup."""
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+        
+        if viewing_angle is None:
+            viewing_angle = (-49, 50, 45)
         
         if ax is None:
-            fig = plt.figure(figsize=figsize)
-            if view == '3d':
-                ax = fig.add_subplot(111, projection='3d')
-            else:
-                ax = fig.add_subplot(111)
+            fig = plt.figure(figsize=(10, 8))
+            ax = fig.add_subplot(111, projection='3d')
+        else:
+            fig = ax.figure
         
-        # Screen corners in screen frame (mm, centered)
-        w, h = self._physical_screen_size
-        screen_corners = [
-            (-w/2, -h/2),  # bottom-left
-            (w/2, -h/2),   # bottom-right
-            (w/2, h/2),    # top-right
-            (-w/2, h/2),   # top-left
-            (-w/2, -h/2),  # close polygon
-        ]
+        eye_pos = np.array([0, 0, 0])
+        camera_pos = np.array([
+            r * np.sin(theta) * np.cos(phi),
+            r * np.sin(theta) * np.sin(phi),
+            r * np.cos(theta)
+        ])
+        screen_corners = np.array([
+            [-w/2, -h/2, d], [w/2, -h/2, d], [w/2, h/2, d], [-w/2, h/2, d], [-w/2, -h/2, d],
+        ])
         
-        # Transform screen corners to eye frame
-        screen_3d = []
-        for x, y in screen_corners:
-            T = self.screen_point_to_eye_frame(x, y)
-            screen_3d.append(T)
+        ax.scatter(*eye_pos, color='blue', s=200, marker='o', label='Eye', edgecolors='darkblue', linewidths=2, alpha=0.8)
+        ax.scatter(*camera_pos, color='red', s=200, marker='^', label='Camera', edgecolors='darkred', linewidths=2, alpha=0.8)
+        ax.plot(screen_corners[:, 0], screen_corners[:, 1], screen_corners[:, 2], 'k-', linewidth=2, label='Screen')
+        screen_surface = [[screen_corners[0], screen_corners[1], screen_corners[2], screen_corners[3]]]
+        ax.add_collection3d(Poly3DCollection(screen_surface, alpha=0.2, facecolor='gray', edgecolor='black'))
         
-        # Eye position (at origin in eye frame)
-        eye_pos = (0, 0, 0)
+        ax.plot([0, camera_pos[0]], [0, camera_pos[1]], [0, camera_pos[2]], 'r--', linewidth=2, alpha=0.6, label=f'E-C: {r:.0f}mm')
+        ax.plot([0, 0], [0, 0], [0, d], 'g--', linewidth=2, alpha=0.6, label=f'E-S: {d:.0f}mm')
         
-        # Camera position
-        cam_pos = self.camera_position_eye_frame if self.has_camera_position() else None
+        # Angle arcs
+        arc_radius = r * 0.3
+        theta_angles = np.linspace(0, theta, 20)
+        camera_xy_norm = np.linalg.norm(camera_pos[:2])
+        phi_unit = camera_pos[:2] / camera_xy_norm if camera_xy_norm > 0 else np.array([1, 0])
+        ax.plot(arc_radius * np.sin(theta_angles) * phi_unit[0],
+                arc_radius * np.sin(theta_angles) * phi_unit[1],
+                arc_radius * np.cos(theta_angles), 'orange', linewidth=2.5, alpha=0.8)
+        mid_theta = theta / 2
+        label_r = arc_radius * 1.3
+        ax.text(label_r * np.sin(mid_theta) * phi_unit[0], label_r * np.sin(mid_theta) * phi_unit[1],
+                label_r * np.cos(mid_theta), f'θ={np.degrees(theta):.1f}°', fontsize=11, color='orange',
+                fontweight='bold', ha='center', va='center',
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='orange', alpha=0.8))
         
-        if view == 'top':
-            # x-z plane (looking down from above)
-            if show_screen:
-                xs = [p[0] for p in screen_3d]
-                zs = [p[2] for p in screen_3d]
-                ax.plot(xs, zs, 'b-', linewidth=2, label='Screen')
-                ax.fill(xs, zs, alpha=0.2, color='blue')
-            
-            if show_eye:
-                ax.plot(eye_pos[0], eye_pos[2], 'go', markersize=10, label='Eye')
-            
-            if show_camera and cam_pos is not None:
-                ax.plot(cam_pos[0], cam_pos[2], 'r^', markersize=10, label='Camera')
-            
-            ax.set_xlabel('X (mm)')
-            ax.set_ylabel('Z (mm) - depth')
-            ax.set_title('Top View (X-Z plane)')
-            
-        elif view == 'side':
-            # y-z plane (looking from the side)
-            if show_screen:
-                ys = [p[1] for p in screen_3d]
-                zs = [p[2] for p in screen_3d]
-                ax.plot(ys, zs, 'b-', linewidth=2, label='Screen')
-                ax.fill(ys, zs, alpha=0.2, color='blue')
-            
-            if show_eye:
-                ax.plot(eye_pos[1], eye_pos[2], 'go', markersize=10, label='Eye')
-            
-            if show_camera and cam_pos is not None:
-                ax.plot(cam_pos[1], cam_pos[2], 'r^', markersize=10, label='Camera')
-            
-            ax.set_xlabel('Y (mm)')
-            ax.set_ylabel('Z (mm) - depth')
-            ax.set_title('Side View (Y-Z plane)')
-            
-        elif view == '3d':
-            if show_screen:
-                xs = [p[0] for p in screen_3d]
-                ys = [p[1] for p in screen_3d]
-                zs = [p[2] for p in screen_3d]
-                ax.plot(xs, ys, zs, 'b-', linewidth=2, label='Screen')
-            
-            if show_eye:
-                ax.scatter([eye_pos[0]], [eye_pos[1]], [eye_pos[2]], 
-                          c='green', s=100, marker='o', label='Eye')
-            
-            if show_camera and cam_pos is not None:
-                ax.scatter([cam_pos[0]], [cam_pos[1]], [cam_pos[2]], 
-                          c='red', s=100, marker='^', label='Camera')
-            
-            ax.set_xlabel('X (mm)')
-            ax.set_ylabel('Y (mm)')
-            ax.set_zlabel('Z (mm)')
-            ax.set_title('3D View')
+        if camera_xy_norm > 1e-6:
+            phi_angles = np.linspace(0, phi, 20)
+            phi_arc_radius = arc_radius * 0.8
+            ax.plot(phi_arc_radius * np.cos(phi_angles), phi_arc_radius * np.sin(phi_angles),
+                    np.zeros(20), 'purple', linewidth=2.5, alpha=0.8)
+            mid_phi = phi / 2
+            ax.text(phi_arc_radius * 1.4 * np.cos(mid_phi), phi_arc_radius * 1.4 * np.sin(mid_phi), 0,
+                    f'φ={np.degrees(phi):.1f}°', fontsize=11, color='purple', fontweight='bold',
+                    ha='center', va='center',
+                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='purple', alpha=0.8))
         
-        ax.legend()
-        ax.axis('equal')
-        ax.grid(True, alpha=0.3)
+        if show_gaze_samples:
+            grid_size = int(np.sqrt(n_gaze_samples))
+            for x in np.linspace(-w/2, w/2, grid_size):
+                for y in np.linspace(-h/2, h/2, grid_size):
+                    ax.plot([0, x], [0, y], [0, d], 'c-', linewidth=0.5, alpha=0.3)
+                    ax.scatter(x, y, d, color='cyan', s=20, alpha=0.5)
         
-        return ax
+        ax.set_xlabel('X (mm)'); ax.set_ylabel('Y (mm)'); ax.set_zlabel('Z (mm)')
+        ax.set_title(f'Experimental Setup: θ={np.degrees(theta):.1f}°, φ={np.degrees(phi):.1f}°, r={r:.0f}mm, d={d:.0f}mm',
+                    fontsize=12, fontweight='bold')
+        max_range = max(r, d, w/2, h/2) * 1.2
+        ax.set_xlim([-max_range, max_range]); ax.set_ylim([-max_range, max_range])
+        ax.set_zlim([-max_range/4, d + max_range/4])
+        ax.legend(loc='upper left', fontsize=9)
+        
+        arrow_length = max_range / 4
+        ax.quiver(0, 0, 0, arrow_length, 0, 0, color='r', alpha=0.3, arrow_length_ratio=0.1)
+        ax.quiver(0, 0, 0, 0, arrow_length, 0, color='g', alpha=0.3, arrow_length_ratio=0.1)
+        ax.quiver(0, 0, 0, 0, 0, arrow_length, color='b', alpha=0.3, arrow_length_ratio=0.1)
+        
+        if len(viewing_angle) == 2:
+            ax.view_init(elev=viewing_angle[0], azim=viewing_angle[1])
+        elif len(viewing_angle) == 3:
+            ax.view_init(elev=viewing_angle[0], azim=viewing_angle[1], roll=viewing_angle[2])
+        plt.tight_layout()
+        return fig, ax
+    
+    def _plot_2d(self, theta, phi, r, d, w, h, show_gaze_samples, n_gaze_samples):
+        """2D orthogonal projections of experimental setup."""
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as mpatches
+        from matplotlib.patches import Arc
+        
+        E = np.array([0, 0, 0])
+        C = np.array([r * np.sin(theta) * np.cos(phi), r * np.sin(theta) * np.sin(phi), r * np.cos(theta)])
+        screen_corners = np.array([[-w/2, -h/2, d], [w/2, -h/2, d], [w/2, h/2, d], [-w/2, h/2, d], [-w/2, -h/2, d]])
+        
+        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+        eye_radius = max(r, d, w/2, h/2) * 0.03
+        cam_size = eye_radius * 1.5
+        
+        # Front View (x-y)
+        ax = axes[0]
+        ax.set_aspect('equal'); ax.axhline(0, color='k', linestyle=':', alpha=0.3); ax.axvline(0, color='k', linestyle=':', alpha=0.3)
+        ax.plot(screen_corners[:, 0], screen_corners[:, 1], 'k-', linewidth=2)
+        ax.fill(screen_corners[:-1, 0], screen_corners[:-1, 1], color='lightgray', alpha=0.3)
+        ax.add_patch(plt.Circle((E[0], E[1]), eye_radius, color='steelblue', ec='black', linewidth=2, zorder=10))
+        ax.plot(E[0], E[1], 'k.', markersize=6, zorder=11)
+        ax.text(E[0], E[1] - eye_radius*1.5, 'E', ha='center', va='top', fontsize=10, fontweight='bold')
+        ax.add_patch(mpatches.FancyBboxPatch((C[0]-cam_size*0.6, C[1]-cam_size*0.4), cam_size*1.2, cam_size*0.8,
+            boxstyle="round,pad=0.05", ec='black', fc='darkred', linewidth=2, zorder=10, alpha=0.7))
+        ax.plot(C[0], C[1], 'wo', markersize=8, zorder=11)
+        ax.text(C[0], C[1] - cam_size*0.7, 'C', ha='center', va='top', fontsize=10, fontweight='bold', color='white')
+        ax.plot([E[0], C[0]], [E[1], C[1]], 'r--', alpha=0.5, linewidth=1.5)
+        camera_xy_dist = np.sqrt(C[0]**2 + C[1]**2)
+        if camera_xy_dist > 1e-6:
+            arc_radius = min(camera_xy_dist, max(w, h)) * 0.3
+            phi_deg = np.degrees(phi)
+            theta1, theta2 = (0, phi_deg) if phi_deg > 0 else (phi_deg, 0)
+            ax.add_patch(Arc((E[0], E[1]), 2*arc_radius, 2*arc_radius, angle=0, theta1=theta1, theta2=theta2, color='purple', linewidth=2.5, zorder=5))
+            mid_phi = phi / 2; label_r = arc_radius * 1.3
+            ax.text(E[0] + label_r * np.cos(mid_phi), E[1] + label_r * np.sin(mid_phi), f'φ={phi_deg:.1f}°',
+                   fontsize=10, color='purple', fontweight='bold', ha='center', va='center',
+                   bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='purple', alpha=0.9))
+        if show_gaze_samples:
+            n = int(np.sqrt(n_gaze_samples))
+            for x_pos in np.linspace(-w/2*0.8, w/2*0.8, n):
+                for y_pos in np.linspace(-h/2*0.8, h/2*0.8, n):
+                    ax.plot([E[0], x_pos], [E[1], y_pos], 'g-', alpha=0.2, linewidth=0.5)
+        ax.set_xlabel('x (mm)'); ax.set_ylabel('y (mm)'); ax.set_title('Front View (x-y plane)', fontweight='bold'); ax.grid(True, alpha=0.2)
+        
+        # Top View (z-x)
+        ax = axes[1]
+        ax.set_aspect('equal'); ax.axhline(0, color='k', linestyle=':', alpha=0.3); ax.axvline(0, color='k', linestyle=':', alpha=0.3)
+        ax.plot(screen_corners[:, 2], screen_corners[:, 0], 'k-', linewidth=2)
+        ax.add_patch(plt.Circle((E[2], E[0]), eye_radius, color='steelblue', ec='black', linewidth=2, zorder=10))
+        ax.plot(E[2], E[0], 'k.', markersize=6, zorder=11)
+        ax.text(E[2] - eye_radius*1.5, E[0], 'E', ha='right', va='center', fontsize=10, fontweight='bold')
+        ax.add_patch(mpatches.FancyBboxPatch((C[2]-cam_size*0.4, C[0]-cam_size*0.6), cam_size*0.8, cam_size*1.2,
+            boxstyle="round,pad=0.05", ec='black', fc='darkred', linewidth=2, zorder=10, alpha=0.7))
+        ax.plot(C[2], C[0], 'wo', markersize=8, zorder=11)
+        ax.text(C[2], C[0] - cam_size*0.7, 'C', ha='center', va='top', fontsize=10, fontweight='bold', color='white')
+        ax.plot([E[2], C[2]], [E[0], C[0]], 'r--', alpha=0.5, linewidth=1.5, label=f'E-C: {r:.0f}mm')
+        ax.plot([E[2], d], [E[0], 0], 'g--', alpha=0.5, linewidth=1.5, label=f'E-S: {d:.0f}mm')
+        theta_zx = np.arctan2(C[0], C[2])
+        if abs(theta_zx) > 1e-6:
+            arc_radius = min(r, d) * 0.3; theta_zx_deg = np.degrees(theta_zx)
+            theta1, theta2 = (0, theta_zx_deg) if theta_zx_deg > 0 else (theta_zx_deg, 0)
+            ax.add_patch(Arc((E[2], E[0]), 2*arc_radius, 2*arc_radius, angle=0, theta1=theta1, theta2=theta2, color='orange', linewidth=2.5, zorder=5))
+            mid_angle = theta_zx / 2; label_r = arc_radius * 1.4
+            ax.text(E[2] + label_r * np.cos(mid_angle), E[0] + label_r * np.sin(mid_angle), f'θ(x)={theta_zx_deg:.1f}°',
+                   fontsize=9, color='orange', fontweight='bold', ha='center', va='center',
+                   bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='orange', alpha=0.9))
+        ax.set_xlabel('z (mm)'); ax.set_ylabel('x (mm)'); ax.set_title('Top View (z-x plane)', fontweight='bold'); ax.grid(True, alpha=0.2); ax.legend(loc='upper left', fontsize=8)
+        
+        # Side View (z-y)
+        ax = axes[2]
+        ax.set_aspect('equal'); ax.axhline(0, color='k', linestyle=':', alpha=0.3); ax.axvline(0, color='k', linestyle=':', alpha=0.3)
+        ax.plot(screen_corners[:, 2], screen_corners[:, 1], 'k-', linewidth=2)
+        ax.add_patch(plt.Circle((E[2], E[1]), eye_radius, color='steelblue', ec='black', linewidth=2, zorder=10))
+        ax.plot(E[2], E[1], 'k.', markersize=6, zorder=11)
+        ax.text(E[2] - eye_radius*1.5, E[1], 'E', ha='right', va='center', fontsize=10, fontweight='bold')
+        ax.add_patch(mpatches.FancyBboxPatch((C[2]-cam_size*0.4, C[1]-cam_size*0.6), cam_size*0.8, cam_size*1.2,
+            boxstyle="round,pad=0.05", ec='black', fc='darkred', linewidth=2, zorder=10, alpha=0.7))
+        ax.plot(C[2], C[1], 'wo', markersize=8, zorder=11)
+        ax.text(C[2], C[1] - cam_size*0.7, 'C', ha='center', va='top', fontsize=10, fontweight='bold', color='white')
+        ax.plot([E[2], C[2]], [E[1], C[1]], 'r--', alpha=0.5, linewidth=1.5)
+        ax.plot([E[2], d], [E[1], 0], 'g--', alpha=0.5, linewidth=1.5)
+        theta_zy = np.arctan2(C[1], C[2])
+        if abs(theta_zy) > 1e-6:
+            arc_radius = min(r, d) * 0.3; theta_zy_deg = np.degrees(theta_zy)
+            theta1, theta2 = (0, theta_zy_deg) if theta_zy_deg > 0 else (theta_zy_deg, 0)
+            ax.add_patch(Arc((E[2], E[1]), 2*arc_radius, 2*arc_radius, angle=0, theta1=theta1, theta2=theta2, color='orange', linewidth=2.5, zorder=5))
+            mid_angle = theta_zy / 2; label_r = arc_radius * 1.4
+            ax.text(E[2] + label_r * np.cos(mid_angle), E[1] + label_r * np.sin(mid_angle), f'θ(y)={theta_zy_deg:.1f}°',
+                   fontsize=9, color='orange', fontweight='bold', ha='center', va='center',
+                   bbox=dict(boxstyle='round,pad=0.2', facecolor='white', edgecolor='orange', alpha=0.9))
+        ax.set_xlabel('z (mm)'); ax.set_ylabel('y (mm)'); ax.set_title('Side View (z-y plane)', fontweight='bold'); ax.grid(True, alpha=0.2)
+        
+        fig.suptitle(f'Experimental Setup: θ={np.degrees(theta):.1f}°, φ={np.degrees(phi):.1f}°', fontsize=13, fontweight='bold', y=0.98)
+        plt.tight_layout()
+        return fig, axes
     
     # =========================================================================
     # String representation

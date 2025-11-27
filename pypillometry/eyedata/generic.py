@@ -11,6 +11,7 @@ from .. import io
 from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, suppress_all_output, normalize_unit
 from ..io import download
 from .eyedatadict import EyeDataDict
+from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
 from ..intervals import stat_event_interval, get_interval_stats, Intervals
 from ..logging import logging_get_level
@@ -1101,10 +1102,13 @@ class GenericEyeData(ABC):
                     val_data, screen_res
                 )
         
-        # build the object
+        # build the object with experimental setup
+        screen_coords = edf["info"]["screen_coords"]
+        setup = ExperimentalSetup(screen_resolution=screen_coords) if screen_coords else None
+        
         obj = cls(time=tx, **d, event_onsets=evon, event_labels=evlab, 
             sampling_rate=sfreq, info=info, calibration=calibration,
-            screen_resolution=edf["info"]["screen_coords"], name=edf["info"]["filename"])
+            experimental_setup=setup, name=edf["info"]["filename"])
 
         # filter out irrelevant triggers
         def eyelink_filter_func(lab):

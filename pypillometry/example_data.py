@@ -182,17 +182,19 @@ def get_rlmw_002():
 
     # Creating EyeData object that contains both X-Y coordinates
     # and pupil data
+    from .eyedata.experimental_setup import ExperimentalSetup
+    setup = ExperimentalSetup(
+        screen_resolution=(1280, 1024),
+        physical_screen_size=("30 cm", "20 cm"),
+        eye_to_screen_perpendicular="60 cm",
+    )
     d = EyeData(time=df.time, name="test short",
-                screen_resolution=(1280,1024), physical_screen_size=(33.75,27),
-                screen_eye_distance=60,
+                experimental_setup=setup,
                 left_x=left_x, left_y=left_y, left_pupil=df.left_p,
                 right_x=right_x, right_y=right_y, right_pupil=df.right_p,
                 event_onsets=df_ev.time, event_labels=df_ev.event,
                 keep_orig=True)\
                 .reset_time()
-    d.set_experiment_info(screen_eye_distance=60, 
-                        screen_resolution=(1280,1024), 
-                        physical_screen_size=(30, 20))
     return d        
 
 
@@ -237,16 +239,18 @@ def get_rlmw_002_short():
 
     # Creating EyeData object that contains both X-Y coordinates
     # and pupil data
+    from .eyedata.experimental_setup import ExperimentalSetup
+    setup = ExperimentalSetup(
+        screen_resolution=(1280, 1024),
+        physical_screen_size=("30 cm", "20 cm"),
+        eye_to_screen_perpendicular="60 cm",
+    )
     d = EyeData(time=df.time, name="test short",
-                screen_resolution=(1280,1024), physical_screen_size=(33.75,27),
-                screen_eye_distance=60,
+                experimental_setup=setup,
                 left_x=left_x, left_y=left_y, left_pupil=df.left_p,
                 right_x=right_x, right_y=right_y, right_pupil=df.right_p,
                 event_onsets=df_ev.time, event_labels=df_ev.event,
                 keep_orig=True)\
                 .reset_time()
-    d.set_experiment_info(screen_eye_distance=60, 
-                        screen_resolution=(1280,1024), 
-                        physical_screen_size=(30, 20))
     return d
         
