@@ -587,18 +587,14 @@ class EyeData(GazeData,PupilData):
             logger.info(f"Camera position: theta = {np.degrees(theta_opt):.1f}°, phi = {np.degrees(phi_opt):.1f}°")
         
         # Create ForeshorteningCalibration object
-        # Pass screen info from experimental_setup
         calibration = ForeshorteningCalibration(
             eye=eye,
             theta=theta_opt,
             phi=phi_opt,
-            r=r,
-            d=d,
+            experimental_setup=setup,
             spline_coeffs=spline_coeffs_opt,
             spline_knots=knots,
             spline_degree=3,
-            screen_resolution=setup.screen_resolution,
-            physical_screen_size=setup.physical_screen_size,
             fit_intervals=intervals,
             fit_metrics=fit_metrics
         )

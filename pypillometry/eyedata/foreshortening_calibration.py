@@ -12,6 +12,7 @@ import numpy.ma as ma
 from scipy.interpolate import BSpline
 from typing import Optional, Union, Tuple, Dict
 from ..intervals import Intervals
+from .experimental_setup import ExperimentalSetup
 
 
 def _compute_cos_alpha_vectorized(
@@ -419,13 +420,11 @@ class ForeshorteningCalibration:
     eye : str
         Which eye ('left' or 'right')
     theta : float
-        Camera polar angle in radians (0 to pi)
+        Fitted camera polar angle in radians (0 to pi)
     phi : float
-        Camera azimuthal angle in radians (0 to 2*pi)
-    r : float
-        Eye-to-camera distance in mm
-    d : float
-        Eye-to-screen distance in mm
+        Fitted camera azimuthal angle in radians (0 to 2*pi)
+    experimental_setup : ExperimentalSetup
+        Experimental setup containing known geometry (r, d, screen info)
     spline_coeffs : np.ndarray
         B-spline coefficients for true pupil size A0(t)
     spline_knots : np.ndarray
@@ -440,20 +439,28 @@ class ForeshorteningCalibration:
     Examples
     --------
     >>> import numpy as np
+    >>> from pypillometry.eyedata import ExperimentalSetup
     >>> from pypillometry.eyedata.foreshortening_calibration import ForeshorteningCalibration
     >>> 
-    >>> # Create a calibration object with example parameters
-    >>> theta = np.radians(95)
-    >>> phi = 0.0
-    >>> knots = np.array([0]*4 + [0, 50, 100] + [100]*4)
+    >>> # Create experimental setup
+    >>> setup = ExperimentalSetup(
+    ...     screen_resolution=(1920, 1080),
+    ...     physical_screen_size=("52 cm", "29 cm"),
+    ...     eye_to_screen_perpendicular="70 cm",
+    ...     camera_spherical=("85 deg", "-90 deg", "60 cm"),
+    ... )
+    >>> 
+    >>> # Create a calibration object with fitted parameters
+    >>> theta = np.radians(85)  # fitted angle
+    >>> phi = np.radians(-90)   # fitted angle
+    >>> knots = np.array([0]*4 + [50] + [100]*4)
     >>> coeffs = np.array([3.5, 3.7, 3.6, 3.8, 3.5])
     >>> 
     >>> cal = ForeshorteningCalibration(
     ...     eye='left',
     ...     theta=theta,
     ...     phi=phi,
-    ...     r=600.0,
-    ...     d=700.0,
+    ...     experimental_setup=setup,
     ...     spline_coeffs=coeffs,
     ...     spline_knots=knots,
     ...     spline_degree=3,
@@ -463,9 +470,6 @@ class ForeshorteningCalibration:
     >>> # Get correction factor at screen center (using pixel coordinates)
     >>> correction = cal.get_correction_factor(960, 540)  # screen center in pixels
     >>> print(f"Correction factor: {correction:.3f}")  # doctest: +SKIP
-    >>> 
-    >>> # Apply correction to pupil measurements
-    >>> corrected_pupil = measured_pupil * correction  # doctest: +SKIP
     """
     
     def __init__(
@@ -473,15 +477,12 @@ class ForeshorteningCalibration:
         eye: str,
         theta: float,
         phi: float,
-        r: float,
-        d: float,
+        experimental_setup: ExperimentalSetup,
         spline_coeffs: np.ndarray,
         spline_knots: np.ndarray,
         spline_degree: int = 3,
         fit_intervals: Optional[Intervals] = None,
         fit_metrics: Optional[Dict] = None,
-        screen_resolution: Optional[tuple] = None,
-        physical_screen_size: Optional[tuple] = None
     ):
         """
         Initialize ForeshorteningCalibration.
@@ -491,13 +492,11 @@ class ForeshorteningCalibration:
         eye : str
             Which eye ('left' or 'right')
         theta : float
-            Camera polar angle in radians
+            Fitted camera polar angle in radians
         phi : float
-            Camera azimuthal angle in radians
-        r : float
-            Eye-to-camera distance in mm
-        d : float
-            Eye-to-screen distance in mm
+            Fitted camera azimuthal angle in radians
+        experimental_setup : ExperimentalSetup
+            Experimental setup containing known geometry (r, d, screen info)
         spline_coeffs : np.ndarray
             B-spline coefficients
         spline_knots : np.ndarray
@@ -508,23 +507,16 @@ class ForeshorteningCalibration:
             Intervals used for fitting
         fit_metrics : dict or None
             Fit quality metrics
-        screen_resolution : tuple, optional
-            Screen resolution in pixels (width, height) for pixel-to-mm conversion
-        physical_screen_size : tuple, optional
-            Physical screen size in mm (width, height) for pixel-to-mm conversion
         """
         self.eye = eye
         self.theta = theta
         self.phi = phi
-        self.r = r
-        self.d = d
+        self.experimental_setup = experimental_setup
         self.spline_coeffs = np.asarray(spline_coeffs)
         self.spline_knots = np.asarray(spline_knots)
         self.spline_degree = spline_degree
         self.fit_intervals = fit_intervals
         self.fit_metrics = fit_metrics if fit_metrics is not None else {}
-        self.screen_resolution = screen_resolution
-        self.physical_screen_size = physical_screen_size
         
         # Create BSpline object for efficient evaluation
         self._spline = BSpline(
@@ -584,7 +576,7 @@ class ForeshorteningCalibration:
         from_pixels : bool, default True
             If True (default), x and y are in pixels and will be converted to mm.
             If False, x and y are already in mm relative to screen center.
-            Requires screen_resolution and physical_screen_size when True.
+            Requires experimental_setup to have screen info when True.
         
         Returns
         -------
@@ -608,17 +600,18 @@ class ForeshorteningCalibration:
         >>> correction = cal.get_correction_factor(0, 0, from_pixels=False)  # doctest: +SKIP
         >>> corrected_pupil = measured_pupil * correction  # doctest: +SKIP
         """
+        setup = self.experimental_setup
+        
         # Convert pixels to mm if needed
         if from_pixels:
-            if self.screen_resolution is None or self.physical_screen_size is None:
+            if not setup.has_screen_info():
                 raise ValueError(
-                    "Cannot convert from pixels: screen_resolution and physical_screen_size "
-                    "must be provided during calibration initialization."
+                    "Cannot convert from pixels: experimental_setup must have "
+                    "screen_resolution and physical_screen_size."
                 )
             
             # Convert pixels to mm (centered coordinates)
-            x_mm = (x - self.screen_resolution[0]/2) * self.physical_screen_size[0] / self.screen_resolution[0]
-            y_mm = (y - self.screen_resolution[1]/2) * self.physical_screen_size[1] / self.screen_resolution[1]
+            x_mm, y_mm = setup.pixels_to_mm(x, y)
         else:
             x_mm = x
             y_mm = y
@@ -626,7 +619,7 @@ class ForeshorteningCalibration:
         # Compute cos(alpha)
         eye_offset = 0.0  # Monocular for now
         cos_alpha = _compute_cos_alpha_vectorized(
-            x_mm, y_mm, self.theta, self.phi, self.r, self.d, eye_offset
+            x_mm, y_mm, self.theta, self.phi, setup.r, setup.d, eye_offset
         )
         
         # Compute correction factor
