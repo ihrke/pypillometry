@@ -387,3 +387,91 @@ class DynamicEventMarkers:
                 text.visible = False
         else:
             self._last_update_hash = None
+
+
+class SelectionRegion:
+    """Visual for user-selected regions (green semi-transparent rectangles)."""
+    
+    def __init__(self, viewbox: scene.ViewBox, color: str = '#00CC00', alpha: float = 0.3):
+        """
+        Initialize selection region visual.
+        
+        Parameters
+        ----------
+        viewbox : scene.ViewBox
+            The viewbox to draw selections in
+        color : str
+            Color for selection regions (default green)
+        alpha : float
+            Transparency (0-1)
+        """
+        self.viewbox = viewbox
+        self.color = color
+        self.alpha = alpha
+        self.intervals: List[Tuple[float, float]] = []  # (start, end) in seconds
+        self.mesh = None
+    
+    def add_interval(self, start: float, end: float):
+        """Add a new selection interval."""
+        if start > end:
+            start, end = end, start
+        self.intervals.append((start, end))
+        self._update_mesh()
+    
+    def remove_last(self) -> bool:
+        """Remove the last added interval. Returns True if removed, False if empty."""
+        if self.intervals:
+            self.intervals.pop()
+            self._update_mesh()
+            return True
+        return False
+    
+    def clear(self):
+        """Remove all intervals."""
+        self.intervals.clear()
+        self._update_mesh()
+    
+    def _update_mesh(self):
+        """Recreate mesh from current intervals."""
+        if not self.intervals:
+            if self.mesh is not None:
+                self.mesh.visible = False
+            return
+        
+        n_rects = len(self.intervals)
+        y_min, y_max = -1e9, 1e9
+        
+        vertices = np.zeros((n_rects * 4, 2), dtype=np.float32)
+        for i, (start, end) in enumerate(self.intervals):
+            vertices[i*4 + 0] = [start, y_min]
+            vertices[i*4 + 1] = [end, y_min]
+            vertices[i*4 + 2] = [end, y_max]
+            vertices[i*4 + 3] = [start, y_max]
+        
+        base_indices = np.arange(n_rects, dtype=np.uint32) * 4
+        faces = np.zeros((n_rects * 2, 3), dtype=np.uint32)
+        faces[0::2, 0] = base_indices
+        faces[0::2, 1] = base_indices + 1
+        faces[0::2, 2] = base_indices + 2
+        faces[1::2, 0] = base_indices
+        faces[1::2, 1] = base_indices + 2
+        faces[1::2, 2] = base_indices + 3
+        
+        c = Color(self.color)
+        rgba = list(c.rgba)
+        rgba[3] = self.alpha
+        
+        if self.mesh is None:
+            self.mesh = scene.Mesh(
+                vertices=vertices, faces=faces, color=rgba,
+                parent=self.viewbox.scene
+            )
+            self.mesh.order = 500  # Above mask regions, below signal lines
+            self.mesh.set_gl_state('translucent', depth_test=False)
+        else:
+            self.mesh.set_data(vertices=vertices, faces=faces, color=rgba)
+            self.mesh.visible = True
+    
+    def get_intervals(self) -> List[Tuple[float, float]]:
+        """Return list of (start, end) intervals in seconds."""
+        return list(self.intervals)
