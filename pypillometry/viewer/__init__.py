@@ -19,10 +19,12 @@ Features
 - Different colors for left (blue) and right (red) eye data
 """
 
+from typing import Dict, Optional
+
 __all__ = ['view']
 
 
-def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None:
+def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> Optional[Dict[str, 'Intervals']]:
     """View eye-tracking data with GPU-accelerated rendering.
     
     Opens an interactive viewer window using VisPy for fast GPU-based
@@ -45,6 +47,13 @@ def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None:
     overlay_y : dict, optional
         Additional timeseries to overlay on the gaze Y plot.
     
+    Returns
+    -------
+    Optional[Dict[str, Intervals]]
+        If regions were selected (using 's' key + mouse clicks), returns a dict
+        mapping variable type ('pupil', 'x', 'y') to Intervals objects containing
+        the selected regions in seconds. Returns None if no selections were made.
+    
     Notes
     -----
     Keyboard controls:
@@ -56,6 +65,8 @@ def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None:
     - +/-: Zoom in/out
     - M: Toggle mask regions
     - O: Toggle event markers
+    - S: Enter selection mode (click twice to mark a region)
+    - D/Backspace: Remove last selection
     - H/?: Show help
     - Q/Esc: Close viewer
     
@@ -69,6 +80,11 @@ def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None:
     >>> import numpy as np  # doctest: +SKIP
     >>> smoothed = np.convolve(data['left_pupil'], np.ones(100)/100, 'same')  # doctest: +SKIP
     >>> pp.view(data, overlay_pupil={'smoothed': smoothed})  # doctest: +SKIP
+    
+    # Select regions interactively
+    >>> selections = pp.view(data)  # Press 's', click twice to select  # doctest: +SKIP
+    >>> if selections:  # doctest: +SKIP
+    ...     print(selections['pupil'])  # Intervals object with selected regions
     """
     import sys
     import locale
@@ -157,3 +173,18 @@ def view(eyedata, overlay_pupil=None, overlay_x=None, overlay_y=None) -> None:
                 locale.setlocale(locale.LC_TIME, 'C')
             except Exception:
                 pass  # If all else fails, continue with whatever Qt set
+    
+    # Get selections from canvas and convert to Intervals
+    selections = canvas.get_selections()
+    
+    if not selections:
+        return None
+    
+    # Import Intervals here to avoid circular imports
+    from ..intervals import Intervals
+    
+    result = {}
+    for var_type, intervals_list in selections.items():
+        result[var_type] = Intervals(intervals_list, units='sec', label=f'selected_{var_type}')
+    
+    return result
