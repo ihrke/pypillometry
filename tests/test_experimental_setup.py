@@ -27,6 +27,15 @@ class TestExperimentalSetupInitialization:
         assert setup.screen_width == 1920
         assert setup.screen_height == 1080
     
+    def test_screen_resolution_from_numpy_array(self):
+        """Test initialization with screen resolution as numpy array (from EDF parsing)."""
+        # EDF parsing returns numpy arrays for screen coordinates
+        screen_coords = np.array([1920, 1080])
+        setup = ExperimentalSetup(screen_resolution=tuple(screen_coords))
+        assert setup.screen_resolution == (1920, 1080)
+        assert setup.screen_width == 1920
+        assert setup.screen_height == 1080
+    
     def test_physical_screen_size_mm(self):
         """Test initialization with physical screen size in mm (floats)."""
         setup = ExperimentalSetup(physical_screen_size=(520.0, 290.0))

@@ -1104,7 +1104,7 @@ class GenericEyeData(ABC):
         
         # build the object with experimental setup
         screen_coords = edf["info"]["screen_coords"]
-        setup = ExperimentalSetup(screen_resolution=screen_coords) if screen_coords else None
+        setup = ExperimentalSetup(screen_resolution=tuple(screen_coords)) if screen_coords is not None else None
         
         obj = cls(time=tx, **d, event_onsets=evon, event_labels=evlab, 
             sampling_rate=sfreq, info=info, calibration=calibration,
