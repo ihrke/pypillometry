@@ -559,7 +559,7 @@ class Intervals:
         Plot intervals as horizontal lines on a timeline.
         
         Uses the current matplotlib axes to create a visualization where each 
-        interval is shown as a horizontal black line at a different y-level.
+        interval is shown as a horizontal line at a different y-level.
         
         Parameters
         ----------
@@ -603,7 +603,7 @@ class Intervals:
         for i, (start, end) in enumerate(self.intervals):
             y_level = i + 1
             
-            # Plot horizontal black line for the interval
+            # Plot horizontal line for the interval
             ax.plot([start, end], [y_level, y_level], **kwargs)
             
             # Optionally add event label centered on the line

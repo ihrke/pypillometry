@@ -396,21 +396,20 @@ class TestIntervalsPlotMethod(unittest.TestCase):
             
             plt.close('all')
     
-    def test_plot_lines_are_black(self):
-        """Test that interval lines are black"""
+    def test_plot_accepts_color_kwarg(self):
+        """Test that interval lines can be colored via kwargs"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         
         fig = plt.figure()
-        intervals.plot()
+        intervals.plot(color='red')
         
         ax = plt.gca()
         lines = ax.get_lines()
         
-        # Check that all lines are black (Intervals.plot doesn't have zero line)
+        # Check that all lines are red (as specified)
         for line in lines:
             color = line.get_color()
-            # Black is (0, 0, 0) or 'black' or 'k'
-            self.assertIn(color, ['black', 'k', (0.0, 0.0, 0.0, 1.0)])
+            self.assertEqual(color, 'red')
 
 
 class TestIntervalsConversionMethods(unittest.TestCase):
