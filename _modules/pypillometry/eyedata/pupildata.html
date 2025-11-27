@@ -609,7 +609,7 @@ window.addEventListener("load", load);
                       <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> 
                       <span class="n">min_onset_len</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
                       <span class="n">strategies</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span><span class="s2">&quot;velocity&quot;</span><span class="p">],</span>
-                      <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                      <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ignore_existing_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Detect blinks in the pupillary signal using several strategies.</span>
 <span class="sd">        First, blinks are detected as consecutive sequence of `blink_val` </span>
@@ -651,6 +651,9 @@ window.addEventListener("load", load);
 <span class="sd">        apply_mask: bool</span>
 <span class="sd">            if `True`, apply detected blinks as masks to the data and return self</span>
 <span class="sd">            if `False`, return detected blinks as Intervals (or dict of Intervals)</span>
+<span class="sd">        ignore_existing_mask: bool</span>
+<span class="sd">            if `True` (default), use raw data ignoring existing masks</span>
+<span class="sd">            if `False`, only detect blinks in non-masked data (already masked regions are skipped)</span>
 <span class="sd">        inplace: bool</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes                                                    </span>
@@ -683,15 +686,22 @@ window.addEventListener("load", load);
         
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detecting blinks for eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Get pupil data, optionally ignoring existing mask</span>
+            <span class="k">if</span> <span class="n">ignore_existing_mask</span><span class="p">:</span>
+                <span class="n">pupil_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pupil_data</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+            
             <span class="c1">## detect blinks with the different strategies</span>
             <span class="k">if</span> <span class="s2">&quot;velocity&quot;</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
-                <span class="n">blinks_vel</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_velocity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">)</span>
+                <span class="n">blinks_vel</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_velocity</span><span class="p">(</span><span class="n">pupil_data</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with velocity strategy&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span> 
                 <span class="n">blinks_vel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
                 
             <span class="k">if</span> <span class="s2">&quot;zero&quot;</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
-                <span class="n">blinks_zero</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_zero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
+                <span class="n">blinks_zero</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_zero</span><span class="p">(</span><span class="n">pupil_data</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_zero</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with zero strategy&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">blinks_zero</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
