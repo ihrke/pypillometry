@@ -465,21 +465,49 @@ class ViewerCanvas(SceneCanvas):
             self.selection_regions[var_type] = SelectionRegion(viewbox)
     
     def _get_viewbox_at_pos(self, canvas_pos):
-        """Find which viewbox contains the given canvas position."""
-        for i, viewbox in enumerate(self.viewboxes):
-            # Convert canvas position to viewbox coordinates
-            tr = self.scene.node_transform(viewbox)
-            vb_pos = tr.map(canvas_pos)[:2]
+        """Find which viewbox contains the given canvas position and return x in data coords."""
+        canvas_x = canvas_pos[0]
+        canvas_y = canvas_pos[1]
+        canvas_width = self.size[0]
+        canvas_height = self.size[1]
+        
+        # Calculate which viewbox based on y position
+        n_plots = len(self.viewboxes)
+        if n_plots == 0:
+            return None, None, None
+        
+        # Account for x-axis and legend at bottom (roughly 75px total)
+        plot_area_height = canvas_height - 75
+        plot_height = plot_area_height / n_plots
+        
+        # Determine which plot index based on y position
+        vb_idx = int(canvas_y / plot_height)
+        vb_idx = max(0, min(vb_idx, n_plots - 1))
+        
+        viewbox = self.viewboxes[vb_idx]
+        
+        try:
+            # Get viewbox width from its rect (local coordinates)
+            vb_rect = viewbox.rect
+            if vb_rect is not None:
+                plot_width = vb_rect.width
+                # Y-axis takes up the remaining space on the left
+                plot_left = canvas_width - plot_width
+            else:
+                # Fallback estimate
+                plot_left = canvas_width * 0.08
+                plot_width = canvas_width - plot_left
             
-            # Check if within viewbox bounds (use camera rect)
-            try:
-                rect = viewbox.camera.rect
-                if (rect.left <= vb_pos[0] <= rect.right and 
-                    rect.bottom <= vb_pos[1] <= rect.top):
-                    return i, viewbox, vb_pos[0]  # return x in data coords
-            except:
-                pass
-        return None, None, None
+            # Calculate relative x position within the plot area (0 to 1)
+            rel_x = (canvas_x - plot_left) / plot_width
+            rel_x = max(0.0, min(1.0, rel_x))
+            
+            # Map to data coordinates using camera's visible range
+            camera_rect = viewbox.camera.rect
+            x_data = camera_rect.left + rel_x * camera_rect.width
+            return vb_idx, viewbox, float(x_data)
+        except Exception:
+            return None, None, None
     
     def _start_selection_mode(self):
         """Enter selection mode - cursor becomes crosshair."""
@@ -592,12 +620,11 @@ class ViewerCanvas(SceneCanvas):
             self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [SELECTION MODE - drag to select region]'
             return
         
-        # Only add selection if drag distance is meaningful (> 0.1 seconds)
-        if abs(end_x - start_x) > 0.1:
-            var_type = self.view_types[start_vb_idx]
-            region = self.selection_regions.get(var_type)
-            if region:
-                region.add_interval(start_x, end_x)
+        # Add selection - any drag counts, no minimum
+        var_type = self.view_types[start_vb_idx]
+        region = self.selection_regions.get(var_type)
+        if region and start_x != end_x:
+            region.add_interval(start_x, end_x)
         
         # Reset for next selection
         self.selection_drag_start = None
