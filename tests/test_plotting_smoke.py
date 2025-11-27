@@ -253,6 +253,8 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
     
     def setUp(self):
         """Create test data with experimental setup parameters"""
+        from pypillometry.eyedata import ExperimentalSetup
+        
         # Create minimal EyeData with gaze and pupil
         self.data = pp.EyeData(
             left_x=np.random.uniform(500, 1400, 100),
@@ -260,12 +262,13 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
             left_pupil=np.random.uniform(700, 800, 100),
             sampling_rate=100.0
         )
-        # Set experimental parameters
-        self.data.set_experiment_info(
-            camera_eye_distance="600 mm",
-            screen_eye_distance="700 mm",
+        # Set experimental parameters using new API
+        self.data.set_experimental_setup(
+            screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            screen_resolution=(1920, 1080)
+            eye_to_screen_perpendicular="700 mm",
+            camera_spherical=("20 deg", "-90 deg", "600 mm"),
+            camera_position_relative_to="eye"
         )
         plt.close('all')
     
@@ -315,14 +318,23 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
     def test_plot_experimental_setup_with_calibration(self):
         """Test with ForeshorteningCalibration object"""
         from pypillometry.eyedata.foreshortening_calibration import ForeshorteningCalibration
+        from pypillometry.eyedata import ExperimentalSetup
+        
+        # Create ExperimentalSetup for calibration
+        setup = ExperimentalSetup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("520 mm", "290 mm"),
+            eye_to_screen_perpendicular="700 mm",
+            camera_spherical=("20 deg", "-90 deg", "600 mm"),
+            camera_position_relative_to="eye"
+        )
         
         # Create a mock calibration object
         calib = ForeshorteningCalibration(
             eye='left',
             theta=np.radians(20),
             phi=np.radians(-90),
-            r=600.0,
-            d=700.0,
+            experimental_setup=setup,
             spline_coeffs=np.array([750.0] * 10),
             spline_knots=np.linspace(0, 10, 14),
             spline_degree=3,
@@ -337,26 +349,28 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)
     
-    def test_plot_experimental_setup_missing_angles_raises_error(self):
-        """Test that missing theta/phi raises ValueError"""
-        with self.assertRaises(ValueError) as context:
-            self.data.plot.plot_experimental_setup(projection='3d')
-        
-        self.assertIn("Camera angle", str(context.exception))
+    def test_plot_experimental_setup_works_with_setup_angles(self):
+        """Test that plot uses angles from experimental_setup when not explicitly provided"""
+        # setUp already configured angles in experimental_setup
+        # Plot should work without providing theta/phi explicitly
+        fig, ax = self.data.plot.plot_experimental_setup(projection='3d')
+        self.assertIsNotNone(fig)
+        self.assertIsNotNone(ax)
     
-    def test_plot_experimental_setup_missing_theta_raises_error(self):
-        """Test that missing theta raises ValueError"""
-        with self.assertRaises(ValueError) as context:
-            self.data.plot.plot_experimental_setup(phi="-90 degrees", projection='3d')
+    def test_plot_experimental_setup_no_setup_raises_error(self):
+        """Test that plotting without experimental_setup raises ValueError"""
+        # Create data without experimental_setup
+        data = pp.EyeData(
+            left_x=np.random.uniform(500, 1400, 100),
+            left_y=np.random.uniform(200, 800, 100),
+            left_pupil=np.random.uniform(700, 800, 100),
+            sampling_rate=100.0
+        )
         
-        self.assertIn("theta", str(context.exception))
-    
-    def test_plot_experimental_setup_missing_phi_raises_error(self):
-        """Test that missing phi raises ValueError"""
         with self.assertRaises(ValueError) as context:
-            self.data.plot.plot_experimental_setup(theta="20 degrees", projection='3d')
+            data.plot.plot_experimental_setup(projection='3d')
         
-        self.assertIn("phi", str(context.exception))
+        self.assertIn("experimental_setup is not set", str(context.exception))
     
     def test_plot_experimental_setup_invalid_projection_raises_error(self):
         """Test that invalid projection type raises ValueError"""
@@ -367,7 +381,7 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
                 projection='invalid'
             )
         
-        self.assertIn("projection must be '3d' or '2d'", str(context.exception))
+        self.assertIn("projection must be", str(context.exception))
     
     def test_plot_experimental_setup_without_gaze_samples(self):
         """Test 2D plot without gaze samples"""

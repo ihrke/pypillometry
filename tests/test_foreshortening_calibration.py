@@ -13,7 +13,7 @@ from pypillometry.eyedata.foreshortening_calibration import (
     _objective_function,
     _objective_gradient
 )
-from pypillometry.eyedata import EyeData
+from pypillometry.eyedata import EyeData, ExperimentalSetup
 
 
 class TestHelperFunctions:
@@ -198,6 +198,15 @@ class TestForeshorteningCalibration:
         self.r = 600.0
         self.d = 700.0
         
+        # Create ExperimentalSetup with camera position in eye frame
+        self.setup = ExperimentalSetup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("520 mm", "290 mm"),
+            eye_to_screen_perpendicular=f"{self.d} mm",
+            camera_spherical=(f"{np.degrees(self.theta)} deg", f"{np.degrees(self.phi)} deg", f"{self.r} mm"),
+            camera_position_relative_to="eye"
+        )
+        
         # Simple knots and coefficients (properly matched)
         # For degree 3: n_coeffs = len(knots) - degree - 1
         # knots length 11 → need 7 coefficients
@@ -208,8 +217,7 @@ class TestForeshorteningCalibration:
             eye='left',
             theta=self.theta,
             phi=self.phi,
-            r=self.r,
-            d=self.d,
+            experimental_setup=self.setup,
             spline_coeffs=self.coeffs,
             spline_knots=self.knots,
             spline_degree=3,
@@ -221,8 +229,8 @@ class TestForeshorteningCalibration:
         assert self.cal.eye == 'left'
         assert self.cal.theta == self.theta
         assert self.cal.phi == self.phi
-        assert self.cal.r == self.r
-        assert self.cal.d == self.d
+        assert np.isclose(self.cal.experimental_setup.r, self.r, rtol=1e-5)
+        assert np.isclose(self.cal.experimental_setup.d, self.d, rtol=1e-5)
         assert len(self.cal.spline_coeffs) == 7
         assert self.cal.fit_metrics['r2'] == 0.95
     
@@ -330,6 +338,15 @@ class TestFitForeshorteningMethod:
         # Ensure all positive
         pupil = np.abs(pupil)
         
+        # Create ExperimentalSetup with known geometry
+        setup = ExperimentalSetup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("520 mm", "290 mm"),  # mm
+            eye_to_screen_perpendicular=f"{d_true} mm",
+            camera_spherical=(f"{np.degrees(theta_true)} deg", f"{np.degrees(phi_true)} deg", f"{r_true} mm"),
+            camera_position_relative_to="eye"
+        )
+        
         # Create EyeData object (without fill_time_discontinuities to avoid masking)
         data = EyeData(
             time=time,
@@ -337,9 +354,7 @@ class TestFitForeshorteningMethod:
             left_y=y_gaze + 540,  # Center at 540
             left_pupil=pupil,
             sampling_rate=fs,
-            screen_resolution=(1920, 1080),
-            physical_screen_size=(52.0, 29.0),  # cm
-            screen_eye_distance=70.0,  # cm
+            experimental_setup=setup,
             fill_time_discontinuities=False  # Don't create masks
         )
         
@@ -352,8 +367,6 @@ class TestFitForeshorteningMethod:
         # Fit the model
         calib = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             target_fs=50.0,
             lowpass_freq=3.0,
             verbose=False
@@ -362,8 +375,8 @@ class TestFitForeshorteningMethod:
         # Check that calibration was created
         assert isinstance(calib, ForeshorteningCalibration)
         assert calib.eye == 'left'
-        assert calib.r == r_true
-        assert calib.d == d_true
+        assert np.isclose(calib.experimental_setup.r, r_true, rtol=1e-5)
+        assert np.isclose(calib.experimental_setup.d, d_true, rtol=1e-5)
         
         # Check fit quality
         assert 'r2' in calib.fit_metrics
@@ -381,8 +394,6 @@ class TestFitForeshorteningMethod:
         
         calib = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             intervals=intervals,
             verbose=False
         )
@@ -402,29 +413,26 @@ class TestFitForeshorteningMethod:
                 verbose=False
             )
     
-    def test_fit_invalid_r(self):
-        """Test that negative r raises error."""
-        data, theta_true, phi_true, r_true, d_true = self.create_synthetic_data(n_samples=100, fs=100.0)
+    def test_fit_requires_camera_position(self):
+        """Test that fitting requires camera position in experimental_setup."""
+        # Create EyeData without camera position
+        setup = ExperimentalSetup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("520 mm", "290 mm"),
+            eye_to_screen_perpendicular="700 mm"
+            # No camera_spherical
+        )
+        data = EyeData(
+            left_x=np.random.rand(100) * 1920,
+            left_y=np.random.rand(100) * 1080,
+            left_pupil=np.random.rand(100) * 3 + 2,
+            sampling_rate=100.0,
+            experimental_setup=setup,
+            fill_time_discontinuities=False
+        )
         
-        with pytest.raises(ValueError, match="r must be positive"):
-            data.fit_foreshortening(
-                eye='left',
-                r=-600.0,
-                d=d_true,
-                verbose=False
-            )
-    
-    def test_fit_invalid_d(self):
-        """Test that negative d raises error."""
-        data, theta_true, phi_true, r_true, d_true = self.create_synthetic_data(n_samples=100, fs=100.0)
-        
-        with pytest.raises(ValueError, match="d must be positive"):
-            data.fit_foreshortening(
-                eye='left',
-                r=r_true,
-                d=-700.0,
-                verbose=False
-            )
+        with pytest.raises(ValueError, match="Camera position not set"):
+            data.fit_foreshortening(eye='left', verbose=False)
     
     def test_correction_reduces_spatial_variance(self):
         """Test that correction reduces gaze-position dependence."""
@@ -433,8 +441,6 @@ class TestFitForeshorteningMethod:
         # Fit the model
         calib = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             verbose=False
         )
         
@@ -460,8 +466,6 @@ class TestFitForeshorteningMethod:
         
         calib = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             verbose=False
         )
         
@@ -510,15 +514,22 @@ class TestFitAndCorrection:
         cos_alpha = _compute_cos_alpha_vectorized(x_mm, y_mm, theta_true, phi_true, r_true, d_true)
         pupil = np.abs(A0_true * cos_alpha + np.random.randn(n_samples) * 0.03)
         
+        # Create ExperimentalSetup
+        setup = ExperimentalSetup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("520 mm", "290 mm"),
+            eye_to_screen_perpendicular=f"{d_true} mm",
+            camera_spherical=(f"{np.degrees(theta_true)} deg", f"{np.degrees(phi_true)} deg", f"{r_true} mm"),
+            camera_position_relative_to="eye"
+        )
+        
         data = EyeData(
             time=time,
             left_x=x_gaze + 960,
             left_y=y_gaze + 540,
             left_pupil=pupil,
             sampling_rate=fs,
-            screen_resolution=(1920, 1080),
-            physical_screen_size=(52.0, 29.0),
-            screen_eye_distance=70.0,
+            experimental_setup=setup,
             fill_time_discontinuities=False
         )
         
@@ -532,8 +543,6 @@ class TestFitAndCorrection:
         # Fit the model
         calib = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             verbose=False
         )
         
@@ -560,16 +569,12 @@ class TestFitAndCorrection:
         # Fit with different knot spacings
         calib_sparse = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             knots_per_second=0.5,
             verbose=False
         )
         
         calib_dense = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             knots_per_second=2.0,
             verbose=False
         )
@@ -589,8 +594,6 @@ class TestFitAndCorrection:
         # Fit with low smoothness (more flexible)
         calib_low = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             lambda_smooth=0.1,
             verbose=False
         )
@@ -598,8 +601,6 @@ class TestFitAndCorrection:
         # Fit with high smoothness (more constrained)
         calib_high = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             lambda_smooth=10.0,
             verbose=False
         )
@@ -620,8 +621,6 @@ class TestFitAndCorrection:
         
         calib = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             verbose=False
         )
         
@@ -647,8 +646,6 @@ class TestFitAndCorrection:
         # Fit with different initial guesses
         calib1 = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             initial_theta=np.radians(90),
             initial_phi=0.0,
             verbose=False
@@ -656,8 +653,6 @@ class TestFitAndCorrection:
         
         calib2 = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             initial_theta=np.radians(80),
             initial_phi=np.radians(10),
             verbose=False
@@ -678,8 +673,6 @@ class TestFitAndCorrection:
         
         calib = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             verbose=False
         )
         
@@ -696,8 +689,6 @@ class TestFitAndCorrection:
         
         calib = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             initial_phi=0.0,  # Camera on x-axis
             verbose=False
         )
@@ -720,16 +711,12 @@ class TestFitAndCorrection:
         # Fit with different lowpass frequencies
         calib_low = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             lowpass_freq=2.0,
             verbose=False
         )
         
         calib_high = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             lowpass_freq=6.0,
             verbose=False
         )
@@ -745,8 +732,6 @@ class TestFitAndCorrection:
         
         calib = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             verbose=False
         )
         
@@ -765,61 +750,55 @@ class TestFitAndCorrection:
         # Should be consistent
         assert np.allclose(A0_array[0], A0_array[1])
     
-    def test_fit_with_attributes_from_eyedata(self):
-        """Test that r and d can be retrieved from EyeData attributes."""
+    def test_fit_uses_experimental_setup(self):
+        """Test that fit_foreshortening uses experimental_setup from EyeData."""
         data, theta_true, phi_true, r_true, d_true, _, _ = \
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
-        # Set the attributes (all in mm now)
-        data.set_experiment_info(
-            camera_eye_distance=r_true,
-            screen_eye_distance=d_true  # Now in mm (was cm before)
-        )
-        
-        # Fit without providing r and d (should use attributes)
+        # Data already has experimental_setup from create_synthetic_data_with_variation
+        # Fit without providing r and d (should use experimental_setup)
         calib = data.fit_foreshortening(
             eye='left',
             verbose=False
         )
         
-        # Should have used the correct values
-        assert calib.r == r_true
-        assert np.isclose(calib.d, d_true, rtol=1e-6)
+        # Should have used the correct values from experimental_setup
+        assert np.isclose(calib.experimental_setup.r, r_true, rtol=1e-5)
+        assert np.isclose(calib.experimental_setup.d, d_true, rtol=1e-5)
         
         # Fit quality should be good
         assert calib.fit_metrics['r2'] > 0.8
     
-    def test_fit_without_attributes_raises_error(self):
-        """Test that fitting without r/d or attributes raises error."""
-        data, theta_true, phi_true, r_true, d_true, _, _ = \
-            self.create_synthetic_data_with_variation(n_samples=100, fs=100.0)
+    def test_fit_without_experimental_setup_raises_error(self):
+        """Test that fitting without experimental_setup raises error."""
+        # Create data without experimental_setup
+        data = EyeData(
+            left_x=np.random.rand(100) * 1920,
+            left_y=np.random.rand(100) * 1080,
+            left_pupil=np.random.rand(100) * 3 + 2,
+            sampling_rate=100.0,
+            fill_time_discontinuities=False
+        )
         
-        # Don't set attributes, don't provide r/d
-        with pytest.raises(ValueError, match="Camera-eye distance not set"):
+        # Should raise error when experimental_setup is not set
+        with pytest.raises(ValueError, match="experimental_setup"):
             data.fit_foreshortening(eye='left', verbose=False)
     
-    def test_fit_explicit_overrides_attributes(self):
-        """Test that explicit r and d override attributes."""
+    def test_fit_uses_setup_from_calibration(self):
+        """Test that calibration object stores the experimental_setup."""
         data, theta_true, phi_true, r_true, d_true, _, _ = \
             self.create_synthetic_data_with_variation(n_samples=300, fs=100.0)
         
-        # Set different values in attributes
-        data.set_experiment_info(
-            camera_eye_distance=500.0,  # Different from r_true
-            screen_eye_distance=60.0    # Different from d_true
-        )
-        
-        # Fit with explicit values (should override attributes)
+        # Fit with data's experimental_setup
         calib = data.fit_foreshortening(
             eye='left',
-            r=r_true,
-            d=d_true,
             verbose=False
         )
         
-        # Should have used the explicit values
-        assert calib.r == r_true
-        assert calib.d == d_true
+        # Calibration should have the experimental_setup
+        assert calib.experimental_setup is not None
+        assert np.isclose(calib.experimental_setup.r, r_true, rtol=1e-5)
+        assert np.isclose(calib.experimental_setup.d, d_true, rtol=1e-5)
 
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from scipy import signal as sp_signal
 
-from pypillometry.eyedata import FakeEyeData, EyeDataDict
+from pypillometry.eyedata import FakeEyeData, EyeDataDict, ExperimentalSetup
 from pypillometry.signal.fake import (
     fake_pupil_baseline,
     fake_gaze_fixations,
@@ -370,20 +370,25 @@ class TestGenerateForeshorteningData:
         """Test that all parameters are stored in sim_params."""
         theta = np.radians(90)
         phi = np.radians(10)
-        camera_eye_distance = 550
-        screen_eye_distance = 650
+        r = 550
+        d = 650
+        
+        setup = ExperimentalSetup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("520 mm", "290 mm"),
+            eye_to_screen_perpendicular=f"{d} mm",
+            camera_spherical=(f"{np.degrees(theta)} deg", f"{np.degrees(phi)} deg", f"{r} mm"),
+            camera_position_relative_to="eye"
+        )
         
         data = generate_foreshortening_data(
-            duration=5, fs=500, theta=theta, phi=phi, 
-            camera_eye_distance=camera_eye_distance, 
-            screen_eye_distance=screen_eye_distance, 
+            experimental_setup=setup,
+            duration=5, fs=500, 
             seed=42
         )
         
-        assert data.sim_params['theta'] == theta
-        assert data.sim_params['phi'] == phi
-        assert data.sim_params['camera_eye_distance'] == camera_eye_distance
-        assert data.sim_params['screen_eye_distance'] == screen_eye_distance
+        # experimental_setup is stored as dict for serialization
+        assert 'experimental_setup' in data.sim_params
         assert data.sim_params['duration'] == 5
         assert data.sim_params['fs'] == 500
     
@@ -429,22 +434,26 @@ class TestIntegration:
         # Generate data with known geometry
         true_theta = np.radians(85)
         true_phi = np.radians(5)
-        true_camera_eye_distance = 600
-        true_screen_eye_distance = 700
+        true_r = 600
+        true_d = 700
+        
+        setup = ExperimentalSetup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("520 mm", "290 mm"),
+            eye_to_screen_perpendicular=f"{true_d} mm",
+            camera_spherical=(f"{np.degrees(true_theta)} deg", f"{np.degrees(true_phi)} deg", f"{true_r} mm"),
+            camera_position_relative_to="eye"
+        )
         
         data = generate_foreshortening_data(
+            experimental_setup=setup,
             duration=60,
             fs=1000,
-            theta=true_theta,
-            phi=true_phi,
-            camera_eye_distance=true_camera_eye_distance,
-            screen_eye_distance=true_screen_eye_distance,
-            physical_screen_size=(520.0, 290.0),  # mm
             measurement_noise=0.01,
             seed=42
         )
         
-        # Fit foreshortening (r and d retrieved from data attributes)
+        # Fit foreshortening (r and d retrieved from experimental_setup)
         calib = data.fit_foreshortening(eye='left')
         
         # Check that fitted angles are close to true angles
@@ -490,76 +499,90 @@ class TestIntegration:
 
 
 def test_generate_foreshortening_data_with_string_units():
-    """Test generate_foreshortening_data with string format units."""
+    """Test generate_foreshortening_data with ExperimentalSetup using string format units."""
+    setup = ExperimentalSetup(
+        screen_resolution=(1920, 1080),
+        physical_screen_size=("52 cm", "29 cm"),
+        eye_to_screen_perpendicular="70 cm",
+        camera_spherical=("20 degrees", "-90 degrees", "600 mm"),
+        camera_position_relative_to="eye"
+    )
+    
     data = generate_foreshortening_data(
+        experimental_setup=setup,
         duration=5,
         fs=100,
         eye='left',
-        theta="20 degrees",
-        phi="-90 degrees",
-        camera_eye_distance="600 mm",
-        screen_eye_distance="70 cm",
-        physical_screen_size=("52 cm", "29 cm"),
         seed=42
     )
     
     # Should create FakeEyeData
     assert isinstance(data, FakeEyeData)
     
-    # Parameters should be stored as floats in canonical units (radians, mm)
-    assert np.isclose(data.sim_params['theta'], np.radians(20))
-    assert np.isclose(data.sim_params['phi'], np.radians(-90))
-    assert data.sim_params['camera_eye_distance'] == 600.0
-    assert data.sim_params['screen_eye_distance'] == 700.0
-    assert data.sim_params['physical_screen_size'] == (520.0, 290.0)
+    # ExperimentalSetup should be stored in sim_params
+    assert 'experimental_setup' in data.sim_params
+    # Verify the setup values are correct
+    assert data.experimental_setup.r == 600.0
+    assert data.experimental_setup.d == 700.0
+    assert data.experimental_setup.physical_screen_width == 520.0
+    assert data.experimental_setup.physical_screen_height == 290.0
 
 
 def test_generate_foreshortening_data_with_pint_quantities():
-    """Test generate_foreshortening_data with Pint Quantities."""
+    """Test generate_foreshortening_data with ExperimentalSetup using Pint Quantities."""
     import pypillometry as pp
     
+    setup = ExperimentalSetup(
+        screen_resolution=(1920, 1080),
+        physical_screen_size=(52 * pp.ureg.cm, 29 * pp.ureg.cm),
+        eye_to_screen_perpendicular=0.7 * pp.ureg.m,
+        camera_spherical=(20 * pp.ureg.degree, -90 * pp.ureg.degree, 60 * pp.ureg.cm),
+        camera_position_relative_to="eye"
+    )
+    
     data = generate_foreshortening_data(
+        experimental_setup=setup,
         duration=5,
         fs=100,
         eye='left',
-        theta=20 * pp.ureg.degree,
-        phi=-90 * pp.ureg.degree,
-        camera_eye_distance=60 * pp.ureg.cm,
-        screen_eye_distance=0.7 * pp.ureg.m,
         seed=42
     )
     
     # Should create FakeEyeData
     assert isinstance(data, FakeEyeData)
     
-    # Parameters should be stored as floats in canonical units
-    assert np.isclose(data.sim_params['theta'], np.radians(20))
-    assert np.isclose(data.sim_params['phi'], np.radians(-90))
-    assert data.sim_params['camera_eye_distance'] == 600.0
-    assert data.sim_params['screen_eye_distance'] == 700.0
+    # ExperimentalSetup should be stored in sim_params
+    assert 'experimental_setup' in data.sim_params
+    # Verify values are stored in canonical units (mm)
+    assert data.experimental_setup.r == 600.0
+    assert data.experimental_setup.d == 700.0
 
 
 def test_generate_foreshortening_data_mixed_units():
-    """Test generate_foreshortening_data with mixed unit formats."""
+    """Test generate_foreshortening_data with ExperimentalSetup using mixed unit formats."""
     import pypillometry as pp
     
+    setup = ExperimentalSetup(
+        screen_resolution=(1920, 1080),
+        physical_screen_size=(520.0, "29 cm"),  # Mixed plain (mm assumed) and string
+        eye_to_screen_perpendicular="700 mm",
+        camera_spherical=("20 degrees", np.radians(-90), 60 * pp.ureg.cm),  # Mixed formats
+        camera_position_relative_to="eye"
+    )
+    
     data = generate_foreshortening_data(
+        experimental_setup=setup,
         duration=5,
         fs=100,
         eye='left',
-        theta="20 degrees",  # String
-        phi=np.radians(-90),  # Plain (radians)
-        camera_eye_distance=60 * pp.ureg.cm,  # Quantity
-        screen_eye_distance="700 mm",  # String
-        physical_screen_size=(520.0, "29 cm"),  # Mixed plain and string
         seed=42
     )
     
     # Should create FakeEyeData with consistent units
     assert isinstance(data, FakeEyeData)
-    assert np.isclose(data.sim_params['theta'], np.radians(20))
-    assert np.isclose(data.sim_params['phi'], np.radians(-90))
-    assert data.sim_params['camera_eye_distance'] == 600.0
-    assert data.sim_params['screen_eye_distance'] == 700.0
-    assert data.sim_params['physical_screen_size'] == (520.0, 290.0)
+    assert 'experimental_setup' in data.sim_params
+    assert data.experimental_setup.r == 600.0
+    assert data.experimental_setup.d == 700.0
+    assert data.experimental_setup.physical_screen_width == 520.0
+    assert data.experimental_setup.physical_screen_height == 290.0
 
