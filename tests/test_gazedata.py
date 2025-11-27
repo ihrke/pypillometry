@@ -3,6 +3,7 @@ import sys
 import numpy as np
 sys.path.insert(0,"..")
 import pypillometry as pp
+from pypillometry.eyedata import ExperimentalSetup
 import pytest
 
 class TestGazeData(unittest.TestCase):
@@ -334,7 +335,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Store original mask state
@@ -365,7 +366,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Mask both eyes
@@ -387,7 +388,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             left_x=np.array([100, 1500, 300, 400, 1600]),
             left_y=np.array([100, 200, 300, 400, 500]),
             sampling_rate=1000,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Detect offscreen without applying mask
@@ -412,7 +413,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             left_x=np.array([100, 1500, 300, 400]),
             left_y=np.array([100, 200, 300, 400]),
             sampling_rate=1000,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Call without apply_mask argument (should default to True)
@@ -434,7 +435,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Apply in-place
@@ -455,11 +456,11 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             left_y=[100, 200, 300]
         )
         
-        # Should raise ValueError when trying to access screen_xlim
+        # Should raise ValueError when experimental_setup is not set
         with self.assertRaises(ValueError) as cm:
             d.mask_offscreen_coords(eyes='left')
         
-        self.assertIn("Screen size not set", str(cm.exception))
+        self.assertIn("experimental_setup not set", str(cm.exception))
     
     def test_mask_offscreen_coords_no_offscreen_data(self):
         """Test function behavior when no coordinates are offscreen"""
@@ -470,7 +471,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Apply offscreen masking
@@ -489,7 +490,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Apply offscreen masking
@@ -508,7 +509,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Manually mask index 1 (which is offscreen)
@@ -536,7 +537,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Manually mask index 1 (which is also offscreen)
@@ -563,7 +564,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Manually mask some points before offscreen masking
@@ -588,7 +589,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Mask only left eye
@@ -611,7 +612,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Mask both eyes using list
@@ -632,7 +633,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x, left_y=left_y,
             right_x=right_x, right_y=right_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Call with empty eyes parameter
@@ -651,7 +652,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         # Chain operations
@@ -677,7 +678,7 @@ class TestMaskOffscreenCoords(unittest.TestCase):
             sampling_rate=10,
             left_x=left_x,
             left_y=left_y,
-            screen_resolution=(1280, 1024)
+            experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024))
         )
         
         d_masked = d.mask_offscreen_coords(eyes='left', inplace=False)

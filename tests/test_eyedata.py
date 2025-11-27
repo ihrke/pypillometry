@@ -4,6 +4,7 @@ import numpy as np
 
 from pypillometry.eyedata.eyedatadict import EyeDataDict
 from pypillometry.eyedata.generic import GenericEyeData
+from pypillometry.eyedata import ExperimentalSetup
 sys.path.insert(0,"..")
 import pypillometry as pp
 from pypillometry.example_data import get_rlmw_002_short
@@ -42,116 +43,126 @@ class TestEyeData(unittest.TestCase):
         # Test with complete data
         self.assertEqual(self.eyedata.name, "test short")
         self.assertEqual(self.eyedata.fs, 500.0)  # Updated to match actual sampling rate
-        self.assertEqual(self.eyedata.screen_width, 1280)  # Updated to match actual screen resolution
-        self.assertEqual(self.eyedata.screen_height, 1024)
-        self.assertEqual(self.eyedata.physical_screen_width, 30.0)  # Updated to match actual physical size
-        self.assertEqual(self.eyedata.physical_screen_height, 20.0)
-        self.assertEqual(self.eyedata.screen_eye_distance, 60.0)
+        self.assertEqual(self.eyedata.experimental_setup.screen_width, 1280)  # Updated to match actual screen resolution
+        self.assertEqual(self.eyedata.experimental_setup.screen_height, 1024)
+        self.assertEqual(self.eyedata.experimental_setup.physical_screen_width, 300.0)  # 30 cm = 300 mm
+        self.assertEqual(self.eyedata.experimental_setup.physical_screen_height, 200.0)  # 20 cm = 200 mm
+        self.assertEqual(self.eyedata.experimental_setup.d, 600.0)  # 60 cm = 600 mm
     
-    def test_camera_eye_distance_initialization(self):
-        """Test initialization with camera_eye_distance"""
-        # Test with camera_eye_distance during initialization
+    def test_camera_position_initialization(self):
+        """Test initialization with camera position via ExperimentalSetup"""
+        # Test with camera_spherical (theta, phi, r) in eye frame
+        setup = ExperimentalSetup(
+            camera_spherical=("20 deg", "-90 deg", "600 mm"),
+            camera_position_relative_to="eye",  # Eye frame for direct r value
+            eye_to_screen_perpendicular="700 mm"
+        )
         d = pp.EyeData(
             left_x=[1,2,3], 
             left_y=[3,4,5], 
             sampling_rate=1000,
-            camera_eye_distance=600.0
+            experimental_setup=setup
         )
-        self.assertEqual(d.camera_eye_distance, 600.0)
+        self.assertEqual(d.experimental_setup.r, 600.0)
+        self.assertAlmostEqual(np.degrees(d.experimental_setup.theta), 20.0, places=5)
         
         # Test that it appears in summary
         summary = d.summary()
-        self.assertIn('camera_eye_distance', summary)
-        self.assertEqual(summary['camera_eye_distance'], 600.0)
+        self.assertIn('experimental_setup', summary)
+        self.assertEqual(summary['experimental_setup']['camera_distance_mm'], 600.0)
     
-    def test_camera_eye_distance_via_set_experiment_info(self):
-        """Test setting camera_eye_distance via set_experiment_info"""
+    def test_experimental_setup_via_set_experimental_setup(self):
+        """Test setting experimental setup via set_experimental_setup"""
         d = pp.EyeData(left_x=[1,2,3], left_y=[3,4,5], sampling_rate=1000)
         
-        # Should raise error when not set
-        with self.assertRaises(ValueError) as cm:
-            _ = d.camera_eye_distance
-        self.assertIn("Camera-eye distance not set", str(cm.exception))
+        # Should be None when not set
+        self.assertIsNone(d.experimental_setup)
         
-        # Set via set_experiment_info
-        d.set_experiment_info(camera_eye_distance=550.0)
-        self.assertEqual(d.camera_eye_distance, 550.0)
+        # Set via set_experimental_setup (eye frame for direct r)
+        d.set_experimental_setup(
+            camera_spherical=("20 deg", "-90 deg", "550 mm"),
+            camera_position_relative_to="eye",
+            eye_to_screen_perpendicular="700 mm"
+        )
+        self.assertAlmostEqual(d.experimental_setup.r, 550.0, places=5)
         
         # Should appear in summary
         summary = d.summary()
-        self.assertEqual(summary['camera_eye_distance'], 550.0)
+        self.assertAlmostEqual(summary['experimental_setup']['camera_distance_mm'], 550.0, places=5)
     
-    def test_eye_to_eye_distance_initialization(self):
-        """Test initialization with eye_to_eye_distance"""
-        # Test with eye_to_eye_distance during initialization
+    def test_ipd_initialization(self):
+        """Test initialization with inter-pupillary distance via ExperimentalSetup"""
+        # Test with ipd during initialization
+        setup = ExperimentalSetup(ipd="65 mm")
         d = pp.EyeData(
             left_x=[1,2,3], 
             left_y=[3,4,5], 
             right_x=[4,5,6],
             right_y=[7,8,9],
             sampling_rate=1000,
-            eye_to_eye_distance=65.0
+            experimental_setup=setup
         )
-        self.assertEqual(d.eye_to_eye_distance, 65.0)
+        self.assertEqual(d.experimental_setup.ipd, 65.0)
         
         # Test that it appears in summary
         summary = d.summary()
-        self.assertIn('eye_to_eye_distance', summary)
-        self.assertEqual(summary['eye_to_eye_distance'], 65.0)
+        self.assertIn('experimental_setup', summary)
+        self.assertEqual(summary['experimental_setup']['ipd_mm'], 65.0)
     
-    def test_eye_to_eye_distance_via_set_experiment_info(self):
-        """Test setting eye_to_eye_distance via set_experiment_info"""
+    def test_ipd_via_set_experimental_setup(self):
+        """Test setting ipd via set_experimental_setup"""
         d = pp.EyeData(left_x=[1,2,3], left_y=[3,4,5], sampling_rate=1000)
         
-        # Should raise error when not set
-        with self.assertRaises(ValueError) as cm:
-            _ = d.eye_to_eye_distance
-        self.assertIn("Eye-to-eye distance not set", str(cm.exception))
+        # experimental_setup should be None initially
+        self.assertIsNone(d.experimental_setup)
         
-        # Set via set_experiment_info
-        d.set_experiment_info(eye_to_eye_distance=63.0)
-        self.assertEqual(d.eye_to_eye_distance, 63.0)
+        # Set via set_experimental_setup
+        d.set_experimental_setup(ipd="63 mm")
+        self.assertEqual(d.experimental_setup.ipd, 63.0)
         
         # Should appear in summary
         summary = d.summary()
-        self.assertEqual(summary['eye_to_eye_distance'], 63.0)
+        self.assertEqual(summary['experimental_setup']['ipd_mm'], 63.0)
     
     def test_all_distance_parameters_together(self):
-        """Test setting all distance parameters together"""
+        """Test setting all distance parameters together via ExperimentalSetup"""
+        setup = ExperimentalSetup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("50 mm", "30 mm"),
+            eye_to_screen_perpendicular="70 mm",
+            camera_spherical=("20 deg", "-90 deg", "600 mm"),
+            camera_position_relative_to="eye",  # Eye frame for direct r value
+            ipd="65 mm"
+        )
         d = pp.EyeData(
             left_x=[1,2,3], 
             left_y=[3,4,5], 
             right_x=[4,5,6],
             right_y=[7,8,9],
             sampling_rate=1000,
-            screen_resolution=(1920, 1080),
-            physical_screen_size=(50.0, 30.0),
-            screen_eye_distance=70.0,
-            camera_eye_distance=600.0,
-            eye_to_eye_distance=65.0
+            experimental_setup=setup
         )
         
         # Check all parameters are set
-        self.assertEqual(d.screen_eye_distance, 70.0)
-        self.assertEqual(d.camera_eye_distance, 600.0)
-        self.assertEqual(d.eye_to_eye_distance, 65.0)
-        self.assertEqual(d.physical_screen_width, 50.0)
-        self.assertEqual(d.physical_screen_height, 30.0)
+        self.assertEqual(d.experimental_setup.d, 70.0)
+        self.assertEqual(d.experimental_setup.r, 600.0)
+        self.assertEqual(d.experimental_setup.ipd, 65.0)
+        self.assertEqual(d.experimental_setup.physical_screen_width, 50.0)
+        self.assertEqual(d.experimental_setup.physical_screen_height, 30.0)
         
         # Check all appear in summary
         summary = d.summary()
-        self.assertEqual(summary['screen_eye_distance'], 70.0)
-        self.assertEqual(summary['camera_eye_distance'], 600.0)
-        self.assertEqual(summary['eye_to_eye_distance'], 65.0)
+        setup_summary = summary['experimental_setup']
+        self.assertEqual(setup_summary['eye_to_screen_distance_mm'], 70.0)
+        self.assertEqual(setup_summary['camera_distance_mm'], 600.0)
+        self.assertEqual(setup_summary['ipd_mm'], 65.0)
     
     def test_distance_parameters_not_set_in_summary(self):
         """Test that unset distance parameters show as 'not set' in summary"""
         d = pp.EyeData(left_x=[1,2,3], left_y=[3,4,5], sampling_rate=1000)
         
         summary = d.summary()
-        self.assertEqual(summary['camera_eye_distance'], 'not set')
-        self.assertEqual(summary['eye_to_eye_distance'], 'not set')
-        self.assertEqual(summary['screen_eye_distance'], 'not set')
+        self.assertEqual(summary['experimental_setup'], 'not set')
 
         # Test pupil data initialization
         # Check that pupil data exists for both eyes
@@ -1757,55 +1768,58 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         # Should have entries for multiple combinations
         self.assertGreater(len(intervals_dict), 1)
     
-    def test_set_experiment_info_with_string_units(self):
-        """Test set_experiment_info with string format units"""
+    def test_set_experimental_setup_with_string_units(self):
+        """Test set_experimental_setup with string format units"""
         data = pp.EyeData(left_x=[1,2], left_y=[3,4], left_pupil=[5,6], sampling_rate=1000)
         
-        # Set with string format
-        data.set_experiment_info(
-            camera_eye_distance="60 cm",
-            screen_eye_distance="70 cm",
+        # Set with string format - eye frame for direct r value
+        data.set_experimental_setup(
+            camera_spherical=("20 deg", "-90 deg", "60 cm"),
+            camera_position_relative_to="eye",
+            eye_to_screen_perpendicular="70 cm",
             physical_screen_size=("52 cm", "29 cm")
         )
         
         # All should be stored in mm
-        self.assertEqual(data.camera_eye_distance, 600.0)
-        self.assertEqual(data.screen_eye_distance, 700.0)
-        self.assertEqual(data.physical_screen_width, 520.0)
-        self.assertEqual(data.physical_screen_height, 290.0)
+        self.assertEqual(data.experimental_setup.r, 600.0)
+        self.assertEqual(data.experimental_setup.d, 700.0)
+        self.assertEqual(data.experimental_setup.physical_screen_width, 520.0)
+        self.assertEqual(data.experimental_setup.physical_screen_height, 290.0)
     
-    def test_set_experiment_info_with_pint_quantities(self):
-        """Test set_experiment_info with Pint Quantities"""
+    def test_set_experimental_setup_with_pint_quantities(self):
+        """Test set_experimental_setup with Pint Quantities"""
         data = pp.EyeData(left_x=[1,2], left_y=[3,4], left_pupil=[5,6], sampling_rate=1000)
         
-        # Set with Pint Quantities
-        data.set_experiment_info(
-            camera_eye_distance=60 * pp.ureg.cm,
-            eye_to_eye_distance=65 * pp.ureg.mm,
-            screen_eye_distance=70 * pp.ureg.cm
+        # Set with Pint Quantities - eye frame for direct r value
+        data.set_experimental_setup(
+            camera_spherical=(20 * pp.ureg.deg, -90 * pp.ureg.deg, 60 * pp.ureg.cm),
+            camera_position_relative_to="eye",
+            ipd=65 * pp.ureg.mm,
+            eye_to_screen_perpendicular=70 * pp.ureg.cm
         )
         
         # All should be stored in mm
-        self.assertEqual(data.camera_eye_distance, 600.0)
-        self.assertEqual(data.eye_to_eye_distance, 65.0)
-        self.assertEqual(data.screen_eye_distance, 700.0)
+        self.assertEqual(data.experimental_setup.r, 600.0)
+        self.assertEqual(data.experimental_setup.ipd, 65.0)
+        self.assertEqual(data.experimental_setup.d, 700.0)
     
-    def test_set_experiment_info_mixed_units(self):
-        """Test set_experiment_info with mixed unit formats"""
+    def test_set_experimental_setup_mixed_units(self):
+        """Test set_experimental_setup with mixed unit formats"""
         data = pp.EyeData(left_x=[1,2], left_y=[3,4], left_pupil=[5,6], sampling_rate=1000)
         
-        # Mix plain numbers, strings, and Quantities
-        data.set_experiment_info(
-            camera_eye_distance=600,  # Plain (mm, will warn)
-            screen_eye_distance="0.7 m",  # String (m to mm)
+        # Mix plain numbers, strings, and Quantities - eye frame for direct r
+        data.set_experimental_setup(
+            camera_spherical=("20 deg", "-90 deg", "600 mm"),  # String format for r
+            camera_position_relative_to="eye",
+            eye_to_screen_perpendicular="0.7 m",  # String (m to mm)
             physical_screen_size=(52 * pp.ureg.cm, "290 mm")  # Mixed Quantity and string
         )
         
         # All should be stored in mm
-        self.assertEqual(data.camera_eye_distance, 600.0)
-        self.assertEqual(data.screen_eye_distance, 700.0)
-        self.assertEqual(data.physical_screen_width, 520.0)
-        self.assertEqual(data.physical_screen_height, 290.0)
+        self.assertEqual(data.experimental_setup.r, 600.0)
+        self.assertEqual(data.experimental_setup.d, 700.0)
+        self.assertEqual(data.experimental_setup.physical_screen_width, 520.0)
+        self.assertEqual(data.experimental_setup.physical_screen_height, 290.0)
 
 
 if __name__ == '__main__':
