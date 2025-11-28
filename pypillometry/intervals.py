@@ -111,6 +111,13 @@ def merge_intervals(*args, label: str = 'merged'):
                 f"Found {first_units} and {obj.units}"
             )
     
+    # Get sampling_rate from first object that has one
+    sampling_rate = None
+    for obj in intervals_list:
+        if obj.sampling_rate is not None:
+            sampling_rate = obj.sampling_rate
+            break
+    
     # Collect all intervals and metadata
     all_intervals = []
     all_event_labels = []
@@ -146,7 +153,8 @@ def merge_intervals(*args, label: str = 'merged'):
     if not all_intervals:
         # All were empty
         return Intervals([], units=first_units, label=label,
-                        data_time_range=intervals_list[0].data_time_range)
+                        data_time_range=intervals_list[0].data_time_range,
+                        sampling_rate=sampling_rate)
     
     # Use data_time_range from first object if available
     data_time_range = intervals_list[0].data_time_range if intervals_list[0].data_time_range is not None else None
@@ -158,7 +166,8 @@ def merge_intervals(*args, label: str = 'merged'):
         event_labels=all_event_labels if has_labels else None,
         event_indices=all_event_indices if has_indices else None,
         event_onsets=all_event_onsets if has_onsets else None,
-        data_time_range=data_time_range
+        data_time_range=data_time_range,
+        sampling_rate=sampling_rate
     )
 
 def get_interval_stats(intervals):
@@ -254,7 +263,7 @@ class Intervals:
     ...     print(f"{start}-{end}")
     """
     
-    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None):
+    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None, sampling_rate=None):
         """
         Initialize an Intervals object.
         
@@ -274,6 +283,8 @@ class Intervals:
             Time range (min, max) of the original dataset
         event_onsets : list or np.ndarray, optional
             Original event onset times (in same units as intervals)
+        sampling_rate : float, optional
+            Sampling rate in Hz. Required to convert index-based intervals to time units.
         """
         if isinstance(intervals, np.ndarray):
             self.intervals = [tuple(row) for row in intervals]
@@ -288,6 +299,7 @@ class Intervals:
         self.event_indices = event_indices
         self.data_time_range = data_time_range
         self.event_onsets = event_onsets
+        self.sampling_rate = sampling_rate
     
     def __len__(self):
         """Return number of intervals."""
@@ -418,6 +430,9 @@ class Intervals:
         else:
             combined_range = None
         
+        # Use self's sampling_rate, or other's if self doesn't have one
+        combined_sampling_rate = self.sampling_rate or other.sampling_rate
+        
         return Intervals(
             combined_intervals,
             self.units,
@@ -425,7 +440,8 @@ class Intervals:
             event_labels=combined_event_labels,
             event_indices=combined_event_indices,
             data_time_range=combined_range,
-            event_onsets=combined_event_onsets
+            event_onsets=combined_event_onsets,
+            sampling_rate=combined_sampling_rate
         )
     
     def to_array(self):
@@ -455,55 +471,15 @@ class Intervals:
         """
         return np.array(self.intervals)
     
-    def as_index(self, eyedata_obj) -> np.ndarray:
-        """
-        Convert intervals to integer indices for array indexing.
-        
-        Parameters
-        ----------
-        eyedata_obj : GenericEyeData
-            EyeData object with time array for conversion
-            
-        Returns
-        -------
-        np.ndarray
-            Array with shape (n, 2) and dtype=int containing interval indices
-            
-        Examples
-        --------
-        >>> intervals = data.get_intervals("stim", interval=(-200, 200), units="ms")
-        >>> indices = intervals.as_index(data)
-        >>> for start, end in indices:
-        ...     data.tx[start:end]
-        """
-        if self.units is None:
-            return np.array(self.intervals, dtype=int)
-        
-        # Define conversion factors to milliseconds
-        units_to_ms = {"ms": 1.0, "sec": 1000.0, "min": 60000.0, "h": 3600000.0}
-        
-        indices = []
-        for start, end in self.intervals:
-            if self.units == "ms":
-                start_ms, end_ms = start, end
-            else:
-                start_ms = start * units_to_ms[self.units]
-                end_ms = end * units_to_ms[self.units]
-            
-            start_ix = np.argmin(np.abs(eyedata_obj.tx - start_ms))
-            end_ix = np.argmin(np.abs(eyedata_obj.tx - end_ms))
-            indices.append((start_ix, end_ix))
-        
-        return np.array(indices, dtype=int)
-    
     def to_units(self, target_units: str|None) -> 'Intervals':
         """
-        Convert intervals to different time units.
+        Convert intervals to different time units or indices.
         
         Parameters
         ----------
-        target_units : str
-            Target units: "ms", "sec", "min", or "h"
+        target_units : str or None
+            Target units: "ms", "sec", "min", "h", or "indices"/"index" for sample indices.
+            Also accepts None for indices.
             
         Returns
         -------
@@ -513,26 +489,26 @@ class Intervals:
         Raises
         ------
         ValueError
-            If current or target units are None (indices)
+            If conversion requires sampling_rate but it is not set
         
         Examples
         --------
         >>> intervals = data.get_intervals("stim", units="ms")
         >>> intervals_sec = intervals.to_units("sec")
         >>> intervals_seconds = intervals.to_units("seconds")  # alias works too
+        
+        Convert from indices to time units (requires sampling_rate):
+        
+        >>> intervals_idx = Intervals([(0, 100), (200, 300)], units=None, sampling_rate=1000)
+        >>> intervals_ms = intervals_idx.to_units("ms")
+        
+        Convert from time units to indices (requires sampling_rate):
+        
+        >>> intervals_ms = Intervals([(0, 1000), (2000, 3000)], units="ms", sampling_rate=1000)
+        >>> intervals_idx = intervals_ms.to_units("indices")
         """
-        if self.units is None:
-            raise ValueError(
-                "Cannot convert from indices (units=None). "
-                "Use get_intervals(units='ms') or get_blinks(units='ms') instead."
-            )
-        
-        if target_units is None:
-            raise ValueError(
-                "Cannot convert to indices. Use intervals.as_index(eyedata_obj) instead."
-            )
-        
         # Normalize target units (source units already normalized in __init__)
+        # This converts "indices", "index", "samples" etc. to None
         target_units = normalize_unit(target_units)
         
         if self.units == target_units:
@@ -540,26 +516,102 @@ class Intervals:
         
         units_to_ms = {"ms": 1.0, "sec": 1000.0, "min": 60000.0, "h": 3600000.0}
         
-        if self.units not in units_to_ms:
-            raise ValueError(f"Unknown source units: {self.units}")
+        # Handle conversion TO indices
+        if target_units is None:
+            if self.units is None:
+                return self  # Already indices
+            
+            if self.sampling_rate is None:
+                raise ValueError(
+                    "Cannot convert to indices without sampling_rate. "
+                    "Set sampling_rate when creating the Intervals object."
+                )
+            
+            if self.units not in units_to_ms:
+                raise ValueError(f"Unknown source units: {self.units}")
+            
+            # Convert to ms first, then to indices
+            # index = time_ms * fs / 1000
+            fac_to_ms = units_to_ms[self.units]
+            samples_per_ms = self.sampling_rate / 1000.0
+            
+            converted = [
+                (int(round(s * fac_to_ms * samples_per_ms)), 
+                 int(round(e * fac_to_ms * samples_per_ms))) 
+                for s, e in self.intervals
+            ]
+            
+            # Convert data_time_range
+            if self.data_time_range is not None:
+                data_time_range = (
+                    int(round(self.data_time_range[0] * fac_to_ms * samples_per_ms)),
+                    int(round(self.data_time_range[1] * fac_to_ms * samples_per_ms))
+                )
+            else:
+                data_time_range = None
+            
+            # Convert event_onsets
+            if self.event_onsets is not None:
+                event_onsets = np.array(
+                    [int(round(o * fac_to_ms * samples_per_ms)) for o in self.event_onsets]
+                )
+            else:
+                event_onsets = None
+            
+            return Intervals(converted, None, self.label,
+                            self.event_labels, self.event_indices,
+                            data_time_range, event_onsets, self.sampling_rate)
+        
+        # Handle conversion to time units
         if target_units not in units_to_ms:
             raise ValueError(f"Unknown target units: {target_units}")
         
-        fac = units_to_ms[self.units] / units_to_ms[target_units]
-        converted = [(s * fac, e * fac) for s, e in self.intervals]
-        # convert data_time_range to target units if it is not None
-        if self.data_time_range is not None:
-            data_time_range = (self.data_time_range[0] * fac, self.data_time_range[1] * fac)
+        # Handle conversion FROM indices
+        if self.units is None:
+            if self.sampling_rate is None:
+                raise ValueError(
+                    "Cannot convert from indices (units=None) without sampling_rate. "
+                    "Set sampling_rate or use get_intervals(units='ms') instead."
+                )
+            # Convert indices to ms first: index / fs * 1000
+            ms_per_sample = 1000.0 / self.sampling_rate
+            converted_ms = [(s * ms_per_sample, e * ms_per_sample) for s, e in self.intervals]
+            # Then convert ms to target units
+            fac = 1.0 / units_to_ms[target_units]
+            converted = [(s * fac, e * fac) for s, e in converted_ms]
+            # Convert data_time_range
+            if self.data_time_range is not None:
+                data_time_range = (
+                    self.data_time_range[0] * ms_per_sample * fac,
+                    self.data_time_range[1] * ms_per_sample * fac
+                )
+            else:
+                data_time_range = None
+            # Convert event_onsets
+            if self.event_onsets is not None:
+                event_onsets = np.array(self.event_onsets) * ms_per_sample * fac
+            else:
+                event_onsets = None
         else:
-            data_time_range = None
-        # convert event_onsets to target units if it is not None
-        if self.event_onsets is not None:
-            event_onsets = np.array(self.event_onsets) * fac
-        else:
-            event_onsets = None
+            if self.units not in units_to_ms:
+                raise ValueError(f"Unknown source units: {self.units}")
+            
+            fac = units_to_ms[self.units] / units_to_ms[target_units]
+            converted = [(s * fac, e * fac) for s, e in self.intervals]
+            # convert data_time_range to target units if it is not None
+            if self.data_time_range is not None:
+                data_time_range = (self.data_time_range[0] * fac, self.data_time_range[1] * fac)
+            else:
+                data_time_range = None
+            # convert event_onsets to target units if it is not None
+            if self.event_onsets is not None:
+                event_onsets = np.array(self.event_onsets) * fac
+            else:
+                event_onsets = None
+        
         return Intervals(converted, target_units, self.label,
                         self.event_labels, self.event_indices,
-                        data_time_range, event_onsets)
+                        data_time_range, event_onsets, self.sampling_rate)
     
     def merge(self, merge_sep='_'):
         """
@@ -629,7 +681,8 @@ class Intervals:
                         event_labels=merged_labels,
                         event_indices=merged_indices,
                         data_time_range=self.data_time_range,
-                        event_onsets=merged_onsets)
+                        event_onsets=merged_onsets,
+                        sampling_rate=self.sampling_rate)
     
     def stats(self):
         """
@@ -791,5 +844,9 @@ class Intervals:
             parts.append(f"units={self.units}")
         else:
             parts.append("units=None (indices)")
+        
+        # Add sampling rate if present
+        if self.sampling_rate is not None:
+            parts.append(f"fs={self.sampling_rate}Hz")
         
         return " | ".join(parts)

@@ -513,7 +513,7 @@ class GenericEyeData(ABC):
         >>> blinks = data.get_blinks('left', 'pupil')
         >>> blinks_ms = data.get_blinks('left', 'pupil', units="ms")
         >>> blinks_dict = data.get_blinks(['left', 'right'], 'pupil')
-        >>> indices = blinks_ms.as_index(data)
+        >>> blinks_idx = blinks_ms.to_units("indices")
         """
         eyes, variables = self._get_eye_var(eyes, variables)
         
@@ -530,31 +530,22 @@ class GenericEyeData(ABC):
                 key = e + "_" + v
                 if key in self._blinks and self._blinks[key] is not None:
                     intervals_obj = self._blinks[key]
+                    # Ensure sampling_rate is set
+                    if intervals_obj.sampling_rate is None:
+                        intervals_obj.sampling_rate = self.fs
                 else:
                     # No blinks stored - create empty Intervals
                     intervals_obj = Intervals(
                         intervals=[],
                         units=None,
                         label=f"{e}_{v}_blinks",
-                        data_time_range=(0, len(self.tx))
+                        data_time_range=(0, len(self.tx)),
+                        sampling_rate=self.fs
                     )
                 
                 # Convert to requested units if needed
                 if units is not None:
-                    intervals_ms = []
-                    last_idx = len(self.tx) - 1
-                    for start, end in intervals_obj.intervals:
-                        start_idx = max(0, min(last_idx, int(start)))
-                        end_idx = max(0, min(last_idx, int(end) - 1))
-                        if end_idx < start_idx:
-                            end_idx = start_idx
-                        intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
-
-                    intervals_obj = Intervals(intervals_ms, "ms", intervals_obj.label,
-                                            intervals_obj.event_labels, intervals_obj.event_indices,
-                                            (self.tx[0], self.tx[-1]), intervals_obj.event_onsets)
-                    if units != "ms":
-                        intervals_obj = intervals_obj.to_units(units)
+                    intervals_obj = intervals_obj.to_units(units)
                 
                 result[key] = intervals_obj
             
@@ -564,31 +555,22 @@ class GenericEyeData(ABC):
             key = eyes[0] + "_" + variables[0]
             if key in self._blinks and self._blinks[key] is not None:
                 result = self._blinks[key]
+                # Ensure sampling_rate is set
+                if result.sampling_rate is None:
+                    result.sampling_rate = self.fs
             else:
                 # No blinks stored - return empty Intervals
                 result = Intervals(
                     intervals=[],
                     units=None,
                     label=f"{eyes[0]}_{variables[0]}_blinks",
-                    data_time_range=(0, len(self.tx))
+                    data_time_range=(0, len(self.tx)),
+                    sampling_rate=self.fs
                 )
             
             # Convert to requested units if needed
             if units is not None:
-                intervals_ms = []
-                last_idx = len(self.tx) - 1
-                for start, end in result.intervals:
-                    start_idx = max(0, min(last_idx, int(start)))
-                    end_idx = max(0, min(last_idx, int(end) - 1))
-                    if end_idx < start_idx:
-                        end_idx = start_idx
-                    intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
-
-                result = Intervals(intervals_ms, "ms", result.label,
-                                result.event_labels, result.event_indices,
-                                (self.tx[0], self.tx[-1]), result.event_onsets)
-                if units != "ms":
-                    result = result.to_units(units)
+                result = result.to_units(units)
             
             return result  
 
@@ -644,28 +626,13 @@ class GenericEyeData(ABC):
                     intervals_list,
                     units=None,
                     label=label or f"{key}_mask",
-                    data_time_range=(0, len(self.tx))
+                    data_time_range=(0, len(self.tx)),
+                    sampling_rate=self.fs
                 )
                 
                 # Convert to requested units if needed
                 if units is not None:
-                    intervals_ms = []
-                    last_idx = len(self.tx) - 1
-                    for start, end in intervals_obj.intervals:
-                        start_idx = max(0, min(last_idx, int(start)))
-                        end_idx = max(0, min(last_idx, int(end)))
-                        if end_idx < start_idx:
-                            end_idx = start_idx
-                        intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
-                    
-                    intervals_obj = Intervals(
-                        intervals_ms, 
-                        "ms", 
-                        intervals_obj.label,
-                        data_time_range=(self.tx[0], self.tx[-1])
-                    )
-                    if units != "ms":
-                        intervals_obj = intervals_obj.to_units(units)
+                    intervals_obj = intervals_obj.to_units(units)
                 
                 result[key] = intervals_obj
             
@@ -674,11 +641,11 @@ class GenericEyeData(ABC):
             # Single eye/variable - return Intervals directly
             key = eyes[0] + "_" + variables[0]
             if key not in self.data.mask:
+                empty_intervals = Intervals([], units=None, label=label or f"{key}_mask",
+                               data_time_range=(0, len(self.tx)), sampling_rate=self.fs)
                 if units is not None:
-                    return Intervals([], units=units, label=label or f"{key}_mask",
-                                   data_time_range=(self.tx[0], self.tx[-1]))
-                return Intervals([], units=None, label=label or f"{key}_mask",
-                               data_time_range=(0, len(self.tx)))
+                    return empty_intervals.to_units(units)
+                return empty_intervals
                 
             mask = self.data.mask[key]
             intervals_list = self._mask_to_intervals_list(mask)
@@ -687,28 +654,13 @@ class GenericEyeData(ABC):
                 intervals_list,
                 units=None,
                 label=label or f"{key}_mask",
-                data_time_range=(0, len(self.tx))
+                data_time_range=(0, len(self.tx)),
+                sampling_rate=self.fs
             )
             
             # Convert to requested units if needed
             if units is not None:
-                intervals_ms = []
-                last_idx = len(self.tx) - 1
-                for start, end in result.intervals:
-                    start_idx = max(0, min(last_idx, int(start)))
-                    end_idx = max(0, min(last_idx, int(end)))
-                    if end_idx < start_idx:
-                        end_idx = start_idx
-                    intervals_ms.append((self.tx[start_idx], self.tx[end_idx]))
-                
-                result = Intervals(
-                    intervals_ms, 
-                    "ms", 
-                    result.label,
-                    data_time_range=(self.tx[0], self.tx[-1])
-                )
-                if units != "ms":
-                    result = result.to_units(units)
+                result = result.to_units(units)
             
             return result
     
@@ -1551,7 +1503,8 @@ class GenericEyeData(ABC):
                 event_labels=events_ms.labels.tolist(),
                 event_indices=None,  # We don't have indices from Events object
                 data_time_range=data_time_range,
-                event_onsets=event_onsets_list
+                event_onsets=event_onsets_list,
+                sampling_rate=self.fs
             )
         
         if isinstance(event_select, tuple):
@@ -1660,7 +1613,8 @@ class GenericEyeData(ABC):
             event_labels=selected_labels,
             event_indices=selected_indices,
             data_time_range=data_time_range,
-            event_onsets=event_onsets_list
+            event_onsets=event_onsets_list,
+            sampling_rate=self.fs
         )
 
     @keephistory
@@ -1931,7 +1885,7 @@ class GenericEyeData(ABC):
             if len(blinks) == 0:
                 continue
             logger.debug(f"Processing blinks for eye {eye} and variable {var}: {len(blinks)} blinks")
-            blinks_array = blinks.as_index(obj)
+            blinks_array = blinks.to_array().astype(int)
             
             newblinks = []
             i = 1
@@ -1950,7 +1904,8 @@ class GenericEyeData(ABC):
                 intervals=[(int(s), int(e)) for s, e in newblinks],
                 units=None,
                 label=f"{eye}_{var}_blinks",
-                data_time_range=(0, len(obj.tx))
+                data_time_range=(0, len(obj.tx)),
+                sampling_rate=obj.fs
             )
             
             key = f"{eye}_{var}"
@@ -2173,10 +2128,7 @@ class GenericEyeData(ABC):
                     raise TypeError(f"Dict values must be Intervals objects, got {type(interval_obj)} for key '{key}'")
                 
                 # Convert to index-based intervals if needed
-                if interval_obj.units is not None:
-                    intervals_array = interval_obj.as_index(obj)
-                else:
-                    intervals_array = interval_obj.to_array()
+                intervals_array = interval_obj.to_units("indices").to_array().astype(int)
                 
                 # Apply mask for this specific eye_variable
                 if key not in obj.data.data:
@@ -2195,10 +2147,7 @@ class GenericEyeData(ABC):
             eyes, variables = obj._get_eye_var(eyes, variables)
             
             # Convert to index-based intervals if needed
-            if intervals.units is not None:
-                intervals_array = intervals.as_index(obj)
-            else:
-                intervals_array = intervals.to_array()
+            intervals_array = intervals.to_units("indices").to_array().astype(int)
             
             # Apply to all combinations of eyes and variables
             for eye in eyes:

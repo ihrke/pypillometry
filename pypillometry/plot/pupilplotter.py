@@ -303,7 +303,7 @@ class PupilPlotter(GenericPlotter):
             logger.warning("No blinks to plot")
             return []
         
-        blinks_ix = blinks.as_index(self.obj)
+        blinks_ix = blinks.to_units("indices").to_array().astype(int)
         
         pre_blink_ix = int(pre_blink / 1000 * self.obj.fs)
         post_blink_ix = int(post_blink / 1000 * self.obj.fs)
@@ -313,7 +313,7 @@ class PupilPlotter(GenericPlotter):
             for s, e in blinks_ix
         ]
         
-        intervals = Intervals(padded, units=None, label="blinks")
+        intervals = Intervals(padded, units=None, label="blinks", sampling_rate=self.obj.fs)
         return self.plot_intervals(intervals, eyes, variables,
                                   pdf_file, nrow, ncol, figsize, units, plot_index)
 

@@ -297,7 +297,8 @@ class PupilData(GenericEyeData):
                 intervals=filtered_blinks,
                 units=None,  # Using index units
                 label=f"{eye}_pupil_blinks",
-                data_time_range=(0, len(obj.tx))
+                data_time_range=(0, len(obj.tx)),
+                sampling_rate=obj.fs
             )
             
             # Store detected blinks internally (always)

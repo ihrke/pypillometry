@@ -348,6 +348,12 @@ UNIT_ALIASES = {
     "hrs": "h",
     "hour": "h",
     "hours": "h",
+    # indices (samples)
+    "index": None,
+    "indices": None,
+    "idx": None,
+    "sample": None,
+    "samples": None,
 }
 
 CANONICAL_UNITS = {"ms", "sec", "min", "h"}

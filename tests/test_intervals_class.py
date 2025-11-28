@@ -613,20 +613,22 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         self.assertEqual(arr.shape[1], 2)
         self.assertEqual(len(arr), len(intervals))
     
-    def test_as_index_with_units_none(self):
-        """Test as_index() when intervals already in indices"""
+    def test_to_indices_with_units_none(self):
+        """Test to_units('indices') when intervals already in indices"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
-        indices = intervals.as_index(self.data)
+        indices_intervals = intervals.to_units("indices")
+        indices = indices_intervals.to_array().astype(int)
         
         self.assertIsInstance(indices, np.ndarray)
         self.assertEqual(indices.dtype, np.int_)
         self.assertEqual(indices.shape[1], 2)
         self.assertEqual(len(indices), len(intervals))
     
-    def test_as_index_with_units_ms(self):
-        """Test as_index() with millisecond units"""
+    def test_to_indices_with_units_ms(self):
+        """Test to_units('indices') with millisecond units"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
-        indices = intervals.as_index(self.data)
+        indices_intervals = intervals.to_units("indices")
+        indices = indices_intervals.to_array().astype(int)
         
         self.assertIsInstance(indices, np.ndarray)
         self.assertEqual(indices.dtype, np.int_)
@@ -637,10 +639,11 @@ class TestIntervalsConversionMethods(unittest.TestCase):
             self.assertGreaterEqual(start, 0)
             self.assertLess(end, len(self.data.tx))
     
-    def test_as_index_with_units_sec(self):
-        """Test as_index() with second units"""
+    def test_to_indices_with_units_sec(self):
+        """Test to_units('indices') with second units"""
         intervals = self.data.get_intervals("F", interval=(-0.2, 0.2), units="sec")
-        indices = intervals.as_index(self.data)
+        indices_intervals = intervals.to_units("indices")
+        indices = indices_intervals.to_array().astype(int)
         
         self.assertIsInstance(indices, np.ndarray)
         self.assertEqual(indices.dtype, np.int_)
@@ -719,23 +722,43 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         np.testing.assert_array_almost_equal(arr_seconds, arr_ms / 1000.0, decimal=6)
         np.testing.assert_array_almost_equal(arr_s, arr_ms / 1000.0, decimal=6)
     
-    def test_to_units_from_none_raises_error(self):
-        """Test that converting from indices raises error"""
+    def test_to_units_from_indices_works_with_sampling_rate(self):
+        """Test that converting from indices works when sampling_rate is set"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
+        # Should have sampling_rate set from get_intervals
+        self.assertIsNotNone(intervals.sampling_rate)
+        
+        # Conversion should work
+        intervals_ms = intervals.to_units("ms")
+        self.assertEqual(intervals_ms.units, "ms")
+    
+    def test_to_units_from_indices_raises_error_without_sampling_rate(self):
+        """Test that converting from indices raises error when sampling_rate not set"""
+        intervals = Intervals([(0, 100), (200, 300)], units=None)
         
         with self.assertRaises(ValueError) as cm:
             intervals.to_units("ms")
         
-        self.assertIn("indices", str(cm.exception).lower())
+        self.assertIn("sampling_rate", str(cm.exception).lower())
     
-    def test_to_units_to_none_raises_error(self):
-        """Test that converting to indices raises error"""
+    def test_to_units_to_indices_works_with_sampling_rate(self):
+        """Test that converting to indices works when sampling_rate is set"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
+        # Should have sampling_rate set from get_intervals
+        self.assertIsNotNone(intervals.sampling_rate)
+        
+        # Conversion should work
+        intervals_idx = intervals.to_units("indices")
+        self.assertIsNone(intervals_idx.units)
+    
+    def test_to_units_to_indices_raises_error_without_sampling_rate(self):
+        """Test that converting to indices raises error when sampling_rate not set"""
+        intervals = Intervals([(0, 100), (200, 300)], units="ms")
         
         with self.assertRaises(ValueError) as cm:
-            intervals.to_units(None)
+            intervals.to_units("indices")
         
-        self.assertIn("indices", str(cm.exception).lower())
+        self.assertIn("sampling_rate", str(cm.exception).lower())
     
     def test_to_units_unknown_source_raises_error(self):
         """Test that unknown source units raise error in constructor"""
