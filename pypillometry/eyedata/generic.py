@@ -2128,6 +2128,8 @@ class GenericEyeData(ABC):
                     raise TypeError(f"Dict values must be Intervals objects, got {type(interval_obj)} for key '{key}'")
                 
                 # Convert to index-based intervals if needed
+                if interval_obj.sampling_rate is None:
+                    interval_obj.sampling_rate = obj.fs
                 intervals_array = interval_obj.to_units("indices").to_array().astype(int)
                 
                 # Apply mask for this specific eye_variable
