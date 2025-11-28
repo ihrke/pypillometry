@@ -448,12 +448,13 @@ class TestNormalizeUnit(unittest.TestCase):
     
     def test_all_aliases_covered(self):
         """Ensure all defined aliases actually work."""
+        valid_results = CANONICAL_UNITS | {None}  # None is valid for index aliases
         for alias in UNIT_ALIASES.keys():
             with self.subTest(alias=alias):
                 # Should not raise
                 result = normalize_unit(alias)
-                # Result should be one of the canonical units
-                self.assertIn(result, CANONICAL_UNITS)
+                # Result should be one of the canonical units or None (for indices)
+                self.assertIn(result, valid_results)
 
 
 if __name__ == '__main__':
