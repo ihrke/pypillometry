@@ -492,13 +492,19 @@ class ViewerCanvas(SceneCanvas):
                 continue
             
             # Get the intervals list and convert to seconds if needed
-            if hasattr(intervals, 'intervals'):
+            if hasattr(intervals, 'intervals') and hasattr(intervals, 'to_units'):
+                # Use Intervals.to_units() for proper conversion
+                units = getattr(intervals, 'units', None)
+                if units != 'sec':
+                    # Set sampling_rate if not already set (needed for index conversion)
+                    if intervals.sampling_rate is None:
+                        intervals.sampling_rate = self.eyedata.fs
+                    intervals = intervals.to_units('sec')
                 interval_list = intervals.intervals
-                # Convert units if necessary
-                if hasattr(intervals, 'units') and intervals.units == 'ms':
-                    interval_list = [(s/1000, e/1000) for s, e in interval_list]
+            elif hasattr(intervals, 'intervals'):
+                interval_list = intervals.intervals
             else:
-                # Assume it's already a list of tuples
+                # Assume it's already a list of tuples in seconds
                 interval_list = list(intervals)
             
             if interval_list:
