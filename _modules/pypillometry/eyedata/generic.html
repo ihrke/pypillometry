@@ -930,7 +930,7 @@ window.addEventListener("load", load);
 <span class="sd">        &gt;&gt;&gt; blinks = data.get_blinks(&#39;left&#39;, &#39;pupil&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; blinks_ms = data.get_blinks(&#39;left&#39;, &#39;pupil&#39;, units=&quot;ms&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; blinks_dict = data.get_blinks([&#39;left&#39;, &#39;right&#39;], &#39;pupil&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; indices = blinks_ms.as_index(data)</span>
+<span class="sd">        &gt;&gt;&gt; blinks_idx = blinks_ms.to_units(&quot;indices&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">)</span>
         
@@ -947,31 +947,22 @@ window.addEventListener("load", load);
                 <span class="n">key</span> <span class="o">=</span> <span class="n">e</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">v</span>
                 <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">intervals_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="c1"># Ensure sampling_rate is set</span>
+                    <span class="k">if</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">intervals_obj</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># No blinks stored - create empty Intervals</span>
                     <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
                         <span class="n">intervals</span><span class="o">=</span><span class="p">[],</span>
                         <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">_blinks&quot;</span><span class="p">,</span>
-                        <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+                        <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
+                        <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
                     <span class="p">)</span>
                 
                 <span class="c1"># Convert to requested units if needed</span>
                 <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">intervals_ms</span> <span class="o">=</span> <span class="p">[]</span>
-                    <span class="n">last_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-                    <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">intervals</span><span class="p">:</span>
-                        <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">last_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)))</span>
-                        <span class="n">end_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">last_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
-                        <span class="k">if</span> <span class="n">end_idx</span> <span class="o">&lt;</span> <span class="n">start_idx</span><span class="p">:</span>
-                            <span class="n">end_idx</span> <span class="o">=</span> <span class="n">start_idx</span>
-                        <span class="n">intervals_ms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">start_idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">end_idx</span><span class="p">]))</span>
-
-                    <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span><span class="n">intervals_ms</span><span class="p">,</span> <span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
-                                            <span class="n">intervals_obj</span><span class="o">.</span><span class="n">event_labels</span><span class="p">,</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">event_indices</span><span class="p">,</span>
-                                            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">units</span> <span class="o">!=</span> <span class="s2">&quot;ms&quot;</span><span class="p">:</span>
-                        <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+                    <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
                 
                 <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">intervals_obj</span>
             
@@ -981,31 +972,22 @@ window.addEventListener("load", load);
             <span class="n">key</span> <span class="o">=</span> <span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="c1"># Ensure sampling_rate is set</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># No blinks stored - return empty Intervals</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
                     <span class="n">intervals</span><span class="o">=</span><span class="p">[],</span>
                     <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_blinks&quot;</span><span class="p">,</span>
-                    <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+                    <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
+                    <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
                 <span class="p">)</span>
             
             <span class="c1"># Convert to requested units if needed</span>
             <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">intervals_ms</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="n">last_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-                <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">intervals</span><span class="p">:</span>
-                    <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">last_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)))</span>
-                    <span class="n">end_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">last_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
-                    <span class="k">if</span> <span class="n">end_idx</span> <span class="o">&lt;</span> <span class="n">start_idx</span><span class="p">:</span>
-                        <span class="n">end_idx</span> <span class="o">=</span> <span class="n">start_idx</span>
-                    <span class="n">intervals_ms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">start_idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">end_idx</span><span class="p">]))</span>
-
-                <span class="n">result</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span><span class="n">intervals_ms</span><span class="p">,</span> <span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
-                                <span class="n">result</span><span class="o">.</span><span class="n">event_labels</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">event_indices</span><span class="p">,</span>
-                                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">result</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">units</span> <span class="o">!=</span> <span class="s2">&quot;ms&quot;</span><span class="p">:</span>
-                    <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
             
             <span class="k">return</span> <span class="n">result</span>  </div>
 
@@ -1064,28 +1046,13 @@ window.addEventListener("load", load);
                     <span class="n">intervals_list</span><span class="p">,</span>
                     <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">label</span><span class="o">=</span><span class="n">label</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_mask&quot;</span><span class="p">,</span>
-                    <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+                    <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
+                    <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
                 <span class="p">)</span>
                 
                 <span class="c1"># Convert to requested units if needed</span>
                 <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">intervals_ms</span> <span class="o">=</span> <span class="p">[]</span>
-                    <span class="n">last_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-                    <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">intervals</span><span class="p">:</span>
-                        <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">last_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)))</span>
-                        <span class="n">end_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">last_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)))</span>
-                        <span class="k">if</span> <span class="n">end_idx</span> <span class="o">&lt;</span> <span class="n">start_idx</span><span class="p">:</span>
-                            <span class="n">end_idx</span> <span class="o">=</span> <span class="n">start_idx</span>
-                        <span class="n">intervals_ms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">start_idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">end_idx</span><span class="p">]))</span>
-                    
-                    <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
-                        <span class="n">intervals_ms</span><span class="p">,</span> 
-                        <span class="s2">&quot;ms&quot;</span><span class="p">,</span> 
-                        <span class="n">intervals_obj</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
-                        <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-                    <span class="p">)</span>
-                    <span class="k">if</span> <span class="n">units</span> <span class="o">!=</span> <span class="s2">&quot;ms&quot;</span><span class="p">:</span>
-                        <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+                    <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
                 
                 <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">intervals_obj</span>
             
@@ -1094,11 +1061,11 @@ window.addEventListener("load", load);
             <span class="c1"># Single eye/variable - return Intervals directly</span>
             <span class="n">key</span> <span class="o">=</span> <span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
+                <span class="n">empty_intervals</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">([],</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_mask&quot;</span><span class="p">,</span>
+                               <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="n">Intervals</span><span class="p">([],</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_mask&quot;</span><span class="p">,</span>
-                                   <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
-                <span class="k">return</span> <span class="n">Intervals</span><span class="p">([],</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_mask&quot;</span><span class="p">,</span>
-                               <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)))</span>
+                    <span class="k">return</span> <span class="n">empty_intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">empty_intervals</span>
                 
             <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
             <span class="n">intervals_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask_to_intervals_list</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
@@ -1107,28 +1074,13 @@ window.addEventListener("load", load);
                 <span class="n">intervals_list</span><span class="p">,</span>
                 <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">label</span><span class="o">=</span><span class="n">label</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_mask&quot;</span><span class="p">,</span>
-                <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+                <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
             <span class="p">)</span>
             
             <span class="c1"># Convert to requested units if needed</span>
             <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">intervals_ms</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="n">last_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
-                <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">intervals</span><span class="p">:</span>
-                    <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">last_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)))</span>
-                    <span class="n">end_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">last_idx</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)))</span>
-                    <span class="k">if</span> <span class="n">end_idx</span> <span class="o">&lt;</span> <span class="n">start_idx</span><span class="p">:</span>
-                        <span class="n">end_idx</span> <span class="o">=</span> <span class="n">start_idx</span>
-                    <span class="n">intervals_ms</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">start_idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">end_idx</span><span class="p">]))</span>
-                
-                <span class="n">result</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
-                    <span class="n">intervals_ms</span><span class="p">,</span> 
-                    <span class="s2">&quot;ms&quot;</span><span class="p">,</span> 
-                    <span class="n">result</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
-                    <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-                <span class="p">)</span>
-                <span class="k">if</span> <span class="n">units</span> <span class="o">!=</span> <span class="s2">&quot;ms&quot;</span><span class="p">:</span>
-                    <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
             
             <span class="k">return</span> <span class="n">result</span></div>
 
@@ -2028,7 +1980,8 @@ window.addEventListener("load", load);
                 <span class="n">event_labels</span><span class="o">=</span><span class="n">events_ms</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
                 <span class="n">event_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># We don&#39;t have indices from Events object</span>
                 <span class="n">data_time_range</span><span class="o">=</span><span class="n">data_time_range</span><span class="p">,</span>
-                <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets_list</span>
+                <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets_list</span><span class="p">,</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
             <span class="p">)</span>
         
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_select</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
@@ -2137,7 +2090,8 @@ window.addEventListener("load", load);
             <span class="n">event_labels</span><span class="o">=</span><span class="n">selected_labels</span><span class="p">,</span>
             <span class="n">event_indices</span><span class="o">=</span><span class="n">selected_indices</span><span class="p">,</span>
             <span class="n">data_time_range</span><span class="o">=</span><span class="n">data_time_range</span><span class="p">,</span>
-            <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets_list</span>
+            <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets_list</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
         <span class="p">)</span></div>
 
 
@@ -2423,7 +2377,7 @@ window.addEventListener("load", load);
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing blinks for eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> and variable </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks&quot;</span><span class="p">)</span>
-            <span class="n">blinks_array</span> <span class="o">=</span> <span class="n">blinks</span><span class="o">.</span><span class="n">as_index</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="n">blinks_array</span> <span class="o">=</span> <span class="n">blinks</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
             
             <span class="n">newblinks</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
@@ -2442,7 +2396,8 @@ window.addEventListener("load", load);
                 <span class="n">intervals</span><span class="o">=</span><span class="p">[(</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">e</span><span class="p">))</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">newblinks</span><span class="p">],</span>
                 <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">_blinks&quot;</span><span class="p">,</span>
-                <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+                <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span>
             <span class="p">)</span>
             
             <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -2677,10 +2632,7 @@ window.addEventListener("load", load);
                     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dict values must be Intervals objects, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">interval_obj</span><span class="p">)</span><span class="si">}</span><span class="s2"> for key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                 
                 <span class="c1"># Convert to index-based intervals if needed</span>
-                <span class="k">if</span> <span class="n">interval_obj</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">interval_obj</span><span class="o">.</span><span class="n">as_index</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">interval_obj</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span>
+                <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">interval_obj</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;indices&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
                 
                 <span class="c1"># Apply mask for this specific eye_variable</span>
                 <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
@@ -2699,10 +2651,7 @@ window.addEventListener("load", load);
             <span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">)</span>
             
             <span class="c1"># Convert to index-based intervals if needed</span>
-            <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">as_index</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span>
+            <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;indices&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
             
             <span class="c1"># Apply to all combinations of eyes and variables</span>
             <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
