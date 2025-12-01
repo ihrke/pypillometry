@@ -132,10 +132,13 @@ class GazePlotter(GenericPlotter):
             ax.set_title(eye)
             ax.set_aspect("equal")
             #fig.colorbar()
-            if show_screen:
-                screenrect=patches.Rectangle((obj.screen_xlim[0], obj.screen_ylim[0]), 
-                                obj.screen_xlim[1], obj.screen_ylim[1], 
-                                fill=False, edgecolor="red", linewidth=2)
+            if show_screen and obj.experimental_setup is not None:
+                setup = obj.experimental_setup
+                screenrect=patches.Rectangle(
+                    (setup.screen_xlim[0], setup.screen_ylim[0]), 
+                    setup.screen_xlim[1] - setup.screen_xlim[0],
+                    setup.screen_ylim[1] - setup.screen_ylim[0], 
+                    fill=False, edgecolor="red", linewidth=2)
                 ax.add_patch(screenrect)
             if rois is not None:
                 self._plot_rois(ax, rois)
@@ -233,10 +236,13 @@ class GazePlotter(GenericPlotter):
 
         ax.set_aspect("equal")
         #fig.colorbar()
-        if plot_screen:
-            screenrect=patches.Rectangle((obj.screen_xlim[0], obj.screen_ylim[0]), 
-                            obj.screen_xlim[1], obj.screen_ylim[1], 
-                            fill=False, edgecolor="red", linewidth=2)
+        if plot_screen and obj.experimental_setup is not None:
+            setup = obj.experimental_setup
+            screenrect=patches.Rectangle(
+                (setup.screen_xlim[0], setup.screen_ylim[0]), 
+                setup.screen_xlim[1] - setup.screen_xlim[0],
+                setup.screen_ylim[1] - setup.screen_ylim[0], 
+                fill=False, edgecolor="red", linewidth=2)
             ax.add_patch(screenrect)
         if rois is not None:
             self._plot_rois(ax, rois)
