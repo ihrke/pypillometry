@@ -38,13 +38,6 @@ class ExperimentalSetup:
         Physical screen dimensions. Each element can be:
         - float: assumed to be mm
         - str: with units, e.g., "52 cm", "520 mm"
-    eye_screen_distance : float, str, optional
-        Perpendicular distance from eye to screen plane (d).
-        This is the cleanest geometric definition.
-        - float: assumed to be mm
-        - str: with units, e.g., "65 cm", "650 mm"
-        Note: For binocular setups, "eye" refers to the midpoint between
-        the two eyes (root of nose).
     screen_offset : tuple, optional
         Offset of screen center from the eye reference point (delta_x, delta_y).
         Each element can be float (mm) or str with units.
@@ -53,9 +46,14 @@ class ExperimentalSetup:
         Note: For binocular setups, the reference is the midpoint between
         the two eyes (root of nose).
     eye_to_screen_center : float, str, optional
-        Alternative: direct distance from eye to screen center.
-        If provided with screen_offset, d is computed from:
-        d = sqrt(distance^2 - delta_x^2 - delta_y^2)
+        Distance from eye to screen center.
+        - float: assumed to be mm
+        - str: with units, e.g., "65 cm", "650 mm"
+        The perpendicular distance d is computed from:
+        d = sqrt(eye_to_screen_center^2 - delta_x^2 - delta_y^2)
+        If screen_offset is (0, 0) or not set, d equals eye_to_screen_center.
+        Note: For binocular setups, "eye" refers to the midpoint between
+        the two eyes (root of nose).
     screen_pitch : float, str, optional
         Screen pitch angle (alpha_tilt). Rotation about horizontal axis.
         Positive = top of screen tilted away from eye.
@@ -117,20 +115,20 @@ class ExperimentalSetup:
     
     Examples
     --------
-    >>> # Basic setup with perpendicular distance
+    >>> # Basic setup with distance to screen center
     >>> setup = ExperimentalSetup(
     ...     screen_resolution=(1920, 1080),
     ...     physical_screen_size=("52 cm", "29 cm"),
-    ...     eye_screen_distance="65 cm",
+    ...     eye_to_screen_center="65 cm",
     ...     camera_offset=("0 cm", "-30 cm", "0 cm"),  # camera below screen
     ... )
     >>> print(f"d = {setup.d} mm")
     
-    >>> # Setup with eye offset and screen tilt
+    >>> # Setup with screen offset and tilt
     >>> setup = ExperimentalSetup(
     ...     screen_resolution=(1920, 1080),
     ...     physical_screen_size=("52 cm", "29 cm"),
-    ...     eye_screen_distance="65 cm",
+    ...     eye_to_screen_center="65 cm",
     ...     screen_offset=("3 cm", "-1.5 cm"),  # screen right and below eye
     ...     screen_pitch="-5 deg",  # screen tilted back
     ...     camera_offset=("0 cm", "-30 cm", "0 cm"),
@@ -144,7 +142,6 @@ class ExperimentalSetup:
         self,
         screen_resolution: Optional[Tuple[int, int]] = None,
         physical_screen_size: Optional[Tuple[Union[float, str], Union[float, str]]] = None,
-        eye_screen_distance: Optional[Union[float, str]] = None,
         screen_offset: Optional[Tuple[Union[float, str], Union[float, str]]] = None,
         eye_to_screen_center: Optional[Union[float, str]] = None,
         screen_pitch: Optional[Union[float, str]] = None,
@@ -159,7 +156,7 @@ class ExperimentalSetup:
         
         # Screen offset from eye (eye-centric coordinate system)
         self._screen_offset = self._parse_screen_offset(screen_offset)
-        self._d = self._compute_d(eye_screen_distance, eye_to_screen_center)
+        self._d = self._compute_d(eye_to_screen_center)
         
         # Screen orientation
         self._alpha_tilt = parse_angle(screen_pitch) if screen_pitch else 0.0
@@ -204,19 +201,15 @@ class ExperimentalSetup:
     
     def _compute_d(
         self,
-        eye_screen_distance: Optional[Union[float, str]],
         eye_to_screen_center: Optional[Union[float, str]]
     ) -> Optional[float]:
         """
-        Compute perpendicular distance d from available information.
+        Compute perpendicular distance d from eye_to_screen_center.
         
-        If eye_screen_distance is given, use it directly.
-        If eye_to_screen_center is given, compute d from:
-            d = sqrt(distance^2 - delta_x^2 - delta_y^2)
+        d = sqrt(eye_to_screen_center^2 - delta_x^2 - delta_y^2)
+        
+        If screen_offset is (0, 0), d equals eye_to_screen_center.
         """
-        if eye_screen_distance is not None:
-            return parse_distance(eye_screen_distance)
-        
         if eye_to_screen_center is not None:
             dist_center = parse_distance(eye_to_screen_center)
             delta_x, delta_y = self._screen_offset
@@ -339,8 +332,7 @@ class ExperimentalSetup:
         """Perpendicular eye-to-screen distance in mm."""
         if self._d is None:
             raise ValueError(
-                "Eye-to-screen distance not set. Provide either "
-                "eye_screen_distance or eye_to_screen_center."
+                "Eye-to-screen distance not set. Provide eye_to_screen_center."
             )
         return self._d
     
@@ -711,11 +703,22 @@ class ExperimentalSetup:
         -------
         ExperimentalSetup
         """
+        # Compute eye_to_screen_center from d and screen_offset
+        d_val = d.get('d')
+        screen_offset = d.get('screen_offset')
+        eye_to_screen_center = None
+        if d_val is not None:
+            if screen_offset is not None:
+                delta_x, delta_y = screen_offset
+                eye_to_screen_center = np.sqrt(d_val**2 + delta_x**2 + delta_y**2)
+            else:
+                eye_to_screen_center = d_val
+        
         return cls(
             screen_resolution=d['screen_resolution'],
             physical_screen_size=d['physical_screen_size'],
-            eye_screen_distance=d.get('d'),
-            screen_offset=d.get('screen_offset'),
+            screen_offset=screen_offset,
+            eye_to_screen_center=eye_to_screen_center,
             screen_pitch=d.get('alpha_tilt', 0.0),
             screen_yaw=d.get('beta_tilt', 0.0),
             camera_offset=d.get('camera_offset'),
@@ -770,7 +773,7 @@ class ExperimentalSetup:
         >>> setup = ExperimentalSetup(
         ...     screen_resolution=(1920, 1080),
         ...     physical_screen_size=("52 cm", "29 cm"),
-        ...     eye_screen_distance="60 cm",
+        ...     eye_to_screen_center="60 cm",
         ...     camera_spherical=("20 deg", "-90 deg", "70 cm"),
         ... )
         >>> fig, ax = setup.plot()  # 2D views

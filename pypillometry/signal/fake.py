@@ -205,7 +205,7 @@ def generate_foreshortening_data(
     >>> setup = ExperimentalSetup(
     ...     screen_resolution=(1920, 1080),
     ...     physical_screen_size=("52 cm", "29 cm"),
-    ...     eye_screen_distance="60 cm",
+    ...     eye_to_screen_center="60 cm",
     ...     camera_spherical=("20 deg", "-90 deg", "70 cm"),
     ... )
     >>> data = generate_foreshortening_data(setup, duration=60, seed=42)
@@ -219,7 +219,7 @@ def generate_foreshortening_data(
         experimental_setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("52 cm", "29 cm"),
-            eye_screen_distance="60 cm",
+            eye_to_screen_center="60 cm",
             camera_spherical=("20 deg", "-90 deg", "70 cm"),
         )
     

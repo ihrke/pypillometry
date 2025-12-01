@@ -446,7 +446,7 @@ class ForeshorteningCalibration:
     >>> setup = ExperimentalSetup(
     ...     screen_resolution=(1920, 1080),
     ...     physical_screen_size=("52 cm", "29 cm"),
-    ...     eye_screen_distance="70 cm",
+    ...     eye_to_screen_center="70 cm",
     ...     camera_spherical=("85 deg", "-90 deg", "60 cm"),
     ... )
     >>> 

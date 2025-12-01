@@ -85,7 +85,7 @@ class GenericEyeData(ABC):
                     sampling_rate: float,
                     event_onsets: np.ndarray,
                     event_labels: np.ndarray,
-                    name: str,
+                    name: str|None,
                     fill_time_discontinuities: bool,
                     inplace: bool,
                     info: dict = None):

@@ -339,7 +339,7 @@ class EyeData(GazeData,PupilData):
         >>> data.set_experimental_setup(  # doctest: +SKIP
         ...     screen_resolution=(1920, 1080),
         ...     physical_screen_size=("52 cm", "29 cm"),
-        ...     eye_screen_distance="65 cm",
+        ...     eye_to_screen_center="65 cm",
         ...     camera_offset=("0 cm", "-30 cm", "0 cm"),
         ... )
         >>> 
@@ -413,7 +413,7 @@ class EyeData(GazeData,PupilData):
             if not setup.has_eye_distance():
                 raise ValueError(
                     "Eye-to-screen distance not set in experimental_setup. "
-                    "Either provide d explicitly or set eye_screen_distance in experimental_setup."
+                    "Either provide d explicitly or set eye_to_screen_center in experimental_setup."
                 )
             d = setup.d
             if verbose:

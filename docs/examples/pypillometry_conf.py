@@ -18,7 +18,7 @@ study_info = {
     "date": "2024-04-10",
     "sampling_rate": 1000.0,  # Hz
     "time_unit": "ms",
-    "eye_screen_distance": "60 cm",  # distance between screen and eye
+    "eye_to_screen_center": "60 cm",  # distance between screen and eye
     "screen_resolution": (1280, 1024),  # pixels (width, height)
     "physical_screen_size": ("30 cm", "20 cm")  # (width, height)
 }
@@ -333,7 +333,7 @@ def read_subject(info):
     setup = pp.ExperimentalSetup(
         screen_resolution=study_info["screen_resolution"],
         physical_screen_size=study_info["physical_screen_size"],
-        eye_screen_distance=study_info["eye_screen_distance"]
+        eye_to_screen_center=study_info["eye_to_screen_center"]
     )
     d = pp.EyeData(time=df.time, name=info["subject"],
                 experimental_setup=setup,

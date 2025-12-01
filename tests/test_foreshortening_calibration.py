@@ -202,7 +202,7 @@ class TestForeshorteningCalibration:
         self.setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_screen_distance=f"{self.d} mm",
+            eye_to_screen_center=f"{self.d} mm",
             camera_spherical=(f"{np.degrees(self.theta)} deg", f"{np.degrees(self.phi)} deg", f"{self.r} mm"),
             
         )
@@ -342,7 +342,7 @@ class TestFitForeshorteningMethod:
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),  # mm
-            eye_screen_distance=f"{d_true} mm",
+            eye_to_screen_center=f"{d_true} mm",
             camera_spherical=(f"{np.degrees(theta_true)} deg", f"{np.degrees(phi_true)} deg", f"{r_true} mm"),
             
         )
@@ -419,7 +419,7 @@ class TestFitForeshorteningMethod:
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_screen_distance="700 mm"
+            eye_to_screen_center="700 mm"
             # No camera_spherical
         )
         data = EyeData(
@@ -518,7 +518,7 @@ class TestFitAndCorrection:
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("520 mm", "290 mm"),
-            eye_screen_distance=f"{d_true} mm",
+            eye_to_screen_center=f"{d_true} mm",
             camera_spherical=(f"{np.degrees(theta_true)} deg", f"{np.degrees(phi_true)} deg", f"{r_true} mm"),
             
         )

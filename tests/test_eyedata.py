@@ -54,7 +54,7 @@ class TestEyeData(unittest.TestCase):
         # Test with camera_spherical (theta, phi, r) in eye frame
         setup = ExperimentalSetup(
             camera_spherical=("20 deg", "-90 deg", "600 mm"),
-            eye_screen_distance="700 mm"
+            eye_to_screen_center="700 mm"
         )
         d = pp.EyeData(
             left_x=[1,2,3], 
@@ -80,7 +80,7 @@ class TestEyeData(unittest.TestCase):
         # Set via set_experimental_setup (eye frame for direct r)
         d.set_experimental_setup(
             camera_spherical=("20 deg", "-90 deg", "550 mm"),
-            eye_screen_distance="700 mm"
+            eye_to_screen_center="700 mm"
         )
         self.assertAlmostEqual(d.experimental_setup.r, 550.0, places=5)
         
@@ -127,7 +127,7 @@ class TestEyeData(unittest.TestCase):
         setup = ExperimentalSetup(
             screen_resolution=(1920, 1080),
             physical_screen_size=("50 mm", "30 mm"),
-            eye_screen_distance="70 mm",
+            eye_to_screen_center="70 mm",
             camera_spherical=("20 deg", "-90 deg", "600 mm"),
             ipd="65 mm"
         )
@@ -1790,7 +1790,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         # Set with string format - eye frame for direct r value
         data.set_experimental_setup(
             camera_spherical=("20 deg", "-90 deg", "60 cm"),
-            eye_screen_distance="70 cm",
+            eye_to_screen_center="70 cm",
             physical_screen_size=("52 cm", "29 cm")
         )
         
@@ -1808,7 +1808,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         data.set_experimental_setup(
             camera_spherical=(20 * pp.ureg.deg, -90 * pp.ureg.deg, 60 * pp.ureg.cm),
             ipd=65 * pp.ureg.mm,
-            eye_screen_distance=70 * pp.ureg.cm
+            eye_to_screen_center=70 * pp.ureg.cm
         )
         
         # All should be stored in mm
@@ -1823,7 +1823,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         # Mix plain numbers, strings, and Quantities - eye frame for direct r
         data.set_experimental_setup(
             camera_spherical=("20 deg", "-90 deg", "600 mm"),
-            eye_screen_distance="0.7 m",
+            eye_to_screen_center="0.7 m",
             physical_screen_size=(52 * pp.ureg.cm, "290 mm")
         )
         

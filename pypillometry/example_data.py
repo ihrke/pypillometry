@@ -186,7 +186,7 @@ def get_rlmw_002():
     setup = ExperimentalSetup(
         screen_resolution=(1280, 1024),
         physical_screen_size=("30 cm", "20 cm"),
-        eye_screen_distance="60 cm",
+        eye_to_screen_center="60 cm",
     )
     d = EyeData(time=df.time, name="test short",
                 experimental_setup=setup,
@@ -243,7 +243,7 @@ def get_rlmw_002_short():
     setup = ExperimentalSetup(
         screen_resolution=(1280, 1024),
         physical_screen_size=("30 cm", "20 cm"),
-        eye_screen_distance="60 cm",
+        eye_to_screen_center="60 cm",
     )
     d = EyeData(time=df.time, name="test short",
                 experimental_setup=setup,

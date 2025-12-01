@@ -148,7 +148,7 @@ class GazeData(GenericEyeData):
             Any parameters accepted by ExperimentalSetup:
             - screen_resolution: tuple (width, height) in pixels
             - physical_screen_size: tuple (width, height) with units
-            - eye_screen_distance: distance (d)
+            - eye_to_screen_center: distance (d)
             - screen_offset: tuple (delta_x, delta_y) - offset of screen center from eye
             - eye_to_screen_center: alternative distance specification
             - screen_pitch: tilt angle (alpha_tilt)
@@ -162,7 +162,7 @@ class GazeData(GenericEyeData):
         >>> data.set_experimental_setup(
         ...     screen_resolution=(1920, 1080),
         ...     physical_screen_size=("52 cm", "29 cm"),
-        ...     eye_screen_distance="65 cm",
+        ...     eye_to_screen_center="65 cm",
         ... )
         """
         if self.experimental_setup is None:
@@ -176,7 +176,7 @@ class GazeData(GenericEyeData):
             merged = {
                 'screen_resolution': kwargs.get('screen_resolution', old.get('screen_resolution')),
                 'physical_screen_size': kwargs.get('physical_screen_size', old.get('physical_screen_size')),
-                'eye_screen_distance': kwargs.get('eye_screen_distance', old.get('d')),
+                'eye_to_screen_center': kwargs.get('eye_to_screen_center', old.get('d')),
                 'screen_offset': kwargs.get('screen_offset', old.get('screen_offset')),
                 'eye_to_screen_center': kwargs.get('eye_to_screen_center'),
                 'screen_pitch': kwargs.get('screen_pitch', old.get('alpha_tilt')),
