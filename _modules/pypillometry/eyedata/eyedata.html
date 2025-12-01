@@ -759,7 +759,7 @@ window.addEventListener("load", load);
 <span class="sd">        &gt;&gt;&gt; data.set_experimental_setup(  # doctest: +SKIP</span>
 <span class="sd">        ...     screen_resolution=(1920, 1080),</span>
 <span class="sd">        ...     physical_screen_size=(&quot;52 cm&quot;, &quot;29 cm&quot;),</span>
-<span class="sd">        ...     eye_screen_distance=&quot;65 cm&quot;,</span>
+<span class="sd">        ...     eye_to_screen_center=&quot;65 cm&quot;,</span>
 <span class="sd">        ...     camera_offset=(&quot;0 cm&quot;, &quot;-30 cm&quot;, &quot;0 cm&quot;),</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; </span>
@@ -833,7 +833,7 @@ window.addEventListener("load", load);
             <span class="k">if</span> <span class="ow">not</span> <span class="n">setup</span><span class="o">.</span><span class="n">has_eye_distance</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="s2">&quot;Eye-to-screen distance not set in experimental_setup. &quot;</span>
-                    <span class="s2">&quot;Either provide d explicitly or set eye_screen_distance in experimental_setup.&quot;</span>
+                    <span class="s2">&quot;Either provide d explicitly or set eye_to_screen_center in experimental_setup.&quot;</span>
                 <span class="p">)</span>
             <span class="n">d</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">d</span>
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>

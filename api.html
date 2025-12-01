@@ -831,7 +831,7 @@ spline coefficients for A0(t), and fit quality metrics.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">set_experimental_setup</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">),</span>
 <span class="gp">... </span>    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;52 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;29 cm&quot;</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="n">eye_screen_distance</span><span class="o">=</span><span class="s2">&quot;65 cm&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">&quot;65 cm&quot;</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">camera_offset</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;0 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;-30 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;0 cm&quot;</span><span class="p">),</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
@@ -1554,7 +1554,7 @@ ExperimentalSetup constructor.</p>
 <dd class="field-odd"><p><strong>**kwargs</strong> – Any parameters accepted by ExperimentalSetup:
 - screen_resolution: tuple (width, height) in pixels
 - physical_screen_size: tuple (width, height) with units
-- eye_screen_distance: distance (d)
+- eye_to_screen_center: distance (d)
 - screen_offset: tuple (delta_x, delta_y) - offset of screen center from eye
 - eye_to_screen_center: alternative distance specification
 - screen_pitch: tilt angle (alpha_tilt)
@@ -1568,7 +1568,7 @@ ExperimentalSetup constructor.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">set_experimental_setup</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">),</span>
 <span class="gp">... </span>    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;52 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;29 cm&quot;</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="n">eye_screen_distance</span><span class="o">=</span><span class="s2">&quot;65 cm&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">&quot;65 cm&quot;</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -2162,6 +2162,11 @@ If apply_mask=False: returns dict of Intervals objects (one per eye/variable com
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.copy">
 <span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.copy" title="Link to this definition">¶</a></dt>
 <dd><p>Make and return a deep-copy of the pupil data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_name</strong> (<em>str</em><em>, </em><em>optional</em>) – New name for the copy. If None, “_copy” is appended to the original name.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

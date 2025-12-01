@@ -562,7 +562,7 @@ window.addEventListener("load", load);
 <span class="sd">            Any parameters accepted by ExperimentalSetup:</span>
 <span class="sd">            - screen_resolution: tuple (width, height) in pixels</span>
 <span class="sd">            - physical_screen_size: tuple (width, height) with units</span>
-<span class="sd">            - eye_screen_distance: distance (d)</span>
+<span class="sd">            - eye_to_screen_center: distance (d)</span>
 <span class="sd">            - screen_offset: tuple (delta_x, delta_y) - offset of screen center from eye</span>
 <span class="sd">            - eye_to_screen_center: alternative distance specification</span>
 <span class="sd">            - screen_pitch: tilt angle (alpha_tilt)</span>
@@ -576,7 +576,7 @@ window.addEventListener("load", load);
 <span class="sd">        &gt;&gt;&gt; data.set_experimental_setup(</span>
 <span class="sd">        ...     screen_resolution=(1920, 1080),</span>
 <span class="sd">        ...     physical_screen_size=(&quot;52 cm&quot;, &quot;29 cm&quot;),</span>
-<span class="sd">        ...     eye_screen_distance=&quot;65 cm&quot;,</span>
+<span class="sd">        ...     eye_to_screen_center=&quot;65 cm&quot;,</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -590,7 +590,7 @@ window.addEventListener("load", load);
             <span class="n">merged</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s1">&#39;screen_resolution&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screen_resolution&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screen_resolution&#39;</span><span class="p">)),</span>
                 <span class="s1">&#39;physical_screen_size&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;physical_screen_size&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;physical_screen_size&#39;</span><span class="p">)),</span>
-                <span class="s1">&#39;eye_screen_distance&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eye_screen_distance&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;eye_to_screen_center&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eye_to_screen_center&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">)),</span>
                 <span class="s1">&#39;screen_offset&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screen_offset&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screen_offset&#39;</span><span class="p">)),</span>
                 <span class="s1">&#39;eye_to_screen_center&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;eye_to_screen_center&#39;</span><span class="p">),</span>
                 <span class="s1">&#39;screen_pitch&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;screen_pitch&#39;</span><span class="p">,</span> <span class="n">old</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;alpha_tilt&#39;</span><span class="p">)),</span>

@@ -494,7 +494,7 @@ window.addEventListener("load", load);
                     <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                     <span class="n">event_onsets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                     <span class="n">event_labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-                    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                     <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
                     <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
@@ -820,11 +820,16 @@ window.addEventListener("load", load);
         <span class="k">return</span> <span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_inplace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Private helper function&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Private helper function.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns self or a copy depending on inplace setting.</span>
+<span class="sd">        When copying, preserves the original name to avoid name changes</span>
+<span class="sd">        during internal processing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">inplace</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">new_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
 
     <span class="nd">@property</span>
@@ -1661,15 +1666,20 @@ window.addEventListener("load", load);
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Make and return a deep-copy of the pupil data.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        new_name : str, optional</span>
+<span class="sd">            New name for the copy. If None, &quot;_copy&quot; is appended to the original name.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">new_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">_random_id</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_copy&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="o">=</span><span class="n">new_name</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">new_name</span>
         <span class="k">return</span> <span class="n">result</span></div>
 
 
@@ -2623,7 +2633,7 @@ window.addEventListener("load", load);
 <span class="sd">        get_blinks : Retrieve stored blink intervals</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
-        
+
         <span class="c1"># Check if intervals is a dict</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="c1"># Apply each Intervals object to its corresponding eye_variable</span>
@@ -2631,9 +2641,11 @@ window.addEventListener("load", load);
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval_obj</span><span class="p">,</span> <span class="n">Intervals</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dict values must be Intervals objects, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">interval_obj</span><span class="p">)</span><span class="si">}</span><span class="s2"> for key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                 
-                <span class="c1"># Convert to index-based intervals if needed</span>
+                <span class="c1"># Ensure sampling_rate is set for unit conversion</span>
                 <span class="k">if</span> <span class="n">interval_obj</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">interval_obj</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span>
+                
+                <span class="c1"># Convert to index-based intervals if needed</span>
                 <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">interval_obj</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;indices&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
                 
                 <span class="c1"># Apply mask for this specific eye_variable</span>
@@ -2649,6 +2661,10 @@ window.addEventListener("load", load);
             <span class="c1"># Single Intervals object - apply to specified eyes/variables</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">Intervals</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;intervals must be an Intervals object or dict, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Ensure sampling_rate is set for unit conversion</span>
+            <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">intervals</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span>
             
             <span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">)</span>
             
