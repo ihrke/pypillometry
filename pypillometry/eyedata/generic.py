@@ -408,11 +408,16 @@ class GenericEyeData(ABC):
         return eyes, variables
 
     def _get_inplace(self, inplace):
-        """Private helper function"""
+        """Private helper function.
+        
+        Returns self or a copy depending on inplace setting.
+        When copying, preserves the original name to avoid name changes
+        during internal processing.
+        """
         if inplace is None:
             return self
         else:
-            return self if inplace else self.copy()
+            return self if inplace else self.copy(new_name=self.name)
 
 
     @property
@@ -1199,15 +1204,20 @@ class GenericEyeData(ABC):
     def copy(self, new_name: Optional[str]=None):
         """
         Make and return a deep-copy of the pupil data.
+        
+        Parameters
+        ----------
+        new_name : str, optional
+            New name for the copy. If None, "_copy" is appended to the original name.
         """
         cls = self.__class__
         result = cls.__new__(cls)
         for k, v in self.__dict__.items():
             setattr(result, k, copy.deepcopy(v))
         if new_name is None:
-            result.name=self.name+"_"+self._random_id(n=2)
+            result.name = self.name + "_copy"
         else:
-            result.name=new_name
+            result.name = new_name
         return result
 
     def set_event_onsets(self, event_onsets: np.ndarray, event_labels: np.ndarray):
@@ -2119,7 +2129,7 @@ class GenericEyeData(ABC):
         get_blinks : Retrieve stored blink intervals
         """
         obj = self._get_inplace(inplace)
-        
+
         # Check if intervals is a dict
         if isinstance(intervals, dict):
             # Apply each Intervals object to its corresponding eye_variable
@@ -2127,9 +2137,11 @@ class GenericEyeData(ABC):
                 if not isinstance(interval_obj, Intervals):
                     raise TypeError(f"Dict values must be Intervals objects, got {type(interval_obj)} for key '{key}'")
                 
-                # Convert to index-based intervals if needed
+                # Ensure sampling_rate is set for unit conversion
                 if interval_obj.sampling_rate is None:
                     interval_obj.sampling_rate = obj.fs
+                
+                # Convert to index-based intervals if needed
                 intervals_array = interval_obj.to_units("indices").to_array().astype(int)
                 
                 # Apply mask for this specific eye_variable
@@ -2145,6 +2157,10 @@ class GenericEyeData(ABC):
             # Single Intervals object - apply to specified eyes/variables
             if not isinstance(intervals, Intervals):
                 raise TypeError(f"intervals must be an Intervals object or dict, got {type(intervals)}")
+            
+            # Ensure sampling_rate is set for unit conversion
+            if intervals.sampling_rate is None:
+                intervals.sampling_rate = obj.fs
             
             eyes, variables = obj._get_eye_var(eyes, variables)
             
