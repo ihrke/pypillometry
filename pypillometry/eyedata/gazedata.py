@@ -194,7 +194,8 @@ class GazeData(GenericEyeData):
 
     @keephistory
     def mask_eye_divergences(self, threshold: float = .99, thr_type: str = "percentile", 
-                           store_as: str|None = None, apply_mask: bool = True, inplace=None):
+                           store_as: str|None = None, apply_mask: bool = True, 
+                           ignore_existing_mask: bool = True, inplace=None):
         """
         Calculate Euclidean distance between left and right eye coordinates and detect divergences.
         
@@ -217,6 +218,9 @@ class GazeData(GenericEyeData):
         apply_mask : bool, default=True
             If True, apply detected divergences as masks to the data and return self.
             If False, return detected divergences as dict of Intervals objects.
+        ignore_existing_mask : bool, default=True
+            If True (default), check all data points including those already masked (e.g., from blinks).
+            If False, only check non-masked data points for divergences.
         inplace : bool or None
             If True, make change in-place and return the object.
             If False, make and return copy before making changes.
@@ -244,6 +248,9 @@ class GazeData(GenericEyeData):
         
         >>> # Mask divergences beyond 100 pixels
         >>> gaze_data = gaze_data.mask_eye_divergences(threshold=100, thr_type="pixel")
+        
+        >>> # Only check non-masked data points
+        >>> gaze_data = gaze_data.mask_eye_divergences(ignore_existing_mask=False)
         """
         obj = self._get_inplace(inplace)
         
@@ -261,7 +268,20 @@ class GazeData(GenericEyeData):
             )
         
         # Calculate Euclidean distance
-        dist = np.ma.sqrt((obj['left_x'] - obj['right_x'])**2 + (obj['left_y'] - obj['right_y'])**2)
+        if ignore_existing_mask:
+            # Use raw data, ignoring existing masks
+            left_x = obj.data['left_x']
+            left_y = obj.data['left_y']
+            right_x = obj.data['right_x']
+            right_y = obj.data['right_y']
+        else:
+            # Use masked data
+            left_x = obj['left_x']
+            left_y = obj['left_y']
+            right_x = obj['right_x']
+            right_y = obj['right_y']
+        
+        dist = np.ma.sqrt((left_x - right_x)**2 + (left_y - right_y)**2)
         
         # Calculate threshold
         if thr_type == "percentile":
