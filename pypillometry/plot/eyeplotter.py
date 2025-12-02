@@ -20,7 +20,8 @@ class EyePlotter(GazePlotter,PupilPlotter):
         cmap: str = "jet",
         gridsize: int = 30,
         vmin: Optional[float] = None,
-        vmax: Optional[float] = None
+        vmax: Optional[float] = None,
+        min_samples: Optional[int] = None
     ) -> None:
         """
         Plot a heatmap showing average pupil size across x/y gaze positions.
@@ -50,6 +51,11 @@ class EyePlotter(GazePlotter,PupilPlotter):
             Minimum value for color scale. If None, uses data minimum.
         vmax : float, optional
             Maximum value for color scale. If None, uses data maximum.
+        min_samples : int, optional
+            Minimum number of samples required in a bin to display it. Bins with
+            fewer samples will not be shown. If None (default), automatically
+            calculates a threshold at the 10th percentile of bin counts, effectively
+            displaying only the top 90% of bins by sample count.
             
         Returns
         -------
@@ -69,6 +75,10 @@ class EyePlotter(GazePlotter,PupilPlotter):
         Plot all available eyes with custom color range:
         
         >>> data.plot.plot_pupil_foreshortening_error_surface(vmin=3, vmax=5)
+        
+        Plot with a specific minimum sample threshold:
+        
+        >>> data.plot.plot_pupil_foreshortening_error_surface(min_samples=50)
         """
         obj = self.obj
         
@@ -158,6 +168,26 @@ class EyePlotter(GazePlotter,PupilPlotter):
                 ax.set_title(f'{eye} eye')
                 continue
             
+            # Determine min_samples threshold
+            if min_samples is None:
+                # Create temporary hexbin to get bin counts
+                temp_hexbin = ax.hexbin(
+                    x_plot, 
+                    y_plot, 
+                    gridsize=gridsize, 
+                    mincnt=1
+                )
+                counts = temp_hexbin.get_array()
+                # Use 10th percentile as threshold (keeps top 90%)
+                mincnt = int(np.percentile(counts, 10))
+                mincnt = max(1, mincnt)  # Ensure at least 1
+                logger.info(f"[{eye} eye] Auto-calculated min_samples threshold: {mincnt} "
+                           f"(10th percentile of {len(counts)} bins with counts ranging {int(counts.min())}-{int(counts.max())})")
+                # Clear the temporary plot
+                ax.clear()
+            else:
+                mincnt = min_samples
+            
             # Create hexbin plot with average pupil size
             im = ax.hexbin(
                 x_plot, 
@@ -166,7 +196,7 @@ class EyePlotter(GazePlotter,PupilPlotter):
                 gridsize=gridsize, 
                 cmap=cmap,
                 reduce_C_function=np.mean,
-                mincnt=1,
+                mincnt=mincnt,
                 vmin=vmin,
                 vmax=vmax
             )

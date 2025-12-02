@@ -11,6 +11,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib as mpl
 from matplotlib.backends.backend_pdf import PdfPages
 from ..roi import ROI
+from loguru import logger
 
 class GazePlotter(GenericPlotter):
     """
@@ -46,7 +47,8 @@ class GazePlotter(GenericPlotter):
         units: str = "sec",
         figsize: tuple = (10, 10),
         cmap: str = "jet",
-        gridsize: int|str = 30#"auto"
+        gridsize: int|str = 30,#"auto"
+        min_samples: Optional[int] = 1
     ) -> None:
         """
         Plot EyeData as a heatmap. Typically used for a large amount of data
@@ -76,6 +78,11 @@ class GazePlotter(GenericPlotter):
             The colormap to use. Default is "jet".
         gridsize: str or int
             The gridsize for the hexbin plot. Default is 30.
+        min_samples: int, optional
+            Minimum number of samples required in a bin to display it. Bins with
+            fewer samples will not be shown. If None (default), automatically
+            calculates a threshold at the 10th percentile of bin counts, effectively
+            displaying only the top 90% of bins by sample count.
         """
         obj = self.obj
         
@@ -125,8 +132,29 @@ class GazePlotter(GenericPlotter):
                 else:
                     x_plot = x_data
                     y_plot = y_data
+                
+                # Determine min_samples threshold
+                if min_samples is None:
+                    # Create temporary hexbin to get bin counts
+                    temp_hexbin = ax.hexbin(
+                        x_plot, 
+                        y_plot, 
+                        gridsize=gridsize, 
+                        mincnt=1
+                    )
+                    counts = temp_hexbin.get_array()
+                    # Use 10th percentile as threshold (keeps top 90%)
+                    mincnt = int(np.percentile(counts, 10))
+                    mincnt = max(1, mincnt)  # Ensure at least 1
+                    logger.info(f"[{eye} eye] Auto-calculated min_samples threshold: {mincnt} "
+                               f"(10th percentile of {len(counts)} bins with counts ranging {int(counts.min())}-{int(counts.max())})")
+                    # Clear the temporary plot
+                    ax.clear()
+                else:
+                    mincnt = min_samples
+                
                 divider = make_axes_locatable(ax)
-                im=ax.hexbin(x_plot, y_plot, gridsize=gridsize, cmap=cmap, mincnt=1)
+                im=ax.hexbin(x_plot, y_plot, gridsize=gridsize, cmap=cmap, mincnt=mincnt)
                 cax = divider.append_axes('right', size='5%', pad=0.05)
                 fig.colorbar(im, cax=cax, orientation='vertical')
             ax.set_title(eye)
