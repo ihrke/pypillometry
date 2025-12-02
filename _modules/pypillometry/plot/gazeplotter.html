@@ -409,7 +409,7 @@ window.addEventListener("load", load);
 <span class="kn">from</span><span class="w"> </span><span class="nn">.genplotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericPlotter</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
@@ -418,6 +418,8 @@ window.addEventListener("load", load);
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.backends.backend_pdf</span><span class="w"> </span><span class="kn">import</span> <span class="n">PdfPages</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..roi</span><span class="w"> </span><span class="kn">import</span> <span class="n">ROI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">gaussian_filter</span>
 
 <div class="viewcode-block" id="GazePlotter">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GazePlotter">[docs]</a>
@@ -457,7 +459,10 @@ window.addEventListener("load", load);
         <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sec&quot;</span><span class="p">,</span>
         <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
         <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;jet&quot;</span><span class="p">,</span>
-        <span class="n">gridsize</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span>
+        <span class="n">gridsize</span><span class="p">:</span> <span class="nb">int</span><span class="o">|</span><span class="nb">str</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span><span class="c1">#&quot;auto&quot;</span>
+        <span class="n">min_samples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">smooth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limits</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot EyeData as a heatmap. Typically used for a large amount of data</span>
@@ -486,7 +491,19 @@ window.addEventListener("load", load);
 <span class="sd">        cmap: str</span>
 <span class="sd">            The colormap to use. Default is &quot;jet&quot;.</span>
 <span class="sd">        gridsize: str or int</span>
-<span class="sd">            The gridsize for the hexbin plot. Default is &quot;auto&quot;.</span>
+<span class="sd">            The gridsize for the hexbin plot or histogram. Default is 30.</span>
+<span class="sd">        min_samples: int, optional</span>
+<span class="sd">            Minimum number of samples required in a bin to display it. Bins with</span>
+<span class="sd">            fewer samples will not be shown. If None, automatically calculates a </span>
+<span class="sd">            threshold at the 10th percentile of bin counts. Default is 1.</span>
+<span class="sd">        smooth: float, optional</span>
+<span class="sd">            If provided, applies Gaussian smoothing to the binned histogram. The value</span>
+<span class="sd">            is the sigma of the Gaussian kernel in bin units (e.g., smooth=1 applies</span>
+<span class="sd">            minimal smoothing with a 1-bin sigma, smooth=2 applies more smoothing).</span>
+<span class="sd">            When smooth is provided, uses a rectangular grid instead of hexbin.</span>
+<span class="sd">        limits: tuple, optional</span>
+<span class="sd">            Axis limits as (xmin, xmax, ymin, ymax). If not provided, uses screen</span>
+<span class="sd">            limits when available (and data falls within), otherwise uses data extent.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
         
@@ -528,7 +545,7 @@ window.addEventListener("load", load);
             <span class="k">if</span> <span class="n">vx</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="n">vy</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="n">x_data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vx</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span>
                 <span class="n">y_data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vy</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">show_masked</span> <span class="ow">and</span> <span class="n">vx</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span> <span class="ow">and</span> <span class="n">vy</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">show_masked</span> <span class="ow">and</span> <span class="n">vx</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span> <span class="ow">and</span> <span class="n">vy</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
                     <span class="n">mask</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">vx</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span> <span class="o">|</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">vy</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">]</span>
                     <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
                     <span class="n">x_plot</span> <span class="o">=</span> <span class="n">x_data</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span>
@@ -536,8 +553,100 @@ window.addEventListener("load", load);
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">x_plot</span> <span class="o">=</span> <span class="n">x_data</span>
                     <span class="n">y_plot</span> <span class="o">=</span> <span class="n">y_data</span>
+                
+                <span class="c1"># Determine limits</span>
+                <span class="k">if</span> <span class="n">limits</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">limits</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Use screen limits if available and data falls within, else use data extent</span>
+                    <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">experimental_setup</span><span class="o">.</span><span class="n">has_screen_info</span><span class="p">():</span>
+                        <span class="n">setup</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">experimental_setup</span>
+                        <span class="n">xmin</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">x_plot</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">setup</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                        <span class="n">xmax</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">x_plot</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">setup</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="n">ymin</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">y_plot</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">setup</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                        <span class="n">ymax</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">y_plot</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">setup</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="n">x_plot</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">x_plot</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                        <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">y_plot</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y_plot</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                
+                <span class="k">if</span> <span class="n">smooth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># Use rectangular histogram with Gaussian smoothing</span>
+                    <span class="n">hist</span><span class="p">,</span> <span class="n">xedges</span><span class="p">,</span> <span class="n">yedges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span>
+                        <span class="n">x_plot</span><span class="p">,</span> <span class="n">y_plot</span><span class="p">,</span>
+                        <span class="n">bins</span><span class="o">=</span><span class="n">gridsize</span><span class="p">,</span>
+                        <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">],</span> <span class="p">[</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">]]</span>
+                    <span class="p">)</span>
+                    
+                    <span class="c1"># Determine min_samples threshold for masking</span>
+                    <span class="k">if</span> <span class="n">min_samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">valid_counts</span> <span class="o">=</span> <span class="n">hist</span><span class="p">[</span><span class="n">hist</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">valid_counts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">mincnt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">valid_counts</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+                            <span class="n">mincnt</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">mincnt</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> eye] Auto-calculated min_samples threshold: </span><span class="si">{</span><span class="n">mincnt</span><span class="si">}</span><span class="s2"> &quot;</span>
+                                       <span class="sa">f</span><span class="s2">&quot;(10th percentile of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">valid_counts</span><span class="p">)</span><span class="si">}</span><span class="s2"> bins with counts ranging &quot;</span>
+                                       <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">valid_counts</span><span class="o">.</span><span class="n">min</span><span class="p">())</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">valid_counts</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">mincnt</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">mincnt</span> <span class="o">=</span> <span class="n">min_samples</span>
+                    
+                    <span class="c1"># Mask bins with insufficient samples</span>
+                    <span class="n">hist_masked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">hist</span> <span class="o">&gt;=</span> <span class="n">mincnt</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                    
+                    <span class="c1"># Apply Gaussian smoothing (only to valid values)</span>
+                    <span class="n">valid_mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">hist_masked</span><span class="p">)</span>
+                    <span class="n">hist_filled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">valid_mask</span><span class="p">,</span> <span class="n">hist_masked</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                    
+                    <span class="c1"># Smooth the data and the mask separately, then normalize</span>
+                    <span class="n">smoothed_data</span> <span class="o">=</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="n">hist_filled</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">smooth</span><span class="p">)</span>
+                    <span class="n">smoothed_mask</span> <span class="o">=</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="n">valid_mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">smooth</span><span class="p">)</span>
+                    
+                    <span class="c1"># Normalize to get proper weighted average, mask where no data</span>
+                    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
+                        <span class="n">hist_smooth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">smoothed_mask</span> <span class="o">&gt;</span> <span class="mf">0.01</span><span class="p">,</span> 
+                                              <span class="n">smoothed_data</span> <span class="o">/</span> <span class="n">smoothed_mask</span><span class="p">,</span> 
+                                              <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                    
+                    <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span>
+                        <span class="n">hist_smooth</span><span class="p">,</span>
+                        <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span>
+                        <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">],</span>
+                        <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+                        <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span>
+                    <span class="p">)</span>
+                    
+                    <span class="c1"># Set axis limits</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">)</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Determine min_samples threshold</span>
+                    <span class="k">if</span> <span class="n">min_samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># Create temporary hexbin to get bin counts</span>
+                        <span class="n">temp_hexbin</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">hexbin</span><span class="p">(</span>
+                            <span class="n">x_plot</span><span class="p">,</span> 
+                            <span class="n">y_plot</span><span class="p">,</span> 
+                            <span class="n">gridsize</span><span class="o">=</span><span class="n">gridsize</span><span class="p">,</span> 
+                            <span class="n">mincnt</span><span class="o">=</span><span class="mi">1</span>
+                        <span class="p">)</span>
+                        <span class="n">counts</span> <span class="o">=</span> <span class="n">temp_hexbin</span><span class="o">.</span><span class="n">get_array</span><span class="p">()</span>
+                        <span class="c1"># Use 10th percentile as threshold (keeps top 90%)</span>
+                        <span class="n">mincnt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+                        <span class="n">mincnt</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">mincnt</span><span class="p">)</span>  <span class="c1"># Ensure at least 1</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> eye] Auto-calculated min_samples threshold: </span><span class="si">{</span><span class="n">mincnt</span><span class="si">}</span><span class="s2"> &quot;</span>
+                                   <span class="sa">f</span><span class="s2">&quot;(10th percentile of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="si">}</span><span class="s2"> bins with counts ranging </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">min</span><span class="p">())</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                        <span class="c1"># Clear the temporary plot</span>
+                        <span class="n">ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">mincnt</span> <span class="o">=</span> <span class="n">min_samples</span>
+                    
+                    <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">hexbin</span><span class="p">(</span><span class="n">x_plot</span><span class="p">,</span> <span class="n">y_plot</span><span class="p">,</span> <span class="n">gridsize</span><span class="o">=</span><span class="n">gridsize</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">mincnt</span><span class="o">=</span><span class="n">mincnt</span><span class="p">)</span>
+                    
+                    <span class="c1"># Set axis limits for hexbin too</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">)</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">)</span>
+                
                 <span class="n">divider</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
-                <span class="n">im</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">hexbin</span><span class="p">(</span><span class="n">x_plot</span><span class="p">,</span> <span class="n">y_plot</span><span class="p">,</span> <span class="n">gridsize</span><span class="o">=</span><span class="n">gridsize</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">mincnt</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
                 <span class="n">cax</span> <span class="o">=</span> <span class="n">divider</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s1">&#39;5%&#39;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
                 <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">eye</span><span class="p">)</span>
