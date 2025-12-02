@@ -6,9 +6,11 @@ import pylab as plt
 from matplotlib import cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.patches as patches
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from collections.abc import Iterable
 from loguru import logger
+from scipy.ndimage import gaussian_filter
+from scipy.stats import binned_statistic_2d
 
 class EyePlotter(GazePlotter,PupilPlotter):
     def plot_pupil_foreshortening_error_surface(
@@ -21,7 +23,9 @@ class EyePlotter(GazePlotter,PupilPlotter):
         gridsize: int = 30,
         vmin: Optional[float] = None,
         vmax: Optional[float] = None,
-        min_samples: Optional[int] = None
+        min_samples: Optional[int] = None,
+        smooth: Optional[float] = None,
+        limits: Optional[Tuple[float, float, float, float]] = None
     ) -> None:
         """
         Plot a heatmap showing average pupil size across x/y gaze positions.
@@ -46,7 +50,7 @@ class EyePlotter(GazePlotter,PupilPlotter):
         cmap : str, optional
             Colormap to use. Default is "jet".
         gridsize : int, optional
-            Number of hexagonal bins in each direction. Default is 30.
+            Number of bins in each direction. Default is 30.
         vmin : float, optional
             Minimum value for color scale. If None, uses data minimum.
         vmax : float, optional
@@ -56,6 +60,14 @@ class EyePlotter(GazePlotter,PupilPlotter):
             fewer samples will not be shown. If None (default), automatically
             calculates a threshold at the 10th percentile of bin counts, effectively
             displaying only the top 90% of bins by sample count.
+        smooth : float, optional
+            If provided, applies Gaussian smoothing to the binned surface. The value
+            is the sigma of the Gaussian kernel in bin units (e.g., smooth=1 applies
+            minimal smoothing with a 1-bin sigma, smooth=2 applies more smoothing).
+            When smooth is provided, uses a rectangular grid instead of hexbin.
+        limits : tuple, optional
+            Axis limits as (xmin, xmax, ymin, ymax). If not provided, uses screen
+            limits when available (and data falls within), otherwise uses data extent.
             
         Returns
         -------
@@ -79,6 +91,14 @@ class EyePlotter(GazePlotter,PupilPlotter):
         Plot with a specific minimum sample threshold:
         
         >>> data.plot.plot_pupil_foreshortening_error_surface(min_samples=50)
+        
+        Plot with Gaussian smoothing:
+        
+        >>> data.plot.plot_pupil_foreshortening_error_surface(smooth=1.5)
+        
+        Plot with custom limits:
+        
+        >>> data.plot.plot_pupil_foreshortening_error_surface(limits=(0, 1920, 0, 1080))
         """
         obj = self.obj
         
@@ -168,38 +188,112 @@ class EyePlotter(GazePlotter,PupilPlotter):
                 ax.set_title(f'{eye} eye')
                 continue
             
-            # Determine min_samples threshold
-            if min_samples is None:
-                # Create temporary hexbin to get bin counts
-                temp_hexbin = ax.hexbin(
+            # Determine limits
+            if limits is not None:
+                xmin, xmax, ymin, ymax = limits
+            else:
+                # Use screen limits if available and data falls within, else use data extent
+                if obj.experimental_setup is not None and obj.experimental_setup.has_screen_info():
+                    setup = obj.experimental_setup
+                    xmin = max(x_plot.min(), setup.screen_xlim[0])
+                    xmax = min(x_plot.max(), setup.screen_xlim[1])
+                    ymin = max(y_plot.min(), setup.screen_ylim[0])
+                    ymax = min(y_plot.max(), setup.screen_ylim[1])
+                else:
+                    xmin, xmax = x_plot.min(), x_plot.max()
+                    ymin, ymax = y_plot.min(), y_plot.max()
+            
+            if smooth is not None:
+                # Use rectangular binning with Gaussian smoothing
+                # Compute binned statistics (mean pupil per bin)
+                stat, xedges, yedges, binnumber = binned_statistic_2d(
+                    x_plot, y_plot, pupil_plot,
+                    statistic='mean', 
+                    bins=gridsize,
+                    range=[[xmin, xmax], [ymin, ymax]]
+                )
+                # Also get counts to mask bins with insufficient samples
+                counts, _, _, _ = binned_statistic_2d(
+                    x_plot, y_plot, pupil_plot,
+                    statistic='count',
+                    bins=gridsize,
+                    range=[[xmin, xmax], [ymin, ymax]]
+                )
+                
+                # Determine min_samples threshold for masking
+                if min_samples is None:
+                    valid_counts = counts[counts > 0]
+                    if len(valid_counts) > 0:
+                        mincnt = int(np.percentile(valid_counts, 10))
+                        mincnt = max(1, mincnt)
+                        logger.info(f"[{eye} eye] Auto-calculated min_samples threshold: {mincnt} "
+                                   f"(10th percentile of {len(valid_counts)} bins with counts ranging "
+                                   f"{int(valid_counts.min())}-{int(valid_counts.max())})")
+                    else:
+                        mincnt = 1
+                else:
+                    mincnt = min_samples
+                
+                # Mask bins with insufficient samples
+                stat_masked = np.where(counts >= mincnt, stat, np.nan)
+                
+                # Apply Gaussian smoothing (only to valid values)
+                # Create a mask for valid data
+                valid_mask = ~np.isnan(stat_masked)
+                stat_filled = np.where(valid_mask, stat_masked, 0)
+                
+                # Smooth the data and the mask separately, then normalize
+                smoothed_data = gaussian_filter(stat_filled.T, sigma=smooth)
+                smoothed_mask = gaussian_filter(valid_mask.astype(float).T, sigma=smooth)
+                
+                # Normalize to get proper weighted average, mask where no data
+                with np.errstate(divide='ignore', invalid='ignore'):
+                    stat_smooth = np.where(smoothed_mask > 0.01, 
+                                          smoothed_data / smoothed_mask, 
+                                          np.nan)
+                
+                im = ax.imshow(
+                    stat_smooth,
+                    origin='lower',
+                    extent=[xmin, xmax, ymin, ymax],
+                    cmap=cmap,
+                    aspect='auto',
+                    vmin=vmin,
+                    vmax=vmax
+                )
+            else:
+                # Determine min_samples threshold
+                if min_samples is None:
+                    # Create temporary hexbin to get bin counts
+                    temp_hexbin = ax.hexbin(
+                        x_plot, 
+                        y_plot, 
+                        gridsize=gridsize, 
+                        mincnt=1
+                    )
+                    counts = temp_hexbin.get_array()
+                    # Use 10th percentile as threshold (keeps top 90%)
+                    mincnt = int(np.percentile(counts, 10))
+                    mincnt = max(1, mincnt)  # Ensure at least 1
+                    logger.info(f"[{eye} eye] Auto-calculated min_samples threshold: {mincnt} "
+                               f"(10th percentile of {len(counts)} bins with counts ranging {int(counts.min())}-{int(counts.max())})")
+                    # Clear the temporary plot
+                    ax.clear()
+                else:
+                    mincnt = min_samples
+                
+                # Create hexbin plot with average pupil size
+                im = ax.hexbin(
                     x_plot, 
                     y_plot, 
+                    C=pupil_plot,
                     gridsize=gridsize, 
-                    mincnt=1
+                    cmap=cmap,
+                    reduce_C_function=np.mean,
+                    mincnt=mincnt,
+                    vmin=vmin,
+                    vmax=vmax
                 )
-                counts = temp_hexbin.get_array()
-                # Use 10th percentile as threshold (keeps top 90%)
-                mincnt = int(np.percentile(counts, 10))
-                mincnt = max(1, mincnt)  # Ensure at least 1
-                logger.info(f"[{eye} eye] Auto-calculated min_samples threshold: {mincnt} "
-                           f"(10th percentile of {len(counts)} bins with counts ranging {int(counts.min())}-{int(counts.max())})")
-                # Clear the temporary plot
-                ax.clear()
-            else:
-                mincnt = min_samples
-            
-            # Create hexbin plot with average pupil size
-            im = ax.hexbin(
-                x_plot, 
-                y_plot, 
-                C=pupil_plot,
-                gridsize=gridsize, 
-                cmap=cmap,
-                reduce_C_function=np.mean,
-                mincnt=mincnt,
-                vmin=vmin,
-                vmax=vmax
-            )
             
             # Add colorbar
             divider = make_axes_locatable(ax)
@@ -212,6 +306,10 @@ class EyePlotter(GazePlotter,PupilPlotter):
             ax.set_xlabel('Gaze X Position')
             ax.set_ylabel('Gaze Y Position')
             ax.set_aspect('equal')
+            
+            # Set axis limits
+            ax.set_xlim(xmin, xmax)
+            ax.set_ylim(ymin, ymax)
             
             # Plot screen boundaries
             if show_screen and obj.experimental_setup is not None and obj.experimental_setup.has_screen_info():

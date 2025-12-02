@@ -2,7 +2,7 @@ from ..eyedata import GenericEyeData
 from .genplotter import GenericPlotter
 import numpy as np
 from collections.abc import Iterable
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Tuple
 
 import pylab as plt
 import matplotlib.patches as patches
@@ -12,6 +12,7 @@ import matplotlib as mpl
 from matplotlib.backends.backend_pdf import PdfPages
 from ..roi import ROI
 from loguru import logger
+from scipy.ndimage import gaussian_filter
 
 class GazePlotter(GenericPlotter):
     """
@@ -48,7 +49,9 @@ class GazePlotter(GenericPlotter):
         figsize: tuple = (10, 10),
         cmap: str = "jet",
         gridsize: int|str = 30,#"auto"
-        min_samples: Optional[int] = 1
+        min_samples: Optional[int] = 1,
+        smooth: Optional[float] = None,
+        limits: Optional[Tuple[float, float, float, float]] = None
     ) -> None:
         """
         Plot EyeData as a heatmap. Typically used for a large amount of data
@@ -77,12 +80,19 @@ class GazePlotter(GenericPlotter):
         cmap: str
             The colormap to use. Default is "jet".
         gridsize: str or int
-            The gridsize for the hexbin plot. Default is 30.
+            The gridsize for the hexbin plot or histogram. Default is 30.
         min_samples: int, optional
             Minimum number of samples required in a bin to display it. Bins with
-            fewer samples will not be shown. If None (default), automatically
-            calculates a threshold at the 10th percentile of bin counts, effectively
-            displaying only the top 90% of bins by sample count.
+            fewer samples will not be shown. If None, automatically calculates a 
+            threshold at the 10th percentile of bin counts. Default is 1.
+        smooth: float, optional
+            If provided, applies Gaussian smoothing to the binned histogram. The value
+            is the sigma of the Gaussian kernel in bin units (e.g., smooth=1 applies
+            minimal smoothing with a 1-bin sigma, smooth=2 applies more smoothing).
+            When smooth is provided, uses a rectangular grid instead of hexbin.
+        limits: tuple, optional
+            Axis limits as (xmin, xmax, ymin, ymax). If not provided, uses screen
+            limits when available (and data falls within), otherwise uses data extent.
         """
         obj = self.obj
         
@@ -133,28 +143,99 @@ class GazePlotter(GenericPlotter):
                     x_plot = x_data
                     y_plot = y_data
                 
-                # Determine min_samples threshold
-                if min_samples is None:
-                    # Create temporary hexbin to get bin counts
-                    temp_hexbin = ax.hexbin(
-                        x_plot, 
-                        y_plot, 
-                        gridsize=gridsize, 
-                        mincnt=1
-                    )
-                    counts = temp_hexbin.get_array()
-                    # Use 10th percentile as threshold (keeps top 90%)
-                    mincnt = int(np.percentile(counts, 10))
-                    mincnt = max(1, mincnt)  # Ensure at least 1
-                    logger.info(f"[{eye} eye] Auto-calculated min_samples threshold: {mincnt} "
-                               f"(10th percentile of {len(counts)} bins with counts ranging {int(counts.min())}-{int(counts.max())})")
-                    # Clear the temporary plot
-                    ax.clear()
+                # Determine limits
+                if limits is not None:
+                    xmin, xmax, ymin, ymax = limits
                 else:
-                    mincnt = min_samples
+                    # Use screen limits if available and data falls within, else use data extent
+                    if obj.experimental_setup is not None and obj.experimental_setup.has_screen_info():
+                        setup = obj.experimental_setup
+                        xmin = max(x_plot.min(), setup.screen_xlim[0])
+                        xmax = min(x_plot.max(), setup.screen_xlim[1])
+                        ymin = max(y_plot.min(), setup.screen_ylim[0])
+                        ymax = min(y_plot.max(), setup.screen_ylim[1])
+                    else:
+                        xmin, xmax = x_plot.min(), x_plot.max()
+                        ymin, ymax = y_plot.min(), y_plot.max()
+                
+                if smooth is not None:
+                    # Use rectangular histogram with Gaussian smoothing
+                    hist, xedges, yedges = np.histogram2d(
+                        x_plot, y_plot,
+                        bins=gridsize,
+                        range=[[xmin, xmax], [ymin, ymax]]
+                    )
+                    
+                    # Determine min_samples threshold for masking
+                    if min_samples is None:
+                        valid_counts = hist[hist > 0]
+                        if len(valid_counts) > 0:
+                            mincnt = int(np.percentile(valid_counts, 10))
+                            mincnt = max(1, mincnt)
+                            logger.info(f"[{eye} eye] Auto-calculated min_samples threshold: {mincnt} "
+                                       f"(10th percentile of {len(valid_counts)} bins with counts ranging "
+                                       f"{int(valid_counts.min())}-{int(valid_counts.max())})")
+                        else:
+                            mincnt = 1
+                    else:
+                        mincnt = min_samples
+                    
+                    # Mask bins with insufficient samples
+                    hist_masked = np.where(hist >= mincnt, hist, np.nan)
+                    
+                    # Apply Gaussian smoothing (only to valid values)
+                    valid_mask = ~np.isnan(hist_masked)
+                    hist_filled = np.where(valid_mask, hist_masked, 0)
+                    
+                    # Smooth the data and the mask separately, then normalize
+                    smoothed_data = gaussian_filter(hist_filled.T, sigma=smooth)
+                    smoothed_mask = gaussian_filter(valid_mask.astype(float).T, sigma=smooth)
+                    
+                    # Normalize to get proper weighted average, mask where no data
+                    with np.errstate(divide='ignore', invalid='ignore'):
+                        hist_smooth = np.where(smoothed_mask > 0.01, 
+                                              smoothed_data / smoothed_mask, 
+                                              np.nan)
+                    
+                    im = ax.imshow(
+                        hist_smooth,
+                        origin='lower',
+                        extent=[xmin, xmax, ymin, ymax],
+                        cmap=cmap,
+                        aspect='auto'
+                    )
+                    
+                    # Set axis limits
+                    ax.set_xlim(xmin, xmax)
+                    ax.set_ylim(ymin, ymax)
+                else:
+                    # Determine min_samples threshold
+                    if min_samples is None:
+                        # Create temporary hexbin to get bin counts
+                        temp_hexbin = ax.hexbin(
+                            x_plot, 
+                            y_plot, 
+                            gridsize=gridsize, 
+                            mincnt=1
+                        )
+                        counts = temp_hexbin.get_array()
+                        # Use 10th percentile as threshold (keeps top 90%)
+                        mincnt = int(np.percentile(counts, 10))
+                        mincnt = max(1, mincnt)  # Ensure at least 1
+                        logger.info(f"[{eye} eye] Auto-calculated min_samples threshold: {mincnt} "
+                                   f"(10th percentile of {len(counts)} bins with counts ranging {int(counts.min())}-{int(counts.max())})")
+                        # Clear the temporary plot
+                        ax.clear()
+                    else:
+                        mincnt = min_samples
+                    
+                    im = ax.hexbin(x_plot, y_plot, gridsize=gridsize, cmap=cmap, mincnt=mincnt)
+                    
+                    # Set axis limits for hexbin too
+                    ax.set_xlim(xmin, xmax)
+                    ax.set_ylim(ymin, ymax)
                 
                 divider = make_axes_locatable(ax)
-                im=ax.hexbin(x_plot, y_plot, gridsize=gridsize, cmap=cmap, mincnt=mincnt)
                 cax = divider.append_axes('right', size='5%', pad=0.05)
                 fig.colorbar(im, cax=cax, orientation='vertical')
             ax.set_title(eye)
