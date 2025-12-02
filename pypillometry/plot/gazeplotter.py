@@ -46,7 +46,6 @@ class GazePlotter(GenericPlotter):
         show_masked: bool = False,
         rois: List[ROI] = None,
         units: str = "sec",
-        figsize: tuple = (10, 10),
         cmap: str = "jet",
         gridsize: int|str = 30,#"auto"
         min_samples: Optional[int] = 1,
@@ -75,8 +74,6 @@ class GazePlotter(GenericPlotter):
             List of ROIs to plot. Default is None.
         units: str
             The units to plot. Default is "sec".
-        figsize: tuple
-            The figure size (per subplot). Default is (10,5).
         cmap: str
             The colormap to use. Default is "jet".
         gridsize: str or int
@@ -121,14 +118,28 @@ class GazePlotter(GenericPlotter):
         if gridsize=="auto":
             gridsize=int(np.sqrt(endix-startix))
 
+        # Use current figure or create new one if none exists
         nplots = len(eyes)
-        fig, axs = plt.subplots(1,nplots)
-        # for the case when nplots=1, make axs iterable
-        if not isinstance(axs, Iterable):
-            axs=[axs]
-        fig.set_figheight(figsize[1])
-        fig.set_figwidth(figsize[0]*nplots)
-        for eye,ax in zip(eyes, axs):
+        fig = plt.gcf()
+        
+        # Check if current figure is empty/new
+        if len(fig.axes) == 0:
+            # Create subplots in the current figure
+            axs = fig.subplots(1, nplots)
+            # Make axs iterable even for single plot
+            if not isinstance(axs, Iterable):
+                axs = [axs]
+        else:
+            # Use existing axes
+            axs = fig.axes
+            if len(axs) != nplots:
+                logger.warning(f"Current figure has {len(axs)} axes but {nplots} eyes to plot. Creating new subplots.")
+                fig.clear()
+                axs = fig.subplots(1, nplots)
+                if not isinstance(axs, Iterable):
+                    axs = [axs]
+        
+        for eye, ax in zip(eyes, axs):
             vx = "_".join([eye,"x"])
             vy = "_".join([eye,"y"])
             if vx in obj.data.keys() and vy in obj.data.keys():
