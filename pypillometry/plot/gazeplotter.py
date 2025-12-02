@@ -46,7 +46,7 @@ class GazePlotter(GenericPlotter):
         units: str = "sec",
         figsize: tuple = (10, 10),
         cmap: str = "jet",
-        gridsize="auto"
+        gridsize: int|str = 30#"auto"
     ) -> None:
         """
         Plot EyeData as a heatmap. Typically used for a large amount of data
@@ -75,7 +75,7 @@ class GazePlotter(GenericPlotter):
         cmap: str
             The colormap to use. Default is "jet".
         gridsize: str or int
-            The gridsize for the hexbin plot. Default is "auto".
+            The gridsize for the hexbin plot. Default is 30.
         """
         obj = self.obj
         
@@ -117,7 +117,7 @@ class GazePlotter(GenericPlotter):
             if vx in obj.data.keys() and vy in obj.data.keys():
                 x_data = obj.data[vx][startix:endix]
                 y_data = obj.data[vy][startix:endix]
-                if show_masked and vx in obj.data.mask and vy in obj.data.mask:
+                if not show_masked and vx in obj.data.mask and vy in obj.data.mask:
                     mask = obj.data.mask[vx][startix:endix] | obj.data.mask[vy][startix:endix]
                     mask = mask.astype(bool)
                     x_plot = x_data[~mask]

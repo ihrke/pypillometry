@@ -189,7 +189,7 @@ class PupilData(GenericEyeData):
                       winsize: float=11, vel_onset: float=-5, vel_offset: float=5, 
                       min_onset_len: int=5, min_offset_len: int=5,
                       strategies: list=["zero","velocity"],
-                      units="ms", apply_mask=True, ignore_existing_mask=True, inplace=None):
+                      units="ms", apply_mask=True, ignore_existing_mask=False, inplace=None):
         """
         Detect blinks in the pupillary signal using several strategies.
         First, blinks are detected as consecutive sequence of `blink_val` 

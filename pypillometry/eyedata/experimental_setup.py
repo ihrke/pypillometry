@@ -49,7 +49,7 @@ class ExperimentalSetup:
         Distance from eye to screen center.
         - float: assumed to be mm
         - str: with units, e.g., "65 cm", "650 mm"
-        The perpendicular distance d is computed from:
+        The perpendicular distance d between midpoint and eye-plane is computed from:
         d = sqrt(eye_to_screen_center^2 - delta_x^2 - delta_y^2)
         If screen_offset is (0, 0) or not set, d equals eye_to_screen_center.
         Note: For binocular setups, "eye" refers to the midpoint between

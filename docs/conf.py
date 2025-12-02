@@ -143,5 +143,5 @@ def run_convert_github_admonitions_to_rst(app, relative_path, parent_docname, li
         # swap line back in original
         lines[i] = "\n".join(orig_line_splits)
 
-def setup(app):
-    app.connect('include-read', run_convert_github_admonitions_to_rst)
+#def setup(app):
+#    app.connect('include-read', run_convert_github_admonitions_to_rst)

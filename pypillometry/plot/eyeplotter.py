@@ -17,7 +17,7 @@ class EyePlotter(GazePlotter,PupilPlotter):
         plot_range: tuple = (-np.inf, +np.inf),
         units: str = "sec",
         show_screen: bool = True,
-        cmap: str = "viridis",
+        cmap: str = "jet",
         gridsize: int = 30,
         vmin: Optional[float] = None,
         vmax: Optional[float] = None
@@ -43,7 +43,7 @@ class EyePlotter(GazePlotter,PupilPlotter):
         show_screen : bool, optional
             Whether to plot the screen limits. Default is True.
         cmap : str, optional
-            Colormap to use. Default is "viridis".
+            Colormap to use. Default is "jet".
         gridsize : int, optional
             Number of hexagonal bins in each direction. Default is 30.
         vmin : float, optional
