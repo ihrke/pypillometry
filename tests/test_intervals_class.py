@@ -57,7 +57,7 @@ class TestIntervalsClass(unittest.TestCase):
         intervals_list = [(0, 100), (200, 300)]
         intervals = Intervals(intervals_list, units="ms")
         
-        arr = intervals.to_array()
+        arr = np.array(intervals)
         self.assertIsInstance(arr, np.ndarray)
         self.assertEqual(arr.shape, (2, 2))
         np.testing.assert_array_equal(arr, [[0, 100], [200, 300]])
@@ -617,7 +617,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         """Test to_units('indices') when intervals already in indices"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
         indices_intervals = intervals.to_units("indices")
-        indices = indices_intervals.to_array().astype(int)
+        indices = np.array(indices_intervals).astype(int)
         
         self.assertIsInstance(indices, np.ndarray)
         self.assertEqual(indices.dtype, np.int_)
@@ -628,7 +628,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         """Test to_units('indices') with millisecond units"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         indices_intervals = intervals.to_units("indices")
-        indices = indices_intervals.to_array().astype(int)
+        indices = np.array(indices_intervals).astype(int)
         
         self.assertIsInstance(indices, np.ndarray)
         self.assertEqual(indices.dtype, np.int_)
@@ -643,7 +643,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         """Test to_units('indices') with second units"""
         intervals = self.data.get_intervals("F", interval=(-0.2, 0.2), units="sec")
         indices_intervals = intervals.to_units("indices")
-        indices = indices_intervals.to_array().astype(int)
+        indices = np.array(indices_intervals).astype(int)
         
         self.assertIsInstance(indices, np.ndarray)
         self.assertEqual(indices.dtype, np.int_)
@@ -892,7 +892,7 @@ class TestMergeIntervals(unittest.TestCase):
         
         # Should have both intervals, not merged
         self.assertEqual(len(merged), 2)
-        arr = merged.to_array()
+        arr = np.array(merged)
         self.assertEqual(arr[0, 0], 0)
         self.assertEqual(arr[0, 1], 100)
         self.assertEqual(arr[1, 0], 50)

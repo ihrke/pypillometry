@@ -303,7 +303,7 @@ class PupilPlotter(GenericPlotter):
             logger.warning("No blinks to plot")
             return []
         
-        blinks_ix = blinks.to_units("indices").to_array().astype(int)
+        blinks_ix = np.array(blinks.to_units("indices")).astype(int)
         
         pre_blink_ix = int(pre_blink / 1000 * self.obj.fs)
         post_blink_ix = int(post_blink / 1000 * self.obj.fs)

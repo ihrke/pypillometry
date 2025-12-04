@@ -533,7 +533,7 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(len(blinks), 1)  # Should merge into one blink
         
         # Convert to integer indices for indexing
-        blinks_ix = blinks.to_units("indices").to_array().astype(int)
+        blinks_ix = np.array(blinks.to_units("indices")).astype(int)
         self.assertEqual(blinks_ix[0, 0], 100)  # Start of first blink
         self.assertEqual(blinks_ix[0, 1], 350)  # End of last blink
 
@@ -544,7 +544,7 @@ class TestEyeData(unittest.TestCase):
         self.eyedata.set_blinks(intervals2, eyes=['left'], variables=['pupil'])
         merged_sec = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=0.1, units="sec")
         blinks_sec = merged_sec.get_blinks('left', 'pupil')
-        blinks_ix_sec = blinks_sec.to_units("indices").to_array().astype(int)
+        blinks_ix_sec = np.array(blinks_sec.to_units("indices")).astype(int)
         self.assertEqual(blinks_ix_sec[0, 0], 100)
         self.assertEqual(blinks_ix_sec[0, 1], 350)
 
@@ -555,7 +555,7 @@ class TestEyeData(unittest.TestCase):
         self.eyedata.set_blinks(intervals3, eyes=['left'], variables=['pupil'])
         separated = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=10, units="ms")
         blinks_sep = separated.get_blinks('left', 'pupil')
-        blinks_ix_sep = blinks_sep.to_units("indices").to_array().astype(int)
+        blinks_ix_sep = np.array(blinks_sep.to_units("indices")).astype(int)
         self.assertEqual(len(blinks_ix_sep), 2)
         np.testing.assert_array_equal(blinks_ix_sep[0], [100, 200])
         np.testing.assert_array_equal(blinks_ix_sep[1], [250, 350])
@@ -602,7 +602,7 @@ class TestEyeData(unittest.TestCase):
         # Verify the blinks are stored
         blinks = data.get_blinks('left', 'pupil')
         self.assertEqual(len(blinks), 1)
-        blinks_ix = blinks.to_units("indices").to_array().astype(int)
+        blinks_ix = np.array(blinks.to_units("indices")).astype(int)
         self.assertEqual(blinks_ix[0, 0], 100)
         self.assertEqual(blinks_ix[0, 1], 350)
 
@@ -633,7 +633,7 @@ class TestEyeData(unittest.TestCase):
         # Verify the merged intervals are correct
         merged_intervals = result['left_pupil']
         self.assertEqual(len(merged_intervals), 1)
-        merged_ix = merged_intervals.to_units("indices").to_array().astype(int)
+        merged_ix = np.array(merged_intervals.to_units("indices")).astype(int)
         self.assertEqual(merged_ix[0, 0], 100)
         self.assertEqual(merged_ix[0, 1], 350)
         
@@ -672,14 +672,14 @@ class TestEyeData(unittest.TestCase):
         # Check left eye merging (100-200 and 250-350 should merge)
         left_merged = result['left_pupil']
         self.assertEqual(len(left_merged), 1)
-        left_ix = left_merged.to_units("indices").to_array().astype(int)
+        left_ix = np.array(left_merged.to_units("indices")).astype(int)
         self.assertEqual(left_ix[0, 0], 100)
         self.assertEqual(left_ix[0, 1], 350)
         
         # Check right eye (150-250 and 400-500 should NOT merge as they're 150ms apart)
         right_merged = result['right_pupil']
         self.assertEqual(len(right_merged), 2)
-        right_ix = right_merged.to_units("indices").to_array().astype(int)
+        right_ix = np.array(right_merged.to_units("indices")).astype(int)
         np.testing.assert_array_equal(right_ix[0], [150, 250])
         np.testing.assert_array_equal(right_ix[1], [400, 500])
 
@@ -697,7 +697,7 @@ class TestEyeData(unittest.TestCase):
         self.assertGreater(len(blinks), 0)
 
         mask = result.data.mask['left_pupil']
-        blink_indices = blinks.to_units("indices").to_array().astype(int)
+        blink_indices = np.array(blinks.to_units("indices")).astype(int)
         for start, end in blink_indices:
             self.assertTrue(np.all(mask[start:end] == 1))
     

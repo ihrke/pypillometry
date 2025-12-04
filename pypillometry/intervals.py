@@ -640,17 +640,6 @@ class Intervals:
             sampling_rate=combined_sampling_rate
         )
     
-    def to_array(self):
-        """
-        Convert intervals to numpy array.
-        
-        Returns
-        -------
-        np.ndarray
-            Array with shape (n, 2) containing intervals
-        """
-        return np.array(self.intervals)
-    
     def __array__(self) -> np.ndarray:
         """
         Convert intervals to numpy array.

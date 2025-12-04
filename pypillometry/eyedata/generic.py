@@ -468,7 +468,7 @@ class GenericEyeData(ABC):
                     if key not in self.data.data:
                         logger.warning(f"Key '{key}' not found in data, skipping mask application")
                         continue
-                    intervals_array = interval_obj.to_array()
+                    intervals_array = np.array(interval_obj)
                     for bstart, bend in intervals_array:
                         self.data.mask[key][int(bstart):int(bend)] = 1
         else:
@@ -489,7 +489,7 @@ class GenericEyeData(ABC):
                         if key not in self.data.data:
                             logger.warning(f"Key '{key}' not found in data, skipping mask application")
                             continue
-                        intervals_array = intervals.to_array()
+                        intervals_array = np.array(intervals)
                         for bstart, bend in intervals_array:
                             self.data.mask[key][int(bstart):int(bend)] = 1
 
@@ -1891,7 +1891,7 @@ class GenericEyeData(ABC):
             if len(blinks) == 0:
                 continue
             logger.debug(f"Processing blinks for eye {eye} and variable {var}: {len(blinks)} blinks")
-            blinks_array = blinks.to_array().astype(int)
+            blinks_array = np.array(blinks).astype(int)
             
             newblinks = []
             i = 1
@@ -2138,7 +2138,7 @@ class GenericEyeData(ABC):
                     interval_obj.sampling_rate = obj.fs
                 
                 # Convert to index-based intervals if needed
-                intervals_array = interval_obj.to_units("indices").to_array().astype(int)
+                intervals_array = np.array(interval_obj.to_units("indices")).astype(int)
                 
                 # Apply mask for this specific eye_variable
                 if key not in obj.data.data:
@@ -2161,7 +2161,7 @@ class GenericEyeData(ABC):
             eyes, variables = obj._get_eye_var(eyes, variables)
             
             # Convert to index-based intervals if needed
-            intervals_array = intervals.to_units("indices").to_array().astype(int)
+            intervals_array = np.array(intervals.to_units("indices")).astype(int)
             
             # Apply to all combinations of eyes and variables
             for eye in eyes:
