@@ -723,6 +723,16 @@ window.addEventListener("load", load);
         <span class="k">if</span> <span class="n">store_as</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">dist_copy</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">dist_copy</span><span class="o">.</span><span class="n">mask</span> <span class="o">|=</span> <span class="n">divergence_mask</span>
+            <span class="c1"># If we ignored existing masks for calculation, still apply them to stored result</span>
+            <span class="k">if</span> <span class="n">ignore_existing_mask</span><span class="p">:</span>
+                <span class="c1"># Combine masks from all source variables</span>
+                <span class="n">original_mask</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;left_x&#39;</span><span class="p">])</span> <span class="o">|</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;left_y&#39;</span><span class="p">])</span> <span class="o">|</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;right_x&#39;</span><span class="p">])</span> <span class="o">|</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;right_y&#39;</span><span class="p">])</span>
+                <span class="p">)</span>
+                <span class="n">dist_copy</span><span class="o">.</span><span class="n">mask</span> <span class="o">|=</span> <span class="n">original_mask</span>
             <span class="n">obj</span><span class="p">[</span><span class="n">store_as</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist_copy</span>
         
         <span class="c1"># Create Intervals object for the detected divergences</span>
