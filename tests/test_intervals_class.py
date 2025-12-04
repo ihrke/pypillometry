@@ -990,6 +990,268 @@ class TestMergeIntervals(unittest.TestCase):
             self.assertEqual(len(merged), 2)
 
 
+class TestIntervalsMaskConversion(unittest.TestCase):
+    """Test Intervals to_mask() and from_mask() methods"""
+    
+    def test_to_mask_basic(self):
+        """Test basic conversion to mask"""
+        intervals = Intervals([(0, 10), (20, 30)], units=None, data_time_range=(0, 50))
+        mask = intervals.to_mask()
+        
+        self.assertIsInstance(mask, np.ndarray)
+        self.assertEqual(len(mask), 50)
+        self.assertEqual(mask.dtype, np.int8)
+        
+        # Check mask values
+        np.testing.assert_array_equal(mask[0:10], 1)
+        np.testing.assert_array_equal(mask[10:20], 0)
+        np.testing.assert_array_equal(mask[20:30], 1)
+        np.testing.assert_array_equal(mask[30:50], 0)
+    
+    def test_to_mask_with_explicit_length(self):
+        """Test to_mask with explicit length argument"""
+        intervals = Intervals([(0, 10), (20, 30)], units=None)
+        mask = intervals.to_mask(length=40)
+        
+        self.assertEqual(len(mask), 40)
+        np.testing.assert_array_equal(mask[0:10], 1)
+        np.testing.assert_array_equal(mask[20:30], 1)
+    
+    def test_to_mask_empty_intervals(self):
+        """Test to_mask with empty intervals"""
+        intervals = Intervals([], units=None, data_time_range=(0, 100))
+        mask = intervals.to_mask()
+        
+        self.assertEqual(len(mask), 100)
+        np.testing.assert_array_equal(mask, 0)
+    
+    def test_to_mask_auto_converts_time_units(self):
+        """Test that to_mask auto-converts time-based intervals to indices"""
+        # 100ms intervals at 1000Hz = 100 samples
+        intervals = Intervals([(0, 100), (200, 300)], units="ms", 
+                             data_time_range=(0, 500), sampling_rate=1000)
+        mask = intervals.to_mask()
+        
+        self.assertEqual(len(mask), 500)  # 500ms at 1000Hz = 500 samples
+        np.testing.assert_array_equal(mask[0:100], 1)
+        np.testing.assert_array_equal(mask[100:200], 0)
+        np.testing.assert_array_equal(mask[200:300], 1)
+        np.testing.assert_array_equal(mask[300:500], 0)
+    
+    def test_to_mask_raises_without_sampling_rate(self):
+        """Test that to_mask raises error for time units without sampling_rate"""
+        intervals = Intervals([(0, 100)], units="ms", data_time_range=(0, 500))
+        
+        with self.assertRaises(ValueError) as cm:
+            intervals.to_mask()
+        
+        self.assertIn("sampling_rate", str(cm.exception).lower())
+    
+    def test_to_mask_raises_without_length_or_data_time_range(self):
+        """Test that to_mask raises error without length or data_time_range"""
+        intervals = Intervals([(0, 10)], units=None)
+        
+        with self.assertRaises(ValueError) as cm:
+            intervals.to_mask()
+        
+        self.assertIn("length", str(cm.exception).lower())
+    
+    def test_to_mask_clips_to_bounds(self):
+        """Test that intervals outside mask bounds are clipped"""
+        intervals = Intervals([(-10, 10), (40, 60)], units=None, data_time_range=(0, 50))
+        mask = intervals.to_mask()
+        
+        # Should clip to [0, 50)
+        np.testing.assert_array_equal(mask[0:10], 1)
+        np.testing.assert_array_equal(mask[40:50], 1)
+    
+    def test_from_mask_basic(self):
+        """Test basic creation from mask"""
+        mask = np.array([0, 0, 1, 1, 1, 0, 0, 1, 1, 0])
+        intervals = Intervals.from_mask(mask)
+        
+        self.assertIsInstance(intervals, Intervals)
+        self.assertEqual(len(intervals), 2)
+        self.assertEqual(intervals.intervals, [(2, 5), (7, 9)])
+        self.assertIsNone(intervals.units)
+        self.assertEqual(intervals.data_time_range, (0, 10))
+    
+    def test_from_mask_all_zeros(self):
+        """Test from_mask with all zeros"""
+        mask = np.zeros(100, dtype=int)
+        intervals = Intervals.from_mask(mask)
+        
+        self.assertEqual(len(intervals), 0)
+    
+    def test_from_mask_all_ones(self):
+        """Test from_mask with all ones"""
+        mask = np.ones(100, dtype=int)
+        intervals = Intervals.from_mask(mask)
+        
+        self.assertEqual(len(intervals), 1)
+        self.assertEqual(intervals.intervals, [(0, 100)])
+    
+    def test_from_mask_with_label(self):
+        """Test from_mask with label"""
+        mask = np.array([1, 1, 0, 0, 1, 1])
+        intervals = Intervals.from_mask(mask, label="test_mask")
+        
+        self.assertEqual(intervals.label, "test_mask")
+    
+    def test_from_mask_with_sampling_rate(self):
+        """Test from_mask with sampling_rate"""
+        mask = np.array([1, 1, 0, 0, 1, 1])
+        intervals = Intervals.from_mask(mask, sampling_rate=1000)
+        
+        self.assertEqual(intervals.sampling_rate, 1000)
+    
+    def test_from_mask_boolean_input(self):
+        """Test from_mask with boolean array"""
+        mask = np.array([False, True, True, False, True])
+        intervals = Intervals.from_mask(mask)
+        
+        self.assertEqual(intervals.intervals, [(1, 3), (4, 5)])
+    
+    def test_roundtrip_to_mask_from_mask(self):
+        """Test roundtrip: intervals -> mask -> intervals"""
+        original = Intervals([(10, 20), (30, 50), (70, 80)], units=None, data_time_range=(0, 100))
+        
+        mask = original.to_mask()
+        recovered = Intervals.from_mask(mask)
+        
+        self.assertEqual(original.intervals, recovered.intervals)
+
+
+class TestIntervalsSubtractOperator(unittest.TestCase):
+    """Test Intervals - operator for subtracting intervals"""
+    
+    def test_subtract_basic(self):
+        """Test basic subtraction of intervals"""
+        a = Intervals([(0, 100), (200, 300)], units=None, data_time_range=(0, 400))
+        b = Intervals([(50, 150)], units=None, data_time_range=(0, 400))
+        c = a - b
+        
+        self.assertIsInstance(c, Intervals)
+        # (0, 100) - (50, 150) = (0, 50)
+        # (200, 300) unchanged
+        self.assertEqual(c.intervals, [(0, 50), (200, 300)])
+    
+    def test_subtract_complete_removal(self):
+        """Test subtraction that completely removes an interval"""
+        a = Intervals([(50, 100)], units=None, data_time_range=(0, 200))
+        b = Intervals([(0, 150)], units=None, data_time_range=(0, 200))
+        c = a - b
+        
+        # (50, 100) is completely contained in (0, 150), so nothing remains
+        self.assertEqual(len(c), 0)
+    
+    def test_subtract_no_overlap(self):
+        """Test subtraction with no overlap"""
+        a = Intervals([(0, 50), (100, 150)], units=None, data_time_range=(0, 200))
+        b = Intervals([(60, 90)], units=None, data_time_range=(0, 200))
+        c = a - b
+        
+        # No overlap, a unchanged
+        self.assertEqual(c.intervals, [(0, 50), (100, 150)])
+    
+    def test_subtract_splits_interval(self):
+        """Test subtraction that splits an interval in two"""
+        a = Intervals([(0, 100)], units=None, data_time_range=(0, 200))
+        b = Intervals([(40, 60)], units=None, data_time_range=(0, 200))
+        c = a - b
+        
+        # (0, 100) - (40, 60) = (0, 40) and (60, 100)
+        self.assertEqual(c.intervals, [(0, 40), (60, 100)])
+    
+    def test_subtract_empty_left(self):
+        """Test subtraction with empty left operand"""
+        a = Intervals([], units=None, data_time_range=(0, 100))
+        b = Intervals([(20, 50)], units=None, data_time_range=(0, 100))
+        c = a - b
+        
+        self.assertEqual(len(c), 0)
+    
+    def test_subtract_empty_right(self):
+        """Test subtraction with empty right operand"""
+        a = Intervals([(0, 50)], units=None, data_time_range=(0, 100))
+        b = Intervals([], units=None, data_time_range=(0, 100))
+        c = a - b
+        
+        self.assertEqual(c.intervals, [(0, 50)])
+    
+    def test_subtract_with_time_units(self):
+        """Test subtraction with time-based intervals"""
+        # 1000Hz sampling rate
+        a = Intervals([(0, 100), (200, 300)], units="ms", 
+                     data_time_range=(0, 400), sampling_rate=1000)
+        b = Intervals([(50, 150)], units="ms", 
+                     data_time_range=(0, 400), sampling_rate=1000)
+        c = a - b
+        
+        # Result should also be in ms (converted back from indices)
+        self.assertEqual(c.units, "ms")
+        # Check intervals are approximately correct
+        self.assertEqual(len(c), 2)
+        self.assertAlmostEqual(c.intervals[0][0], 0, places=0)
+        self.assertAlmostEqual(c.intervals[0][1], 50, places=0)
+        self.assertAlmostEqual(c.intervals[1][0], 200, places=0)
+        self.assertAlmostEqual(c.intervals[1][1], 300, places=0)
+    
+    def test_subtract_creates_label(self):
+        """Test that subtraction creates combined label"""
+        a = Intervals([(0, 100)], units=None, data_time_range=(0, 200), label="a")
+        b = Intervals([(50, 75)], units=None, data_time_range=(0, 200), label="b")
+        c = a - b
+        
+        self.assertIn("a", c.label)
+        self.assertIn("b", c.label)
+    
+    def test_subtract_preserves_sampling_rate(self):
+        """Test that subtraction preserves sampling_rate"""
+        a = Intervals([(0, 100)], units=None, data_time_range=(0, 200), sampling_rate=500)
+        b = Intervals([(50, 75)], units=None, data_time_range=(0, 200))
+        c = a - b
+        
+        self.assertEqual(c.sampling_rate, 500)
+    
+    def test_subtract_non_intervals_returns_notimplemented(self):
+        """Test that subtracting non-Intervals returns NotImplemented"""
+        a = Intervals([(0, 100)], units=None, data_time_range=(0, 200))
+        
+        result = a.__sub__("not an Intervals")
+        self.assertEqual(result, NotImplemented)
+    
+    def test_subtract_raises_without_data_time_range(self):
+        """Test that subtraction raises error without data_time_range"""
+        a = Intervals([(0, 100)], units=None)
+        b = Intervals([(50, 75)], units=None)
+        
+        with self.assertRaises(ValueError) as cm:
+            a - b
+        
+        self.assertIn("data_time_range", str(cm.exception).lower())
+    
+    def test_subtract_uses_other_data_time_range(self):
+        """Test that subtraction uses other's data_time_range if self doesn't have one"""
+        a = Intervals([(0, 100)], units=None)
+        b = Intervals([(50, 75)], units=None, data_time_range=(0, 200))
+        c = a - b
+        
+        # Should work using b's data_time_range
+        self.assertEqual(c.intervals, [(0, 50), (75, 100)])
+    
+    def test_subtract_multiple_from_multiple(self):
+        """Test subtracting multiple intervals from multiple intervals"""
+        a = Intervals([(0, 50), (100, 150), (200, 250)], units=None, data_time_range=(0, 300))
+        b = Intervals([(25, 75), (125, 225)], units=None, data_time_range=(0, 300))
+        c = a - b
+        
+        # (0, 50) - (25, 75) = (0, 25)
+        # (100, 150) - (125, 225) = (100, 125)
+        # (200, 250) - (125, 225) = (225, 250)
+        self.assertEqual(c.intervals, [(0, 25), (100, 125), (225, 250)])
+
+
 if __name__ == '__main__':
     unittest.main()
 
