@@ -313,6 +313,202 @@ class Intervals:
         """Get interval(s) by index."""
         return self.intervals[idx]
     
+    def to_mask(self, length: int = None) -> np.ndarray:
+        """
+        Convert intervals to a binary mask array.
+        
+        If intervals have time units, they are automatically converted to indices
+        using the sampling_rate.
+        
+        Parameters
+        ----------
+        length : int, optional
+            Length of the mask array. If None, uses data_time_range[1] 
+            (converted to indices if necessary).
+            
+        Returns
+        -------
+        np.ndarray
+            Binary array with 1s where intervals exist, 0s elsewhere.
+            
+        Raises
+        ------
+        ValueError
+            If length is not provided and data_time_range is not set.
+            If intervals have time units but sampling_rate is not set.
+            
+        Examples
+        --------
+        >>> intervals = Intervals([(0, 10), (20, 30)], units=None, data_time_range=(0, 50))
+        >>> mask = intervals.to_mask()
+        >>> mask.shape
+        (50,)
+        
+        >>> # Time-based intervals are auto-converted
+        >>> intervals = Intervals([(0, 100), (200, 300)], units="ms", 
+        ...                       data_time_range=(0, 500), sampling_rate=1000)
+        >>> mask = intervals.to_mask()  # Converts to indices automatically
+        """
+        # Convert to index-based if needed
+        if self.units is not None:
+            if self.sampling_rate is None:
+                raise ValueError(
+                    "Cannot convert time-based intervals to mask without sampling_rate. "
+                    "Set sampling_rate when creating the Intervals object."
+                )
+            intervals_idx = self.to_units(None)
+        else:
+            intervals_idx = self
+        
+        # Determine length
+        # Note: We use data_time_range[1] (not the span) because intervals are stored
+        # as absolute indices. The mask covers indices 0 to data_time_range[1]-1.
+        if length is None:
+            if intervals_idx.data_time_range is None:
+                raise ValueError(
+                    "Cannot create mask without length. Either provide length argument "
+                    "or set data_time_range when creating the Intervals object."
+                )
+            length = int(intervals_idx.data_time_range[1])
+        
+        mask = np.zeros(length, dtype=np.int8)
+        for start, end in intervals_idx.intervals:
+            start_idx = max(0, int(start))
+            end_idx = min(length, int(end))
+            mask[start_idx:end_idx] = 1
+        
+        return mask
+    
+    @classmethod
+    def from_mask(cls, mask: np.ndarray, units=None, label: str = None, 
+                  sampling_rate: float = None) -> 'Intervals':
+        """
+        Create Intervals from a binary mask array.
+        
+        Parameters
+        ----------
+        mask : np.ndarray
+            Binary array where non-zero values indicate interval membership.
+        units : str or None, optional
+            Units for the intervals. Default is None (indices).
+        label : str, optional
+            Label for the intervals.
+        sampling_rate : float, optional
+            Sampling rate in Hz.
+            
+        Returns
+        -------
+        Intervals
+            New Intervals object created from the mask.
+            
+        Examples
+        --------
+        >>> mask = np.array([0, 0, 1, 1, 1, 0, 0, 1, 1, 0])
+        >>> intervals = Intervals.from_mask(mask)
+        >>> intervals.intervals
+        [(2, 5), (7, 9)]
+        """
+        # Find transitions in the mask
+        mask_bool = mask.astype(bool).astype(int)
+        # Pad with zeros to detect edges
+        padded = np.concatenate([[0], mask_bool, [0]])
+        diff = np.diff(padded)
+        
+        # Starts are where diff == 1, ends are where diff == -1
+        starts = np.where(diff == 1)[0]
+        ends = np.where(diff == -1)[0]
+        
+        intervals_list = list(zip(starts.tolist(), ends.tolist()))
+        
+        return cls(
+            intervals_list,
+            units=units,
+            label=label,
+            data_time_range=(0, len(mask)),
+            sampling_rate=sampling_rate
+        )
+    
+    def __sub__(self, other: 'Intervals') -> 'Intervals':
+        """
+        Subtract intervals using the - operator.
+        
+        Converts both Intervals to binary masks, subtracts them (with negative 
+        values clipped to 0), and converts back to Intervals. This effectively
+        removes the regions covered by 'other' from 'self'.
+        
+        Both Intervals must be index-based (units=None) or will be converted.
+        
+        Parameters
+        ----------
+        other : Intervals
+            Intervals to subtract from self
+            
+        Returns
+        -------
+        Intervals
+            New Intervals object with subtracted regions removed
+            
+        Raises
+        ------
+        TypeError
+            If other is not an Intervals object
+        ValueError
+            If neither object has data_time_range set
+            
+        Examples
+        --------
+        >>> a = Intervals([(0, 100), (200, 300)], units=None, data_time_range=(0, 400))
+        >>> b = Intervals([(50, 150)], units=None, data_time_range=(0, 400))
+        >>> c = a - b
+        >>> c.intervals  # (0, 50) and (200, 300) remain
+        [(0, 50), (200, 300)]
+        """
+        if not isinstance(other, Intervals):
+            return NotImplemented
+        
+        # Convert to index-based if needed
+        if self.units is not None:
+            self_idx = self.to_units(None)
+        else:
+            self_idx = self
+        
+        if other.units is not None:
+            other_idx = other.to_units(None)
+        else:
+            other_idx = other
+        
+        # Determine mask length from data_time_range
+        if self_idx.data_time_range is not None:
+            length = int(self_idx.data_time_range[1])
+        elif other_idx.data_time_range is not None:
+            length = int(other_idx.data_time_range[1])
+        else:
+            raise ValueError(
+                "Cannot subtract Intervals without data_time_range. "
+                "At least one Intervals object must have data_time_range set."
+            )
+        
+        # Convert to masks
+        mask_self = self_idx.to_mask(length)
+        mask_other = other_idx.to_mask(length)
+        
+        # Subtract and clip negative values to 0
+        result_mask = np.clip(mask_self - mask_other, 0, 1)
+        
+        # Convert back to Intervals
+        result = Intervals.from_mask(
+            result_mask,
+            units=None,
+            label=f"{self.label or 'intervals'} - {other.label or 'intervals'}",
+            sampling_rate=self.sampling_rate or other.sampling_rate
+        )
+        
+        # Convert back to original units if self had time units
+        if self.units is not None:
+            result = result.to_units(self.units)
+        
+        return result
+    
     def __add__(self, other: 'Intervals') -> 'Intervals':
         """
         Combine two Intervals objects using the + operator.

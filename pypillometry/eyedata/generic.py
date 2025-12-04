@@ -674,23 +674,19 @@ class GenericEyeData(ABC):
         
         Returns intervals with exclusive end (Python convention): [start, end)
         This means the interval (1, 4) covers indices 1, 2, 3 (not 4).
+        
+        Uses Intervals.from_mask() internally for the conversion.
         """
         if not isinstance(mask, np.ndarray):
             mask = np.array(mask)
         if mask.ndim > 1:
             raise ValueError("mask must be 1D")
-        if mask.dtype not in (bool, int):
-            raise ValueError("mask must be int or boolean")
         if mask.size == 0 or not np.any(mask):
             return []
         
-        m = np.concatenate(([0], mask, [0]))
-        idxs = np.flatnonzero(m[1:] != m[:-1])
-        ivs = list(zip(idxs[::2], idxs[1::2]))
-        # Use exclusive end to match Python slicing convention
-        ivs = [(max(start, 0), min(end, mask.size)) 
-               for start, end in ivs]
-        return ivs
+        # Use Intervals.from_mask() for the conversion
+        intervals_obj = Intervals.from_mask(mask)
+        return intervals_obj.intervals
 
     def _init_blinks(self, eyes=[], variables=[]):
         """Initialize blink-arrays for selected eyes and variables.
