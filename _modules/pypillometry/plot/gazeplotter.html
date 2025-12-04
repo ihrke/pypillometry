@@ -457,7 +457,6 @@ window.addEventListener("load", load);
         <span class="n">show_masked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">rois</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ROI</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sec&quot;</span><span class="p">,</span>
-        <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
         <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;jet&quot;</span><span class="p">,</span>
         <span class="n">gridsize</span><span class="p">:</span> <span class="nb">int</span><span class="o">|</span><span class="nb">str</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span><span class="c1">#&quot;auto&quot;</span>
         <span class="n">min_samples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -486,8 +485,6 @@ window.addEventListener("load", load);
 <span class="sd">            List of ROIs to plot. Default is None.</span>
 <span class="sd">        units: str</span>
 <span class="sd">            The units to plot. Default is &quot;sec&quot;.</span>
-<span class="sd">        figsize: tuple</span>
-<span class="sd">            The figure size (per subplot). Default is (10,5).</span>
 <span class="sd">        cmap: str</span>
 <span class="sd">            The colormap to use. Default is &quot;jet&quot;.</span>
 <span class="sd">        gridsize: str or int</span>
@@ -532,14 +529,28 @@ window.addEventListener("load", load);
         <span class="k">if</span> <span class="n">gridsize</span><span class="o">==</span><span class="s2">&quot;auto&quot;</span><span class="p">:</span>
             <span class="n">gridsize</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">endix</span><span class="o">-</span><span class="n">startix</span><span class="p">))</span>
 
+        <span class="c1"># Use current figure or create new one if none exists</span>
         <span class="n">nplots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span>
-        <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">nplots</span><span class="p">)</span>
-        <span class="c1"># for the case when nplots=1, make axs iterable</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
-            <span class="n">axs</span><span class="o">=</span><span class="p">[</span><span class="n">axs</span><span class="p">]</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">set_figheight</span><span class="p">(</span><span class="n">figsize</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">fig</span><span class="o">.</span><span class="n">set_figwidth</span><span class="p">(</span><span class="n">figsize</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">nplots</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">eye</span><span class="p">,</span><span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">axs</span><span class="p">):</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span>
+        
+        <span class="c1"># Check if current figure is empty/new</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Create subplots in the current figure</span>
+            <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nplots</span><span class="p">)</span>
+            <span class="c1"># Make axs iterable even for single plot</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+                <span class="n">axs</span> <span class="o">=</span> <span class="p">[</span><span class="n">axs</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Use existing axes</span>
+            <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">axes</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">axs</span><span class="p">)</span> <span class="o">!=</span> <span class="n">nplots</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current figure has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">axs</span><span class="p">)</span><span class="si">}</span><span class="s2"> axes but </span><span class="si">{</span><span class="n">nplots</span><span class="si">}</span><span class="s2"> eyes to plot. Creating new subplots.&quot;</span><span class="p">)</span>
+                <span class="n">fig</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nplots</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axs</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+                    <span class="n">axs</span> <span class="o">=</span> <span class="p">[</span><span class="n">axs</span><span class="p">]</span>
+        
+        <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">axs</span><span class="p">):</span>
             <span class="n">vx</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
             <span class="n">vy</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;y&quot;</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">vx</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="n">vy</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>

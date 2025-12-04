@@ -882,7 +882,7 @@ window.addEventListener("load", load);
                     <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; not found in data, skipping mask application&quot;</span><span class="p">)</span>
                         <span class="k">continue</span>
-                    <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">interval_obj</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span>
+                    <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">interval_obj</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">bstart</span><span class="p">,</span> <span class="n">bend</span> <span class="ow">in</span> <span class="n">intervals_array</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">bstart</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">bend</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
@@ -903,7 +903,7 @@ window.addEventListener("load", load);
                         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
                             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; not found in data, skipping mask application&quot;</span><span class="p">)</span>
                             <span class="k">continue</span>
-                        <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span>
+                        <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span>
                         <span class="k">for</span> <span class="n">bstart</span><span class="p">,</span> <span class="n">bend</span> <span class="ow">in</span> <span class="n">intervals_array</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">bstart</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">bend</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span></div>
 
@@ -1095,23 +1095,19 @@ window.addEventListener("load", load);
 <span class="sd">        </span>
 <span class="sd">        Returns intervals with exclusive end (Python convention): [start, end)</span>
 <span class="sd">        This means the interval (1, 4) covers indices 1, 2, 3 (not 4).</span>
+<span class="sd">        </span>
+<span class="sd">        Uses Intervals.from_mask() internally for the conversion.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mask must be 1D&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mask must be int or boolean&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">mask</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">[]</span>
         
-        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="mi">0</span><span class="p">],</span> <span class="n">mask</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-        <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">!=</span> <span class="n">m</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">ivs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">idxs</span><span class="p">[::</span><span class="mi">2</span><span class="p">],</span> <span class="n">idxs</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]))</span>
-        <span class="c1"># Use exclusive end to match Python slicing convention</span>
-        <span class="n">ivs</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">max</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">mask</span><span class="o">.</span><span class="n">size</span><span class="p">))</span> 
-               <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">ivs</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">ivs</span>
+        <span class="c1"># Use Intervals.from_mask() for the conversion</span>
+        <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">Intervals</span><span class="o">.</span><span class="n">from_mask</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">intervals</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_init_blinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize blink-arrays for selected eyes and variables.</span>
@@ -2387,7 +2383,7 @@ window.addEventListener("load", load);
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing blinks for eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> and variable </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks&quot;</span><span class="p">)</span>
-            <span class="n">blinks_array</span> <span class="o">=</span> <span class="n">blinks</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">blinks_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
             
             <span class="n">newblinks</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
@@ -2646,7 +2642,7 @@ window.addEventListener("load", load);
                     <span class="n">interval_obj</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span>
                 
                 <span class="c1"># Convert to index-based intervals if needed</span>
-                <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">interval_obj</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;indices&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+                <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">interval_obj</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;indices&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
                 
                 <span class="c1"># Apply mask for this specific eye_variable</span>
                 <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
@@ -2669,7 +2665,7 @@ window.addEventListener("load", load);
             <span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">)</span>
             
             <span class="c1"># Convert to index-based intervals if needed</span>
-            <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;indices&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;indices&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
             
             <span class="c1"># Apply to all combinations of eyes and variables</span>
             <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
