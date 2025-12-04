@@ -306,6 +306,16 @@ class GazeData(GenericEyeData):
         if store_as is not None:
             dist_copy = dist.copy()
             dist_copy.mask |= divergence_mask
+            # If we ignored existing masks for calculation, still apply them to stored result
+            if ignore_existing_mask:
+                # Combine masks from all source variables
+                original_mask = (
+                    np.ma.getmaskarray(obj['left_x']) |
+                    np.ma.getmaskarray(obj['left_y']) |
+                    np.ma.getmaskarray(obj['right_x']) |
+                    np.ma.getmaskarray(obj['right_y'])
+                )
+                dist_copy.mask |= original_mask
             obj[store_as] = dist_copy
         
         # Create Intervals object for the detected divergences
