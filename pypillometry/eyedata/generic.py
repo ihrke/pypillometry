@@ -13,7 +13,7 @@ from ..io import download
 from .eyedatadict import EyeDataDict
 from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
-from ..intervals import stat_event_interval, get_interval_stats, Intervals
+from ..intervals import stat_event_interval, Intervals
 from ..logging import logging_get_level
 
 import numpy as np

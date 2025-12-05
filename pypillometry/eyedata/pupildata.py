@@ -16,7 +16,7 @@ from ..signal import preproc
 from ..signal import pupil
 #from .. import io
 from ..plot import PupilPlotter
-from ..intervals import IntervalStats, get_interval_stats, Intervals
+from ..intervals import IntervalStats, Intervals
 
 import json
 from loguru import logger

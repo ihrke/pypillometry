@@ -16,7 +16,8 @@ class IntervalStats(dict):
         sd=self["sd"] if "sd" in self else np.nan
         minv=self["min"] if "min" in self else np.nan
         maxv=self["max"] if "max" in self else np.nan
-        r = "%i intervals, %.2f +/- %.2f, [%.2f, %.2f]" % (n, mean, sd, minv, maxv)
+        total_duration=self["total_duration"] if "total_duration" in self else np.nan
+        r = "%i intervals (total duration: %.2f), %.2f +/- %.2f, [%.2f, %.2f]" % (n, total_duration, mean, sd, minv, maxv)
         return r
 
 
@@ -169,31 +170,6 @@ def merge_intervals(*args, label: str = 'merged'):
         data_time_range=data_time_range,
         sampling_rate=sampling_rate
     )
-
-def get_interval_stats(intervals):
-    """
-    Calculate summary statistics of intervals.
-    
-    Parameters
-    ----------
-    intervals: list of tuples
-        list of intervals
-    
-    Returns
-    -------
-    IntervalStats
-        dictionary with summary statistics
-    """
-    stats=IntervalStats()
-    stats["n"]=len(intervals)
-
-    durations = [i[1]-i[0] for i in intervals]
-    stats["mean"]=np.mean(durations)
-    stats["sd"]=np.std(durations)
-    stats["min"]=np.min(durations)
-    stats["max"]=np.max(durations)
-    return stats
-
 
 def stat_event_interval(tx,sy,intervals,statfct=np.mean):
     """
@@ -876,9 +852,19 @@ class Intervals:
         Returns
         -------
         IntervalStats
-            Dictionary with summary statistics (n, mean, sd, min, max)
+            Dictionary with summary statistics (n, mean, sd, min, max, total_duration, units)
         """
-        return get_interval_stats(self.intervals)
+        stats = IntervalStats()
+        stats["n"] = len(self.intervals)
+
+        durations = [i[1] - i[0] for i in self.intervals]
+        stats["mean"] = np.mean(durations)
+        stats["sd"] = np.std(durations)
+        stats["min"] = np.min(durations)
+        stats["max"] = np.max(durations)
+        stats["total_duration"] = np.sum(durations)
+        stats["units"] = self.units
+        return stats
 
 
     @requires_package("pandas")
