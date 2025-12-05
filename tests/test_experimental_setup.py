@@ -276,6 +276,102 @@ class TestExperimentalSetupCoordinateConversion:
         x_mm, y_mm = self.setup.pixels_to_mm(x_px, y_px)
         assert x_mm.shape == (3,)
         assert y_mm.shape == (3,)
+    
+    def test_mm_to_degrees(self):
+        """Test mm to visual angle conversion."""
+        # At 700mm viewing distance, 100mm offset = arctan(100/700) ≈ 8.13 degrees
+        x_deg, y_deg = self.setup.mm_to_degrees(100, 50)
+        expected_x = np.degrees(np.arctan(100 / 700))
+        expected_y = np.degrees(np.arctan(50 / 700))
+        assert np.isclose(x_deg, expected_x)
+        assert np.isclose(y_deg, expected_y)
+    
+    def test_degrees_to_mm_string_input(self):
+        """Test degrees_to_mm with string angle input."""
+        x_mm, y_mm = self.setup.degrees_to_mm("5 deg", "2.5 deg")
+        expected_x = 700 * np.tan(np.radians(5))
+        expected_y = 700 * np.tan(np.radians(2.5))
+        assert np.isclose(x_mm, expected_x)
+        assert np.isclose(y_mm, expected_y)
+    
+    def test_degrees_to_mm_float_radians_input(self):
+        """Test degrees_to_mm with float (radians) input."""
+        x_mm, y_mm = self.setup.degrees_to_mm(np.radians(5), np.radians(2.5))
+        expected_x = 700 * np.tan(np.radians(5))
+        expected_y = 700 * np.tan(np.radians(2.5))
+        assert np.isclose(x_mm, expected_x)
+        assert np.isclose(y_mm, expected_y)
+    
+    def test_degrees_to_mm_pint_input(self):
+        """Test degrees_to_mm with pint Quantity input."""
+        from pypillometry.units import ureg
+        x_mm, y_mm = self.setup.degrees_to_mm(5 * ureg.degree, 2.5 * ureg.degree)
+        expected_x = 700 * np.tan(np.radians(5))
+        expected_y = 700 * np.tan(np.radians(2.5))
+        assert np.isclose(x_mm, expected_x)
+        assert np.isclose(y_mm, expected_y)
+    
+    def test_degrees_to_mm_consistency_with_mm_to_degrees(self):
+        """Test that degrees_to_mm is inverse of mm_to_degrees."""
+        # Start with mm, convert to degrees, convert back
+        x_mm_orig, y_mm_orig = 100, 50
+        x_deg, y_deg = self.setup.mm_to_degrees(x_mm_orig, y_mm_orig)
+        # Convert degrees back to mm using string format
+        x_mm_back, y_mm_back = self.setup.degrees_to_mm(f"{x_deg} deg", f"{y_deg} deg")
+        assert np.isclose(x_mm_back, x_mm_orig)
+        assert np.isclose(y_mm_back, y_mm_orig)
+    
+    def test_pixels_to_degrees(self):
+        """Test pixel to visual angle conversion."""
+        # Screen center should map to (0, 0) degrees
+        x_deg, y_deg = self.setup.pixels_to_degrees(960, 540)
+        assert np.isclose(x_deg, 0, atol=1e-10)
+        assert np.isclose(y_deg, 0, atol=1e-10)
+    
+    def test_pixels_to_degrees_offset(self):
+        """Test pixel to visual angle for non-center point."""
+        # Right of center, above center (in screen coords y increases down)
+        # So y=0 is above center in screen coords, which is positive angle
+        x_deg, y_deg = self.setup.pixels_to_degrees(1920, 0)
+        # x=1920 is 260mm right of center
+        # y=0 is 145mm above center (positive in visual angle)
+        expected_x = np.degrees(np.arctan(260 / 700))
+        expected_y = np.degrees(np.arctan(145 / 700))
+        assert np.isclose(x_deg, expected_x)
+        assert np.isclose(y_deg, expected_y)
+    
+    def test_degrees_to_pixels_string_input(self):
+        """Test degrees_to_pixels with string angle input."""
+        x_px, y_px = self.setup.degrees_to_pixels("0 deg", "0 deg")
+        # (0, 0) degrees should map to screen center
+        assert np.isclose(x_px, 960)
+        assert np.isclose(y_px, 540)
+    
+    def test_degrees_to_pixels_float_radians_input(self):
+        """Test degrees_to_pixels with float (radians) input."""
+        x_px, y_px = self.setup.degrees_to_pixels(0, 0)
+        # (0, 0) radians should map to screen center
+        assert np.isclose(x_px, 960)
+        assert np.isclose(y_px, 540)
+    
+    def test_degrees_to_pixels_consistency_with_pixels_to_degrees(self):
+        """Test that degrees_to_pixels is inverse of pixels_to_degrees."""
+        # Start with pixels, convert to degrees, convert back
+        x_px_orig, y_px_orig = 1200, 400
+        x_deg, y_deg = self.setup.pixels_to_degrees(x_px_orig, y_px_orig)
+        # Convert degrees back to pixels using string format
+        x_px_back, y_px_back = self.setup.degrees_to_pixels(f"{x_deg} deg", f"{y_deg} deg")
+        assert np.isclose(x_px_back, x_px_orig)
+        assert np.isclose(y_px_back, y_px_orig)
+    
+    def test_degrees_to_mm_mixed_input_formats(self):
+        """Test degrees_to_mm with mixed input formats."""
+        # String for x, float for y
+        x_mm1, y_mm1 = self.setup.degrees_to_mm("5 deg", np.radians(2.5))
+        # Both as strings
+        x_mm2, y_mm2 = self.setup.degrees_to_mm("5 deg", "2.5 deg")
+        assert np.isclose(x_mm1, x_mm2)
+        assert np.isclose(y_mm1, y_mm2)
 
 
 class TestExperimentalSetupUnitParsing:
