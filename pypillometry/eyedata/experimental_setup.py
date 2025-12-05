@@ -517,6 +517,148 @@ class ExperimentalSetup:
         
         return x_px, y_px
     
+    def mm_to_degrees(
+        self,
+        x_mm: Union[float, np.ndarray],
+        y_mm: Union[float, np.ndarray],
+    ) -> Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]:
+        """
+        Convert mm coordinates (relative to screen center) to visual angles.
+        
+        Parameters
+        ----------
+        x_mm, y_mm : float or array
+            Coordinates in mm relative to screen center.
+            Positive x = right, positive y = up.
+        
+        Returns
+        -------
+        angle_x, angle_y : float or array
+            Visual angles in degrees.
+            Positive x = right, positive y = up.
+        
+        Notes
+        -----
+        Uses the small-angle approximation: angle = arctan(distance / d)
+        where d is the eye-to-screen distance.
+        """
+        if self._d is None:
+            raise ValueError(
+                "Eye-to-screen distance not set. Provide eye_to_screen_center."
+            )
+        angle_x = np.degrees(np.arctan(x_mm / self._d))
+        angle_y = np.degrees(np.arctan(y_mm / self._d))
+        return angle_x, angle_y
+    
+    def degrees_to_mm(
+        self,
+        angle_x: Union[float, str, np.ndarray],
+        angle_y: Union[float, str, np.ndarray],
+    ) -> Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]:
+        """
+        Convert visual angles to mm coordinates (relative to screen center).
+        
+        Parameters
+        ----------
+        angle_x, angle_y : float, str, or array
+            Visual angles. Can be:
+            - float: assumed to be radians
+            - str: with units, e.g., "5 deg", "0.087 rad"
+            - pint Quantity
+            - array of floats (radians)
+            Positive x = right, positive y = up.
+        
+        Returns
+        -------
+        x_mm, y_mm : float or array
+            Coordinates in mm relative to screen center.
+            Positive x = right, positive y = up.
+        
+        Notes
+        -----
+        Inverse of mm_to_degrees: x_mm = d * tan(angle)
+        """
+        if self._d is None:
+            raise ValueError(
+                "Eye-to-screen distance not set. Provide eye_to_screen_center."
+            )
+        # Parse angles if they're strings or pint quantities
+        if isinstance(angle_x, (str,)) or hasattr(angle_x, 'magnitude'):
+            angle_x = parse_angle(angle_x)  # returns radians
+        else:
+            angle_x = parse_angle(angle_x)  # handles float (assumes radians)
+        
+        if isinstance(angle_y, (str,)) or hasattr(angle_y, 'magnitude'):
+            angle_y = parse_angle(angle_y)  # returns radians
+        else:
+            angle_y = parse_angle(angle_y)  # handles float (assumes radians)
+        
+        x_mm = self._d * np.tan(angle_x)
+        y_mm = self._d * np.tan(angle_y)
+        return x_mm, y_mm
+    
+    def pixels_to_degrees(
+        self,
+        x_px: Union[float, np.ndarray],
+        y_px: Union[float, np.ndarray],
+    ) -> Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]:
+        """
+        Convert pixel coordinates to visual angles.
+        
+        Parameters
+        ----------
+        x_px, y_px : float or array
+            Coordinates in pixels (origin at upper-left, y increases downward).
+        
+        Returns
+        -------
+        angle_x, angle_y : float or array
+            Visual angles in degrees relative to screen center.
+            Positive x = right, positive y = up.
+        
+        Notes
+        -----
+        Combines pixels_to_mm (centered) and mm_to_degrees.
+        The y-axis is flipped: pixel y increases downward, but visual angle
+        y increases upward.
+        """
+        x_mm, y_mm = self.pixels_to_mm(x_px, y_px, centered=True)
+        # Flip y because pixels have +y down, but degrees have +y up
+        return self.mm_to_degrees(x_mm, -y_mm)
+    
+    def degrees_to_pixels(
+        self,
+        angle_x: Union[float, str, np.ndarray],
+        angle_y: Union[float, str, np.ndarray],
+    ) -> Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]:
+        """
+        Convert visual angles to pixel coordinates.
+        
+        Parameters
+        ----------
+        angle_x, angle_y : float, str, or array
+            Visual angles. Can be:
+            - float: assumed to be radians
+            - str: with units, e.g., "5 deg", "0.087 rad"
+            - pint Quantity
+            - array of floats (radians)
+            Positive x = right, positive y = up.
+        
+        Returns
+        -------
+        x_px, y_px : float or array
+            Coordinates in pixels (origin at upper-left, y increases downward).
+        
+        Notes
+        -----
+        Combines degrees_to_mm and mm_to_pixels (centered).
+        The y-axis is flipped: visual angle y increases upward, but pixel
+        y increases downward.
+        """
+        x_mm, y_mm = self.degrees_to_mm(angle_x, angle_y)
+        # Flip y because degrees have +y up, but pixels have +y down
+        return self.mm_to_pixels(x_mm, -y_mm, centered=True)
+    
     def screen_point_to_eye_frame(
         self,
         x_mm: Union[float, np.ndarray],
