@@ -744,7 +744,7 @@ class GenericEyeData(ABC):
         Returns
         -------
         dict
-            Dictionary mapping eye name to IntervalStats (or None if no blinks)
+            Dictionary mapping eye name to stats dict (or None if no blinks)
         """
         eyes, _ = self._get_eye_var(eyes, [])
         

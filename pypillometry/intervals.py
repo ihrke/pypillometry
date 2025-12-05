@@ -5,22 +5,6 @@ import numpy as np
 
 from pypillometry.convenience import requires_package, normalize_unit
 
-class IntervalStats(dict):
-    """
-    A dictionary with a specialized repr() function
-    to display summary statistics of intervals.
-    """
-    def __repr__(self):
-        n=self["n"] if "n" in self else 0
-        mean=self["mean"] if "mean" in self else np.nan
-        sd=self["sd"] if "sd" in self else np.nan
-        minv=self["min"] if "min" in self else np.nan
-        maxv=self["max"] if "max" in self else np.nan
-        total_duration=self["total_duration"] if "total_duration" in self else np.nan
-        r = "%i intervals (total duration: %.2f), %.2f +/- %.2f, [%.2f, %.2f]" % (n, total_duration, mean, sd, minv, maxv)
-        return r
-
-
 def merge_intervals(*args, label: str = 'merged'):
     """Combine multiple Intervals objects into a single Intervals object.
     
@@ -851,20 +835,19 @@ class Intervals:
         
         Returns
         -------
-        IntervalStats
+        dict
             Dictionary with summary statistics (n, mean, sd, min, max, total_duration, units)
         """
-        stats = IntervalStats()
-        stats["n"] = len(self.intervals)
-
         durations = [i[1] - i[0] for i in self.intervals]
-        stats["mean"] = np.mean(durations)
-        stats["sd"] = np.std(durations)
-        stats["min"] = np.min(durations)
-        stats["max"] = np.max(durations)
-        stats["total_duration"] = np.sum(durations)
-        stats["units"] = self.units
-        return stats
+        return {
+            "n": len(self.intervals),
+            "mean": np.mean(durations),
+            "sd": np.std(durations),
+            "min": np.min(durations),
+            "max": np.max(durations),
+            "total_duration": np.sum(durations),
+            "units": self.units
+        }
 
 
     @requires_package("pandas")
@@ -988,7 +971,7 @@ class Intervals:
     
     def __repr__(self):
         """
-        String representation using IntervalStats for nice formatting.
+        String representation with statistics.
         
         Returns
         -------
@@ -1003,21 +986,42 @@ class Intervals:
         else:
             parts.append("Intervals")
         
-        # Add statistics using IntervalStats
+        # Add statistics
         if len(self.intervals) > 0:
             stats = self.stats()
-            parts.append(str(stats))
+            parts.append(_format_interval_stats(stats))
         else:
             parts.append("0 intervals")
-        
-        # Add units info
-        if self.units is not None:
-            parts.append(f"units={self.units}")
-        else:
-            parts.append("units=None (indices)")
-        
+                
         # Add sampling rate if present
         if self.sampling_rate is not None:
             parts.append(f"fs={self.sampling_rate}Hz")
         
         return " | ".join(parts)
+
+
+def _format_interval_stats(stats: dict) -> str:
+    """
+    Format interval statistics as a human-readable string.
+    
+    Parameters
+    ----------
+    stats : dict
+        Dictionary with keys: n, mean, sd, min, max, total_duration
+        
+    Returns
+    -------
+    str
+        Formatted string like "3 intervals (total duration: 600.00), 200.00 +/- 81.65, [100.00, 300.00]"
+    """
+    n = stats.get("n", 0)
+    mean = stats.get("mean", np.nan)
+    sd = stats.get("sd", np.nan)
+    minv = stats.get("min", np.nan)
+    maxv = stats.get("max", np.nan)
+    total_duration = stats.get("total_duration", np.nan)
+    units = stats.get("units", "indices")
+    return "%i intervals (total duration: %.2f %s), %.2f %s +/- %.2f %s, [%.2f %s, %.2f %s]" % (
+        n, total_duration, units, mean, units, sd, units, minv, units, maxv, units
+    )
+

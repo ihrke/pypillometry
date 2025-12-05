@@ -10,7 +10,7 @@ sys.path.insert(0, "..")
 import pypillometry as pp
 import numpy as np
 import pandas as pd
-from pypillometry.intervals import Intervals, IntervalStats, merge_intervals
+from pypillometry.intervals import Intervals, merge_intervals
 
 
 class TestIntervalsClass(unittest.TestCase):
@@ -182,7 +182,7 @@ class TestIntervalsMethods(unittest.TestCase):
         intervals = Intervals(intervals_list, units="ms")
         
         stats = intervals.stats()
-        self.assertIsInstance(stats, IntervalStats)
+        self.assertIsInstance(stats, dict)
         self.assertEqual(stats["n"], 3)
         self.assertEqual(stats["mean"], 200.0)  # (100+200+300)/3
         self.assertEqual(stats["min"], 100.0)
