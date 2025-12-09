@@ -434,19 +434,6 @@ window.addEventListener("load", load);
         <span class="bp">self</span><span class="o">.</span><span class="n">ignore_vars</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1">#[&quot;blinkmask&quot;, &quot;pupilinterpolated&quot;]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span>
     
-    <span class="k">def</span><span class="w"> </span><span class="nf">_plot_rois</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">rois</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ROI</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot ROIs on the given axes.</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        ax : matplotlib.axes.Axes</span>
-<span class="sd">            The axes to plot ROIs on.</span>
-<span class="sd">        rois : List[ROI]</span>
-<span class="sd">            List of ROIs to plot.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">rois</span><span class="p">:</span>
-            <span class="n">roi</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
-    
 <div class="viewcode-block" id="GazePlotter.plot_heatmap">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GazePlotter.plot_heatmap">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_heatmap</span><span class="p">(</span>
@@ -456,6 +443,7 @@ window.addEventListener("load", load);
         <span class="n">show_screen</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">show_masked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">rois</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ROI</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">roi_style</span><span class="p">:</span> <span class="nb">dict</span><span class="o">=</span><span class="p">{},</span>
         <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sec&quot;</span><span class="p">,</span>
         <span class="n">cmap</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;jet&quot;</span><span class="p">,</span>
         <span class="n">gridsize</span><span class="p">:</span> <span class="nb">int</span><span class="o">|</span><span class="nb">str</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span><span class="c1">#&quot;auto&quot;</span>
@@ -483,6 +471,15 @@ window.addEventListener("load", load);
 <span class="sd">            Whether to plot the masked data (because of blinks, artifacts, ...). Default is False.</span>
 <span class="sd">        rois: List[ROI], optional</span>
 <span class="sd">            List of ROIs to plot. Default is None.</span>
+<span class="sd">        roi_style: dict, optional</span>
+<span class="sd">            Style for the ROIs. Default is None.</span>
+<span class="sd">            Example:</span>
+<span class="sd">            {</span>
+<span class="sd">                &quot;facecolor&quot;: &quot;red&quot;,</span>
+<span class="sd">                &quot;edgecolor&quot;: &quot;black&quot;,</span>
+<span class="sd">                &quot;linewidth&quot;: 2,</span>
+<span class="sd">                &quot;alpha&quot;: 0.5</span>
+<span class="sd">            }</span>
 <span class="sd">        units: str</span>
 <span class="sd">            The units to plot. Default is &quot;sec&quot;.</span>
 <span class="sd">        cmap: str</span>
@@ -672,7 +669,8 @@ window.addEventListener("load", load);
                     <span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
                 <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">screenrect</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">rois</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_plot_rois</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">rois</span><span class="p">)</span></div>
+                <span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">rois</span><span class="p">:</span>
+                    <span class="n">roi</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">roi_style</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GazePlotter.plot_scanpath">
@@ -682,6 +680,7 @@ window.addEventListener("load", load);
             <span class="n">eyes</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">plot_screen</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">rois</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ROI</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">roi_style</span><span class="p">:</span> <span class="nb">dict</span><span class="o">=</span><span class="p">{},</span>
             <span class="n">plot_onsets</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -708,6 +707,15 @@ window.addEventListener("load", load);
 <span class="sd">            Whether to plot the screen limits. Default is True.</span>
 <span class="sd">        rois: List[ROI], optional</span>
 <span class="sd">            List of ROIs to plot. Default is None.</span>
+<span class="sd">        roi_style: dict, optional</span>
+<span class="sd">            Style for the ROIs. Default is None.</span>
+<span class="sd">            Example:</span>
+<span class="sd">            {</span>
+<span class="sd">                &quot;facecolor&quot;: &quot;red&quot;,</span>
+<span class="sd">                &quot;edgecolor&quot;: &quot;black&quot;,</span>
+<span class="sd">                &quot;linewidth&quot;: 2,</span>
+<span class="sd">                &quot;alpha&quot;: 0.5</span>
+<span class="sd">            }</span>
 <span class="sd">        plot_onsets: bool</span>
 <span class="sd">            Whether to plot the event onsets. Default is True.</span>
 <span class="sd">        title: str</span>
@@ -779,7 +787,8 @@ window.addEventListener("load", load);
                 <span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">screenrect</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rois</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_plot_rois</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">rois</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">roi</span> <span class="ow">in</span> <span class="n">rois</span><span class="p">:</span>
+                <span class="n">roi</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">roi_style</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
         <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span></div>
