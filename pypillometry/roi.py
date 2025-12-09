@@ -59,7 +59,7 @@ class ROI:
             Experimental setup for coordinate conversions
         """
         self.name = name
-        self._setup = setup
+        self.setup = setup
     
     def __contains__(self, coords: Union[Tuple[float, float], np.ndarray]) -> bool:
         """Test if a single coordinate is within the ROI (for use with `in`).

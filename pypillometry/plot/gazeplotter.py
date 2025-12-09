@@ -25,19 +25,6 @@ class GazePlotter(GenericPlotter):
         self.ignore_vars = [] #["blinkmask", "pupilinterpolated"]
         self.obj = obj
     
-    def _plot_rois(self, ax, rois: List[ROI]) -> None:
-        """Plot ROIs on the given axes.
-        
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes
-            The axes to plot ROIs on.
-        rois : List[ROI]
-            List of ROIs to plot.
-        """
-        for roi in rois:
-            roi.plot(ax)
-    
     def plot_heatmap(
         self,
         plot_range: tuple = (-np.inf, +np.inf),
@@ -45,6 +32,7 @@ class GazePlotter(GenericPlotter):
         show_screen: bool = True,
         show_masked: bool = False,
         rois: List[ROI] = None,
+        roi_style: dict={},
         units: str = "sec",
         cmap: str = "jet",
         gridsize: int|str = 30,#"auto"
@@ -72,6 +60,15 @@ class GazePlotter(GenericPlotter):
             Whether to plot the masked data (because of blinks, artifacts, ...). Default is False.
         rois: List[ROI], optional
             List of ROIs to plot. Default is None.
+        roi_style: dict, optional
+            Style for the ROIs. Default is None.
+            Example:
+            {
+                "facecolor": "red",
+                "edgecolor": "black",
+                "linewidth": 2,
+                "alpha": 0.5
+            }
         units: str
             The units to plot. Default is "sec".
         cmap: str
@@ -261,13 +258,15 @@ class GazePlotter(GenericPlotter):
                     fill=False, edgecolor="red", linewidth=2)
                 ax.add_patch(screenrect)
             if rois is not None:
-                self._plot_rois(ax, rois)
+                for roi in rois:
+                    roi.plot(ax, **roi_style)
 
     def plot_scanpath(self, 
             plot_range: tuple=(-np.inf, +np.inf), 
             eyes: list=[],
             plot_screen: bool=True,
             rois: List[ROI]=None,
+            roi_style: dict={},
             plot_onsets: bool=True,
             title: str="",
             units: str=None,
@@ -294,6 +293,15 @@ class GazePlotter(GenericPlotter):
             Whether to plot the screen limits. Default is True.
         rois: List[ROI], optional
             List of ROIs to plot. Default is None.
+        roi_style: dict, optional
+            Style for the ROIs. Default is None.
+            Example:
+            {
+                "facecolor": "red",
+                "edgecolor": "black",
+                "linewidth": 2,
+                "alpha": 0.5
+            }
         plot_onsets: bool
             Whether to plot the event onsets. Default is True.
         title: str
@@ -365,7 +373,8 @@ class GazePlotter(GenericPlotter):
                 fill=False, edgecolor="red", linewidth=2)
             ax.add_patch(screenrect)
         if rois is not None:
-            self._plot_rois(ax, rois)
+            for roi in rois:
+                roi.plot(ax, **roi_style)
         ax.legend()
         ax.set_title(title)
         fig.tight_layout()
