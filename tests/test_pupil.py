@@ -125,24 +125,25 @@ class TestPupilSignalQuality(unittest.TestCase):
                 mask=self.mask_none, metric="snr"
             )
     
-    def test_masked_locations_are_zero(self):
-        """Output should be 0 at masked locations"""
+    def test_returns_masked_array(self):
+        """Output should be a masked array with same mask as input"""
         result = pupil_signal_quality(
             self.noisy_signal, self.fs,
             mask=self.mask_partial, metric="snr"
         )
         
-        masked_values = result[self.mask_partial]
-        self.assertTrue(np.all(masked_values == 0))
+        self.assertIsInstance(result, np.ma.MaskedArray)
+        np.testing.assert_array_equal(result.mask, self.mask_partial)
     
     def test_masked_array_input(self):
-        """Should accept numpy masked array"""
+        """Should accept numpy masked array and return masked array"""
         masked_signal = np.ma.array(self.noisy_signal, mask=self.mask_partial)
         
         result = pupil_signal_quality(masked_signal, self.fs, metric="snr")
         
+        self.assertIsInstance(result, np.ma.MaskedArray)
         self.assertEqual(result.shape, self.noisy_signal.shape)
-        self.assertTrue(np.all(result[self.mask_partial] == 0))
+        np.testing.assert_array_equal(result.mask, self.mask_partial)
     
     def test_snr_positive(self):
         """SNR should be positive for valid data"""

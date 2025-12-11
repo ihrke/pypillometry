@@ -121,9 +121,9 @@ def pupil_signal_quality(signal, fs, mask=None, lowpass_cutoff=4.0,
           
     Returns
     -------
-    quality : np.ndarray
-        Local quality metric array (same length as input).
-        Values are 0 at masked locations.
+    quality : np.ma.MaskedArray
+        Local quality metric as a masked array (same length as input).
+        Masked at the same locations as the input.
         
     Raises
     ------
@@ -217,10 +217,8 @@ def pupil_signal_quality(signal, fs, mask=None, lowpass_cutoff=4.0,
         noise_std = np.sqrt(noise_power)
         result = noise_std / (np.abs(signal_smooth) + eps)
     
-    # Set output to 0 at masked locations
-    result[invalid_mask] = 0
-    
-    return result
+    # Return as masked array with same mask as input
+    return np.ma.array(result, mask=invalid_mask)
 
 
 def pupil_kernel_t(t,npar,tmax):
