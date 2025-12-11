@@ -392,7 +392,7 @@ class PupilData(GenericEyeData):
     def pupil_blinks_interpolate(self, eyes: str|list=[],
                                  store_as: str="pupil", 
                                  method="mahot", winsize: float=11, 
-                                 vel_onset: float=-5, vel_offset: float=5, 
+                                 vel_onset=-5.0, vel_offset=5.0, 
                                  margin: Tuple[float,float]=(10,30), 
                                  blinkwindow: float=500,
                                  interp_type: str="cubic",
@@ -419,11 +419,15 @@ class PupilData(GenericEyeData):
         method: str
             method to use; so far, only "mahot" is implemented
         winsize: float
-            size of the Hanning-window in ms
-        vel_onset: float
-            velocity-threshold to detect the onset of the blink
-        vel_offset: float
-            velocity-threshold to detect the offset of the blink
+            size of the Savitzky-Golay window in ms
+        vel_onset: float or str
+            velocity threshold to detect blink onset (negative value).
+            - If float: threshold in pupil-units per millisecond (e.g., -5.0)
+            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)
+        vel_offset: float or str
+            velocity threshold to detect blink offset (positive value).
+            - If float: threshold in pupil-units per millisecond (e.g., 5.0)
+            - If str: percentile of velocity distribution (e.g., "95%" for top 95%)
         margin: Tuple[float,float]
             margin that is subtracted/added to onset and offset (in ms)
         blinkwindow: float
@@ -449,9 +453,14 @@ class PupilData(GenericEyeData):
             syr=obj.data[eye,"pupil"].copy() ## interpolated signal
             mask=obj.data.mask[eye+"_pupil"].copy() # copy of mask
             bls = self.get_blinks(eye, "pupil")
+            
+            # Convert velocity thresholds to per-sample units
+            vel_onset_samples, vel_offset_samples = self._convert_velocity_thresholds(
+                obj.data[eye,"pupil"], winsize_ix, vel_onset, vel_offset
+            )
             blink_onsets=preproc.blink_onsets_mahot(obj.data[eye,"pupil"], bls, 
                                                     winsize_ix, 
-                                                    vel_onset, vel_offset,
+                                                    vel_onset_samples, vel_offset_samples,
                                                     margin_ix, blinkwindow_ix)
           
             # loop through blinks
