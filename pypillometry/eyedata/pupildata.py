@@ -252,9 +252,9 @@ class PupilData(GenericEyeData):
     @keephistory
     def pupil_blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
                       winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
-                      min_onset_len: int=5, min_offset_len: int=5,
+                      vel_onset_min_duration: float=5.0, vel_offset_min_duration: float=5.0,
                       strategies: list=["zero","velocity"],
-                      units="ms", apply_mask=True, ignore_existing_mask=False, inplace=None):
+                      apply_mask=False, ignore_existing_mask=False, inplace=None):
         """
         Detect blinks in the pupillary signal using several strategies.
         First, blinks are detected as consecutive sequence of `blink_val` 
@@ -265,7 +265,7 @@ class PupilData(GenericEyeData):
         the blinks are also applied as masks to the data. When apply_mask=False,
         the detected blinks are returned as Intervals objects.
 
-        Finally, detected blinks have to be at least `min_duration` duration (in `units`).
+        Finally, detected blinks have to be at least `min_duration` ms.
         
         Parameters
         ----------
@@ -276,7 +276,7 @@ class PupilData(GenericEyeData):
         blink_val: float
             "missing value" code
         winsize: float
-            window-size for Savitzky-Golay velocity estimation (in units, default ms)
+            window-size for Savitzky-Golay velocity estimation in ms
         vel_onset: float or str
             velocity threshold to detect blink onset (negative value).
             - If float: threshold in pupil-units per millisecond (e.g., -5.0)
@@ -285,19 +285,17 @@ class PupilData(GenericEyeData):
             velocity threshold to detect blink offset (positive value).
             - If float: threshold in pupil-units per millisecond (e.g., 5.0)
             - If str: percentile of velocity distribution (e.g., "95%" for top 95%)
-        min_onset_len: int
-            minimum number of consecutive samples that crossed threshold in the velocity
-            profile to detect as onset (to avoid noise-induced changes)
-        min_offset_len: int
-            minimum number of consecutive samples that crossed threshold in the velocity
-            profile to detect as offset (to avoid noise-induced changes)            
+        vel_onset_min_duration: float
+            minimum duration in ms that velocity must exceed threshold to detect as onset
+            (to avoid noise-induced false detections)
+        vel_offset_min_duration: float
+            minimum duration in ms that velocity must exceed threshold to detect as offset
+            (to avoid noise-induced false detections)
         strategies: list of strategies to use
             so far, use a list containing any combination of "zero" and "velocity"
-        units: str
-            one of "ms", "sec", "min", "h"
         apply_mask: bool
             if `True`, apply detected blinks as masks to the data and return self
-            if `False`, return detected blinks as Intervals (or dict of Intervals)
+            if `False` (default), return detected blinks as Intervals (or dict of Intervals)
         ignore_existing_mask: bool
             if `True` (default), use raw data ignoring existing masks
             if `False`, only detect blinks in non-masked data (already masked regions are skipped)
@@ -315,13 +313,13 @@ class PupilData(GenericEyeData):
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
 
-        fac=self._unit_fac(units)
-        winsize_ms=winsize*fac
-        winsize_ix=int(winsize_ms/1000.*self.fs)
+        # Convert ms to samples
+        winsize_ix=int(winsize/1000.*self.fs)
         if winsize_ix % 2==0:
             winsize_ix += 1
-        min_duration_ms=min_duration*fac
-        min_duration_ix=int(min_duration_ms/1000.*self.fs)        
+        min_duration_ix=int(min_duration/1000.*self.fs)
+        vel_onset_min_samples = max(1, int(vel_onset_min_duration/1000.*self.fs))
+        vel_offset_min_samples = max(1, int(vel_offset_min_duration/1000.*self.fs))
 
         
         # check for unknown strategies
@@ -346,7 +344,7 @@ class PupilData(GenericEyeData):
                 vel_onset_samples, vel_offset_samples = self._convert_velocity_thresholds(
                     pupil_data, winsize_ix, vel_onset, vel_offset
                 )
-                blinks_vel=preproc.detect_blinks_velocity(pupil_data, winsize_ix, vel_onset_samples, vel_offset_samples, min_onset_len, min_offset_len)
+                blinks_vel=preproc.detect_blinks_velocity(pupil_data, winsize_ix, vel_onset_samples, vel_offset_samples, vel_onset_min_samples, vel_offset_min_samples)
                 logger.debug(f"Detected {len(blinks_vel)} blinks with velocity strategy")
             else: 
                 blinks_vel=np.array([])
