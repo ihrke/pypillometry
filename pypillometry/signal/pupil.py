@@ -9,6 +9,76 @@ import scipy.optimize
 import pylab as plt
 from loguru import logger
 from ..convenience import *
+from .baseline import butter_lowpass_filter
+
+
+def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
+    """
+    Lowpass filter that handles NaN values via iterative interpolation.
+    
+    NaN values are initially filled with the signal mean, then iteratively
+    replaced with filtered values until convergence. This avoids sharp
+    artifacts at gap boundaries that would occur with simple interpolation.
+    
+    Parameters
+    ----------
+    signal : np.ndarray
+        Input signal (can contain NaN values)
+    cutoff : float
+        Lowpass filter cutoff frequency in Hz
+    fs : float
+        Sampling rate in Hz
+    order : int, optional
+        Butterworth filter order (default: 2)
+    max_iter : int, optional
+        Maximum number of iterations (default: 5)
+        
+    Returns
+    -------
+    filtered : np.ndarray
+        Lowpass-filtered signal with NaN gaps smoothly filled
+        
+    Notes
+    -----
+    The iterative approach works by:
+    1. Fill NaN positions with the signal mean
+    2. Apply lowpass filter to the filled signal
+    3. Replace NaN positions with the filtered values
+    4. Repeat steps 2-3 until max_iter reached
+    
+    This converges to a smooth solution that respects the observed data
+    while filling gaps with values consistent with the surrounding signal.
+    
+    Examples
+    --------
+    >>> signal = np.array([1, 2, np.nan, np.nan, 5, 6])
+    >>> filtered = lowpass_filter_iterative(signal, cutoff=2.0, fs=100)
+    """
+    valid = ~np.isnan(signal)
+    n_valid = np.sum(valid)
+    
+    if n_valid == 0:
+        # All NaN - return as is
+        return signal.copy()
+    
+    if n_valid == len(signal):
+        # No NaN - just apply regular filter
+        return butter_lowpass_filter(signal, cutoff, fs, order)
+    
+    # Initialize: fill NaN with signal mean
+    filled = signal.copy()
+    filled[~valid] = np.nanmean(signal)
+    
+    # Iterative filtering
+    for _ in range(max_iter):
+        # Filter the filled signal
+        smoothed = butter_lowpass_filter(filled, cutoff, fs, order)
+        # Replace only the NaN positions with filtered values
+        filled[~valid] = smoothed[~valid]
+    
+    # Final filter pass
+    result = butter_lowpass_filter(filled, cutoff, fs, order)
+    return result
 
 def pupil_kernel_t(t,npar,tmax):
     """
