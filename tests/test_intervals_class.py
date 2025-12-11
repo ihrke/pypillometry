@@ -1221,6 +1221,239 @@ class TestIntervalsMaskConversion(unittest.TestCase):
         self.assertEqual(original.intervals, recovered.intervals)
 
 
+class TestIntervalsFilter(unittest.TestCase):
+    """Test Intervals.filter() method"""
+    
+    def test_filter_by_min_duration(self):
+        """Test filtering by minimum duration"""
+        intervals = Intervals([(0, 50), (100, 200), (300, 500)], units="ms")
+        
+        filtered = intervals.filter(min_duration=100)
+        
+        self.assertEqual(len(filtered), 2)
+        self.assertEqual(filtered.intervals, [(100, 200), (300, 500)])
+    
+    def test_filter_by_max_duration(self):
+        """Test filtering by maximum duration"""
+        intervals = Intervals([(0, 50), (100, 200), (300, 500)], units="ms")
+        
+        filtered = intervals.filter(max_duration=100)
+        
+        self.assertEqual(len(filtered), 2)
+        self.assertEqual(filtered.intervals, [(0, 50), (100, 200)])
+    
+    def test_filter_by_duration_range(self):
+        """Test filtering by both min and max duration"""
+        intervals = Intervals([(0, 50), (100, 200), (300, 500), (600, 610)], units="ms")
+        
+        filtered = intervals.filter(min_duration=50, max_duration=150)
+        
+        self.assertEqual(len(filtered), 2)
+        self.assertEqual(filtered.intervals, [(0, 50), (100, 200)])
+    
+    def test_filter_by_time_range_overlap(self):
+        """Test filtering by time range (overlap)"""
+        intervals = Intervals([(0, 100), (200, 300), (400, 500)], units="ms")
+        
+        # Should keep intervals that overlap with (150, 350)
+        filtered = intervals.filter(time_range=(150, 350))
+        
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered.intervals, [(200, 300)])
+    
+    def test_filter_by_time_range_partial_overlap(self):
+        """Test that partial overlap is sufficient"""
+        intervals = Intervals([(0, 200), (300, 400)], units="ms")
+        
+        # (0, 200) partially overlaps (150, 250)
+        filtered = intervals.filter(time_range=(150, 250))
+        
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered.intervals, [(0, 200)])
+    
+    def test_filter_by_time_range_no_overlap(self):
+        """Test filtering when no intervals overlap"""
+        intervals = Intervals([(0, 100), (400, 500)], units="ms")
+        
+        filtered = intervals.filter(time_range=(150, 350))
+        
+        self.assertEqual(len(filtered), 0)
+    
+    def test_filter_by_selector_function(self):
+        """Test filtering with custom selector function"""
+        intervals = Intervals([(0, 100), (100, 200), (200, 300)], units="ms")
+        
+        # Keep intervals starting at multiples of 200
+        filtered = intervals.filter(selector=lambda s, e: s % 200 == 0)
+        
+        self.assertEqual(len(filtered), 2)
+        self.assertEqual(filtered.intervals, [(0, 100), (200, 300)])
+    
+    def test_filter_by_selector_using_end(self):
+        """Test filtering with selector using end value"""
+        intervals = Intervals([(0, 100), (100, 250), (200, 300)], units="ms")
+        
+        # Keep intervals ending at multiples of 100
+        filtered = intervals.filter(selector=lambda s, e: e % 100 == 0)
+        
+        self.assertEqual(len(filtered), 2)
+        self.assertEqual(filtered.intervals, [(0, 100), (200, 300)])
+    
+    def test_filter_combined_criteria(self):
+        """Test filtering with multiple criteria combined"""
+        intervals = Intervals([(0, 50), (100, 200), (300, 500), (600, 700)], units="ms")
+        
+        # min_duration=50, max_duration=150, time_range=(50, 400)
+        filtered = intervals.filter(
+            min_duration=50, 
+            max_duration=150, 
+            time_range=(50, 400)
+        )
+        
+        # (0, 50): duration=50 OK, but doesn't overlap (50, 400) - NO
+        # (100, 200): duration=100 OK, overlaps (50, 400) - YES
+        # (300, 500): duration=200 > 150 - NO
+        # (600, 700): duration=100 OK, but doesn't overlap (50, 400) - NO
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered.intervals, [(100, 200)])
+    
+    def test_filter_preserves_metadata(self):
+        """Test that filter preserves all metadata"""
+        intervals = Intervals(
+            [(0, 100), (200, 300), (400, 500)], 
+            units="ms", 
+            label="test_label",
+            event_labels=["a", "b", "c"],
+            event_indices=np.array([0, 1, 2]),
+            event_onsets=np.array([50, 250, 450]),
+            data_time_range=(0, 1000),
+            sampling_rate=1000
+        )
+        
+        filtered = intervals.filter(min_duration=100)
+        
+        self.assertEqual(filtered.units, "ms")
+        self.assertEqual(filtered.label, "test_label")
+        self.assertEqual(filtered.event_labels, ["a", "b", "c"])
+        np.testing.assert_array_equal(filtered.event_indices, [0, 1, 2])
+        np.testing.assert_array_equal(filtered.event_onsets, [50, 250, 450])
+        self.assertEqual(filtered.data_time_range, (0, 1000))
+        self.assertEqual(filtered.sampling_rate, 1000)
+    
+    def test_filter_filters_metadata_correctly(self):
+        """Test that metadata is filtered in sync with intervals"""
+        intervals = Intervals(
+            [(0, 50), (200, 300), (400, 500)], 
+            units="ms",
+            event_labels=["short", "medium", "long"],
+            event_indices=np.array([0, 1, 2]),
+            event_onsets=np.array([25, 250, 450])
+        )
+        
+        # Filter out the short one
+        filtered = intervals.filter(min_duration=100)
+        
+        self.assertEqual(len(filtered), 2)
+        self.assertEqual(filtered.event_labels, ["medium", "long"])
+        np.testing.assert_array_equal(filtered.event_indices, [1, 2])
+        np.testing.assert_array_equal(filtered.event_onsets, [250, 450])
+    
+    def test_filter_empty_intervals(self):
+        """Test filtering empty intervals"""
+        intervals = Intervals([], units="ms", data_time_range=(0, 1000))
+        
+        filtered = intervals.filter(min_duration=100)
+        
+        self.assertEqual(len(filtered), 0)
+        self.assertEqual(filtered.units, "ms")
+        self.assertEqual(filtered.data_time_range, (0, 1000))
+    
+    def test_filter_no_criteria_returns_all(self):
+        """Test that filter with no criteria returns all intervals"""
+        intervals = Intervals([(0, 100), (200, 300)], units="ms")
+        
+        filtered = intervals.filter()
+        
+        self.assertEqual(len(filtered), 2)
+        self.assertEqual(filtered.intervals, [(0, 100), (200, 300)])
+    
+    def test_filter_all_filtered_out(self):
+        """Test filtering that removes all intervals"""
+        intervals = Intervals([(0, 10), (20, 30)], units="ms")
+        
+        filtered = intervals.filter(min_duration=100)
+        
+        self.assertEqual(len(filtered), 0)
+    
+    def test_filter_time_range_invalid_raises_error(self):
+        """Test that invalid time_range raises error"""
+        intervals = Intervals([(0, 100)], units="ms")
+        
+        with self.assertRaises(ValueError) as cm:
+            intervals.filter(time_range=(100, 50))  # start >= end
+        
+        self.assertIn("start", str(cm.exception).lower())
+    
+    def test_filter_time_range_wrong_length_raises_error(self):
+        """Test that time_range with wrong length raises error"""
+        intervals = Intervals([(0, 100)], units="ms")
+        
+        with self.assertRaises(ValueError) as cm:
+            intervals.filter(time_range=(100,))
+        
+        self.assertIn("time_range", str(cm.exception).lower())
+    
+    def test_filter_non_callable_selector_raises_error(self):
+        """Test that non-callable selector raises error"""
+        intervals = Intervals([(0, 100)], units="ms")
+        
+        with self.assertRaises(TypeError) as cm:
+            intervals.filter(selector="not a function")
+        
+        self.assertIn("callable", str(cm.exception).lower())
+    
+    def test_filter_with_indices_units(self):
+        """Test filtering with index-based intervals"""
+        intervals = Intervals([(0, 50), (100, 200), (300, 500)], units=None)
+        
+        filtered = intervals.filter(min_duration=100)
+        
+        self.assertEqual(len(filtered), 2)
+        self.assertIsNone(filtered.units)
+    
+    def test_filter_returns_new_object(self):
+        """Test that filter returns a new Intervals object"""
+        intervals = Intervals([(0, 100), (200, 300)], units="ms")
+        
+        filtered = intervals.filter()
+        
+        self.assertIsNot(filtered, intervals)
+        self.assertIsNot(filtered.intervals, intervals.intervals)
+    
+    def test_filter_duration_boundary_inclusive(self):
+        """Test that duration boundaries are inclusive"""
+        intervals = Intervals([(0, 100), (200, 300)], units="ms")
+        
+        # Exactly 100ms duration
+        filtered = intervals.filter(min_duration=100, max_duration=100)
+        
+        self.assertEqual(len(filtered), 2)
+    
+    def test_filter_time_range_boundary_exclusive(self):
+        """Test time range boundary behavior"""
+        intervals = Intervals([(0, 100), (100, 200), (200, 300)], units="ms")
+        
+        # Range (100, 200) - start exclusive, end exclusive for overlap
+        # Overlap means: interval.end > range.start AND interval.start < range.end
+        filtered = intervals.filter(time_range=(100, 200))
+        
+        # (0, 100): end=100 > 100? No - excluded
+        # (100, 200): end=200 > 100? Yes, start=100 < 200? Yes - included
+        # (200, 300): start=200 < 200? No - excluded
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered.intervals, [(100, 200)])
+
+
 class TestIntervalsSubtractOperator(unittest.TestCase):
     """Test Intervals - operator for subtracting intervals"""
     
