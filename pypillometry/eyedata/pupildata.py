@@ -272,7 +272,7 @@ class PupilData(GenericEyeData):
         eyes: list
             list of eyes to process; if empty, all available eyes are processed
         min_duration: float
-            minimum duration for a sequence of missing numbers to be treated as blink
+            minimum duration in ms for a sequence of missing numbers to be treated as blink
         blink_val: float
             "missing value" code
         winsize: float

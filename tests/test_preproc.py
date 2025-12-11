@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pypillometry.signal.preproc import smooth_window, detect_blinks_velocity
+from pypillometry.signal.preproc import smooth_window, velocity_savgol, detect_blinks_velocity
 
 
 class TestSmoothWindow(unittest.TestCase):
@@ -102,6 +102,93 @@ class TestSmoothWindow(unittest.TestCase):
             result = smooth_window(self.sine, window_len=11, direction=direction)
             # Smoothed signal should have lower variance
             self.assertLess(np.var(result), np.var(self.sine))
+
+
+class TestVelocitySavgol(unittest.TestCase):
+    """Tests for velocity_savgol() function"""
+    
+    def setUp(self):
+        """Create test signals"""
+        np.random.seed(42)
+        # Linear ramp (constant velocity)
+        self.ramp = np.arange(100, dtype=float)
+        # Noisy sine wave
+        t = np.linspace(0, 4*np.pi, 200)
+        self.sine = np.sin(t) + 0.1 * np.random.randn(200)
+    
+    def test_output_same_length(self):
+        """Output should have same length as input for all directions"""
+        for direction in ['center', 'backward', 'forward']:
+            result = velocity_savgol(self.ramp, window_len=11, direction=direction)
+            self.assertEqual(len(result), len(self.ramp))
+    
+    def test_center_direction_default(self):
+        """Center direction should be the default"""
+        result1 = velocity_savgol(self.ramp, window_len=11)
+        result2 = velocity_savgol(self.ramp, window_len=11, direction='center')
+        np.testing.assert_array_almost_equal(result1, result2)
+    
+    def test_linear_ramp_constant_velocity(self):
+        """Linear ramp should have constant velocity of 1"""
+        result = velocity_savgol(self.ramp, window_len=11, direction='center')
+        # Middle portion should have velocity ~1 (slope of ramp is 1)
+        middle = result[20:80]
+        np.testing.assert_array_almost_equal(middle, np.ones_like(middle), decimal=5)
+    
+    def test_backward_differs_from_center(self):
+        """Backward velocity should differ from center at transitions"""
+        # Create signal with a step change from flat to ramp
+        signal = np.concatenate([np.zeros(50), np.arange(50, dtype=float)])
+        result_backward = velocity_savgol(signal, window_len=11, direction='backward')
+        result_center = velocity_savgol(signal, window_len=11, direction='center')
+        
+        # Backward and center should give different results at the transition
+        # (different asymmetry in the window)
+        self.assertFalse(np.allclose(result_backward[45:55], result_center[45:55]))
+        
+        # Both should converge to ~1 well into the ramp region
+        np.testing.assert_array_almost_equal(result_backward[70:90], np.ones(20), decimal=1)
+        np.testing.assert_array_almost_equal(result_center[70:90], np.ones(20), decimal=1)
+    
+    def test_forward_differs_from_center(self):
+        """Forward velocity should differ from center at transitions"""
+        # Create signal that transitions from ramp to flat
+        signal = np.concatenate([np.arange(50, dtype=float), np.ones(50) * 49])
+        result_forward = velocity_savgol(signal, window_len=11, direction='forward')
+        result_center = velocity_savgol(signal, window_len=11, direction='center')
+        
+        # Forward and center should give different results at the transition
+        self.assertFalse(np.allclose(result_forward[45:55], result_center[45:55]))
+        
+        # Both should show ~1 well before the transition
+        np.testing.assert_array_almost_equal(result_forward[10:30], np.ones(20), decimal=1)
+        np.testing.assert_array_almost_equal(result_center[10:30], np.ones(20), decimal=1)
+    
+    def test_invalid_direction_raises_error(self):
+        """Invalid direction should raise ValueError"""
+        with self.assertRaises(ValueError):
+            velocity_savgol(self.ramp, window_len=11, direction='invalid')
+    
+    def test_signal_too_short_raises_error(self):
+        """Signal shorter than window should raise ValueError"""
+        short_signal = np.array([1, 2, 3])
+        with self.assertRaises(ValueError):
+            velocity_savgol(short_signal, window_len=11)
+    
+    def test_small_window_auto_adjusted(self):
+        """Window smaller than polyorder+1 should be auto-adjusted"""
+        # Should not raise error, but auto-adjust window size
+        result = velocity_savgol(self.ramp, window_len=2, polyorder=2)
+        self.assertEqual(len(result), len(self.ramp))
+    
+    def test_different_polyorders(self):
+        """Different polynomial orders should work"""
+        for polyorder in [1, 2, 3]:
+            result = velocity_savgol(self.ramp, window_len=11, polyorder=polyorder)
+            self.assertEqual(len(result), len(self.ramp))
+            # For linear ramp, all should give ~1
+            middle = result[20:80]
+            np.testing.assert_array_almost_equal(middle, np.ones_like(middle), decimal=3)
 
 
 class TestDetectBlinksVelocity(unittest.TestCase):
