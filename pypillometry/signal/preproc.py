@@ -9,6 +9,8 @@ import numpy as np
 import scipy.optimize
 import pylab as plt
 from loguru import logger
+from scipy.signal import savgol_coeffs
+from scipy.ndimage import convolve1d
 
 from ..convenience import *
 
@@ -108,6 +110,85 @@ def smooth_window(x, window_len=11, window='hanning', direction='center'):
         return y
 
 
+def velocity_savgol(x, window_len=11, polyorder=2, direction='center'):
+    """
+    Compute velocity (first derivative) using Savitzky-Golay filter.
+    
+    This computes velocity by fitting a polynomial to a window of samples
+    and evaluating its derivative, which is more robust than simple differencing.
+    The direction parameter controls whether the velocity estimate uses past, 
+    future, or both samples relative to each point.
+    
+    Parameters
+    ----------
+    x : np.ndarray
+        The input signal
+    window_len : int
+        The dimension of the smoothing window; should be an odd integer.
+        Must be greater than polyorder.
+    polyorder : int
+        Order of the polynomial to fit. Default is 2 (quadratic).
+    direction : str
+        'center' - symmetric, uses both past and future samples (default)
+        'backward' - only uses current and past samples (useful for onset detection)
+        'forward' - only uses current and future samples (useful for offset detection)
+        
+    Returns
+    -------
+    np.ndarray
+        The velocity (first derivative) in units per sample (same length as input)
+        
+    Examples
+    --------
+    >>> # Standard centered velocity
+    >>> vel = velocity_savgol(signal, window_len=11)
+    >>> 
+    >>> # Backward-looking for onset detection
+    >>> vel_back = velocity_savgol(signal, window_len=11, direction='backward')
+    >>> 
+    >>> # Forward-looking for offset detection  
+    >>> vel_fwd = velocity_savgol(signal, window_len=11, direction='forward')
+    """
+    x = np.asarray(x, dtype=float)
+    
+    if x.ndim != 1:
+        raise ValueError("velocity_savgol only accepts 1 dimension arrays.")
+    
+    if x.size < window_len:
+        raise ValueError("Input vector needs to be bigger than window size.")
+    
+    if window_len <= polyorder:
+        raise ValueError("window_len must be greater than polyorder.")
+    
+    if window_len < 3:
+        raise ValueError("window_len must be at least 3.")
+        
+    # Ensure window_len is odd
+    if window_len % 2 == 0:
+        window_len += 1
+        
+    if direction not in ['center', 'backward', 'forward']:
+        raise ValueError("direction should be one of 'center', 'backward', 'forward'")
+    
+    # Set position parameter based on direction
+    # pos is the index within the window where the output value is evaluated
+    if direction == 'center':
+        pos = window_len // 2  # center of window (default)
+    elif direction == 'backward':
+        pos = window_len - 1   # rightmost position (current sample at end of window)
+    else:  # forward
+        pos = 0                # leftmost position (current sample at start of window)
+    
+    # Get Savitzky-Golay coefficients for first derivative
+    coeffs = savgol_coeffs(window_len, polyorder, deriv=1, pos=pos)
+    
+    # Apply filter using convolution with appropriate boundary handling
+    # Use 'nearest' mode to extend boundary values
+    vel = convolve1d(x, coeffs, mode='nearest')
+    
+    return vel
+
+
 def helper_merge_blinks(b1,b2):
     if b1.size==0:
         return b2
@@ -134,9 +215,9 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     """
     Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.
     
-    Uses asymmetric (one-sided) smoothing to handle NaN values properly:
-    - Backward smoothing for onset detection (so future NaN doesn't affect the estimate)
-    - Forward smoothing for offset detection (so past NaN doesn't affect the estimate)
+    Uses asymmetric Savitzky-Golay velocity estimation to handle NaN values properly:
+    - Backward-looking velocity for onset detection (so future NaN doesn't affect the estimate)
+    - Forward-looking velocity for offset detection (so past NaN doesn't affect the estimate)
     
     This works similarly to :py:func:`blink_onsets_mahot()`.
     
@@ -145,13 +226,11 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     sy: np.array
         pupil data (can contain NaN for missing values)
     smooth_winsize: int (odd)
-        size of the smoothing window in sampling points
+        size of the Savitzky-Golay window in sampling points
     vel_onset: float
-        velocity-threshold to detect the onset of the blink; difference between 
-        two consecutive samples (negative value)
+        velocity-threshold to detect the onset of the blink; in units per sample (negative value)
     vel_offset: float
-        velocity-threshold to detect the offset of the blink; difference between 
-        two consecutive samples (positive value)
+        velocity-threshold to detect the offset of the blink; in units per sample (positive value)
     min_onset_len: int
         minimum number of consecutive samples that cross the threshold to detect onset
     min_offset_len: int
@@ -167,8 +246,8 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     # Track NaN/zero locations (invalid data)
     invalid_mask = np.isnan(sy) | (sy == 0)
     
-    # Fill invalid values with linear interpolation for smoothing
-    # (the asymmetric smoothing will prevent NaN from affecting edges)
+    # Fill invalid values with linear interpolation for velocity estimation
+    # (the asymmetric Savitzky-Golay will prevent NaN from affecting edges)
     sy_filled = sy.copy()
     valid_indices = np.where(~invalid_mask)[0]
         
@@ -179,14 +258,12 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
             invalid_indices, valid_indices, sy[valid_indices]
         )
     
-    # Generate velocity profiles using asymmetric smoothing
-    # Backward smooth for onset detection (only uses past samples)
-    sym_backward = smooth_window(sy_filled, smooth_winsize, "hanning", direction="backward")
-    vel_backward = np.r_[0, np.diff(sym_backward)]
+    # Generate velocity profiles using asymmetric Savitzky-Golay
+    # Backward-looking velocity for onset detection (only uses past samples)
+    vel_backward = velocity_savgol(sy_filled, smooth_winsize, polyorder=2, direction="backward")
     
-    # Forward smooth for offset detection (only uses future samples)  
-    sym_forward = smooth_window(sy_filled, smooth_winsize, "hanning", direction="forward")
-    vel_forward = np.r_[np.diff(sym_forward), 0]
+    # Forward-looking velocity for offset detection (only uses future samples)  
+    vel_forward = velocity_savgol(sy_filled, smooth_winsize, polyorder=2, direction="forward")
     
     # Don't detect inside invalid regions
     vel_backward[invalid_mask] = 0
@@ -315,21 +392,20 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
     blinks: np.array (nblinks x 2) 
         blink onset/offset matrix (contiguous zeros)
     smooth_winsize: int (odd)
-        size of the Hanning-window in sampling points
+        size of the Savitzky-Golay window in sampling points
     vel_onset: float
-        velocity-threshold to detect the onset of the blink
+        velocity-threshold to detect the onset of the blink; in units per sample (negative value)
     vel_offset: float
-        velocity-threshold to detect the offset of the blink
+        velocity-threshold to detect the offset of the blink; in units per sample (positive value)
     margin: tuple (int,int)
         margin that is subtracted/added to onset and offset (in sampling points)
     blinkwindow: int
         how much time before and after each blink to include (in sampling points)        
     """
-    # generate smoothed signal and velocity-profile
-    sym=smooth_window(sy, smooth_winsize, "hanning")
-    vel=np.r_[0,np.diff(sym)] 
+    # generate velocity-profile using centered Savitzky-Golay
+    vel = velocity_savgol(sy, smooth_winsize, polyorder=2, direction="center")
     blinkwindow_ix=blinkwindow
-    n=sym.size
+    n=len(sy)
     
     newblinks=[]
     for ix,(start,end) in enumerate(blinks):                
