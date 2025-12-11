@@ -19,7 +19,11 @@ def smooth_window(x, window_len=11, window='hanning', direction='center'):
     
     This method is based on the convolution of a scaled window with the signal.
     The direction parameter controls whether the smoothing uses past, future, 
-    or both samples relative to each point.
+    or both samples relative to each point. 
+
+    Note: If using backward or forward smoothing, the smoothed signal will be shifted 
+    by half the window size. This is intentional for onset and offset detection, 
+    where the smoothed signal is used to detect the onset and offset of the blink.
     
     Adapted from SciPy Cookbook: `<https://scipy-cookbook.readthedocs.io/items/SignalSmooth.html>`_.
     
@@ -84,19 +88,21 @@ def smooth_window(x, window_len=11, window='hanning', direction='center'):
     w = w / w.sum()
 
     if direction == 'center':
-        # symmetric padding with reflected signal
+        # Symmetric padding with reflected signal
         s = np.r_[x[window_len-1:0:-1], x, x[-2:-window_len-1:-1]]
         y = np.convolve(w, s, mode='same')
         return y[(window_len-1):(-window_len+1)]
     
     elif direction == 'backward':
-        # Pad on the left only - output depends on current and past samples
+        # Backward-looking: y[i] depends on x[i-window_len+1:i+1] (current and past)
+        # This causes a phase lag, which is intentional for onset detection
         padded = np.r_[np.full(window_len-1, x[0]), x]
         y = np.convolve(w, padded, mode='valid')
         return y
     
     elif direction == 'forward':
-        # Pad on the right only - output depends on current and future samples
+        # Forward-looking: y[i] depends on x[i:i+window_len] (current and future)
+        # This causes a phase lead, which is intentional for offset detection
         padded = np.r_[x, np.full(window_len-1, x[-1])]
         y = np.convolve(w, padded, mode='valid')
         return y
@@ -141,9 +147,11 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     smooth_winsize: int (odd)
         size of the smoothing window in sampling points
     vel_onset: float
-        velocity-threshold to detect the onset of the blink (negative value)
+        velocity-threshold to detect the onset of the blink; difference between 
+        two consecutive samples (negative value)
     vel_offset: float
-        velocity-threshold to detect the offset of the blink (positive value)
+        velocity-threshold to detect the offset of the blink; difference between 
+        two consecutive samples (positive value)
     min_onset_len: int
         minimum number of consecutive samples that cross the threshold to detect onset
     min_offset_len: int

@@ -969,6 +969,83 @@ class Intervals:
         if self.label is not None:
             ax.set_title(self.label)
     
+    def plot_highlight(self, ax=None, color='lightblue', alpha=0.3, **kwargs):
+        """
+        Draw highlighted backgrounds for each interval on existing plot(s).
+        
+        Uses matplotlib's axvspan to draw semi-transparent vertical spans
+        for each interval. This is useful for highlighting regions of interest
+        on top of timeseries plots.
+        
+        Parameters
+        ----------
+        ax : Axes, list of Axes, Figure, or None
+            Where to draw highlights:
+            - None: Apply to ALL axes in current figure (useful after plot_timeseries)
+            - Single Axes: Apply only to that axes
+            - List of Axes: Apply to each axes in the list
+            - Figure: Apply to all axes in that figure
+        color : str
+            Color for the highlighted regions (default 'lightblue')
+        alpha : float
+            Transparency level, 0-1 (default 0.3)
+        **kwargs : dict
+            Additional keyword arguments passed to ax.axvspan()
+            (e.g., zorder, label, linestyle, edgecolor)
+            
+        Returns
+        -------
+        list
+            List of matplotlib patches created
+            
+        Examples
+        --------
+        >>> # Highlight on a single pupil plot
+        >>> data.plot.pupil_plot(units="sec")
+        >>> intervals = data.get_intervals("stim", units="sec")
+        >>> intervals.plot_highlight(color='green', alpha=0.2)
+        
+        >>> # Highlight on all subplots from plot_timeseries
+        >>> data.plot.plot_timeseries(units="ms")
+        >>> intervals = data.get_intervals("stim", units="ms")
+        >>> intervals.plot_highlight()  # Applies to all subplots
+        
+        >>> # Highlight only specific subplot
+        >>> fig = plt.gcf()
+        >>> intervals.plot_highlight(ax=fig.axes[0])  # Only first subplot
+        
+        Notes
+        -----
+        Make sure the intervals are in the same units as the plot's x-axis.
+        Use `intervals.to_units("sec")` to convert if needed.
+        """
+        import matplotlib.pyplot as plt
+        
+        if len(self.intervals) == 0:
+            return []
+        
+        # Determine which axes to use
+        if ax is None:
+            # Default: all axes in current figure
+            axes_list = plt.gcf().axes
+        elif isinstance(ax, plt.Figure):
+            axes_list = ax.axes
+        elif hasattr(ax, '__iter__') and not isinstance(ax, plt.Axes):
+            axes_list = list(ax)
+        else:
+            axes_list = [ax]
+        
+        if not axes_list:
+            return []
+        
+        patches = []
+        for axes in axes_list:
+            for start, end in self.intervals:
+                patch = axes.axvspan(start, end, color=color, alpha=alpha, zorder=0, **kwargs)
+                patches.append(patch)
+        
+        return patches
+    
     def __repr__(self):
         """
         String representation with statistics.

@@ -588,6 +588,105 @@ class TestIntervalsPlotMethod(unittest.TestCase):
             self.assertEqual(color, 'red')
 
 
+class TestIntervalsPlotHighlight(unittest.TestCase):
+    """Test Intervals.plot_highlight() method"""
+    
+    def setUp(self):
+        """Set up test data"""
+        self.intervals = Intervals(
+            [(0, 100), (200, 300), (400, 500)], 
+            units="ms", 
+            label="test"
+        )
+    
+    def tearDown(self):
+        """Clean up after each test"""
+        plt.close('all')
+    
+    def test_plot_highlight_single_axes(self):
+        """Test plot_highlight on a single axes"""
+        fig, ax = plt.subplots()
+        ax.plot([0, 600], [0, 1])
+        
+        patches = self.intervals.plot_highlight()
+        
+        # Should create 3 patches (one per interval)
+        self.assertEqual(len(patches), 3)
+    
+    def test_plot_highlight_multiple_subplots(self):
+        """Test plot_highlight applies to all subplots by default"""
+        fig, axs = plt.subplots(3, 1)
+        for ax in axs:
+            ax.plot([0, 600], [0, 1])
+        
+        patches = self.intervals.plot_highlight()
+        
+        # Should create 9 patches (3 intervals x 3 axes)
+        self.assertEqual(len(patches), 9)
+    
+    def test_plot_highlight_specific_axes(self):
+        """Test plot_highlight on specific axes only"""
+        fig, axs = plt.subplots(2, 1)
+        
+        patches = self.intervals.plot_highlight(ax=axs[0])
+        
+        # Should create 3 patches (only on first axes)
+        self.assertEqual(len(patches), 3)
+    
+    def test_plot_highlight_with_figure(self):
+        """Test plot_highlight with Figure argument"""
+        fig, axs = plt.subplots(2, 1)
+        
+        patches = self.intervals.plot_highlight(ax=fig)
+        
+        # Should create 6 patches (3 intervals x 2 axes)
+        self.assertEqual(len(patches), 6)
+    
+    def test_plot_highlight_empty_intervals(self):
+        """Test plot_highlight with empty intervals"""
+        empty = Intervals([], units="ms")
+        fig, ax = plt.subplots()
+        
+        patches = empty.plot_highlight()
+        
+        self.assertEqual(len(patches), 0)
+    
+    def test_plot_highlight_custom_color_alpha(self):
+        """Test plot_highlight with custom color and alpha"""
+        fig, ax = plt.subplots()
+        ax.plot([0, 600], [0, 1])
+        
+        patches = self.intervals.plot_highlight(color='green', alpha=0.5)
+        
+        self.assertEqual(len(patches), 3)
+        # Check that patches have correct color
+        for patch in patches:
+            fc = patch.get_facecolor()
+            # Green should have high G component
+            self.assertGreater(fc[1], 0.4)  # G component
+    
+    def test_plot_highlight_returns_patches(self):
+        """Test that plot_highlight returns matplotlib patches"""
+        from matplotlib.patches import Patch
+        
+        fig, ax = plt.subplots()
+        patches = self.intervals.plot_highlight()
+        
+        # All returned items should be patches
+        for patch in patches:
+            self.assertIsInstance(patch, Patch)
+    
+    def test_plot_highlight_with_list_of_axes(self):
+        """Test plot_highlight with explicit list of axes"""
+        fig, axs = plt.subplots(3, 1)
+        
+        # Only highlight first two
+        patches = self.intervals.plot_highlight(ax=[axs[0], axs[1]])
+        
+        # Should create 6 patches (3 intervals x 2 axes)
+        self.assertEqual(len(patches), 6)
+
+
 class TestIntervalsConversionMethods(unittest.TestCase):
     """Test Intervals conversion methods (as_index, to_units, __array__)"""
     
