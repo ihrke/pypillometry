@@ -10,6 +10,7 @@ import pylab as plt
 from loguru import logger
 from ..convenience import *
 from .baseline import butter_lowpass_filter
+from scipy.ndimage import uniform_filter1d
 
 
 def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
@@ -79,6 +80,146 @@ def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
     # Final filter pass
     result = butter_lowpass_filter(filled, cutoff, fs, order)
     return result
+
+
+def pupil_signal_quality(signal, fs, mask=None, lowpass_cutoff=4.0, 
+                         window_size_ms=500, metric="snr"):
+    """
+    Compute local signal quality metric for pupil signal.
+    
+    Estimates signal quality by separating the signal into a slow "true signal"
+    component (via lowpass filtering) and a fast "noise" component (the residual).
+    Quality is then computed in sliding windows.
+    
+    Parameters
+    ----------
+    signal : np.ndarray or np.ma.MaskedArray
+        Pupil signal. Can be either:
+        - A regular numpy array, in which case `mask` must be provided
+        - A numpy masked array, in which case its mask is used
+    fs : float
+        Sampling rate in Hz
+    mask : np.ndarray, optional
+        Boolean mask where True indicates invalid/masked samples.
+        Required if `signal` is a regular numpy array.
+        Ignored if `signal` is a masked array.
+    lowpass_cutoff : float, optional
+        Cutoff frequency for separating signal from noise (default: 4.0 Hz).
+        Pupil responses are typically < 4 Hz, so higher frequencies are noise.
+    window_size_ms : float, optional
+        Window size for local quality estimation in milliseconds (default: 500 ms)
+    metric : str, optional
+        Quality metric to return:
+        - "snr": signal-to-noise ratio (signal_power / noise_power)
+        - "snr_db": SNR in decibels, 10 * log10(snr)
+          (0 dB = equal, +10 dB = 10x better, -10 dB = 10x worse)
+        - "noise_power": raw noise power (signal units squared)
+        - "noise_cv": coefficient of variation (noise_std / signal),
+          interpretable as fractional noise (0.05 = 5% noise)
+          
+    Returns
+    -------
+    quality : np.ndarray
+        Local quality metric array (same length as input).
+        Values are 0 at masked locations.
+        
+    Raises
+    ------
+    ValueError
+        If metric is not one of the supported options.
+        If signal is a regular array and mask is not provided.
+        If there are NaN values in the unmasked (valid) portion of the signal.
+        
+    Notes
+    -----
+    The signal-noise separation assumes pupil dynamics are slow (< lowpass_cutoff Hz).
+    The "signal" estimate is the lowpass-filtered version, and "noise" is the
+    high-frequency residual (original - lowpass).
+    
+    Local power is computed as the mean of squared values in a sliding window.
+    SNR = signal_power / noise_power indicates how much true signal there is
+    relative to measurement noise.
+    
+    Examples
+    --------
+    >>> # With explicit mask
+    >>> mask = pupil == 0  # e.g., blinks marked as 0
+    >>> snr = pupil_signal_quality(pupil, fs=500, mask=mask, metric="snr")
+    >>> 
+    >>> # With masked array
+    >>> pupil_ma = np.ma.array(pupil, mask=(pupil == 0))
+    >>> snr = pupil_signal_quality(pupil_ma, fs=500, metric="snr")
+    >>> 
+    >>> # Get noise as coefficient of variation (percentage)
+    >>> noise_cv = pupil_signal_quality(pupil, fs=500, mask=mask, metric="noise_cv")
+    >>> print(f"Average noise level: {np.mean(noise_cv[~mask])*100:.1f}%")
+    """
+    valid_metrics = ["snr", "snr_db", "noise_power", "noise_cv"]
+    if metric not in valid_metrics:
+        raise ValueError(f"metric must be one of {valid_metrics}, got '{metric}'")
+    
+    # Handle masked array vs regular array + mask
+    if isinstance(signal, np.ma.MaskedArray):
+        data = signal.data.copy()
+        invalid_mask = signal.mask
+        # Handle scalar mask (all False or all True)
+        if isinstance(invalid_mask, np.bool_):
+            invalid_mask = np.full(data.shape, invalid_mask, dtype=bool)
+    else:
+        if mask is None:
+            raise ValueError("mask must be provided when signal is a regular numpy array")
+        data = signal.copy()
+        invalid_mask = np.asarray(mask, dtype=bool)
+    
+    # Check for NaN in valid (unmasked) data
+    valid_data = data[~invalid_mask]
+    if np.any(np.isnan(valid_data)):
+        raise ValueError("NaN values found in unmasked (valid) portion of signal. "
+                        "All invalid samples should be marked in the mask.")
+    
+    # Convert window size to samples
+    window_samples = int(window_size_ms / 1000 * fs)
+    if window_samples < 3:
+        window_samples = 3
+    
+    # Prepare signal for filtering: set masked values to NaN for iterative filter
+    signal_with_nan = data.copy()
+    signal_with_nan[invalid_mask] = np.nan
+    
+    # Get signal estimate via iterative lowpass filter
+    signal_smooth = lowpass_filter_iterative(signal_with_nan, lowpass_cutoff, fs, order=2)
+    
+    # Compute noise (residual) only for valid samples
+    # For masked samples, use 0 (they won't contribute to the result anyway)
+    noise = np.zeros_like(data)
+    noise[~invalid_mask] = data[~invalid_mask] - signal_smooth[~invalid_mask]
+    
+    # Compute local power using sliding window
+    # uniform_filter1d computes local mean, so we apply it to squared values
+    signal_power = uniform_filter1d(signal_smooth**2, window_samples, mode='nearest')
+    noise_power = uniform_filter1d(noise**2, window_samples, mode='nearest')
+    
+    # Small epsilon to avoid division by zero
+    eps = 1e-10
+    
+    # Compute requested metric
+    if metric == "snr":
+        result = signal_power / (noise_power + eps)
+    elif metric == "snr_db":
+        snr = signal_power / (noise_power + eps)
+        result = 10 * np.log10(snr + eps)
+    elif metric == "noise_power":
+        result = noise_power
+    elif metric == "noise_cv":
+        # CV = noise_std / signal_mean = sqrt(noise_power) / abs(signal_smooth)
+        noise_std = np.sqrt(noise_power)
+        result = noise_std / (np.abs(signal_smooth) + eps)
+    
+    # Set output to 0 at masked locations
+    result[invalid_mask] = 0
+    
+    return result
+
 
 def pupil_kernel_t(t,npar,tmax):
     """
