@@ -875,6 +875,138 @@ class Intervals:
             "units": self.units
         }
 
+    def filter(self, 
+               selector: callable = None,
+               min_duration: float = None,
+               max_duration: float = None,
+               time_range: tuple = None) -> 'Intervals':
+        """
+        Filter intervals and return a new Intervals object.
+        
+        This method supports multiple filtering criteria that can be combined:
+        - Custom function: applied to each interval
+        - Duration constraints: minimum and/or maximum duration
+        - Time range: intervals must overlap with the specified range
+        
+        All specified criteria are combined with AND logic.
+        
+        Parameters
+        ----------
+        selector : callable, optional
+            Function that takes an interval tuple (start, end) and returns bool.
+            Returns True to keep the interval, False to discard it.
+        min_duration : float, optional
+            Minimum duration of intervals to keep (in current units)
+        max_duration : float, optional
+            Maximum duration of intervals to keep (in current units)
+        time_range : tuple, optional
+            (start, end) time range. Only keeps intervals that overlap with this range.
+            An interval overlaps if its end > range_start AND its start < range_end.
+            
+        Returns
+        -------
+        Intervals
+            New Intervals object containing only the filtered intervals
+            
+        Examples
+        --------
+        >>> intervals = Intervals([(0, 100), (200, 400), (500, 550)], units="ms")
+        
+        >>> # Filter by duration
+        >>> short = intervals.filter(max_duration=100)
+        >>> len(short)
+        2
+        
+        >>> # Filter by minimum duration
+        >>> long = intervals.filter(min_duration=150)
+        >>> len(long)
+        1
+        
+        >>> # Filter by time range (keeps intervals overlapping with range)
+        >>> middle = intervals.filter(time_range=(150, 450))
+        
+        >>> # Filter by custom function
+        >>> starts_at_multiple_of_100 = intervals.filter(
+        ...     selector=lambda start, end: start % 100 == 0
+        ... )
+        
+        >>> # Combine multiple criteria
+        >>> filtered = intervals.filter(
+        ...     min_duration=50,
+        ...     max_duration=200,
+        ...     time_range=(0, 500)
+        ... )
+        """
+        if len(self.intervals) == 0:
+            return Intervals(
+                [],
+                units=self.units,
+                label=self.label,
+                event_labels=None,
+                event_indices=None,
+                data_time_range=self.data_time_range,
+                event_onsets=None,
+                sampling_rate=self.sampling_rate,
+                time_offset=self.time_offset
+            )
+        
+        mask = np.ones(len(self.intervals), dtype=bool)
+        
+        # Apply duration filters
+        if min_duration is not None or max_duration is not None:
+            durations = np.array([end - start for start, end in self.intervals])
+            if min_duration is not None:
+                mask &= durations >= min_duration
+            if max_duration is not None:
+                mask &= durations <= max_duration
+        
+        # Apply time range filter
+        if time_range is not None:
+            if len(time_range) != 2:
+                raise ValueError("time_range must be a tuple of (start, end)")
+            range_start, range_end = time_range
+            if range_start >= range_end:
+                raise ValueError(f"time_range start must be < end, got {range_start} >= {range_end}")
+            # Keep intervals that overlap with the range
+            for i, (start, end) in enumerate(self.intervals):
+                # Overlap: interval end > range start AND interval start < range end
+                overlaps = (end > range_start) and (start < range_end)
+                mask[i] &= overlaps
+        
+        # Apply custom selector function
+        if selector is not None:
+            if not callable(selector):
+                raise TypeError(f"selector must be callable, got {type(selector)}")
+            for i, (start, end) in enumerate(self.intervals):
+                mask[i] &= bool(selector(start, end))
+        
+        # Build filtered data using boolean mask
+        indices = np.where(mask)[0]
+        filtered_intervals = [self.intervals[i] for i in indices]
+        
+        filtered_event_labels = None
+        if self.event_labels is not None:
+            filtered_event_labels = [self.event_labels[i] for i in indices]
+        
+        filtered_event_indices = None
+        if self.event_indices is not None:
+            filtered_event_indices = np.array([self.event_indices[i] for i in indices])
+        
+        filtered_event_onsets = None
+        if self.event_onsets is not None:
+            filtered_event_onsets = np.array([self.event_onsets[i] for i in indices])
+        
+        return Intervals(
+            filtered_intervals,
+            units=self.units,
+            label=self.label,
+            event_labels=filtered_event_labels,
+            event_indices=filtered_event_indices,
+            data_time_range=self.data_time_range,
+            event_onsets=filtered_event_onsets,
+            sampling_rate=self.sampling_rate,
+            time_offset=self.time_offset
+        )
 
     @requires_package("pandas")
     def as_pandas(self):
