@@ -59,6 +59,85 @@ def smooth_window(x,window_len=11,window='hanning'):
     y=np.convolve(w/w.sum(),s,mode='same')
     return y[(window_len-1):(-window_len+1)]
 
+
+def backward_smooth(x, window_len=11):
+    """
+    Smooth signal using only past and current samples (backward-looking).
+    
+    This is useful for detecting signal changes (like blink onsets) right before
+    missing data, where you don't want future NaN values to affect the estimate.
+    
+    Parameters
+    ----------
+    x : np.ndarray
+        Input signal
+    window_len : int
+        Size of the smoothing window (uses current sample and window_len-1 past samples)
+        
+    Returns
+    -------
+    np.ndarray
+        Smoothed signal (same length as input)
+        
+    Notes
+    -----
+    Uses uniform (moving average) smoothing. The window includes the current sample
+    and looks backward, so the smoothed value at index i depends only on x[i-window_len+1:i+1].
+    
+    See Also
+    --------
+    forward_smooth : Smooth using only current and future samples
+    smooth_window : Symmetric smoothing (uses both past and future)
+    """
+    from scipy.ndimage import uniform_filter1d
+    
+    if x.size < window_len:
+        return x.copy()
+    
+    # origin > 0 shifts window backward (uses past samples)
+    # origin = window_len//2 makes it fully backward-looking
+    return uniform_filter1d(x.astype(float), window_len, mode='nearest', origin=window_len//2)
+
+
+def forward_smooth(x, window_len=11):
+    """
+    Smooth signal using only current and future samples (forward-looking).
+    
+    This is useful for detecting signal changes (like blink offsets) right after
+    missing data, where you don't want past NaN values to affect the estimate.
+    
+    Parameters
+    ----------
+    x : np.ndarray
+        Input signal
+    window_len : int
+        Size of the smoothing window (uses current sample and window_len-1 future samples)
+        
+    Returns
+    -------
+    np.ndarray
+        Smoothed signal (same length as input)
+        
+    Notes
+    -----
+    Uses uniform (moving average) smoothing. The window includes the current sample
+    and looks forward, so the smoothed value at index i depends only on x[i:i+window_len].
+    
+    See Also
+    --------
+    backward_smooth : Smooth using only past and current samples
+    smooth_window : Symmetric smoothing (uses both past and future)
+    """
+    from scipy.ndimage import uniform_filter1d
+    
+    if x.size < window_len:
+        return x.copy()
+    
+    # origin < 0 shifts window forward (uses future samples)
+    # origin = -window_len//2 makes it fully forward-looking
+    return uniform_filter1d(x.astype(float), window_len, mode='nearest', origin=-window_len//2)
+
+
 def helper_merge_blinks(b1,b2):
     if b1.size==0:
         return b2
