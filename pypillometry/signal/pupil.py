@@ -9,7 +9,6 @@ import scipy.optimize
 import pylab as plt
 from loguru import logger
 from ..convenience import *
-from .baseline import butter_lowpass_filter
 from scipy.ndimage import uniform_filter1d
 
 
@@ -61,6 +60,9 @@ def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):
     if n_valid == 0:
         # All NaN - return as is
         return signal.copy()
+    
+    # Import here to avoid circular import (baseline.py imports from pupil.py)
+    from .baseline import butter_lowpass_filter
     
     if n_valid == len(signal):
         # No NaN - just apply regular filter
