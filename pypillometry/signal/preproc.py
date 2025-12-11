@@ -13,129 +13,93 @@ from loguru import logger
 from ..convenience import *
 
 
-def smooth_window(x,window_len=11,window='hanning'):
-    """smooth the data using a window with requested size.
+def smooth_window(x, window_len=11, window='hanning', direction='center'):
+    """
+    Smooth the data using a window with requested size.
     
     This method is based on the convolution of a scaled window with the signal.
-    The signal is prepared by introducing reflected copies of the signal 
-    (with the window size) in both ends so that transient parts are minimized
-    in the begining and end part of the output signal.
+    The direction parameter controls whether the smoothing uses past, future, 
+    or both samples relative to each point.
     
-    adapted from SciPy Cookbook: `<https://scipy-cookbook.readthedocs.io/items/SignalSmooth.html>`_.
+    Adapted from SciPy Cookbook: `<https://scipy-cookbook.readthedocs.io/items/SignalSmooth.html>`_.
     
     Parameters
-    ----------    
-    x: the input signal 
-    window_len: the dimension of the smoothing window; should be an odd integer
-    window: the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'
-            flat window will produce a moving average smoothing.
+    ----------
+    x : np.ndarray
+        The input signal
+    window_len : int
+        The dimension of the smoothing window; should be an odd integer
+    window : str
+        The type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'.
+        'flat' window will produce a moving average smoothing.
+    direction : str
+        'center' - symmetric smoothing using both past and future samples (default)
+        'backward' - only uses current and past samples (useful for onset detection
+                     before missing data, where future NaN shouldn't affect the estimate)
+        'forward' - only uses current and future samples (useful for offset detection
+                    after missing data, where past NaN shouldn't affect the estimate)
 
     Returns
     -------
-    np.array: the smoothed signal        
+    np.ndarray
+        The smoothed signal (same length as input)
+        
+    Examples
+    --------
+    >>> # Standard centered smoothing
+    >>> smoothed = smooth_window(signal, window_len=11, window='hanning')
+    >>> 
+    >>> # Backward-looking for onset detection
+    >>> smoothed_back = smooth_window(signal, window_len=11, direction='backward')
+    >>> 
+    >>> # Forward-looking for offset detection  
+    >>> smoothed_fwd = smooth_window(signal, window_len=11, direction='forward')
     """
-
+    x = np.asarray(x, dtype=float)
+    
     if x.ndim != 1:
         raise ValueError("smooth only accepts 1 dimension arrays.")
 
     if x.size < window_len:
         raise ValueError("Input vector needs to be bigger than window size.")
+    
+    if np.any(np.isnan(x)):
+        raise ValueError("Input signal contains NaN values. Handle missing data before smoothing "
+                        "(e.g., interpolate or use a masked approach).")
 
+    if window_len < 3:
+        return x.copy()
 
-    if window_len<3:
-        return x
-
-
-    if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+    if window not in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
         raise ValueError("Window should be one of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
+    
+    if direction not in ['center', 'backward', 'forward']:
+        raise ValueError("direction should be one of 'center', 'backward', 'forward'")
 
-
-    s=np.r_[x[window_len-1:0:-1],x,x[-2:-window_len-1:-1]]
-    if window == 'flat': #moving average
-        w=np.ones(window_len,'d')
+    # Create window weights
+    if window == 'flat':
+        w = np.ones(window_len, 'd')
     else:
-        w=eval('np.'+window+'(window_len)')
+        w = getattr(np, window)(window_len)
+    w = w / w.sum()
 
-    y=np.convolve(w/w.sum(),s,mode='same')
-    return y[(window_len-1):(-window_len+1)]
-
-
-def backward_smooth(x, window_len=11):
-    """
-    Smooth signal using only past and current samples (backward-looking).
+    if direction == 'center':
+        # symmetric padding with reflected signal
+        s = np.r_[x[window_len-1:0:-1], x, x[-2:-window_len-1:-1]]
+        y = np.convolve(w, s, mode='same')
+        return y[(window_len-1):(-window_len+1)]
     
-    This is useful for detecting signal changes (like blink onsets) right before
-    missing data, where you don't want future NaN values to affect the estimate.
+    elif direction == 'backward':
+        # Pad on the left only - output depends on current and past samples
+        padded = np.r_[np.full(window_len-1, x[0]), x]
+        y = np.convolve(w, padded, mode='valid')
+        return y
     
-    Parameters
-    ----------
-    x : np.ndarray
-        Input signal
-    window_len : int
-        Size of the smoothing window (uses current sample and window_len-1 past samples)
-        
-    Returns
-    -------
-    np.ndarray
-        Smoothed signal (same length as input)
-        
-    Notes
-    -----
-    Uses uniform (moving average) smoothing. The window includes the current sample
-    and looks backward, so the smoothed value at index i depends only on x[i-window_len+1:i+1].
-    
-    See Also
-    --------
-    forward_smooth : Smooth using only current and future samples
-    smooth_window : Symmetric smoothing (uses both past and future)
-    """
-    from scipy.ndimage import uniform_filter1d
-    
-    if x.size < window_len:
-        return x.copy()
-    
-    # origin > 0 shifts window backward (uses past samples)
-    # origin = window_len//2 makes it fully backward-looking
-    return uniform_filter1d(x.astype(float), window_len, mode='nearest', origin=window_len//2)
-
-
-def forward_smooth(x, window_len=11):
-    """
-    Smooth signal using only current and future samples (forward-looking).
-    
-    This is useful for detecting signal changes (like blink offsets) right after
-    missing data, where you don't want past NaN values to affect the estimate.
-    
-    Parameters
-    ----------
-    x : np.ndarray
-        Input signal
-    window_len : int
-        Size of the smoothing window (uses current sample and window_len-1 future samples)
-        
-    Returns
-    -------
-    np.ndarray
-        Smoothed signal (same length as input)
-        
-    Notes
-    -----
-    Uses uniform (moving average) smoothing. The window includes the current sample
-    and looks forward, so the smoothed value at index i depends only on x[i:i+window_len].
-    
-    See Also
-    --------
-    backward_smooth : Smooth using only past and current samples
-    smooth_window : Symmetric smoothing (uses both past and future)
-    """
-    from scipy.ndimage import uniform_filter1d
-    
-    if x.size < window_len:
-        return x.copy()
-    
-    # origin < 0 shifts window forward (uses future samples)
-    # origin = -window_len//2 makes it fully forward-looking
-    return uniform_filter1d(x.astype(float), window_len, mode='nearest', origin=-window_len//2)
+    elif direction == 'forward':
+        # Pad on the right only - output depends on current and future samples
+        padded = np.r_[x, np.full(window_len-1, x[-1])]
+        y = np.convolve(w, padded, mode='valid')
+        return y
 
 
 def helper_merge_blinks(b1,b2):
@@ -209,11 +173,11 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     
     # Generate velocity profiles using asymmetric smoothing
     # Backward smooth for onset detection (only uses past samples)
-    sym_backward = backward_smooth(sy_filled, smooth_winsize)
+    sym_backward = smooth_window(sy_filled, smooth_winsize, "hanning", direction="backward")
     vel_backward = np.r_[0, np.diff(sym_backward)]
     
     # Forward smooth for offset detection (only uses future samples)  
-    sym_forward = forward_smooth(sy_filled, smooth_winsize)
+    sym_forward = smooth_window(sy_filled, smooth_winsize, "hanning", direction="forward")
     vel_forward = np.r_[np.diff(sym_forward), 0]
     
     # Don't detect inside invalid regions
