@@ -183,10 +183,75 @@ class PupilData(GenericEyeData):
 
         return obj
 
+    def _convert_velocity_thresholds(self, pupil_data, winsize_ix, vel_onset, vel_offset):
+        """
+        Convert velocity thresholds from per-ms or percentile to per-sample units.
+        
+        Parameters
+        ----------
+        pupil_data : np.array
+            pupil data array (used for percentile calculation)
+        winsize_ix : int
+            window size in samples for velocity calculation
+        vel_onset : float or str
+            onset threshold (per-ms float or percentile string like "5%")
+        vel_offset : float or str
+            offset threshold (per-ms float or percentile string like "95%")
+            
+        Returns
+        -------
+        tuple (float, float)
+            (vel_onset_samples, vel_offset_samples) thresholds in per-sample units
+        """
+        # Helper to parse percentile string
+        def parse_percentile(val):
+            if isinstance(val, str) and val.endswith('%'):
+                return float(val[:-1])
+            return None
+        
+        onset_pct = parse_percentile(vel_onset)
+        offset_pct = parse_percentile(vel_offset)
+        
+        # If either threshold is a percentile, we need to compute velocity profile
+        if onset_pct is not None or offset_pct is not None:
+            # Fill NaN/zero values with interpolation for velocity calculation
+            invalid_mask = np.isnan(pupil_data) | (pupil_data == 0)
+            pupil_filled = pupil_data.copy()
+            valid_indices = np.where(~invalid_mask)[0]
+            invalid_indices = np.where(invalid_mask)[0]
+            if len(invalid_indices) > 0 and len(valid_indices) > 0:
+                pupil_filled[invalid_indices] = np.interp(
+                    invalid_indices, valid_indices, pupil_data[valid_indices]
+                )
+            
+            # Compute velocity profile
+            vel = preproc.velocity_savgol(pupil_filled, winsize_ix, polyorder=2, direction="center")
+            # Mask out invalid regions for percentile calculation
+            vel_valid = vel[~invalid_mask]
+        
+        # Convert onset threshold
+        if onset_pct is not None:
+            vel_onset_samples = np.percentile(vel_valid, onset_pct)
+            logger.debug(f"vel_onset {vel_onset} -> {vel_onset_samples:.4f} (percentile)")
+        else:
+            # Convert from per-ms to per-sample
+            vel_onset_samples = float(vel_onset) * (1000 / self.fs)
+            logger.debug(f"vel_onset {vel_onset}/ms -> {vel_onset_samples:.4f}/sample")
+        
+        # Convert offset threshold
+        if offset_pct is not None:
+            vel_offset_samples = np.percentile(vel_valid, offset_pct)
+            logger.debug(f"vel_offset {vel_offset} -> {vel_offset_samples:.4f} (percentile)")
+        else:
+            # Convert from per-ms to per-sample
+            vel_offset_samples = float(vel_offset) * (1000 / self.fs)
+            logger.debug(f"vel_offset {vel_offset}/ms -> {vel_offset_samples:.4f}/sample")
+        
+        return vel_onset_samples, vel_offset_samples
 
     @keephistory
     def pupil_blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
-                      winsize: float=11, vel_onset: float=-5, vel_offset: float=5, 
+                      winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
                       min_onset_len: int=5, min_offset_len: int=5,
                       strategies: list=["zero","velocity"],
                       units="ms", apply_mask=True, ignore_existing_mask=False, inplace=None):
@@ -210,14 +275,16 @@ class PupilData(GenericEyeData):
             minimum duration for a sequence of missing numbers to be treated as blink
         blink_val: float
             "missing value" code
-        winsize:
-            window-size for smoothing for velocity profile (in units)
-        vel_onset:
-            negative velocity that needs to be crossed; arbitrary units that depend on
-            sampling rate etc
-        vel_offset:
-            positive velocity that needs to be exceeded; arbitrary units that depend on
-            sampling rate etc
+        winsize: float
+            window-size for Savitzky-Golay velocity estimation (in units, default ms)
+        vel_onset: float or str
+            velocity threshold to detect blink onset (negative value).
+            - If float: threshold in pupil-units per millisecond (e.g., -5.0)
+            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)
+        vel_offset: float or str
+            velocity threshold to detect blink offset (positive value).
+            - If float: threshold in pupil-units per millisecond (e.g., 5.0)
+            - If str: percentile of velocity distribution (e.g., "95%" for top 95%)
         min_onset_len: int
             minimum number of consecutive samples that crossed threshold in the velocity
             profile to detect as onset (to avoid noise-induced changes)
@@ -252,7 +319,7 @@ class PupilData(GenericEyeData):
         winsize_ms=winsize*fac
         winsize_ix=int(winsize_ms/1000.*self.fs)
         if winsize_ix % 2==0:
-            winsize += 1
+            winsize_ix += 1
         min_duration_ms=min_duration*fac
         min_duration_ix=int(min_duration_ms/1000.*self.fs)        
 
@@ -275,7 +342,11 @@ class PupilData(GenericEyeData):
             
             ## detect blinks with the different strategies
             if "velocity" in strategies:
-                blinks_vel=preproc.detect_blinks_velocity(pupil_data, winsize_ix, vel_onset, vel_offset, min_onset_len, min_offset_len)
+                # Convert velocity thresholds to per-sample units
+                vel_onset_samples, vel_offset_samples = self._convert_velocity_thresholds(
+                    pupil_data, winsize_ix, vel_onset, vel_offset
+                )
+                blinks_vel=preproc.detect_blinks_velocity(pupil_data, winsize_ix, vel_onset_samples, vel_offset_samples, min_onset_len, min_offset_len)
                 logger.debug(f"Detected {len(blinks_vel)} blinks with velocity strategy")
             else: 
                 blinks_vel=np.array([])

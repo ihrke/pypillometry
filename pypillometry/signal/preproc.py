@@ -157,11 +157,11 @@ def velocity_savgol(x, window_len=11, polyorder=2, direction='center'):
     if x.size < window_len:
         raise ValueError("Input vector needs to be bigger than window size.")
     
-    if window_len <= polyorder:
-        raise ValueError("window_len must be greater than polyorder.")
-    
-    if window_len < 3:
-        raise ValueError("window_len must be at least 3.")
+    # Ensure minimum window size for Savitzky-Golay (must be > polyorder and >= 3)
+    min_window = max(3, polyorder + 1)
+    if window_len < min_window:
+        logger.warning(f"window_len={window_len} too small for polyorder={polyorder}, increasing to {min_window}")
+        window_len = min_window
         
     # Ensure window_len is odd
     if window_len % 2 == 0:
