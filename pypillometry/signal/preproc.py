@@ -164,85 +164,119 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     """
     Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.
     
+    Uses asymmetric (one-sided) smoothing to handle NaN values properly:
+    - Backward smoothing for onset detection (so future NaN doesn't affect the estimate)
+    - Forward smoothing for offset detection (so past NaN doesn't affect the estimate)
+    
     This works similarly to :py:func:`blink_onsets_mahot()`.
     
     Parameters
     ----------
     sy: np.array
-        pupil data
+        pupil data (can contain NaN for missing values)
     smooth_winsize: int (odd)
-        size of the Hanning-window in sampling points
+        size of the smoothing window in sampling points
     vel_onset: float
-        velocity-threshold to detect the onset of the blink
+        velocity-threshold to detect the onset of the blink (negative value)
     vel_offset: float
-        velocity-threshold to detect the offset of the blink
+        velocity-threshold to detect the offset of the blink (positive value)
     min_onset_len: int
         minimum number of consecutive samples that cross the threshold to detect onset
     min_offset_len: int
         minimum number of consecutive samples that cross the threshold to detect offset
+        
+    Returns
+    -------
+    np.array (nblinks x 2)
+        Array of blink onset/offset index pairs
     """
+    n = len(sy)
     
-    # generate smoothed signal and velocity-profile
-    sym=smooth_window(sy, smooth_winsize, "hanning")
-    vel=np.r_[0,np.diff(sym)] 
-    n=sym.size
-    logger.debug(f"Generated velocity profile, length {n}")
+    # Track NaN/zero locations (invalid data)
+    invalid_mask = np.isnan(sy) | (sy == 0)
+    
+    # Fill invalid values with linear interpolation for smoothing
+    # (the asymmetric smoothing will prevent NaN from affecting edges)
+    sy_filled = sy.copy()
+    valid_indices = np.where(~invalid_mask)[0]
+        
+    # Simple linear interpolation for NaN regions
+    invalid_indices = np.where(invalid_mask)[0]
+    if len(invalid_indices) > 0:
+        sy_filled[invalid_indices] = np.interp(
+            invalid_indices, valid_indices, sy[valid_indices]
+        )
+    
+    # Generate velocity profiles using asymmetric smoothing
+    # Backward smooth for onset detection (only uses past samples)
+    sym_backward = backward_smooth(sy_filled, smooth_winsize)
+    vel_backward = np.r_[0, np.diff(sym_backward)]
+    
+    # Forward smooth for offset detection (only uses future samples)  
+    sym_forward = forward_smooth(sy_filled, smooth_winsize)
+    vel_forward = np.r_[np.diff(sym_forward), 0]
+    
+    # Don't detect inside invalid regions
+    vel_backward[invalid_mask] = 0
+    vel_forward[invalid_mask] = 0
+    
+    logger.debug(f"Generated asymmetric velocity profiles, length {n}")
 
-    # find first negative vel-crossing 
-    onsets=np.where(vel<=vel_onset)[0]
+    # Find onset candidates using backward velocity (fast drop before blink)
+    onsets = np.where(vel_backward <= vel_onset)[0]
     logger.debug(f"Found {len(onsets)} potential onset points")
     
     if len(onsets) == 0:
         logger.debug("No onsets found - returning empty array")
         return np.array([])
         
-    onsets_ixx=np.r_[np.diff(onsets),10]>1
-    onsets_len=np.diff(np.r_[0,np.where(onsets_ixx)[0]+1])
-    onsets=onsets[:-1][onsets_ixx[:-1]]
-    onsets_len=onsets_len[:len(onsets)]            ## truncate onsets_len to the length of onsets to avoid IndexError in line 124
-    onsets=onsets[onsets_len>min_onset_len]        ## will produce IndexError since len(onsets)!=len(onsets_len)
+    onsets_ixx = np.r_[np.diff(onsets), 10] > 1
+    onsets_len = np.diff(np.r_[0, np.where(onsets_ixx)[0] + 1])
+    onsets = onsets[:-1][onsets_ixx[:-1]]
+    onsets_len = onsets_len[:len(onsets)]
+    onsets = onsets[onsets_len > min_onset_len]
     logger.debug(f"After filtering, {len(onsets)} onsets remain")
 
-    ## offset finding
-    offsets=np.where(vel>=vel_offset)[0]
+    # Find offset candidates using forward velocity (fast rise after blink)
+    offsets = np.where(vel_forward >= vel_offset)[0]
     logger.debug(f"Found {len(offsets)} potential offset points")
     
     if len(offsets) == 0:
         logger.debug("No offsets found - returning empty array")
         return np.array([])
         
-    offsets_ixx=np.r_[10,np.diff(offsets)]>1
-    offsets_len=np.diff(np.r_[np.where(offsets_ixx)[0],offsets.size])
-    offsets=offsets[offsets_ixx]
-    offsets=offsets[offsets_len>min_offset_len]
+    offsets_ixx = np.r_[10, np.diff(offsets)] > 1
+    offsets_len = np.diff(np.r_[np.where(offsets_ixx)[0], offsets.size])
+    offsets = offsets[offsets_ixx]
+    offsets = offsets[offsets_len > min_offset_len]
     logger.debug(f"After filtering, {len(offsets)} offsets remain")
     
     if len(onsets) == 0 or len(offsets) == 0:
         logger.debug("No valid onset/offset pairs - returning empty array")
         return np.array([])
     
-    ## find corresponding on- and off-sets
-    blinks=[]
-    on=onsets[0]
+    # Find corresponding on- and off-sets
+    blinks = []
+    on = onsets[0]
     while on is not None:
-        offs=offsets[offsets>on]
-        off=offs[0] if offs.size>0 else n
-        blinks.append([on,off])
-        ons=onsets[onsets>off]
-        on=ons[0] if ons.size>0 else None
+        offs = offsets[offsets > on]
+        off = offs[0] if offs.size > 0 else n
+        blinks.append([on, off])
+        ons = onsets[onsets > off]
+        on = ons[0] if ons.size > 0 else None
     logger.debug(f"Found {len(blinks)} blink pairs")
         
-    ## if on- off-sets fall in a zero-region, grow until first non-zero sample
-    blinks2=[]
-    for (on,off) in blinks:
-        while(on>0 and sy[on]==0):
-            on-=1
-        while(off<n-1 and sy[off]==0):
-            off+=1
-        blinks2.append([on,off])
+    # If on/off-sets fall in an invalid region, grow until first valid sample
+    blinks2 = []
+    for (on, off) in blinks:
+        while on > 0 and invalid_mask[on]:
+            on -= 1
+        while off < n - 1 and invalid_mask[off]:
+            off += 1
+        blinks2.append([on, off])
     
     result = np.array(blinks2)
-    logger.debug(f"Returning {len(result)} blinks after zero-region adjustment")
+    logger.debug(f"Returning {len(result)} blinks after invalid-region adjustment")
     return result
 
 def detect_blinks_zero(sy, min_duration, blink_val=0):
