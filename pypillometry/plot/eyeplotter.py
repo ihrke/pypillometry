@@ -108,6 +108,9 @@ class EyePlotter(GazePlotter,PupilPlotter):
         if not isinstance(eyes, list):
             eyes = [eyes]
         
+        # Validate plot_range
+        self._validate_plot_range(plot_range, units)
+        
         # Handle time range
         fac = obj._unit_fac(units)
         tx = obj.tx * fac

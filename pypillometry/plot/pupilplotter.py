@@ -67,6 +67,9 @@ class PupilPlotter(GenericPlotter):
             eyes=self.obj.data.get_available_eyes(variable="pupil")
         logger.debug("Plotting eyes %s"%eyes)
 
+        # Validate plot_range
+        self._validate_plot_range(plot_range, units)
+
         fac=self.obj._unit_fac(units)
         logger.debug("Plotting in units %s (fac=%f)"%(units, fac))
         if units=="sec":

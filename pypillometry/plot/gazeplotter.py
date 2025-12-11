@@ -90,6 +90,9 @@ class GazePlotter(GenericPlotter):
         """
         obj = self.obj
         
+        # Validate plot_range
+        self._validate_plot_range(plot_range, units)
+        
         fac=obj._unit_fac(units)
         tx=obj.tx*fac
 
@@ -313,6 +316,9 @@ class GazePlotter(GenericPlotter):
             The figure size (per subplot). Default is (10,5).
         """
         obj = self.obj
+
+        # Validate plot_range
+        self._validate_plot_range(plot_range, units)
 
         if units is not None: 
             fac=obj._unit_fac(units)

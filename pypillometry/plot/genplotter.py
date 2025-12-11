@@ -19,6 +19,57 @@ class GenericPlotter:
     """
     obj: GenericEyeData # link to the data object
 
+    def _validate_plot_range(self, plot_range: tuple, units: str = None) -> None:
+        """
+        Validate that plot_range overlaps with the data time range.
+        
+        Parameters
+        ----------
+        plot_range : tuple
+            The (start, end) range to validate
+        units : str or None
+            Time units for plot_range. If None, assumes raw time vector units.
+            
+        Raises
+        ------
+        ValueError
+            If plot_range does not overlap with data time range
+        """
+        start, end = plot_range
+        
+        # Handle infinite bounds (always valid)
+        if start == -np.inf and end == np.inf:
+            return
+        
+        # Get data time range in the specified units
+        if units is not None:
+            fac = self.obj._unit_fac(units)
+        else:
+            fac = 1.0
+        
+        data_start = float(np.min(self.obj.tx) * fac)
+        data_end = float(np.max(self.obj.tx) * fac)
+        
+        # Replace infinite bounds with data bounds for comparison
+        eff_start = data_start if start == -np.inf else start
+        eff_end = data_end if end == np.inf else end
+        
+        # Check for any overlap
+        if eff_end <= data_start or eff_start >= data_end:
+            units_str = units if units else "time units"
+            raise ValueError(
+                f"plot_range ({start}, {end}) does not overlap with data range "
+                f"({data_start:.4f}, {data_end:.4f}) in {units_str}"
+            )
+        
+        # Warn if only partial overlap
+        if eff_start < data_start or eff_end > data_end:
+            units_str = units if units else "time units"
+            logger.warning(
+                f"plot_range ({start}, {end}) extends beyond data range "
+                f"({data_start:.4f}, {data_end:.4f}) in {units_str}"
+            )
+
     def plot_intervals(self, intervals: Intervals,
                        eyes: str|list=[], variables: str|list=[],
                        pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
@@ -195,6 +246,10 @@ class GenericPlotter:
         """
         obj = self.obj
         eyes,variables=obj._get_eye_var(eyes, variables)
+        
+        # Validate plot_range
+        self._validate_plot_range(plot_range, units)
+        
         if units is not None: 
             fac=obj._unit_fac(units)
             tx = obj.tx*fac
