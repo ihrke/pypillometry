@@ -323,7 +323,9 @@ class GazeData(GenericEyeData):
             intervals=intervals_list,
             units=None,  # Using index units
             label="eye_divergences",
-            data_time_range=(0, len(obj.tx))
+            data_time_range=(0, len(obj.tx)),
+            sampling_rate=obj.fs,
+            time_offset=obj.tx[0]
         )
         
         # Apply mask if requested
@@ -440,7 +442,8 @@ class GazeData(GenericEyeData):
                 units=None,  # Using index units
                 label=f"{eye}_offscreen",
                 data_time_range=(0, len(obj.tx)),
-                sampling_rate=obj.fs
+                sampling_rate=obj.fs,
+                time_offset=obj.tx[0]
             )
             
             intervals_dict[eye] = intervals_obj

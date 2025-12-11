@@ -87,13 +87,13 @@ class TestPlottingSmokePupil(unittest.TestCase):
     def test_pupil_plot_no_events(self):
         """Test pupil_plot without events"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(plot_events=False)
+        self.data.plot.pupil_plot(show_events=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_pupil_plot_no_blinks(self):
         """Test pupil_plot without blink highlighting"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(highlight_blinks=False)
+        self.data.plot.pupil_plot(show_blinks=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_pupil_plot_segments_runs(self):

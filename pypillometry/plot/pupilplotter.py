@@ -29,8 +29,8 @@ class PupilPlotter(GenericPlotter):
     def pupil_plot(self, 
                    eyes: str|list=[],
                    plot_range: Tuple[float,float]=(-np.inf, +np.inf),
-                   plot_events: bool=True,
-                   highlight_blinks: bool=True,
+                   show_events: bool=True,
+                   show_blinks: bool=True,
                    units: str="sec",
                    label_prefix: str="",
                    style: dict=None
@@ -48,9 +48,9 @@ class PupilPlotter(GenericPlotter):
             plot from start to end (in units of `units`)
         units: str
             one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours
-        plot_events: bool
+        show_events: bool
             plot events as vertical lines with labels
-        highlight_blinks: bool
+        show_blinks: bool
             highlight detected blinks
         label_prefix: str
             Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
@@ -140,7 +140,7 @@ class PupilPlotter(GenericPlotter):
             plt.plot(tx, self.obj.data[eye,"pupil"][startix:endix], **plot_kwargs)
 
         # plot grey lines for events
-        if plot_events:
+        if show_events:
             logger.debug("Plotting events, %i in range"%len(evon))
             plt.vlines(evon, *plt.ylim(), color="grey", alpha=0.5)
             ll,ul=plt.ylim()
@@ -148,7 +148,7 @@ class PupilPlotter(GenericPlotter):
                 plt.text(ev, ll+(ul-ll)/2., "%s"%lab, fontsize=8, rotation=90)
         
         # highlight if a blink in any of the eyes
-        if highlight_blinks:
+        if show_blinks:
             ax = plt.gca()
             for eye in eyes:
                 mask = self.obj.data.mask.get(f"{eye}_pupil")

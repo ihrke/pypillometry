@@ -545,7 +545,8 @@ class GenericEyeData(ABC):
                         units=None,
                         label=f"{e}_{v}_blinks",
                         data_time_range=(0, len(self.tx)),
-                        sampling_rate=self.fs
+                        sampling_rate=self.fs,
+                        time_offset=self.tx[0]
                     )
                 
                 # Convert to requested units if needed
@@ -570,7 +571,8 @@ class GenericEyeData(ABC):
                     units=None,
                     label=f"{eyes[0]}_{variables[0]}_blinks",
                     data_time_range=(0, len(self.tx)),
-                    sampling_rate=self.fs
+                    sampling_rate=self.fs,
+                    time_offset=self.tx[0]
                 )
             
             # Convert to requested units if needed
@@ -632,7 +634,8 @@ class GenericEyeData(ABC):
                     units=None,
                     label=label or f"{key}_mask",
                     data_time_range=(0, len(self.tx)),
-                    sampling_rate=self.fs
+                    sampling_rate=self.fs,
+                    time_offset=self.tx[0]
                 )
                 
                 # Convert to requested units if needed
@@ -647,7 +650,8 @@ class GenericEyeData(ABC):
             key = eyes[0] + "_" + variables[0]
             if key not in self.data.mask:
                 empty_intervals = Intervals([], units=None, label=label or f"{key}_mask",
-                               data_time_range=(0, len(self.tx)), sampling_rate=self.fs)
+                               data_time_range=(0, len(self.tx)), sampling_rate=self.fs,
+                               time_offset=self.tx[0])
                 if units is not None:
                     return empty_intervals.to_units(units)
                 return empty_intervals
@@ -660,7 +664,8 @@ class GenericEyeData(ABC):
                 units=None,
                 label=label or f"{key}_mask",
                 data_time_range=(0, len(self.tx)),
-                sampling_rate=self.fs
+                sampling_rate=self.fs,
+                time_offset=self.tx[0]
             )
             
             # Convert to requested units if needed
@@ -1499,8 +1504,10 @@ class GenericEyeData(ABC):
             # Get data time range
             if units is None:
                 data_time_range = (0, len(self.tx))
+                time_offset = self.tx[0]
             else:
                 data_time_range = (self.tx[0] * fac, self.tx[-1] * fac)
+                time_offset = 0.0
             
             return Intervals(
                 intervals=intervals_list,
@@ -1510,7 +1517,8 @@ class GenericEyeData(ABC):
                 event_indices=None,  # We don't have indices from Events object
                 data_time_range=data_time_range,
                 event_onsets=event_onsets_list,
-                sampling_rate=self.fs
+                sampling_rate=self.fs,
+                time_offset=time_offset
             )
         
         if isinstance(event_select, tuple):
@@ -1608,9 +1616,11 @@ class GenericEyeData(ABC):
         if units is None:
             # Units are indices
             data_time_range = (0, len(self.tx))
+            time_offset = self.tx[0]
         else:
             # Convert tx range to specified units
             data_time_range = (self.tx[0] * fac, self.tx[-1] * fac)
+            time_offset = 0.0
         
         return Intervals(
             intervals=intervals_list,
@@ -1620,7 +1630,8 @@ class GenericEyeData(ABC):
             event_indices=selected_indices,
             data_time_range=data_time_range,
             event_onsets=event_onsets_list,
-            sampling_rate=self.fs
+            sampling_rate=self.fs,
+            time_offset=time_offset
         )
 
     @keephistory
@@ -1911,7 +1922,8 @@ class GenericEyeData(ABC):
                 units=None,
                 label=f"{eye}_{var}_blinks",
                 data_time_range=(0, len(obj.tx)),
-                sampling_rate=obj.fs
+                sampling_rate=obj.fs,
+                time_offset=obj.tx[0]
             )
             
             key = f"{eye}_{var}"

@@ -72,16 +72,16 @@ class TestPupilPlotParameters(unittest.TestCase):
         self.data.plot.pupil_plot(eyes="left")
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_plot_events_false(self):
+    def test_pupil_plot_show_events_false(self):
         """Test pupil_plot without events"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(plot_events=False)
+        self.data.plot.pupil_plot(show_events=False)
         self.assertIsNotNone(plt.gcf())
     
-    def test_pupil_plot_highlight_blinks_false(self):
+    def test_pupil_plot_show_blinks_false(self):
         """Test pupil_plot without blink highlighting"""
         fig = plt.figure()
-        self.data.plot.pupil_plot(highlight_blinks=False)
+        self.data.plot.pupil_plot(show_blinks=False)
         self.assertIsNotNone(plt.gcf())
     
     def test_pupil_plot_style_single_dict(self):

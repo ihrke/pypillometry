@@ -223,7 +223,7 @@ class Intervals:
     ...     print(f"{start}-{end}")
     """
     
-    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None, sampling_rate=None):
+    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None, sampling_rate=None, time_offset=None):
         """
         Initialize an Intervals object.
         
@@ -240,11 +240,15 @@ class Intervals:
         event_indices : np.ndarray, optional
             Indices for each interval
         data_time_range : tuple, optional
-            Time range (min, max) of the original dataset
+            Time range (min, max) of the original dataset (in same units as intervals)
         event_onsets : list or np.ndarray, optional
             Original event onset times (in same units as intervals)
         sampling_rate : float, optional
             Sampling rate in Hz. Required to convert index-based intervals to time units.
+        time_offset : float, optional
+            Time offset in milliseconds. When intervals are stored in indices (units=None),
+            this offset is added when converting to time units. This is needed when the
+            dataset's time vector doesn't start at 0. Default is 0.
         """
         if isinstance(intervals, np.ndarray):
             self.intervals = [tuple(row) for row in intervals]
@@ -260,6 +264,7 @@ class Intervals:
         self.data_time_range = data_time_range
         self.event_onsets = event_onsets
         self.sampling_rate = sampling_rate
+        self.time_offset = time_offset if time_offset is not None else 0.0
     
     def __len__(self):
         """Return number of intervals."""
@@ -341,7 +346,7 @@ class Intervals:
     
     @classmethod
     def from_mask(cls, mask: np.ndarray, units=None, label: str = None, 
-                  sampling_rate: float = None) -> 'Intervals':
+                  sampling_rate: float = None, time_offset: float = None) -> 'Intervals':
         """
         Create Intervals from a binary mask array.
         
@@ -355,6 +360,8 @@ class Intervals:
             Label for the intervals.
         sampling_rate : float, optional
             Sampling rate in Hz.
+        time_offset : float, optional
+            Time offset in milliseconds for index-to-time conversion.
             
         Returns
         -------
@@ -385,7 +392,8 @@ class Intervals:
             units=units,
             label=label,
             data_time_range=(0, len(mask)),
-            sampling_rate=sampling_rate
+            sampling_rate=sampling_rate,
+            time_offset=time_offset
         )
     
     def __sub__(self, other: 'Intervals') -> 'Intervals':
@@ -455,12 +463,13 @@ class Intervals:
         # Subtract and clip negative values to 0
         result_mask = np.clip(mask_self - mask_other, 0, 1)
         
-        # Convert back to Intervals
+        # Convert back to Intervals (use time_offset from index-converted interval)
         result = Intervals.from_mask(
             result_mask,
             units=None,
             label=f"{self.label or 'intervals'} - {other.label or 'intervals'}",
-            sampling_rate=self.sampling_rate or other.sampling_rate
+            sampling_rate=self.sampling_rate or other.sampling_rate,
+            time_offset=self_idx.time_offset if hasattr(self_idx, 'time_offset') else 0.0
         )
         
         # Convert back to original units if self had time units
@@ -589,6 +598,9 @@ class Intervals:
         # Use self's sampling_rate, or other's if self doesn't have one
         combined_sampling_rate = self.sampling_rate or other.sampling_rate
         
+        # Use self's time_offset (both should have same offset if combining)
+        combined_time_offset = self.time_offset if self.time_offset else other.time_offset
+        
         return Intervals(
             combined_intervals,
             self.units,
@@ -597,7 +609,8 @@ class Intervals:
             event_indices=combined_event_indices,
             data_time_range=combined_range,
             event_onsets=combined_event_onsets,
-            sampling_rate=combined_sampling_rate
+            sampling_rate=combined_sampling_rate,
+            time_offset=combined_time_offset
         )
     
     def __array__(self) -> np.ndarray:
@@ -676,36 +689,44 @@ class Intervals:
                 raise ValueError(f"Unknown source units: {self.units}")
             
             # Convert to ms first, then to indices
-            # index = time_ms * fs / 1000
+            # First, compute the time offset (starting time in ms)
             fac_to_ms = units_to_ms[self.units]
             samples_per_ms = self.sampling_rate / 1000.0
             
+            # Compute time_offset from data_time_range start (in ms)
+            if self.data_time_range is not None:
+                time_offset = self.data_time_range[0] * fac_to_ms
+            else:
+                time_offset = 0.0
+            
+            # Subtract offset before converting to indices
             converted = [
-                (int(round(s * fac_to_ms * samples_per_ms)), 
-                 int(round(e * fac_to_ms * samples_per_ms))) 
+                (int(round((s * fac_to_ms - time_offset) * samples_per_ms)), 
+                 int(round((e * fac_to_ms - time_offset) * samples_per_ms))) 
                 for s, e in self.intervals
             ]
             
-            # Convert data_time_range
+            # Convert data_time_range to indices (relative to offset, so starts at 0)
             if self.data_time_range is not None:
                 data_time_range = (
-                    int(round(self.data_time_range[0] * fac_to_ms * samples_per_ms)),
-                    int(round(self.data_time_range[1] * fac_to_ms * samples_per_ms))
+                    0,
+                    int(round((self.data_time_range[1] * fac_to_ms - time_offset) * samples_per_ms))
                 )
             else:
                 data_time_range = None
             
-            # Convert event_onsets
+            # Convert event_onsets (subtract offset)
             if self.event_onsets is not None:
                 event_onsets = np.array(
-                    [int(round(o * fac_to_ms * samples_per_ms)) for o in self.event_onsets]
+                    [int(round((o * fac_to_ms - time_offset) * samples_per_ms)) for o in self.event_onsets]
                 )
             else:
                 event_onsets = None
             
             return Intervals(converted, None, self.label,
                             self.event_labels, self.event_indices,
-                            data_time_range, event_onsets, self.sampling_rate)
+                            data_time_range, event_onsets, self.sampling_rate,
+                            time_offset=time_offset)
         
         # Handle conversion to time units
         if target_units not in units_to_ms:
@@ -718,23 +739,25 @@ class Intervals:
                     "Cannot convert from indices (units=None) without sampling_rate. "
                     "Set sampling_rate or use get_intervals(units='ms') instead."
                 )
-            # Convert indices to ms first: index / fs * 1000
+            # Convert indices to ms first: index / fs * 1000, then add time_offset
             ms_per_sample = 1000.0 / self.sampling_rate
-            converted_ms = [(s * ms_per_sample, e * ms_per_sample) for s, e in self.intervals]
+            offset_ms = self.time_offset  # time_offset is already in ms
+            converted_ms = [(s * ms_per_sample + offset_ms, e * ms_per_sample + offset_ms) 
+                          for s, e in self.intervals]
             # Then convert ms to target units
             fac = 1.0 / units_to_ms[target_units]
             converted = [(s * fac, e * fac) for s, e in converted_ms]
-            # Convert data_time_range
+            # Convert data_time_range (also add offset)
             if self.data_time_range is not None:
                 data_time_range = (
-                    self.data_time_range[0] * ms_per_sample * fac,
-                    self.data_time_range[1] * ms_per_sample * fac
+                    (self.data_time_range[0] * ms_per_sample + offset_ms) * fac,
+                    (self.data_time_range[1] * ms_per_sample + offset_ms) * fac
                 )
             else:
                 data_time_range = None
-            # Convert event_onsets
+            # Convert event_onsets (also add offset)
             if self.event_onsets is not None:
-                event_onsets = np.array(self.event_onsets) * ms_per_sample * fac
+                event_onsets = (np.array(self.event_onsets) * ms_per_sample + offset_ms) * fac
             else:
                 event_onsets = None
         else:
@@ -754,9 +777,11 @@ class Intervals:
             else:
                 event_onsets = None
         
+        # time_offset is 0 for time-based intervals (offset already incorporated into values)
         return Intervals(converted, target_units, self.label,
                         self.event_labels, self.event_indices,
-                        data_time_range, event_onsets, self.sampling_rate)
+                        data_time_range, event_onsets, self.sampling_rate,
+                        time_offset=0.0)
     
     def merge(self, merge_sep='_'):
         """
@@ -827,7 +852,8 @@ class Intervals:
                         event_indices=merged_indices,
                         data_time_range=self.data_time_range,
                         event_onsets=merged_onsets,
-                        sampling_rate=self.sampling_rate)
+                        sampling_rate=self.sampling_rate,
+                        time_offset=self.time_offset)
     
     def stats(self):
         """
