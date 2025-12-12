@@ -135,7 +135,7 @@ class GenericPlotter:
 
             for ix, (start, end) in enumerate(intervals_idx[(i*nsubplots):(i+1)*nsubplots]):
                 iinterv += 1
-                slic = slice(start, end)
+                slic = slice(int(start), int(end))
                 ax = axs[ix]
                 for eye, var in itertools.product(eyes, variables):
                     ax.plot(obj.tx[slic] * fac, obj.data[eye, var][slic], label="%s_%s" % (eye, var))
