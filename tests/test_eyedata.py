@@ -931,6 +931,257 @@ class TestEyeData(unittest.TestCase):
         # Check that masks were applied correctly
         self.assertTrue(np.all(result.data.mask['left_pupil'][100:200] == 1))
         self.assertTrue(np.all(result.data.mask['right_pupil'][150:250] == 1))
+
+    def test_interpolate_intervals_single(self):
+        """Test interpolate_intervals with a single Intervals object"""
+        from pypillometry.intervals import Intervals
+        
+        # Create test data with a gap
+        data_copy = self.eyedata.copy()
+        original_values = data_copy.data['left_pupil'].copy()
+        
+        # Set known values at boundaries and create a gap
+        data_copy.data['left_pupil'][99] = 100.0
+        data_copy.data['left_pupil'][200] = 200.0
+        data_copy.data['left_pupil'][100:200] = np.nan  # Gap to interpolate
+        
+        # Create interval for the gap
+        intervals = Intervals([(100, 200)], units=None,
+                             data_time_range=(0, len(self.eyedata.tx)),
+                             sampling_rate=self.eyedata.fs)
+        
+        # Interpolate
+        result = data_copy.interpolate_intervals(intervals, eyes=['left'], variables=['pupil'])
+        
+        # Check that values were interpolated (linear interpolation between 100 and 200)
+        interpolated = result.data['left_pupil'][100:200]
+        self.assertFalse(np.any(np.isnan(interpolated)))
+        
+        # Check that mask was applied to interpolated region
+        mask = result.data.mask['left_pupil']
+        self.assertTrue(np.all(mask[100:200] == 1))
+        
+    def test_interpolate_intervals_dict(self):
+        """Test interpolate_intervals with a dict of Intervals"""
+        from pypillometry.intervals import Intervals
+        
+        # Create test data with gaps
+        data_copy = self.eyedata.copy()
+        
+        # Set up left eye gap
+        data_copy.data['left_pupil'][99] = 100.0
+        data_copy.data['left_pupil'][150] = 150.0
+        data_copy.data['left_pupil'][100:150] = np.nan
+        
+        # Set up right eye gap
+        data_copy.data['right_pupil'][149] = 200.0
+        data_copy.data['right_pupil'][250] = 300.0
+        data_copy.data['right_pupil'][150:250] = np.nan
+        
+        # Create intervals dict
+        intervals_dict = {
+            'left_pupil': Intervals([(100, 150)], units=None,
+                                   data_time_range=(0, len(self.eyedata.tx)),
+                                   sampling_rate=self.eyedata.fs),
+            'right_pupil': Intervals([(150, 250)], units=None,
+                                    data_time_range=(0, len(self.eyedata.tx)),
+                                    sampling_rate=self.eyedata.fs)
+        }
+        
+        # Interpolate
+        result = data_copy.interpolate_intervals(intervals_dict)
+        
+        # Check that gaps were filled
+        self.assertFalse(np.any(np.isnan(result.data['left_pupil'][100:150])))
+        self.assertFalse(np.any(np.isnan(result.data['right_pupil'][150:250])))
+        
+        # Check masks
+        self.assertTrue(np.all(result.data.mask['left_pupil'][100:150] == 1))
+        self.assertTrue(np.all(result.data.mask['right_pupil'][150:250] == 1))
+        
+    def test_interpolate_intervals_store_as_suffix(self):
+        """Test interpolate_intervals with store_as_suffix creates new variable"""
+        from pypillometry.intervals import Intervals
+        
+        # Create test data with a gap
+        data_copy = self.eyedata.copy()
+        original_values = data_copy.data['left_pupil'].copy()
+        
+        # Set known values at boundaries and create a gap
+        data_copy.data['left_pupil'][99] = 100.0
+        data_copy.data['left_pupil'][200] = 200.0
+        data_copy.data['left_pupil'][100:200] = np.nan
+        
+        intervals = Intervals([(100, 200)], units=None,
+                             data_time_range=(0, len(self.eyedata.tx)),
+                             sampling_rate=self.eyedata.fs)
+        
+        # Interpolate with suffix
+        result = data_copy.interpolate_intervals(intervals, eyes=['left'], variables=['pupil'],
+                                                  store_as_suffix="_interp")
+        
+        # Check that new variable was created
+        self.assertIn('left_pupil_interp', result.data.data)
+        
+        # Original should still have NaN
+        self.assertTrue(np.any(np.isnan(result.data['left_pupil'][100:200])))
+        
+        # New variable should be interpolated
+        self.assertFalse(np.any(np.isnan(result.data['left_pupil_interp'][100:200])))
+        
+    def test_interpolate_intervals_method_linear(self):
+        """Test interpolate_intervals with linear method produces correct values"""
+        from pypillometry.intervals import Intervals
+        
+        # Create test data with a gap
+        data_copy = self.eyedata.copy()
+        
+        # Set known values at boundaries
+        data_copy.data['left_pupil'][99] = 0.0
+        data_copy.data['left_pupil'][110] = 100.0
+        data_copy.data['left_pupil'][100:110] = np.nan
+        
+        intervals = Intervals([(100, 110)], units=None,
+                             data_time_range=(0, len(self.eyedata.tx)),
+                             sampling_rate=self.eyedata.fs)
+        
+        # Interpolate with linear method
+        result = data_copy.interpolate_intervals(intervals, eyes=['left'], variables=['pupil'],
+                                                  method="linear")
+        
+        # Values should be linearly interpolated
+        interpolated = result.data['left_pupil'][100:110]
+        # Linear interpolation between 0 and 100 over 10 points
+        self.assertFalse(np.any(np.isnan(interpolated)))
+        # Check monotonically increasing
+        self.assertTrue(np.all(np.diff(interpolated) >= 0))
+        
+    def test_interpolate_intervals_method_cubic(self):
+        """Test interpolate_intervals with cubic method"""
+        from pypillometry.intervals import Intervals
+        
+        # Create test data with a gap
+        data_copy = self.eyedata.copy()
+        
+        # Set known values at boundaries
+        data_copy.data['left_pupil'][99] = 50.0
+        data_copy.data['left_pupil'][150] = 100.0
+        data_copy.data['left_pupil'][100:150] = np.nan
+        
+        intervals = Intervals([(100, 150)], units=None,
+                             data_time_range=(0, len(self.eyedata.tx)),
+                             sampling_rate=self.eyedata.fs)
+        
+        # Interpolate with cubic method
+        result = data_copy.interpolate_intervals(intervals, eyes=['left'], variables=['pupil'],
+                                                  method="cubic")
+        
+        # Values should be filled (cubic with 2 points is essentially linear)
+        interpolated = result.data['left_pupil'][100:150]
+        self.assertFalse(np.any(np.isnan(interpolated)))
+        
+    def test_interpolate_intervals_multiple_intervals(self):
+        """Test interpolate_intervals with multiple intervals"""
+        from pypillometry.intervals import Intervals
+        
+        # Create test data with multiple gaps
+        data_copy = self.eyedata.copy()
+        
+        # Set up first gap
+        data_copy.data['left_pupil'][99] = 100.0
+        data_copy.data['left_pupil'][150] = 150.0
+        data_copy.data['left_pupil'][100:150] = np.nan
+        
+        # Set up second gap
+        data_copy.data['left_pupil'][199] = 200.0
+        data_copy.data['left_pupil'][250] = 250.0
+        data_copy.data['left_pupil'][200:250] = np.nan
+        
+        intervals = Intervals([(100, 150), (200, 250)], units=None,
+                             data_time_range=(0, len(self.eyedata.tx)),
+                             sampling_rate=self.eyedata.fs)
+        
+        # Interpolate
+        result = data_copy.interpolate_intervals(intervals, eyes=['left'], variables=['pupil'])
+        
+        # Both gaps should be filled
+        self.assertFalse(np.any(np.isnan(result.data['left_pupil'][100:150])))
+        self.assertFalse(np.any(np.isnan(result.data['left_pupil'][200:250])))
+        
+        # Masks should be applied
+        self.assertTrue(np.all(result.data.mask['left_pupil'][100:150] == 1))
+        self.assertTrue(np.all(result.data.mask['left_pupil'][200:250] == 1))
+        
+    def test_interpolate_intervals_inplace_false(self):
+        """Test interpolate_intervals with inplace=False returns copy"""
+        from pypillometry.intervals import Intervals
+        
+        data_copy = self.eyedata.copy()
+        data_copy.data['left_pupil'][99] = 100.0
+        data_copy.data['left_pupil'][150] = 150.0
+        data_copy.data['left_pupil'][100:150] = np.nan
+        
+        intervals = Intervals([(100, 150)], units=None,
+                             data_time_range=(0, len(self.eyedata.tx)),
+                             sampling_rate=self.eyedata.fs)
+        
+        # Interpolate with inplace=False
+        result = data_copy.interpolate_intervals(intervals, eyes=['left'], variables=['pupil'],
+                                                  inplace=False)
+        
+        # Original should still have NaN
+        self.assertTrue(np.any(np.isnan(data_copy.data['left_pupil'][100:150])))
+        
+        # Result should be interpolated
+        self.assertFalse(np.any(np.isnan(result.data['left_pupil'][100:150])))
+        
+    def test_interpolate_intervals_invalid_type(self):
+        """Test interpolate_intervals raises error on invalid type"""
+        with self.assertRaises(TypeError):
+            self.eyedata.interpolate_intervals("not an interval")
+            
+    def test_interpolate_intervals_nan_boundary_warning(self):
+        """Test interpolate_intervals warns when boundary values are NaN"""
+        from pypillometry.intervals import Intervals
+        import warnings
+        
+        data_copy = self.eyedata.copy()
+        # Set boundary to NaN as well
+        data_copy.data['left_pupil'][99] = np.nan
+        data_copy.data['left_pupil'][150] = 150.0
+        data_copy.data['left_pupil'][100:150] = np.nan
+        
+        intervals = Intervals([(100, 150)], units=None,
+                             data_time_range=(0, len(self.eyedata.tx)),
+                             sampling_rate=self.eyedata.fs)
+        
+        # Should not raise but should not interpolate (boundary is NaN)
+        result = data_copy.interpolate_intervals(intervals, eyes=['left'], variables=['pupil'])
+        # The interval should still have NaN since boundary was NaN
+        self.assertTrue(np.any(np.isnan(result.data['left_pupil'][100:150])))
+        
+    def test_interpolate_intervals_empty_eyes(self):
+        """Test interpolate_intervals with empty eyes applies to all eyes"""
+        from pypillometry.intervals import Intervals
+        
+        data_copy = self.eyedata.copy()
+        
+        # Set up gaps in both eyes
+        for eye in ['left', 'right']:
+            data_copy.data[f'{eye}_pupil'][99] = 100.0
+            data_copy.data[f'{eye}_pupil'][150] = 150.0
+            data_copy.data[f'{eye}_pupil'][100:150] = np.nan
+        
+        intervals = Intervals([(100, 150)], units=None,
+                             data_time_range=(0, len(self.eyedata.tx)),
+                             sampling_rate=self.eyedata.fs)
+        
+        # Interpolate with empty eyes (should apply to all)
+        result = data_copy.interpolate_intervals(intervals, eyes=[], variables=['pupil'])
+        
+        # Both eyes should be interpolated
+        self.assertFalse(np.any(np.isnan(result.data['left_pupil'][100:150])))
+        self.assertFalse(np.any(np.isnan(result.data['right_pupil'][100:150])))
         
     def test_pupil_blinks_detect_apply_mask_false(self):
         """Test pupil_blinks_detect with apply_mask=False returns Intervals"""
