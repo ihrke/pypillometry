@@ -501,6 +501,9 @@ window.addEventListener("load", load);
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
         
+        <span class="c1"># Validate plot_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_plot_range</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
+        
         <span class="n">fac</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
         <span class="n">tx</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="o">*</span><span class="n">fac</span>
 
@@ -678,10 +681,10 @@ window.addEventListener("load", load);
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_scanpath</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
             <span class="n">plot_range</span><span class="p">:</span> <span class="nb">tuple</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span> 
             <span class="n">eyes</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[],</span>
-            <span class="n">plot_screen</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">show_screen</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">rois</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ROI</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">roi_style</span><span class="p">:</span> <span class="nb">dict</span><span class="o">=</span><span class="p">{},</span>
-            <span class="n">plot_onsets</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">show_onsets</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
@@ -703,7 +706,7 @@ window.addEventListener("load", load);
 <span class="sd">        eyes: list</span>
 <span class="sd">            The eyes to plot. Default is [], which means all available data (&quot;left&quot;, &quot;right&quot;,</span>
 <span class="sd">            average, regression, ...)</span>
-<span class="sd">        plot_screen: bool</span>
+<span class="sd">        show_screen: bool</span>
 <span class="sd">            Whether to plot the screen limits. Default is True.</span>
 <span class="sd">        rois: List[ROI], optional</span>
 <span class="sd">            List of ROIs to plot. Default is None.</span>
@@ -716,7 +719,7 @@ window.addEventListener("load", load);
 <span class="sd">                &quot;linewidth&quot;: 2,</span>
 <span class="sd">                &quot;alpha&quot;: 0.5</span>
 <span class="sd">            }</span>
-<span class="sd">        plot_onsets: bool</span>
+<span class="sd">        show_onsets: bool</span>
 <span class="sd">            Whether to plot the event onsets. Default is True.</span>
 <span class="sd">        title: str</span>
 <span class="sd">            The title of the plot. Default is &quot;&quot;.</span>
@@ -727,6 +730,9 @@ window.addEventListener("load", load);
 <span class="sd">            The figure size (per subplot). Default is (10,5).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
+
+        <span class="c1"># Validate plot_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_plot_range</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> 
             <span class="n">fac</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
@@ -771,14 +777,14 @@ window.addEventListener("load", load);
                 <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vx</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vy</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">eye</span><span class="p">)</span>
                 <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vx</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vy</span><span class="p">][</span><span class="n">startix</span><span class="p">:</span><span class="n">endix</span><span class="p">],</span> 
                         <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">cm</span><span class="o">.</span><span class="n">jet</span><span class="p">(</span><span class="n">tnorm</span><span class="p">))</span>
-            <span class="k">if</span> <span class="n">plot_onsets</span> <span class="ow">and</span> <span class="n">eye</span><span class="o">==</span><span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">show_onsets</span> <span class="ow">and</span> <span class="n">eye</span><span class="o">==</span><span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
                 <span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">evontix</span><span class="p">,</span> <span class="n">evlab</span><span class="p">):</span>
                     <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vx</span><span class="p">][</span><span class="n">ix</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vy</span><span class="p">][</span><span class="n">ix</span><span class="p">],</span> <span class="n">lab</span><span class="p">,</span> 
                             <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
 
         <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
         <span class="c1">#fig.colorbar()</span>
-        <span class="k">if</span> <span class="n">plot_screen</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">show_screen</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">setup</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">experimental_setup</span>
             <span class="n">screenrect</span><span class="o">=</span><span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">(</span>
                 <span class="p">(</span><span class="n">setup</span><span class="o">.</span><span class="n">screen_xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">setup</span><span class="o">.</span><span class="n">screen_ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> 

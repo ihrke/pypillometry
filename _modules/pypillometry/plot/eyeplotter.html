@@ -519,6 +519,9 @@ window.addEventListener("load", load);
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">eyes</span> <span class="o">=</span> <span class="p">[</span><span class="n">eyes</span><span class="p">]</span>
         
+        <span class="c1"># Validate plot_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_plot_range</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
+        
         <span class="c1"># Handle time range</span>
         <span class="n">fac</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
         <span class="n">tx</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">tx</span> <span class="o">*</span> <span class="n">fac</span>

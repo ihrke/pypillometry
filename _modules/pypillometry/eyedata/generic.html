@@ -775,7 +775,7 @@ window.addEventListener("load", load);
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; data.plot_timeseries()  # instead of data.plot.plot_timeseries()</span>
-<span class="sd">        &gt;&gt;&gt; data.plot_intervals(intervals, units=&#39;ms&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; data.plot_intervals(intervals)</span>
 <span class="sd">        &gt;&gt;&gt; data.pupil_plot(plot_range=(0, 1000))</span>
 <span class="sd">        </span>
 <span class="sd">        The original syntax still works:</span>
@@ -876,15 +876,12 @@ window.addEventListener("load", load);
                     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dict values must be Intervals objects or None, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">interval_obj</span><span class="p">)</span><span class="si">}</span><span class="s2"> for key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">interval_obj</span>
-                
-                <span class="c1"># Apply mask if requested and intervals exist</span>
-                <span class="k">if</span> <span class="n">apply_mask</span> <span class="ow">and</span> <span class="n">interval_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-                        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; not found in data, skipping mask application&quot;</span><span class="p">)</span>
-                        <span class="k">continue</span>
-                    <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">interval_obj</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">bstart</span><span class="p">,</span> <span class="n">bend</span> <span class="ow">in</span> <span class="n">intervals_array</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">bstart</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">bend</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+            
+            <span class="c1"># Apply mask if requested (filter out None values)</span>
+            <span class="k">if</span> <span class="n">apply_mask</span><span class="p">:</span>
+                <span class="n">intervals_to_mask</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">intervals</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+                <span class="k">if</span> <span class="n">intervals_to_mask</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">intervals_to_mask</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Single Intervals object - apply to specified eyes/variables</span>
             <span class="k">if</span> <span class="n">intervals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">Intervals</span><span class="p">):</span>
@@ -897,15 +894,10 @@ window.addEventListener("load", load);
                 <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
                     <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">intervals</span>
-                    
-                    <span class="c1"># Apply mask if requested and intervals exist</span>
-                    <span class="k">if</span> <span class="n">apply_mask</span> <span class="ow">and</span> <span class="n">intervals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-                            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; not found in data, skipping mask application&quot;</span><span class="p">)</span>
-                            <span class="k">continue</span>
-                        <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span>
-                        <span class="k">for</span> <span class="n">bstart</span><span class="p">,</span> <span class="n">bend</span> <span class="ow">in</span> <span class="n">intervals_array</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">bstart</span><span class="p">):</span><span class="nb">int</span><span class="p">(</span><span class="n">bend</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span></div>
+            
+            <span class="c1"># Apply mask if requested and intervals exist</span>
+            <span class="k">if</span> <span class="n">apply_mask</span> <span class="ow">and</span> <span class="n">intervals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GenericEyeData.get_blinks">
@@ -962,7 +954,8 @@ window.addEventListener("load", load);
                         <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">_blinks&quot;</span><span class="p">,</span>
                         <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
-                        <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+                        <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                        <span class="n">time_offset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="p">)</span>
                 
                 <span class="c1"># Convert to requested units if needed</span>
@@ -987,7 +980,8 @@ window.addEventListener("load", load);
                     <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_blinks&quot;</span><span class="p">,</span>
                     <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
-                    <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+                    <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                    <span class="n">time_offset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="p">)</span>
             
             <span class="c1"># Convert to requested units if needed</span>
@@ -995,6 +989,93 @@ window.addEventListener("load", load);
                 <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
             
             <span class="k">return</span> <span class="n">result</span>  </div>
+
+
+<div class="viewcode-block" id="GenericEyeData.get_interpolated_blinks">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.get_interpolated_blinks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_interpolated_blinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">variables</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span> 
+                                <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get interpolated blinks as Intervals object or dict of Intervals.</span>
+<span class="sd">        </span>
+<span class="sd">        Interpolated blinks are the blink regions that were successfully interpolated</span>
+<span class="sd">        by `pupil_blinks_interpolate()`. These may differ from detected blinks because:</span>
+<span class="sd">        - Blink boundaries are refined using velocity thresholds</span>
+<span class="sd">        - Some blinks may be skipped if they&#39;re too short to interpolate</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes : str or list</span>
+<span class="sd">            Eye(s) to get interpolated blinks for. If multiple, returns dict.</span>
+<span class="sd">        variables : str or list</span>
+<span class="sd">            Variable(s) to get interpolated blinks for. If multiple, returns dict.</span>
+<span class="sd">        units : str or None, optional</span>
+<span class="sd">            Units for intervals: &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;, or None for indices</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Intervals or dict</span>
+<span class="sd">            If single eye and variable: returns Intervals object.</span>
+<span class="sd">            If multiple eyes/variables: returns dict with keys like &quot;left_pupil&quot;.</span>
+<span class="sd">            </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        get_blinks : Get detected (not interpolated) blinks</span>
+<span class="sd">        pupil_blinks_interpolate : Interpolate blinks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">)</span>
+        
+        <span class="c1"># Multiple eyes/variables - return dict</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">):</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">e</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">v</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolated_blinks</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">intervals_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="c1"># Ensure sampling_rate is set</span>
+                    <span class="k">if</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">intervals_obj</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+                    <span class="c1"># Convert to requested units if needed</span>
+                    <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">intervals_obj</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">intervals_obj</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># No interpolated blinks stored - return empty Intervals</span>
+                    <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
+                        <span class="n">intervals</span><span class="o">=</span><span class="p">[],</span>
+                        <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_interpolated_blinks&quot;</span><span class="p">,</span>
+                        <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
+                        <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                        <span class="n">time_offset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Single eye/variable - return Intervals directly</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolated_blinks</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="c1"># Ensure sampling_rate is set</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># No interpolated blinks stored - return empty Intervals</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
+                    <span class="n">intervals</span><span class="o">=</span><span class="p">[],</span>
+                    <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_interpolated_blinks&quot;</span><span class="p">,</span>
+                    <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
+                    <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                    <span class="n">time_offset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">)</span>
+            
+            <span class="c1"># Convert to requested units if needed</span>
+            <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+            
+            <span class="k">return</span> <span class="n">result</span></div>
 
 
 <div class="viewcode-block" id="GenericEyeData.mask_as_intervals">
@@ -1052,7 +1133,8 @@ window.addEventListener("load", load);
                     <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">label</span><span class="o">=</span><span class="n">label</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_mask&quot;</span><span class="p">,</span>
                     <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
-                    <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+                    <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                    <span class="n">time_offset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="p">)</span>
                 
                 <span class="c1"># Convert to requested units if needed</span>
@@ -1067,7 +1149,8 @@ window.addEventListener("load", load);
             <span class="n">key</span> <span class="o">=</span> <span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
                 <span class="n">empty_intervals</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">([],</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_mask&quot;</span><span class="p">,</span>
-                               <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+                               <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                               <span class="n">time_offset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">return</span> <span class="n">empty_intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">empty_intervals</span>
@@ -1080,7 +1163,8 @@ window.addEventListener("load", load);
                 <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">label</span><span class="o">=</span><span class="n">label</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_mask&quot;</span><span class="p">,</span>
                 <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
-                <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                <span class="n">time_offset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="p">)</span>
             
             <span class="c1"># Convert to requested units if needed</span>
@@ -1125,8 +1209,10 @@ window.addEventListener("load", load);
 
         <span class="c1">## initialize blinks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="o">=</span><span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="o">=</span><span class="p">{}</span>
         <span class="k">for</span> <span class="n">eye</span><span class="p">,</span><span class="n">variable</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>        
+            <span class="bp">self</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>        
 
 <div class="viewcode-block" id="GenericEyeData.nblinks">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.nblinks">[docs]</a>
@@ -1976,8 +2062,10 @@ window.addEventListener("load", load);
             <span class="c1"># Get data time range</span>
             <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">data_time_range</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+                <span class="n">time_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">data_time_range</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">fac</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">fac</span><span class="p">)</span>
+                <span class="n">time_offset</span> <span class="o">=</span> <span class="mf">0.0</span>
             
             <span class="k">return</span> <span class="n">Intervals</span><span class="p">(</span>
                 <span class="n">intervals</span><span class="o">=</span><span class="n">intervals_list</span><span class="p">,</span>
@@ -1987,7 +2075,8 @@ window.addEventListener("load", load);
                 <span class="n">event_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># We don&#39;t have indices from Events object</span>
                 <span class="n">data_time_range</span><span class="o">=</span><span class="n">data_time_range</span><span class="p">,</span>
                 <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets_list</span><span class="p">,</span>
-                <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                <span class="n">time_offset</span><span class="o">=</span><span class="n">time_offset</span>
             <span class="p">)</span>
         
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_select</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
@@ -2085,9 +2174,11 @@ window.addEventListener("load", load);
         <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Units are indices</span>
             <span class="n">data_time_range</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+            <span class="n">time_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Convert tx range to specified units</span>
             <span class="n">data_time_range</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">fac</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">fac</span><span class="p">)</span>
+            <span class="n">time_offset</span> <span class="o">=</span> <span class="mf">0.0</span>
         
         <span class="k">return</span> <span class="n">Intervals</span><span class="p">(</span>
             <span class="n">intervals</span><span class="o">=</span><span class="n">intervals_list</span><span class="p">,</span>
@@ -2097,7 +2188,8 @@ window.addEventListener("load", load);
             <span class="n">event_indices</span><span class="o">=</span><span class="n">selected_indices</span><span class="p">,</span>
             <span class="n">data_time_range</span><span class="o">=</span><span class="n">data_time_range</span><span class="p">,</span>
             <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets_list</span><span class="p">,</span>
-            <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+            <span class="n">time_offset</span><span class="o">=</span><span class="n">time_offset</span>
         <span class="p">)</span></div>
 
 
@@ -2403,7 +2495,8 @@ window.addEventListener("load", load);
                 <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">_blinks&quot;</span><span class="p">,</span>
                 <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
-                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                <span class="n">time_offset</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="p">)</span>
             
             <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -2679,6 +2772,157 @@ window.addEventListener("load", load);
                         <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">start</span><span class="p">)))</span>
                         <span class="n">end_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">),</span> <span class="n">end</span><span class="p">)))</span>
                         <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="GenericEyeData.interpolate_intervals">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.interpolate_intervals">[docs]</a>
+    <span class="nd">@keephistory</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interpolate_intervals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intervals</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[],</span> 
+                             <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">store_as_suffix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                             <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Interpolate data within specified intervals.</span>
+<span class="sd">        </span>
+<span class="sd">        This function replaces data within the specified intervals with interpolated</span>
+<span class="sd">        values based on the boundary points just outside each interval.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        intervals : Intervals or dict</span>
+<span class="sd">            Either:</span>
+<span class="sd">            - A single Intervals object: applied to all specified eyes/variables</span>
+<span class="sd">            - A dict of Intervals: keys like &quot;left_pupil&quot;, &quot;right_x&quot;, etc.</span>
+<span class="sd">              When dict is provided, `eyes` and `variables` are ignored.</span>
+<span class="sd">        eyes : str or list, optional</span>
+<span class="sd">            Eye(s) to interpolate. If empty, applies to all available eyes.</span>
+<span class="sd">            Ignored if `intervals` is a dict.</span>
+<span class="sd">        variables : str or list, optional</span>
+<span class="sd">            Variable(s) to interpolate. If empty, applies to all available variables.</span>
+<span class="sd">            Ignored if `intervals` is a dict.</span>
+<span class="sd">        method : str, default &quot;linear&quot;</span>
+<span class="sd">            Interpolation method. Options: &quot;linear&quot;, &quot;nearest&quot;, &quot;zero&quot;, </span>
+<span class="sd">            &quot;slinear&quot;, &quot;quadratic&quot;, &quot;cubic&quot;, &quot;previous&quot;, &quot;next&quot;.</span>
+<span class="sd">            Passed to scipy.interpolate.interp1d.</span>
+<span class="sd">        store_as_suffix : str or None, default None</span>
+<span class="sd">            If None, replace the original data.</span>
+<span class="sd">            If a string, store interpolated data in a new variable with this suffix</span>
+<span class="sd">            (e.g., &quot;_interp&quot; creates &quot;left_pupil_interp&quot;).</span>
+<span class="sd">        inplace : bool, optional</span>
+<span class="sd">            If True, modify in-place. If False, return a copy.</span>
+<span class="sd">            If None, use object&#39;s default setting.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GenericEyeData</span>
+<span class="sd">            The object with interpolated data.</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        Interpolate blinks for left eye pupil data:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; blinks = data.get_blinks(eyes=&#39;left&#39;, variables=&#39;pupil&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; data.interpolate_intervals(blinks, eyes=[&#39;left&#39;], variables=[&#39;pupil&#39;])</span>
+<span class="sd">        </span>
+<span class="sd">        Interpolate using a dict of intervals:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; blinks = data.get_blinks()  # returns dict</span>
+<span class="sd">        &gt;&gt;&gt; data.interpolate_intervals(blinks)</span>
+<span class="sd">        </span>
+<span class="sd">        Store interpolated data in a new variable:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; data.interpolate_intervals(blinks, store_as_suffix=&quot;_interp&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; # Access via data[&#39;left&#39;, &#39;pupil_interp&#39;]</span>
+<span class="sd">        </span>
+<span class="sd">        Use cubic interpolation:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; data.interpolate_intervals(blinks, method=&quot;cubic&quot;)</span>
+<span class="sd">        </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        mask_intervals : Apply intervals as masks without interpolation</span>
+<span class="sd">        get_blinks : Retrieve stored blink intervals</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
+        
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        
+        <span class="k">def</span><span class="w"> </span><span class="nf">interpolate_single_key</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">interval_obj</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Local helper to interpolate a single data key.&quot;&quot;&quot;</span>
+            <span class="c1"># Ensure sampling_rate is set</span>
+            <span class="k">if</span> <span class="n">interval_obj</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">interval_obj</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span>
+            
+            <span class="c1"># Convert to index-based intervals</span>
+            <span class="n">intervals_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">interval_obj</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;indices&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            
+            <span class="c1"># Get the data and mask</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            
+            <span class="c1"># Interpolate each interval</span>
+            <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">intervals_array</span><span class="p">:</span>
+                <span class="n">start_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">start</span><span class="p">))</span>
+                <span class="n">end_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">),</span> <span class="n">end</span><span class="p">))</span>
+                
+                <span class="k">if</span> <span class="n">end_idx</span> <span class="o">&lt;=</span> <span class="n">start_idx</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                
+                <span class="c1"># Get boundary points for interpolation</span>
+                <span class="n">left_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">start_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">right_idx</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end_idx</span><span class="p">)</span>
+                
+                <span class="c1"># Skip if boundary points are invalid</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">left_idx</span><span class="p">])</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">right_idx</span><span class="p">]):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot interpolate interval [</span><span class="si">{</span><span class="n">start_idx</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">end_idx</span><span class="si">}</span><span class="s2">] - boundary values are NaN&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                
+                <span class="c1"># Interpolate</span>
+                <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;linear&quot;</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+                        <span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">],</span>
+                        <span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">left_idx</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">right_idx</span><span class="p">]],</span>
+                        <span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">left_idx</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">right_idx</span><span class="p">]]</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">f</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">([</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">left_idx</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">right_idx</span><span class="p">]],</span> 
+                                <span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">left_idx</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">right_idx</span><span class="p">]],</span> 
+                                <span class="n">kind</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">])</span>
+                
+                <span class="c1"># Update mask for interpolated region</span>
+                <span class="n">mask</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            
+            <span class="c1"># Store result</span>
+            <span class="n">target_key</span> <span class="o">=</span> <span class="n">key</span> <span class="k">if</span> <span class="n">store_as_suffix</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}{</span><span class="n">store_as_suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="n">target_key</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+        
+        <span class="c1"># Handle dict vs single Intervals</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">interval_obj</span> <span class="ow">in</span> <span class="n">intervals</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval_obj</span><span class="p">,</span> <span class="n">Intervals</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dict values must be Intervals objects, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">interval_obj</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; not found in data, skipping&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                
+                <span class="n">interpolate_single_key</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">interval_obj</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">Intervals</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;intervals must be Intervals or dict, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Key &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; not found in data, skipping&quot;</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    
+                    <span class="n">interpolate_single_key</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">intervals</span><span class="p">)</span>
         
         <span class="k">return</span> <span class="n">obj</span></div>
 </div>

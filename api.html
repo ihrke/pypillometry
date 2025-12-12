@@ -629,14 +629,20 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code>([units])</p></td>
 <td><p>Get events as an Events object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code>([eyes, variables, units])</p></td>
+<td><p>Get interpolated blinks as Intervals object or dict of Intervals.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
 <td><p>Return an Intervals object containing intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_pupildata" title="pypillometry.EyeData.get_pupildata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pupildata</span></code></a>([eye])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_pupildata" title="pypillometry.EyeData.get_pupildata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pupildata</span></code></a>([eye])</p></td>
 <td><p>Return the pupil data as a PupilData object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
 <td><p>Return the size of the object in bytes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code>(intervals[, eyes, ...])</p></td>
+<td><p>Interpolate data within specified intervals.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code>([eyes, variables, units, ...])</p></td>
 <td><p>Convert masks to Intervals objects.</p></td>
@@ -993,11 +999,17 @@ default is “False”</p></li>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code>([units])</p></td>
 <td><p>Get events as an Events object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code>([eyes, variables, units])</p></td>
+<td><p>Get interpolated blinks as Intervals object or dict of Intervals.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
 <td><p>Return an Intervals object containing intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
 <td><p>Return the size of the object in bytes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code>(intervals[, eyes, ...])</p></td>
+<td><p>Interpolate data within specified intervals.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code>([eyes, variables, units, ...])</p></td>
 <td><p>Convert masks to Intervals objects.</p></td>
@@ -1095,7 +1107,7 @@ if tuple, the mean value in the window in milliseconds (relative to interval) is
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.PupilData.pupil_blinks_detect">
-<span class="sig-name descname"><span class="pre">pupil_blinks_detect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blink_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_onset_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_offset_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['zero',</span> <span class="pre">'velocity']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ms'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_existing_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/pupildata.html#PupilData.pupil_blinks_detect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilData.pupil_blinks_detect" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">pupil_blinks_detect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blink_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset_min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset_min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['zero',</span> <span class="pre">'velocity']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_existing_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/pupildata.html#PupilData.pupil_blinks_detect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilData.pupil_blinks_detect" title="Link to this definition">¶</a></dt>
 <dd><p>Detect blinks in the pupillary signal using several strategies.
 First, blinks are detected as consecutive sequence of <cite>blink_val</cite>
 (f.eks., 0 or NaN). Second, blinks are defined as everything between
@@ -1103,26 +1115,27 @@ two crossings of the velocity profile (from negative to positive).</p>
 <p>Detected blinks are always stored internally. When apply_mask=True,
 the blinks are also applied as masks to the data. When apply_mask=False,
 the detected blinks are returned as Intervals objects.</p>
-<p>Finally, detected blinks have to be at least <cite>min_duration</cite> duration (in <cite>units</cite>).</p>
+<p>Finally, detected blinks have to be at least <cite>min_duration</cite> ms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>min_duration</strong> (<em>float</em>) – minimum duration for a sequence of missing numbers to be treated as blink</p></li>
+<li><p><strong>min_duration</strong> (<em>float</em>) – minimum duration in ms for a sequence of missing numbers to be treated as blink</p></li>
 <li><p><strong>blink_val</strong> (<em>float</em>) – “missing value” code</p></li>
-<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – window-size for smoothing for velocity profile (in units)</p></li>
-<li><p><strong>vel_onset</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – negative velocity that needs to be crossed; arbitrary units that depend on
-sampling rate etc</p></li>
-<li><p><strong>vel_offset</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – positive velocity that needs to be exceeded; arbitrary units that depend on
-sampling rate etc</p></li>
-<li><p><strong>min_onset_len</strong> (<em>int</em>) – minimum number of consecutive samples that crossed threshold in the velocity
-profile to detect as onset (to avoid noise-induced changes)</p></li>
-<li><p><strong>min_offset_len</strong> (<em>int</em>) – minimum number of consecutive samples that crossed threshold in the velocity
-profile to detect as offset (to avoid noise-induced changes)</p></li>
+<li><p><strong>winsize</strong> (<em>float</em>) – window-size for Savitzky-Golay velocity estimation in ms</p></li>
+<li><p><strong>vel_onset</strong> (<em>float</em><em> or </em><em>str</em>) – velocity threshold to detect blink onset (negative value).
+- If float: threshold in pupil-units per millisecond (e.g., -5.0)
+- If str: percentile of velocity distribution (e.g., “5%” for bottom 5%)</p></li>
+<li><p><strong>vel_offset</strong> (<em>float</em><em> or </em><em>str</em>) – velocity threshold to detect blink offset (positive value).
+- If float: threshold in pupil-units per millisecond (e.g., 5.0)
+- If str: percentile of velocity distribution (e.g., “95%” for top 95%)</p></li>
+<li><p><strong>vel_onset_min_duration</strong> (<em>float</em>) – minimum duration in ms that velocity must exceed threshold to detect as onset
+(to avoid noise-induced false detections)</p></li>
+<li><p><strong>vel_offset_min_duration</strong> (<em>float</em>) – minimum duration in ms that velocity must exceed threshold to detect as offset
+(to avoid noise-induced false detections)</p></li>
 <li><p><strong>strategies</strong> (<em>list</em><em> of </em><em>strategies to use</em>) – so far, use a list containing any combination of “zero” and “velocity”</p></li>
-<li><p><strong>units</strong> (<em>str</em>) – one of “ms”, “sec”, “min”, “h”</p></li>
 <li><p><strong>apply_mask</strong> (<em>bool</em>) – if <cite>True</cite>, apply detected blinks as masks to the data and return self
-if <cite>False</cite>, return detected blinks as Intervals (or dict of Intervals)</p></li>
+if <cite>False</cite> (default), return detected blinks as Intervals (or dict of Intervals)</p></li>
 <li><p><strong>ignore_existing_mask</strong> (<em>bool</em>) – if <cite>True</cite> (default), use raw data ignoring existing masks
 if <cite>False</cite>, only detect blinks in non-masked data (already masked regions are skipped)</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
@@ -1142,7 +1155,7 @@ If apply_mask=False and multiple eyes: returns dict of Intervals objects</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.PupilData.pupil_blinks_interpolate">
-<span class="sig-name descname"><span class="pre">pupil_blinks_interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_as</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pupil'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mahot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">30)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blinkwindow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/pupildata.html#PupilData.pupil_blinks_interpolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilData.pupil_blinks_interpolate" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">pupil_blinks_interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_as</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pupil'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mahot'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">winsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_onset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vel_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">30)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blinkwindow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/pupildata.html#PupilData.pupil_blinks_interpolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilData.pupil_blinks_interpolate" title="Link to this definition">¶</a></dt>
 <dd><p>Interpolating blinks in the pupillary signal.</p>
 <p>Implements the blink-interpolation method by Mahot (2013).</p>
 <p>Mahot, 2013:
@@ -1158,9 +1171,13 @@ can help to set good parameter values for <cite>winsize</cite>, <cite>vel_onset<
 the original pupil data or a string that will be used as the new variable
 name in the data (e.g., “pupilinterp”)</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – method to use; so far, only “mahot” is implemented</p></li>
-<li><p><strong>winsize</strong> (<em>float</em>) – size of the Hanning-window in ms</p></li>
-<li><p><strong>vel_onset</strong> (<em>float</em>) – velocity-threshold to detect the onset of the blink</p></li>
-<li><p><strong>vel_offset</strong> (<em>float</em>) – velocity-threshold to detect the offset of the blink</p></li>
+<li><p><strong>winsize</strong> (<em>float</em>) – size of the Savitzky-Golay window in ms</p></li>
+<li><p><strong>vel_onset</strong> (<em>float</em><em> or </em><em>str</em>) – velocity threshold to detect blink onset (negative value).
+- If float: threshold in pupil-units per millisecond (e.g., -5.0)
+- If str: percentile of velocity distribution (e.g., “5%” for bottom 5%)</p></li>
+<li><p><strong>vel_offset</strong> (<em>float</em><em> or </em><em>str</em>) – velocity threshold to detect blink offset (positive value).
+- If float: threshold in pupil-units per millisecond (e.g., 5.0)
+- If str: percentile of velocity distribution (e.g., “95%” for top 95%)</p></li>
 <li><p><strong>margin</strong> (<em>Tuple</em><em>[</em><em>float</em><em>,</em><em>float</em><em>]</em>) – margin that is subtracted/added to onset and offset (in ms)</p></li>
 <li><p><strong>blinkwindow</strong> (<em>float</em>) – how much time before and after each blink to include (in ms)</p></li>
 <li><p><strong>interp_type</strong> (<em>str</em>) – type of interpolation accepted by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.interpolate.interp1d()</span></code></p></li>
@@ -1374,11 +1391,17 @@ default is “False”</p></li>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code>([units])</p></td>
 <td><p>Get events as an Events object.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code>([eyes, variables, units])</p></td>
+<td><p>Get interpolated blinks as Intervals object or dict of Intervals.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
 <td><p>Return an Intervals object containing intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
 <td><p>Return the size of the object in bytes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code>(intervals[, eyes, ...])</p></td>
+<td><p>Interpolate data within specified intervals.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code>([eyes, variables, units, ...])</p></td>
 <td><p>Convert masks to Intervals objects.</p></td>
@@ -1636,7 +1659,7 @@ ExperimentalSetup constructor.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_timeseries_segments</span></code>([pdf_file, interv, ...])</p></td>
 <td><p>Plot the whole dataset chunked up into segments (usually to a PDF file).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_plot</span></code>([eyes, plot_range, plot_events, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_plot</span></code>([eyes, plot_range, show_events, ...])</p></td>
 <td><p>Make a plot of the pupil data using <cite>matplotlib</cite>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_plot_segments</span></code>([pdf_file, interv, ...])</p></td>
@@ -1781,7 +1804,7 @@ and provides methods to plot the data in various ways.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_timeseries_segments</span></code>([pdf_file, interv, ...])</p></td>
 <td><p>Plot the whole dataset chunked up into segments (usually to a PDF file).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilPlotter.pupil_plot" title="pypillometry.PupilPlotter.pupil_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_plot</span></code></a>([eyes, plot_range, plot_events, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilPlotter.pupil_plot" title="pypillometry.PupilPlotter.pupil_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_plot</span></code></a>([eyes, plot_range, show_events, ...])</p></td>
 <td><p>Make a plot of the pupil data using <cite>matplotlib</cite>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilPlotter.pupil_plot_segments" title="pypillometry.PupilPlotter.pupil_plot_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_plot_segments</span></code></a>([pdf_file, interv, ...])</p></td>
@@ -1791,7 +1814,7 @@ and provides methods to plot the data in various ways.</p>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.PupilPlotter.plot_blinks">
-<span class="sig-name descname"><span class="pre">plot_blinks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pupil'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdf_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nrow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_blink</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_blink</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ms'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/pupilplotter.html#PupilPlotter.plot_blinks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilPlotter.plot_blinks" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plot_blinks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pupil'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdf_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nrow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_blink</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_blink</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'min'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/pupilplotter.html#PupilPlotter.plot_blinks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilPlotter.plot_blinks" title="Link to this definition">¶</a></dt>
 <dd><p>Plot detected blinks in separate subplots.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1805,7 +1828,7 @@ and provides methods to plot the data in various ways.</p>
 <li><p><strong>pre_blink</strong> (<em>float</em>) – Time before blink to include (in ms)</p></li>
 <li><p><strong>post_blink</strong> (<em>float</em>) – Time after blink to include (in ms)</p></li>
 <li><p><strong>units</strong> (<em>str</em>) – Display units for time axis</p></li>
-<li><p><strong>plot_index</strong> (<em>bool</em>) – Show blink index numbers</p></li>
+<li><p><strong>show_index</strong> (<em>bool</em>) – Show blink index numbers</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1819,7 +1842,7 @@ and provides methods to plot the data in various ways.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.PupilPlotter.pupil_plot">
-<span class="sig-name descname"><span class="pre">pupil_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-inf,</span> <span class="pre">inf)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_events</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight_blinks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sec'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/pupilplotter.html#PupilPlotter.pupil_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilPlotter.pupil_plot" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">pupil_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-inf,</span> <span class="pre">inf)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_events</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_blinks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sec'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/pupilplotter.html#PupilPlotter.pupil_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilPlotter.pupil_plot" title="Link to this definition">¶</a></dt>
 <dd><p>Make a plot of the pupil data using <cite>matplotlib</cite>.</p>
 <p>Has pupil-specific options which makes it different from
 <code class="xref py py-func docutils literal notranslate"><span class="pre">GazePlotter.plot_timeseries()</span></code>.</p>
@@ -1829,8 +1852,8 @@ and provides methods to plot the data in various ways.</p>
 <li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to plot; if empty, all available eyes are plotted</p></li>
 <li><p><strong>plot_range</strong> (<em>tuple</em><em> (</em><em>start</em><em>,</em><em>end</em><em>)</em>) – plot from start to end (in units of <cite>units</cite>)</p></li>
 <li><p><strong>units</strong> (<em>str</em>) – one of “sec”=seconds, “ms”=millisec, “min”=minutes, “h”=hours</p></li>
-<li><p><strong>plot_events</strong> (<em>bool</em>) – plot events as vertical lines with labels</p></li>
-<li><p><strong>highlight_blinks</strong> (<em>bool</em>) – highlight detected blinks</p></li>
+<li><p><strong>show_events</strong> (<em>bool</em>) – plot events as vertical lines with labels</p></li>
+<li><p><strong>show_blinks</strong> (<em>bool</em>) – highlight detected blinks</p></li>
 <li><p><strong>label_prefix</strong> (<em>str</em>) – Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
 Default is “” (no prefix).</p></li>
 <li><p><strong>style</strong> (<em>dict</em><em> or </em><em>dict</em><em> of </em><em>dicts</em>) – Styling for plotted lines. Can be:
@@ -1964,7 +1987,7 @@ Each eye is plotted in a separate subplot.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GazePlotter.plot_scanpath">
-<span class="sig-name descname"><span class="pre">plot_scanpath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-inf,</span> <span class="pre">inf)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_screen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rois</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roi_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_onsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/gazeplotter.html#GazePlotter.plot_scanpath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GazePlotter.plot_scanpath" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plot_scanpath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-inf,</span> <span class="pre">inf)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_screen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rois</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roi_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_onsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">10)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/gazeplotter.html#GazePlotter.plot_scanpath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GazePlotter.plot_scanpath" title="Link to this definition">¶</a></dt>
 <dd><p>Plot EyeData as a scanpath. Typically used for single trials
 or another small amount of data. To plot a larger amount of data,
 use <a class="reference internal" href="#pypillometry.GazePlotter.plot_heatmap" title="pypillometry.GazePlotter.plot_heatmap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_heatmap()</span></code></a> instead.</p>
@@ -2046,11 +2069,17 @@ implements some basic functions.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_events" title="pypillometry.GenericEyeData.get_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code></a>([units])</p></td>
 <td><p>Get events as an Events object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code></a>(event_select[, interval, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_interpolated_blinks" title="pypillometry.GenericEyeData.get_interpolated_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code></a>([eyes, variables, units])</p></td>
+<td><p>Get interpolated blinks as Intervals object or dict of Intervals.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code></a>(event_select[, interval, ...])</p></td>
 <td><p>Return an Intervals object containing intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_size" title="pypillometry.GenericEyeData.get_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_size" title="pypillometry.GenericEyeData.get_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code></a>()</p></td>
 <td><p>Return the size of the object in bytes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.interpolate_intervals" title="pypillometry.GenericEyeData.interpolate_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code></a>(intervals[, eyes, ...])</p></td>
+<td><p>Interpolate data within specified intervals.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.mask_as_intervals" title="pypillometry.GenericEyeData.mask_as_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code></a>([eyes, variables, units, ...])</p></td>
 <td><p>Convert masks to Intervals objects.</p></td>
@@ -2383,6 +2412,41 @@ Default is “ms” (the internal storage format).</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.GenericEyeData.get_interpolated_blinks">
+<span class="sig-name descname"><span class="pre">get_interpolated_blinks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.get_interpolated_blinks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.get_interpolated_blinks" title="Link to this definition">¶</a></dt>
+<dd><p>Get interpolated blinks as Intervals object or dict of Intervals.</p>
+<p>Interpolated blinks are the blink regions that were successfully interpolated
+by <cite>pupil_blinks_interpolate()</cite>. These may differ from detected blinks because:
+- Blink boundaries are refined using velocity thresholds
+- Some blinks may be skipped if they’re too short to interpolate</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – Eye(s) to get interpolated blinks for. If multiple, returns dict.</p></li>
+<li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em>) – Variable(s) to get interpolated blinks for. If multiple, returns dict.</p></li>
+<li><p><strong>units</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Units for intervals: “ms”, “sec”, “min”, “h”, or None for indices</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If single eye and variable: returns Intervals object.
+If multiple eyes/variables: returns dict with keys like “left_pupil”.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Intervals or dict</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.get_blinks" title="pypillometry.GenericEyeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code></a></dt><dd><p>Get detected (not interpolated) blinks</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_blinks_interpolate</span></code></dt><dd><p>Interpolate blinks</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.get_intervals">
 <span class="sig-name descname"><span class="pre">get_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event_select</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-200,</span> <span class="pre">200)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.get_intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.get_intervals" title="Link to this definition">¶</a></dt>
 <dd><p>Return an Intervals object containing intervals relative to event-onsets.
@@ -2439,6 +2503,74 @@ with associated metadata (event labels, indices, units)</p></li>
 <dd class="field-even"><p>ByteSize</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.GenericEyeData.interpolate_intervals">
+<span class="sig-name descname"><span class="pre">interpolate_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intervals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_as_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.interpolate_intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.interpolate_intervals" title="Link to this definition">¶</a></dt>
+<dd><p>Interpolate data within specified intervals.</p>
+<p>This function replaces data within the specified intervals with interpolated
+values based on the boundary points just outside each interval.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>intervals</strong> (<em>Intervals</em><em> or </em><em>dict</em>) – <p>Either:
+- A single Intervals object: applied to all specified eyes/variables
+- A dict of Intervals: keys like “left_pupil”, “right_x”, etc.</p>
+<blockquote>
+<div><p>When dict is provided, <cite>eyes</cite> and <cite>variables</cite> are ignored.</p>
+</div></blockquote>
+</p></li>
+<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em><em>, </em><em>optional</em>) – Eye(s) to interpolate. If empty, applies to all available eyes.
+Ignored if <cite>intervals</cite> is a dict.</p></li>
+<li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em><em>, </em><em>optional</em>) – Variable(s) to interpolate. If empty, applies to all available variables.
+Ignored if <cite>intervals</cite> is a dict.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>default &quot;linear&quot;</em>) – Interpolation method. Options: “linear”, “nearest”, “zero”,
+“slinear”, “quadratic”, “cubic”, “previous”, “next”.
+Passed to scipy.interpolate.interp1d.</p></li>
+<li><p><strong>store_as_suffix</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – If None, replace the original data.
+If a string, store interpolated data in a new variable with this suffix
+(e.g., “_interp” creates “left_pupil_interp”).</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, modify in-place. If False, return a copy.
+If None, use object’s default setting.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The object with interpolated data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData">GenericEyeData</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Interpolate blinks for left eye pupil data:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">blinks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s1">&#39;pupil&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Interpolate using a dict of intervals:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">blinks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">()</span>  <span class="c1"># returns dict</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Store interpolated data in a new variable:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">store_as_suffix</span><span class="o">=</span><span class="s2">&quot;_interp&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access via data[&#39;left&#39;, &#39;pupil_interp&#39;]</span>
+</pre></div>
+</div>
+<p>Use cubic interpolation:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.mask_intervals" title="pypillometry.GenericEyeData.mask_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_intervals</span></code></a></dt><dd><p>Apply intervals as masks without interpolation</p>
+</dd>
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.get_blinks" title="pypillometry.GenericEyeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code></a></dt><dd><p>Retrieve stored blink intervals</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py method">

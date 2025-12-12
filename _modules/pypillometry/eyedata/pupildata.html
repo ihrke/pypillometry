@@ -601,15 +601,80 @@ window.addEventListener("load", load);
         <span class="k">return</span> <span class="n">obj</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_velocity_thresholds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pupil_data</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert velocity thresholds from per-ms or percentile to per-sample units.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pupil_data : np.array</span>
+<span class="sd">            pupil data array (used for percentile calculation)</span>
+<span class="sd">        winsize_ix : int</span>
+<span class="sd">            window size in samples for velocity calculation</span>
+<span class="sd">        vel_onset : float or str</span>
+<span class="sd">            onset threshold (per-ms float or percentile string like &quot;5%&quot;)</span>
+<span class="sd">        vel_offset : float or str</span>
+<span class="sd">            offset threshold (per-ms float or percentile string like &quot;95%&quot;)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple (float, float)</span>
+<span class="sd">            (vel_onset_samples, vel_offset_samples) thresholds in per-sample units</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Helper to parse percentile string</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">parse_percentile</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">val</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;%&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="n">onset_pct</span> <span class="o">=</span> <span class="n">parse_percentile</span><span class="p">(</span><span class="n">vel_onset</span><span class="p">)</span>
+        <span class="n">offset_pct</span> <span class="o">=</span> <span class="n">parse_percentile</span><span class="p">(</span><span class="n">vel_offset</span><span class="p">)</span>
+        
+        <span class="c1"># If either threshold is a percentile, we need to compute velocity profile</span>
+        <span class="k">if</span> <span class="n">onset_pct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">offset_pct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Fill NaN/zero values with interpolation for velocity calculation</span>
+            <span class="n">invalid_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">pupil_data</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pupil_data</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">pupil_filled</span> <span class="o">=</span> <span class="n">pupil_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">valid_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">invalid_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">invalid_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">invalid_mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">invalid_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">valid_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">pupil_filled</span><span class="p">[</span><span class="n">invalid_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+                    <span class="n">invalid_indices</span><span class="p">,</span> <span class="n">valid_indices</span><span class="p">,</span> <span class="n">pupil_data</span><span class="p">[</span><span class="n">valid_indices</span><span class="p">]</span>
+                <span class="p">)</span>
+            
+            <span class="c1"># Compute velocity profile</span>
+            <span class="n">vel</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">velocity_savgol</span><span class="p">(</span><span class="n">pupil_filled</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+            <span class="c1"># Mask out invalid regions for percentile calculation</span>
+            <span class="n">vel_valid</span> <span class="o">=</span> <span class="n">vel</span><span class="p">[</span><span class="o">~</span><span class="n">invalid_mask</span><span class="p">]</span>
+        
+        <span class="c1"># Convert onset threshold</span>
+        <span class="k">if</span> <span class="n">onset_pct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vel_onset_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">vel_valid</span><span class="p">,</span> <span class="n">onset_pct</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vel_onset </span><span class="si">{</span><span class="n">vel_onset</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">vel_onset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> (percentile)&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Convert from per-ms to per-sample</span>
+            <span class="n">vel_onset_samples</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vel_onset</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vel_onset </span><span class="si">{</span><span class="n">vel_onset</span><span class="si">}</span><span class="s2">/ms -&gt; </span><span class="si">{</span><span class="n">vel_onset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">/sample&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Convert offset threshold</span>
+        <span class="k">if</span> <span class="n">offset_pct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vel_offset_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">vel_valid</span><span class="p">,</span> <span class="n">offset_pct</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vel_offset </span><span class="si">{</span><span class="n">vel_offset</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">vel_offset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> (percentile)&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Convert from per-ms to per-sample</span>
+            <span class="n">vel_offset_samples</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vel_offset</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vel_offset </span><span class="si">{</span><span class="n">vel_offset</span><span class="si">}</span><span class="s2">/ms -&gt; </span><span class="si">{</span><span class="n">vel_offset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">/sample&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span>
 
 <div class="viewcode-block" id="PupilData.pupil_blinks_detect">
 <a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_blinks_detect">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_blinks_detect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">min_duration</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                      <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> 
-                      <span class="n">min_onset_len</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                      <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">vel_offset</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> 
+                      <span class="n">vel_onset_min_duration</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">vel_offset_min_duration</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
                       <span class="n">strategies</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span><span class="s2">&quot;velocity&quot;</span><span class="p">],</span>
-                      <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ignore_existing_mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                      <span class="n">apply_mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ignore_existing_mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Detect blinks in the pupillary signal using several strategies.</span>
 <span class="sd">        First, blinks are detected as consecutive sequence of `blink_val` </span>
@@ -620,37 +685,37 @@ window.addEventListener("load", load);
 <span class="sd">        the blinks are also applied as masks to the data. When apply_mask=False,</span>
 <span class="sd">        the detected blinks are returned as Intervals objects.</span>
 
-<span class="sd">        Finally, detected blinks have to be at least `min_duration` duration (in `units`).</span>
+<span class="sd">        Finally, detected blinks have to be at least `min_duration` ms.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        eyes: list</span>
 <span class="sd">            list of eyes to process; if empty, all available eyes are processed</span>
 <span class="sd">        min_duration: float</span>
-<span class="sd">            minimum duration for a sequence of missing numbers to be treated as blink</span>
+<span class="sd">            minimum duration in ms for a sequence of missing numbers to be treated as blink</span>
 <span class="sd">        blink_val: float</span>
 <span class="sd">            &quot;missing value&quot; code</span>
-<span class="sd">        winsize:</span>
-<span class="sd">            window-size for smoothing for velocity profile (in units)</span>
-<span class="sd">        vel_onset:</span>
-<span class="sd">            negative velocity that needs to be crossed; arbitrary units that depend on</span>
-<span class="sd">            sampling rate etc</span>
-<span class="sd">        vel_offset:</span>
-<span class="sd">            positive velocity that needs to be exceeded; arbitrary units that depend on</span>
-<span class="sd">            sampling rate etc</span>
-<span class="sd">        min_onset_len: int</span>
-<span class="sd">            minimum number of consecutive samples that crossed threshold in the velocity</span>
-<span class="sd">            profile to detect as onset (to avoid noise-induced changes)</span>
-<span class="sd">        min_offset_len: int</span>
-<span class="sd">            minimum number of consecutive samples that crossed threshold in the velocity</span>
-<span class="sd">            profile to detect as offset (to avoid noise-induced changes)            </span>
+<span class="sd">        winsize: float</span>
+<span class="sd">            window-size for Savitzky-Golay velocity estimation in ms</span>
+<span class="sd">        vel_onset: float or str</span>
+<span class="sd">            velocity threshold to detect blink onset (negative value).</span>
+<span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., -5.0)</span>
+<span class="sd">            - If str: percentile of velocity distribution (e.g., &quot;5%&quot; for bottom 5%)</span>
+<span class="sd">        vel_offset: float or str</span>
+<span class="sd">            velocity threshold to detect blink offset (positive value).</span>
+<span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., 5.0)</span>
+<span class="sd">            - If str: percentile of velocity distribution (e.g., &quot;95%&quot; for top 95%)</span>
+<span class="sd">        vel_onset_min_duration: float</span>
+<span class="sd">            minimum duration in ms that velocity must exceed threshold to detect as onset</span>
+<span class="sd">            (to avoid noise-induced false detections)</span>
+<span class="sd">        vel_offset_min_duration: float</span>
+<span class="sd">            minimum duration in ms that velocity must exceed threshold to detect as offset</span>
+<span class="sd">            (to avoid noise-induced false detections)</span>
 <span class="sd">        strategies: list of strategies to use</span>
 <span class="sd">            so far, use a list containing any combination of &quot;zero&quot; and &quot;velocity&quot;</span>
-<span class="sd">        units: str</span>
-<span class="sd">            one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;</span>
 <span class="sd">        apply_mask: bool</span>
 <span class="sd">            if `True`, apply detected blinks as masks to the data and return self</span>
-<span class="sd">            if `False`, return detected blinks as Intervals (or dict of Intervals)</span>
+<span class="sd">            if `False` (default), return detected blinks as Intervals (or dict of Intervals)</span>
 <span class="sd">        ignore_existing_mask: bool</span>
 <span class="sd">            if `True` (default), use raw data ignoring existing masks</span>
 <span class="sd">            if `False`, only detect blinks in non-masked data (already masked regions are skipped)</span>
@@ -668,13 +733,13 @@ window.addEventListener("load", load);
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
 
-        <span class="n">fac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
-        <span class="n">winsize_ms</span><span class="o">=</span><span class="n">winsize</span><span class="o">*</span><span class="n">fac</span>
-        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">winsize_ms</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="c1"># Convert ms to samples</span>
+        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">winsize</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">winsize_ix</span> <span class="o">%</span> <span class="mi">2</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
-            <span class="n">winsize</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">min_duration_ms</span><span class="o">=</span><span class="n">min_duration</span><span class="o">*</span><span class="n">fac</span>
-        <span class="n">min_duration_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">min_duration_ms</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>        
+            <span class="n">winsize_ix</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">min_duration_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">min_duration</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">vel_onset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">vel_onset_min_duration</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+        <span class="n">vel_offset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">vel_offset_min_duration</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
 
         
         <span class="c1"># check for unknown strategies</span>
@@ -695,7 +760,11 @@ window.addEventListener("load", load);
             
             <span class="c1">## detect blinks with the different strategies</span>
             <span class="k">if</span> <span class="s2">&quot;velocity&quot;</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
-                <span class="n">blinks_vel</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_velocity</span><span class="p">(</span><span class="n">pupil_data</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="p">)</span>
+                <span class="c1"># Convert velocity thresholds to per-sample units</span>
+                <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_velocity_thresholds</span><span class="p">(</span>
+                    <span class="n">pupil_data</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span>
+                <span class="p">)</span>
+                <span class="n">blinks_vel</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_velocity</span><span class="p">(</span><span class="n">pupil_data</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span><span class="p">,</span> <span class="n">vel_onset_min_samples</span><span class="p">,</span> <span class="n">vel_offset_min_samples</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with velocity strategy&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span> 
                 <span class="n">blinks_vel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
@@ -713,12 +782,14 @@ window.addEventListener("load", load);
             
             <span class="c1"># Filter by minimum duration and create Intervals object</span>
             <span class="n">filtered_blinks</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">int</span><span class="p">(</span><span class="n">on</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">off</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="n">blinks</span> <span class="k">if</span> <span class="n">off</span><span class="o">-</span><span class="n">on</span><span class="o">&gt;=</span><span class="n">min_duration_ix</span><span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtered </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">filtered_blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks by minimum duration&quot;</span><span class="p">)</span>
             <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
                 <span class="n">intervals</span><span class="o">=</span><span class="n">filtered_blinks</span><span class="p">,</span>
                 <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Using index units</span>
                 <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil_blinks&quot;</span><span class="p">,</span>
                 <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
-                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                <span class="n">time_offset</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Store starting time for correct unit conversion</span>
             <span class="p">)</span>
             
             <span class="c1"># Store detected blinks internally (always)</span>
@@ -742,8 +813,8 @@ window.addEventListener("load", load);
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_blinks_interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">list</span><span class="o">=</span><span class="p">[],</span>
                                  <span class="n">store_as</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span> 
-                                 <span class="n">method</span><span class="o">=</span><span class="s2">&quot;mahot&quot;</span><span class="p">,</span> <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> 
-                                 <span class="n">vel_onset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> 
+                                 <span class="n">method</span><span class="o">=</span><span class="s2">&quot;mahot&quot;</span><span class="p">,</span> <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> 
+                                 <span class="n">vel_onset</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">vel_offset</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> 
                                  <span class="n">margin</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> 
                                  <span class="n">blinkwindow</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
                                  <span class="n">interp_type</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span>
@@ -770,11 +841,15 @@ window.addEventListener("load", load);
 <span class="sd">        method: str</span>
 <span class="sd">            method to use; so far, only &quot;mahot&quot; is implemented</span>
 <span class="sd">        winsize: float</span>
-<span class="sd">            size of the Hanning-window in ms</span>
-<span class="sd">        vel_onset: float</span>
-<span class="sd">            velocity-threshold to detect the onset of the blink</span>
-<span class="sd">        vel_offset: float</span>
-<span class="sd">            velocity-threshold to detect the offset of the blink</span>
+<span class="sd">            size of the Savitzky-Golay window in ms</span>
+<span class="sd">        vel_onset: float or str</span>
+<span class="sd">            velocity threshold to detect blink onset (negative value).</span>
+<span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., -5.0)</span>
+<span class="sd">            - If str: percentile of velocity distribution (e.g., &quot;5%&quot; for bottom 5%)</span>
+<span class="sd">        vel_offset: float or str</span>
+<span class="sd">            velocity threshold to detect blink offset (positive value).</span>
+<span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., 5.0)</span>
+<span class="sd">            - If str: percentile of velocity distribution (e.g., &quot;95%&quot; for top 95%)</span>
 <span class="sd">        margin: Tuple[float,float]</span>
 <span class="sd">            margin that is subtracted/added to onset and offset (in ms)</span>
 <span class="sd">        blinkwindow: float</span>
@@ -800,11 +875,25 @@ window.addEventListener("load", load);
             <span class="n">syr</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1">## interpolated signal</span>
             <span class="n">mask</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_pupil&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1"># copy of mask</span>
             <span class="n">bls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">)</span>
-            <span class="n">blink_onsets</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">blink_onsets_mahot</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">bls</span><span class="p">,</span> 
+            
+            <span class="c1"># Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally</span>
+            <span class="c1"># Don&#39;t use mask-applied data here because the mask includes blink regions,</span>
+            <span class="c1"># which would smooth out the velocity transitions we need to detect boundaries</span>
+            <span class="n">pupil_data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span>
+            
+            <span class="c1"># Convert velocity thresholds to per-sample units</span>
+            <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_velocity_thresholds</span><span class="p">(</span>
+                <span class="n">pupil_data</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span>
+            <span class="p">)</span>
+            <span class="n">blink_onsets</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">blink_onsets_mahot</span><span class="p">(</span><span class="n">pupil_data</span><span class="p">,</span> <span class="n">bls</span><span class="p">,</span> 
                                                     <span class="n">winsize_ix</span><span class="p">,</span> 
-                                                    <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span>
+                                                    <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span><span class="p">,</span>
                                                     <span class="n">margin_ix</span><span class="p">,</span> <span class="n">blinkwindow_ix</span><span class="p">)</span>
-          
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Refined </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blink_onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> blink boundaries&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Collect successfully interpolated blinks</span>
+            <span class="n">interpolated_intervals</span> <span class="o">=</span> <span class="p">[]</span>
+            
             <span class="c1"># loop through blinks</span>
             <span class="k">for</span> <span class="n">ix</span><span class="p">,(</span><span class="n">onset</span><span class="p">,</span><span class="n">offset</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">blink_onsets</span><span class="p">):</span>                
                 <span class="c1"># calc the 4 time points</span>
@@ -830,9 +919,24 @@ window.addEventListener("load", load);
                 <span class="n">syr</span><span class="p">[</span><span class="n">islic</span><span class="p">]</span><span class="o">=</span><span class="n">intfct</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">islic</span><span class="p">])</span>
                 <span class="c1"># mark the interpolated datapoints as masked</span>
                 <span class="n">mask</span><span class="p">[</span><span class="n">islic</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                
+                <span class="c1"># Record this successfully interpolated blink</span>
+                <span class="n">interpolated_intervals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">))</span>
 
             <span class="c1"># store interpolated data with mask preservation</span>
             <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">store_as</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">syr</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+            
+            <span class="c1"># Store interpolated blinks as Intervals object</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil&quot;</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
+                <span class="n">intervals</span><span class="o">=</span><span class="n">interpolated_intervals</span><span class="p">,</span>
+                <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Using index units</span>
+                <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_interpolated_blinks&quot;</span><span class="p">,</span>
+                <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+                <span class="n">time_offset</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stored </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">interpolated_intervals</span><span class="p">)</span><span class="si">}</span><span class="s2"> interpolated blinks for </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">obj</span></div>
 
