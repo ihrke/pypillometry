@@ -255,7 +255,7 @@ class PupilPlotter(GenericPlotter):
                    pdf_file: str|None = None, nrow: int = 5, ncol: int = 3, 
                    figsize: tuple = (10, 10),
                    pre_blink: float = 200, post_blink: float = 200, 
-                   units: str = "ms", show_index: bool = True) -> list:
+                   units: str = "min", show_index: bool = True) -> list:
         """
         Plot detected blinks in separate subplots.
         
@@ -287,8 +287,8 @@ class PupilPlotter(GenericPlotter):
         list
             List of matplotlib Figure objects
         """
-        # Get blinks for specified eyes and variables
-        blinks_result = self.obj.get_blinks(eyes=eyes, variables=variables, units=None)
+        # Get blinks for specified eyes and variables (in ms for consistent padding)
+        blinks_result = self.obj.get_blinks(eyes=eyes, variables=variables, units="ms")
         
         # Handle dict or single Intervals
         if isinstance(blinks_result, dict):
@@ -306,20 +306,12 @@ class PupilPlotter(GenericPlotter):
             logger.warning("No blinks to plot")
             return []
         
-        blinks_ix = np.array(blinks.to_units("indices")).astype(int)
+        # Pad blinks with pre/post time (pre_blink and post_blink are in ms)
+        padded_blinks = blinks.pad(left=pre_blink, right=post_blink)
         
-        pre_blink_ix = int(pre_blink / 1000 * self.obj.fs)
-        post_blink_ix = int(post_blink / 1000 * self.obj.fs)
-        
-        padded = [
-            (max(0, s - pre_blink_ix), min(len(self.obj.tx), e + post_blink_ix))
-            for s, e in blinks_ix
-        ]
-        
-        intervals = Intervals(padded, units=None, label="blinks", sampling_rate=self.obj.fs,
-                             data_time_range=(0, len(self.obj.tx)), time_offset=self.obj.tx[0])
         # Convert to desired display units
-        intervals = intervals.to_units(units)
+        intervals = padded_blinks.to_units(units)
+        
         return self.plot_intervals(intervals, eyes, variables,
                                   pdf_file, nrow, ncol, figsize, show_index=show_index)
 
