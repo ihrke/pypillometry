@@ -384,14 +384,18 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
     Method for finding the on- and offset for each blink (excluding transient).
     See https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
     
-    Uses asymmetric Savitzky-Golay velocity estimation to handle NaN values properly:
-    - Backward-looking velocity for onset detection (so future NaN doesn't affect the estimate)
-    - Forward-looking velocity for offset detection (so past NaN doesn't affect the estimate)
+    Uses asymmetric Savitzky-Golay velocity estimation:
+    - Backward-looking velocity for onset detection (so future zeros/NaN don't affect the estimate)
+    - Forward-looking velocity for offset detection (so past zeros/NaN don't affect the estimate)
+    
+    The asymmetric approach naturally handles blink regions (zeros/NaN) because:
+    - At blink onset: backward velocity only sees valid data before the blink → detects the drop
+    - At blink offset: forward velocity only sees valid data after the blink → detects the rise
     
     Parameters
     ----------
     sy: np.array
-        pupil data
+        pupil data (can contain NaN or zeros for missing values)
     blinks: np.array (nblinks x 2) 
         blink onset/offset matrix (contiguous zeros)
     smooth_winsize: int (odd)
@@ -405,7 +409,7 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
     blinkwindow: int
         how much time before and after each blink to include (in sampling points)        
     """
-    # Generate asymmetric velocity profiles for robust estimation near NaN regions
+    # Generate asymmetric velocity profiles
     # Backward-looking for onset detection (doesn't peek into blink)
     vel_backward = velocity_savgol(sy, smooth_winsize, polyorder=2, direction="backward")
     # Forward-looking for offset detection (doesn't peek into blink)
@@ -423,24 +427,41 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
         onsets=np.where(vel_backward[slic]<=vel_onset)[0]
         offsets=np.where(vel_forward[slic]>=vel_offset)[0]
         if onsets.size==0 or offsets.size==0:
+            logger.debug(f"Blink {ix} (samples {start}-{end}) skipped: no velocity threshold crossings found "
+                        f"(onsets={onsets.size}, offsets={offsets.size})")
             continue
 
         ## onsets are in "local" indices of the windows, start-end of blink global
         startl,endl=blinkwindow_ix if winstart>0 else start,end-start+blinkwindow_ix
 
-        # find vel-crossing next to start of blink and move back to start of that crossing
-        onset_ix=np.argmin(np.abs((onsets-startl<=0)*(onsets-startl)))
-        while(onsets[onset_ix-1]+1==onsets[onset_ix]):
-            onset_ix-=1
-        onset=onsets[onset_ix]
-        onset=max(0, onset-margin[0]) # avoid overflow to the left
+        # find vel-crossing next to start of blink (onset must be <= startl)
+        # Filter to only onsets at or before the blink start
+        valid_onsets = onsets[onsets <= startl]
+        if valid_onsets.size == 0:
+            logger.debug(f"Blink {ix} (samples {start}-{end}) skipped: no valid onset crossings found")
+            continue
+        # Find the one closest to startl and move back to start of that crossing
+        onset_ix = np.argmin(np.abs(valid_onsets - startl))
+        # Walk back through consecutive onsets to find the start of the crossing
+        while onset_ix > 0 and valid_onsets[onset_ix-1] + 1 == valid_onsets[onset_ix]:
+            onset_ix -= 1
+        onset = valid_onsets[onset_ix]
+        onset = max(0, onset - margin[0])  # apply margin, avoid overflow to the left
 
-        # find start of "reversal period" and move forward until it drops back
-        offset_ix=np.argmin(np.abs(((offsets-endl<0)*np.iinfo(int).max)+(offsets-endl)))
-        while(offset_ix<(len(offsets)-1) and offsets[offset_ix+1]-1==offsets[offset_ix]):
-            offset_ix+=1        
-        offset=offsets[offset_ix]
-        offset=min(winlength-1, offset+margin[1]) # avoid overflow to the right
-        newblinks.append( [onset+winstart,offset+winstart] )
+        # find vel-crossing next to end of blink (offset must be >= endl)
+        # Filter to only offsets at or after the blink end
+        valid_offsets = offsets[offsets >= endl]
+        if valid_offsets.size == 0:
+            logger.debug(f"Blink {ix} (samples {start}-{end}) skipped: no valid offset crossings found")
+            continue
+        # Find the one closest to endl and move forward to end of that crossing
+        offset_ix = np.argmin(np.abs(valid_offsets - endl))
+        # Walk forward through consecutive offsets to find the end of the crossing
+        while offset_ix < len(valid_offsets) - 1 and valid_offsets[offset_ix+1] - 1 == valid_offsets[offset_ix]:
+            offset_ix += 1
+        offset = valid_offsets[offset_ix]
+        offset = min(winlength - 1, offset + margin[1])  # apply margin, avoid overflow to the right
+        
+        newblinks.append([onset + winstart, offset + winstart])
     
     return np.array(newblinks)    

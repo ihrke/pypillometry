@@ -390,7 +390,7 @@ class PupilData(GenericEyeData):
     @keephistory
     def pupil_blinks_interpolate(self, eyes: str|list=[],
                                  store_as: str="pupil", 
-                                 method="mahot", winsize: float=11, 
+                                 method="mahot", winsize: float=25, 
                                  vel_onset=-5.0, vel_offset=5.0, 
                                  margin: Tuple[float,float]=(10,30), 
                                  blinkwindow: float=500,
@@ -453,15 +453,24 @@ class PupilData(GenericEyeData):
             mask=obj.data.mask[eye+"_pupil"].copy() # copy of mask
             bls = self.get_blinks(eye, "pupil")
             
+            # Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally
+            # Don't use mask-applied data here because the mask includes blink regions,
+            # which would smooth out the velocity transitions we need to detect boundaries
+            pupil_data = obj.data[eye,"pupil"]
+            
             # Convert velocity thresholds to per-sample units
             vel_onset_samples, vel_offset_samples = self._convert_velocity_thresholds(
-                obj.data[eye,"pupil"], winsize_ix, vel_onset, vel_offset
+                pupil_data, winsize_ix, vel_onset, vel_offset
             )
-            blink_onsets=preproc.blink_onsets_mahot(obj.data[eye,"pupil"], bls, 
+            blink_onsets=preproc.blink_onsets_mahot(pupil_data, bls, 
                                                     winsize_ix, 
                                                     vel_onset_samples, vel_offset_samples,
                                                     margin_ix, blinkwindow_ix)
-          
+            logger.debug(f"Refined {len(blink_onsets)} blink boundaries")
+
+            # Collect successfully interpolated blinks
+            interpolated_intervals = []
+            
             # loop through blinks
             for ix,(onset,offset) in enumerate(blink_onsets):                
                 # calc the 4 time points
@@ -487,9 +496,24 @@ class PupilData(GenericEyeData):
                 syr[islic]=intfct(obj.tx[islic])
                 # mark the interpolated datapoints as masked
                 mask[islic] = 1
+                
+                # Record this successfully interpolated blink
+                interpolated_intervals.append((t2, t3))
 
             # store interpolated data with mask preservation
             obj.data.set_with_mask(f"{eye}_{store_as}", syr, mask=mask)
+            
+            # Store interpolated blinks as Intervals object
+            key = f"{eye}_pupil"
+            obj._interpolated_blinks[key] = Intervals(
+                intervals=interpolated_intervals,
+                units=None,  # Using index units
+                label=f"{key}_interpolated_blinks",
+                data_time_range=(0, len(obj.tx)),
+                sampling_rate=obj.fs,
+                time_offset=obj.tx[0]
+            )
+            logger.debug(f"Stored {len(interpolated_intervals)} interpolated blinks for {eye}")
 
         return obj
             

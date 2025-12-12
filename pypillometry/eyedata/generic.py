@@ -573,6 +573,90 @@ class GenericEyeData(ABC):
             
             return result  
 
+    def get_interpolated_blinks(self, eyes: str|list = [], variables: str|list = [], 
+                                units: str|None = None):
+        """
+        Get interpolated blinks as Intervals object or dict of Intervals.
+        
+        Interpolated blinks are the blink regions that were successfully interpolated
+        by `pupil_blinks_interpolate()`. These may differ from detected blinks because:
+        - Blink boundaries are refined using velocity thresholds
+        - Some blinks may be skipped if they're too short to interpolate
+        
+        Parameters
+        ----------
+        eyes : str or list
+            Eye(s) to get interpolated blinks for. If multiple, returns dict.
+        variables : str or list
+            Variable(s) to get interpolated blinks for. If multiple, returns dict.
+        units : str or None, optional
+            Units for intervals: "ms", "sec", "min", "h", or None for indices
+            
+        Returns
+        -------
+        Intervals or dict
+            If single eye and variable: returns Intervals object.
+            If multiple eyes/variables: returns dict with keys like "left_pupil".
+            
+        See Also
+        --------
+        get_blinks : Get detected (not interpolated) blinks
+        pupil_blinks_interpolate : Interpolate blinks
+        """
+        eyes, variables = self._get_eye_var(eyes, variables)
+        
+        # Multiple eyes/variables - return dict
+        if len(eyes) > 1 or len(variables) > 1:
+            result = {}
+            for e, v in itertools.product(eyes, variables):
+                key = e + "_" + v
+                if key in self._interpolated_blinks and self._interpolated_blinks[key] is not None:
+                    intervals_obj = self._interpolated_blinks[key]
+                    # Ensure sampling_rate is set
+                    if intervals_obj.sampling_rate is None:
+                        intervals_obj.sampling_rate = self.fs
+                    # Convert to requested units if needed
+                    if units is not None:
+                        intervals_obj = intervals_obj.to_units(units)
+                    result[key] = intervals_obj
+                else:
+                    # No interpolated blinks stored - return empty Intervals
+                    result[key] = Intervals(
+                        intervals=[],
+                        units=None,
+                        label=f"{key}_interpolated_blinks",
+                        data_time_range=(0, len(self.tx)),
+                        sampling_rate=self.fs,
+                        time_offset=self.tx[0]
+                    )
+                    if units is not None:
+                        result[key] = result[key].to_units(units)
+            return result
+        else:
+            # Single eye/variable - return Intervals directly
+            key = eyes[0] + "_" + variables[0]
+            if key in self._interpolated_blinks and self._interpolated_blinks[key] is not None:
+                result = self._interpolated_blinks[key]
+                # Ensure sampling_rate is set
+                if result.sampling_rate is None:
+                    result.sampling_rate = self.fs
+            else:
+                # No interpolated blinks stored - return empty Intervals
+                result = Intervals(
+                    intervals=[],
+                    units=None,
+                    label=f"{eyes[0]}_{variables[0]}_interpolated_blinks",
+                    data_time_range=(0, len(self.tx)),
+                    sampling_rate=self.fs,
+                    time_offset=self.tx[0]
+                )
+            
+            # Convert to requested units if needed
+            if units is not None:
+                result = result.to_units(units)
+            
+            return result
+
     def mask_as_intervals(self, eyes: str|list = [], variables: str|list = [], 
                           units: str|None = None, label: str|None = None):
         """
@@ -701,8 +785,10 @@ class GenericEyeData(ABC):
 
         ## initialize blinks
         self._blinks={}
+        self._interpolated_blinks={}
         for eye,variable in itertools.product(eyes, variables):
-            self._blinks[f"{eye}_{variable}"] = None        
+            self._blinks[f"{eye}_{variable}"] = None
+            self._interpolated_blinks[f"{eye}_{variable}"] = None        
 
     def nblinks(self, eyes=[], variables=[]) -> int:
         """
