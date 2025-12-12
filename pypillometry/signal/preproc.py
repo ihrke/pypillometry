@@ -279,10 +279,9 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
         logger.debug("No onsets found - returning empty array")
         return np.array([])
         
-    onsets_ixx = np.r_[np.diff(onsets), 10] > 1
-    onsets_len = np.diff(np.r_[0, np.where(onsets_ixx)[0] + 1])
-    onsets = onsets[:-1][onsets_ixx[:-1]]
-    onsets_len = onsets_len[:len(onsets)]
+    onsets_ixx = np.r_[10, np.diff(onsets)] > 1
+    onsets_len = np.diff(np.r_[np.where(onsets_ixx)[0], onsets.size])
+    onsets = onsets[onsets_ixx]
     onsets = onsets[onsets_len > min_onset_len]
     logger.debug(f"After filtering, {len(onsets)} onsets remain")
 

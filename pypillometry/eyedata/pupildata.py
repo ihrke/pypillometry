@@ -362,6 +362,7 @@ class PupilData(GenericEyeData):
             
             # Filter by minimum duration and create Intervals object
             filtered_blinks = [(int(on), int(off)) for (on,off) in blinks if off-on>=min_duration_ix]
+            logger.debug(f"Filtered {len(filtered_blinks)} blinks by minimum duration")
             intervals_obj = Intervals(
                 intervals=filtered_blinks,
                 units=None,  # Using index units

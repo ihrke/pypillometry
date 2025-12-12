@@ -462,15 +462,12 @@ class GenericEyeData(ABC):
                     raise TypeError(f"Dict values must be Intervals objects or None, got {type(interval_obj)} for key '{key}'")
                 
                 self._blinks[key] = interval_obj
-                
-                # Apply mask if requested and intervals exist
-                if apply_mask and interval_obj is not None:
-                    if key not in self.data.data:
-                        logger.warning(f"Key '{key}' not found in data, skipping mask application")
-                        continue
-                    intervals_array = np.array(interval_obj)
-                    for bstart, bend in intervals_array:
-                        self.data.mask[key][int(bstart):int(bend)] = 1
+            
+            # Apply mask if requested (filter out None values)
+            if apply_mask:
+                intervals_to_mask = {k: v for k, v in intervals.items() if v is not None}
+                if intervals_to_mask:
+                    self.mask_intervals(intervals_to_mask, inplace=True)
         else:
             # Single Intervals object - apply to specified eyes/variables
             if intervals is not None and not isinstance(intervals, Intervals):
@@ -483,15 +480,10 @@ class GenericEyeData(ABC):
                 for var in variables:
                     key = f"{eye}_{var}"
                     self._blinks[key] = intervals
-                    
-                    # Apply mask if requested and intervals exist
-                    if apply_mask and intervals is not None:
-                        if key not in self.data.data:
-                            logger.warning(f"Key '{key}' not found in data, skipping mask application")
-                            continue
-                        intervals_array = np.array(intervals)
-                        for bstart, bend in intervals_array:
-                            self.data.mask[key][int(bstart):int(bend)] = 1
+            
+            # Apply mask if requested and intervals exist
+            if apply_mask and intervals is not None:
+                self.mask_intervals(intervals, eyes=eyes, variables=variables, inplace=True)
 
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
                    units: str|None = None):

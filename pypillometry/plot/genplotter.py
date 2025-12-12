@@ -174,7 +174,8 @@ class GenericPlotter:
                     txm = obj.tx[slic]
                     mint = obj._mask_to_intervals_list(mask)
                     for sm,em in mint:
-                        ax.axvspan(txm[sm]*fac,txm[em]*fac, color="grey", alpha=0.3)
+                        # em is exclusive (Python convention), so use em-1 for the actual last index
+                        ax.axvspan(txm[sm]*fac, txm[em-1]*fac, color="grey", alpha=0.3)
                 if plot_index: 
                     ax.text(0.5, 0.5, '%i'%(iinterv), fontsize=12, horizontalalignment='center',     
                             verticalalignment='center', transform=ax.transAxes)
