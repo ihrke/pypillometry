@@ -2267,3 +2267,151 @@ class GenericEyeData(ABC):
                         obj.data.mask[key][start_idx:end_idx] = 1
         
         return obj
+
+    @keephistory
+    def interpolate_intervals(self, intervals, eyes=[], variables=[], 
+                             method="linear", store_as_suffix=None, 
+                             inplace=None):
+        """
+        Interpolate data within specified intervals.
+        
+        This function replaces data within the specified intervals with interpolated
+        values based on the boundary points just outside each interval.
+        
+        Parameters
+        ----------
+        intervals : Intervals or dict
+            Either:
+            - A single Intervals object: applied to all specified eyes/variables
+            - A dict of Intervals: keys like "left_pupil", "right_x", etc.
+              When dict is provided, `eyes` and `variables` are ignored.
+        eyes : str or list, optional
+            Eye(s) to interpolate. If empty, applies to all available eyes.
+            Ignored if `intervals` is a dict.
+        variables : str or list, optional
+            Variable(s) to interpolate. If empty, applies to all available variables.
+            Ignored if `intervals` is a dict.
+        method : str, default "linear"
+            Interpolation method. Options: "linear", "nearest", "zero", 
+            "slinear", "quadratic", "cubic", "previous", "next".
+            Passed to scipy.interpolate.interp1d.
+        store_as_suffix : str or None, default None
+            If None, replace the original data.
+            If a string, store interpolated data in a new variable with this suffix
+            (e.g., "_interp" creates "left_pupil_interp").
+        inplace : bool, optional
+            If True, modify in-place. If False, return a copy.
+            If None, use object's default setting.
+            
+        Returns
+        -------
+        GenericEyeData
+            The object with interpolated data.
+            
+        Examples
+        --------
+        Interpolate blinks for left eye pupil data:
+        
+        >>> blinks = data.get_blinks(eyes='left', variables='pupil')
+        >>> data.interpolate_intervals(blinks, eyes=['left'], variables=['pupil'])
+        
+        Interpolate using a dict of intervals:
+        
+        >>> blinks = data.get_blinks()  # returns dict
+        >>> data.interpolate_intervals(blinks)
+        
+        Store interpolated data in a new variable:
+        
+        >>> data.interpolate_intervals(blinks, store_as_suffix="_interp")
+        >>> # Access via data['left', 'pupil_interp']
+        
+        Use cubic interpolation:
+        
+        >>> data.interpolate_intervals(blinks, method="cubic")
+        
+        See Also
+        --------
+        mask_intervals : Apply intervals as masks without interpolation
+        get_blinks : Retrieve stored blink intervals
+        """
+        from scipy.interpolate import interp1d
+        
+        obj = self._get_inplace(inplace)
+        
+        def interpolate_single_key(key, interval_obj):
+            """Local helper to interpolate a single data key."""
+            # Ensure sampling_rate is set
+            if interval_obj.sampling_rate is None:
+                interval_obj.sampling_rate = obj.fs
+            
+            # Convert to index-based intervals
+            intervals_array = np.array(interval_obj.to_units("indices")).astype(int)
+            
+            # Get the data and mask
+            data = obj.data[key].copy()
+            mask = obj.data.mask[key].copy()
+            
+            # Interpolate each interval
+            for start, end in intervals_array:
+                start_idx = int(max(0, start))
+                end_idx = int(min(len(obj.tx), end))
+                
+                if end_idx <= start_idx:
+                    continue
+                
+                # Get boundary points for interpolation
+                left_idx = max(0, start_idx - 1)
+                right_idx = min(len(obj.tx) - 1, end_idx)
+                
+                # Skip if boundary points are invalid
+                if np.isnan(data[left_idx]) or np.isnan(data[right_idx]):
+                    logger.warning(f"Cannot interpolate interval [{start_idx}:{end_idx}] - boundary values are NaN")
+                    continue
+                
+                # Interpolate
+                if method == "linear":
+                    data[start_idx:end_idx] = np.interp(
+                        obj.tx[start_idx:end_idx],
+                        [obj.tx[left_idx], obj.tx[right_idx]],
+                        [data[left_idx], data[right_idx]]
+                    )
+                else:
+                    f = interp1d([obj.tx[left_idx], obj.tx[right_idx]], 
+                                [data[left_idx], data[right_idx]], 
+                                kind=method, fill_value="extrapolate")
+                    data[start_idx:end_idx] = f(obj.tx[start_idx:end_idx])
+                
+                # Update mask for interpolated region
+                mask[start_idx:end_idx] = 1
+            
+            # Store result
+            target_key = key if store_as_suffix is None else f"{key}{store_as_suffix}"
+            obj.data.set_with_mask(target_key, data, mask=mask)
+        
+        # Handle dict vs single Intervals
+        if isinstance(intervals, dict):
+            for key, interval_obj in intervals.items():
+                if not isinstance(interval_obj, Intervals):
+                    raise TypeError(f"Dict values must be Intervals objects, got {type(interval_obj)}")
+                
+                if key not in obj.data.data:
+                    logger.warning(f"Key '{key}' not found in data, skipping")
+                    continue
+                
+                interpolate_single_key(key, interval_obj)
+        else:
+            if not isinstance(intervals, Intervals):
+                raise TypeError(f"intervals must be Intervals or dict, got {type(intervals)}")
+            
+            eyes, variables = obj._get_eye_var(eyes, variables)
+            
+            for eye in eyes:
+                for var in variables:
+                    key = f"{eye}_{var}"
+                    if key not in obj.data.data:
+                        logger.warning(f"Key '{key}' not found in data, skipping")
+                        continue
+                    
+                    interpolate_single_key(key, intervals)
+        
+        return obj
