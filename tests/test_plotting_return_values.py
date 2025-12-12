@@ -48,8 +48,9 @@ class TestPlottingReturnValues(unittest.TestCase):
                 intervals.intervals[:5],
                 intervals.units,
                 intervals.label,
-                intervals.event_labels[:5] if intervals.event_labels else None,
-                intervals.event_indices[:5] if intervals.event_indices is not None else None
+                event_labels=intervals.event_labels[:5] if intervals.event_labels else None,
+                event_indices=intervals.event_indices[:5] if intervals.event_indices is not None else None,
+                sampling_rate=intervals.sampling_rate
             )
             figs = self.data.plot.plot_intervals(intervals_subset, nrow=2, ncol=2)
             self.assertEqual(len(figs), 2)

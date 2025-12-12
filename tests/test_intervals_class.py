@@ -247,6 +247,126 @@ class TestIntervalsMethods(unittest.TestCase):
             merged = intervals.merge(distance=1000)  # Large distance to force merge
             self.assertEqual(merged.units, units)
     
+    def test_intervals_pad_basic(self):
+        """Test basic padding of intervals"""
+        intervals = Intervals([(100, 200), (300, 400)], units="ms")
+        
+        padded = intervals.pad(left=10, right=20)
+        
+        self.assertEqual(len(padded), 2)
+        self.assertEqual(padded.intervals[0], (90, 220))
+        self.assertEqual(padded.intervals[1], (290, 420))
+    
+    def test_intervals_pad_left_only(self):
+        """Test padding only on the left"""
+        intervals = Intervals([(100, 200)], units="ms")
+        
+        padded = intervals.pad(left=50)
+        
+        self.assertEqual(padded.intervals[0], (50, 200))
+    
+    def test_intervals_pad_right_only(self):
+        """Test padding only on the right"""
+        intervals = Intervals([(100, 200)], units="ms")
+        
+        padded = intervals.pad(right=50)
+        
+        self.assertEqual(padded.intervals[0], (100, 250))
+    
+    def test_intervals_pad_preserves_metadata(self):
+        """Test that pad preserves all metadata"""
+        intervals = Intervals(
+            [(100, 200), (300, 400)],
+            units="ms",
+            label="test",
+            event_labels=["a", "b"],
+            event_indices=[0, 1],
+            event_onsets=[100, 300],
+            sampling_rate=1000,
+            data_time_range=(0, 1000)
+        )
+        
+        padded = intervals.pad(left=10, right=10)
+        
+        self.assertEqual(padded.units, "ms")
+        self.assertEqual(padded.label, "test")
+        self.assertEqual(padded.event_labels, ["a", "b"])
+        self.assertEqual(padded.event_indices, [0, 1])
+        self.assertEqual(padded.event_onsets, [100, 300])
+        self.assertEqual(padded.sampling_rate, 1000)
+        self.assertEqual(padded.data_time_range, (0, 1000))
+    
+    def test_intervals_pad_empty_returns_self(self):
+        """Test that padding empty intervals returns self"""
+        intervals = Intervals([], units="ms")
+        
+        padded = intervals.pad(left=10, right=10)
+        
+        self.assertIs(padded, intervals)
+    
+    def test_intervals_pad_with_indices(self):
+        """Test padding with index units"""
+        intervals = Intervals([(10, 20), (30, 40)], units=None, sampling_rate=1000)
+        
+        padded = intervals.pad(left=5, right=5)
+        
+        self.assertEqual(padded.intervals[0], (5, 25))
+        self.assertEqual(padded.intervals[1], (25, 45))
+    
+    def test_intervals_pad_then_merge(self):
+        """Test chaining pad with merge"""
+        # Two intervals with a 10-unit gap
+        intervals = Intervals([(100, 150), (160, 200)], units="ms")
+        
+        # Padding by 10 on each side should make them overlap
+        padded = intervals.pad(left=10, right=10)
+        self.assertEqual(padded.intervals[0], (90, 160))
+        self.assertEqual(padded.intervals[1], (150, 210))
+        
+        # Merging should combine them
+        merged = padded.merge()
+        self.assertEqual(len(merged), 1)
+        self.assertEqual(merged.intervals[0], (90, 210))
+    
+    def test_intervals_pad_negative_shrinks(self):
+        """Test that negative padding shrinks intervals"""
+        intervals = Intervals([(100, 200)], units="ms")
+        
+        # Negative left adds to start, negative right subtracts from end
+        padded = intervals.pad(left=-10, right=-20)
+        
+        self.assertEqual(padded.intervals[0], (110, 180))
+    
+    def test_intervals_pad_clips_to_data_time_range(self):
+        """Test that padding clips to data_time_range bounds"""
+        intervals = Intervals([(10, 50), (80, 95)], units="ms", data_time_range=(0, 100))
+        
+        # Padding left should clip to 0
+        padded_left = intervals.pad(left=20)
+        self.assertEqual(padded_left.intervals[0], (0, 50))
+        self.assertEqual(padded_left.intervals[1], (60, 95))
+        
+        # Padding right should clip to 100
+        padded_right = intervals.pad(right=20)
+        self.assertEqual(padded_right.intervals[0], (10, 70))
+        self.assertEqual(padded_right.intervals[1], (80, 100))
+    
+    def test_intervals_pad_clips_to_zero_without_data_time_range(self):
+        """Test that padding clips to 0 when no data_time_range is set"""
+        intervals = Intervals([(10, 50)], units="ms")
+        
+        # Padding left beyond 0 should clip to 0
+        padded = intervals.pad(left=20)
+        self.assertEqual(padded.intervals[0][0], 0)
+    
+    def test_intervals_pad_clips_indices_to_zero(self):
+        """Test that index-based intervals are clipped to 0"""
+        intervals = Intervals([(5, 20)], units=None, sampling_rate=1000)
+        
+        # Padding left beyond 0 should clip to 0
+        padded = intervals.pad(left=10)
+        self.assertEqual(padded.intervals[0], (0, 20))
+    
     def test_intervals_stats(self):
         """Test getting interval statistics"""
         intervals_list = [(0, 100), (0, 200), (0, 300)]

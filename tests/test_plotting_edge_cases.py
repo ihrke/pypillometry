@@ -27,7 +27,7 @@ class TestPlottingEdgeCases(unittest.TestCase):
     def test_plot_intervals_single_interval(self):
         """Test plot_intervals with Intervals object containing one interval"""
         from pypillometry.intervals import Intervals
-        intervals = Intervals([(0, 1000)], units="ms", label="single")
+        intervals = Intervals([(0, 1000)], units="ms", label="single", sampling_rate=self.data.fs)
         figs = self.data.plot.plot_intervals(intervals)
         self.assertIsNotNone(figs)
     

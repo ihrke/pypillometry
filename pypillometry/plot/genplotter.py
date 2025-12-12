@@ -74,14 +74,15 @@ class GenericPlotter:
                        eyes: str|list=[], variables: str|list=[],
                        pdf_file: Optional[str]=None, nrow: int=5, ncol: int=3, 
                        figsize: Tuple[int,int]=(10,10), 
-                       units: str="ms", plot_mask: bool=False,
-                       plot_index: bool=True):
+                       show_mask: bool=False,
+                       show_index: bool=True):
         """"
         Plotting data around intervals.
 
         Intervals can be extracted with EyeData.get_intervals(). 
         Each interval gets a separate subplot. 
         The data is plotted for each eye and variable in different colors.
+        The x-axis is plotted in the units of the Intervals object.
         
         Parameters
         ----------
@@ -98,46 +99,33 @@ class GenericPlotter:
             number of columns for the subplots for the intervals
         nrow: int
             number of rows for the subplots for the intervals
-        units: str
-            units in which the signal is plotted (for display only)
-        plot_index: bool
-            plot a number with the blinks' index (e.g., for identifying abnormal blinks)
-        plot_mask: bool
+        show_index: bool
+            plot a number with the interval's index (e.g., for identifying abnormal blinks)
+        show_mask: bool
             plot the "mask" array of the underlying data object
         """
         if not isinstance(intervals, Intervals):
             raise TypeError("intervals must be an Intervals object. Use get_intervals() to create one.")
         
-        obj=self.obj # PupilData object
-        fac=obj._unit_fac(units)  # For display
-        nsubplots=nrow*ncol # number of subplots per figure
-
-        eyes,variables=obj._get_eye_var(eyes, variables)
+        obj = self.obj  # PupilData object
+        nsubplots = nrow * ncol  # number of subplots per figure
+        
+        # Get display factor based on Intervals' units
+        units = intervals.units
+        fac = obj._unit_fac(units)
+        
+        eyes, variables = obj._get_eye_var(eyes, variables)
         
         # Convert Intervals to indices for data slicing
-        if intervals.units is None:
-            # Already in index units
-            intervals_idx = intervals.intervals
-        else:
-            # Convert from intervals' units to indices
-            fac_to_ms = 1.0 / obj._unit_fac(intervals.units)
-            intervals_idx = []
-            for start, end in intervals.intervals:
-                # Convert to ms
-                start_ms = start * fac_to_ms
-                end_ms = end * fac_to_ms
-                # Find corresponding indices
-                start_ix = np.argmin(np.abs(obj.tx - start_ms))
-                end_ix = np.argmin(np.abs(obj.tx - end_ms))
-                intervals_idx.append((start_ix, end_ix))
+        intervals_idx = intervals.to_units(None).intervals
             
-        nfig=int(np.ceil(len(intervals_idx)/nsubplots))
+        nfig = int(np.ceil(len(intervals_idx) / nsubplots))
 
-        figs=[]
+        figs = []
         
-        iinterv=0
+        iinterv = 0
         for i in range(nfig):
-            fig=plt.figure(figsize=figsize)
+            fig = plt.figure(figsize=figsize)
             axs = fig.subplots(nrow, ncol)
             # Ensure axs is always iterable (flatten if array, wrap if single Axes)
             if isinstance(axs, np.ndarray):
@@ -145,39 +133,28 @@ class GenericPlotter:
             elif not isinstance(axs, Iterable):
                 axs = [axs]
 
-            for ix,(start,end) in enumerate(intervals_idx[(i*nsubplots):(i+1)*nsubplots]):
-                iinterv+=1
-                slic=slice(start,end)
-                ax=axs[ix]
-                for eye,var in itertools.product(eyes,variables):
-                    ax.plot(obj.tx[slic]*fac,obj.data[eye,var][slic], label="%s_%s"%(eye,var))
+            for ix, (start, end) in enumerate(intervals_idx[(i*nsubplots):(i+1)*nsubplots]):
+                iinterv += 1
+                slic = slice(start, end)
+                ax = axs[ix]
+                for eye, var in itertools.product(eyes, variables):
+                    ax.plot(obj.tx[slic] * fac, obj.data[eye, var][slic], label="%s_%s" % (eye, var))
 
-                # Plot vertical line at event onset (first event for this interval)
-                if intervals.event_onsets is not None and len(intervals.event_onsets) > (iinterv-1):
-                    event_onset_idx = iinterv - 1
-                    # Convert event onset from intervals units to display units
-                    if intervals.units is None:
-                        # Event onset is in indices, need to convert to ms then to display units
-                        event_onset_ms = obj.tx[int(intervals.event_onsets[event_onset_idx])]
-                    else:
-                        # Event onset is in intervals units, convert to ms first
-                        fac_onset_to_ms = 1.0 / obj._unit_fac(intervals.units)
-                        event_onset_ms = intervals.event_onsets[event_onset_idx] * fac_onset_to_ms
-                    
-                    # Now convert to display units
-                    event_onset_display = event_onset_ms * fac
-                    ax.axvline(event_onset_display, color='red', linestyle='--', 
+                # Plot vertical line at event onset
+                if intervals.event_onsets is not None and len(intervals.event_onsets) > (iinterv - 1):
+                    event_onset = intervals.event_onsets[iinterv - 1]
+                    ax.axvline(event_onset, color='red', linestyle='--', 
                               linewidth=1, alpha=0.7, zorder=1)
 
-                if plot_mask:
-                    mask = obj.data.mask[eye+"_"+var][slic]
+                if show_mask:
+                    mask = obj.data.mask[eye + "_" + var][slic]
                     txm = obj.tx[slic]
                     mint = obj._mask_to_intervals_list(mask)
-                    for sm,em in mint:
+                    for sm, em in mint:
                         # em is exclusive (Python convention), so use em-1 for the actual last index
-                        ax.axvspan(txm[sm]*fac, txm[em-1]*fac, color="grey", alpha=0.3)
-                if plot_index: 
-                    ax.text(0.5, 0.5, '%i'%(iinterv), fontsize=12, horizontalalignment='center',     
+                        ax.axvspan(txm[sm] * fac, txm[em-1] * fac, color="grey", alpha=0.3)
+                if show_index: 
+                    ax.text(0.5, 0.5, '%i' % (iinterv), fontsize=12, horizontalalignment='center',     
                             verticalalignment='center', transform=ax.transAxes)
             figs.append(fig)
             

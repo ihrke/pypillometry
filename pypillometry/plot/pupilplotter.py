@@ -255,7 +255,7 @@ class PupilPlotter(GenericPlotter):
                    pdf_file: str|None = None, nrow: int = 5, ncol: int = 3, 
                    figsize: tuple = (10, 10),
                    pre_blink: float = 200, post_blink: float = 200, 
-                   units: str = "ms", plot_index: bool = True) -> list:
+                   units: str = "ms", show_index: bool = True) -> list:
         """
         Plot detected blinks in separate subplots.
         
@@ -279,7 +279,7 @@ class PupilPlotter(GenericPlotter):
             Time after blink to include (in ms)
         units : str
             Display units for time axis
-        plot_index : bool
+        show_index : bool
             Show blink index numbers
             
         Returns
@@ -316,7 +316,10 @@ class PupilPlotter(GenericPlotter):
             for s, e in blinks_ix
         ]
         
-        intervals = Intervals(padded, units=None, label="blinks", sampling_rate=self.obj.fs)
+        intervals = Intervals(padded, units=None, label="blinks", sampling_rate=self.obj.fs,
+                             data_time_range=(0, len(self.obj.tx)), time_offset=self.obj.tx[0])
+        # Convert to desired display units
+        intervals = intervals.to_units(units)
         return self.plot_intervals(intervals, eyes, variables,
-                                  pdf_file, nrow, ncol, figsize, units, plot_index)
+                                  pdf_file, nrow, ncol, figsize, show_index=show_index)
 

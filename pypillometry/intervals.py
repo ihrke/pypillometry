@@ -872,6 +872,87 @@ class Intervals:
                         sampling_rate=self.sampling_rate,
                         time_offset=self.time_offset)
     
+    def pad(self, left: float = 0, right: float = 0):
+        """
+        Add padding to the left (start) and right (end) of each interval.
+        
+        The padding is in the current units of the Intervals object.
+        Padding is applied independently to each interval without merging.
+        Use `.merge()` after padding if you want to merge overlapping intervals.
+        
+        Intervals are clipped to stay within valid bounds:
+        - If data_time_range is set, intervals are clipped to that range
+        - Otherwise, intervals are clipped to start at 0 (or time_offset for time units)
+        
+        Parameters
+        ----------
+        left : float, optional
+            Amount to subtract from the start of each interval (expand left).
+            Default is 0.
+        right : float, optional
+            Amount to add to the end of each interval (expand right).
+            Default is 0.
+            
+        Returns
+        -------
+        Intervals
+            New Intervals object with padded intervals, clipped to valid bounds.
+            
+        Examples
+        --------
+        >>> intervals = Intervals([(100, 200), (300, 400)], units="ms")
+        >>> padded = intervals.pad(left=10, right=20)
+        >>> padded.intervals
+        [(90, 220), (290, 420)]
+        
+        >>> # Padding that would go out of bounds is clipped
+        >>> intervals = Intervals([(10, 50)], units="ms", data_time_range=(0, 100))
+        >>> intervals.pad(left=20)  # Would go to -10, clipped to 0
+        [(0, 50)]
+        
+        >>> # Pad and then merge overlapping intervals
+        >>> intervals.pad(left=50, right=50).merge()
+        
+        Notes
+        -----
+        - Negative padding values will shrink intervals (left adds to start, 
+          right subtracts from end)
+        """
+        if not self.intervals:
+            return self
+        
+        # Determine bounds for clipping
+        if self.data_time_range is not None:
+            min_bound = self.data_time_range[0]
+            max_bound = self.data_time_range[1]
+        else:
+            # Default bounds: 0 (or time_offset) to infinity
+            if self.units is None:
+                # Index-based: start at 0
+                min_bound = 0
+            else:
+                # Time-based: start at time_offset (usually 0)
+                min_bound = self.time_offset
+            max_bound = float('inf')
+        
+        # Apply padding and clip to bounds
+        padded = [
+            (max(min_bound, start - left), min(max_bound, end + right))
+            for start, end in self.intervals
+        ]
+        
+        return Intervals(
+            padded, 
+            self.units, 
+            self.label,
+            event_labels=self.event_labels,
+            event_indices=self.event_indices,
+            data_time_range=self.data_time_range,
+            event_onsets=self.event_onsets,
+            sampling_rate=self.sampling_rate,
+            time_offset=self.time_offset
+        )
+    
     def stats(self):
         """
         Get statistics about interval durations.

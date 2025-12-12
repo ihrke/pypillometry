@@ -366,7 +366,7 @@ class GenericEyeData(ABC):
         Examples
         --------
         >>> data.plot_timeseries()  # instead of data.plot.plot_timeseries()
-        >>> data.plot_intervals(intervals, units='ms')
+        >>> data.plot_intervals(intervals)
         >>> data.pupil_plot(plot_range=(0, 1000))
         
         The original syntax still works:

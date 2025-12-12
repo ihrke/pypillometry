@@ -267,10 +267,10 @@ class GazePlotter(GenericPlotter):
     def plot_scanpath(self, 
             plot_range: tuple=(-np.inf, +np.inf), 
             eyes: list=[],
-            plot_screen: bool=True,
+            show_screen: bool=True,
             rois: List[ROI]=None,
             roi_style: dict={},
-            plot_onsets: bool=True,
+            show_onsets: bool=True,
             title: str="",
             units: str=None,
             figsize: tuple=(10,10)
@@ -292,7 +292,7 @@ class GazePlotter(GenericPlotter):
         eyes: list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
-        plot_screen: bool
+        show_screen: bool
             Whether to plot the screen limits. Default is True.
         rois: List[ROI], optional
             List of ROIs to plot. Default is None.
@@ -305,7 +305,7 @@ class GazePlotter(GenericPlotter):
                 "linewidth": 2,
                 "alpha": 0.5
             }
-        plot_onsets: bool
+        show_onsets: bool
             Whether to plot the event onsets. Default is True.
         title: str
             The title of the plot. Default is "".
@@ -363,14 +363,14 @@ class GazePlotter(GenericPlotter):
                 ax.plot(obj.data[vx][startix:endix], obj.data[vy][startix:endix], alpha=0.3, label=eye)
                 ax.scatter(obj.data[vx][startix:endix], obj.data[vy][startix:endix], 
                         s=1, c=cm.jet(tnorm))
-            if plot_onsets and eye==eyes[0]:
+            if show_onsets and eye==eyes[0]:
                 for ix, lab in zip(evontix, evlab):
                     ax.text(obj.data[vx][ix], obj.data[vy][ix], lab, 
                             fontsize=12, ha="center", va="center")
 
         ax.set_aspect("equal")
         #fig.colorbar()
-        if plot_screen and obj.experimental_setup is not None:
+        if show_screen and obj.experimental_setup is not None:
             setup = obj.experimental_setup
             screenrect=patches.Rectangle(
                 (setup.screen_xlim[0], setup.screen_ylim[0]), 

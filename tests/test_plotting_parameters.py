@@ -239,28 +239,29 @@ class TestPlotIntervalsParameters(unittest.TestCase):
         intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         
         for units in ["ms", "sec", "min"]:
-            figs = self.data.plot.plot_intervals(intervals, units=units)
+            intervals_in_units = intervals.to_units(units)
+            figs = self.data.plot.plot_intervals(intervals_in_units)
             self.assertIsNotNone(figs)
             plt.close('all')
     
-    def test_plot_intervals_plot_mask(self):
-        """Test plot_intervals with plot_mask option"""
+    def test_plot_intervals_show_mask(self):
+        """Test plot_intervals with show_mask option"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
-        figs = self.data.plot.plot_intervals(intervals, plot_mask=True)
+        figs = self.data.plot.plot_intervals(intervals, show_mask=True)
         self.assertIsNotNone(figs)
     
-    def test_plot_intervals_plot_index(self):
-        """Test plot_intervals with plot_index option"""
+    def test_plot_intervals_show_index(self):
+        """Test plot_intervals with show_index option"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         
         # With index
-        figs1 = self.data.plot.plot_intervals(intervals, plot_index=True)
+        figs1 = self.data.plot.plot_intervals(intervals, show_index=True)
         self.assertIsNotNone(figs1)
         
         plt.close('all')
         
         # Without index
-        figs2 = self.data.plot.plot_intervals(intervals, plot_index=False)
+        figs2 = self.data.plot.plot_intervals(intervals, show_index=False)
         self.assertIsNotNone(figs2)
 
 
