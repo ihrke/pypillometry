@@ -176,6 +176,77 @@ class TestIntervalsMethods(unittest.TestCase):
         
         self.assertIs(merged, intervals)
     
+    def test_intervals_merge_with_distance_ms(self):
+        """Test merging intervals with distance parameter in ms units"""
+        # Gap between (10,15) and (17,22) is 2ms
+        intervals = Intervals([(10, 15), (17, 22), (30, 35)], units="ms")
+        
+        # distance=0: no merging of non-overlapping
+        merged_0 = intervals.merge(distance=0)
+        self.assertEqual(len(merged_0), 3)
+        
+        # distance=2: should merge first two (gap is exactly 2)
+        merged_2 = intervals.merge(distance=2)
+        self.assertEqual(len(merged_2), 2)
+        self.assertEqual(merged_2.intervals[0], (10, 22))
+        self.assertEqual(merged_2.intervals[1], (30, 35))
+        
+        # distance=1: should NOT merge (gap is 2 > 1)
+        merged_1 = intervals.merge(distance=1)
+        self.assertEqual(len(merged_1), 3)
+        
+        # distance=20: should merge all three
+        merged_20 = intervals.merge(distance=20)
+        self.assertEqual(len(merged_20), 1)
+        self.assertEqual(merged_20.intervals[0], (10, 35))
+    
+    def test_intervals_merge_with_distance_indices(self):
+        """Test merging intervals with distance parameter when units are indices"""
+        # At 1000Hz, 2 samples = 2ms
+        intervals = Intervals([(10, 15), (17, 22), (30, 35)], units=None, sampling_rate=1000)
+        
+        # distance=2ms should merge first two (gap is 2 samples = 2ms at 1000Hz)
+        merged = intervals.merge(distance=2)
+        self.assertEqual(len(merged), 2)
+        self.assertEqual(merged.intervals[0], (10, 22))
+    
+    def test_intervals_merge_with_distance_seconds(self):
+        """Test merging intervals with distance parameter in seconds units"""
+        # Gap is 0.002 sec = 2ms
+        intervals = Intervals([(0.010, 0.015), (0.017, 0.022)], units="sec", sampling_rate=1000)
+        
+        # distance=2ms should merge
+        merged = intervals.merge(distance=2)
+        self.assertEqual(len(merged), 1)
+        self.assertAlmostEqual(merged.intervals[0][0], 0.010)
+        self.assertAlmostEqual(merged.intervals[0][1], 0.022)
+    
+    def test_intervals_merge_with_distance_preserves_metadata(self):
+        """Test that merge with distance preserves and combines metadata correctly"""
+        intervals = Intervals(
+            [(10, 15), (17, 22), (30, 35)], 
+            units="ms",
+            event_labels=["a", "b", "c"],
+            event_indices=[0, 1, 2],
+            event_onsets=[10, 17, 30]
+        )
+        
+        # Merge first two intervals
+        merged = intervals.merge(distance=2)
+        
+        self.assertEqual(len(merged), 2)
+        self.assertEqual(merged.event_labels[0], "a_b")  # Labels joined
+        self.assertEqual(merged.event_labels[1], "c")
+        self.assertEqual(merged.event_indices[0], 0)  # First index kept
+        self.assertEqual(merged.event_onsets[0], 10)  # First onset kept
+    
+    def test_intervals_merge_with_distance_preserves_units(self):
+        """Test that merge with distance returns intervals in original units"""
+        for units in ["ms", "sec", "min"]:
+            intervals = Intervals([(10, 15), (17, 22)], units=units, sampling_rate=1000)
+            merged = intervals.merge(distance=1000)  # Large distance to force merge
+            self.assertEqual(merged.units, units)
+    
     def test_intervals_stats(self):
         """Test getting interval statistics"""
         intervals_list = [(0, 100), (0, 200), (0, 300)]

@@ -783,9 +783,9 @@ class Intervals:
                         data_time_range, event_onsets, self.sampling_rate,
                         time_offset=0.0)
     
-    def merge(self, merge_sep='_'):
+    def merge(self, merge_sep='_', distance: float = 0):
         """
-        Merge overlapping intervals.
+        Merge overlapping or close intervals.
         
         When intervals are merged, metadata is handled as follows:
         - event_labels: Labels of merged intervals are joined with merge_sep
@@ -797,14 +797,31 @@ class Intervals:
         merge_sep : str, optional
             Separator to use when joining event labels of merged intervals. 
             Default is '_'.
+        distance : float, optional
+            Maximum gap (in milliseconds) between intervals to still merge them.
+            If two intervals are separated by less than or equal to this distance,
+            they will be merged. Default is 0 (only merge overlapping intervals).
+            
+            Example: If distance=2 and intervals are (10, 15) and (17, 22), they
+            will be merged into (10, 22) because the gap (17-15=2) is <= distance.
         
         Returns
         -------
         Intervals
             New Intervals object with merged intervals and updated metadata.
+            
+        Raises
+        ------
+        ValueError
+            If distance > 0 and conversion requires sampling_rate but it is not set.
         """
         if not self.intervals:
             return self
+        
+        # If distance > 0 and units are not ms, convert to ms, merge, convert back
+        if distance > 0 and self.units != 'ms':
+            merged_ms = self.to_units('ms').merge(merge_sep=merge_sep, distance=distance)
+            return merged_ms.to_units(self.units)
         
         # Get indices that would sort intervals by start point
         sorted_indices = sorted(range(len(self.intervals)), 
@@ -818,13 +835,13 @@ class Intervals:
         for idx, current in zip(sorted_indices[1:], sorted_intervals[1:]):
             last_merged = merged[-1]
             
-            # Check if intervals overlap
-            if current[0] <= last_merged[1]:
+            # Check if intervals overlap or are within distance (distance is in ms here)
+            if current[0] <= last_merged[1] + distance:
                 # Merge the intervals
                 merged[-1] = (last_merged[0], max(last_merged[1], current[1]))
                 merged_groups[-1].append(idx)  # Add to current merge group
             else:
-                # No overlap, add the current interval
+                # No overlap and beyond distance, add as separate interval
                 merged.append(current)
                 merged_groups.append([idx])  # Start new merge group
         
