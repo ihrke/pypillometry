@@ -384,6 +384,10 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
     Method for finding the on- and offset for each blink (excluding transient).
     See https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
     
+    Uses asymmetric Savitzky-Golay velocity estimation to handle NaN values properly:
+    - Backward-looking velocity for onset detection (so future NaN doesn't affect the estimate)
+    - Forward-looking velocity for offset detection (so past NaN doesn't affect the estimate)
+    
     Parameters
     ----------
     sy: np.array
@@ -401,8 +405,12 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
     blinkwindow: int
         how much time before and after each blink to include (in sampling points)        
     """
-    # generate velocity-profile using centered Savitzky-Golay
-    vel = velocity_savgol(sy, smooth_winsize, polyorder=2, direction="center")
+    # Generate asymmetric velocity profiles for robust estimation near NaN regions
+    # Backward-looking for onset detection (doesn't peek into blink)
+    vel_backward = velocity_savgol(sy, smooth_winsize, polyorder=2, direction="backward")
+    # Forward-looking for offset detection (doesn't peek into blink)
+    vel_forward = velocity_savgol(sy, smooth_winsize, polyorder=2, direction="forward")
+    
     blinkwindow_ix=blinkwindow
     n=len(sy)
     
@@ -410,10 +418,10 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
     for ix,(start,end) in enumerate(blinks):                
         winstart,winend=max(0,start-blinkwindow_ix), min(end+blinkwindow_ix, n)
         slic=slice(winstart, winend) #start-blinkwindow_ix, end+blinkwindow_ix)
-        winlength=vel[slic].size
+        winlength=vel_backward[slic].size
 
-        onsets=np.where(vel[slic]<=vel_onset)[0]
-        offsets=np.where(vel[slic]>=vel_offset)[0]
+        onsets=np.where(vel_backward[slic]<=vel_onset)[0]
+        offsets=np.where(vel_forward[slic]>=vel_offset)[0]
         if onsets.size==0 or offsets.size==0:
             continue
 
