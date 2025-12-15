@@ -529,6 +529,152 @@ def pupilresponse_nnls(tx, sy, event_onsets, fs, npar=10.1, tmax=930):
     resid=sy-pred         ## residual
 
     return coef,pred,resid
-    
 
+
+def pupil_eye_offset(left, right, fs, left_mask=None, right_mask=None, 
+                     lowpass_cutoff=0.2, interp_method="cubic"):
+    """
+    Compute a slowly-varying offset between left and right pupil signals.
     
+    This function calculates the local inter-ocular difference (left - right)
+    to account for drift over an experimental session. The offset is computed
+    where both eyes have valid data, interpolated to fill gaps, and lowpass
+    filtered to produce a smooth, slowly-varying correction signal.
+    
+    Parameters
+    ----------
+    left : np.ndarray or np.ma.MaskedArray
+        Left eye pupil signal. Can be:
+        - A regular numpy array (requires `left_mask`)
+        - A numpy masked array (mask is extracted automatically)
+    right : np.ndarray or np.ma.MaskedArray
+        Right eye pupil signal. Same format options as `left`.
+    fs : float
+        Sampling rate in Hz.
+    left_mask : np.ndarray, optional
+        Boolean mask for left eye where True = invalid/masked.
+        Required if `left` is a regular numpy array.
+        Ignored if `left` is a masked array.
+    right_mask : np.ndarray, optional
+        Boolean mask for right eye where True = invalid/masked.
+        Required if `right` is a regular numpy array.
+        Ignored if `right` is a masked array.
+    lowpass_cutoff : float, optional
+        Cutoff frequency for lowpass filtering the offset (default: 0.2 Hz).
+        Lower values produce a more stable offset that only tracks very slow
+        drift. Higher values allow faster changes but may introduce noise.
+    interp_method : str, optional
+        Interpolation method for filling gaps where only one eye is valid.
+        Options: "linear", "nearest", "zero", "slinear", "quadratic", "cubic".
+        Default is "cubic" for smooth transitions.
+        
+    Returns
+    -------
+    offset : np.ndarray
+        The local offset signal (left - right), smoothly interpolated and
+        lowpass filtered. Can be added to right eye data to align it with
+        left eye level: `right_corrected = right + offset`.
+        
+    Notes
+    -----
+    The offset is computed as follows:
+    1. Calculate raw difference (left - right) where both eyes are valid
+    2. Interpolate to fill gaps using the specified method
+    3. Apply lowpass filter to smooth the result
+    
+    This handles session-long drift by allowing the offset to vary slowly
+    over time, rather than assuming a constant inter-ocular difference.
+    
+    For typical pupillometry experiments, a lowpass cutoff of 0.1-0.5 Hz
+    is recommended. This corresponds to changes over 2-10 seconds, which
+    captures drift while ignoring trial-by-trial noise.
+    
+    Examples
+    --------
+    >>> # With masked arrays
+    >>> offset = pupil_eye_offset(left_ma, right_ma, fs=500)
+    >>> right_corrected = right_ma + offset
+    >>> 
+    >>> # With explicit masks
+    >>> offset = pupil_eye_offset(left, right, fs=500, 
+    ...                           left_mask=left_mask, right_mask=right_mask)
+    >>> 
+    >>> # Merge eyes using the offset
+    >>> both_valid = ~left_mask & ~right_mask
+    >>> merged = np.where(both_valid, 
+    ...                   (left + right + offset) / 2,
+    ...                   np.where(~left_mask, left, right + offset))
+    
+    See Also
+    --------
+    lowpass_filter_iterative : Lowpass filter that handles NaN values
+    """
+    from scipy.interpolate import interp1d
+    from .baseline import butter_lowpass_filter
+    
+    # Extract data and masks from masked arrays if needed
+    if isinstance(left, np.ma.MaskedArray):
+        left_data = left.data.copy()
+        left_mask = left.mask
+        if isinstance(left_mask, np.bool_):
+            left_mask = np.full(left_data.shape, left_mask, dtype=bool)
+    else:
+        left_data = np.asarray(left).copy()
+        if left_mask is None:
+            raise ValueError("left_mask must be provided when left is a regular numpy array")
+        left_mask = np.asarray(left_mask, dtype=bool)
+    
+    if isinstance(right, np.ma.MaskedArray):
+        right_data = right.data.copy()
+        right_mask = right.mask
+        if isinstance(right_mask, np.bool_):
+            right_mask = np.full(right_data.shape, right_mask, dtype=bool)
+    else:
+        right_data = np.asarray(right).copy()
+        if right_mask is None:
+            raise ValueError("right_mask must be provided when right is a regular numpy array")
+        right_mask = np.asarray(right_mask, dtype=bool)
+    
+    # Find where both eyes are valid
+    both_valid = ~left_mask & ~right_mask
+    
+    # Compute raw difference where both valid
+    raw_diff = np.full(len(left_data), np.nan)
+    raw_diff[both_valid] = left_data[both_valid] - right_data[both_valid]
+    
+    # Get indices where we have valid differences
+    valid_indices = np.where(both_valid)[0]
+    
+    if len(valid_indices) == 0:
+        # No valid data - return zeros
+        logger.warning("No timepoints with both eyes valid. Returning zero offset.")
+        return np.zeros(len(left_data))
+    
+    if len(valid_indices) == 1:
+        # Only one valid point - use constant offset
+        logger.warning("Only one timepoint with both eyes valid. Using constant offset.")
+        return np.full(len(left_data), raw_diff[valid_indices[0]])
+    
+    # Determine minimum points needed for interpolation method
+    min_points = {"cubic": 4, "quadratic": 3}.get(interp_method, 2)
+    use_method = interp_method
+    if len(valid_indices) < min_points:
+        logger.warning(f"Only {len(valid_indices)} valid points available, "
+                      f"but '{interp_method}' requires {min_points}. "
+                      f"Falling back to linear interpolation.")
+        use_method = "linear"
+    
+    # Interpolate to fill gaps
+    interp_func = interp1d(
+        valid_indices,
+        raw_diff[valid_indices],
+        kind=use_method,
+        bounds_error=False,
+        fill_value=(raw_diff[valid_indices[0]], raw_diff[valid_indices[-1]])
+    )
+    diff_interpolated = interp_func(np.arange(len(left_data)))
+    
+    # Lowpass filter to smooth
+    offset = butter_lowpass_filter(diff_interpolated, lowpass_cutoff, fs, order=2)
+    
+    return offset
