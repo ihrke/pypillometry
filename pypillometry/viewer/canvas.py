@@ -325,6 +325,9 @@ class ViewerCanvas(SceneCanvas):
                     mask = arr.mask.astype(int) if arr.mask is not np.ma.nomask else None
                     arr = arr.data
                 
+                # Convert to float32 for GPU rendering
+                arr = np.asarray(arr, dtype=np.float32)
+                
                 lod_line = LODLine(
                     viewbox, time, arr, color,
                     mask=mask,
@@ -564,10 +567,17 @@ class ViewerCanvas(SceneCanvas):
             else:
                 visible_data = arr[start_idx:end_idx]
             
-            valid = np.isfinite(visible_data)
-            if np.any(valid):
-                y_min = min(y_min, float(np.nanmin(visible_data[valid])))
-                y_max = max(y_max, float(np.nanmax(visible_data[valid])))
+            # Convert to float for proper handling
+            visible_data = np.asarray(visible_data, dtype=np.float64)
+            
+            if len(visible_data) == 0:
+                continue
+                
+            valid_mask = np.isfinite(visible_data)
+            if np.any(valid_mask):
+                valid_data = visible_data[valid_mask]
+                y_min = min(y_min, float(np.min(valid_data)))
+                y_max = max(y_max, float(np.max(valid_data)))
         
         return y_min, y_max
     
