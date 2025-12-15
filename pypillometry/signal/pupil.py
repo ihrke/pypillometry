@@ -532,14 +532,14 @@ def pupilresponse_nnls(tx, sy, event_onsets, fs, npar=10.1, tmax=930):
 
 
 def pupil_eye_offset(left, right, fs, left_mask=None, right_mask=None, 
-                     lowpass_cutoff=0.2, interp_method="cubic"):
+                     lowpass_cutoff=0.2, max_iter=10):
     """
     Compute a slowly-varying offset between left and right pupil signals.
     
     This function calculates the local inter-ocular difference (left - right)
     to account for drift over an experimental session. The offset is computed
-    where both eyes have valid data, interpolated to fill gaps, and lowpass
-    filtered to produce a smooth, slowly-varying correction signal.
+    where both eyes have valid data, and lowpass filtered using an iterative
+    method that properly handles missing values (NaN gaps).
     
     Parameters
     ----------
@@ -563,24 +563,28 @@ def pupil_eye_offset(left, right, fs, left_mask=None, right_mask=None,
         Cutoff frequency for lowpass filtering the offset (default: 0.2 Hz).
         Lower values produce a more stable offset that only tracks very slow
         drift. Higher values allow faster changes but may introduce noise.
-    interp_method : str, optional
-        Interpolation method for filling gaps where only one eye is valid.
-        Options: "linear", "nearest", "zero", "slinear", "quadratic", "cubic".
-        Default is "cubic" for smooth transitions.
+    max_iter : int, optional
+        Maximum iterations for iterative lowpass filtering (default: 10).
+        The iterative filter fills NaN gaps by repeatedly filtering and
+        replacing NaN values until convergence.
         
     Returns
     -------
     offset : np.ndarray
-        The local offset signal (left - right), smoothly interpolated and
-        lowpass filtered. Can be added to right eye data to align it with
-        left eye level: `right_corrected = right + offset`.
+        The local offset signal (left - right), smoothly lowpass filtered.
+        Can be added to right eye data to align it with left eye level:
+        `right_corrected = right + offset`.
         
     Notes
     -----
     The offset is computed as follows:
     1. Calculate raw difference (left - right) where both eyes are valid
-    2. Interpolate to fill gaps using the specified method
-    3. Apply lowpass filter to smooth the result
+    2. Apply iterative lowpass filter that handles NaN gaps properly
+    
+    The iterative filtering approach (see `lowpass_filter_iterative`) ensures
+    that only actual measurements influence the result, not interpolated values.
+    NaN gaps are filled with values consistent with the surrounding signal
+    through an iterative process that converges to a smooth solution.
     
     This handles session-long drift by allowing the offset to vary slowly
     over time, rather than assuming a constant inter-ocular difference.
@@ -609,9 +613,6 @@ def pupil_eye_offset(left, right, fs, left_mask=None, right_mask=None,
     --------
     lowpass_filter_iterative : Lowpass filter that handles NaN values
     """
-    from scipy.interpolate import interp1d
-    from .baseline import butter_lowpass_filter
-    
     # Extract data and masks from masked arrays if needed
     if isinstance(left, np.ma.MaskedArray):
         left_data = left.data.copy()
@@ -638,43 +639,26 @@ def pupil_eye_offset(left, right, fs, left_mask=None, right_mask=None,
     # Find where both eyes are valid
     both_valid = ~left_mask & ~right_mask
     
-    # Compute raw difference where both valid
+    # Compute raw difference where both valid (NaN elsewhere)
     raw_diff = np.full(len(left_data), np.nan)
     raw_diff[both_valid] = left_data[both_valid] - right_data[both_valid]
     
-    # Get indices where we have valid differences
-    valid_indices = np.where(both_valid)[0]
+    # Check for sufficient valid data
+    n_valid = np.sum(both_valid)
     
-    if len(valid_indices) == 0:
+    if n_valid == 0:
         # No valid data - return zeros
         logger.warning("No timepoints with both eyes valid. Returning zero offset.")
         return np.zeros(len(left_data))
     
-    if len(valid_indices) == 1:
+    if n_valid == 1:
         # Only one valid point - use constant offset
         logger.warning("Only one timepoint with both eyes valid. Using constant offset.")
-        return np.full(len(left_data), raw_diff[valid_indices[0]])
+        valid_idx = np.where(both_valid)[0][0]
+        return np.full(len(left_data), raw_diff[valid_idx])
     
-    # Determine minimum points needed for interpolation method
-    min_points = {"cubic": 4, "quadratic": 3}.get(interp_method, 2)
-    use_method = interp_method
-    if len(valid_indices) < min_points:
-        logger.warning(f"Only {len(valid_indices)} valid points available, "
-                      f"but '{interp_method}' requires {min_points}. "
-                      f"Falling back to linear interpolation.")
-        use_method = "linear"
-    
-    # Interpolate to fill gaps
-    interp_func = interp1d(
-        valid_indices,
-        raw_diff[valid_indices],
-        kind=use_method,
-        bounds_error=False,
-        fill_value=(raw_diff[valid_indices[0]], raw_diff[valid_indices[-1]])
-    )
-    diff_interpolated = interp_func(np.arange(len(left_data)))
-    
-    # Lowpass filter to smooth
-    offset = butter_lowpass_filter(diff_interpolated, lowpass_cutoff, fs, order=2)
+    # Use iterative lowpass filter that properly handles NaN values
+    # This fills gaps with values consistent with surrounding valid data
+    offset = lowpass_filter_iterative(raw_diff, lowpass_cutoff, fs, order=2, max_iter=max_iter)
     
     return offset
