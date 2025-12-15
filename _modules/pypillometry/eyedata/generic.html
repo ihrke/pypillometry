@@ -2780,13 +2780,13 @@ window.addEventListener("load", load);
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.interpolate_intervals">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">interpolate_intervals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intervals</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[],</span> 
-                             <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">store_as_suffix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
-                             <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                             <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+                             <span class="n">store_as_suffix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Interpolate data within specified intervals.</span>
 <span class="sd">        </span>
 <span class="sd">        This function replaces data within the specified intervals with interpolated</span>
-<span class="sd">        values based on the boundary points just outside each interval.</span>
+<span class="sd">        values based on boundary points outside each interval.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2805,6 +2805,12 @@ window.addEventListener("load", load);
 <span class="sd">            Interpolation method. Options: &quot;linear&quot;, &quot;nearest&quot;, &quot;zero&quot;, </span>
 <span class="sd">            &quot;slinear&quot;, &quot;quadratic&quot;, &quot;cubic&quot;, &quot;previous&quot;, &quot;next&quot;.</span>
 <span class="sd">            Passed to scipy.interpolate.interp1d.</span>
+<span class="sd">        margin : tuple, default (-20, 20)</span>
+<span class="sd">            Time window (in ms) before and after the interval to collect boundary</span>
+<span class="sd">            points for interpolation. The first value is subtracted from the start</span>
+<span class="sd">            (should be negative to go back in time), and the second is added to the</span>
+<span class="sd">            end. For higher-order methods like &quot;cubic&quot; or &quot;quadratic&quot;, more boundary</span>
+<span class="sd">            points from this margin are used to fit the interpolation curve.</span>
 <span class="sd">        store_as_suffix : str or None, default None</span>
 <span class="sd">            If None, replace the original data.</span>
 <span class="sd">            If a string, store interpolated data in a new variable with this suffix</span>
@@ -2835,9 +2841,9 @@ window.addEventListener("load", load);
 <span class="sd">        &gt;&gt;&gt; data.interpolate_intervals(blinks, store_as_suffix=&quot;_interp&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; # Access via data[&#39;left&#39;, &#39;pupil_interp&#39;]</span>
 <span class="sd">        </span>
-<span class="sd">        Use cubic interpolation:</span>
+<span class="sd">        Use cubic interpolation with wider margin:</span>
 <span class="sd">        </span>
-<span class="sd">        &gt;&gt;&gt; data.interpolate_intervals(blinks, method=&quot;cubic&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; data.interpolate_intervals(blinks, method=&quot;cubic&quot;, margin=(-50, 50))</span>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -2847,6 +2853,10 @@ window.addEventListener("load", load);
         <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
         
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
+        
+        <span class="c1"># Convert margin from ms to samples</span>
+        <span class="n">margin_left_ix</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">margin</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">margin_right_ix</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">margin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
         
         <span class="k">def</span><span class="w"> </span><span class="nf">interpolate_single_key</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">interval_obj</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Local helper to interpolate a single data key.&quot;&quot;&quot;</span>
@@ -2869,26 +2879,67 @@ window.addEventListener("load", load);
                 <span class="k">if</span> <span class="n">end_idx</span> <span class="o">&lt;=</span> <span class="n">start_idx</span><span class="p">:</span>
                     <span class="k">continue</span>
                 
-                <span class="c1"># Get boundary points for interpolation</span>
-                <span class="n">left_idx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">start_idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-                <span class="n">right_idx</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end_idx</span><span class="p">)</span>
+                <span class="c1"># Collect boundary points from margin windows</span>
+                <span class="c1"># Left margin: from (start_idx - margin_left_ix) to (start_idx - 1)</span>
+                <span class="n">left_margin_start</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">start_idx</span> <span class="o">-</span> <span class="n">margin_left_ix</span><span class="p">)</span>
+                <span class="n">left_margin_end</span> <span class="o">=</span> <span class="n">start_idx</span>  <span class="c1"># exclusive</span>
                 
-                <span class="c1"># Skip if boundary points are invalid</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">left_idx</span><span class="p">])</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">right_idx</span><span class="p">]):</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot interpolate interval [</span><span class="si">{</span><span class="n">start_idx</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">end_idx</span><span class="si">}</span><span class="s2">] - boundary values are NaN&quot;</span><span class="p">)</span>
+                <span class="c1"># Right margin: from end_idx to (end_idx + margin_right_ix - 1)</span>
+                <span class="n">right_margin_start</span> <span class="o">=</span> <span class="n">end_idx</span>
+                <span class="n">right_margin_end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">),</span> <span class="n">end_idx</span> <span class="o">+</span> <span class="n">margin_right_ix</span><span class="p">)</span>
+                
+                <span class="c1"># Get valid (non-NaN) points from left margin</span>
+                <span class="n">left_indices</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">left_times</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">left_values</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">left_margin_start</span><span class="p">,</span> <span class="n">left_margin_end</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
+                        <span class="n">left_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+                        <span class="n">left_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+                        <span class="n">left_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+                
+                <span class="c1"># Get valid (non-NaN) points from right margin</span>
+                <span class="n">right_indices</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">right_times</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">right_values</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">right_margin_start</span><span class="p">,</span> <span class="n">right_margin_end</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
+                        <span class="n">right_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+                        <span class="n">right_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+                        <span class="n">right_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+                
+                <span class="c1"># Need at least one point on each side</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">left_values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">right_values</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot interpolate interval [</span><span class="si">{</span><span class="n">start_idx</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">end_idx</span><span class="si">}</span><span class="s2">] - &quot;</span>
+                                  <span class="sa">f</span><span class="s2">&quot;insufficient valid boundary points&quot;</span><span class="p">)</span>
                     <span class="k">continue</span>
                 
+                <span class="c1"># Combine boundary points</span>
+                <span class="n">boundary_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">left_times</span> <span class="o">+</span> <span class="n">right_times</span><span class="p">)</span>
+                <span class="n">boundary_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">left_values</span> <span class="o">+</span> <span class="n">right_values</span><span class="p">)</span>
+                
+                <span class="c1"># Determine if we have enough points for the requested method</span>
+                <span class="n">n_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">boundary_times</span><span class="p">)</span>
+                <span class="n">min_points</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;cubic&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;quadratic&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                
+                <span class="n">use_method</span> <span class="o">=</span> <span class="n">method</span>
+                <span class="k">if</span> <span class="n">n_points</span> <span class="o">&lt;</span> <span class="n">min_points</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Method &#39;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; requires </span><span class="si">{</span><span class="n">min_points</span><span class="si">}</span><span class="s2">+ points but only </span><span class="si">{</span><span class="n">n_points</span><span class="si">}</span><span class="s2"> &quot;</span>
+                                  <span class="sa">f</span><span class="s2">&quot;available for interval [</span><span class="si">{</span><span class="n">start_idx</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">end_idx</span><span class="si">}</span><span class="s2">]. &quot;</span>
+                                  <span class="sa">f</span><span class="s2">&quot;Falling back to linear interpolation.&quot;</span><span class="p">)</span>
+                    <span class="n">use_method</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span>
+                
                 <span class="c1"># Interpolate</span>
-                <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;linear&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">use_method</span> <span class="o">==</span> <span class="s2">&quot;linear&quot;</span> <span class="ow">and</span> <span class="n">n_points</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="c1"># Use numpy&#39;s interp for simple 2-point linear</span>
                     <span class="n">data</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
                         <span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">],</span>
-                        <span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">left_idx</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">right_idx</span><span class="p">]],</span>
-                        <span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">left_idx</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">right_idx</span><span class="p">]]</span>
+                        <span class="n">boundary_times</span><span class="p">,</span>
+                        <span class="n">boundary_values</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">f</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">([</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">left_idx</span><span class="p">],</span> <span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">right_idx</span><span class="p">]],</span> 
-                                <span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">left_idx</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">right_idx</span><span class="p">]],</span> 
-                                <span class="n">kind</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
+                    <span class="n">f</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">boundary_times</span><span class="p">,</span> <span class="n">boundary_values</span><span class="p">,</span> 
+                                <span class="n">kind</span><span class="o">=</span><span class="n">use_method</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
                     <span class="n">data</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">])</span>
                 
                 <span class="c1"># Update mask for interpolated region</span>

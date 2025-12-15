@@ -2507,10 +2507,10 @@ with associated metadata (event labels, indices, units)</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.interpolate_intervals">
-<span class="sig-name descname"><span class="pre">interpolate_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intervals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_as_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.interpolate_intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.interpolate_intervals" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">interpolate_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intervals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-20,</span> <span class="pre">20)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_as_suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.interpolate_intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.interpolate_intervals" title="Link to this definition">¶</a></dt>
 <dd><p>Interpolate data within specified intervals.</p>
 <p>This function replaces data within the specified intervals with interpolated
-values based on the boundary points just outside each interval.</p>
+values based on boundary points outside each interval.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2528,6 +2528,11 @@ Ignored if <cite>intervals</cite> is a dict.</p></li>
 <li><p><strong>method</strong> (<em>str</em><em>, </em><em>default &quot;linear&quot;</em>) – Interpolation method. Options: “linear”, “nearest”, “zero”,
 “slinear”, “quadratic”, “cubic”, “previous”, “next”.
 Passed to scipy.interpolate.interp1d.</p></li>
+<li><p><strong>margin</strong> (<em>tuple</em><em>, </em><em>default</em><em> (</em><em>-20</em><em>, </em><em>20</em><em>)</em>) – Time window (in ms) before and after the interval to collect boundary
+points for interpolation. The first value is subtracted from the start
+(should be negative to go back in time), and the second is added to the
+end. For higher-order methods like “cubic” or “quadratic”, more boundary
+points from this margin are used to fit the interpolation curve.</p></li>
 <li><p><strong>store_as_suffix</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>default None</em>) – If None, replace the original data.
 If a string, store interpolated data in a new variable with this suffix
 (e.g., “_interp” creates “left_pupil_interp”).</p></li>
@@ -2558,8 +2563,8 @@ If None, use object’s default setting.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access via data[&#39;left&#39;, &#39;pupil_interp&#39;]</span>
 </pre></div>
 </div>
-<p>Use cubic interpolation:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">)</span>
+<p>Use cubic interpolation with wider margin:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
