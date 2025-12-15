@@ -24,7 +24,7 @@ class ViewerCanvas(SceneCanvas):
     """GPU-accelerated viewer canvas with Level of Detail support."""
     
     def __init__(self, data, mode='eyedata', time_seconds=None, variables=None,
-                 overlays=None, highlight=None, highlight_color='lightblue'):
+                 overlays=None, extra_plots=None, highlight=None, highlight_color='lightblue'):
         """Initialize the viewer canvas.
         
         Parameters
@@ -40,6 +40,9 @@ class ViewerCanvas(SceneCanvas):
             For EyeData mode: filter modalities to display ('pupil', 'x', 'y').
         overlays : dict, optional
             Overlays for EyeData mode.
+        extra_plots : dict, optional
+            For EyeData mode: additional arrays to plot as separate subplots.
+            Dict mapping label to list of arrays.
         highlight : Intervals or dict, optional
             Intervals to highlight.
         highlight_color : str
@@ -64,6 +67,7 @@ class ViewerCanvas(SceneCanvas):
         
         self.unfreeze()
         self.overlays = overlays or {}
+        self.extra_plots = extra_plots or {}  # {label: [arrays]} for extra subplots
         self.highlight = highlight
         self.highlight_color = highlight_color
         self.variables_filter = variables  # Store the filter for later use
@@ -167,6 +171,12 @@ class ViewerCanvas(SceneCanvas):
                 
                 self._add_subplot(row, plot_labels[var_type], var_type)
                 row += 1
+            
+            # Add extra_plots subplots (additional arrays below EyeData)
+            for label in self.extra_plots.keys():
+                # Use 'extra_<label>' as var_type to distinguish from EyeData modalities
+                self._add_subplot(row, label, f'extra_{label}')
+                row += 1
         else:
             # Array mode: use dict keys as labels
             for label in self.plot_spec.keys():
@@ -260,7 +270,49 @@ class ViewerCanvas(SceneCanvas):
             event_times = self.eyedata.event_onsets.astype(np.float32) * 0.001
             event_labels = list(self.eyedata.event_labels)
         
+        # Colors for extra_plots arrays
+        array_colors = [
+            '#0066CC', '#CC0000', '#00AA00', '#AA00AA',
+            '#00AAAA', '#AAAA00', '#FF6600', '#6600FF',
+        ]
+        
         for idx, (viewbox, var_type) in enumerate(zip(self.viewboxes, self.view_types)):
+            # Check if this is an extra_plots subplot
+            if var_type.startswith('extra_'):
+                # Extract the label from 'extra_<label>'
+                label = var_type[6:]  # Remove 'extra_' prefix
+                arrays = self.extra_plots.get(label, [])
+                
+                # Add event markers to extra plots too
+                if event_times is not None:
+                    event_vis = DynamicEventMarkers(
+                        viewbox, event_times, event_labels, 
+                        show_labels=False  # No labels on extra plots
+                    )
+                    self.event_markers.append(event_vis)
+                
+                # Plot the arrays
+                for i, arr in enumerate(arrays):
+                    color = array_colors[i % len(array_colors)]
+                    
+                    # Handle masked arrays
+                    mask = None
+                    if isinstance(arr, np.ma.MaskedArray):
+                        mask = arr.mask.astype(int) if arr.mask is not np.ma.nomask else None
+                        arr = arr.data
+                    
+                    # Convert to float32 for GPU rendering
+                    arr = np.asarray(arr, dtype=np.float32)
+                    
+                    lod_line = LODLine(
+                        viewbox, time, arr, color,
+                        mask=mask,
+                        lod_factors=lod_factors
+                    )
+                    self.lod_lines.append(lod_line)
+                continue
+            
+            # Standard EyeData modality plotting
             modalities = self.available_modalities.get(var_type, [])
             
             # Add mask regions
@@ -433,6 +485,21 @@ class ViewerCanvas(SceneCanvas):
             for label, color, var_type in self.overlay_info:
                 plot_label = {'pupil': 'P', 'x': 'X', 'y': 'Y'}.get(var_type, '')
                 legend_items.append((f"{label} [{plot_label}]", color, var_type))
+            
+            # Add extra_plots entries
+            array_colors = [
+                '#0066CC', '#CC0000', '#00AA00', '#AA00AA',
+                '#00AAAA', '#AAAA00', '#FF6600', '#6600FF',
+            ]
+            for plot_label, arrays in self.extra_plots.items():
+                if len(arrays) > 1:
+                    # Multiple arrays in this extra plot - show numbered legend
+                    for i, _ in enumerate(arrays):
+                        color = array_colors[i % len(array_colors)]
+                        legend_items.append((f"{plot_label} #{i+1}", color, f'extra_{plot_label}'))
+                else:
+                    # Single array - just show the label
+                    legend_items.append((plot_label, array_colors[0], f'extra_{plot_label}'))
         else:
             # Array mode: show colors for each array in each plot
             array_colors = [
@@ -547,7 +614,13 @@ class ViewerCanvas(SceneCanvas):
         y_min, y_max = float('inf'), float('-inf')
         
         if self.mode == 'eyedata':
-            y_min, y_max = self._get_y_range_eyedata(var_type, start_idx, end_idx, y_min, y_max)
+            # Check if this is an extra_plots subplot
+            if var_type.startswith('extra_'):
+                label = var_type[6:]  # Remove 'extra_' prefix
+                arrays = self.extra_plots.get(label, [])
+                y_min, y_max = self._get_y_range_from_arrays(arrays, start_idx, end_idx, y_min, y_max)
+            else:
+                y_min, y_max = self._get_y_range_eyedata(var_type, start_idx, end_idx, y_min, y_max)
         else:
             y_min, y_max = self._get_y_range_arrays(var_type, start_idx, end_idx, y_min, y_max)
         
@@ -613,7 +686,11 @@ class ViewerCanvas(SceneCanvas):
                             y_min: float, y_max: float) -> tuple:
         """Get y-range for array mode."""
         arrays = self.plot_spec.get(var_type, [])
-        
+        return self._get_y_range_from_arrays(arrays, start_idx, end_idx, y_min, y_max)
+    
+    def _get_y_range_from_arrays(self, arrays: list, start_idx: int, end_idx: int,
+                                  y_min: float, y_max: float) -> tuple:
+        """Get y-range from a list of arrays."""
         for arr in arrays:
             if hasattr(arr, 'data'):
                 visible_data = arr.data[start_idx:end_idx]

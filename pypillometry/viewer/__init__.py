@@ -115,6 +115,7 @@ def _normalize_input(data, time=None):
 
 def view(data, variables=None, time=None,
          overlay_pupil=None, overlay_x=None, overlay_y=None,
+         extra_plots=None,
          highlight=None, highlight_color='lightblue') -> Optional[Dict[str, 'Intervals']]:
     """View eye-tracking data or numpy arrays with GPU-accelerated rendering.
     
@@ -150,6 +151,11 @@ def view(data, variables=None, time=None,
         (EyeData only) Additional timeseries to overlay on the gaze X plot.
     overlay_y : dict, optional
         (EyeData only) Additional timeseries to overlay on the gaze Y plot.
+    extra_plots : dict, optional
+        (EyeData only) Additional numpy arrays to display as separate subplots
+        below the EyeData variables. Keys become subplot labels (y-axis), 
+        values are arrays or lists of arrays. Arrays must have the same length
+        as the EyeData. Example: ``extra_plots={"velocity": vel, "custom": [a, b]}``
     highlight : Intervals or dict, optional
         Intervals to highlight in the plots. Can be:
         - An Intervals object (applied to all plots)
@@ -264,6 +270,25 @@ def view(data, variables=None, time=None,
     if overlay_y:
         overlays['y'] = overlay_y
     
+    # Normalize and validate extra_plots (only for EyeData mode)
+    normalized_extra_plots = None
+    if extra_plots is not None and mode == 'eyedata':
+        normalized_extra_plots = {}
+        eyedata_len = len(plot_spec.tx)
+        for label, arr_or_list in extra_plots.items():
+            if isinstance(arr_or_list, list):
+                arrays = [np.asarray(a) for a in arr_or_list]
+            else:
+                arrays = [np.asarray(arr_or_list)]
+            # Validate lengths match EyeData
+            for arr in arrays:
+                if len(arr) != eyedata_len:
+                    raise ValueError(
+                        f"extra_plots['{label}'] has length {len(arr)}, "
+                        f"but EyeData has length {eyedata_len}"
+                    )
+            normalized_extra_plots[label] = arrays
+    
     # Create the viewer based on mode
     if mode == 'eyedata':
         canvas = ViewerCanvas(
@@ -271,7 +296,8 @@ def view(data, variables=None, time=None,
             mode='eyedata',
             time_seconds=time_seconds,
             variables=variables,
-            overlays=overlays, 
+            overlays=overlays,
+            extra_plots=normalized_extra_plots,
             highlight=highlight, 
             highlight_color=highlight_color
         )
