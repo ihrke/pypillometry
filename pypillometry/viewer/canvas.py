@@ -283,6 +283,17 @@ class ViewerCanvas(SceneCanvas):
                 label = var_type[6:]  # Remove 'extra_' prefix
                 arrays = self.extra_plots.get(label, [])
                 
+                # Add mask regions (orange highlights) for the first masked array
+                mask_added = False
+                for arr in arrays:
+                    if isinstance(arr, np.ma.MaskedArray) and arr.mask is not np.ma.nomask:
+                        mask = arr.mask
+                        if np.any(mask):
+                            mask_vis = DynamicMaskRegions(viewbox, time, mask)
+                            self.mask_regions.append(mask_vis)
+                            mask_added = True
+                            break  # Only add one mask region per subplot
+                
                 # Add event markers to extra plots too
                 if event_times is not None:
                     event_vis = DynamicEventMarkers(
@@ -370,6 +381,15 @@ class ViewerCanvas(SceneCanvas):
         
         for viewbox, var_type in zip(self.viewboxes, self.view_types):
             arrays = self.plot_spec.get(var_type, [])
+            
+            # Add mask regions (orange highlights) for the first masked array
+            for arr in arrays:
+                if isinstance(arr, np.ma.MaskedArray) and arr.mask is not np.ma.nomask:
+                    mask = arr.mask
+                    if np.any(mask):
+                        mask_vis = DynamicMaskRegions(viewbox, time, mask)
+                        self.mask_regions.append(mask_vis)
+                        break  # Only add one mask region per subplot
             
             for i, arr in enumerate(arrays):
                 color = array_colors[i % len(array_colors)]

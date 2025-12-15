@@ -75,15 +75,21 @@ def _normalize_input(data, time=None):
     if hasattr(data, 'tx') and hasattr(data, 'data'):
         return 'eyedata', data, data.tx.astype(np.float32) * 0.001
     
+    # Helper to convert to array while preserving MaskedArrays
+    def _to_array(a):
+        if isinstance(a, np.ma.MaskedArray):
+            return a
+        return np.asarray(a)
+    
     # Single array
     if isinstance(data, (np.ndarray, np.ma.MaskedArray)):
         time_vec = time if time is not None else np.arange(len(data), dtype=np.float32)
-        return 'arrays', {'Signal': [np.asarray(data)]}, time_vec.astype(np.float32)
+        return 'arrays', {'Signal': [_to_array(data)]}, time_vec.astype(np.float32)
     
     # List of arrays -> one plot with multiple lines
     if isinstance(data, list):
-        # Validate all items are arrays
-        arrays = [np.asarray(a) for a in data]
+        # Validate all items are arrays (preserve MaskedArrays)
+        arrays = [_to_array(a) for a in data]
         _validate_array_lengths(arrays)
         time_vec = time if time is not None else np.arange(len(arrays[0]), dtype=np.float32)
         return 'arrays', {'Signal': arrays}, time_vec.astype(np.float32)
@@ -94,11 +100,11 @@ def _normalize_input(data, time=None):
         all_arrays = []
         for label, arr_or_list in data.items():
             if isinstance(arr_or_list, list):
-                arrays = [np.asarray(a) for a in arr_or_list]
+                arrays = [_to_array(a) for a in arr_or_list]
                 plots[label] = arrays
                 all_arrays.extend(arrays)
             else:
-                arr = np.asarray(arr_or_list)
+                arr = _to_array(arr_or_list)
                 plots[label] = [arr]
                 all_arrays.append(arr)
         
@@ -277,9 +283,17 @@ def view(data, variables=None, time=None,
         eyedata_len = len(plot_spec.tx)
         for label, arr_or_list in extra_plots.items():
             if isinstance(arr_or_list, list):
-                arrays = [np.asarray(a) for a in arr_or_list]
+                # Preserve MaskedArrays, convert others to ndarray
+                arrays = [
+                    a if isinstance(a, np.ma.MaskedArray) else np.asarray(a)
+                    for a in arr_or_list
+                ]
             else:
-                arrays = [np.asarray(arr_or_list)]
+                # Preserve MaskedArrays, convert others to ndarray
+                if isinstance(arr_or_list, np.ma.MaskedArray):
+                    arrays = [arr_or_list]
+                else:
+                    arrays = [np.asarray(arr_or_list)]
             # Validate lengths match EyeData
             for arr in arrays:
                 if len(arr) != eyedata_len:
