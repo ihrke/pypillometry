@@ -195,7 +195,7 @@ class ViewerCanvas(SceneCanvas):
             )
             x_axis.height_min = 50  # Fixed minimum height in pixels
             x_axis.height_max = 50  # Fixed maximum height
-            x_axis.stretch = (1, 0.001)  # Near-zero stretch (0 not allowed)
+            x_axis.stretch = (1, 0.0001)  # Near-zero vertical stretch
             self.grid.add_widget(x_axis, row=row, col=1)
             x_axis.link_view(self.viewboxes[-1])
             self._x_axis_row = row
@@ -216,13 +216,16 @@ class ViewerCanvas(SceneCanvas):
         self.grid.add_widget(y_axis, row=row, col=0)
         
         viewbox = self.grid.add_view(row=row, col=1, border_color='#cccccc')
-        viewbox.stretch = (1, 1)  # Plots expand to fill available space
+        viewbox.stretch = (1, 1)  # Equal vertical stretch for all plot viewboxes
+        viewbox.height_min = 50   # Minimum height to prevent zero-size during layout
+        
         camera = scene.PanZoomCamera(aspect=None)
         camera.interactive = False
         viewbox.camera = camera
         
         y_axis.link_view(viewbox)
-        y_axis.stretch = (0.08, 1)
+        y_axis.stretch = (0.08, 1)  # Fixed width, equal vertical stretch
+        y_axis.height_min = 50     # Match viewbox min height
         
         self.viewboxes.append(viewbox)
         self.view_types.append(var_type)
@@ -412,10 +415,9 @@ class ViewerCanvas(SceneCanvas):
         legend_view = self.grid.add_view(row=legend_row, col=0, col_span=2, border_color=None)
         legend_view.camera = scene.PanZoomCamera(aspect=None)
         legend_view.camera.interactive = False
-        legend_view.camera.set_range(x=(0, 1), y=(0, 1))
-        legend_view.height_min = 25  # Fixed height in pixels
-        legend_view.height_max = 25
-        legend_view.stretch = (1, 0.001)  # Near-zero stretch
+        legend_view.height_min = 30  # Fixed height in pixels
+        legend_view.height_max = 30  # Same as min to prevent stretching
+        legend_view.stretch = (1, 0.0001)  # Near-zero vertical stretch
         
         # Build legend items based on mode
         legend_items = []
@@ -475,12 +477,19 @@ class ViewerCanvas(SceneCanvas):
     
     def _set_initial_view(self):
         total_duration = self.data_max - self.data_min
-        initial_window = min(30.0, total_duration * 0.05)
-        if total_duration > 10.0:
-            initial_window = max(initial_window, 10.0)
         
-        x_min = self.data_min
-        x_max = x_min + initial_window
+        if self.mode == 'arrays':
+            # For array mode, show the full data initially
+            # (arrays are typically shorter than eye-tracking recordings)
+            x_min = self.data_min
+            x_max = self.data_max
+        else:
+            # For EyeData mode, show a reasonable window for long recordings
+            initial_window = min(30.0, total_duration * 0.05)
+            if total_duration > 10.0:
+                initial_window = max(initial_window, 10.0)
+            x_min = self.data_min
+            x_max = x_min + initial_window
         
         self.navigation.set_view(x_min, x_max)
         self._set_view_range(x_min, x_max)
@@ -488,10 +497,47 @@ class ViewerCanvas(SceneCanvas):
     def _set_view_range(self, x_min: float, x_max: float):
         for viewbox, var_type in zip(self.viewboxes, self.view_types):
             y_min, y_max = self._get_y_range(var_type, x_min, x_max)
-            viewbox.camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
+            self._safe_set_camera_range(viewbox.camera, x_min, x_max, y_min, y_max)
         
         self._update_lod_visuals(x_min, x_max)
         self._last_x_range = (x_min, x_max)
+    
+    def _safe_set_camera_range(self, camera, x_min: float, x_max: float, 
+                                y_min: float, y_max: float):
+        """Set camera range with validation to avoid singular matrix errors.
+        
+        VisPy's PanZoomCamera can fail with singular matrix errors when:
+        - Range is zero or near-zero
+        - Viewbox has zero dimensions (during layout)
+        """
+        # Ensure minimum x range
+        x_range = x_max - x_min
+        if x_range < 1e-6:
+            x_center = (x_min + x_max) / 2
+            x_min = x_center - 0.5
+            x_max = x_center + 0.5
+        
+        # Ensure minimum y range  
+        y_range = y_max - y_min
+        if y_range < 1e-6:
+            y_center = (y_min + y_max) / 2
+            y_min = y_center - 0.5
+            y_max = y_center + 0.5
+        
+        # Check if viewbox has valid dimensions - if not, skip
+        # (VisPy will call resize events later when dimensions are valid)
+        try:
+            rect = camera._viewbox.rect
+            if rect is None or rect.width <= 0 or rect.height <= 0:
+                return  # Skip - viewbox not ready yet
+        except (AttributeError, TypeError):
+            pass  # No viewbox rect available, try anyway
+        
+        try:
+            camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
+        except (np.linalg.LinAlgError, Exception):
+            # Camera in bad state, just skip this update
+            pass
     
     def _get_y_range(self, var_type: str, x_min: float, x_max: float) -> tuple:
         time = self.time_seconds
@@ -508,7 +554,14 @@ class ViewerCanvas(SceneCanvas):
         if y_min == float('inf'):
             return (0, 1)
         
-        padding = (y_max - y_min) * 0.1
+        # Ensure non-zero range to avoid singular matrix in camera transform
+        data_range = y_max - y_min
+        if data_range < 1e-10:
+            # For constant or near-constant data, use a small fixed range
+            center = (y_min + y_max) / 2
+            return (center - 0.5, center + 0.5)
+        
+        padding = data_range * 0.1
         return (y_min - padding, y_max + padding)
     
     def _get_y_range_eyedata(self, var_type: str, start_idx: int, end_idx: int, 
@@ -984,7 +1037,7 @@ class ViewerCanvas(SceneCanvas):
             
             for viewbox, var_type in zip(self.viewboxes, self.view_types):
                 y_min, y_max = self._get_y_range(var_type, x_min, x_max)
-                viewbox.camera.set_range(x=(x_min, x_max), y=(y_min, y_max))
+                self._safe_set_camera_range(viewbox.camera, x_min, x_max, y_min, y_max)
             
             self._update_lod_visuals(x_min, x_max)
             self._last_x_range = (x_min, x_max)

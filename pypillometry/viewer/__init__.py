@@ -287,6 +287,17 @@ def view(data, variables=None, time=None,
             highlight_color=highlight_color
         )
     
+    # For array mode, set the view range before showing to avoid
+    # singular matrix errors during initial resize events
+    if mode == 'arrays':
+        # Process pending events to let canvas initialize
+        canvas.app.process_events()
+        # Set view range now
+        try:
+            canvas._set_view_range(canvas.data_min, canvas.data_max)
+        except Exception:
+            pass
+    
     # Show canvas
     canvas.show()
     
@@ -298,6 +309,14 @@ def view(data, variables=None, time=None,
     # Force an initial draw
     canvas.update()
     canvas.app.process_events()
+    
+    # Re-set the view range now that canvas is sized properly
+    if mode == 'arrays':
+        try:
+            canvas._set_view_range(canvas.data_min, canvas.data_max)
+            canvas.update()
+        except Exception:
+            pass
     
     # Run the Qt event loop directly (blocks until window closed)
     # vispy's app.run() doesn't block properly in Jupyter
