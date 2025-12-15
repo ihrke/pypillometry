@@ -23,30 +23,72 @@ MODALITY_COLORS = {
 class ViewerCanvas(SceneCanvas):
     """GPU-accelerated viewer canvas with Level of Detail support."""
     
-    def __init__(self, eyedata, overlays=None, highlight=None, highlight_color='lightblue'):
+    def __init__(self, data, mode='eyedata', time_seconds=None, variables=None,
+                 overlays=None, highlight=None, highlight_color='lightblue'):
+        """Initialize the viewer canvas.
+        
+        Parameters
+        ----------
+        data : EyeData or dict
+            In 'eyedata' mode: EyeData object with tx and data attributes.
+            In 'arrays' mode: dict mapping plot labels to lists of arrays.
+        mode : str
+            'eyedata' for EyeData objects, 'arrays' for raw numpy arrays.
+        time_seconds : ndarray
+            Time vector in seconds.
+        variables : list of str, optional
+            For EyeData mode: filter modalities to display ('pupil', 'x', 'y').
+        overlays : dict, optional
+            Overlays for EyeData mode.
+        highlight : Intervals or dict, optional
+            Intervals to highlight.
+        highlight_color : str
+            Color for highlighted regions.
+        """
+        self.mode = mode
+        
+        if mode == 'eyedata':
+            title = f'Viewer - {getattr(data, "name", "Unknown")}'
+            self.eyedata = data
+        else:
+            title = 'Viewer - Arrays'
+            self.eyedata = None
+            self.plot_spec = data  # dict of {label: [arrays]}
+        
         super().__init__(
             keys='interactive',
             size=(1400, 800),
             bgcolor='white',
-            title=f'Viewer - {getattr(eyedata, "name", "Unknown")}'
+            title=title
         )
         
         self.unfreeze()
-        self.eyedata = eyedata
         self.overlays = overlays or {}
         self.highlight = highlight
         self.highlight_color = highlight_color
+        self.variables_filter = variables  # Store the filter for later use
         
-        self.time_seconds = eyedata.tx.astype(np.float32) * 0.001
+        self.time_seconds = time_seconds
         self.data_min = float(self.time_seconds[0])
         self.data_max = float(self.time_seconds[-1])
         
-        self.available_modalities = self._detect_modalities()
+        if mode == 'eyedata':
+            self.available_modalities = self._detect_modalities()
+            # Apply variables filter
+            if variables is not None:
+                self.available_modalities = {
+                    k: v for k, v in self.available_modalities.items() 
+                    if k in variables
+                }
+        else:
+            # For array mode, plot_spec keys become the "modalities"
+            self.available_modalities = None
         
         self.has_events = (
-            hasattr(eyedata, 'event_onsets') and 
-            eyedata.event_onsets is not None and 
-            len(eyedata.event_onsets) > 0
+            mode == 'eyedata' and
+            hasattr(data, 'event_onsets') and 
+            data.event_onsets is not None and 
+            len(data.event_onsets) > 0
         )
         
         # Visibility states
@@ -113,42 +155,37 @@ class ViewerCanvas(SceneCanvas):
     
     def _create_subplots(self):
         row = 0
-        plot_labels = {'pupil': 'Pupil', 'x': 'Gaze X', 'y': 'Gaze Y'}
         
-        for var_type in ['pupil', 'x', 'y']:
-            if var_type not in self.available_modalities:
-                continue
+        if self.mode == 'eyedata':
+            # EyeData mode: use standard modality labels
+            plot_labels = {'pupil': 'Pupil', 'x': 'Gaze X', 'y': 'Gaze Y'}
+            plot_order = ['pupil', 'x', 'y']
             
-            y_axis = scene.AxisWidget(
-                orientation='left',
-                axis_font_size=7,
-                axis_label=plot_labels[var_type],
-                axis_label_margin=50,
-                tick_label_margin=5,
-                text_color='black',
-                axis_color='black',
-                tick_color='black',
-            )
-            y_axis.stretch = (0.08, 1)
-            self.grid.add_widget(y_axis, row=row, col=0)
-            
-            viewbox = self.grid.add_view(row=row, col=1, border_color='#cccccc')
-            viewbox.stretch = (1, 1)  # Plots expand to fill available space
-            camera = scene.PanZoomCamera(aspect=None)
-            camera.interactive = False
-            viewbox.camera = camera
-            
-            y_axis.link_view(viewbox)
-            y_axis.stretch = (0.08, 1)
-            
-            self.viewboxes.append(viewbox)
-            self.view_types.append(var_type)
-            row += 1
+            for var_type in plot_order:
+                if var_type not in self.available_modalities:
+                    continue
+                
+                self._add_subplot(row, plot_labels[var_type], var_type)
+                row += 1
+        else:
+            # Array mode: use dict keys as labels
+            for label in self.plot_spec.keys():
+                self._add_subplot(row, label, label)
+                row += 1
         
         if self.viewboxes:
+            # Determine x-axis label based on whether time was provided
+            # If time is just sample indices (0, 1, 2, ...), label as "Sample"
+            # Otherwise label as "Time (s)"
+            is_sample_index = (
+                len(self.time_seconds) > 1 and 
+                np.allclose(self.time_seconds, np.arange(len(self.time_seconds)))
+            )
+            x_label = 'Sample' if is_sample_index else 'Time (s)'
+            
             x_axis = scene.AxisWidget(
                 orientation='bottom',
-                axis_label='Time (s)',
+                axis_label=x_label,
                 axis_font_size=8,
                 axis_label_margin=30,
                 tick_label_margin=5,
@@ -163,19 +200,57 @@ class ViewerCanvas(SceneCanvas):
             x_axis.link_view(self.viewboxes[-1])
             self._x_axis_row = row
     
+    def _add_subplot(self, row: int, label: str, var_type: str):
+        """Add a single subplot with y-axis and viewbox."""
+        y_axis = scene.AxisWidget(
+            orientation='left',
+            axis_font_size=7,
+            axis_label=label,
+            axis_label_margin=50,
+            tick_label_margin=5,
+            text_color='black',
+            axis_color='black',
+            tick_color='black',
+        )
+        y_axis.stretch = (0.08, 1)
+        self.grid.add_widget(y_axis, row=row, col=0)
+        
+        viewbox = self.grid.add_view(row=row, col=1, border_color='#cccccc')
+        viewbox.stretch = (1, 1)  # Plots expand to fill available space
+        camera = scene.PanZoomCamera(aspect=None)
+        camera.interactive = False
+        viewbox.camera = camera
+        
+        y_axis.link_view(viewbox)
+        y_axis.stretch = (0.08, 1)
+        
+        self.viewboxes.append(viewbox)
+        self.view_types.append(var_type)
+    
     def _plot_all_data(self):
         time = self.time_seconds
         
         n_points = len(time)
-        if n_points > 1000000:
-            lod_factors = (1, 10, 100, 1000)
-        elif n_points > 100000:
-            lod_factors = (1, 10, 100)
-        elif n_points > 10000:
-            lod_factors = (1, 10)
-        else:
-            lod_factors = (1,)
+        lod_factors = self._get_lod_factors(n_points)
         
+        if self.mode == 'eyedata':
+            self._plot_eyedata(time, lod_factors)
+        else:
+            self._plot_arrays(time, lod_factors)
+    
+    def _get_lod_factors(self, n_points: int) -> tuple:
+        """Determine LOD factors based on data length."""
+        if n_points > 1000000:
+            return (1, 10, 100, 1000)
+        elif n_points > 100000:
+            return (1, 10, 100)
+        elif n_points > 10000:
+            return (1, 10)
+        else:
+            return (1,)
+    
+    def _plot_eyedata(self, time: np.ndarray, lod_factors: tuple):
+        """Plot EyeData modalities with masks and events."""
         event_times = None
         event_labels = None
         if self.has_events:
@@ -219,6 +294,39 @@ class ViewerCanvas(SceneCanvas):
                 
                 lod_line = LODLine(
                     viewbox, time, data, color,
+                    mask=mask,
+                    lod_factors=lod_factors
+                )
+                self.lod_lines.append(lod_line)
+    
+    def _plot_arrays(self, time: np.ndarray, lod_factors: tuple):
+        """Plot raw numpy arrays."""
+        # Colors for array lines
+        array_colors = [
+            '#0066CC',  # Blue
+            '#CC0000',  # Red
+            '#00AA00',  # Green
+            '#AA00AA',  # Purple  
+            '#00AAAA',  # Cyan
+            '#AAAA00',  # Yellow
+            '#FF6600',  # Orange
+            '#6600FF',  # Violet
+        ]
+        
+        for viewbox, var_type in zip(self.viewboxes, self.view_types):
+            arrays = self.plot_spec.get(var_type, [])
+            
+            for i, arr in enumerate(arrays):
+                color = array_colors[i % len(array_colors)]
+                
+                # Handle masked arrays
+                mask = None
+                if isinstance(arr, np.ma.MaskedArray):
+                    mask = arr.mask.astype(int) if arr.mask is not np.ma.nomask else None
+                    arr = arr.data
+                
+                lod_line = LODLine(
+                    viewbox, time, arr, color,
                     mask=mask,
                     lod_factors=lod_factors
                 )
@@ -306,19 +414,33 @@ class ViewerCanvas(SceneCanvas):
         legend_view.height_max = 25
         legend_view.stretch = (1, 0.001)  # Near-zero stretch
         
-        # Build legend items: eye colors first, then overlays
+        # Build legend items based on mode
         legend_items = []
         
-        # Add eye color entries
-        if any('left' in m for mods in self.available_modalities.values() for m in mods):
-            legend_items.append(('Left eye', '#0066CC', None))
-        if any('right' in m for mods in self.available_modalities.values() for m in mods):
-            legend_items.append(('Right eye', '#CC0000', None))
-        
-        # Add overlay entries
-        for label, color, var_type in self.overlay_info:
-            plot_label = {'pupil': 'P', 'x': 'X', 'y': 'Y'}.get(var_type, '')
-            legend_items.append((f"{label} [{plot_label}]", color, var_type))
+        if self.mode == 'eyedata':
+            # Add eye color entries
+            if any('left' in m for mods in self.available_modalities.values() for m in mods):
+                legend_items.append(('Left eye', '#0066CC', None))
+            if any('right' in m for mods in self.available_modalities.values() for m in mods):
+                legend_items.append(('Right eye', '#CC0000', None))
+            
+            # Add overlay entries
+            for label, color, var_type in self.overlay_info:
+                plot_label = {'pupil': 'P', 'x': 'X', 'y': 'Y'}.get(var_type, '')
+                legend_items.append((f"{label} [{plot_label}]", color, var_type))
+        else:
+            # Array mode: show colors for each array in each plot
+            array_colors = [
+                '#0066CC', '#CC0000', '#00AA00', '#AA00AA',  
+                '#00AAAA', '#AAAA00', '#FF6600', '#6600FF',
+            ]
+            
+            for plot_label, arrays in self.plot_spec.items():
+                if len(arrays) > 1:
+                    # Multiple arrays in this plot - show numbered legend
+                    for i, _ in enumerate(arrays):
+                        color = array_colors[i % len(array_colors)]
+                        legend_items.append((f"{plot_label} #{i+1}", color, plot_label))
         
         if not legend_items:
             return
@@ -374,6 +496,22 @@ class ViewerCanvas(SceneCanvas):
         end_idx = np.searchsorted(time, x_max, side='right')
         
         y_min, y_max = float('inf'), float('-inf')
+        
+        if self.mode == 'eyedata':
+            y_min, y_max = self._get_y_range_eyedata(var_type, start_idx, end_idx, y_min, y_max)
+        else:
+            y_min, y_max = self._get_y_range_arrays(var_type, start_idx, end_idx, y_min, y_max)
+        
+        if y_min == float('inf'):
+            return (0, 1)
+        
+        padding = (y_max - y_min) * 0.1
+        return (y_min - padding, y_max + padding)
+    
+    def _get_y_range_eyedata(self, var_type: str, start_idx: int, end_idx: int, 
+                              y_min: float, y_max: float) -> tuple:
+        """Get y-range for EyeData mode."""
+        time = self.time_seconds
         modalities = self.available_modalities.get(var_type, [])
         
         for modality in modalities:
@@ -413,11 +551,25 @@ class ViewerCanvas(SceneCanvas):
                     y_min = min(y_min, float(np.nanmin(valid_data)))
                     y_max = max(y_max, float(np.nanmax(valid_data)))
         
-        if y_min == float('inf'):
-            return (0, 1)
+        return y_min, y_max
+    
+    def _get_y_range_arrays(self, var_type: str, start_idx: int, end_idx: int,
+                            y_min: float, y_max: float) -> tuple:
+        """Get y-range for array mode."""
+        arrays = self.plot_spec.get(var_type, [])
         
-        padding = (y_max - y_min) * 0.1
-        return (y_min - padding, y_max + padding)
+        for arr in arrays:
+            if hasattr(arr, 'data'):
+                visible_data = arr.data[start_idx:end_idx]
+            else:
+                visible_data = arr[start_idx:end_idx]
+            
+            valid = np.isfinite(visible_data)
+            if np.any(valid):
+                y_min = min(y_min, float(np.nanmin(visible_data[valid])))
+                y_max = max(y_max, float(np.nanmax(visible_data[valid])))
+        
+        return y_min, y_max
     
     def _update_lod_visuals(self, x_min: float, x_max: float):
         for lod_line in self.lod_lines:
@@ -497,7 +649,7 @@ class ViewerCanvas(SceneCanvas):
                 units = getattr(intervals, 'units', None)
                 if units != 'sec':
                     # Set sampling_rate if not already set (needed for index conversion)
-                    if intervals.sampling_rate is None:
+                    if intervals.sampling_rate is None and self.mode == 'eyedata':
                         intervals.sampling_rate = self.eyedata.fs
                     intervals = intervals.to_units('sec')
                 interval_list = intervals.intervals
@@ -568,7 +720,8 @@ class ViewerCanvas(SceneCanvas):
         except ImportError:
             from PyQt5.QtCore import Qt
         self.native.setCursor(Qt.CursorShape.CrossCursor)
-        self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [SELECTION MODE - drag to select region]'
+        name = getattr(self.eyedata, "name", "Arrays") if self.eyedata else "Arrays"
+        self.title = f'Viewer - {name} [SELECTION MODE - drag to select region]'
     
     def _exit_selection_mode(self):
         """Exit selection mode - restore normal cursor."""
@@ -581,7 +734,8 @@ class ViewerCanvas(SceneCanvas):
         except ImportError:
             from PyQt5.QtCore import Qt
         self.native.setCursor(Qt.CursorShape.ArrowCursor)
-        self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")}'
+        name = getattr(self.eyedata, "name", "Arrays") if self.eyedata else "Arrays"
+        self.title = f'Viewer - {name}'
     
     def _clear_preview(self):
         """Remove the selection preview rectangle."""
@@ -627,7 +781,8 @@ class ViewerCanvas(SceneCanvas):
         
         # Start drag
         self.selection_drag_start = (vb_idx, x_time, viewbox)
-        self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [Drag to select...]'
+        name = getattr(self.eyedata, "name", "Arrays") if self.eyedata else "Arrays"
+        self.title = f'Viewer - {name} [Drag to select...]'
     
     def on_mouse_move(self, event):
         """Handle mouse move events for selection preview during drag."""
@@ -664,9 +819,11 @@ class ViewerCanvas(SceneCanvas):
         # Clear preview
         self._clear_preview()
         
+        name = getattr(self.eyedata, "name", "Arrays") if self.eyedata else "Arrays"
+        
         if end_x is None:
             self.selection_drag_start = None
-            self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [SELECTION MODE - drag to select region]'
+            self.title = f'Viewer - {name} [SELECTION MODE - drag to select region]'
             return
         
         # Add selection - any drag counts, no minimum
@@ -677,7 +834,7 @@ class ViewerCanvas(SceneCanvas):
         
         # Reset for next selection
         self.selection_drag_start = None
-        self.title = f'Viewer - {getattr(self.eyedata, "name", "Unknown")} [SELECTION MODE - drag to select region]'
+        self.title = f'Viewer - {name} [SELECTION MODE - drag to select region]'
         self.update()
     
     def _update_preview(self, viewbox, x_start, x_end):
