@@ -105,6 +105,10 @@ class ViewerCanvas(SceneCanvas):
         self.selection_preview = None  # Temporary preview rectangle
         self.selection_regions: Dict[str, SelectionRegion] = {}  # var_type -> SelectionRegion
         
+        # Y-axis zoom state
+        self.manual_y_ranges: Dict[int, tuple] = {}  # {vb_idx: (y_min, y_max)} for manual Y ranges
+        self._mouse_pos = None  # Track last mouse position for Y-axis zoom
+        
         # Storage for visuals
         self.lod_lines: List[LODLine] = []
         self.overlay_lines: List[LODLine] = []
@@ -870,6 +874,129 @@ class ViewerCanvas(SceneCanvas):
         except Exception:
             return None, None, None
     
+    def _get_viewbox_idx_at_mouse(self) -> Optional[int]:
+        """Get index of viewbox under current mouse position."""
+        if self._mouse_pos is None:
+            return None
+        
+        vb_idx, _, _ = self._get_viewbox_at_pos(self._mouse_pos)
+        return vb_idx
+    
+    def _get_mouse_y_in_data_coords(self, vb_idx: int) -> Optional[float]:
+        """Get the Y coordinate of mouse in data coordinates for a viewbox."""
+        if self._mouse_pos is None or vb_idx is None:
+            return None
+        
+        canvas_y = self._mouse_pos[1]
+        canvas_height = self.size[1]
+        n_plots = len(self.viewboxes)
+        
+        if n_plots == 0 or vb_idx >= n_plots:
+            return None
+        
+        viewbox = self.viewboxes[vb_idx]
+        
+        try:
+            # Calculate plot area dimensions
+            plot_area_height = canvas_height - 75  # Account for x-axis and legend
+            plot_height = plot_area_height / n_plots
+            
+            # Get the top of this viewbox in canvas coords
+            vb_top = vb_idx * plot_height
+            
+            # Relative Y position within this viewbox (0=top, 1=bottom)
+            rel_y = (canvas_y - vb_top) / plot_height
+            rel_y = max(0.0, min(1.0, rel_y))
+            
+            # Map to data coordinates (invert because canvas Y grows down)
+            camera_rect = viewbox.camera.rect
+            y_data = camera_rect.top - rel_y * camera_rect.height
+            return float(y_data)
+        except Exception:
+            return None
+    
+    def _zoom_y_axis(self, vb_idx: int, factor: float, center_y: Optional[float] = None):
+        """Zoom Y-axis of specific viewbox by factor, centered on center_y.
+        
+        Parameters
+        ----------
+        vb_idx : int
+            Index of the viewbox to zoom.
+        factor : float
+            Zoom factor. <1 zooms in, >1 zooms out.
+        center_y : float, optional
+            Y coordinate to center zoom on. If None, uses current center.
+        """
+        if vb_idx is None or vb_idx >= len(self.viewboxes):
+            return
+        
+        viewbox = self.viewboxes[vb_idx]
+        
+        try:
+            camera_rect = viewbox.camera.rect
+            y_min = camera_rect.bottom
+            y_max = camera_rect.top
+            y_span = y_max - y_min
+            
+            if center_y is None:
+                center_y = (y_min + y_max) / 2
+            
+            # Calculate new span
+            new_span = y_span * factor
+            
+            # Calculate new range centered on center_y
+            # Preserve the relative position of center_y
+            rel_pos = (center_y - y_min) / y_span if y_span > 0 else 0.5
+            new_y_min = center_y - rel_pos * new_span
+            new_y_max = center_y + (1 - rel_pos) * new_span
+            
+            # Get current x range - MUST preserve exactly
+            x_min = camera_rect.left
+            x_max = camera_rect.right
+            x_span = x_max - x_min
+            
+            # Directly set camera.rect to avoid set_range() aspect ratio adjustments
+            # Rect is (x, y, width, height) where y is bottom
+            from vispy.geometry import Rect
+            viewbox.camera.rect = Rect(x_min, new_y_min, x_span, new_y_max - new_y_min)
+            
+            # Store as manual Y range
+            self.manual_y_ranges[vb_idx] = (new_y_min, new_y_max)
+            
+            self.update()
+        except Exception as e:
+            print(f"_zoom_y_axis error: {e}")
+    
+    def _reset_y_axis(self, vb_idx: int):
+        """Reset Y-axis of specific viewbox to auto-fit."""
+        if vb_idx is None or vb_idx >= len(self.viewboxes):
+            return
+        
+        # Remove from manual ranges
+        if vb_idx in self.manual_y_ranges:
+            del self.manual_y_ranges[vb_idx]
+        
+        viewbox = self.viewboxes[vb_idx]
+        var_type = self.view_types[vb_idx]
+        
+        try:
+            # Get current x range - MUST preserve exactly
+            camera_rect = viewbox.camera.rect
+            x_min = camera_rect.left
+            x_max = camera_rect.right
+            x_span = x_max - x_min
+            
+            # Calculate auto-fit y range
+            y_min, y_max = self._get_y_range(var_type, x_min, x_max)
+            
+            # Directly set camera.rect to avoid set_range() aspect ratio adjustments
+            from vispy.geometry import Rect
+            viewbox.camera.rect = Rect(x_min, y_min, x_span, y_max - y_min)
+            
+            self.update()
+        except Exception:
+            pass
+    
     def _start_selection_mode(self):
         """Enter selection mode - cursor becomes crosshair."""
         self.selection_mode = True
@@ -945,7 +1072,10 @@ class ViewerCanvas(SceneCanvas):
         self.title = f'Viewer - {name} [Drag to select...]'
     
     def on_mouse_move(self, event):
-        """Handle mouse move events for selection preview during drag."""
+        """Handle mouse move events for selection preview and position tracking."""
+        # Always track mouse position for Y-axis zoom
+        self._mouse_pos = event.pos
+        
         if not self.selection_mode or self.selection_drag_start is None:
             return
         
@@ -996,6 +1126,55 @@ class ViewerCanvas(SceneCanvas):
         self.selection_drag_start = None
         self.title = f'Viewer - {name} [SELECTION MODE - drag to select region]'
         self.update()
+    
+    def on_mouse_wheel(self, event):
+        """Handle mouse wheel events for Y-axis zoom with Shift modifier.
+        
+        We block all mouse wheel events to prevent default camera zoom behavior.
+        Y-axis zoom is only enabled when Shift is held.
+        """
+        # Always block the event first to prevent default camera behavior
+        event.handled = True
+        
+        # Check for Shift modifier
+        modifiers = event.modifiers
+        shift_held = 'Shift' in modifiers if modifiers else False
+        
+        if not shift_held:
+            return  # Wheel without Shift does nothing
+        
+        # Get viewbox under mouse
+        vb_idx = self._get_viewbox_idx_at_mouse()
+        if vb_idx is None:
+            return
+        
+        # Get mouse Y in data coordinates for centering
+        center_y = self._get_mouse_y_in_data_coords(vb_idx)
+        
+        # Determine zoom direction from wheel delta
+        # event.delta is (dx, dy) tuple
+        # Handle both tuple and single value cases
+        try:
+            if hasattr(event.delta, '__len__') and len(event.delta) >= 2:
+                delta = event.delta[1]  # Vertical scroll
+            else:
+                delta = float(event.delta)
+        except (TypeError, IndexError):
+            delta = 0
+        
+        
+        if delta == 0:
+            return
+        
+        # Determine zoom factor based on scroll direction
+        # Positive delta typically means scroll up/away from user
+        # We want scroll up = zoom in (see more detail = smaller Y range)
+        if delta > 0:
+            factor = 0.8  # Zoom in 20%
+        else:
+            factor = 1.25  # Zoom out 25%
+        
+        self._zoom_y_axis(vb_idx, factor, center_y)
     
     def _update_preview(self, viewbox, x_start, x_end):
         """Update the selection preview rectangle."""
@@ -1048,7 +1227,7 @@ class ViewerCanvas(SceneCanvas):
         help_text = """
 <h2>Viewer - Keyboard Controls</h2>
 
-<h3>Navigation</h3>
+<h3>Navigation (X-axis)</h3>
 <table>
 <tr><td><b>←  →</b></td><td>Pan left / right (10%)</td></tr>
 <tr><td><b>PgUp  PgDn</b></td><td>Pan left / right (50%)</td></tr>
@@ -1056,10 +1235,17 @@ class ViewerCanvas(SceneCanvas):
 <tr><td><b>Space</b></td><td>Show full signal</td></tr>
 </table>
 
-<h3>Zoom</h3>
+<h3>Zoom (X-axis)</h3>
 <table>
 <tr><td><b>↑  or  +</b></td><td>Zoom in</td></tr>
 <tr><td><b>↓  or  -</b></td><td>Zoom out</td></tr>
+</table>
+
+<h3>Y-Axis Zoom (plot under cursor)</h3>
+<table>
+<tr><td><b>Shift + ↑/↓</b></td><td>Zoom Y-axis in/out</td></tr>
+<tr><td><b>Shift + Wheel</b></td><td>Zoom Y-axis (centered on mouse)</td></tr>
+<tr><td><b>Shift + Space</b></td><td>Reset Y-axis to auto-fit</td></tr>
 </table>
 
 <h3>Display</h3>
@@ -1126,14 +1312,44 @@ class ViewerCanvas(SceneCanvas):
                 self._exit_selection_mode()
                 return
         
-        # Navigation keys
+        # Check for Shift modifier for Y-axis zoom
+        from vispy.util import keys
+        modifiers = event.modifiers
+        shift_held = 'Shift' in modifiers if modifiers else False
+        
+        if shift_held:
+            vb_idx = self._get_viewbox_idx_at_mouse()
+            
+            # Shift + Up: Zoom Y in
+            if key == keys.UP:
+                if vb_idx is not None:
+                    self._zoom_y_axis(vb_idx, 0.8)  # Zoom in 20%
+                return
+            
+            # Shift + Down: Zoom Y out
+            if key == keys.DOWN:
+                if vb_idx is not None:
+                    self._zoom_y_axis(vb_idx, 1.25)  # Zoom out 25%
+                return
+            
+            # Shift + Space: Reset Y to auto-fit
+            if key == keys.SPACE:
+                if vb_idx is not None:
+                    self._reset_y_axis(vb_idx)
+                return
+        
+        # Navigation keys (X-axis)
         result = self.navigation.handle_key_press(event)
         
         if result is not None:
             x_min, x_max = result
             
-            for viewbox, var_type in zip(self.viewboxes, self.view_types):
-                y_min, y_max = self._get_y_range(var_type, x_min, x_max)
+            for idx, (viewbox, var_type) in enumerate(zip(self.viewboxes, self.view_types)):
+                # Preserve manual Y ranges, otherwise auto-fit
+                if idx in self.manual_y_ranges:
+                    y_min, y_max = self.manual_y_ranges[idx]
+                else:
+                    y_min, y_max = self._get_y_range(var_type, x_min, x_max)
                 self._safe_set_camera_range(viewbox.camera, x_min, x_max, y_min, y_max)
             
             self._update_lod_visuals(x_min, x_max)
