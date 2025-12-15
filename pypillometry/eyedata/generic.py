@@ -2270,13 +2270,13 @@ class GenericEyeData(ABC):
 
     @keephistory
     def interpolate_intervals(self, intervals, eyes=[], variables=[], 
-                             method="linear", store_as_suffix=None, 
-                             inplace=None):
+                             method="linear", margin=(-20, 20),
+                             store_as_suffix=None, inplace=None):
         """
         Interpolate data within specified intervals.
         
         This function replaces data within the specified intervals with interpolated
-        values based on the boundary points just outside each interval.
+        values based on boundary points outside each interval.
         
         Parameters
         ----------
@@ -2295,6 +2295,12 @@ class GenericEyeData(ABC):
             Interpolation method. Options: "linear", "nearest", "zero", 
             "slinear", "quadratic", "cubic", "previous", "next".
             Passed to scipy.interpolate.interp1d.
+        margin : tuple, default (-20, 20)
+            Time window (in ms) before and after the interval to collect boundary
+            points for interpolation. The first value is subtracted from the start
+            (should be negative to go back in time), and the second is added to the
+            end. For higher-order methods like "cubic" or "quadratic", more boundary
+            points from this margin are used to fit the interpolation curve.
         store_as_suffix : str or None, default None
             If None, replace the original data.
             If a string, store interpolated data in a new variable with this suffix
@@ -2325,9 +2331,9 @@ class GenericEyeData(ABC):
         >>> data.interpolate_intervals(blinks, store_as_suffix="_interp")
         >>> # Access via data['left', 'pupil_interp']
         
-        Use cubic interpolation:
+        Use cubic interpolation with wider margin:
         
-        >>> data.interpolate_intervals(blinks, method="cubic")
+        >>> data.interpolate_intervals(blinks, method="cubic", margin=(-50, 50))
         
         See Also
         --------
@@ -2337,6 +2343,10 @@ class GenericEyeData(ABC):
         from scipy.interpolate import interp1d
         
         obj = self._get_inplace(inplace)
+        
+        # Convert margin from ms to samples
+        margin_left_ix = int(abs(margin[0]) / 1000.0 * obj.fs)
+        margin_right_ix = int(abs(margin[1]) / 1000.0 * obj.fs)
         
         def interpolate_single_key(key, interval_obj):
             """Local helper to interpolate a single data key."""
@@ -2359,26 +2369,67 @@ class GenericEyeData(ABC):
                 if end_idx <= start_idx:
                     continue
                 
-                # Get boundary points for interpolation
-                left_idx = max(0, start_idx - 1)
-                right_idx = min(len(obj.tx) - 1, end_idx)
+                # Collect boundary points from margin windows
+                # Left margin: from (start_idx - margin_left_ix) to (start_idx - 1)
+                left_margin_start = max(0, start_idx - margin_left_ix)
+                left_margin_end = start_idx  # exclusive
                 
-                # Skip if boundary points are invalid
-                if np.isnan(data[left_idx]) or np.isnan(data[right_idx]):
-                    logger.warning(f"Cannot interpolate interval [{start_idx}:{end_idx}] - boundary values are NaN")
+                # Right margin: from end_idx to (end_idx + margin_right_ix - 1)
+                right_margin_start = end_idx
+                right_margin_end = min(len(obj.tx), end_idx + margin_right_ix)
+                
+                # Get valid (non-NaN) points from left margin
+                left_indices = []
+                left_times = []
+                left_values = []
+                for idx in range(left_margin_start, left_margin_end):
+                    if not np.isnan(data[idx]):
+                        left_indices.append(idx)
+                        left_times.append(obj.tx[idx])
+                        left_values.append(data[idx])
+                
+                # Get valid (non-NaN) points from right margin
+                right_indices = []
+                right_times = []
+                right_values = []
+                for idx in range(right_margin_start, right_margin_end):
+                    if not np.isnan(data[idx]):
+                        right_indices.append(idx)
+                        right_times.append(obj.tx[idx])
+                        right_values.append(data[idx])
+                
+                # Need at least one point on each side
+                if len(left_values) == 0 or len(right_values) == 0:
+                    logger.warning(f"Cannot interpolate interval [{start_idx}:{end_idx}] - "
+                                  f"insufficient valid boundary points")
                     continue
                 
+                # Combine boundary points
+                boundary_times = np.array(left_times + right_times)
+                boundary_values = np.array(left_values + right_values)
+                
+                # Determine if we have enough points for the requested method
+                n_points = len(boundary_times)
+                min_points = {"cubic": 4, "quadratic": 3}.get(method, 2)
+                
+                use_method = method
+                if n_points < min_points:
+                    logger.warning(f"Method '{method}' requires {min_points}+ points but only {n_points} "
+                                  f"available for interval [{start_idx}:{end_idx}]. "
+                                  f"Falling back to linear interpolation.")
+                    use_method = "linear"
+                
                 # Interpolate
-                if method == "linear":
+                if use_method == "linear" and n_points == 2:
+                    # Use numpy's interp for simple 2-point linear
                     data[start_idx:end_idx] = np.interp(
                         obj.tx[start_idx:end_idx],
-                        [obj.tx[left_idx], obj.tx[right_idx]],
-                        [data[left_idx], data[right_idx]]
+                        boundary_times,
+                        boundary_values
                     )
                 else:
-                    f = interp1d([obj.tx[left_idx], obj.tx[right_idx]], 
-                                [data[left_idx], data[right_idx]], 
-                                kind=method, fill_value="extrapolate")
+                    f = interp1d(boundary_times, boundary_values, 
+                                kind=use_method, fill_value="extrapolate")
                     data[start_idx:end_idx] = f(obj.tx[start_idx:end_idx])
                 
                 # Update mask for interpolated region

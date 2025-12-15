@@ -1146,18 +1146,19 @@ class TestEyeData(unittest.TestCase):
         import warnings
         
         data_copy = self.eyedata.copy()
-        # Set boundary to NaN as well
-        data_copy.data['left_pupil'][99] = np.nan
-        data_copy.data['left_pupil'][150] = 150.0
-        data_copy.data['left_pupil'][100:150] = np.nan
+        # Set entire left margin to NaN (default margin is 20ms, so ~10 samples at 500Hz)
+        # This ensures no valid boundary points are available on the left side
+        data_copy.data['left_pupil'][80:100] = np.nan  # Left margin all NaN
+        data_copy.data['left_pupil'][100:150] = np.nan  # Gap to interpolate
+        data_copy.data['left_pupil'][150] = 150.0  # Right boundary valid
         
         intervals = Intervals([(100, 150)], units=None,
                              data_time_range=(0, len(self.eyedata.tx)),
                              sampling_rate=self.eyedata.fs)
         
-        # Should not raise but should not interpolate (boundary is NaN)
+        # Should not raise but should not interpolate (left boundary margin is all NaN)
         result = data_copy.interpolate_intervals(intervals, eyes=['left'], variables=['pupil'])
-        # The interval should still have NaN since boundary was NaN
+        # The interval should still have NaN since left boundary margin was all NaN
         self.assertTrue(np.any(np.isnan(result.data['left_pupil'][100:150])))
         
     def test_interpolate_intervals_empty_eyes(self):
