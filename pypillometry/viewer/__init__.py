@@ -620,14 +620,24 @@ def tweak(data, func, params, variable=None, time=None):
         title=f'Parameters: {func_name}'
     )
     
+    # Link windows so they close together
+    canvas.set_param_window(param_window)
+    param_window.set_canvas(canvas)
+    
     # Show windows
     canvas.show()
     param_window.show()
     
-    # Ensure windows are visible
+    # Position parameter window to the right of the canvas
     if hasattr(canvas, 'native') and canvas.native is not None:
         canvas.native.raise_()
         canvas.native.activateWindow()
+        # Position param window to the right of canvas
+        canvas_geom = canvas.native.geometry()
+        param_window.window.move(
+            canvas_geom.x() + canvas_geom.width() + 10,
+            canvas_geom.y()
+        )
     
     canvas.update()
     canvas.app.process_events()

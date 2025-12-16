@@ -128,13 +128,15 @@ class PupilData(GenericEyeData):
     @keephistory
     def pupil_lowpass_filter(self,  cutoff: float, order: int=2, eyes=[], inplace=None):
         """
-        Lowpass-filter pupil signal using a Butterworth-filter, 
-        see :func:`baseline.butter_lowpass_filter()`.
+        Lowpass-filter pupil signal using a Butterworth-filter.
+        
+        Uses an iterative approach to handle NaN/masked values properly,
+        preventing NaN propagation through the filter.
     
         Parameters
         -----------
         cutoff: float
-            lowpass-filter cutoff
+            lowpass-filter cutoff frequency in Hz
         order: int
             filter order
         eyes: list
@@ -144,11 +146,14 @@ class PupilData(GenericEyeData):
             if `False`, make and return copy before making changes           
             if `None`, use the object-level setting         
         """
+        from ..signal.pupil import lowpass_filter_iterative
+        
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
 
         for eye in eyes:
-            filtered = baseline.butter_lowpass_filter(obj.data[eye,"pupil"], cutoff, obj.fs, order)
+            # Use iterative filter that handles NaN values properly
+            filtered = lowpass_filter_iterative(obj.data[eye,"pupil"], cutoff, obj.fs, order)
             obj.data.set_with_mask(f"{eye}_pupil", filtered, preserve_mask=True)
         return obj
 
@@ -181,6 +186,190 @@ class PupilData(GenericEyeData):
             smoothed = preproc.smooth_window(obj.data[eye,"pupil"], winsize_ix, window)
             obj.data.set_with_mask(f"{eye}_pupil", smoothed, preserve_mask=True)
 
+        return obj
+
+    @keephistory
+    def pupil_merge_eyes(self, method: str = "local_offset", 
+                         lowpass_cutoff: float = 0.2,
+                         max_iter: int = 10,
+                         keep_eyes: bool = True, 
+                         inplace: bool | None = None):
+        """
+        Merge pupil data from both eyes into a single "merged" variable.
+        
+        This method combines left and right pupil signals, handling missing data
+        (masked values) intelligently. Where both eyes are valid, the signals are
+        averaged to reduce noise. Where only one eye is valid, that eye's data is
+        used (with offset correction if applicable).
+        
+        Parameters
+        ----------
+        method : str, optional
+            Method for merging the two eyes. Options:
+            
+            - "local_offset" (default): Compute a slowly-varying offset between eyes
+              using lowpass filtering. This handles drift over the session. The right
+              eye is shifted to match the left eye's level before merging.
+            - "offset": Use a single global offset (mean difference) computed over
+              the entire signal where both eyes are valid.
+            - "both_available": Only use data where both eyes are valid (take mean).
+              Timepoints where only one eye is valid remain masked.
+            
+            # TODO: Implement "signal_quality" method that weights eyes by their
+            # local signal quality (SNR), giving more weight to the cleaner eye.
+            
+        lowpass_cutoff : float, optional
+            Cutoff frequency (Hz) for the lowpass filter used in "local_offset" method.
+            Lower values produce a more stable offset that only tracks very slow drift.
+            Default is 0.2 Hz (~5 second time constant).
+        max_iter : int, optional
+            Maximum iterations for iterative lowpass filtering in "local_offset" method.
+            Default is 10.
+        keep_eyes : bool, optional
+            If True (default), keep the original left/right pupil data.
+            If False, remove the original eye data after merging.
+        inplace : bool or None, optional
+            If True, modify in-place. If False, return a copy.
+            If None, use the object's default setting.
+            
+        Returns
+        -------
+        PupilData
+            The object with merged pupil data stored as "merged_pupil".
+            
+        Raises
+        ------
+        ValueError
+            If only one eye is available (nothing to merge).
+            If an unknown method is specified.
+            
+        Notes
+        -----
+        The merged signal is stored as "merged_pupil" and can be accessed via
+        `data["merged", "pupil"]` or `data["merged_pupil"]`.
+        
+        The mask for the merged signal reflects which timepoints have valid data:
+        - For "local_offset" and "offset": masked only where BOTH eyes are masked
+        - For "both_available": masked where EITHER eye is masked
+        
+        The "local_offset" method is recommended for most use cases as it:
+        1. Uses all available data (doesn't discard single-eye timepoints)
+        2. Handles session-long drift in the inter-ocular difference
+        3. Produces smooth transitions at boundaries between single/both-eye regions
+        
+        Examples
+        --------
+        >>> # Default: local offset correction
+        >>> data.pupil_merge_eyes()
+        >>> merged = data["merged", "pupil"]
+        
+        >>> # Use global offset (simpler, assumes no drift)
+        >>> data.pupil_merge_eyes(method="offset")
+        
+        >>> # Only use timepoints where both eyes are valid
+        >>> data.pupil_merge_eyes(method="both_available")
+        
+        >>> # Remove original eye data after merging
+        >>> data.pupil_merge_eyes(keep_eyes=False)
+        
+        See Also
+        --------
+        merge_eyes : Generic merge method in GenericEyeData (masks if either eye invalid)
+        pypillometry.signal.pupil.pupil_eye_offset : Compute local offset between eyes
+        """
+        obj = self._get_inplace(inplace)
+        
+        # Check that we have both eyes
+        available_eyes = obj.data.get_available_eyes(variable="pupil")
+        if len(available_eyes) < 2:
+            raise ValueError(f"Need both eyes to merge, but only have: {available_eyes}")
+        
+        if "left" not in available_eyes or "right" not in available_eyes:
+            raise ValueError(f"Need 'left' and 'right' eyes, but have: {available_eyes}")
+        
+        valid_methods = ["local_offset", "offset", "both_available"]
+        if method not in valid_methods:
+            raise ValueError(f"Unknown method '{method}'. Must be one of: {valid_methods}")
+
+        # get data and mask from object
+        left_data = obj.data["left_pupil"]
+        right_data = obj.data["right_pupil"]
+        left_mask = np.asarray(obj.data.mask["left_pupil"], dtype=bool)
+        right_mask = np.asarray(obj.data.mask["right_pupil"], dtype=bool)
+        
+        # Determine valid regions
+        both_valid = ~left_mask & ~right_mask
+        only_left = ~left_mask & right_mask
+        only_right = left_mask & ~right_mask
+        neither_valid = left_mask & right_mask
+        
+        n_both = np.sum(both_valid)
+        n_left_only = np.sum(only_left)
+        n_right_only = np.sum(only_right)
+        n_neither = np.sum(neither_valid)
+        
+        logger.debug(f"Merge regions: both={n_both}, left_only={n_left_only}, "
+                    f"right_only={n_right_only}, neither={n_neither}")
+        
+        # Initialize merged array
+        merged = np.full(len(left_data), np.nan)
+        merged_mask = np.ones(len(left_data), dtype=int)
+        
+        if method == "both_available":
+            # Only use timepoints where both eyes are valid
+            merged[both_valid] = (left_data[both_valid] + right_data[both_valid]) / 2
+            merged_mask[both_valid] = 0
+            
+        elif method == "offset":
+            # Compute global offset where both valid
+            if n_both == 0:
+                logger.warning("No timepoints with both eyes valid. Using zero offset.")
+                offset = 0.0
+            else:
+                offset = np.mean(left_data[both_valid] - right_data[both_valid])
+            
+            logger.debug(f"Global offset (left - right): {offset:.2f}")
+            
+            # Merge: use true midpoint where both valid
+            # Where only one eye: shift it to midpoint level (half the offset)
+            merged[both_valid] = (left_data[both_valid] + right_data[both_valid]) / 2
+            merged[only_left] = left_data[only_left] - offset / 2  # shift down to midpoint
+            merged[only_right] = right_data[only_right] + offset / 2  # shift up to midpoint
+            merged_mask[~neither_valid] = 0
+            
+        elif method == "local_offset":
+            # Compute local (time-varying) offset
+            offset = pupil.pupil_eye_offset(
+                left_data, right_data, obj.fs,
+                left_mask=left_mask, right_mask=right_mask,
+                lowpass_cutoff=lowpass_cutoff, max_iter=max_iter
+            )
+            
+            # Merge: use true midpoint where both valid
+            # Where only one eye: shift it to midpoint level (half the offset)
+            merged[both_valid] = (left_data[both_valid] + right_data[both_valid]) / 2
+            merged[only_left] = left_data[only_left] - offset[only_left] / 2  # shift down to midpoint
+            merged[only_right] = right_data[only_right] + offset[only_right] / 2  # shift up to midpoint
+            merged_mask[~neither_valid] = 0
+        
+        # Store merged data
+        obj.data.data["merged_pupil"] = merged
+        obj.data.mask["merged_pupil"] = merged_mask
+        
+        # Initialize blinks for merged variable
+        obj._blinks["merged_pupil"] = None
+        obj._interpolated_blinks["merged_pupil"] = None
+        
+        # Optionally remove original eye data
+        if not keep_eyes:
+            del obj.data["left_pupil"]
+            del obj.data["right_pupil"]
+            obj._blinks.pop("left_pupil", None)
+            obj._blinks.pop("right_pupil", None)
+            obj._interpolated_blinks.pop("left_pupil", None)
+            obj._interpolated_blinks.pop("right_pupil", None)
+            logger.debug("Removed original left/right pupil data")
+        
         return obj
 
     def _convert_velocity_thresholds(self, pupil_data, winsize_ix, vel_onset, vel_offset):
