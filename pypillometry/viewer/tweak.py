@@ -847,6 +847,36 @@ class TweakCanvas(SceneCanvas):
             self.update()
 
 
+def _create_enter_key_filter(callback):
+    """Create an event filter that triggers callback on Enter key press.
+    
+    Parameters
+    ----------
+    callback : callable
+        Function to call when Enter is pressed.
+    
+    Returns
+    -------
+    QObject
+        Event filter object to install on widgets.
+    """
+    try:
+        from PyQt6.QtCore import QObject, QEvent, Qt
+    except ImportError:
+        from PyQt5.QtCore import QObject, QEvent, Qt
+    
+    class EnterKeyFilter(QObject):
+        def eventFilter(self, obj, event):
+            if event.type() == QEvent.Type.KeyPress:
+                key = event.key()
+                if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+                    callback()
+                    return True  # Event handled
+            return False  # Let event propagate
+    
+    return EnterKeyFilter()
+
+
 class TweakViewer:
     """Main window combining plot canvas with embedded parameter controls."""
     
@@ -882,8 +912,9 @@ class TweakViewer:
                                          QHBoxLayout, QSplitter, QLabel, 
                                          QDoubleSpinBox, QSpinBox, QPushButton,
                                          QCheckBox, QFrame, QApplication)
-            from PyQt6.QtCore import Qt
+            from PyQt6.QtCore import Qt, QEvent
             self.Qt = Qt
+            self.QEvent = QEvent
             self.QDoubleSpinBox = QDoubleSpinBox
             self.QSpinBox = QSpinBox
             self.QApplication = QApplication
@@ -892,11 +923,15 @@ class TweakViewer:
                                          QHBoxLayout, QSplitter, QLabel, 
                                          QDoubleSpinBox, QSpinBox, QPushButton,
                                          QCheckBox, QFrame, QApplication)
-            from PyQt5.QtCore import Qt
+            from PyQt5.QtCore import Qt, QEvent
             self.Qt = Qt
+            self.QEvent = QEvent
             self.QDoubleSpinBox = QDoubleSpinBox
             self.QSpinBox = QSpinBox
             self.QApplication = QApplication
+        
+        # Create event filter for Enter key detection in spinboxes
+        self._event_filter = _create_enter_key_filter(self._on_enter_pressed)
         
         # Create main window
         self.main_window = QMainWindow()
@@ -973,6 +1008,8 @@ class TweakViewer:
                 spinbox.valueChanged.connect(lambda v, n=name: self._on_value_changed(n, v))
             
             spinbox.setMinimumWidth(80)
+            # Install event filter to detect Enter key
+            spinbox.installEventFilter(self._event_filter)
             row.addWidget(spinbox)
             row.addStretch()
             
@@ -1014,6 +1051,11 @@ class TweakViewer:
         self.update_btn.setEnabled(not self.auto_update)
         
         if self.auto_update and self._pending_update:
+            self._trigger_update()
+    
+    def _on_enter_pressed(self):
+        """Handle Enter key press in spinbox - trigger update."""
+        if not self.auto_update and not self._computing:
             self._trigger_update()
     
     def _on_update_clicked(self):
