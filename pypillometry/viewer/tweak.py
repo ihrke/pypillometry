@@ -119,6 +119,9 @@ class TweakCanvas(SceneCanvas):
         self.masks_visible = True
         self.intervals_visible = True
         
+        # Reference to parent viewer for closing
+        self._viewer = None
+        
         # Y-axis zoom state
         self.manual_y_range: Optional[tuple] = None
         self._mouse_pos = None
@@ -581,8 +584,35 @@ class TweakCanvas(SceneCanvas):
         """Track mouse position for Y-axis zoom."""
         self._mouse_pos = event.pos
     
+    def _get_mouse_y_in_data_coords(self) -> Optional[float]:
+        """Get the Y coordinate of mouse in data coordinates."""
+        if self._mouse_pos is None:
+            return None
+        
+        canvas_y = self._mouse_pos[1]
+        canvas_height = self.size[1]
+        
+        try:
+            # Calculate plot area dimensions (account for x-axis ~50px and legend ~30px)
+            plot_area_top = 0
+            plot_area_height = canvas_height - 80
+            
+            # Relative Y position within the plot area (0=top, 1=bottom)
+            rel_y = (canvas_y - plot_area_top) / plot_area_height
+            rel_y = max(0.0, min(1.0, rel_y))
+            
+            # Map to data coordinates (invert because canvas Y grows down)
+            camera_rect = self.viewbox.camera.rect
+            y_data = camera_rect.top - rel_y * camera_rect.height
+            return float(y_data)
+        except Exception:
+            return None
+    
     def on_mouse_wheel(self, event):
-        """Handle mouse wheel for Y-axis zoom with Shift."""
+        """Handle mouse wheel for Y-axis zoom with Shift.
+        
+        Zooms centered on mouse Y position for intuitive interaction.
+        """
         event.handled = True
         
         modifiers = event.modifiers
@@ -590,6 +620,9 @@ class TweakCanvas(SceneCanvas):
         
         if not shift_held:
             return
+        
+        # Get mouse Y position for centering zoom
+        center_y = self._get_mouse_y_in_data_coords()
         
         # Get wheel delta
         try:
@@ -609,13 +642,21 @@ class TweakCanvas(SceneCanvas):
         else:
             factor = 1.25  # Zoom out
         
-        self._zoom_y_axis(factor)
+        self._zoom_y_axis(factor, center_y)
     
     def on_key_press(self, event):
         """Handle keyboard events."""
         key = event.key.name if hasattr(event.key, 'name') else str(event.key)
         modifiers = event.modifiers if hasattr(event, 'modifiers') else []
         shift_held = 'Shift' in modifiers if modifiers else False
+        
+        # Close window with Q or Escape
+        if key in ('Q', 'Escape'):
+            if self._viewer is not None:
+                self._viewer.close()
+            else:
+                self.close()
+            return
         
         # Toggle masks with 'M'
         if key == 'M':
@@ -667,6 +708,7 @@ class TweakViewer:
             Window title.
         """
         self.canvas = canvas
+        self.canvas._viewer = self  # Link canvas to viewer for closing
         self.params = dict(params)
         self.initial_params = dict(params)
         self.on_change = on_change
