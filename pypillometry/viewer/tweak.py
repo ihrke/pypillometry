@@ -686,24 +686,33 @@ class ParameterWindow:
         self.on_change = on_change
         self.spinboxes: Dict[str, Any] = {}
         self.canvas = None  # Reference to canvas for coordinated close
+        self.auto_update = True
+        self._pending_update = False
+        self._computing = False
         
         # Import Qt
         try:
             from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, 
-                                         QLabel, QDoubleSpinBox, QSpinBox, QPushButton)
-            from PyQt6.QtCore import Qt
+                                         QLabel, QDoubleSpinBox, QSpinBox, 
+                                         QPushButton, QCheckBox)
+            from PyQt6.QtCore import Qt, QTimer
             self.Qt = Qt
+            self.QTimer = QTimer
             self.QDoubleSpinBox = QDoubleSpinBox
             self.QSpinBox = QSpinBox
             self.QWidget = QWidget
+            self.QCheckBox = QCheckBox
         except ImportError:
             from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
-                                         QLabel, QDoubleSpinBox, QSpinBox, QPushButton)
-            from PyQt5.QtCore import Qt
+                                         QLabel, QDoubleSpinBox, QSpinBox, 
+                                         QPushButton, QCheckBox)
+            from PyQt5.QtCore import Qt, QTimer
             self.Qt = Qt
+            self.QTimer = QTimer
             self.QDoubleSpinBox = QDoubleSpinBox
             self.QSpinBox = QSpinBox
             self.QWidget = QWidget
+            self.QCheckBox = QCheckBox
         
         # Create a custom widget class to handle close event
         class ParamWidget(QWidget):
@@ -720,10 +729,14 @@ class ParameterWindow:
                         pass
                 event.accept()
         
-        # Create window
+        # Create window with always-on-top flag
         self.window = ParamWidget(self, parent)
         self.window.setWindowTitle(title)
         self.window.setMinimumWidth(250)
+        # Set window to stay on top
+        self.window.setWindowFlags(
+            self.window.windowFlags() | self.Qt.WindowType.WindowStaysOnTopHint
+        )
         
         layout = QVBoxLayout()
         self.window.setLayout(layout)
@@ -755,6 +768,21 @@ class ParameterWindow:
             self.spinboxes[name] = spinbox
             layout.addLayout(row)
         
+        # Separator
+        layout.addSpacing(10)
+        
+        # Auto-update checkbox
+        self.auto_update_checkbox = self.QCheckBox("Auto Update")
+        self.auto_update_checkbox.setChecked(True)
+        self.auto_update_checkbox.stateChanged.connect(self._on_auto_update_changed)
+        layout.addWidget(self.auto_update_checkbox)
+        
+        # Update button (disabled when auto-update is on)
+        self.update_btn = QPushButton("Update")
+        self.update_btn.clicked.connect(self._on_update_clicked)
+        self.update_btn.setEnabled(False)  # Disabled by default (auto-update is on)
+        layout.addWidget(self.update_btn)
+        
         # Reset button
         reset_btn = QPushButton("Reset to Initial")
         reset_btn.clicked.connect(self._reset_params)
@@ -767,10 +795,52 @@ class ParameterWindow:
         """Set reference to canvas for coordinated closing."""
         self.canvas = canvas
     
+    def _on_auto_update_changed(self, state):
+        """Handle auto-update checkbox state change."""
+        self.auto_update = bool(state)
+        # Enable/disable update button based on auto-update state
+        self.update_btn.setEnabled(not self.auto_update)
+        
+        # If turning auto-update on and there's a pending update, trigger it
+        if self.auto_update and self._pending_update:
+            self._trigger_update()
+    
+    def _on_update_clicked(self):
+        """Handle update button click."""
+        self._trigger_update()
+    
+    def _trigger_update(self):
+        """Trigger the update callback."""
+        self._pending_update = False
+        self._computing = True
+        self.update_btn.setEnabled(False)
+        self.update_btn.setText("Computing...")
+        
+        # Process events to show the button state change
+        try:
+            from PyQt6.QtWidgets import QApplication
+        except ImportError:
+            from PyQt5.QtWidgets import QApplication
+        QApplication.processEvents()
+        
+        try:
+            self.on_change(self.params)
+        finally:
+            self._computing = False
+            self.update_btn.setText("Update")
+            # Re-enable button if auto-update is off
+            if not self.auto_update:
+                self.update_btn.setEnabled(True)
+    
     def _on_value_changed(self, name: str, value: Any):
         """Handle spinbox value change."""
         self.params[name] = value
-        self.on_change(self.params)
+        
+        if self.auto_update:
+            self._trigger_update()
+        else:
+            # Mark that there's a pending update
+            self._pending_update = True
     
     def _reset_params(self):
         """Reset all parameters to initial values."""
@@ -780,7 +850,11 @@ class ParameterWindow:
             spinbox.blockSignals(True)
             spinbox.setValue(value)
             spinbox.blockSignals(False)
-        self.on_change(self.params)
+        
+        if self.auto_update:
+            self._trigger_update()
+        else:
+            self._pending_update = True
     
     def show(self):
         """Show the parameter window."""
