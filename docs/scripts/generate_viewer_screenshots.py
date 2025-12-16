@@ -39,7 +39,7 @@ except ImportError:
     from PyQt5.QtCore import Qt, QTimer
 
 # Output directory
-OUTPUT_DIR = os.path.join(docs_dir, '_static')
+OUTPUT_DIR = os.path.join(docs_dir, 'images')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 

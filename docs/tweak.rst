@@ -32,7 +32,7 @@ The simplest use case is tweaking a function applied to numpy arrays:
     
     print(f"Final window_size: {final_params['window_size']}")
 
-.. image:: _static/tweak_basic.png
+.. image:: images/tweak_basic.png
    :alt: Tweak viewer with smoothing function and parameter panel
    :width: 100%
 
@@ -64,7 +64,7 @@ For pupillometry analysis, you often need to tune filter parameters. The :func:`
     
     print(f"Final cutoff: {final_params['cutoff']} Hz")
 
-.. image:: _static/tweak_eyedata.png
+.. image:: images/tweak_eyedata.png
    :alt: Tweak viewer with lowpass filter on EyeData
    :width: 100%
 
@@ -99,7 +99,7 @@ Another common use case is tuning blink detection parameters. Functions can retu
         variable='left_pupil'
     )
 
-.. image:: _static/tweak_intervals.png
+.. image:: images/tweak_intervals.png
    :alt: Tweak viewer showing detected blink intervals
    :width: 100%
 
