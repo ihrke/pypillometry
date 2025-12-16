@@ -684,42 +684,45 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <td><p>Estimate pupil-response based on event-onsets, see <code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_response()</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_lowpass_filter</span></code>(cutoff[, order, eyes, ...])</p></td>
-<td><p>Lowpass-filter pupil signal using a Butterworth-filter, see <code class="xref py py-func docutils literal notranslate"><span class="pre">baseline.butter_lowpass_filter()</span></code>.</p></td>
+<td><p>Lowpass-filter pupil signal using a Butterworth-filter.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_smooth_window</span></code>([eyes, window, winsize, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_merge_eyes</span></code>([method, lowpass_cutoff, ...])</p></td>
+<td><p>Merge pupil data from both eyes into a single &quot;merged&quot; variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_smooth_window</span></code>([eyes, window, winsize, ...])</p></td>
 <td><p>Apply smoothing of the signal using a moving window.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
 <td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale the signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code>(intervals[, eyes, variables, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code>(intervals[, eyes, variables, ...])</p></td>
 <td><p>Set blinks for specified eyes and variables.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
 <td><p>Set onsets of events in the data</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
 <td><p>Replace event onsets and labels from an Events object.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experimental_setup</span></code>(**kwargs)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experimental_setup</span></code>(**kwargs)</p></td>
 <td><p>Set or update the experimental setup geometry.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
 <td><p>Return a new <cite>EyeData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.summary" title="pypillometry.EyeData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.summary" title="pypillometry.EyeData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
 <td><p>Return a summary of the dataset as a dictionary.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
 <td><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p></td>
 </tr>
 </tbody>
@@ -1045,39 +1048,42 @@ default is “False”</p></li>
 <td><p>Estimate pupil-response based on event-onsets, see <code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_response()</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_lowpass_filter" title="pypillometry.PupilData.pupil_lowpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_lowpass_filter</span></code></a>(cutoff[, order, eyes, ...])</p></td>
-<td><p>Lowpass-filter pupil signal using a Butterworth-filter, see <code class="xref py py-func docutils literal notranslate"><span class="pre">baseline.butter_lowpass_filter()</span></code>.</p></td>
+<td><p>Lowpass-filter pupil signal using a Butterworth-filter.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_smooth_window" title="pypillometry.PupilData.pupil_smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_smooth_window</span></code></a>([eyes, window, winsize, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_merge_eyes" title="pypillometry.PupilData.pupil_merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_merge_eyes</span></code></a>([method, lowpass_cutoff, ...])</p></td>
+<td><p>Merge pupil data from both eyes into a single &quot;merged&quot; variable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_smooth_window" title="pypillometry.PupilData.pupil_smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_smooth_window</span></code></a>([eyes, window, winsize, ...])</p></td>
 <td><p>Apply smoothing of the signal using a moving window.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
 <td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale the signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code>(intervals[, eyes, variables, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code>(intervals[, eyes, variables, ...])</p></td>
 <td><p>Set blinks for specified eyes and variables.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
 <td><p>Set onsets of events in the data</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
 <td><p>Replace event onsets and labels from an Events object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
 <td><p>Return a new <cite>EyeData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
 <td><p>Return a summary of the dataset as a dictionary.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
 <td><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p></td>
 </tr>
 </tbody>
@@ -1249,12 +1255,13 @@ and <cite>response_pars</cite></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.PupilData.pupil_lowpass_filter">
 <span class="sig-name descname"><span class="pre">pupil_lowpass_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/pupildata.html#PupilData.pupil_lowpass_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilData.pupil_lowpass_filter" title="Link to this definition">¶</a></dt>
-<dd><p>Lowpass-filter pupil signal using a Butterworth-filter,
-see <code class="xref py py-func docutils literal notranslate"><span class="pre">baseline.butter_lowpass_filter()</span></code>.</p>
+<dd><p>Lowpass-filter pupil signal using a Butterworth-filter.</p>
+<p>Uses an iterative approach to handle NaN/masked values properly,
+preventing NaN propagation through the filter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff</p></li>
+<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff frequency in Hz</p></li>
 <li><p><strong>order</strong> (<em>int</em>) – filter order</p></li>
 <li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to filter; if empty, all available eyes are filtered</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
@@ -1263,6 +1270,91 @@ if <cite>None</cite>, use the object-level setting</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.PupilData.pupil_merge_eyes">
+<span class="sig-name descname"><span class="pre">pupil_merge_eyes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local_offset'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lowpass_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/pupildata.html#PupilData.pupil_merge_eyes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilData.pupil_merge_eyes" title="Link to this definition">¶</a></dt>
+<dd><p>Merge pupil data from both eyes into a single “merged” variable.</p>
+<p>This method combines left and right pupil signals, handling missing data
+(masked values) intelligently. Where both eyes are valid, the signals are
+averaged to reduce noise. Where only one eye is valid, that eye’s data is
+used (with offset correction if applicable).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Method for merging the two eyes. Options:</p>
+<ul>
+<li><p>”local_offset” (default): Compute a slowly-varying offset between eyes
+using lowpass filtering. This handles drift over the session. The right
+eye is shifted to match the left eye’s level before merging.</p></li>
+<li><p>”offset”: Use a single global offset (mean difference) computed over
+the entire signal where both eyes are valid.</p></li>
+<li><p>”both_available”: Only use data where both eyes are valid (take mean).
+Timepoints where only one eye is valid remain masked.</p></li>
+</ul>
+<p># TODO: Implement “signal_quality” method that weights eyes by their
+# local signal quality (SNR), giving more weight to the cleaner eye.</p>
+</p></li>
+<li><p><strong>lowpass_cutoff</strong> (<em>float</em><em>, </em><em>optional</em>) – Cutoff frequency (Hz) for the lowpass filter used in “local_offset” method.
+Lower values produce a more stable offset that only tracks very slow drift.
+Default is 0.2 Hz (~5 second time constant).</p></li>
+<li><p><strong>max_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum iterations for iterative lowpass filtering in “local_offset” method.
+Default is 10.</p></li>
+<li><p><strong>keep_eyes</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True (default), keep the original left/right pupil data.
+If False, remove the original eye data after merging.</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – If True, modify in-place. If False, return a copy.
+If None, use the object’s default setting.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The object with merged pupil data stored as “merged_pupil”.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pypillometry.PupilData" title="pypillometry.PupilData">PupilData</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If only one eye is available (nothing to merge).
+If an unknown method is specified.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The merged signal is stored as “merged_pupil” and can be accessed via
+<cite>data[“merged”, “pupil”]</cite> or <cite>data[“merged_pupil”]</cite>.</p>
+<p>The mask for the merged signal reflects which timepoints have valid data:
+- For “local_offset” and “offset”: masked only where BOTH eyes are masked
+- For “both_available”: masked where EITHER eye is masked</p>
+<p>The “local_offset” method is recommended for most use cases as it:
+1. Uses all available data (doesn’t discard single-eye timepoints)
+2. Handles session-long drift in the inter-ocular difference
+3. Produces smooth transitions at boundaries between single/both-eye regions</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Default: local offset correction</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">pupil_merge_eyes</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">merged</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;merged&quot;</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use global offset (simpler, assumes no drift)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">pupil_merge_eyes</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;offset&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Only use timepoints where both eyes are valid</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">pupil_merge_eyes</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;both_available&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Remove original eye data after merging</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">pupil_merge_eyes</span><span class="p">(</span><span class="n">keep_eyes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code></dt><dd><p>Generic merge method in GenericEyeData (masks if either eye invalid)</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">pypillometry.signal.pupil.pupil_eye_offset</span></code></dt><dd><p>Compute local offset between eyes</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py method">
