@@ -915,6 +915,35 @@ class ViewerCanvas(SceneCanvas):
         except Exception:
             return None
     
+    def _get_mouse_x_in_data_coords(self) -> Optional[float]:
+        """Get the X coordinate of mouse in data coordinates."""
+        if self._mouse_pos is None:
+            return None
+        
+        canvas_x = self._mouse_pos[0]
+        canvas_width = self.size[0]
+        
+        if len(self.viewboxes) == 0:
+            return None
+        
+        viewbox = self.viewboxes[0]  # All viewboxes share same X range
+        
+        try:
+            # Account for Y-axis label area on left (~60px)
+            plot_left = 60
+            plot_width = canvas_width - plot_left
+            
+            # Relative X position within plot area (0=left, 1=right)
+            rel_x = (canvas_x - plot_left) / plot_width
+            rel_x = max(0.0, min(1.0, rel_x))
+            
+            # Map to data coordinates
+            camera_rect = viewbox.camera.rect
+            x_data = camera_rect.left + rel_x * camera_rect.width
+            return float(x_data)
+        except Exception:
+            return None
+    
     def _zoom_y_axis(self, vb_idx: int, factor: float, center_y: Optional[float] = None):
         """Zoom Y-axis of specific viewbox by factor, centered on center_y.
         
@@ -966,6 +995,60 @@ class ViewerCanvas(SceneCanvas):
             self.update()
         except Exception as e:
             print(f"_zoom_y_axis error: {e}")
+    
+    def _zoom_x_axis(self, factor: float, center_x: Optional[float] = None):
+        """Zoom X-axis by factor, centered on center_x.
+        
+        Parameters
+        ----------
+        factor : float
+            Zoom factor. <1 zooms in, >1 zooms out.
+        center_x : float, optional
+            X coordinate to center zoom on. If None, uses current center.
+        """
+        if len(self.viewboxes) == 0:
+            return
+        
+        try:
+            # Get current X range from navigation
+            x_min, x_max = self.navigation.current_x_min, self.navigation.current_x_max
+            x_span = x_max - x_min
+            
+            if center_x is None:
+                center_x = (x_min + x_max) / 2
+            
+            # Calculate new span
+            new_span = x_span * factor
+            
+            # Clamp to data range
+            if new_span >= (self.data_max - self.data_min) * 0.99:
+                # Snap to full view
+                new_x_min = self.data_min
+                new_x_max = self.data_max
+            else:
+                # Calculate new range preserving relative position of center_x
+                rel_pos = (center_x - x_min) / x_span if x_span > 0 else 0.5
+                new_x_min = center_x - rel_pos * new_span
+                new_x_max = center_x + (1 - rel_pos) * new_span
+                
+                # Clamp to data bounds
+                if new_x_min < self.data_min:
+                    new_x_min = self.data_min
+                    new_x_max = new_x_min + new_span
+                if new_x_max > self.data_max:
+                    new_x_max = self.data_max
+                    new_x_min = new_x_max - new_span
+                    if new_x_min < self.data_min:
+                        new_x_min = self.data_min
+            
+            # Update navigation state
+            self.navigation.set_view(new_x_min, new_x_max)
+            
+            # Apply the new range
+            self._set_view_range(new_x_min, new_x_max)
+            self.update()
+        except Exception:
+            pass
     
     def _reset_y_axis(self, vb_idx: int):
         """Reset Y-axis of specific viewbox to auto-fit."""
@@ -1128,32 +1211,17 @@ class ViewerCanvas(SceneCanvas):
         self.update()
     
     def on_mouse_wheel(self, event):
-        """Handle mouse wheel events for Y-axis zoom with Shift modifier.
+        """Handle mouse wheel events for axis zooming.
+        
+        - Scroll wheel (no modifier): X-axis zoom centered on mouse X position
+        - Shift + scroll wheel: Y-axis zoom centered on mouse Y position
         
         We block all mouse wheel events to prevent default camera zoom behavior.
-        Y-axis zoom is only enabled when Shift is held.
         """
         # Always block the event first to prevent default camera behavior
         event.handled = True
         
-        # Check for Shift modifier
-        modifiers = event.modifiers
-        shift_held = 'Shift' in modifiers if modifiers else False
-        
-        if not shift_held:
-            return  # Wheel without Shift does nothing
-        
-        # Get viewbox under mouse
-        vb_idx = self._get_viewbox_idx_at_mouse()
-        if vb_idx is None:
-            return
-        
-        # Get mouse Y in data coordinates for centering
-        center_y = self._get_mouse_y_in_data_coords(vb_idx)
-        
-        # Determine zoom direction from wheel delta
-        # event.delta is (dx, dy) tuple
-        # Handle both tuple and single value cases
+        # Get wheel delta
         try:
             if hasattr(event.delta, '__len__') and len(event.delta) >= 2:
                 delta = event.delta[1]  # Vertical scroll
@@ -1162,19 +1230,31 @@ class ViewerCanvas(SceneCanvas):
         except (TypeError, IndexError):
             delta = 0
         
-        
         if delta == 0:
             return
         
         # Determine zoom factor based on scroll direction
-        # Positive delta typically means scroll up/away from user
-        # We want scroll up = zoom in (see more detail = smaller Y range)
+        # Positive delta typically means scroll up/away from user = zoom in
         if delta > 0:
             factor = 0.8  # Zoom in 20%
         else:
             factor = 1.25  # Zoom out 25%
         
-        self._zoom_y_axis(vb_idx, factor, center_y)
+        # Check for Shift modifier
+        modifiers = event.modifiers
+        shift_held = 'Shift' in modifiers if modifiers else False
+        
+        if shift_held:
+            # Y-axis zoom
+            vb_idx = self._get_viewbox_idx_at_mouse()
+            if vb_idx is None:
+                return
+            center_y = self._get_mouse_y_in_data_coords(vb_idx)
+            self._zoom_y_axis(vb_idx, factor, center_y)
+        else:
+            # X-axis zoom
+            center_x = self._get_mouse_x_in_data_coords()
+            self._zoom_x_axis(factor, center_x)
     
     def _update_preview(self, viewbox, x_start, x_end):
         """Update the selection preview rectangle."""

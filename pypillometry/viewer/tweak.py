@@ -581,7 +581,7 @@ class TweakCanvas(SceneCanvas):
         self.update()
     
     def on_mouse_move(self, event):
-        """Track mouse position for Y-axis zoom."""
+        """Track mouse position for axis zoom."""
         self._mouse_pos = event.pos
     
     def _get_mouse_y_in_data_coords(self) -> Optional[float]:
@@ -608,21 +608,88 @@ class TweakCanvas(SceneCanvas):
         except Exception:
             return None
     
-    def on_mouse_wheel(self, event):
-        """Handle mouse wheel for Y-axis zoom with Shift.
+    def _get_mouse_x_in_data_coords(self) -> Optional[float]:
+        """Get the X coordinate of mouse in data coordinates."""
+        if self._mouse_pos is None:
+            return None
         
-        Zooms centered on mouse Y position for intuitive interaction.
+        canvas_x = self._mouse_pos[0]
+        canvas_width = self.size[0]
+        
+        try:
+            # Account for Y-axis label area on left (~60px)
+            plot_left = 60
+            plot_width = canvas_width - plot_left
+            
+            # Relative X position within plot area (0=left, 1=right)
+            rel_x = (canvas_x - plot_left) / plot_width
+            rel_x = max(0.0, min(1.0, rel_x))
+            
+            # Map to data coordinates
+            camera_rect = self.viewbox.camera.rect
+            x_data = camera_rect.left + rel_x * camera_rect.width
+            return float(x_data)
+        except Exception:
+            return None
+    
+    def _zoom_x_axis(self, factor: float, center_x: Optional[float] = None):
+        """Zoom X-axis by factor, centered on center_x.
+        
+        Parameters
+        ----------
+        factor : float
+            Zoom factor. <1 zooms in, >1 zooms out.
+        center_x : float, optional
+            X coordinate to center zoom on. If None, uses current center.
+        """
+        try:
+            # Get current X range from navigation
+            x_min, x_max = self.navigation.current_x_min, self.navigation.current_x_max
+            x_span = x_max - x_min
+            
+            if center_x is None:
+                center_x = (x_min + x_max) / 2
+            
+            # Calculate new span
+            new_span = x_span * factor
+            
+            # Clamp to data range
+            if new_span >= (self.data_max - self.data_min) * 0.99:
+                # Snap to full view
+                new_x_min = self.data_min
+                new_x_max = self.data_max
+            else:
+                # Calculate new range preserving relative position of center_x
+                rel_pos = (center_x - x_min) / x_span if x_span > 0 else 0.5
+                new_x_min = center_x - rel_pos * new_span
+                new_x_max = center_x + (1 - rel_pos) * new_span
+                
+                # Clamp to data bounds
+                if new_x_min < self.data_min:
+                    new_x_min = self.data_min
+                    new_x_max = new_x_min + new_span
+                if new_x_max > self.data_max:
+                    new_x_max = self.data_max
+                    new_x_min = new_x_max - new_span
+                    if new_x_min < self.data_min:
+                        new_x_min = self.data_min
+            
+            # Update navigation state
+            self.navigation.set_view(new_x_min, new_x_max)
+            
+            # Apply the new range
+            self._set_view_range(new_x_min, new_x_max)
+            self.update()
+        except Exception:
+            pass
+    
+    def on_mouse_wheel(self, event):
+        """Handle mouse wheel for axis zooming.
+        
+        - Scroll wheel (no modifier): X-axis zoom centered on mouse X position
+        - Shift + scroll wheel: Y-axis zoom centered on mouse Y position
         """
         event.handled = True
-        
-        modifiers = event.modifiers
-        shift_held = 'Shift' in modifiers if modifiers else False
-        
-        if not shift_held:
-            return
-        
-        # Get mouse Y position for centering zoom
-        center_y = self._get_mouse_y_in_data_coords()
         
         # Get wheel delta
         try:
@@ -636,13 +703,24 @@ class TweakCanvas(SceneCanvas):
         if delta == 0:
             return
         
-        # Zoom in/out based on scroll direction
+        # Determine zoom factor based on scroll direction
         if delta > 0:
             factor = 0.8  # Zoom in
         else:
             factor = 1.25  # Zoom out
         
-        self._zoom_y_axis(factor, center_y)
+        # Check for Shift modifier
+        modifiers = event.modifiers
+        shift_held = 'Shift' in modifiers if modifiers else False
+        
+        if shift_held:
+            # Y-axis zoom
+            center_y = self._get_mouse_y_in_data_coords()
+            self._zoom_y_axis(factor, center_y)
+        else:
+            # X-axis zoom
+            center_x = self._get_mouse_x_in_data_coords()
+            self._zoom_x_axis(factor, center_x)
     
     def on_key_press(self, event):
         """Handle keyboard events."""
