@@ -7,9 +7,10 @@ while seeing the result overlaid on the original data.
 import numpy as np
 from vispy import app, scene
 from vispy.scene import SceneCanvas
-from typing import Dict, Callable, Any, Optional, List, Union
+from vispy.color import Color
+from typing import Dict, Callable, Any, Optional, List, Union, Tuple
 
-from .visuals import LODLine, DynamicMaskRegions
+from .visuals import LODLine, DynamicMaskRegions, HighlightRegion
 from .navigation import NavigationHandler
 
 # Colors for multiple overlay lines
@@ -22,6 +23,16 @@ OVERLAY_COLORS = [
     '#6600FF',  # Violet
 ]
 
+# Colors for interval highlights
+INTERVAL_COLORS = [
+    '#87CEEB',  # Light blue
+    '#90EE90',  # Light green
+    '#FFB6C1',  # Light pink
+    '#FFFACD',  # Lemon chiffon
+    '#E6E6FA',  # Lavender
+    '#FFDAB9',  # Peach puff
+]
+
 
 class TweakCanvas(SceneCanvas):
     """GPU-accelerated canvas for parameter tweaking with original data + overlay."""
@@ -30,6 +41,8 @@ class TweakCanvas(SceneCanvas):
                  original_mask: np.ndarray = None,
                  overlay_data: Union[np.ndarray, Dict[str, np.ndarray]] = None,
                  overlay_mask: np.ndarray = None,
+                 overlay_intervals: Dict[str, List[Tuple[float, float]]] = None,
+                 sampling_rate: float = None,
                  title: str = 'Tweak Viewer'):
         """Initialize the tweak canvas.
         
@@ -47,6 +60,11 @@ class TweakCanvas(SceneCanvas):
             - Dict mapping names to 1D arrays (all same length)
         overlay_mask : ndarray, optional
             Boolean mask for overlay data (True = masked/invalid).
+        overlay_intervals : dict, optional
+            Dict mapping names to lists of (start, end) tuples in seconds.
+            These are displayed as highlighted regions.
+        sampling_rate : float, optional
+            Sampling rate in Hz (used for Intervals conversion).
         title : str
             Window title.
         """
@@ -63,6 +81,7 @@ class TweakCanvas(SceneCanvas):
         self.original_data = original_data.astype(np.float32)
         self.original_mask = original_mask
         self.overlay_mask = overlay_mask
+        self.sampling_rate = sampling_rate
         self.data_min = float(self.time_seconds[0])
         self.data_max = float(self.time_seconds[-1])
         
@@ -75,6 +94,9 @@ class TweakCanvas(SceneCanvas):
                 }
             else:
                 self._overlay_data_dict = {'tweaked': np.asarray(overlay_data, dtype=np.float32)}
+        
+        # Store overlay intervals
+        self._overlay_intervals_dict: Dict[str, List[Tuple[float, float]]] = overlay_intervals or {}
         
         # LOD factors based on data length
         n_points = len(time_seconds)
@@ -91,9 +113,11 @@ class TweakCanvas(SceneCanvas):
         self.original_line: LODLine = None
         self.overlay_lines: Dict[str, LODLine] = {}
         self.mask_regions: List[DynamicMaskRegions] = []
+        self.interval_highlights: Dict[str, HighlightRegion] = {}
         
         # Visibility state
         self.masks_visible = True
+        self.intervals_visible = True
         
         # Reference to parameter window for coordinated close
         self.param_window = None
@@ -115,6 +139,9 @@ class TweakCanvas(SceneCanvas):
         
         # Create mask regions first (behind everything)
         self._create_mask_regions()
+        
+        # Create interval highlights (above masks, below lines)
+        self._create_interval_highlights()
         
         # Plot data - original first, then overlays on top
         self._plot_original()
@@ -206,6 +233,26 @@ class TweakCanvas(SceneCanvas):
                     color='#FF6600', alpha=0.2
                 )
                 self.mask_regions.append(mask_vis)
+    
+    def _create_interval_highlights(self):
+        """Create highlight regions for overlay intervals."""
+        # Clear existing interval highlights
+        for region in self.interval_highlights.values():
+            if region.mesh is not None:
+                region.mesh.parent = None
+        self.interval_highlights = {}
+        
+        if not self._overlay_intervals_dict:
+            return
+        
+        for idx, (name, intervals) in enumerate(self._overlay_intervals_dict.items()):
+            if not intervals:
+                continue
+            color = INTERVAL_COLORS[idx % len(INTERVAL_COLORS)]
+            highlight = HighlightRegion(
+                self.viewbox, intervals, color=color, alpha=0.35
+            )
+            self.interval_highlights[name] = highlight
     
     def _plot_original(self):
         """Plot the original data line."""
@@ -301,7 +348,23 @@ class TweakCanvas(SceneCanvas):
             self._create_mask_regions()
         
         self._plot_overlays()
+        self._update_legend()
         self._update_y_range()
+        self.update()
+        self.freeze()
+    
+    def update_intervals(self, intervals_dict: Dict[str, List[Tuple[float, float]]]):
+        """Update interval highlights with new data.
+        
+        Parameters
+        ----------
+        intervals_dict : dict
+            Dict mapping names to lists of (start, end) tuples in seconds.
+        """
+        self.unfreeze()
+        self._overlay_intervals_dict = intervals_dict
+        self._create_interval_highlights()
+        self._update_legend()
         self.update()
         self.freeze()
     
@@ -323,23 +386,48 @@ class TweakCanvas(SceneCanvas):
         for child in list(self.legend_view.scene.children):
             child.parent = None
         
-        # Build legend items
-        legend_items = [('Original', '#0066CC')]
+        # Build legend items: (label, color, is_interval)
+        legend_items = [('Original', '#0066CC', False)]
         
+        # Add array overlays (lines)
         for idx, name in enumerate(self._overlay_data_dict.keys()):
             color = OVERLAY_COLORS[idx % len(OVERLAY_COLORS)]
-            legend_items.append((name, color))
+            legend_items.append((name, color, False))
         
-        total_width = sum(len(label) * 0.012 + 0.06 for label, _ in legend_items)
+        # Add interval overlays (rectangles)
+        for idx, name in enumerate(self._overlay_intervals_dict.keys()):
+            color = INTERVAL_COLORS[idx % len(INTERVAL_COLORS)]
+            legend_items.append((name, color, True))
+        
+        total_width = sum(len(label) * 0.012 + 0.06 for label, _, _ in legend_items)
         x_start = 0.5 - total_width / 2
         x_pos = x_start
         
-        for label, color in legend_items:
-            line_pos = np.array([
-                [x_pos - 0.015, 0.5],
-                [x_pos + 0.015, 0.5]
-            ], dtype=np.float32)
-            scene.Line(pos=line_pos, color=color, width=4, parent=self.legend_view.scene)
+        for label, color, is_interval in legend_items:
+            if is_interval:
+                # Draw a filled rectangle for intervals
+                rect_verts = np.array([
+                    [x_pos - 0.012, 0.3],
+                    [x_pos + 0.012, 0.3],
+                    [x_pos + 0.012, 0.7],
+                    [x_pos - 0.012, 0.7],
+                ], dtype=np.float32)
+                c = Color(color)
+                rgba = list(c.rgba)
+                rgba[3] = 0.5
+                scene.Mesh(
+                    vertices=rect_verts,
+                    faces=np.array([[0, 1, 2], [0, 2, 3]], dtype=np.uint32),
+                    color=rgba,
+                    parent=self.legend_view.scene
+                )
+            else:
+                # Draw a line for arrays
+                line_pos = np.array([
+                    [x_pos - 0.015, 0.5],
+                    [x_pos + 0.015, 0.5]
+                ], dtype=np.float32)
+                scene.Line(pos=line_pos, color=color, width=4, parent=self.legend_view.scene)
             
             scene.Text(
                 text=label,
@@ -457,6 +545,13 @@ class TweakCanvas(SceneCanvas):
             mask_vis.set_visible(self.masks_visible)
         self.update()
     
+    def _toggle_intervals(self):
+        """Toggle visibility of interval highlight regions."""
+        self.intervals_visible = not self.intervals_visible
+        for highlight in self.interval_highlights.values():
+            highlight.set_visible(self.intervals_visible)
+        self.update()
+    
     def _zoom_y_axis(self, factor: float, center_y: Optional[float] = None):
         """Zoom Y-axis by factor, centered on center_y."""
         try:
@@ -541,6 +636,11 @@ class TweakCanvas(SceneCanvas):
         # Toggle masks with 'M'
         if key == 'M':
             self._toggle_masks()
+            return
+        
+        # Toggle intervals with 'I'
+        if key == 'I':
+            self._toggle_intervals()
             return
         
         # Y-axis zoom with Shift

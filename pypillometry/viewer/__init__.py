@@ -532,59 +532,83 @@ def tweak(data, func, params, variable=None, time=None):
             original_mask = None
         
         title = f'Tweak - {getattr(eyedata, "name", "Unknown")} [{display_variable}]'
-        
-        # Helper to extract display data and mask from function result
-        def extract_result(result):
-            """Extract display array(s) and mask from function result.
-            
-            Returns (data, mask) where data is either ndarray or dict of ndarrays.
-            """
-            if hasattr(result, 'data') and hasattr(result, 'tx'):
-                # Result is EyeData - extract the same variable
-                try:
-                    arr = np.asarray(result[display_variable], dtype=np.float32)
-                except (KeyError, AttributeError):
-                    raise ValueError(
-                        f"Function result does not contain variable '{display_variable}'"
-                    )
-                # Extract mask
-                try:
-                    mask = result.data.mask.get(display_variable)
-                    if mask is not None:
-                        mask = np.asarray(mask, dtype=bool)
-                except (AttributeError, KeyError):
-                    mask = None
-                return arr, mask
-            elif isinstance(result, dict):
-                # Result is dict of arrays
-                data_dict = {}
-                for k, v in result.items():
-                    data_dict[k] = np.asarray(v, dtype=np.float32)
-                return data_dict, None
-            else:
-                # Result is single array
-                return np.asarray(result, dtype=np.float32), None
+        sampling_rate = eyedata.fs
     
     elif isinstance(data, list):
         # List of arrays - use the first one
         data_array = np.asarray(data[0], dtype=np.float32)
         time_vec = time if time is not None else np.arange(len(data_array), dtype=np.float32)
         title = 'Tweak Viewer'
-        
-        def extract_result(result):
-            if isinstance(result, dict):
-                return {k: np.asarray(v, dtype=np.float32) for k, v in result.items()}, None
-            return np.asarray(result, dtype=np.float32), None
+        sampling_rate = None
+        display_variable = None
     else:
         # Single array
         data_array = np.asarray(data, dtype=np.float32)
         time_vec = time if time is not None else np.arange(len(data_array), dtype=np.float32)
         title = 'Tweak Viewer'
+        sampling_rate = None
+        display_variable = None
+    
+    # Import Intervals for type checking
+    from ..intervals import Intervals
+    
+    def _intervals_to_seconds(intervals, default_fs):
+        """Convert Intervals object to list of (start, end) tuples in seconds."""
+        if intervals.sampling_rate is None and default_fs is not None:
+            intervals.sampling_rate = default_fs
+        if intervals.units != 'sec':
+            try:
+                intervals = intervals.to_units('sec')
+            except ValueError:
+                pass  # Keep original if conversion fails
+        return list(intervals.intervals)
+    
+    def extract_result(result):
+        """Extract display arrays, mask, and intervals from function result.
         
-        def extract_result(result):
-            if isinstance(result, dict):
-                return {k: np.asarray(v, dtype=np.float32) for k, v in result.items()}, None
-            return np.asarray(result, dtype=np.float32), None
+        Returns (arrays_dict, mask, intervals_dict) where:
+        - arrays_dict: dict mapping names to ndarrays (for line plots)
+        - mask: boolean mask array or None
+        - intervals_dict: dict mapping names to list of (start,end) tuples in seconds
+        """
+        arrays_dict = {}
+        intervals_dict = {}
+        mask = None
+        
+        if hasattr(result, 'data') and hasattr(result, 'tx'):
+            # Result is EyeData - extract the same variable
+            try:
+                arr = np.asarray(result[display_variable], dtype=np.float32)
+                arrays_dict['tweaked'] = arr
+            except (KeyError, AttributeError):
+                raise ValueError(
+                    f"Function result does not contain variable '{display_variable}'"
+                )
+            # Extract mask
+            try:
+                mask = result.data.mask.get(display_variable)
+                if mask is not None:
+                    mask = np.asarray(mask, dtype=bool)
+            except (AttributeError, KeyError):
+                pass
+        
+        elif isinstance(result, Intervals):
+            # Single Intervals object
+            intervals_dict['result'] = _intervals_to_seconds(result, sampling_rate)
+        
+        elif isinstance(result, dict):
+            # Dict - can contain arrays and/or Intervals
+            for k, v in result.items():
+                if isinstance(v, Intervals):
+                    intervals_dict[k] = _intervals_to_seconds(v, sampling_rate)
+                else:
+                    arrays_dict[k] = np.asarray(v, dtype=np.float32)
+        
+        else:
+            # Single array
+            arrays_dict['tweaked'] = np.asarray(result, dtype=np.float32)
+        
+        return arrays_dict, mask, intervals_dict
     
     time_vec = np.asarray(time_vec, dtype=np.float32)
     
@@ -618,31 +642,27 @@ def tweak(data, func, params, variable=None, time=None):
     current_params = dict(params)
     try:
         result = func(data, **current_params)
-        initial_overlay, overlay_mask = extract_result(result)
+        initial_arrays, overlay_mask, initial_intervals = extract_result(result)
     except Exception as e:
         raise RuntimeError(f"Function failed with initial parameters: {e}")
     
-    # Validate overlay length
-    if isinstance(initial_overlay, dict):
-        for k, v in initial_overlay.items():
-            if len(v) != len(data_array):
-                raise ValueError(
-                    f"Function returned array '{k}' of length {len(v)}, "
-                    f"but input has length {len(data_array)}"
-                )
-    elif len(initial_overlay) != len(data_array):
-        raise ValueError(
-            f"Function returned array of length {len(initial_overlay)}, "
-            f"but input has length {len(data_array)}"
-        )
+    # Validate overlay array lengths
+    for k, v in initial_arrays.items():
+        if len(v) != len(data_array):
+            raise ValueError(
+                f"Function returned array '{k}' of length {len(v)}, "
+                f"but input has length {len(data_array)}"
+            )
     
-    # Create canvas with mask support
+    # Create canvas with mask and intervals support
     canvas = TweakCanvas(
         time_seconds=time_vec,
         original_data=data_array,
         original_mask=original_mask,
-        overlay_data=initial_overlay,
+        overlay_data=initial_arrays if initial_arrays else None,
         overlay_mask=overlay_mask,
+        overlay_intervals=initial_intervals if initial_intervals else None,
+        sampling_rate=sampling_rate,
         title=title
     )
     
@@ -652,8 +672,11 @@ def tweak(data, func, params, variable=None, time=None):
         current_params = dict(new_params)
         try:
             result = func(data, **new_params)
-            new_overlay, new_mask = extract_result(result)
-            canvas.update_overlay(new_overlay, new_mask)
+            new_arrays, new_mask, new_intervals = extract_result(result)
+            if new_arrays:
+                canvas.update_overlay(new_arrays, new_mask)
+            if new_intervals:
+                canvas.update_intervals(new_intervals)
         except Exception as e:
             print(f"Warning: Function failed with parameters {new_params}: {e}")
     
