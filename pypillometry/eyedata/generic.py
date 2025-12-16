@@ -916,7 +916,6 @@ class GenericEyeData(ABC):
 
         return ''.join([choice(v if i%2 else c) for i in range(n)])
 
-
     @keephistory
     def drop_original(self, inplace=None):
         """
@@ -1297,6 +1296,128 @@ class GenericEyeData(ABC):
             result.name = self.name + "_copy"
         else:
             result.name = new_name
+        return result
+
+    def drop_data(self, eyes: list = [], variables: list = []):
+        """
+        Drop specified eyes and/or variables from the data and return a new object.
+        
+        This method never works in place - it always returns a new object.
+        The returned object's class is determined by what data remains:
+        - If only pupil variables remain: returns PupilData
+        - If only x/y variables remain: returns GazeData
+        - If both pupil and x/y remain: returns EyeData
+        
+        Parameters
+        ----------
+        eyes : list of str
+            Eyes to drop (e.g., ['left'] or ['right'] or ['left', 'right'])
+        variables : list of str
+            Variables to drop (e.g., ['pupil'] or ['x', 'y'])
+            
+        Returns
+        -------
+        GenericEyeData subclass
+            A new object with the specified data removed, cast to the appropriate class.
+            
+        Raises
+        ------
+        ValueError
+            If dropping would result in no data remaining.
+            
+        Examples
+        --------
+        >>> # Drop left eye data
+        >>> right_only = data.drop_data(eyes=['left'])
+        >>> 
+        >>> # Drop pupil data, keep only gaze
+        >>> gaze_only = data.drop_data(variables=['pupil'])
+        >>> 
+        >>> # Drop right eye and pupil data
+        >>> left_gaze = data.drop_data(eyes=['right'], variables=['pupil'])
+        """
+        # Import here to avoid circular imports
+        from . import PupilData, GazeData, EyeData
+        
+        # Normalize inputs to lists
+        if isinstance(eyes, str):
+            eyes = [eyes]
+        if isinstance(variables, str):
+            variables = [variables]
+            
+        # Make a deep copy first
+        result = self.copy(new_name=self.name)
+        
+        # Get current keys
+        keys_to_remove = []
+        for key in list(result.data.data.keys()):
+            parts = key.split("_", 1)
+            if len(parts) != 2:
+                continue
+            eye, var = parts
+            
+            # Check if this key should be removed
+            if eye in eyes or var in variables:
+                keys_to_remove.append(key)
+        
+        # Remove the keys from data and mask
+        for key in keys_to_remove:
+            if key in result.data.data:
+                del result.data.data[key]
+            if key in result.data.mask:
+                del result.data.mask[key]
+        
+        # Check what remains
+        remaining_vars = result.data.get_available_variables()
+        remaining_eyes = result.data.get_available_eyes()
+        
+        if len(remaining_vars) == 0 or len(remaining_eyes) == 0:
+            raise ValueError("Dropping the specified data would leave no data remaining")
+        
+        # Also clean up related stored data (blinks, interpolated_blinks, etc.)
+        # Remove blinks for dropped eyes/variables
+        blinks_to_remove = []
+        for key in result._blinks.keys():
+            parts = key.split("_", 1)
+            if len(parts) == 2:
+                eye, var = parts
+                if eye in eyes or var in variables:
+                    blinks_to_remove.append(key)
+        for key in blinks_to_remove:
+            del result._blinks[key]
+            
+        # Remove interpolated blinks for dropped eyes/variables
+        interp_to_remove = []
+        for key in result._interpolated_blinks.keys():
+            parts = key.split("_", 1)
+            if len(parts) == 2:
+                eye, var = parts
+                if eye in eyes or var in variables:
+                    interp_to_remove.append(key)
+        for key in interp_to_remove:
+            del result._interpolated_blinks[key]
+        
+        # Determine target class based on remaining variables
+        has_pupil = 'pupil' in remaining_vars
+        has_gaze = 'x' in remaining_vars or 'y' in remaining_vars
+        
+        if has_pupil and has_gaze:
+            target_class = EyeData
+        elif has_pupil:
+            target_class = PupilData
+        elif has_gaze:
+            target_class = GazeData
+        else:
+            # Other variables only - keep current class
+            target_class = self.__class__
+        
+        # Cast to target class if different
+        if target_class != result.__class__:
+            new_result = target_class.__new__(target_class)
+            for k, v in result.__dict__.items():
+                setattr(new_result, k, v)
+            return new_result
+        
         return result
 
     def set_event_onsets(self, event_onsets: np.ndarray, event_labels: np.ndarray):
