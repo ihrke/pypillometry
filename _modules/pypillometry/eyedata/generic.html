@@ -1358,7 +1358,6 @@ window.addEventListener("load", load);
 
         <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">choice</span><span class="p">(</span><span class="n">v</span> <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="mi">2</span> <span class="k">else</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span>
 
-
 <div class="viewcode-block" id="GenericEyeData.drop_original">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.drop_original">[docs]</a>
     <span class="nd">@keephistory</span>
@@ -1762,6 +1761,131 @@ window.addEventListener("load", load);
             <span class="n">result</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_copy&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">result</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">new_name</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="GenericEyeData.drop_data">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.drop_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">drop_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">variables</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Drop specified eyes and/or variables from the data and return a new object.</span>
+<span class="sd">        </span>
+<span class="sd">        This method never works in place - it always returns a new object.</span>
+<span class="sd">        The returned object&#39;s class is determined by what data remains:</span>
+<span class="sd">        - If only pupil variables remain: returns PupilData</span>
+<span class="sd">        - If only x/y variables remain: returns GazeData</span>
+<span class="sd">        - If both pupil and x/y remain: returns EyeData</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyes : list of str</span>
+<span class="sd">            Eyes to drop (e.g., [&#39;left&#39;] or [&#39;right&#39;] or [&#39;left&#39;, &#39;right&#39;])</span>
+<span class="sd">        variables : list of str</span>
+<span class="sd">            Variables to drop (e.g., [&#39;pupil&#39;] or [&#39;x&#39;, &#39;y&#39;])</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GenericEyeData subclass</span>
+<span class="sd">            A new object with the specified data removed, cast to the appropriate class.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If dropping would result in no data remaining.</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; # Drop left eye data</span>
+<span class="sd">        &gt;&gt;&gt; right_only = data.drop_data(eyes=[&#39;left&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; # Drop pupil data, keep only gaze</span>
+<span class="sd">        &gt;&gt;&gt; gaze_only = data.drop_data(variables=[&#39;pupil&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; </span>
+<span class="sd">        &gt;&gt;&gt; # Drop right eye and pupil data</span>
+<span class="sd">        &gt;&gt;&gt; left_gaze = data.drop_data(eyes=[&#39;right&#39;], variables=[&#39;pupil&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Import here to avoid circular imports</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilData</span><span class="p">,</span> <span class="n">GazeData</span><span class="p">,</span> <span class="n">EyeData</span>
+        
+        <span class="c1"># Normalize inputs to lists</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">eyes</span> <span class="o">=</span> <span class="p">[</span><span class="n">eyes</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">variables</span><span class="p">]</span>
+            
+        <span class="c1"># Make a deep copy first</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">new_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        
+        <span class="c1"># Get current keys</span>
+        <span class="n">keys_to_remove</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">eye</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="n">parts</span>
+            
+            <span class="c1"># Check if this key should be removed</span>
+            <span class="k">if</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span> <span class="ow">or</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                <span class="n">keys_to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        
+        <span class="c1"># Remove the keys from data and mask</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys_to_remove</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        
+        <span class="c1"># Check what remains</span>
+        <span class="n">remaining_vars</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_available_variables</span><span class="p">()</span>
+        <span class="n">remaining_eyes</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_available_eyes</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">remaining_vars</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">remaining_eyes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Dropping the specified data would leave no data remaining&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Also clean up related stored data (blinks, interpolated_blinks, etc.)</span>
+        <span class="c1"># Remove blinks for dropped eyes/variables</span>
+        <span class="n">blinks_to_remove</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">_blinks</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">eye</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="n">parts</span>
+                <span class="k">if</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span> <span class="ow">or</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                    <span class="n">blinks_to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">blinks_to_remove</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">result</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            
+        <span class="c1"># Remove interpolated blinks for dropped eyes/variables</span>
+        <span class="n">interp_to_remove</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">eye</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="n">parts</span>
+                <span class="k">if</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span> <span class="ow">or</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                    <span class="n">interp_to_remove</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">interp_to_remove</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">result</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        
+        <span class="c1"># Determine target class based on remaining variables</span>
+        <span class="n">has_pupil</span> <span class="o">=</span> <span class="s1">&#39;pupil&#39;</span> <span class="ow">in</span> <span class="n">remaining_vars</span>
+        <span class="n">has_gaze</span> <span class="o">=</span> <span class="s1">&#39;x&#39;</span> <span class="ow">in</span> <span class="n">remaining_vars</span> <span class="ow">or</span> <span class="s1">&#39;y&#39;</span> <span class="ow">in</span> <span class="n">remaining_vars</span>
+        
+        <span class="k">if</span> <span class="n">has_pupil</span> <span class="ow">and</span> <span class="n">has_gaze</span><span class="p">:</span>
+            <span class="n">target_class</span> <span class="o">=</span> <span class="n">EyeData</span>
+        <span class="k">elif</span> <span class="n">has_pupil</span><span class="p">:</span>
+            <span class="n">target_class</span> <span class="o">=</span> <span class="n">PupilData</span>
+        <span class="k">elif</span> <span class="n">has_gaze</span><span class="p">:</span>
+            <span class="n">target_class</span> <span class="o">=</span> <span class="n">GazeData</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Other variables only - keep current class</span>
+            <span class="n">target_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
+        
+        <span class="c1"># Cast to target class if different</span>
+        <span class="k">if</span> <span class="n">target_class</span> <span class="o">!=</span> <span class="n">result</span><span class="o">.</span><span class="vm">__class__</span><span class="p">:</span>
+            <span class="n">new_result</span> <span class="o">=</span> <span class="n">target_class</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">target_class</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">new_result</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">new_result</span>
+        
         <span class="k">return</span> <span class="n">result</span></div>
 
 

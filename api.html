@@ -602,127 +602,130 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">downsample</span></code>(fsd[, dsfac, inplace])</p></td>
 <td><p>Simple downsampling scheme using mean within the downsampling window.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_original</span></code>([inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_data</span></code>([eyes, variables])</p></td>
+<td><p>Drop specified eyes and/or variables from the data and return a new object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_original</span></code>([inplace])</p></td>
 <td><p>Drop original dataset from record (e.g., to save space).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code>([yval, print_info])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code>([yval, print_info])</p></td>
 <td><p>find gaps in the time-vector and fill them in (add zeros to the signal)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.fit_foreshortening" title="pypillometry.EyeData.fit_foreshortening"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_foreshortening</span></code></a>(eye[, r, d, intervals, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.fit_foreshortening" title="pypillometry.EyeData.fit_foreshortening"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_foreshortening</span></code></a>(eye[, r, d, intervals, ...])</p></td>
 <td><p>Fit foreshortening correction model to estimate camera geometry and true pupil size.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from an Eyelink file.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from a pickle-file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code>([eyes, variables, units])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code>([eyes, variables, units])</p></td>
 <td><p>Get blinks as Intervals object or dict of Intervals.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code>([units])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code>([units])</p></td>
 <td><p>Return duration of the dataset in units specified.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_erpd</span></code>(intervals[, eyes, variable, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_erpd</span></code>(intervals[, eyes, variable, ...])</p></td>
 <td><p>Extract event-related pupil dilation (ERPD) from Intervals object.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code>([units])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code>([units])</p></td>
 <td><p>Get events as an Events object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code>([eyes, variables, units])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code>([eyes, variables, units])</p></td>
 <td><p>Get interpolated blinks as Intervals object or dict of Intervals.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
 <td><p>Return an Intervals object containing intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_pupildata" title="pypillometry.EyeData.get_pupildata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pupildata</span></code></a>([eye])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.get_pupildata" title="pypillometry.EyeData.get_pupildata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pupildata</span></code></a>([eye])</p></td>
 <td><p>Return the pupil data as a PupilData object.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
 <td><p>Return the size of the object in bytes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code>(intervals[, eyes, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code>(intervals[, eyes, ...])</p></td>
 <td><p>Interpolate data within specified intervals.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code>([eyes, variables, units, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code>([eyes, variables, units, ...])</p></td>
 <td><p>Convert masks to Intervals objects.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_eye_divergences</span></code>([threshold, thr_type, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_eye_divergences</span></code>([threshold, thr_type, ...])</p></td>
 <td><p>Calculate Euclidean distance between left and right eye coordinates and detect divergences.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_intervals</span></code>(intervals[, eyes, variables, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_intervals</span></code>(intervals[, eyes, variables, ...])</p></td>
 <td><p>Apply Intervals as masks to selected data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_offscreen_coords</span></code>([eyes, apply_mask, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_offscreen_coords</span></code>([eyes, apply_mask, ...])</p></td>
 <td><p>Detect and mask gaze coordinates that fall outside the screen boundaries.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code>([eyes, variables, method, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code>([eyes, variables, method, ...])</p></td>
 <td><p>Merge data from both eyes into a single variable.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_masks</span></code>([inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_masks</span></code>([inplace])</p></td>
 <td><p>Merge masks of all variables into a single joint mask.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code>([eyes, variables])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code>([eyes, variables])</p></td>
 <td><p>Return number of detected blinks.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
 <td><p>Return number of events in data.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
 <td><p>Pretty-print the history of the current dataset (which manipulations where done on it).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_blinks_detect</span></code>([eyes, min_duration, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_blinks_detect</span></code>([eyes, min_duration, ...])</p></td>
 <td><p>Detect blinks in the pupillary signal using several strategies.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_blinks_interpolate</span></code>([eyes, store_as, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_blinks_interpolate</span></code>([eyes, store_as, ...])</p></td>
 <td><p>Interpolating blinks in the pupillary signal.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_estimate_baseline</span></code>([eyes, variable, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_estimate_baseline</span></code>([eyes, variable, ...])</p></td>
 <td><p>Apply one of the baseline-estimation methods.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_estimate_response</span></code>([eyes, npar, tmax, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_estimate_response</span></code>([eyes, npar, tmax, ...])</p></td>
 <td><p>Estimate pupil-response based on event-onsets, see <code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_response()</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_lowpass_filter</span></code>(cutoff[, order, eyes, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_lowpass_filter</span></code>(cutoff[, order, eyes, ...])</p></td>
 <td><p>Lowpass-filter pupil signal using a Butterworth-filter.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_merge_eyes</span></code>([method, lowpass_cutoff, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_merge_eyes</span></code>([method, lowpass_cutoff, ...])</p></td>
 <td><p>Merge pupil data from both eyes into a single &quot;merged&quot; variable.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_smooth_window</span></code>([eyes, window, winsize, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_smooth_window</span></code>([eyes, window, winsize, ...])</p></td>
 <td><p>Apply smoothing of the signal using a moving window.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
 <td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale the signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code>(intervals[, eyes, variables, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code>(intervals[, eyes, variables, ...])</p></td>
 <td><p>Set blinks for specified eyes and variables.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
 <td><p>Set onsets of events in the data</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
 <td><p>Replace event onsets and labels from an Events object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experimental_setup</span></code>(**kwargs)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experimental_setup</span></code>(**kwargs)</p></td>
 <td><p>Set or update the experimental setup geometry.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
 <td><p>Return a new <cite>EyeData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeData.summary" title="pypillometry.EyeData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeData.summary" title="pypillometry.EyeData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
 <td><p>Return a summary of the dataset as a dictionary.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
 <td><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p></td>
 </tr>
 </tbody>
@@ -978,112 +981,115 @@ default is “False”</p></li>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">downsample</span></code>(fsd[, dsfac, inplace])</p></td>
 <td><p>Simple downsampling scheme using mean within the downsampling window.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_original</span></code>([inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_data</span></code>([eyes, variables])</p></td>
+<td><p>Drop specified eyes and/or variables from the data and return a new object.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_original</span></code>([inplace])</p></td>
 <td><p>Drop original dataset from record (e.g., to save space).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code>([yval, print_info])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code>([yval, print_info])</p></td>
 <td><p>find gaps in the time-vector and fill them in (add zeros to the signal)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from an Eyelink file.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from a pickle-file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code>([eyes, variables, units])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code>([eyes, variables, units])</p></td>
 <td><p>Get blinks as Intervals object or dict of Intervals.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code>([units])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code>([units])</p></td>
 <td><p>Return duration of the dataset in units specified.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_erpd</span></code></a>(intervals[, eyes, variable, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_erpd</span></code></a>(intervals[, eyes, variable, ...])</p></td>
 <td><p>Extract event-related pupil dilation (ERPD) from Intervals object.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code>([units])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code>([units])</p></td>
 <td><p>Get events as an Events object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code>([eyes, variables, units])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code>([eyes, variables, units])</p></td>
 <td><p>Get interpolated blinks as Intervals object or dict of Intervals.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
 <td><p>Return an Intervals object containing intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
 <td><p>Return the size of the object in bytes.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code>(intervals[, eyes, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code>(intervals[, eyes, ...])</p></td>
 <td><p>Interpolate data within specified intervals.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code>([eyes, variables, units, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code>([eyes, variables, units, ...])</p></td>
 <td><p>Convert masks to Intervals objects.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_intervals</span></code>(intervals[, eyes, variables, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_intervals</span></code>(intervals[, eyes, variables, ...])</p></td>
 <td><p>Apply Intervals as masks to selected data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code>([eyes, variables, method, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code>([eyes, variables, method, ...])</p></td>
 <td><p>Merge data from both eyes into a single variable.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_masks</span></code>([inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_masks</span></code>([inplace])</p></td>
 <td><p>Merge masks of all variables into a single joint mask.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code>([eyes, variables])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code>([eyes, variables])</p></td>
 <td><p>Return number of detected blinks.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
 <td><p>Return number of events in data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
 <td><p>Pretty-print the history of the current dataset (which manipulations where done on it).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_blinks_detect" title="pypillometry.PupilData.pupil_blinks_detect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_blinks_detect</span></code></a>([eyes, min_duration, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_blinks_detect" title="pypillometry.PupilData.pupil_blinks_detect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_blinks_detect</span></code></a>([eyes, min_duration, ...])</p></td>
 <td><p>Detect blinks in the pupillary signal using several strategies.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_blinks_interpolate" title="pypillometry.PupilData.pupil_blinks_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_blinks_interpolate</span></code></a>([eyes, store_as, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_blinks_interpolate" title="pypillometry.PupilData.pupil_blinks_interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_blinks_interpolate</span></code></a>([eyes, store_as, ...])</p></td>
 <td><p>Interpolating blinks in the pupillary signal.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_estimate_baseline" title="pypillometry.PupilData.pupil_estimate_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_estimate_baseline</span></code></a>([eyes, variable, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_estimate_baseline" title="pypillometry.PupilData.pupil_estimate_baseline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_estimate_baseline</span></code></a>([eyes, variable, ...])</p></td>
 <td><p>Apply one of the baseline-estimation methods.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_estimate_response" title="pypillometry.PupilData.pupil_estimate_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_estimate_response</span></code></a>([eyes, npar, tmax, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_estimate_response" title="pypillometry.PupilData.pupil_estimate_response"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_estimate_response</span></code></a>([eyes, npar, tmax, ...])</p></td>
 <td><p>Estimate pupil-response based on event-onsets, see <code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.pupil.pupil_response()</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_lowpass_filter" title="pypillometry.PupilData.pupil_lowpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_lowpass_filter</span></code></a>(cutoff[, order, eyes, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_lowpass_filter" title="pypillometry.PupilData.pupil_lowpass_filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_lowpass_filter</span></code></a>(cutoff[, order, eyes, ...])</p></td>
 <td><p>Lowpass-filter pupil signal using a Butterworth-filter.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_merge_eyes" title="pypillometry.PupilData.pupil_merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_merge_eyes</span></code></a>([method, lowpass_cutoff, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_merge_eyes" title="pypillometry.PupilData.pupil_merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_merge_eyes</span></code></a>([method, lowpass_cutoff, ...])</p></td>
 <td><p>Merge pupil data from both eyes into a single &quot;merged&quot; variable.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_smooth_window" title="pypillometry.PupilData.pupil_smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_smooth_window</span></code></a>([eyes, window, winsize, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.pupil_smooth_window" title="pypillometry.PupilData.pupil_smooth_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pupil_smooth_window</span></code></a>([eyes, window, winsize, ...])</p></td>
 <td><p>Apply smoothing of the signal using a moving window.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
 <td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale the signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code>(intervals[, eyes, variables, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code>(intervals[, eyes, variables, ...])</p></td>
 <td><p>Set blinks for specified eyes and variables.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
 <td><p>Set onsets of events in the data</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
 <td><p>Replace event onsets and labels from an Events object.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
 <td><p>Return a new <cite>EyeData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
 <td><p>Return a summary of the dataset as a dictionary.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
 <td><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p></td>
 </tr>
 </tbody>
@@ -1462,97 +1468,100 @@ default is “False”</p></li>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">downsample</span></code>(fsd[, dsfac, inplace])</p></td>
 <td><p>Simple downsampling scheme using mean within the downsampling window.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_original</span></code>([inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_data</span></code>([eyes, variables])</p></td>
+<td><p>Drop specified eyes and/or variables from the data and return a new object.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_original</span></code>([inplace])</p></td>
 <td><p>Drop original dataset from record (e.g., to save space).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code>([yval, print_info])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code>([yval, print_info])</p></td>
 <td><p>find gaps in the time-vector and fill them in (add zeros to the signal)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from an Eyelink file.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from a pickle-file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code>([eyes, variables, units])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code>([eyes, variables, units])</p></td>
 <td><p>Get blinks as Intervals object or dict of Intervals.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code>([units])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code>([units])</p></td>
 <td><p>Return duration of the dataset in units specified.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code>([units])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code>([units])</p></td>
 <td><p>Get events as an Events object.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code>([eyes, variables, units])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code>([eyes, variables, units])</p></td>
 <td><p>Get interpolated blinks as Intervals object or dict of Intervals.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code>(event_select[, interval, ...])</p></td>
 <td><p>Return an Intervals object containing intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code>()</p></td>
 <td><p>Return the size of the object in bytes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code>(intervals[, eyes, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code>(intervals[, eyes, ...])</p></td>
 <td><p>Interpolate data within specified intervals.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code>([eyes, variables, units, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code>([eyes, variables, units, ...])</p></td>
 <td><p>Convert masks to Intervals objects.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GazeData.mask_eye_divergences" title="pypillometry.GazeData.mask_eye_divergences"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_eye_divergences</span></code></a>([threshold, thr_type, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GazeData.mask_eye_divergences" title="pypillometry.GazeData.mask_eye_divergences"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_eye_divergences</span></code></a>([threshold, thr_type, ...])</p></td>
 <td><p>Calculate Euclidean distance between left and right eye coordinates and detect divergences.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_intervals</span></code>(intervals[, eyes, variables, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_intervals</span></code>(intervals[, eyes, variables, ...])</p></td>
 <td><p>Apply Intervals as masks to selected data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GazeData.mask_offscreen_coords" title="pypillometry.GazeData.mask_offscreen_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_offscreen_coords</span></code></a>([eyes, apply_mask, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GazeData.mask_offscreen_coords" title="pypillometry.GazeData.mask_offscreen_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_offscreen_coords</span></code></a>([eyes, apply_mask, ...])</p></td>
 <td><p>Detect and mask gaze coordinates that fall outside the screen boundaries.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code>([eyes, variables, method, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code>([eyes, variables, method, ...])</p></td>
 <td><p>Merge data from both eyes into a single variable.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_masks</span></code>([inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_masks</span></code>([inplace])</p></td>
 <td><p>Merge masks of all variables into a single joint mask.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code>([eyes, variables])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code>([eyes, variables])</p></td>
 <td><p>Return number of detected blinks.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code>()</p></td>
 <td><p>Return number of events in data.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code>()</p></td>
 <td><p>Pretty-print the history of the current dataset (which manipulations where done on it).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code>([t0, inplace])</p></td>
 <td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale the signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code>(intervals[, eyes, variables, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code>(intervals[, eyes, variables, ...])</p></td>
 <td><p>Set blinks for specified eyes and variables.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code>(event_onsets, event_labels)</p></td>
 <td><p>Set onsets of events in the data</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code>(events[, inplace])</p></td>
 <td><p>Replace event onsets and labels from an Events object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GazeData.set_experimental_setup" title="pypillometry.GazeData.set_experimental_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experimental_setup</span></code></a>(**kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GazeData.set_experimental_setup" title="pypillometry.GazeData.set_experimental_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_experimental_setup</span></code></a>(**kwargs)</p></td>
 <td><p>Set or update the experimental setup geometry.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code>([intervals, interval, ...])</p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code>([start, end, units, inplace])</p></td>
 <td><p>Return a new <cite>EyeData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GazeData.summary" title="pypillometry.GazeData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GazeData.summary" title="pypillometry.GazeData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
 <td><p>Return a summary of the dataset as a dictionary.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code>(fname)</p></td>
 <td><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p></td>
 </tr>
 </tbody>
@@ -2140,88 +2149,91 @@ implements some basic functions.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.downsample" title="pypillometry.GenericEyeData.downsample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">downsample</span></code></a>(fsd[, dsfac, inplace])</p></td>
 <td><p>Simple downsampling scheme using mean within the downsampling window.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.drop_original" title="pypillometry.GenericEyeData.drop_original"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_original</span></code></a>([inplace])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.drop_data" title="pypillometry.GenericEyeData.drop_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_data</span></code></a>([eyes, variables])</p></td>
+<td><p>Drop specified eyes and/or variables from the data and return a new object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.drop_original" title="pypillometry.GenericEyeData.drop_original"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drop_original</span></code></a>([inplace])</p></td>
 <td><p>Drop original dataset from record (e.g., to save space).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.fill_time_discontinuities" title="pypillometry.GenericEyeData.fill_time_discontinuities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code></a>([yval, print_info])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.fill_time_discontinuities" title="pypillometry.GenericEyeData.fill_time_discontinuities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_time_discontinuities</span></code></a>([yval, print_info])</p></td>
 <td><p>find gaps in the time-vector and fill them in (add zeros to the signal)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.from_eyelink" title="pypillometry.GenericEyeData.from_eyelink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code></a>(fname[, return_edf_obj, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.from_eyelink" title="pypillometry.GenericEyeData.from_eyelink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code></a>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from an Eyelink file.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.from_file" title="pypillometry.GenericEyeData.from_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code></a>(fname)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.from_file" title="pypillometry.GenericEyeData.from_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code></a>(fname)</p></td>
 <td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from a pickle-file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_blinks" title="pypillometry.GenericEyeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code></a>([eyes, variables, units])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_blinks" title="pypillometry.GenericEyeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code></a>([eyes, variables, units])</p></td>
 <td><p>Get blinks as Intervals object or dict of Intervals.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_duration" title="pypillometry.GenericEyeData.get_duration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code></a>([units])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_duration" title="pypillometry.GenericEyeData.get_duration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_duration</span></code></a>([units])</p></td>
 <td><p>Return duration of the dataset in units specified.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_events" title="pypillometry.GenericEyeData.get_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code></a>([units])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_events" title="pypillometry.GenericEyeData.get_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_events</span></code></a>([units])</p></td>
 <td><p>Get events as an Events object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_interpolated_blinks" title="pypillometry.GenericEyeData.get_interpolated_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code></a>([eyes, variables, units])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_interpolated_blinks" title="pypillometry.GenericEyeData.get_interpolated_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolated_blinks</span></code></a>([eyes, variables, units])</p></td>
 <td><p>Get interpolated blinks as Intervals object or dict of Intervals.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code></a>(event_select[, interval, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intervals</span></code></a>(event_select[, interval, ...])</p></td>
 <td><p>Return an Intervals object containing intervals relative to event-onsets.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_size" title="pypillometry.GenericEyeData.get_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_size" title="pypillometry.GenericEyeData.get_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_size</span></code></a>()</p></td>
 <td><p>Return the size of the object in bytes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.interpolate_intervals" title="pypillometry.GenericEyeData.interpolate_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code></a>(intervals[, eyes, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.interpolate_intervals" title="pypillometry.GenericEyeData.interpolate_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_intervals</span></code></a>(intervals[, eyes, ...])</p></td>
 <td><p>Interpolate data within specified intervals.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.mask_as_intervals" title="pypillometry.GenericEyeData.mask_as_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code></a>([eyes, variables, units, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.mask_as_intervals" title="pypillometry.GenericEyeData.mask_as_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_as_intervals</span></code></a>([eyes, variables, units, ...])</p></td>
 <td><p>Convert masks to Intervals objects.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.mask_intervals" title="pypillometry.GenericEyeData.mask_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_intervals</span></code></a>(intervals[, eyes, variables, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.mask_intervals" title="pypillometry.GenericEyeData.mask_intervals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mask_intervals</span></code></a>(intervals[, eyes, variables, ...])</p></td>
 <td><p>Apply Intervals as masks to selected data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.merge_eyes" title="pypillometry.GenericEyeData.merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code></a>([eyes, variables, method, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.merge_eyes" title="pypillometry.GenericEyeData.merge_eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code></a>([eyes, variables, method, ...])</p></td>
 <td><p>Merge data from both eyes into a single variable.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.merge_masks" title="pypillometry.GenericEyeData.merge_masks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_masks</span></code></a>([inplace])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.merge_masks" title="pypillometry.GenericEyeData.merge_masks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_masks</span></code></a>([inplace])</p></td>
 <td><p>Merge masks of all variables into a single joint mask.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.nblinks" title="pypillometry.GenericEyeData.nblinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code></a>([eyes, variables])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.nblinks" title="pypillometry.GenericEyeData.nblinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nblinks</span></code></a>([eyes, variables])</p></td>
 <td><p>Return number of detected blinks.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.nevents" title="pypillometry.GenericEyeData.nevents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.nevents" title="pypillometry.GenericEyeData.nevents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nevents</span></code></a>()</p></td>
 <td><p>Return number of events in data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.print_history" title="pypillometry.GenericEyeData.print_history"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.print_history" title="pypillometry.GenericEyeData.print_history"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_history</span></code></a>()</p></td>
 <td><p>Pretty-print the history of the current dataset (which manipulations where done on it).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.reset_time" title="pypillometry.GenericEyeData.reset_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code></a>([t0, inplace])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.reset_time" title="pypillometry.GenericEyeData.reset_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_time</span></code></a>([t0, inplace])</p></td>
 <td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.scale" title="pypillometry.GenericEyeData.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code></a>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.scale" title="pypillometry.GenericEyeData.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code></a>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale the signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.set_blinks" title="pypillometry.GenericEyeData.set_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code></a>(intervals[, eyes, variables, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.set_blinks" title="pypillometry.GenericEyeData.set_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_blinks</span></code></a>(intervals[, eyes, variables, ...])</p></td>
 <td><p>Set blinks for specified eyes and variables.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.set_event_onsets" title="pypillometry.GenericEyeData.set_event_onsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code></a>(event_onsets, event_labels)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.set_event_onsets" title="pypillometry.GenericEyeData.set_event_onsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_event_onsets</span></code></a>(event_onsets, event_labels)</p></td>
 <td><p>Set onsets of events in the data</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.set_events" title="pypillometry.GenericEyeData.set_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code></a>(events[, inplace])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.set_events" title="pypillometry.GenericEyeData.set_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_events</span></code></a>(events[, inplace])</p></td>
 <td><p>Replace event onsets and labels from an Events object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.stat_per_event" title="pypillometry.GenericEyeData.stat_per_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code></a>([intervals, interval, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.stat_per_event" title="pypillometry.GenericEyeData.stat_per_event"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stat_per_event</span></code></a>([intervals, interval, ...])</p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.sub_slice" title="pypillometry.GenericEyeData.sub_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code></a>([start, end, units, inplace])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.sub_slice" title="pypillometry.GenericEyeData.sub_slice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sub_slice</span></code></a>([start, end, units, inplace])</p></td>
 <td><p>Return a new <cite>EyeData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.summary" title="pypillometry.GenericEyeData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.summary" title="pypillometry.GenericEyeData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">summary</span></code></a>()</p></td>
 <td><p>Return a summary of the <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code>-object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.unscale" title="pypillometry.GenericEyeData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code></a>([variables, mean, sd, eyes, inplace])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.unscale" title="pypillometry.GenericEyeData.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code></a>([variables, mean, sd, eyes, inplace])</p></td>
 <td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.write_file" title="pypillometry.GenericEyeData.write_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code></a>(fname)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.write_file" title="pypillometry.GenericEyeData.write_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code></a>(fname)</p></td>
 <td><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p></td>
 </tr>
 </tbody>
@@ -2335,6 +2347,45 @@ if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.GenericEyeData.drop_data">
+<span class="sig-name descname"><span class="pre">drop_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.drop_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.drop_data" title="Link to this definition">¶</a></dt>
+<dd><p>Drop specified eyes and/or variables from the data and return a new object.</p>
+<p>This method never works in place - it always returns a new object.
+The returned object’s class is determined by what data remains:
+- If only pupil variables remain: returns PupilData
+- If only x/y variables remain: returns GazeData
+- If both pupil and x/y remain: returns EyeData</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eyes</strong> (<em>list</em><em> of </em><em>str</em>) – Eyes to drop (e.g., [‘left’] or [‘right’] or [‘left’, ‘right’])</p></li>
+<li><p><strong>variables</strong> (<em>list</em><em> of </em><em>str</em>) – Variables to drop (e.g., [‘pupil’] or [‘x’, ‘y’])</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new object with the specified data removed, cast to the appropriate class.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>GenericEyeData subclass</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If dropping would result in no data remaining.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Drop left eye data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">right_only</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Drop pupil data, keep only gaze</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gaze_only</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Drop right eye and pupil data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">left_gaze</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
