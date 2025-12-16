@@ -30,7 +30,7 @@ Features
 from typing import Dict, Optional, Union, List
 import numpy as np
 
-__all__ = ['view']
+__all__ = ['view', 'tweak']
 
 
 def _validate_array_lengths(arrays: List[np.ndarray]) -> None:
@@ -401,3 +401,220 @@ def view(data, variables=None, time=None,
         result[var_type] = Intervals(intervals_list, units='sec', label=f'selected_{var_type}')
     
     return result
+
+
+def tweak(data, func, params, time=None):
+    """Interactively tweak function parameters while viewing the result.
+    
+    Opens a viewer showing the original data with the function result overlaid.
+    A separate parameter window allows adjusting numeric parameters in real-time,
+    with the overlay updating to reflect the changes.
+    
+    Parameters
+    ----------
+    data : EyeData, ndarray, or list of ndarrays
+        Original data to display. For EyeData, uses the first available pupil
+        channel. For arrays, uses the first array if a list is provided.
+    func : callable
+        Function that takes (data, **params) and returns transformed data
+        of the same length as the input. The function receives the raw numpy
+        array (not EyeData object).
+    params : dict
+        Initial parameter values. Only numeric types (int, float) are supported.
+        These become the adjustable parameters in the GUI.
+    time : ndarray, optional
+        Time vector for array data. If not provided, uses sample indices.
+        For EyeData, the time vector is taken from the object.
+    
+    Returns
+    -------
+    dict
+        Final parameter values after user adjustments. Returns the parameter
+        dict as it was when the viewer was closed.
+    
+    Examples
+    --------
+    Basic usage with numpy arrays:
+    
+    >>> import numpy as np
+    >>> import pypillometry as pp
+    >>> 
+    >>> # Create sample data
+    >>> data = np.sin(np.linspace(0, 10, 1000)) + np.random.randn(1000) * 0.1
+    >>> 
+    >>> # Define a smoothing function
+    >>> def smooth(x, window_size=10):
+    ...     kernel = np.ones(window_size) / window_size
+    ...     return np.convolve(x, kernel, mode='same')
+    >>> 
+    >>> # Tweak the window_size parameter
+    >>> final_params = pp.tweak(data, smooth, {'window_size': 10})  # doctest: +SKIP
+    
+    With EyeData:
+    
+    >>> eyedata = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP
+    >>> def bandpass(x, low_freq=0.01, high_freq=4.0):  # doctest: +SKIP
+    ...     # Apply bandpass filter
+    ...     return filtered_signal
+    >>> params = pp.tweak(eyedata, bandpass, {'low_freq': 0.01, 'high_freq': 4.0})  # doctest: +SKIP
+    
+    Notes
+    -----
+    Keyboard controls in the viewer:
+    
+    - Left/Right arrows: Pan view
+    - Up/Down arrows: Zoom in/out
+    - Space: Reset to full view
+    - Q/Esc: Close viewer
+    
+    The parameter window stays on top and can be repositioned. Changes to
+    parameters are applied immediately and the overlay updates in real-time.
+    """
+    import sys
+    import locale
+    import vispy
+    
+    # Validate params - only numeric types allowed
+    for name, value in params.items():
+        if not isinstance(value, (int, float)):
+            raise TypeError(
+                f"Parameter '{name}' has type {type(value).__name__}, "
+                "but only int and float are supported."
+            )
+    
+    # Extract array and time from input
+    if hasattr(data, 'tx') and hasattr(data, 'data'):
+        # EyeData object - extract first available pupil channel
+        eyedata = data
+        time_vec = eyedata.tx.astype(np.float32) * 0.001  # Convert ms to seconds
+        
+        # Find first available data channel
+        data_array = None
+        for key in ['left_pupil', 'right_pupil', 'left_x', 'right_x', 'left_y', 'right_y']:
+            try:
+                arr = eyedata[key]
+                if arr is not None and len(arr) > 0:
+                    data_array = np.asarray(arr, dtype=np.float32)
+                    break
+            except (KeyError, AttributeError):
+                continue
+        
+        if data_array is None:
+            raise ValueError("No valid data channel found in EyeData object")
+        
+        title = f'Tweak - {getattr(eyedata, "name", "Unknown")}'
+    elif isinstance(data, list):
+        # List of arrays - use the first one
+        data_array = np.asarray(data[0], dtype=np.float32)
+        time_vec = time if time is not None else np.arange(len(data_array), dtype=np.float32)
+        title = 'Tweak Viewer'
+    else:
+        # Single array
+        data_array = np.asarray(data, dtype=np.float32)
+        time_vec = time if time is not None else np.arange(len(data_array), dtype=np.float32)
+        title = 'Tweak Viewer'
+    
+    time_vec = np.asarray(time_vec, dtype=np.float32)
+    
+    # Save LC_TIME locale before Qt initialization
+    try:
+        saved_lc_time = locale.getlocale(locale.LC_TIME)
+    except Exception:
+        saved_lc_time = None
+    
+    # Configure vispy backend
+    if 'PyQt6' in sys.modules or 'PyQt6.QtCore' in sys.modules:
+        vispy.use(app='pyqt6')
+    elif 'PyQt5' in sys.modules or 'PyQt5.QtCore' in sys.modules:
+        vispy.use(app='pyqt5')
+    elif 'PySide6' in sys.modules:
+        vispy.use(app='pyside6')
+    elif 'PySide2' in sys.modules:
+        vispy.use(app='pyside2')
+    else:
+        for backend in ['pyqt6', 'pyqt5', 'pyside6', 'pyside2']:
+            try:
+                vispy.use(app=backend)
+                break
+            except RuntimeError:
+                continue
+    
+    from vispy import app
+    from .tweak import TweakCanvas, ParameterWindow
+    
+    # Compute initial overlay
+    current_params = dict(params)
+    try:
+        initial_overlay = func(data_array, **current_params)
+        initial_overlay = np.asarray(initial_overlay, dtype=np.float32)
+    except Exception as e:
+        raise RuntimeError(f"Function failed with initial parameters: {e}")
+    
+    if len(initial_overlay) != len(data_array):
+        raise ValueError(
+            f"Function returned array of length {len(initial_overlay)}, "
+            f"but input has length {len(data_array)}"
+        )
+    
+    # Create canvas
+    canvas = TweakCanvas(
+        time_seconds=time_vec,
+        original_data=data_array,
+        overlay_data=initial_overlay,
+        title=title
+    )
+    
+    # Callback for parameter changes
+    def on_params_change(new_params):
+        nonlocal current_params
+        current_params = dict(new_params)
+        try:
+            new_overlay = func(data_array, **new_params)
+            new_overlay = np.asarray(new_overlay, dtype=np.float32)
+            canvas.update_overlay(new_overlay)
+        except Exception as e:
+            print(f"Warning: Function failed with parameters {new_params}: {e}")
+    
+    # Create parameter window
+    func_name = getattr(func, '__name__', 'function')
+    param_window = ParameterWindow(
+        params=params,
+        on_change=on_params_change,
+        title=f'Parameters: {func_name}'
+    )
+    
+    # Show windows
+    canvas.show()
+    param_window.show()
+    
+    # Ensure windows are visible
+    if hasattr(canvas, 'native') and canvas.native is not None:
+        canvas.native.raise_()
+        canvas.native.activateWindow()
+    
+    canvas.update()
+    canvas.app.process_events()
+    
+    # Run Qt event loop
+    try:
+        from PyQt6.QtWidgets import QApplication
+    except ImportError:
+        from PyQt5.QtWidgets import QApplication
+    
+    qt_app = QApplication.instance()
+    if qt_app is not None:
+        qt_app.exec()
+    else:
+        app.run()
+    
+    # Restore locale
+    if saved_lc_time is not None:
+        try:
+            locale.setlocale(locale.LC_TIME, saved_lc_time)
+        except Exception:
+            try:
+                locale.setlocale(locale.LC_TIME, 'C')
+            except Exception:
+                pass
+    
+    return current_params
