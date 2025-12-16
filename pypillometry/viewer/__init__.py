@@ -636,7 +636,7 @@ def tweak(data, func, params, variable=None, time=None):
                 continue
     
     from vispy import app
-    from .tweak import TweakCanvas, ParameterWindow
+    from .tweak import TweakCanvas, TweakViewer
     
     # Compute initial overlay - pass full data to function
     current_params = dict(params)
@@ -680,32 +680,17 @@ def tweak(data, func, params, variable=None, time=None):
         except Exception as e:
             print(f"Warning: Function failed with parameters {new_params}: {e}")
     
-    # Create parameter window
+    # Create viewer with embedded parameter panel
     func_name = getattr(func, '__name__', 'function')
-    param_window = ParameterWindow(
+    viewer = TweakViewer(
+        canvas=canvas,
         params=params,
         on_change=on_params_change,
-        title=f'Parameters: {func_name}'
+        title=f'Tweak: {func_name}'
     )
     
-    # Link windows so they close together
-    canvas.set_param_window(param_window)
-    param_window.set_canvas(canvas)
-    
-    # Show windows
-    canvas.show()
-    param_window.show()
-    
-    # Position parameter window to the right of the canvas
-    if hasattr(canvas, 'native') and canvas.native is not None:
-        canvas.native.raise_()
-        canvas.native.activateWindow()
-        # Position param window to the right of canvas
-        canvas_geom = canvas.native.geometry()
-        param_window.window.move(
-            canvas_geom.x() + canvas_geom.width() + 10,
-            canvas_geom.y()
-        )
+    # Show viewer
+    viewer.show()
     
     canvas.update()
     canvas.app.process_events()
@@ -732,4 +717,4 @@ def tweak(data, func, params, variable=None, time=None):
             except Exception:
                 pass
     
-    return current_params
+    return viewer.get_params()

@@ -119,9 +119,6 @@ class TweakCanvas(SceneCanvas):
         self.masks_visible = True
         self.intervals_visible = True
         
-        # Reference to parameter window for coordinated close
-        self.param_window = None
-        
         # Y-axis zoom state
         self.manual_y_range: Optional[tuple] = None
         self._mouse_pos = None
@@ -152,10 +149,6 @@ class TweakCanvas(SceneCanvas):
         self._last_x_range = (self.data_min, self.data_max)
         
         self.freeze()
-    
-    def set_param_window(self, param_window):
-        """Set reference to parameter window for coordinated closing."""
-        self.param_window = param_window
     
     def _create_subplot(self):
         """Create single subplot with y-axis and viewbox."""
@@ -584,15 +577,6 @@ class TweakCanvas(SceneCanvas):
         self._update_y_range()
         self.update()
     
-    def on_close(self, event):
-        """Handle close event - also close parameter window."""
-        if self.param_window is not None:
-            try:
-                self.param_window.close()
-            except Exception:
-                pass
-        super().on_close(event)
-    
     def on_mouse_move(self, event):
         """Track mouse position for Y-axis zoom."""
         self._mouse_pos = event.pos
@@ -663,90 +647,115 @@ class TweakCanvas(SceneCanvas):
             self.update()
 
 
-class ParameterWindow:
-    """Floating window with parameter spinboxes for interactive tweaking."""
+class TweakViewer:
+    """Main window combining plot canvas with embedded parameter controls."""
     
-    def __init__(self, params: Dict[str, Any], on_change: Callable[[Dict[str, Any]], None],
-                 title: str = 'Parameters', parent=None):
-        """Initialize parameter window.
+    def __init__(self, canvas: TweakCanvas, params: Dict[str, Any], 
+                 on_change: Callable[[Dict[str, Any]], None],
+                 title: str = 'Tweak Viewer'):
+        """Initialize the tweak viewer with embedded parameter panel.
         
         Parameters
         ----------
+        canvas : TweakCanvas
+            The VisPy canvas for plotting.
         params : dict
             Initial parameter values (int or float).
         on_change : callable
             Callback function called with updated params dict when values change.
         title : str
             Window title.
-        parent : QWidget, optional
-            Parent widget for window management.
         """
+        self.canvas = canvas
         self.params = dict(params)
         self.initial_params = dict(params)
         self.on_change = on_change
         self.spinboxes: Dict[str, Any] = {}
-        self.canvas = None  # Reference to canvas for coordinated close
         self.auto_update = True
         self._pending_update = False
         self._computing = False
         
         # Import Qt
         try:
-            from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, 
-                                         QLabel, QDoubleSpinBox, QSpinBox, 
-                                         QPushButton, QCheckBox)
-            from PyQt6.QtCore import Qt, QTimer
+            from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, 
+                                         QHBoxLayout, QSplitter, QLabel, 
+                                         QDoubleSpinBox, QSpinBox, QPushButton,
+                                         QCheckBox, QFrame, QApplication)
+            from PyQt6.QtCore import Qt
             self.Qt = Qt
-            self.QTimer = QTimer
             self.QDoubleSpinBox = QDoubleSpinBox
             self.QSpinBox = QSpinBox
-            self.QWidget = QWidget
-            self.QCheckBox = QCheckBox
+            self.QApplication = QApplication
         except ImportError:
-            from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
-                                         QLabel, QDoubleSpinBox, QSpinBox, 
-                                         QPushButton, QCheckBox)
-            from PyQt5.QtCore import Qt, QTimer
+            from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, 
+                                         QHBoxLayout, QSplitter, QLabel, 
+                                         QDoubleSpinBox, QSpinBox, QPushButton,
+                                         QCheckBox, QFrame, QApplication)
+            from PyQt5.QtCore import Qt
             self.Qt = Qt
-            self.QTimer = QTimer
             self.QDoubleSpinBox = QDoubleSpinBox
             self.QSpinBox = QSpinBox
-            self.QWidget = QWidget
-            self.QCheckBox = QCheckBox
+            self.QApplication = QApplication
         
-        # Create a custom widget class to handle close event
-        class ParamWidget(QWidget):
-            def __init__(self, param_window, parent=None):
-                super().__init__(parent)
-                self.param_window = param_window
-            
-            def closeEvent(self, event):
-                # Close the canvas when parameter window is closed
-                if self.param_window.canvas is not None:
-                    try:
-                        self.param_window.canvas.close()
-                    except Exception:
-                        pass
-                event.accept()
+        # Create main window
+        self.main_window = QMainWindow()
+        self.main_window.setWindowTitle(title)
+        self.main_window.resize(1400, 600)
         
-        # Create window with always-on-top flag
-        self.window = ParamWidget(self, parent)
-        self.window.setWindowTitle(title)
-        self.window.setMinimumWidth(250)
-        # Set window to stay on top
-        self.window.setWindowFlags(
-            self.window.windowFlags() | self.Qt.WindowType.WindowStaysOnTopHint
-        )
+        # Create central widget with horizontal layout
+        central_widget = QWidget()
+        self.main_window.setCentralWidget(central_widget)
+        main_layout = QHBoxLayout(central_widget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
         
-        layout = QVBoxLayout()
-        self.window.setLayout(layout)
+        # Create splitter for resizable panels
+        splitter = QSplitter(self.Qt.Orientation.Horizontal)
+        main_layout.addWidget(splitter)
+        
+        # Add canvas to splitter (left side)
+        canvas_widget = self.canvas.native
+        splitter.addWidget(canvas_widget)
+        
+        # Create parameter panel (right side)
+        param_panel = self._create_param_panel(params, QPushButton, QCheckBox, 
+                                                QLabel, QVBoxLayout, QHBoxLayout, 
+                                                QFrame, QWidget)
+        splitter.addWidget(param_panel)
+        
+        # Set initial splitter sizes (85% canvas, 15% params)
+        splitter.setSizes([1200, 200])
+        
+        # Set minimum width for param panel
+        param_panel.setMinimumWidth(180)
+        param_panel.setMaximumWidth(300)
+    
+    def _create_param_panel(self, params, QPushButton, QCheckBox, QLabel, 
+                            QVBoxLayout, QHBoxLayout, QFrame, QWidget):
+        """Create the parameter control panel."""
+        panel = QFrame()
+        panel.setFrameStyle(QFrame.Shape.StyledPanel | QFrame.Shadow.Raised)
+        
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(8)
+        
+        # Title
+        title_label = QLabel("<b>Parameters</b>")
+        layout.addWidget(title_label)
+        
+        # Separator
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFrameShadow(QFrame.Shadow.Sunken)
+        layout.addWidget(line)
         
         # Create spinbox for each parameter
         for name, value in params.items():
             row = QHBoxLayout()
             
             label = QLabel(f"{name}:")
-            label.setMinimumWidth(100)
+            label.setMinimumWidth(80)
             row.addWidget(label)
             
             if isinstance(value, int):
@@ -762,17 +771,22 @@ class ParameterWindow:
                 spinbox.setValue(float(value))
                 spinbox.valueChanged.connect(lambda v, n=name: self._on_value_changed(n, v))
             
-            spinbox.setMinimumWidth(100)
+            spinbox.setMinimumWidth(80)
             row.addWidget(spinbox)
+            row.addStretch()
             
             self.spinboxes[name] = spinbox
             layout.addLayout(row)
         
         # Separator
         layout.addSpacing(10)
+        line2 = QFrame()
+        line2.setFrameShape(QFrame.Shape.HLine)
+        line2.setFrameShadow(QFrame.Shadow.Sunken)
+        layout.addWidget(line2)
         
         # Auto-update checkbox
-        self.auto_update_checkbox = self.QCheckBox("Auto Update")
+        self.auto_update_checkbox = QCheckBox("Auto Update")
         self.auto_update_checkbox.setChecked(True)
         self.auto_update_checkbox.stateChanged.connect(self._on_auto_update_changed)
         layout.addWidget(self.auto_update_checkbox)
@@ -780,7 +794,7 @@ class ParameterWindow:
         # Update button (disabled when auto-update is on)
         self.update_btn = QPushButton("Update")
         self.update_btn.clicked.connect(self._on_update_clicked)
-        self.update_btn.setEnabled(False)  # Disabled by default (auto-update is on)
+        self.update_btn.setEnabled(False)
         layout.addWidget(self.update_btn)
         
         # Reset button
@@ -790,18 +804,14 @@ class ParameterWindow:
         
         # Stretch at bottom
         layout.addStretch()
-    
-    def set_canvas(self, canvas):
-        """Set reference to canvas for coordinated closing."""
-        self.canvas = canvas
+        
+        return panel
     
     def _on_auto_update_changed(self, state):
         """Handle auto-update checkbox state change."""
         self.auto_update = bool(state)
-        # Enable/disable update button based on auto-update state
         self.update_btn.setEnabled(not self.auto_update)
         
-        # If turning auto-update on and there's a pending update, trigger it
         if self.auto_update and self._pending_update:
             self._trigger_update()
     
@@ -816,19 +826,13 @@ class ParameterWindow:
         self.update_btn.setEnabled(False)
         self.update_btn.setText("Computing...")
         
-        # Process events to show the button state change
-        try:
-            from PyQt6.QtWidgets import QApplication
-        except ImportError:
-            from PyQt5.QtWidgets import QApplication
-        QApplication.processEvents()
+        self.QApplication.processEvents()
         
         try:
             self.on_change(self.params)
         finally:
             self._computing = False
             self.update_btn.setText("Update")
-            # Re-enable button if auto-update is off
             if not self.auto_update:
                 self.update_btn.setEnabled(True)
     
@@ -839,7 +843,6 @@ class ParameterWindow:
         if self.auto_update:
             self._trigger_update()
         else:
-            # Mark that there's a pending update
             self._pending_update = True
     
     def _reset_params(self):
@@ -857,12 +860,12 @@ class ParameterWindow:
             self._pending_update = True
     
     def show(self):
-        """Show the parameter window."""
-        self.window.show()
+        """Show the main window."""
+        self.main_window.show()
     
     def close(self):
-        """Close the parameter window."""
-        self.window.close()
+        """Close the main window."""
+        self.main_window.close()
     
     def get_params(self) -> Dict[str, Any]:
         """Get current parameter values."""
