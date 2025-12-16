@@ -211,7 +211,7 @@ def helper_merge_blinks(b1,b2):
     newb.append([on,off])
     return np.array(newb)
 
-def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_len=5, min_offset_len=5):
+def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_len=5, min_offset_len=5, min_blink_samples=1):
     """
     Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.
     
@@ -235,6 +235,9 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
         minimum number of consecutive samples that cross the threshold to detect onset
     min_offset_len: int
         minimum number of consecutive samples that cross the threshold to detect offset
+    min_blink_samples: int
+        minimum duration of a blink in samples; offsets that would create shorter intervals
+        are skipped during matching (to avoid spurious short offsets stealing real onsets)
         
     Returns
     -------
@@ -293,34 +296,50 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
         logger.debug("No offsets found - returning empty array")
         return np.array([])
         
-    offsets_ixx = np.r_[10, np.diff(offsets)] > 1
-    offsets_len = np.diff(np.r_[np.where(offsets_ixx)[0], offsets.size])
-    offsets = offsets[offsets_ixx]
-    offsets = offsets[offsets_len > min_offset_len]
-    logger.debug(f"After filtering, {len(offsets)} offsets remain")
+    # Mark starts and ends of runs
+    offsets_start_ixx = np.r_[10, np.diff(offsets)] > 1
+    offsets_end_ixx = np.r_[np.diff(offsets), 10] > 1
+    offsets_len = np.diff(np.r_[np.where(offsets_start_ixx)[0], offsets.size])
     
-    if len(onsets) == 0 or len(offsets) == 0:
+    # Get both start and end positions for each run
+    offset_starts = offsets[offsets_start_ixx]
+    offset_ends = offsets[offsets_end_ixx]
+    
+    # Filter by minimum length (apply same mask to both starts and ends)
+    valid_len_mask = offsets_len > min_offset_len
+    offset_starts = offset_starts[valid_len_mask]
+    offset_ends = offset_ends[valid_len_mask]
+    logger.debug(f"After filtering, {len(offset_starts)} offsets remain")
+    
+    if len(onsets) == 0 or len(offset_starts) == 0:
         logger.debug("No valid onset/offset pairs - returning empty array")
         return np.array([])
     
     # Find corresponding on- and off-sets
+    # Use offset STARTS for comparison, but offset ENDS as actual values
+    # Skip offsets that would create intervals shorter than min_blink_samples
     blinks = []
     on = onsets[0]
     while on is not None:
-        offs = offsets[offsets > on]
-        off = offs[0] if offs.size > 0 else n
+        # Find offset runs that START after this onset AND create long enough intervals
+        valid_offset_mask = (offset_starts > on) & (offset_ends - on >= min_blink_samples)
+        if valid_offset_mask.any():
+            # Get the first valid offset run and use its END
+            first_valid_idx = np.where(valid_offset_mask)[0][0]
+            off = offset_ends[first_valid_idx]
+        else:
+            off = n
         blinks.append([on, off])
         ons = onsets[onsets > off]
         on = ons[0] if ons.size > 0 else None
     logger.debug(f"Found {len(blinks)} blink pairs")
         
-    # If on/off-sets fall in an invalid region, grow until first valid sample
+    # If onsets fall in an invalid region, grow backward until first valid sample
+    # (Don't grow offsets forward - offset_ends already mark the end of recovery)
     blinks2 = []
     for (on, off) in blinks:
         while on > 0 and invalid_mask[on]:
             on -= 1
-        while off < n - 1 and invalid_mask[off]:
-            off += 1
         blinks2.append([on, off])
     
     result = np.array(blinks2)

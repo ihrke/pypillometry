@@ -533,7 +533,7 @@ class PupilData(GenericEyeData):
                 vel_onset_samples, vel_offset_samples = self._convert_velocity_thresholds(
                     pupil_data, winsize_ix, vel_onset, vel_offset
                 )
-                blinks_vel=preproc.detect_blinks_velocity(pupil_data, winsize_ix, vel_onset_samples, vel_offset_samples, vel_onset_min_samples, vel_offset_min_samples)
+                blinks_vel=preproc.detect_blinks_velocity(pupil_data, winsize_ix, vel_onset_samples, vel_offset_samples, vel_onset_min_samples, vel_offset_min_samples, min_duration_ix)
                 logger.debug(f"Detected {len(blinks_vel)} blinks with velocity strategy")
             else: 
                 blinks_vel=np.array([])
