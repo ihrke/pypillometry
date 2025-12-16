@@ -403,7 +403,7 @@ def view(data, variables=None, time=None,
     return result
 
 
-def tweak(data, func, params, time=None):
+def tweak(data, func, params, variable=None, time=None):
     """Interactively tweak function parameters while viewing the result.
     
     Opens a viewer showing the original data with the function result overlaid.
@@ -413,15 +413,19 @@ def tweak(data, func, params, time=None):
     Parameters
     ----------
     data : EyeData, ndarray, or list of ndarrays
-        Original data to display. For EyeData, uses the first available pupil
-        channel. For arrays, uses the first array if a list is provided.
+        Original data to display and pass to the function.
     func : callable
         Function that takes (data, **params) and returns transformed data
-        of the same length as the input. The function receives the raw numpy
-        array (not EyeData object).
+        of the same type. For EyeData input, function receives the full EyeData
+        object and should return an EyeData object. For arrays, receives and
+        returns arrays.
     params : dict
         Initial parameter values. Only numeric types (int, float) are supported.
         These become the adjustable parameters in the GUI.
+    variable : str, optional
+        For EyeData objects, specifies which variable to display (e.g., 
+        'left_pupil', 'right_pupil', 'left_x', 'right_y'). If not provided,
+        uses the first available pupil channel.
     time : ndarray, optional
         Time vector for array data. If not provided, uses sample indices.
         For EyeData, the time vector is taken from the object.
@@ -434,10 +438,21 @@ def tweak(data, func, params, time=None):
     
     Examples
     --------
+    With EyeData - function receives full EyeData object:
+    
+    >>> import pypillometry as pp
+    >>> 
+    >>> eyedata = pp.get_example_data("rlmw_002_short")  # doctest: +SKIP
+    >>> 
+    >>> def smooth(d, lp=5):
+    ...     return d.pupil_lowpass_filter(cutoff=lp, inplace=False)
+    >>> 
+    >>> # Tweak lowpass filter cutoff, display left_pupil
+    >>> params = pp.tweak(eyedata, smooth, {'lp': 5}, variable='left_pupil')  # doctest: +SKIP
+    
     Basic usage with numpy arrays:
     
     >>> import numpy as np
-    >>> import pypillometry as pp
     >>> 
     >>> # Create sample data
     >>> data = np.sin(np.linspace(0, 10, 1000)) + np.random.randn(1000) * 0.1
@@ -449,14 +464,6 @@ def tweak(data, func, params, time=None):
     >>> 
     >>> # Tweak the window_size parameter
     >>> final_params = pp.tweak(data, smooth, {'window_size': 10})  # doctest: +SKIP
-    
-    With EyeData:
-    
-    >>> eyedata = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP
-    >>> def bandpass(x, low_freq=0.01, high_freq=4.0):  # doctest: +SKIP
-    ...     # Apply bandpass filter
-    ...     return filtered_signal
-    >>> params = pp.tweak(eyedata, bandpass, {'low_freq': 0.01, 'high_freq': 4.0})  # doctest: +SKIP
     
     Notes
     -----
@@ -482,37 +489,67 @@ def tweak(data, func, params, time=None):
                 "but only int and float are supported."
             )
     
-    # Extract array and time from input
-    if hasattr(data, 'tx') and hasattr(data, 'data'):
-        # EyeData object - extract first available pupil channel
+    # Determine if we have EyeData or raw arrays
+    is_eyedata = hasattr(data, 'tx') and hasattr(data, 'data')
+    
+    if is_eyedata:
+        # EyeData object
         eyedata = data
         time_vec = eyedata.tx.astype(np.float32) * 0.001  # Convert ms to seconds
         
-        # Find first available data channel
-        data_array = None
-        for key in ['left_pupil', 'right_pupil', 'left_x', 'right_x', 'left_y', 'right_y']:
+        # Determine which variable to display
+        if variable is not None:
+            # User specified a variable
             try:
-                arr = eyedata[key]
-                if arr is not None and len(arr) > 0:
-                    data_array = np.asarray(arr, dtype=np.float32)
-                    break
+                data_array = np.asarray(eyedata[variable], dtype=np.float32)
             except (KeyError, AttributeError):
-                continue
+                raise ValueError(f"Variable '{variable}' not found in EyeData object")
+            display_variable = variable
+        else:
+            # Find first available data channel
+            data_array = None
+            display_variable = None
+            for key in ['left_pupil', 'right_pupil', 'left_x', 'right_x', 'left_y', 'right_y']:
+                try:
+                    arr = eyedata[key]
+                    if arr is not None and len(arr) > 0:
+                        data_array = np.asarray(arr, dtype=np.float32)
+                        display_variable = key
+                        break
+                except (KeyError, AttributeError):
+                    continue
+            
+            if data_array is None:
+                raise ValueError("No valid data channel found in EyeData object")
         
-        if data_array is None:
-            raise ValueError("No valid data channel found in EyeData object")
+        title = f'Tweak - {getattr(eyedata, "name", "Unknown")} [{display_variable}]'
         
-        title = f'Tweak - {getattr(eyedata, "name", "Unknown")}'
+        # Helper to extract display array from function result
+        def extract_display_array(result):
+            if hasattr(result, 'data') and hasattr(result, 'tx'):
+                # Result is EyeData - extract the same variable
+                try:
+                    return np.asarray(result[display_variable], dtype=np.float32)
+                except (KeyError, AttributeError):
+                    raise ValueError(
+                        f"Function result does not contain variable '{display_variable}'"
+                    )
+            else:
+                # Result is array
+                return np.asarray(result, dtype=np.float32)
+    
     elif isinstance(data, list):
         # List of arrays - use the first one
         data_array = np.asarray(data[0], dtype=np.float32)
         time_vec = time if time is not None else np.arange(len(data_array), dtype=np.float32)
         title = 'Tweak Viewer'
+        extract_display_array = lambda result: np.asarray(result, dtype=np.float32)
     else:
         # Single array
         data_array = np.asarray(data, dtype=np.float32)
         time_vec = time if time is not None else np.arange(len(data_array), dtype=np.float32)
         title = 'Tweak Viewer'
+        extract_display_array = lambda result: np.asarray(result, dtype=np.float32)
     
     time_vec = np.asarray(time_vec, dtype=np.float32)
     
@@ -542,11 +579,11 @@ def tweak(data, func, params, time=None):
     from vispy import app
     from .tweak import TweakCanvas, ParameterWindow
     
-    # Compute initial overlay
+    # Compute initial overlay - pass full data to function
     current_params = dict(params)
     try:
-        initial_overlay = func(data_array, **current_params)
-        initial_overlay = np.asarray(initial_overlay, dtype=np.float32)
+        result = func(data, **current_params)
+        initial_overlay = extract_display_array(result)
     except Exception as e:
         raise RuntimeError(f"Function failed with initial parameters: {e}")
     
@@ -564,13 +601,13 @@ def tweak(data, func, params, time=None):
         title=title
     )
     
-    # Callback for parameter changes
+    # Callback for parameter changes - pass full data to function
     def on_params_change(new_params):
         nonlocal current_params
         current_params = dict(new_params)
         try:
-            new_overlay = func(data_array, **new_params)
-            new_overlay = np.asarray(new_overlay, dtype=np.float32)
+            result = func(data, **new_params)
+            new_overlay = extract_display_array(result)
             canvas.update_overlay(new_overlay)
         except Exception as e:
             print(f"Warning: Function failed with parameters {new_params}: {e}")
