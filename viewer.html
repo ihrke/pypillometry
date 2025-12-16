@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>GPU-Accelerated Viewer (pp.view) &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Interactive Parameter Tweaking (pp.tweak)" href="tweak.html" />
+    <link rel="prev" title="Graphical Tools" href="graphical_tools.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tweak.html" title="Interactive Parameter Tweaking (pp.tweak)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="graphical_tools.html" title="Graphical Tools"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="graphical_tools.html" accesskey="U">Graphical Tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">GPU-Accelerated Viewer (pp.view)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="gpu-accelerated-viewer-pp-view">
+<h1>GPU-Accelerated Viewer (pp.view)<a class="headerlink" href="#gpu-accelerated-viewer-pp-view" title="Link to this heading">¶</a></h1>
+<p>The <a class="reference internal" href="#pypillometry.view" title="pypillometry.view"><code class="xref py py-func docutils literal notranslate"><span class="pre">view()</span></code></a> function provides a GPU-accelerated interactive viewer for exploring eye-tracking data. It is designed for smooth navigation of long recordings (60+ minutes at 1000 Hz) using VisPy for OpenGL rendering.</p>
+<p><strong>Keyboard shortcuts:</strong> Press <code class="docutils literal notranslate"><span class="pre">H</span></code> or <code class="docutils literal notranslate"><span class="pre">?</span></code> in the viewer to see all available keyboard shortcuts for navigation, zooming, and toggling display options.</p>
+<section id="viewing-eyedata-objects">
+<h2>Viewing EyeData Objects<a class="headerlink" href="#viewing-eyedata-objects" title="Link to this heading">¶</a></h2>
+<p>The simplest use case is viewing an <a class="reference internal" href="api.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a> object directly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+
+<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">eyedata</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/viewer_eyedata.png"><img alt="Viewer showing EyeData with pupil, x, and y subplots" src="_images/viewer_eyedata.png" style="width: 100%;" />
+</a>
+<p>The viewer automatically creates subplots for each modality (pupil, x, y) and shows both left (blue) and right (red) eye data. Masked regions are highlighted in orange.</p>
+</section>
+<section id="viewing-numpy-arrays">
+<h2>Viewing Numpy Arrays<a class="headerlink" href="#viewing-numpy-arrays" title="Link to this heading">¶</a></h2>
+<p>You can also view raw numpy arrays. Use a dictionary to create multiple subplots:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+
+<span class="c1"># Create synthetic signals</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="n">signal_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span>
+<span class="n">signal_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">({</span><span class="s2">&quot;Signal A&quot;</span><span class="p">:</span> <span class="n">signal_a</span><span class="p">,</span> <span class="s2">&quot;Signal B&quot;</span><span class="p">:</span> <span class="n">signal_b</span><span class="p">},</span> <span class="n">time</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/viewer_arrays.png"><img alt="Viewer showing two numpy arrays as separate subplots" src="_images/viewer_arrays.png" style="width: 100%;" />
+</a>
+</section>
+<section id="filtering-variables">
+<h2>Filtering Variables<a class="headerlink" href="#filtering-variables" title="Link to this heading">¶</a></h2>
+<p>For EyeData objects, you can filter which modalities to display using the <code class="docutils literal notranslate"><span class="pre">variables</span></code> parameter:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+
+<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">eyedata</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/viewer_pupil_only.png"><img alt="Viewer showing only pupil data" src="_images/viewer_pupil_only.png" style="width: 100%;" />
+</a>
+<p>Valid values are <code class="docutils literal notranslate"><span class="pre">'pupil'</span></code>, <code class="docutils literal notranslate"><span class="pre">'x'</span></code>, and <code class="docutils literal notranslate"><span class="pre">'y'</span></code>.</p>
+</section>
+<section id="adding-overlays">
+<h2>Adding Overlays<a class="headerlink" href="#adding-overlays" title="Link to this heading">¶</a></h2>
+<p>You can overlay additional data on top of the main plots for comparison. This is useful for visualizing the effect of processing steps:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+
+<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create a smoothed version of the pupil signal</span>
+<span class="n">pupil</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">eyedata</span><span class="p">[</span><span class="s1">&#39;left_pupil&#39;</span><span class="p">])</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="o">/</span> <span class="mi">50</span>
+<span class="n">smoothed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">pupil</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">eyedata</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">],</span> <span class="n">overlay_pupil</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;smoothed&#39;</span><span class="p">:</span> <span class="n">smoothed</span><span class="p">})</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/viewer_overlay.png"><img alt="Viewer showing pupil data with smoothed overlay" src="_images/viewer_overlay.png" style="width: 100%;" />
+</a>
+<p>Use <code class="docutils literal notranslate"><span class="pre">overlay_pupil</span></code>, <code class="docutils literal notranslate"><span class="pre">overlay_x</span></code>, or <code class="docutils literal notranslate"><span class="pre">overlay_y</span></code> to add overlays to the respective subplots.</p>
+</section>
+<section id="extra-subplots">
+<h2>Extra Subplots<a class="headerlink" href="#extra-subplots" title="Link to this heading">¶</a></h2>
+<p>You can add additional subplots below the main EyeData variables using <code class="docutils literal notranslate"><span class="pre">extra_plots</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+
+<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+
+<span class="c1"># Compute velocity (derivative of pupil size)</span>
+<span class="n">pupil</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">eyedata</span><span class="p">[</span><span class="s1">&#39;left_pupil&#39;</span><span class="p">])</span>
+<span class="n">velocity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">pupil</span><span class="p">)</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">eyedata</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">],</span> <span class="n">extra_plots</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;velocity&#39;</span><span class="p">:</span> <span class="n">velocity</span><span class="p">})</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/viewer_extra_plots.png"><img alt="Viewer showing pupil data with velocity subplot" src="_images/viewer_extra_plots.png" style="width: 100%;" />
+</a>
+</section>
+<section id="interactive-selection">
+<h2>Interactive Selection<a class="headerlink" href="#interactive-selection" title="Link to this heading">¶</a></h2>
+<p>The viewer supports interactive region selection:</p>
+<ol class="arabic simple">
+<li><p>Press <code class="docutils literal notranslate"><span class="pre">S</span></code> to enter selection mode</p></li>
+<li><p>Click and drag to select a region</p></li>
+<li><p>Press <code class="docutils literal notranslate"><span class="pre">D</span></code> or <code class="docutils literal notranslate"><span class="pre">Backspace</span></code> to remove the last selection</p></li>
+<li><p>When you close the viewer, selected regions are returned as <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> objects</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+
+<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+
+<span class="c1"># View data and select regions</span>
+<span class="n">selections</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">eyedata</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">])</span>
+
+<span class="c1"># selections is a dict of Intervals if any regions were selected</span>
+<span class="k">if</span> <span class="n">selections</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">selections</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.view">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">view</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlay_pupil</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlay_x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlay_y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_plots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lightblue'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/viewer.html#view"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.view" title="Link to this definition">¶</a></dt>
+<dd><p>View eye-tracking data or numpy arrays with GPU-accelerated rendering.</p>
+<p>Opens an interactive viewer window using VisPy for fast GPU-based
+rendering. Suitable for long recordings (60+ minutes at 1000 Hz).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference internal" href="api.html#pypillometry.EyeData" title="pypillometry.EyeData"><em>EyeData</em></a><em>, </em><em>ndarray</em><em>, </em><em>list</em><em> of </em><em>ndarrays</em><em>, or </em><em>dict</em>) – <p>Data to view. Supports multiple input types:</p>
+<ul>
+<li><p><strong>EyeData object</strong>: Eye-tracking data with <cite>tx</cite> attribute and
+dictionary-like access to modalities (left_pupil, right_x, etc.)</p></li>
+<li><p><strong>ndarray or MaskedArray</strong>: Single array displayed as one plot</p></li>
+<li><p><strong>list of arrays</strong>: Multiple arrays overlaid in one plot with
+different colors</p></li>
+<li><p><strong>dict of arrays</strong>: Keys become plot labels (y-axis), values are
+arrays or lists of arrays. Example: <code class="docutils literal notranslate"><span class="pre">{&quot;upper&quot;:</span> <span class="pre">[x,</span> <span class="pre">y],</span> <span class="pre">&quot;lower&quot;:</span> <span class="pre">z}</span></code>
+creates two subplots with x,y overlaid in “upper” and z in “lower”</p></li>
+</ul>
+</p></li>
+<li><p><strong>variables</strong> (<em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – For EyeData objects only. Filter which modalities to display.
+Valid values: ‘pupil’, ‘x’, ‘y’. Default: show all available.
+Example: <code class="docutils literal notranslate"><span class="pre">variables=['pupil']</span></code> shows only pupil data.</p></li>
+<li><p><strong>time</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Time vector for raw array viewing. If not provided, uses sample
+index (0, 1, 2, …). Should have same length as data arrays.</p></li>
+<li><p><strong>overlay_pupil</strong> (<em>dict</em><em>, </em><em>optional</em>) – (EyeData only) Additional timeseries to overlay on the pupil plot.
+Keys are labels for legend, values are either:
+- str: name of data in eyedata.data (e.g., ‘left_pupil_filtered’)
+- array-like: timeseries of same length as eyedata</p></li>
+<li><p><strong>overlay_x</strong> (<em>dict</em><em>, </em><em>optional</em>) – (EyeData only) Additional timeseries to overlay on the gaze X plot.</p></li>
+<li><p><strong>overlay_y</strong> (<em>dict</em><em>, </em><em>optional</em>) – (EyeData only) Additional timeseries to overlay on the gaze Y plot.</p></li>
+<li><p><strong>extra_plots</strong> (<em>dict</em><em>, </em><em>optional</em>) – (EyeData only) Additional numpy arrays to display as separate subplots
+below the EyeData variables. Keys become subplot labels (y-axis),
+values are arrays or lists of arrays. Arrays must have the same length
+as the EyeData. Example: <code class="docutils literal notranslate"><span class="pre">extra_plots={&quot;velocity&quot;:</span> <span class="pre">vel,</span> <span class="pre">&quot;custom&quot;:</span> <span class="pre">[a,</span> <span class="pre">b]}</span></code></p></li>
+<li><p><strong>highlight</strong> (<em>Intervals</em><em> or </em><em>dict</em><em>, </em><em>optional</em>) – Intervals to highlight in the plots. Can be:
+- An Intervals object (applied to all plots)
+- A dict mapping variable type (‘pupil’, ‘x’, ‘y’) to Intervals objects</p></li>
+<li><p><strong>highlight_color</strong> (<em>str</em><em>, </em><em>optional</em>) – Color for highlighted regions (default: ‘lightblue’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If regions were selected (using ‘s’ key + mouse clicks), returns a dict
+mapping plot label to Intervals objects containing the selected regions
+in seconds. Returns None if no selections were made.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[Dict[str, Intervals]]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If arrays have different lengths.</p></li>
+<li><p><strong>TypeError</strong> – If data type is not supported.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Keyboard controls:</p>
+<ul class="simple">
+<li><p>Left/Right arrows: Pan 10% of view</p></li>
+<li><p>Up/Down arrows: Zoom in/out 20%</p></li>
+<li><p>PgUp/PgDn: Pan 50% of view</p></li>
+<li><p>Home/End: Jump to start/end</p></li>
+<li><p>Space: Reset to full view</p></li>
+<li><p>+/-: Zoom in/out</p></li>
+<li><p>M: Toggle mask regions (EyeData only)</p></li>
+<li><p>O: Toggle event markers (EyeData only)</p></li>
+<li><p>S: Enter selection mode (drag to mark a region)</p></li>
+<li><p>D/Backspace: Remove last selection</p></li>
+<li><p>H/?: Show help</p></li>
+<li><p>Q/Esc: Close viewer</p></li>
+</ul>
+<p class="rubric">Examples</p>
+<p>View EyeData:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s1">&#39;recording.edf&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">])</span>  <span class="c1"># Only show pupil plots</span>
+</pre></div>
+</div>
+<p>View numpy arrays:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># Single array</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>  <span class="c1"># Multiple arrays in one plot</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">({</span><span class="s2">&quot;Signal 1&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="s2">&quot;Signal 2&quot;</span><span class="p">:</span> <span class="n">y</span><span class="p">})</span>  <span class="c1"># Two separate plots</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">({</span><span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">})</span>  <span class="c1"># Complex layout</span>
+</pre></div>
+</div>
+<p>With time vector:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># 10 seconds</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>EyeData with overlays:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">smoothed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;left_pupil&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;same&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">overlay_pupil</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;smoothed&#39;</span><span class="p">:</span> <span class="n">smoothed</span><span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">GPU-Accelerated Viewer (pp.view)</a><ul>
+<li><a class="reference internal" href="#viewing-eyedata-objects">Viewing EyeData Objects</a></li>
+<li><a class="reference internal" href="#viewing-numpy-arrays">Viewing Numpy Arrays</a></li>
+<li><a class="reference internal" href="#filtering-variables">Filtering Variables</a></li>
+<li><a class="reference internal" href="#adding-overlays">Adding Overlays</a></li>
+<li><a class="reference internal" href="#extra-subplots">Extra Subplots</a></li>
+<li><a class="reference internal" href="#interactive-selection">Interactive Selection</a></li>
+<li><a class="reference internal" href="#api-reference">API Reference</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="graphical_tools.html"
+                          title="previous chapter">Graphical Tools</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="tweak.html"
+                          title="next chapter">Interactive Parameter Tweaking (pp.tweak)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/viewer.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tweak.html" title="Interactive Parameter Tweaking (pp.tweak)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="graphical_tools.html" title="Graphical Tools"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="graphical_tools.html" >Graphical Tools</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">GPU-Accelerated Viewer (pp.view)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

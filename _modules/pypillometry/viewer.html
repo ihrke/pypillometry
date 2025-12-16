@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.viewer &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.0/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.0/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+const defaultStyle = document.createElement('style');
+defaultStyle.textContent = `pre.mermaid {
+    /* Same as .mermaid-container > pre */
+    display: block;
+    width: 100%;
+}
+
+pre.mermaid > svg {
+    /* Same as .mermaid-container > pre > svg */
+    height: 500px;
+    width: 100%;
+    max-width: 100% !important;
+}
+`;
+document.head.appendChild(defaultStyle);
+
+const fullscreenStyle = document.createElement('style');
+fullscreenStyle.textContent = `.mermaid-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.mermaid-container > pre {
+    display: block;
+    width: 100%;
+}
+
+.mermaid-container > pre > svg {
+    height: 500px;
+    width: 100%;
+    max-width: 100% !important;
+}
+
+.mermaid-fullscreen-btn {
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    color: #333;
+}
+
+.mermaid-fullscreen-btn:hover {
+    opacity: 100% !important;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    transform: scale(1.1);
+}
+
+.mermaid-fullscreen-btn.dark-theme {
+    background: rgba(50, 50, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #e0e0e0;
+}
+
+.mermaid-fullscreen-btn.dark-theme:hover {
+    background: rgba(60, 60, 60, 1);
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
+}
+
+.mermaid-fullscreen-modal {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 95vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.98);
+    z-index: 9999;
+    padding: 20px;
+    overflow: auto;
+}
+
+.mermaid-fullscreen-modal.dark-theme {
+    background: rgba(0, 0, 0, 0.98);
+}
+
+.mermaid-fullscreen-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-container-fullscreen {
+    position: relative;
+    width: 95vw;
+    height: 90vh;
+    max-width: 95vw;
+    max-height: 90vh;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-container-fullscreen.dark-theme {
+    background: #1a1a1a;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+}
+
+.mermaid-container-fullscreen pre.mermaid {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-container-fullscreen .mermaid svg {
+    height: 100% !important;
+    width: 100% !important;
+    cursor: grab;
+}
+
+.mermaid-fullscreen-close {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+    font-size: 24px;
+    line-height: 1;
+    color: #333;
+}
+
+.mermaid-fullscreen-close:hover {
+    background: white;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    transform: scale(1.1);
+}
+
+.mermaid-fullscreen-close.dark-theme {
+    background: rgba(50, 50, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e0e0e0;
+}
+
+.mermaid-fullscreen-close.dark-theme:hover {
+    background: rgba(60, 60, 60, 1);
+    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
+}
+
+.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
+    display: none !important;
+}`;
+document.head.appendChild(fullscreenStyle);
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness < 128;
+    }
+    return false;
+};
+
+const load = async () => {
+    await mermaid.run();
+
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+
+    if ("False" === "True") {
+        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("");
+            if(all_mermaids.length !== mermaids_processed.length) {
+                setTimeout(load, 200);
+                return;
+            } else if(svgs.size() !== mermaids_to_add_zoom) {
+                setTimeout(load, 200);
+                return;
+            } else {
+                svgs.each(function() {
+                    var svg = d3.select(this);
+                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                    var inner = svg.select("g");
+                    var zoom = d3.zoom().on("zoom", function(event) {
+                        inner.attr("transform", event.transform);
+                    });
+                    svg.call(zoom);
+                });
+            }
+        }
+    } else if(all_mermaids.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(load, 200);
+        return;
+    }
+
+    const darkTheme = isDarkTheme();
+
+    // Stop here if not adding fullscreen capability
+    if ("True" !== "True") return;
+
+    const modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    const modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    let previousScrollOffset = [window.scrollX, window.scrollY];
+
+    const closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+
+    const allButtons = [];
+
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = '⛶';
+        fullscreenBtn.style.opacity = '50%';
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scroll, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.sdisplay = 'block';
+
+                if ("False" === "True") {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        container.appendChild(fullscreenBtn);
+        allButtons.push(fullscreenBtn);
+    });
+
+    // Update theme classes when theme changes
+    const updateTheme = () => {
+        const dark = isDarkTheme();
+        allButtons.forEach(btn => {
+            if (dark) {
+                btn.classList.add('dark-theme');
+            } else {
+                btn.classList.remove('dark-theme');
+            }
+        });
+        if (dark) {
+            modal.classList.add('dark-theme');
+            modalContent.classList.add('dark-theme');
+            closeBtn.classList.add('dark-theme');
+        } else {
+            modal.classList.remove('dark-theme');
+            modalContent.classList.remove('dark-theme');
+            closeBtn.classList.remove('dark-theme');
+        }
+    };
+
+    // Watch for theme changes
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style']
+    });
+};
+
+window.addEventListener("load", load);
+</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.viewer</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pypillometry.viewer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;GPU-accelerated viewer for eye-tracking data using VisPy.</span>
+
+<span class="sd">This module provides a fast, GPU-accelerated viewer for long eye-tracking</span>
+<span class="sd">recordings using VisPy for OpenGL rendering.</span>
+
+<span class="sd">Usage</span>
+<span class="sd">-----</span>
+<span class="sd">&gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">&gt;&gt;&gt; data = pp.EyeData.from_eyelink(&#39;data.edf&#39;)  # doctest: +SKIP</span>
+<span class="sd">&gt;&gt;&gt; pp.view(data)  # doctest: +SKIP</span>
+
+<span class="sd"># View raw numpy arrays</span>
+<span class="sd">&gt;&gt;&gt; import numpy as np  # doctest: +SKIP</span>
+<span class="sd">&gt;&gt;&gt; x = np.random.randn(1000)  # doctest: +SKIP</span>
+<span class="sd">&gt;&gt;&gt; pp.view(x)  # Single array  # doctest: +SKIP</span>
+<span class="sd">&gt;&gt;&gt; pp.view([x, y])  # Multiple arrays in same plot  # doctest: +SKIP</span>
+<span class="sd">&gt;&gt;&gt; pp.view({&quot;upper&quot;: [x, y], &quot;lower&quot;: z})  # Multiple plots  # doctest: +SKIP</span>
+
+<span class="sd">Features</span>
+<span class="sd">--------</span>
+<span class="sd">- GPU-accelerated rendering for smooth navigation of large datasets</span>
+<span class="sd">- Keyboard-only navigation (no GUI controls needed)</span>
+<span class="sd">- Masked data highlighted with colored background</span>
+<span class="sd">- Event markers shown as vertical grey stripes with labels</span>
+<span class="sd">- Separate plots for each variable type (pupil, x, y)</span>
+<span class="sd">- Different colors for left (blue) and right (red) eye data</span>
+<span class="sd">- Support for viewing raw numpy arrays and masked arrays</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;view&#39;</span><span class="p">,</span> <span class="s1">&#39;tweak&#39;</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_array_lengths</span><span class="p">(</span><span class="n">arrays</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate that all arrays have the same length.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arrays : list of ndarray</span>
+<span class="sd">        Arrays to validate.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If arrays have different lengths.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">arrays</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">lengths</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">lengths</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;All arrays must have the same length, got: </span><span class="si">{</span><span class="n">lengths</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_input</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize input data to a common format.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : various</span>
+<span class="sd">        Input data: EyeData object, ndarray, list of ndarrays, or dict.</span>
+<span class="sd">    time : ndarray, optional</span>
+<span class="sd">        Time vector for raw arrays.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        (mode, plot_spec, time_vector) where:</span>
+<span class="sd">        - mode is &#39;eyedata&#39; or &#39;arrays&#39;</span>
+<span class="sd">        - plot_spec is EyeData object or dict of {label: [arrays]}</span>
+<span class="sd">        - time_vector is the time axis in seconds</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check for EyeData-like object (has tx and data attributes)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;tx&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;eyedata&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.001</span>
+    
+    <span class="c1"># Helper to convert to array while preserving MaskedArrays</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_to_array</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">a</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    
+    <span class="c1"># Single array</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">)):</span>
+        <span class="n">time_vec</span> <span class="o">=</span> <span class="n">time</span> <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;arrays&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Signal&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">_to_array</span><span class="p">(</span><span class="n">data</span><span class="p">)]},</span> <span class="n">time_vec</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    
+    <span class="c1"># List of arrays -&gt; one plot with multiple lines</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="c1"># Validate all items are arrays (preserve MaskedArrays)</span>
+        <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">_to_array</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+        <span class="n">_validate_array_lengths</span><span class="p">(</span><span class="n">arrays</span><span class="p">)</span>
+        <span class="n">time_vec</span> <span class="o">=</span> <span class="n">time</span> <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;arrays&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Signal&#39;</span><span class="p">:</span> <span class="n">arrays</span><span class="p">},</span> <span class="n">time_vec</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    
+    <span class="c1"># Dict of arrays -&gt; multiple plots</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">plots</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">all_arrays</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">arr_or_list</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr_or_list</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">_to_array</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arr_or_list</span><span class="p">]</span>
+                <span class="n">plots</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">arrays</span>
+                <span class="n">all_arrays</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">arrays</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">arr</span> <span class="o">=</span> <span class="n">_to_array</span><span class="p">(</span><span class="n">arr_or_list</span><span class="p">)</span>
+                <span class="n">plots</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">arr</span><span class="p">]</span>
+                <span class="n">all_arrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+        
+        <span class="n">_validate_array_lengths</span><span class="p">(</span><span class="n">all_arrays</span><span class="p">)</span>
+        <span class="n">first_arr</span> <span class="o">=</span> <span class="n">all_arrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">time_vec</span> <span class="o">=</span> <span class="n">time</span> <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">first_arr</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;arrays&#39;</span><span class="p">,</span> <span class="n">plots</span><span class="p">,</span> <span class="n">time_vec</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Unsupported data type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">. &quot;</span>
+        <span class="s2">&quot;Expected EyeData, ndarray, list of ndarrays, or dict of ndarrays.&quot;</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="view">
+<a class="viewcode-back" href="../../viewer.html#pypillometry.view">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">view</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+         <span class="n">overlay_pupil</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overlay_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overlay_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+         <span class="n">extra_plots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+         <span class="n">highlight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">highlight_color</span><span class="o">=</span><span class="s1">&#39;lightblue&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;Intervals&#39;</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;View eye-tracking data or numpy arrays with GPU-accelerated rendering.</span>
+<span class="sd">    </span>
+<span class="sd">    Opens an interactive viewer window using VisPy for fast GPU-based</span>
+<span class="sd">    rendering. Suitable for long recordings (60+ minutes at 1000 Hz).</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : EyeData, ndarray, list of ndarrays, or dict</span>
+<span class="sd">        Data to view. Supports multiple input types:</span>
+<span class="sd">        </span>
+<span class="sd">        - **EyeData object**: Eye-tracking data with `tx` attribute and </span>
+<span class="sd">          dictionary-like access to modalities (left_pupil, right_x, etc.)</span>
+<span class="sd">        - **ndarray or MaskedArray**: Single array displayed as one plot</span>
+<span class="sd">        - **list of arrays**: Multiple arrays overlaid in one plot with </span>
+<span class="sd">          different colors</span>
+<span class="sd">        - **dict of arrays**: Keys become plot labels (y-axis), values are </span>
+<span class="sd">          arrays or lists of arrays. Example: ``{&quot;upper&quot;: [x, y], &quot;lower&quot;: z}``</span>
+<span class="sd">          creates two subplots with x,y overlaid in &quot;upper&quot; and z in &quot;lower&quot;</span>
+<span class="sd">    variables : list of str, optional</span>
+<span class="sd">        For EyeData objects only. Filter which modalities to display.</span>
+<span class="sd">        Valid values: &#39;pupil&#39;, &#39;x&#39;, &#39;y&#39;. Default: show all available.</span>
+<span class="sd">        Example: ``variables=[&#39;pupil&#39;]`` shows only pupil data.</span>
+<span class="sd">    time : ndarray, optional</span>
+<span class="sd">        Time vector for raw array viewing. If not provided, uses sample</span>
+<span class="sd">        index (0, 1, 2, ...). Should have same length as data arrays.</span>
+<span class="sd">    overlay_pupil : dict, optional</span>
+<span class="sd">        (EyeData only) Additional timeseries to overlay on the pupil plot.</span>
+<span class="sd">        Keys are labels for legend, values are either:</span>
+<span class="sd">        - str: name of data in eyedata.data (e.g., &#39;left_pupil_filtered&#39;)</span>
+<span class="sd">        - array-like: timeseries of same length as eyedata</span>
+<span class="sd">    overlay_x : dict, optional</span>
+<span class="sd">        (EyeData only) Additional timeseries to overlay on the gaze X plot.</span>
+<span class="sd">    overlay_y : dict, optional</span>
+<span class="sd">        (EyeData only) Additional timeseries to overlay on the gaze Y plot.</span>
+<span class="sd">    extra_plots : dict, optional</span>
+<span class="sd">        (EyeData only) Additional numpy arrays to display as separate subplots</span>
+<span class="sd">        below the EyeData variables. Keys become subplot labels (y-axis), </span>
+<span class="sd">        values are arrays or lists of arrays. Arrays must have the same length</span>
+<span class="sd">        as the EyeData. Example: ``extra_plots={&quot;velocity&quot;: vel, &quot;custom&quot;: [a, b]}``</span>
+<span class="sd">    highlight : Intervals or dict, optional</span>
+<span class="sd">        Intervals to highlight in the plots. Can be:</span>
+<span class="sd">        - An Intervals object (applied to all plots)</span>
+<span class="sd">        - A dict mapping variable type (&#39;pupil&#39;, &#39;x&#39;, &#39;y&#39;) to Intervals objects</span>
+<span class="sd">    highlight_color : str, optional</span>
+<span class="sd">        Color for highlighted regions (default: &#39;lightblue&#39;)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Optional[Dict[str, Intervals]]</span>
+<span class="sd">        If regions were selected (using &#39;s&#39; key + mouse clicks), returns a dict</span>
+<span class="sd">        mapping plot label to Intervals objects containing the selected regions</span>
+<span class="sd">        in seconds. Returns None if no selections were made.</span>
+<span class="sd">    </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If arrays have different lengths.</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If data type is not supported.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Keyboard controls:</span>
+<span class="sd">    </span>
+<span class="sd">    - Left/Right arrows: Pan 10% of view</span>
+<span class="sd">    - Up/Down arrows: Zoom in/out 20%</span>
+<span class="sd">    - PgUp/PgDn: Pan 50% of view  </span>
+<span class="sd">    - Home/End: Jump to start/end</span>
+<span class="sd">    - Space: Reset to full view</span>
+<span class="sd">    - +/-: Zoom in/out</span>
+<span class="sd">    - M: Toggle mask regions (EyeData only)</span>
+<span class="sd">    - O: Toggle event markers (EyeData only)</span>
+<span class="sd">    - S: Enter selection mode (drag to mark a region)</span>
+<span class="sd">    - D/Backspace: Remove last selection</span>
+<span class="sd">    - H/?: Show help</span>
+<span class="sd">    - Q/Esc: Close viewer</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    View EyeData:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">    &gt;&gt;&gt; data = pp.EyeData.from_eyelink(&#39;recording.edf&#39;)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; pp.view(data)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; pp.view(data, variables=[&#39;pupil&#39;])  # Only show pupil plots  # doctest: +SKIP</span>
+<span class="sd">    </span>
+<span class="sd">    View numpy arrays:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; x = np.random.randn(1000)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; y = np.random.randn(1000)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; pp.view(x)  # Single array  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; pp.view([x, y])  # Multiple arrays in one plot  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; pp.view({&quot;Signal 1&quot;: x, &quot;Signal 2&quot;: y})  # Two separate plots  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; pp.view({&quot;upper&quot;: [x, y], &quot;lower&quot;: x + y})  # Complex layout  # doctest: +SKIP</span>
+<span class="sd">    </span>
+<span class="sd">    With time vector:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; t = np.linspace(0, 10, 1000)  # 10 seconds  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; pp.view(x, time=t)  # doctest: +SKIP</span>
+<span class="sd">    </span>
+<span class="sd">    EyeData with overlays:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; smoothed = np.convolve(data[&#39;left_pupil&#39;], np.ones(100)/100, &#39;same&#39;)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; pp.view(data, overlay_pupil={&#39;smoothed&#39;: smoothed})  # doctest: +SKIP</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">locale</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">vispy</span>
+    
+    <span class="c1"># Normalize input to common format</span>
+    <span class="n">mode</span><span class="p">,</span> <span class="n">plot_spec</span><span class="p">,</span> <span class="n">time_seconds</span> <span class="o">=</span> <span class="n">_normalize_input</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+    
+    <span class="c1"># Save LC_TIME locale before Qt initialization (Qt may change it)</span>
+    <span class="c1"># This prevents issues with date parsing in EDF files after viewer is opened</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">saved_lc_time</span> <span class="o">=</span> <span class="n">locale</span><span class="o">.</span><span class="n">getlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_TIME</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">saved_lc_time</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="c1"># Configure vispy to use an available Qt backend</span>
+    <span class="c1"># Detect which Qt is already imported and use that, or try in order</span>
+    <span class="k">if</span> <span class="s1">&#39;PyQt6&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span> <span class="ow">or</span> <span class="s1">&#39;PyQt6.QtCore&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="n">vispy</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="s1">&#39;pyqt6&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">&#39;PyQt5&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span> <span class="ow">or</span> <span class="s1">&#39;PyQt5.QtCore&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="n">vispy</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="s1">&#39;pyqt5&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">&#39;PySide6&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="n">vispy</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="s1">&#39;pyside6&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">&#39;PySide2&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="n">vispy</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="s1">&#39;pyside2&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Try PyQt6 first (more modern), then PyQt5</span>
+        <span class="k">for</span> <span class="n">backend</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pyqt6&#39;</span><span class="p">,</span> <span class="s1">&#39;pyqt5&#39;</span><span class="p">,</span> <span class="s1">&#39;pyside6&#39;</span><span class="p">,</span> <span class="s1">&#39;pyside2&#39;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">vispy</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="n">backend</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                <span class="k">continue</span>
+    
+    <span class="kn">from</span><span class="w"> </span><span class="nn">vispy</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+    
+    <span class="c1"># Import here to avoid circular imports and defer vispy loading</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.canvas</span><span class="w"> </span><span class="kn">import</span> <span class="n">ViewerCanvas</span>
+    
+    <span class="c1"># Build overlays dict (only used for EyeData mode)</span>
+    <span class="n">overlays</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">overlay_pupil</span><span class="p">:</span>
+        <span class="n">overlays</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">overlay_pupil</span>
+    <span class="k">if</span> <span class="n">overlay_x</span><span class="p">:</span>
+        <span class="n">overlays</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">overlay_x</span>
+    <span class="k">if</span> <span class="n">overlay_y</span><span class="p">:</span>
+        <span class="n">overlays</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">overlay_y</span>
+    
+    <span class="c1"># Normalize and validate extra_plots (only for EyeData mode)</span>
+    <span class="n">normalized_extra_plots</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">extra_plots</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;eyedata&#39;</span><span class="p">:</span>
+        <span class="n">normalized_extra_plots</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">eyedata_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">plot_spec</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">arr_or_list</span> <span class="ow">in</span> <span class="n">extra_plots</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr_or_list</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="c1"># Preserve MaskedArrays, convert others to ndarray</span>
+                <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">a</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arr_or_list</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Preserve MaskedArrays, convert others to ndarray</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arr_or_list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+                    <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">arr_or_list</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr_or_list</span><span class="p">)]</span>
+            <span class="c1"># Validate lengths match EyeData</span>
+            <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">!=</span> <span class="n">eyedata_len</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;extra_plots[&#39;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&#39;] has length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;but EyeData has length </span><span class="si">{</span><span class="n">eyedata_len</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+            <span class="n">normalized_extra_plots</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">arrays</span>
+    
+    <span class="c1"># Create the viewer based on mode</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;eyedata&#39;</span><span class="p">:</span>
+        <span class="n">canvas</span> <span class="o">=</span> <span class="n">ViewerCanvas</span><span class="p">(</span>
+            <span class="n">plot_spec</span><span class="p">,</span>  <span class="c1"># EyeData object</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;eyedata&#39;</span><span class="p">,</span>
+            <span class="n">time_seconds</span><span class="o">=</span><span class="n">time_seconds</span><span class="p">,</span>
+            <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+            <span class="n">overlays</span><span class="o">=</span><span class="n">overlays</span><span class="p">,</span>
+            <span class="n">extra_plots</span><span class="o">=</span><span class="n">normalized_extra_plots</span><span class="p">,</span>
+            <span class="n">highlight</span><span class="o">=</span><span class="n">highlight</span><span class="p">,</span> 
+            <span class="n">highlight_color</span><span class="o">=</span><span class="n">highlight_color</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Array mode</span>
+        <span class="n">canvas</span> <span class="o">=</span> <span class="n">ViewerCanvas</span><span class="p">(</span>
+            <span class="n">plot_spec</span><span class="p">,</span>  <span class="c1"># dict of {label: [arrays]}</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;arrays&#39;</span><span class="p">,</span>
+            <span class="n">time_seconds</span><span class="o">=</span><span class="n">time_seconds</span><span class="p">,</span>
+            <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">overlays</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+            <span class="n">highlight</span><span class="o">=</span><span class="n">highlight</span><span class="p">,</span> 
+            <span class="n">highlight_color</span><span class="o">=</span><span class="n">highlight_color</span>
+        <span class="p">)</span>
+    
+    <span class="c1"># For array mode, set the view range before showing to avoid</span>
+    <span class="c1"># singular matrix errors during initial resize events</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;arrays&#39;</span><span class="p">:</span>
+        <span class="c1"># Process pending events to let canvas initialize</span>
+        <span class="n">canvas</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">process_events</span><span class="p">()</span>
+        <span class="c1"># Set view range now</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">canvas</span><span class="o">.</span><span class="n">_set_view_range</span><span class="p">(</span><span class="n">canvas</span><span class="o">.</span><span class="n">data_min</span><span class="p">,</span> <span class="n">canvas</span><span class="o">.</span><span class="n">data_max</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+    
+    <span class="c1"># Show canvas</span>
+    <span class="n">canvas</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    
+    <span class="c1"># Ensure window is visible and focused</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">canvas</span><span class="p">,</span> <span class="s1">&#39;native&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">canvas</span><span class="o">.</span><span class="n">native</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">canvas</span><span class="o">.</span><span class="n">native</span><span class="o">.</span><span class="n">raise_</span><span class="p">()</span>
+        <span class="n">canvas</span><span class="o">.</span><span class="n">native</span><span class="o">.</span><span class="n">activateWindow</span><span class="p">()</span>
+    
+    <span class="c1"># Force an initial draw</span>
+    <span class="n">canvas</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+    <span class="n">canvas</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">process_events</span><span class="p">()</span>
+    
+    <span class="c1"># Re-set the view range now that canvas is sized properly</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;arrays&#39;</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">canvas</span><span class="o">.</span><span class="n">_set_view_range</span><span class="p">(</span><span class="n">canvas</span><span class="o">.</span><span class="n">data_min</span><span class="p">,</span> <span class="n">canvas</span><span class="o">.</span><span class="n">data_max</span><span class="p">)</span>
+            <span class="n">canvas</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+    
+    <span class="c1"># Run the Qt event loop directly (blocks until window closed)</span>
+    <span class="c1"># vispy&#39;s app.run() doesn&#39;t block properly in Jupyter</span>
+    <span class="n">qt_app</span> <span class="o">=</span> <span class="n">canvas</span><span class="o">.</span><span class="n">native</span><span class="o">.</span><span class="n">parent</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">canvas</span><span class="o">.</span><span class="n">native</span><span class="p">,</span> <span class="s1">&#39;parent&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">qt_app</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Get the QApplication instance</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">QApplication</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">PyQt5.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">QApplication</span>
+        <span class="n">qt_app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="n">qt_app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">qt_app</span><span class="o">.</span><span class="n">exec</span><span class="p">()</span>  <span class="c1"># PyQt6</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>  <span class="c1"># Fallback</span>
+    
+    <span class="c1"># Restore LC_TIME locale after Qt event loop ends</span>
+    <span class="c1"># Qt can change the locale (e.g., to system locale like nb_NO), which breaks</span>
+    <span class="c1"># date parsing in eyelinkio that expects English month/day abbreviations</span>
+    <span class="k">if</span> <span class="n">saved_lc_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_TIME</span><span class="p">,</span> <span class="n">saved_lc_time</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c1"># If restoring fails, force C locale for date parsing</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_TIME</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>  <span class="c1"># If all else fails, continue with whatever Qt set</span>
+    
+    <span class="c1"># Get selections from canvas and convert to Intervals</span>
+    <span class="n">selections</span> <span class="o">=</span> <span class="n">canvas</span><span class="o">.</span><span class="n">get_selections</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">selections</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    
+    <span class="c1"># Import Intervals here to avoid circular imports</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
+    
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">var_type</span><span class="p">,</span> <span class="n">intervals_list</span> <span class="ow">in</span> <span class="n">selections</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">var_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span><span class="n">intervals_list</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;sec&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;selected_</span><span class="si">{</span><span class="n">var_type</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="tweak">
+<a class="viewcode-back" href="../../tweak.html#pypillometry.tweak">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tweak</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interactively tweak function parameters while viewing the result.</span>
+<span class="sd">    </span>
+<span class="sd">    Opens a viewer showing the original data with the function result overlaid.</span>
+<span class="sd">    A separate parameter window allows adjusting numeric parameters in real-time,</span>
+<span class="sd">    with the overlay updating to reflect the changes.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : EyeData, ndarray, or list of ndarrays</span>
+<span class="sd">        Original data to display and pass to the function.</span>
+<span class="sd">    func : callable</span>
+<span class="sd">        Function that takes (data, **params) and returns transformed data</span>
+<span class="sd">        of the same type. For EyeData input, function receives the full EyeData</span>
+<span class="sd">        object and should return an EyeData object. For arrays, receives and</span>
+<span class="sd">        returns arrays.</span>
+<span class="sd">    params : dict</span>
+<span class="sd">        Initial parameter values. Only numeric types (int, float) are supported.</span>
+<span class="sd">        These become the adjustable parameters in the GUI.</span>
+<span class="sd">    variable : str, optional</span>
+<span class="sd">        For EyeData objects, specifies which variable to display (e.g., </span>
+<span class="sd">        &#39;left_pupil&#39;, &#39;right_pupil&#39;, &#39;left_x&#39;, &#39;right_y&#39;). If not provided,</span>
+<span class="sd">        uses the first available pupil channel.</span>
+<span class="sd">    time : ndarray, optional</span>
+<span class="sd">        Time vector for array data. If not provided, uses sample indices.</span>
+<span class="sd">        For EyeData, the time vector is taken from the object.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Final parameter values after user adjustments. Returns the parameter</span>
+<span class="sd">        dict as it was when the viewer was closed.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    With EyeData - function receives full EyeData object:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; eyedata = pp.get_example_data(&quot;rlmw_002_short&quot;)  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; def smooth(d, lp=5):</span>
+<span class="sd">    ...     return d.pupil_lowpass_filter(cutoff=lp, inplace=False)</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; # Tweak lowpass filter cutoff, display left_pupil</span>
+<span class="sd">    &gt;&gt;&gt; params = pp.tweak(eyedata, smooth, {&#39;lp&#39;: 5}, variable=&#39;left_pupil&#39;)  # doctest: +SKIP</span>
+<span class="sd">    </span>
+<span class="sd">    Basic usage with numpy arrays:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; # Create sample data</span>
+<span class="sd">    &gt;&gt;&gt; data = np.sin(np.linspace(0, 10, 1000)) + np.random.randn(1000) * 0.1</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; # Define a smoothing function</span>
+<span class="sd">    &gt;&gt;&gt; def smooth(x, window_size=10):</span>
+<span class="sd">    ...     kernel = np.ones(window_size) / window_size</span>
+<span class="sd">    ...     return np.convolve(x, kernel, mode=&#39;same&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; # Tweak the window_size parameter</span>
+<span class="sd">    &gt;&gt;&gt; final_params = pp.tweak(data, smooth, {&#39;window_size&#39;: 10})  # doctest: +SKIP</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Keyboard controls in the viewer:</span>
+<span class="sd">    </span>
+<span class="sd">    - Left/Right arrows: Pan view</span>
+<span class="sd">    - Up/Down arrows: Zoom in/out</span>
+<span class="sd">    - Space: Reset to full view</span>
+<span class="sd">    - Q/Esc: Close viewer</span>
+<span class="sd">    </span>
+<span class="sd">    The parameter window stays on top and can be repositioned. Changes to</span>
+<span class="sd">    parameters are applied immediately and the overlay updates in real-time.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">locale</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">vispy</span>
+    
+    <span class="c1"># Validate params - only numeric types allowed</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Parameter &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="s2">&quot;but only int and float are supported.&quot;</span>
+            <span class="p">)</span>
+    
+    <span class="c1"># Determine if we have EyeData or raw arrays</span>
+    <span class="n">is_eyedata</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;tx&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
+    <span class="n">original_mask</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="k">if</span> <span class="n">is_eyedata</span><span class="p">:</span>
+        <span class="c1"># EyeData object</span>
+        <span class="n">eyedata</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="n">time_vec</span> <span class="o">=</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.001</span>  <span class="c1"># Convert ms to seconds</span>
+        
+        <span class="c1"># Determine which variable to display</span>
+        <span class="k">if</span> <span class="n">variable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># User specified a variable</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">eyedata</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable &#39;</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">&#39; not found in EyeData object&quot;</span><span class="p">)</span>
+            <span class="n">display_variable</span> <span class="o">=</span> <span class="n">variable</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Find first available data channel</span>
+            <span class="n">data_array</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">display_variable</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;left_pupil&#39;</span><span class="p">,</span> <span class="s1">&#39;right_pupil&#39;</span><span class="p">,</span> <span class="s1">&#39;left_x&#39;</span><span class="p">,</span> <span class="s1">&#39;right_x&#39;</span><span class="p">,</span> <span class="s1">&#39;left_y&#39;</span><span class="p">,</span> <span class="s1">&#39;right_y&#39;</span><span class="p">]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">arr</span> <span class="o">=</span> <span class="n">eyedata</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">arr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                        <span class="n">display_variable</span> <span class="o">=</span> <span class="n">key</span>
+                        <span class="k">break</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+                    <span class="k">continue</span>
+            
+            <span class="k">if</span> <span class="n">data_array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No valid data channel found in EyeData object&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Extract mask for original data</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">original_mask</span> <span class="o">=</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">display_variable</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">original_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">original_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">original_mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="n">original_mask</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Tweak - </span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">eyedata</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;name&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Unknown&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1"> [</span><span class="si">{</span><span class="n">display_variable</span><span class="si">}</span><span class="s1">]&#39;</span>
+        <span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">fs</span>
+    
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="c1"># List of arrays - use the first one</span>
+        <span class="n">data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">time_vec</span> <span class="o">=</span> <span class="n">time</span> <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Tweak Viewer&#39;</span>
+        <span class="n">sampling_rate</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">display_variable</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Single array</span>
+        <span class="n">data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">time_vec</span> <span class="o">=</span> <span class="n">time</span> <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Tweak Viewer&#39;</span>
+        <span class="n">sampling_rate</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">display_variable</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="c1"># Import Intervals for type checking</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_intervals_to_seconds</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">default_fs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert Intervals object to list of (start, end) tuples in seconds.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">default_fs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">intervals</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">default_fs</span>
+        <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">units</span> <span class="o">!=</span> <span class="s1">&#39;sec&#39;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">intervals</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s1">&#39;sec&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">pass</span>  <span class="c1"># Keep original if conversion fails</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">intervals</span><span class="o">.</span><span class="n">intervals</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_result</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract display arrays, mask, and intervals from function result.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns (arrays_dict, mask, intervals_dict) where:</span>
+<span class="sd">        - arrays_dict: dict mapping names to ndarrays (for line plots)</span>
+<span class="sd">        - mask: boolean mask array or None</span>
+<span class="sd">        - intervals_dict: dict mapping names to list of (start,end) tuples in seconds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">arrays_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">intervals_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">&#39;tx&#39;</span><span class="p">):</span>
+            <span class="c1"># Result is EyeData - extract the same variable</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">display_variable</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="n">arrays_dict</span><span class="p">[</span><span class="s1">&#39;tweaked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Function result does not contain variable &#39;</span><span class="si">{</span><span class="n">display_variable</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                <span class="p">)</span>
+            <span class="c1"># Extract mask</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">display_variable</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+                <span class="k">pass</span>
+        
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">Intervals</span><span class="p">):</span>
+            <span class="c1"># Single Intervals object</span>
+            <span class="n">intervals_dict</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_intervals_to_seconds</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># Dict - can contain arrays and/or Intervals</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Intervals</span><span class="p">):</span>
+                    <span class="n">intervals_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">_intervals_to_seconds</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">arrays_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Single array</span>
+            <span class="n">arrays_dict</span><span class="p">[</span><span class="s1">&#39;tweaked&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">arrays_dict</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">intervals_dict</span>
+    
+    <span class="n">time_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_vec</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    
+    <span class="c1"># Save LC_TIME locale before Qt initialization</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">saved_lc_time</span> <span class="o">=</span> <span class="n">locale</span><span class="o">.</span><span class="n">getlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_TIME</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">saved_lc_time</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="c1"># Configure vispy backend</span>
+    <span class="k">if</span> <span class="s1">&#39;PyQt6&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span> <span class="ow">or</span> <span class="s1">&#39;PyQt6.QtCore&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="n">vispy</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="s1">&#39;pyqt6&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">&#39;PyQt5&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span> <span class="ow">or</span> <span class="s1">&#39;PyQt5.QtCore&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="n">vispy</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="s1">&#39;pyqt5&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">&#39;PySide6&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="n">vispy</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="s1">&#39;pyside6&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">&#39;PySide2&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="n">vispy</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="s1">&#39;pyside2&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">backend</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pyqt6&#39;</span><span class="p">,</span> <span class="s1">&#39;pyqt5&#39;</span><span class="p">,</span> <span class="s1">&#39;pyside6&#39;</span><span class="p">,</span> <span class="s1">&#39;pyside2&#39;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">vispy</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="n">backend</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                <span class="k">continue</span>
+    
+    <span class="kn">from</span><span class="w"> </span><span class="nn">vispy</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.tweak</span><span class="w"> </span><span class="kn">import</span> <span class="n">TweakCanvas</span><span class="p">,</span> <span class="n">TweakViewer</span>
+    
+    <span class="c1"># Compute initial overlay - pass full data to function</span>
+    <span class="n">current_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">current_params</span><span class="p">)</span>
+        <span class="n">initial_arrays</span><span class="p">,</span> <span class="n">overlay_mask</span><span class="p">,</span> <span class="n">initial_intervals</span> <span class="o">=</span> <span class="n">extract_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Function failed with initial parameters: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Validate overlay array lengths</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">initial_arrays</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Function returned array &#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&#39; of length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;but input has length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data_array</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+    
+    <span class="c1"># Create canvas with mask and intervals support</span>
+    <span class="n">canvas</span> <span class="o">=</span> <span class="n">TweakCanvas</span><span class="p">(</span>
+        <span class="n">time_seconds</span><span class="o">=</span><span class="n">time_vec</span><span class="p">,</span>
+        <span class="n">original_data</span><span class="o">=</span><span class="n">data_array</span><span class="p">,</span>
+        <span class="n">original_mask</span><span class="o">=</span><span class="n">original_mask</span><span class="p">,</span>
+        <span class="n">overlay_data</span><span class="o">=</span><span class="n">initial_arrays</span> <span class="k">if</span> <span class="n">initial_arrays</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">overlay_mask</span><span class="o">=</span><span class="n">overlay_mask</span><span class="p">,</span>
+        <span class="n">overlay_intervals</span><span class="o">=</span><span class="n">initial_intervals</span> <span class="k">if</span> <span class="n">initial_intervals</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="n">title</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># Callback for parameter changes - pass full data to function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_params_change</span><span class="p">(</span><span class="n">new_params</span><span class="p">):</span>
+        <span class="k">nonlocal</span> <span class="n">current_params</span>
+        <span class="n">current_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">new_params</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">new_params</span><span class="p">)</span>
+            <span class="n">new_arrays</span><span class="p">,</span> <span class="n">new_mask</span><span class="p">,</span> <span class="n">new_intervals</span> <span class="o">=</span> <span class="n">extract_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">new_arrays</span><span class="p">:</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">update_overlay</span><span class="p">(</span><span class="n">new_arrays</span><span class="p">,</span> <span class="n">new_mask</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">new_intervals</span><span class="p">:</span>
+                <span class="n">canvas</span><span class="o">.</span><span class="n">update_intervals</span><span class="p">(</span><span class="n">new_intervals</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Function failed with parameters </span><span class="si">{</span><span class="n">new_params</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Create viewer with embedded parameter panel</span>
+    <span class="n">func_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span>
+    <span class="n">viewer</span> <span class="o">=</span> <span class="n">TweakViewer</span><span class="p">(</span>
+        <span class="n">canvas</span><span class="o">=</span><span class="n">canvas</span><span class="p">,</span>
+        <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+        <span class="n">on_change</span><span class="o">=</span><span class="n">on_params_change</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Tweak: </span><span class="si">{</span><span class="n">func_name</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># Show viewer</span>
+    <span class="n">viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    
+    <span class="n">canvas</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+    <span class="n">canvas</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">process_events</span><span class="p">()</span>
+    
+    <span class="c1"># Run Qt event loop</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">QApplication</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">PyQt5.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">QApplication</span>
+    
+    <span class="n">qt_app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">qt_app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">qt_app</span><span class="o">.</span><span class="n">exec</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    
+    <span class="c1"># Restore locale</span>
+    <span class="k">if</span> <span class="n">saved_lc_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_TIME</span><span class="p">,</span> <span class="n">saved_lc_time</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_TIME</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+    
+    <span class="k">return</span> <span class="n">viewer</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.viewer</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

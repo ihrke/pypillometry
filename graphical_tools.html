@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Graphical Tools &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="GPU-Accelerated Viewer (pp.view)" href="viewer.html" />
+    <link rel="prev" title="Overview" href="usage.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="viewer.html" title="GPU-Accelerated Viewer (pp.view)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="usage.html" title="Overview"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Graphical Tools</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="graphical-tools">
+<h1>Graphical Tools<a class="headerlink" href="#graphical-tools" title="Link to this heading">¶</a></h1>
+<p>pypillometry provides GPU-accelerated graphical tools for interactive exploration and parameter tuning of eye-tracking data. These tools use VisPy for fast OpenGL rendering, enabling smooth navigation even with long recordings (60+ minutes at 1000 Hz).</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Available Tools:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">GPU-Accelerated Viewer (pp.view)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#viewing-eyedata-objects">Viewing EyeData Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#viewing-numpy-arrays">Viewing Numpy Arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#filtering-variables">Filtering Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#adding-overlays">Adding Overlays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#extra-subplots">Extra Subplots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#interactive-selection">Interactive Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="viewer.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tweak.html">Interactive Parameter Tweaking (pp.tweak)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tweak.html#basic-usage-with-arrays">Basic Usage with Arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tweak.html#tweaking-eyedata-processing">Tweaking EyeData Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tweak.html#tweaking-blink-detection">Tweaking Blink Detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tweak.html#gui-controls">GUI Controls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tweak.html#return-values">Return Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tweak.html#api-reference">API Reference</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<dl class="simple">
+<dt><a class="reference internal" href="viewer.html#pypillometry.view" title="pypillometry.view"><code class="xref py py-func docutils literal notranslate"><span class="pre">view()</span></code></a></dt><dd><p>Interactive viewer for exploring EyeData objects or numpy arrays. Supports multiple subplots, overlays, masked region highlighting, and interactive region selection.</p>
+</dd>
+<dt><a class="reference internal" href="tweak.html#pypillometry.tweak" title="pypillometry.tweak"><code class="xref py py-func docutils literal notranslate"><span class="pre">tweak()</span></code></a></dt><dd><p>Interactive parameter tuning tool. Displays original data with function results overlaid, allowing real-time adjustment of function parameters through a GUI panel.</p>
+</dd>
+</dl>
+<p>Both tools share common keyboard shortcuts - press <code class="docutils literal notranslate"><span class="pre">H</span></code> or <code class="docutils literal notranslate"><span class="pre">?</span></code> while in the viewer to see the full list.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Graphical Tools</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="usage.html"
+                          title="previous chapter">Overview</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="viewer.html"
+                          title="next chapter">GPU-Accelerated Viewer (pp.view)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/graphical_tools.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="viewer.html" title="GPU-Accelerated Viewer (pp.view)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="usage.html" title="Overview"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Graphical Tools</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

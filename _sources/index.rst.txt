@@ -11,6 +11,7 @@ Documentation
    
    installation
    usage
+   graphical_tools
    notebooks
    examples/share_study
    api
