@@ -722,11 +722,92 @@ class TweakCanvas(SceneCanvas):
             center_x = self._get_mouse_x_in_data_coords()
             self._zoom_x_axis(factor, center_x)
     
+    def _show_help(self):
+        """Show help dialog with keybindings."""
+        try:
+            from PyQt6.QtWidgets import QMessageBox
+            from PyQt6.QtCore import Qt
+        except ImportError:
+            try:
+                from PyQt5.QtWidgets import QMessageBox
+                from PyQt5.QtCore import Qt
+            except ImportError:
+                print("Help: scroll=X-zoom, shift+scroll=Y-zoom, arrows=navigate, m=masks, i=intervals, q=quit")
+                return
+        
+        help_text = """
+<h2>Tweak Viewer - Controls</h2>
+
+<h3>Mouse Wheel</h3>
+<table>
+<tr><td><b>Scroll</b></td><td>Zoom X-axis (centered on mouse)</td></tr>
+<tr><td><b>Shift + Scroll</b></td><td>Zoom Y-axis (centered on mouse)</td></tr>
+</table>
+
+<h3>Navigation (X-axis)</h3>
+<table>
+<tr><td><b>←  →</b></td><td>Pan left / right (10%)</td></tr>
+<tr><td><b>PgUp  PgDn</b></td><td>Pan left / right (50%)</td></tr>
+<tr><td><b>Home  End</b></td><td>Jump to start / end</td></tr>
+<tr><td><b>Space</b></td><td>Show full signal</td></tr>
+</table>
+
+<h3>Zoom (X-axis)</h3>
+<table>
+<tr><td><b>↑  or  +</b></td><td>Zoom in</td></tr>
+<tr><td><b>↓  or  -</b></td><td>Zoom out</td></tr>
+</table>
+
+<h3>Y-Axis Zoom</h3>
+<table>
+<tr><td><b>Shift + ↑/↓</b></td><td>Zoom Y-axis in/out</td></tr>
+<tr><td><b>Shift + Space</b></td><td>Reset Y-axis to auto-fit</td></tr>
+</table>
+
+<h3>Display</h3>
+<table>
+<tr><td><b>M</b></td><td>Toggle mask regions (orange)</td></tr>
+<tr><td><b>I</b></td><td>Toggle interval highlights</td></tr>
+</table>
+
+<h3>Other</h3>
+<table>
+<tr><td><b>H  or  ?</b></td><td>Show this help</td></tr>
+<tr><td><b>Q  or  Esc</b></td><td>Close viewer</td></tr>
+</table>
+
+<h3>Parameter Panel</h3>
+<table>
+<tr><td><b>Auto Update</b></td><td>Update plot on every parameter change</td></tr>
+<tr><td><b>Update</b></td><td>Manually trigger update (when Auto off)</td></tr>
+<tr><td><b>Reset</b></td><td>Reset parameters to initial values</td></tr>
+</table>
+"""
+        
+        # Get parent window for the dialog
+        parent = None
+        if self._viewer is not None:
+            parent = self._viewer.main_window
+        elif self.native is not None:
+            parent = self.native
+        
+        msg = QMessageBox(parent)
+        msg.setWindowTitle("Tweak Viewer Help")
+        msg.setTextFormat(Qt.TextFormat.RichText)
+        msg.setText(help_text)
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg.exec()
+    
     def on_key_press(self, event):
         """Handle keyboard events."""
         key = event.key.name if hasattr(event.key, 'name') else str(event.key)
         modifiers = event.modifiers if hasattr(event, 'modifiers') else []
         shift_held = 'Shift' in modifiers if modifiers else False
+        
+        # Help with 'H' or '?'
+        if key in ('H', 'Slash') or (key == '/' and '?' in str(event.key)):
+            self._show_help()
+            return
         
         # Close window with Q or Escape
         if key in ('Q', 'Escape'):
