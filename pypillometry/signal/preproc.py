@@ -398,7 +398,7 @@ def detect_blinks_zero(sy, min_duration, blink_val=0):
     
     return np.array(blinks)
     
-def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin, blinkwindow):
+def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin, blinkwindow, min_onset_len=1, min_offset_len=1):
     """
     Method for finding the on- and offset for each blink (excluding transient).
     See https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
@@ -426,7 +426,11 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
     margin: tuple (int,int)
         margin that is subtracted/added to onset and offset (in sampling points)
     blinkwindow: int
-        how much time before and after each blink to include (in sampling points)        
+        how much time before and after each blink to include (in sampling points)
+    min_onset_len: int
+        minimum number of consecutive samples in an onset run to be considered valid
+    min_offset_len: int
+        minimum number of consecutive samples in an offset run to be considered valid
     """
     # Generate asymmetric velocity profiles
     # Backward-looking for onset detection (doesn't peek into blink)
@@ -459,12 +463,31 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
         if valid_onsets.size == 0:
             logger.debug(f"Blink {ix} (samples {start}-{end}) skipped: no valid onset crossings found")
             continue
-        # Find the one closest to startl and move back to start of that crossing
-        onset_ix = np.argmin(np.abs(valid_onsets - startl))
-        # Walk back through consecutive onsets to find the start of the crossing
-        while onset_ix > 0 and valid_onsets[onset_ix-1] + 1 == valid_onsets[onset_ix]:
-            onset_ix -= 1
-        onset = valid_onsets[onset_ix]
+        
+        # Identify runs in valid_onsets and filter by minimum length
+        # Find run boundaries (where consecutive difference > 1)
+        if len(valid_onsets) > 1:
+            run_starts = np.r_[0, np.where(np.diff(valid_onsets) > 1)[0] + 1]
+            run_ends = np.r_[np.where(np.diff(valid_onsets) > 1)[0], len(valid_onsets) - 1]
+            run_lengths = run_ends - run_starts + 1
+            # Filter to runs with sufficient length
+            valid_run_mask = run_lengths >= min_onset_len
+            if not valid_run_mask.any():
+                logger.debug(f"Blink {ix} (samples {start}-{end}) skipped: no onset runs >= {min_onset_len} samples")
+                continue
+            # Get start indices of valid runs (these are the onset candidates)
+            valid_run_starts = run_starts[valid_run_mask]
+            valid_run_start_values = valid_onsets[valid_run_starts]
+            # Find the run closest to startl (by its start value)
+            closest_run_idx = np.argmin(np.abs(valid_run_start_values - startl))
+            onset = valid_onsets[valid_run_starts[closest_run_idx]]
+        else:
+            # Single onset - check if it meets min length (it's length 1)
+            if min_onset_len > 1:
+                logger.debug(f"Blink {ix} (samples {start}-{end}) skipped: single onset < {min_onset_len} samples")
+                continue
+            onset = valid_onsets[0]
+        
         onset = max(0, onset - margin[0])  # apply margin, avoid overflow to the left
 
         # find vel-crossing next to end of blink (offset must be >= endl)
@@ -473,12 +496,33 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
         if valid_offsets.size == 0:
             logger.debug(f"Blink {ix} (samples {start}-{end}) skipped: no valid offset crossings found")
             continue
-        # Find the one closest to endl and move forward to end of that crossing
-        offset_ix = np.argmin(np.abs(valid_offsets - endl))
-        # Walk forward through consecutive offsets to find the end of the crossing
-        while offset_ix < len(valid_offsets) - 1 and valid_offsets[offset_ix+1] - 1 == valid_offsets[offset_ix]:
-            offset_ix += 1
-        offset = valid_offsets[offset_ix]
+        
+        # Identify runs in valid_offsets and filter by minimum length
+        # Find run boundaries (where consecutive difference > 1)
+        if len(valid_offsets) > 1:
+            run_starts = np.r_[0, np.where(np.diff(valid_offsets) > 1)[0] + 1]
+            run_ends = np.r_[np.where(np.diff(valid_offsets) > 1)[0], len(valid_offsets) - 1]
+            run_lengths = run_ends - run_starts + 1
+            # Filter to runs with sufficient length
+            valid_run_mask = run_lengths >= min_offset_len
+            if not valid_run_mask.any():
+                logger.debug(f"Blink {ix} (samples {start}-{end}) skipped: no offset runs >= {min_offset_len} samples")
+                continue
+            # Get end indices of valid runs (these are the offset candidates - we want the END of each run)
+            valid_run_ends = run_ends[valid_run_mask]
+            valid_run_end_values = valid_offsets[valid_run_ends]
+            valid_run_start_values = valid_offsets[run_starts[valid_run_mask]]
+            # Find the run closest to endl (by its start value, since that's where recovery begins)
+            closest_run_idx = np.argmin(np.abs(valid_run_start_values - endl))
+            # Use the END of that run as the offset
+            offset = valid_offsets[valid_run_ends[closest_run_idx]]
+        else:
+            # Single offset - check if it meets min length (it's length 1)
+            if min_offset_len > 1:
+                logger.debug(f"Blink {ix} (samples {start}-{end}) skipped: single offset < {min_offset_len} samples")
+                continue
+            offset = valid_offsets[0]
+        
         offset = min(winlength - 1, offset + margin[1])  # apply margin, avoid overflow to the right
         
         newblinks.append([onset + winstart, offset + winstart])
