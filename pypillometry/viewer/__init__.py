@@ -491,6 +491,7 @@ def tweak(data, func, params, variable=None, time=None):
     
     # Determine if we have EyeData or raw arrays
     is_eyedata = hasattr(data, 'tx') and hasattr(data, 'data')
+    original_mask = None
     
     if is_eyedata:
         # EyeData object
@@ -522,34 +523,68 @@ def tweak(data, func, params, variable=None, time=None):
             if data_array is None:
                 raise ValueError("No valid data channel found in EyeData object")
         
+        # Extract mask for original data
+        try:
+            original_mask = eyedata.data.mask.get(display_variable)
+            if original_mask is not None:
+                original_mask = np.asarray(original_mask, dtype=bool)
+        except (AttributeError, KeyError):
+            original_mask = None
+        
         title = f'Tweak - {getattr(eyedata, "name", "Unknown")} [{display_variable}]'
         
-        # Helper to extract display array from function result
-        def extract_display_array(result):
+        # Helper to extract display data and mask from function result
+        def extract_result(result):
+            """Extract display array(s) and mask from function result.
+            
+            Returns (data, mask) where data is either ndarray or dict of ndarrays.
+            """
             if hasattr(result, 'data') and hasattr(result, 'tx'):
                 # Result is EyeData - extract the same variable
                 try:
-                    return np.asarray(result[display_variable], dtype=np.float32)
+                    arr = np.asarray(result[display_variable], dtype=np.float32)
                 except (KeyError, AttributeError):
                     raise ValueError(
                         f"Function result does not contain variable '{display_variable}'"
                     )
+                # Extract mask
+                try:
+                    mask = result.data.mask.get(display_variable)
+                    if mask is not None:
+                        mask = np.asarray(mask, dtype=bool)
+                except (AttributeError, KeyError):
+                    mask = None
+                return arr, mask
+            elif isinstance(result, dict):
+                # Result is dict of arrays
+                data_dict = {}
+                for k, v in result.items():
+                    data_dict[k] = np.asarray(v, dtype=np.float32)
+                return data_dict, None
             else:
-                # Result is array
-                return np.asarray(result, dtype=np.float32)
+                # Result is single array
+                return np.asarray(result, dtype=np.float32), None
     
     elif isinstance(data, list):
         # List of arrays - use the first one
         data_array = np.asarray(data[0], dtype=np.float32)
         time_vec = time if time is not None else np.arange(len(data_array), dtype=np.float32)
         title = 'Tweak Viewer'
-        extract_display_array = lambda result: np.asarray(result, dtype=np.float32)
+        
+        def extract_result(result):
+            if isinstance(result, dict):
+                return {k: np.asarray(v, dtype=np.float32) for k, v in result.items()}, None
+            return np.asarray(result, dtype=np.float32), None
     else:
         # Single array
         data_array = np.asarray(data, dtype=np.float32)
         time_vec = time if time is not None else np.arange(len(data_array), dtype=np.float32)
         title = 'Tweak Viewer'
-        extract_display_array = lambda result: np.asarray(result, dtype=np.float32)
+        
+        def extract_result(result):
+            if isinstance(result, dict):
+                return {k: np.asarray(v, dtype=np.float32) for k, v in result.items()}, None
+            return np.asarray(result, dtype=np.float32), None
     
     time_vec = np.asarray(time_vec, dtype=np.float32)
     
@@ -583,21 +618,31 @@ def tweak(data, func, params, variable=None, time=None):
     current_params = dict(params)
     try:
         result = func(data, **current_params)
-        initial_overlay = extract_display_array(result)
+        initial_overlay, overlay_mask = extract_result(result)
     except Exception as e:
         raise RuntimeError(f"Function failed with initial parameters: {e}")
     
-    if len(initial_overlay) != len(data_array):
+    # Validate overlay length
+    if isinstance(initial_overlay, dict):
+        for k, v in initial_overlay.items():
+            if len(v) != len(data_array):
+                raise ValueError(
+                    f"Function returned array '{k}' of length {len(v)}, "
+                    f"but input has length {len(data_array)}"
+                )
+    elif len(initial_overlay) != len(data_array):
         raise ValueError(
             f"Function returned array of length {len(initial_overlay)}, "
             f"but input has length {len(data_array)}"
         )
     
-    # Create canvas
+    # Create canvas with mask support
     canvas = TweakCanvas(
         time_seconds=time_vec,
         original_data=data_array,
+        original_mask=original_mask,
         overlay_data=initial_overlay,
+        overlay_mask=overlay_mask,
         title=title
     )
     
@@ -607,8 +652,8 @@ def tweak(data, func, params, variable=None, time=None):
         current_params = dict(new_params)
         try:
             result = func(data, **new_params)
-            new_overlay = extract_display_array(result)
-            canvas.update_overlay(new_overlay)
+            new_overlay, new_mask = extract_result(result)
+            canvas.update_overlay(new_overlay, new_mask)
         except Exception as e:
             print(f"Warning: Function failed with parameters {new_params}: {e}")
     

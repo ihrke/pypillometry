@@ -7,17 +7,30 @@ while seeing the result overlaid on the original data.
 import numpy as np
 from vispy import app, scene
 from vispy.scene import SceneCanvas
-from typing import Dict, Callable, Any, Optional, List
+from typing import Dict, Callable, Any, Optional, List, Union
 
-from .visuals import LODLine
+from .visuals import LODLine, DynamicMaskRegions
 from .navigation import NavigationHandler
+
+# Colors for multiple overlay lines
+OVERLAY_COLORS = [
+    '#00DD00',  # Green
+    '#DD00DD',  # Magenta
+    '#00DDDD',  # Cyan
+    '#DDDD00',  # Yellow
+    '#FF6600',  # Orange
+    '#6600FF',  # Violet
+]
 
 
 class TweakCanvas(SceneCanvas):
     """GPU-accelerated canvas for parameter tweaking with original data + overlay."""
     
     def __init__(self, time_seconds: np.ndarray, original_data: np.ndarray,
-                 overlay_data: np.ndarray = None, title: str = 'Tweak Viewer'):
+                 original_mask: np.ndarray = None,
+                 overlay_data: Union[np.ndarray, Dict[str, np.ndarray]] = None,
+                 overlay_mask: np.ndarray = None,
+                 title: str = 'Tweak Viewer'):
         """Initialize the tweak canvas.
         
         Parameters
@@ -26,8 +39,14 @@ class TweakCanvas(SceneCanvas):
             Time vector in seconds.
         original_data : ndarray
             Original data to display (1D array).
-        overlay_data : ndarray, optional
-            Initial overlay data from function (same length as original).
+        original_mask : ndarray, optional
+            Boolean mask for original data (True = masked/invalid).
+        overlay_data : ndarray or dict, optional
+            Initial overlay data from function. Can be:
+            - Single 1D array (same length as original)
+            - Dict mapping names to 1D arrays (all same length)
+        overlay_mask : ndarray, optional
+            Boolean mask for overlay data (True = masked/invalid).
         title : str
             Window title.
         """
@@ -42,9 +61,20 @@ class TweakCanvas(SceneCanvas):
         
         self.time_seconds = time_seconds.astype(np.float32)
         self.original_data = original_data.astype(np.float32)
-        self.overlay_data = overlay_data.astype(np.float32) if overlay_data is not None else None
+        self.original_mask = original_mask
+        self.overlay_mask = overlay_mask
         self.data_min = float(self.time_seconds[0])
         self.data_max = float(self.time_seconds[-1])
+        
+        # Store overlay data (can be dict or single array)
+        self._overlay_data_dict: Dict[str, np.ndarray] = {}
+        if overlay_data is not None:
+            if isinstance(overlay_data, dict):
+                self._overlay_data_dict = {
+                    k: np.asarray(v, dtype=np.float32) for k, v in overlay_data.items()
+                }
+            else:
+                self._overlay_data_dict = {'tweaked': np.asarray(overlay_data, dtype=np.float32)}
         
         # LOD factors based on data length
         n_points = len(time_seconds)
@@ -57,9 +87,13 @@ class TweakCanvas(SceneCanvas):
         else:
             self.lod_factors = (1,)
         
-        # Storage
+        # Storage for visuals
         self.original_line: LODLine = None
-        self.overlay_line: LODLine = None
+        self.overlay_lines: Dict[str, LODLine] = {}
+        self.mask_regions: List[DynamicMaskRegions] = []
+        
+        # Visibility state
+        self.masks_visible = True
         
         # Reference to parameter window for coordinated close
         self.param_window = None
@@ -79,10 +113,12 @@ class TweakCanvas(SceneCanvas):
             data_max=self.data_max
         )
         
-        # Plot data - overlay first (below), then original (on top)
-        if self.overlay_data is not None:
-            self._plot_overlay(self.overlay_data)
+        # Create mask regions first (behind everything)
+        self._create_mask_regions()
+        
+        # Plot data - original first, then overlays on top
         self._plot_original()
+        self._plot_overlays()
         
         self._create_legend()
         self._set_initial_view()
@@ -144,66 +180,127 @@ class TweakCanvas(SceneCanvas):
         self.grid.add_widget(x_axis, row=1, col=1)
         x_axis.link_view(self.viewbox)
     
+    def _create_mask_regions(self):
+        """Create orange highlight regions for masked data."""
+        # Clear existing mask regions
+        for region in self.mask_regions:
+            if region.mesh is not None:
+                region.mesh.parent = None
+        self.mask_regions = []
+        
+        # Create mask region for original data
+        if self.original_mask is not None and np.any(self.original_mask):
+            mask_vis = DynamicMaskRegions(
+                self.viewbox, self.time_seconds, self.original_mask,
+                color='#FFA500', alpha=0.25
+            )
+            self.mask_regions.append(mask_vis)
+        
+        # Create mask region for overlay data (if different from original)
+        if self.overlay_mask is not None and np.any(self.overlay_mask):
+            # Only add if different from original mask
+            if self.original_mask is None or not np.array_equal(self.original_mask, self.overlay_mask):
+                # Use a slightly different color for overlay mask
+                mask_vis = DynamicMaskRegions(
+                    self.viewbox, self.time_seconds, self.overlay_mask,
+                    color='#FF6600', alpha=0.2
+                )
+                self.mask_regions.append(mask_vis)
+    
     def _plot_original(self):
         """Plot the original data line."""
+        # Determine mask for the line (NaN-based)
+        mask = None
+        if self.original_mask is not None:
+            mask = self.original_mask
+        
         self.original_line = LODLine(
             self.viewbox,
             self.time_seconds,
             self.original_data,
             color='#0066CC',  # Blue
-            mask=None,
+            mask=mask,
             width=2.0,
             lod_factors=self.lod_factors
         )
-        # Set order so original is drawn on top
+        # Set order so original is drawn above masks but below overlays
         if self.original_line.line_normal:
-            self.original_line.line_normal.order = 1001
+            self.original_line.line_normal.order = 1000
         if self.original_line.line_masked:
-            self.original_line.line_masked.order = 1001
+            self.original_line.line_masked.order = 1000
     
-    def _plot_overlay(self, data: np.ndarray):
-        """Plot or update the overlay line."""
-        data = np.asarray(data, dtype=np.float32)
-        self.overlay_data = data
+    def _plot_overlays(self):
+        """Plot all overlay lines."""
+        # Clear existing overlay lines
+        for line in self.overlay_lines.values():
+            if line.line_normal is not None:
+                line.line_normal.parent = None
+            if line.line_masked is not None:
+                line.line_masked.parent = None
+        self.overlay_lines = {}
         
-        # Remove existing overlay if present
-        if self.overlay_line is not None:
-            if self.overlay_line.line_normal is not None:
-                self.overlay_line.line_normal.parent = None
-            if self.overlay_line.line_masked is not None:
-                self.overlay_line.line_masked.parent = None
+        if not self._overlay_data_dict:
+            return
         
-        # Create new overlay line with bright green color for visibility
-        self.overlay_line = LODLine(
-            self.viewbox,
-            self.time_seconds,
-            data,
-            color='#00DD00',  # Bright green for high visibility
-            mask=None,
-            width=3.0,  # Thicker line to be clearly visible
-            lod_factors=self.lod_factors
-        )
-        # Set order so overlay is drawn ON TOP of original (higher order = drawn later)
-        if self.overlay_line.line_normal:
-            self.overlay_line.line_normal.order = 2000
-        if self.overlay_line.line_masked:
-            self.overlay_line.line_masked.order = 2000
+        # Plot each overlay with different colors
+        for idx, (name, data) in enumerate(self._overlay_data_dict.items()):
+            color = OVERLAY_COLORS[idx % len(OVERLAY_COLORS)]
+            
+            # Determine mask for overlay
+            mask = None
+            if self.overlay_mask is not None:
+                mask = self.overlay_mask
+            
+            line = LODLine(
+                self.viewbox,
+                self.time_seconds,
+                data,
+                color=color,
+                mask=mask,
+                width=2.5,
+                lod_factors=self.lod_factors
+            )
+            # Set order so overlays are on top
+            if line.line_normal:
+                line.line_normal.order = 2000 + idx
+            if line.line_masked:
+                line.line_masked.order = 2000 + idx
+            
+            self.overlay_lines[name] = line
         
         # Update LOD for current view
         if hasattr(self, '_last_x_range'):
             x_min, x_max = self._last_x_range
-            self.overlay_line.update_for_view(x_min, x_max)
+            for line in self.overlay_lines.values():
+                line.update_for_view(x_min, x_max)
     
-    def update_overlay(self, data: np.ndarray):
+    def update_overlay(self, data: Union[np.ndarray, Dict[str, np.ndarray]], 
+                       mask: np.ndarray = None):
         """Update the overlay with new data.
         
         Parameters
         ----------
-        data : ndarray
-            New overlay data (same length as original).
+        data : ndarray or dict
+            New overlay data. Can be single array or dict of arrays.
+        mask : ndarray, optional
+            New mask for overlay data.
         """
         self.unfreeze()
-        self._plot_overlay(data)
+        
+        # Update overlay data dict
+        if isinstance(data, dict):
+            self._overlay_data_dict = {
+                k: np.asarray(v, dtype=np.float32) for k, v in data.items()
+            }
+        else:
+            self._overlay_data_dict = {'tweaked': np.asarray(data, dtype=np.float32)}
+        
+        # Update overlay mask
+        if mask is not None:
+            self.overlay_mask = mask
+            self._create_mask_regions()
+        
+        self._plot_overlays()
         self._update_y_range()
         self.update()
         self.freeze()
@@ -211,17 +308,27 @@ class TweakCanvas(SceneCanvas):
     def _create_legend(self):
         """Create a legend showing original vs tweaked."""
         legend_row = 2
-        legend_view = self.grid.add_view(row=legend_row, col=0, col_span=2, border_color=None)
-        legend_view.camera = scene.PanZoomCamera(aspect=None)
-        legend_view.camera.interactive = False
-        legend_view.height_min = 30
-        legend_view.height_max = 30
-        legend_view.stretch = (1, 0.0001)
+        self.legend_view = self.grid.add_view(row=legend_row, col=0, col_span=2, border_color=None)
+        self.legend_view.camera = scene.PanZoomCamera(aspect=None)
+        self.legend_view.camera.interactive = False
+        self.legend_view.height_min = 30
+        self.legend_view.height_max = 30
+        self.legend_view.stretch = (1, 0.0001)
         
-        legend_items = [
-            ('Original', '#0066CC'),
-            ('Tweaked', '#00DD00'),  # Bright green to match overlay
-        ]
+        self._update_legend()
+    
+    def _update_legend(self):
+        """Update legend to reflect current overlay names."""
+        # Clear existing legend items
+        for child in list(self.legend_view.scene.children):
+            child.parent = None
+        
+        # Build legend items
+        legend_items = [('Original', '#0066CC')]
+        
+        for idx, name in enumerate(self._overlay_data_dict.keys()):
+            color = OVERLAY_COLORS[idx % len(OVERLAY_COLORS)]
+            legend_items.append((name, color))
         
         total_width = sum(len(label) * 0.012 + 0.06 for label, _ in legend_items)
         x_start = 0.5 - total_width / 2
@@ -232,7 +339,7 @@ class TweakCanvas(SceneCanvas):
                 [x_pos - 0.015, 0.5],
                 [x_pos + 0.015, 0.5]
             ], dtype=np.float32)
-            scene.Line(pos=line_pos, color=color, width=4, parent=legend_view.scene)
+            scene.Line(pos=line_pos, color=color, width=4, parent=self.legend_view.scene)
             
             scene.Text(
                 text=label,
@@ -241,7 +348,7 @@ class TweakCanvas(SceneCanvas):
                 font_size=8,
                 anchor_x='left',
                 anchor_y='center',
-                parent=legend_view.scene
+                parent=self.legend_view.scene
             )
             
             x_pos += len(label) * 0.012 + 0.06
@@ -315,9 +422,9 @@ class TweakCanvas(SceneCanvas):
             y_min = min(y_min, float(np.nanmin(visible[valid])))
             y_max = max(y_max, float(np.nanmax(visible[valid])))
         
-        # Overlay data
-        if self.overlay_data is not None:
-            overlay_visible = self.overlay_data[start_idx:end_idx]
+        # All overlay data
+        for data in self._overlay_data_dict.values():
+            overlay_visible = data[start_idx:end_idx]
             valid = np.isfinite(overlay_visible)
             if np.any(valid):
                 y_min = min(y_min, float(np.nanmin(overlay_visible[valid])))
@@ -335,11 +442,20 @@ class TweakCanvas(SceneCanvas):
         return (y_min - padding, y_max + padding)
     
     def _update_lod_visuals(self, x_min: float, x_max: float):
-        """Update LOD for all lines."""
+        """Update LOD for all lines and mask regions."""
         if self.original_line is not None:
             self.original_line.update_for_view(x_min, x_max)
-        if self.overlay_line is not None:
-            self.overlay_line.update_for_view(x_min, x_max)
+        for line in self.overlay_lines.values():
+            line.update_for_view(x_min, x_max)
+        for mask_vis in self.mask_regions:
+            mask_vis.update_for_view(x_min, x_max)
+    
+    def _toggle_masks(self):
+        """Toggle visibility of mask regions."""
+        self.masks_visible = not self.masks_visible
+        for mask_vis in self.mask_regions:
+            mask_vis.set_visible(self.masks_visible)
+        self.update()
     
     def _zoom_y_axis(self, factor: float, center_y: Optional[float] = None):
         """Zoom Y-axis by factor, centered on center_y."""
@@ -421,6 +537,11 @@ class TweakCanvas(SceneCanvas):
         key = event.key.name if hasattr(event.key, 'name') else str(event.key)
         modifiers = event.modifiers if hasattr(event, 'modifiers') else []
         shift_held = 'Shift' in modifiers if modifiers else False
+        
+        # Toggle masks with 'M'
+        if key == 'M':
+            self._toggle_masks()
+            return
         
         # Y-axis zoom with Shift
         if shift_held:
