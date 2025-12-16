@@ -1448,6 +1448,10 @@ class GenericEyeData(ABC):
                 raise ValueError("event_labels must have same length as event_onsets")
             self.event_labels=np.array(event_labels)
 
+    @property
+    def events(self):
+        return self.get_events()
+
     def get_events(self, units: str = "ms"):
         """
         Get events as an Events object.

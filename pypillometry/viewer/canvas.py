@@ -9,22 +9,25 @@ from .visuals import LODLine, DynamicMaskRegions, DynamicEventMarkers, Selection
 from .navigation import NavigationHandler
 
 
-# Color scheme - signal drawn on top of orange mask regions
-MODALITY_COLORS = {
-    'left_pupil': '#0066CC',   # Blue (left eye)
-    'right_pupil': '#CC0000',  # Red (right eye)
-    'left_x': '#0066CC',
-    'left_y': '#0066CC',
-    'right_x': '#CC0000',
-    'right_y': '#CC0000',
-}
+# Color palette for eyes - each eye gets a distinct color
+# Supports arbitrary number of eyes by cycling through the palette
+EYE_COLOR_PALETTE = [
+    '#0066CC',  # Blue
+    '#CC0000',  # Red
+    '#00AA00',  # Green
+    '#AA00AA',  # Purple
+    '#00AAAA',  # Cyan
+    '#AAAA00',  # Yellow/Olive
+    '#FF6600',  # Orange
+    '#6600FF',  # Violet
+]
 
 
 class ViewerCanvas(SceneCanvas):
     """GPU-accelerated viewer canvas with Level of Detail support."""
     
     def __init__(self, data, mode='eyedata', time_seconds=None, variables=None,
-                 overlays=None, extra_plots=None, highlight=None, highlight_color='lightblue'):
+                 eyes=None, overlays=None, extra_plots=None, highlight=None, highlight_color='lightblue'):
         """Initialize the viewer canvas.
         
         Parameters
@@ -38,6 +41,9 @@ class ViewerCanvas(SceneCanvas):
             Time vector in seconds.
         variables : list of str, optional
             For EyeData mode: filter modalities to display ('pupil', 'x', 'y').
+        eyes : list of str, optional
+            For EyeData mode: filter which eyes to display.
+            If None, all available eyes are detected and displayed.
         overlays : dict, optional
             Overlays for EyeData mode.
         extra_plots : dict, optional
@@ -53,10 +59,16 @@ class ViewerCanvas(SceneCanvas):
         if mode == 'eyedata':
             title = f'Viewer - {getattr(data, "name", "Unknown")}'
             self.eyedata = data
+            # Auto-detect eyes if not provided
+            if eyes is None:
+                self.eyes_filter = data.eyes  # Use the eyes property to get all available eyes
+            else:
+                self.eyes_filter = eyes
         else:
             title = 'Viewer - Arrays'
             self.eyedata = None
             self.plot_spec = data  # dict of {label: [arrays]}
+            self.eyes_filter = None
         
         super().__init__(
             keys='interactive',
@@ -141,25 +153,60 @@ class ViewerCanvas(SceneCanvas):
         self.freeze()
     
     def _detect_modalities(self) -> Dict[str, List[str]]:
-        available_data = {}
-        for modality in ['left_pupil', 'right_pupil', 'left_x', 'right_x', 'left_y', 'right_y']:
-            try:
-                data = self.eyedata[modality]
-                if data is not None and len(data) > 0:
-                    available_data[modality] = True
-            except (KeyError, AttributeError):
-                pass
+        """Detect available modalities based on eyes_filter.
         
+        Dynamically builds modality list based on self.eyes_filter 
+        (which contains the list of eyes to display).
+        """
+        available_data = {}
+        
+        # Build modality list dynamically based on eyes_filter
+        variable_types = ['pupil', 'x', 'y']
+        for eye in self.eyes_filter:
+            for var in variable_types:
+                modality = f"{eye}_{var}"
+                try:
+                    data = self.eyedata[modality]
+                    if data is not None and len(data) > 0:
+                        available_data[modality] = True
+                except (KeyError, AttributeError):
+                    pass
+        
+        # Group by variable type
         grouped = {'pupil': [], 'x': [], 'y': []}
         for modality in available_data.keys():
-            if 'pupil' in modality:
-                grouped['pupil'].append(modality)
-            elif '_x' in modality:
-                grouped['x'].append(modality)
-            elif '_y' in modality:
-                grouped['y'].append(modality)
+            # Extract variable type from modality name (e.g., 'left_pupil' -> 'pupil')
+            parts = modality.rsplit('_', 1)
+            if len(parts) == 2:
+                var_type = parts[1]
+                if var_type in grouped:
+                    grouped[var_type].append(modality)
         
         return {k: v for k, v in grouped.items() if v}
+    
+    def _get_modality_color(self, modality: str) -> str:
+        """Get color for a modality based on its eye's position in eyes_filter.
+        
+        Parameters
+        ----------
+        modality : str
+            Modality name like 'left_pupil', 'right_x', etc.
+            
+        Returns
+        -------
+        str
+            Hex color code for the modality.
+        """
+        # Extract eye name from modality (e.g., 'left_pupil' -> 'left')
+        parts = modality.rsplit('_', 1)
+        if len(parts) == 2:
+            eye = parts[0]
+            try:
+                eye_idx = self.eyes_filter.index(eye)
+                return EYE_COLOR_PALETTE[eye_idx % len(EYE_COLOR_PALETTE)]
+            except (ValueError, AttributeError):
+                pass
+        return '#666666'  # Fallback color
     
     def _create_subplots(self):
         row = 0
@@ -353,7 +400,7 @@ class ViewerCanvas(SceneCanvas):
             # Add LOD lines
             for modality in modalities:
                 data = self.eyedata[modality]
-                color = MODALITY_COLORS.get(modality, '#666666')
+                color = self._get_modality_color(modality)
                 
                 # Get mask for this modality
                 mask = None

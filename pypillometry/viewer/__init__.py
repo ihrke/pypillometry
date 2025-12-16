@@ -119,7 +119,7 @@ def _normalize_input(data, time=None):
     )
 
 
-def view(data, variables=None, time=None,
+def view(data, variables=None, eyes=None, time=None,
          overlay_pupil=None, overlay_x=None, overlay_y=None,
          extra_plots=None,
          highlight=None, highlight_color='lightblue') -> Optional[Dict[str, 'Intervals']]:
@@ -145,6 +145,10 @@ def view(data, variables=None, time=None,
         For EyeData objects only. Filter which modalities to display.
         Valid values: 'pupil', 'x', 'y'. Default: show all available.
         Example: ``variables=['pupil']`` shows only pupil data.
+    eyes : list of str, optional
+        For EyeData objects only. Filter which eyes to display.
+        Example: ``eyes=['left']`` shows only left eye data.
+        If not provided, all available eyes are detected and displayed.
     time : ndarray, optional
         Time vector for raw array viewing. If not provided, uses sample
         index (0, 1, 2, ...). Should have same length as data arrays.
@@ -208,6 +212,7 @@ def view(data, variables=None, time=None,
     >>> data = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP
     >>> pp.view(data)  # doctest: +SKIP
     >>> pp.view(data, variables=['pupil'])  # Only show pupil plots  # doctest: +SKIP
+    >>> pp.view(data, eyes=['left'])  # Only show left eye data  # doctest: +SKIP
     
     View numpy arrays:
     
@@ -310,6 +315,7 @@ def view(data, variables=None, time=None,
             mode='eyedata',
             time_seconds=time_seconds,
             variables=variables,
+            eyes=eyes,
             overlays=overlays,
             extra_plots=normalized_extra_plots,
             highlight=highlight, 
