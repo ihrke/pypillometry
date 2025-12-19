@@ -38,7 +38,7 @@ def _collect_and_import_submodules() -> Dict[str, Any]:
         '.example_data',
         '.events',
         '.intervals',
-        '.erpd',
+        '.segmented',
         '.io',
         '.logging',
         '.plot',
