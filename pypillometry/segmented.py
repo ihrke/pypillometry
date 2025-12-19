@@ -296,43 +296,57 @@ class SegmentedEyeData:
         return s
     
     def baseline_correct(self, 
-                         baseline_win: Union[Tuple[float, float], float, None] = 0) -> 'SegmentedEyeData':
+                         window: Union[Tuple[float, float], float, None] = 0) -> 'SegmentedEyeData':
         """
         Apply baseline correction to the segments.
         
+        The window is specified in milliseconds relative to the zero-point of the 
+        intervals (typically the event onset). For example, `window=(-200, 0)` uses 
+        the 200ms before the event as baseline.
+        
         Parameters
         ----------
-        baseline_win : tuple (float, float), float, or None
+        window : tuple (float, float), float, or None
+            Baseline window in ms relative to event onset (time 0):
             - If None, no baseline correction is applied
-            - If tuple, the mean value in the window (ms) is subtracted from each segment
-            - If float, the value at the time point closest to this value is used as baseline
+            - If tuple (start, end), the mean value in this time window is subtracted
+            - If float, the value at the time point closest to this value is used
+            Default is 0 (baseline at event onset).
             
         Returns
         -------
         SegmentedEyeData
             New instance with baseline-corrected data
+            
+        Examples
+        --------
+        >>> # Use pre-event period as baseline
+        >>> segments_bc = segments.baseline_correct(window=(-200, 0))
+        
+        >>> # Use single time point as baseline
+        >>> segments_bc = segments.baseline_correct(window=-100)
         """
-        if baseline_win is None:
+        if window is None:
             logger.warning("No baseline correction applied")
             return self
         
         # Create copy of data
         corrected_data = self.data.copy()
         
-        if not isinstance(baseline_win, Iterable):
+        if not isinstance(window, Iterable):
             # Single time point
-            blwin_ix = np.argmin(np.abs(self.tx - baseline_win))
+            blwin_ix = np.argmin(np.abs(self.tx - window))
             for i in range(self.n_segments):
                 baseline = corrected_data[blwin_ix, i]
                 corrected_data[:, i] -= baseline
         else:
             # Time window
-            blwin_ix = tuple(np.argmin(np.abs(bw - self.tx)) for bw in baseline_win)
+            blwin_ix = tuple(np.argmin(np.abs(bw - self.tx)) for bw in window)
             for i in range(self.n_segments):
                 baseline = np.mean(corrected_data[blwin_ix[0]:blwin_ix[1], i])
                 corrected_data[:, i] -= baseline
         
-        logger.info(f"Baseline correction applied using window {baseline_win}")
+        logger.info(f"Baseline correction applied using window {window}")
         
         return SegmentedEyeData(
             name=self.name,

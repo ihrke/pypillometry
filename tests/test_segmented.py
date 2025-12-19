@@ -200,7 +200,7 @@ class TestSegmentedEyeDataBaselineCorrection(unittest.TestCase):
         )
         
         # Baseline correct at t=0
-        seg_bc = seg.baseline_correct(baseline_win=0)
+        seg_bc = seg.baseline_correct(window=0)
         
         # After correction, values at t=0 should be close to 0
         t0_idx = np.argmin(np.abs(tx))
@@ -225,14 +225,14 @@ class TestSegmentedEyeDataBaselineCorrection(unittest.TestCase):
         )
         
         # Baseline correct using window (-200, 0)
-        seg_bc = seg.baseline_correct(baseline_win=(-200, 0))
+        seg_bc = seg.baseline_correct(window=(-200, 0))
         
         # After correction, all segments should be at 0
         for i in range(n_segments):
             self.assertAlmostEqual(seg_bc.data[:, i].mean(), 0, places=5)
     
     def test_baseline_correct_none(self):
-        """Test that None baseline_win returns original data"""
+        """Test that None window returns original data"""
         tx = np.linspace(-200, 800, 100)
         data = np.random.randn(100, 5)
         
@@ -242,7 +242,7 @@ class TestSegmentedEyeDataBaselineCorrection(unittest.TestCase):
             variable="left_pupil"
         )
         
-        seg_bc = seg.baseline_correct(baseline_win=None)
+        seg_bc = seg.baseline_correct(window=None)
         
         # Should return same object reference since no correction applied
         self.assertIs(seg_bc, seg)
@@ -259,7 +259,7 @@ class TestSegmentedEyeDataBaselineCorrection(unittest.TestCase):
         )
         original_mean = seg.data.mean()
         
-        seg_bc = seg.baseline_correct(baseline_win=0)
+        seg_bc = seg.baseline_correct(window=0)
         
         # Original should be unchanged
         self.assertAlmostEqual(seg.data.mean(), original_mean)
