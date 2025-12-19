@@ -12,7 +12,7 @@ from collections.abc import Iterable
 from loguru import logger
 import scipy.stats
 
-from .io import pd_write_pickle, pd_read_pickle
+from .io import write_pickle, read_pickle
 
 
 class SegmentedEyeData:
@@ -213,12 +213,14 @@ class SegmentedEyeData:
             if on < 0:  # pad with zeros in case timewindow starts before data
                 onl = abs(on)
                 on = 0
-            if off >= eyedata.tx.size - 1:
-                offl = (off - on)
+            if off > eyedata.tx.size:
+                offl = duration_ix - (off - eyedata.tx.size)
                 off = eyedata.tx.size
             
-            data_arr[onl:offl, i] = eyedata.data[variable][on:off]
-            mask_arr[onl:offl, i] = eyedata.data.mask[variable][on:off]
+            # Ensure we extract exactly the right number of samples
+            segment_len = min(offl - onl, off - on)
+            data_arr[onl:onl+segment_len, i] = eyedata.data[variable][on:on+segment_len]
+            mask_arr[onl:onl+segment_len, i] = eyedata.data.mask[variable][on:on+segment_len]
         
         masked_data = ma.masked_array(data_arr, mask=mask_arr)
         
@@ -387,7 +389,7 @@ class SegmentedEyeData:
         fname : str
             Filename to save to
         """
-        pd_write_pickle(self, fname)
+        write_pickle(self, fname)
     
     @classmethod
     def from_file(cls, fname: str) -> 'SegmentedEyeData':
@@ -404,5 +406,5 @@ class SegmentedEyeData:
         SegmentedEyeData
             Loaded instance
         """
-        return pd_read_pickle(fname)
+        return read_pickle(fname)
 
