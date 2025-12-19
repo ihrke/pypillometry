@@ -528,7 +528,7 @@ window.addEventListener("load", load);
 
 <div class="viewcode-block" id="view">
 <a class="viewcode-back" href="../../viewer.html#pypillometry.view">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">view</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">view</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
          <span class="n">overlay_pupil</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overlay_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overlay_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
          <span class="n">extra_plots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
          <span class="n">highlight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">highlight_color</span><span class="o">=</span><span class="s1">&#39;lightblue&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s1">&#39;Intervals&#39;</span><span class="p">]]:</span>
@@ -554,6 +554,10 @@ window.addEventListener("load", load);
 <span class="sd">        For EyeData objects only. Filter which modalities to display.</span>
 <span class="sd">        Valid values: &#39;pupil&#39;, &#39;x&#39;, &#39;y&#39;. Default: show all available.</span>
 <span class="sd">        Example: ``variables=[&#39;pupil&#39;]`` shows only pupil data.</span>
+<span class="sd">    eyes : list of str, optional</span>
+<span class="sd">        For EyeData objects only. Filter which eyes to display.</span>
+<span class="sd">        Example: ``eyes=[&#39;left&#39;]`` shows only left eye data.</span>
+<span class="sd">        If not provided, all available eyes are detected and displayed.</span>
 <span class="sd">    time : ndarray, optional</span>
 <span class="sd">        Time vector for raw array viewing. If not provided, uses sample</span>
 <span class="sd">        index (0, 1, 2, ...). Should have same length as data arrays.</span>
@@ -617,6 +621,7 @@ window.addEventListener("load", load);
 <span class="sd">    &gt;&gt;&gt; data = pp.EyeData.from_eyelink(&#39;recording.edf&#39;)  # doctest: +SKIP</span>
 <span class="sd">    &gt;&gt;&gt; pp.view(data)  # doctest: +SKIP</span>
 <span class="sd">    &gt;&gt;&gt; pp.view(data, variables=[&#39;pupil&#39;])  # Only show pupil plots  # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; pp.view(data, eyes=[&#39;left&#39;])  # Only show left eye data  # doctest: +SKIP</span>
 <span class="sd">    </span>
 <span class="sd">    View numpy arrays:</span>
 <span class="sd">    </span>
@@ -719,6 +724,7 @@ window.addEventListener("load", load);
             <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;eyedata&#39;</span><span class="p">,</span>
             <span class="n">time_seconds</span><span class="o">=</span><span class="n">time_seconds</span><span class="p">,</span>
             <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+            <span class="n">eyes</span><span class="o">=</span><span class="n">eyes</span><span class="p">,</span>
             <span class="n">overlays</span><span class="o">=</span><span class="n">overlays</span><span class="p">,</span>
             <span class="n">extra_plots</span><span class="o">=</span><span class="n">normalized_extra_plots</span><span class="p">,</span>
             <span class="n">highlight</span><span class="o">=</span><span class="n">highlight</span><span class="p">,</span> 

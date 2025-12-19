@@ -1920,6 +1920,10 @@ window.addEventListener("load", load);
             <span class="bp">self</span><span class="o">.</span><span class="n">event_labels</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">event_labels</span><span class="p">)</span></div>
 
 
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+
 <div class="viewcode-block" id="GenericEyeData.get_events">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.get_events">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span><span class="p">):</span>
@@ -2200,7 +2204,8 @@ window.addEventListener("load", load);
                 <span class="n">data_time_range</span><span class="o">=</span><span class="n">data_time_range</span><span class="p">,</span>
                 <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets_list</span><span class="p">,</span>
                 <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
-                <span class="n">time_offset</span><span class="o">=</span><span class="n">time_offset</span>
+                <span class="n">time_offset</span><span class="o">=</span><span class="n">time_offset</span><span class="p">,</span>
+                <span class="n">interval_window</span><span class="o">=</span><span class="n">interval</span>
             <span class="p">)</span>
         
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_select</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
@@ -2313,8 +2318,51 @@ window.addEventListener("load", load);
             <span class="n">data_time_range</span><span class="o">=</span><span class="n">data_time_range</span><span class="p">,</span>
             <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets_list</span><span class="p">,</span>
             <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
-            <span class="n">time_offset</span><span class="o">=</span><span class="n">time_offset</span>
+            <span class="n">time_offset</span><span class="o">=</span><span class="n">time_offset</span><span class="p">,</span>
+            <span class="n">interval_window</span><span class="o">=</span><span class="n">interval</span>
         <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GenericEyeData.get_segments">
+<a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.get_segments">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_segments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intervals</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract segments from data using intervals.</span>
+<span class="sd">        </span>
+<span class="sd">        Creates a SegmentedEyeData object containing equal-length segments</span>
+<span class="sd">        of a single variable extracted at the specified intervals.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        intervals : Intervals</span>
+<span class="sd">            Intervals object defining the segments to extract (from get_intervals())</span>
+<span class="sd">        variable : str</span>
+<span class="sd">            Variable to extract in &quot;eye_variable&quot; format (e.g., &quot;left_pupil&quot;, &quot;right_x&quot;)</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            Name for the segmented dataset. If None, uses intervals.label or &quot;segments&quot;</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SegmentedEyeData</span>
+<span class="sd">            Object containing the extracted segments with mask information</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; # Extract pupil segments around stimulus events</span>
+<span class="sd">        &gt;&gt;&gt; intervals = data.get_intervals(&quot;stimulus&quot;, interval=(-200, 800), units=&quot;ms&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; segments = data.get_segments(intervals, &quot;left_pupil&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; segments.plot()</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Apply baseline correction</span>
+<span class="sd">        &gt;&gt;&gt; segments_bc = segments.baseline_correct(baseline_win=(-200, 0))</span>
+<span class="sd">        </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        get_intervals : Create Intervals object from events</span>
+<span class="sd">        SegmentedEyeData : Class holding segmented data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..segmented</span><span class="w"> </span><span class="kn">import</span> <span class="n">SegmentedEyeData</span>
+        <span class="k">return</span> <span class="n">SegmentedEyeData</span><span class="o">.</span><span class="n">from_eyedata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intervals</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GenericEyeData.scale">

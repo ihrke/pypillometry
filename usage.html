@@ -195,7 +195,7 @@ This will return a new object with the results of the operations.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;right_pupil&#39;: Intervals &#39;right_pupil_blinks&#39; | 11 intervals (total duration: 662.00 None), 60.18 None +/- 16.04 None, [35.00 None, 81.00 None] | fs=500.0Hz, &#39;left_pupil&#39;: Intervals &#39;left_pupil_blinks&#39; | 13 intervals (total duration: 892.00 None), 68.62 None +/- 24.26 None, [20.00 None, 98.00 None] | fs=500.0Hz}
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>{&#39;left_pupil&#39;: Intervals &#39;left_pupil_blinks&#39; | 13 intervals (total duration: 892.00 None), 68.62 None +/- 24.26 None, [20.00 None, 98.00 None] | fs=500.0Hz, &#39;right_pupil&#39;: Intervals &#39;right_pupil_blinks&#39; | 11 intervals (total duration: 662.00 None), 60.18 None +/- 16.04 None, [35.00 None, 81.00 None] | fs=500.0Hz}
 </pre></div>
 </div>
 <div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>[&lt;Figure size 1000x1000 with 15 Axes&gt;]
@@ -289,9 +289,6 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(intervals[, eyes, ...])</p></td>
-<td><p>Extract event-related pupil dilation (ERPD) from Intervals object.</p></td>
-</tr>
 </tbody>
 </table>
 </section>
@@ -307,35 +304,20 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.stat_per_event</span></code>([intervals, ...])</p></td>
 <td><p>Return result of applying a statistical function to data in a given interval relative to event-onsets.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(intervals[, eyes, ...])</p></td>
-<td><p>Extract event-related pupil dilation (ERPD) from Intervals object.</p></td>
-</tr>
 </tbody>
 </table>
 </section>
 <section id="event-related-pupil-dilation">
 <h3>Event-Related Pupil Dilation<a class="headerlink" href="#event-related-pupil-dilation" title="Link to this heading">¶</a></h3>
 <p>The average pupillometric signal, timelocked to repeating events during the experiment, is referred to as “Event-related pupil dilation” or ERPD. In <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a>, the functionality for this is implemented in the class <code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.erpd.ERPD</span></code>.</p>
-<p>Running <a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.get_erpd()</span></code></a> returns an Object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code>. This object has functions for plotting and summarising the event-related pupillary dilation.</p>
+<p>Running <code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.get_erpd()</span></code> returns an Object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code>. This object has functions for plotting and summarising the event-related pupillary dilation.</p>
 <p><a class="reference internal" href="erpds.html"><span class="std std-ref">Here is an example notebook for for how to work with ERPDs</span></a>.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.get_erpd" title="pypillometry.PupilData.get_erpd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.get_erpd</span></code></a>(intervals[, eyes, ...])</p></td>
-<td><p>Extract event-related pupil dilation (ERPD) from Intervals object.</p></td>
-</tr>
 </tbody>
 </table>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">group_erpd</span></code>(datasets, intervals[, ...])</p></td>
-<td><p>Calculate group-level ERPDs by applying <cite>subj_meanfct</cite> to each subj-level ERPD.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPD.summary</span></code>()</p></td>
-<td><p>Return a summary of the <a class="reference internal" href="api.html#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>-object.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ERPD.plot</span></code>([eyes, overlays, meanfct, varfct, ...])</p></td>
-<td><p>Plot mean and error-ribbons using <cite>varct</cite>.</p></td>
-</tr>
 </tbody>
 </table>
 </section>
