@@ -10,7 +10,7 @@ sys.path.insert(0, "..")
 import pypillometry as pp
 import numpy as np
 import numpy.ma as ma
-from pypillometry.segmented import SegmentedEyeData
+from pypillometry.segmented import SegmentedEyeData, GroupLevelSegmentedData
 from pypillometry.intervals import Intervals
 
 
@@ -345,17 +345,84 @@ class TestSegmentedEyeDataPlotting(unittest.TestCase):
         self.seg.plot(ax=ax)
         plt.close(fig)
     
-    def test_plot_without_missing(self):
-        """Test plot without missing data overlay"""
+    def test_plot_standalone(self):
+        """Test standalone plot sets title and ylabel"""
         fig, ax = plt.subplots()
-        self.seg.plot(ax=ax, show_missing=False)
+        returned_ax = self.seg.plot()
+        self.assertIsNotNone(returned_ax)
+        self.assertEqual(returned_ax.get_title(), "test_plot")
         plt.close(fig)
     
-    def test_plot_with_custom_title(self):
-        """Test plot with custom title"""
+    def test_plot_with_ax_no_title(self):
+        """Test that title is not set when ax is provided"""
         fig, ax = plt.subplots()
-        self.seg.plot(ax=ax, title="Custom Title")
-        self.assertEqual(ax.get_title(), "Custom Title")
+        ax.set_title("Original Title")
+        self.seg.plot(ax=ax)
+        # Title should remain unchanged when ax is provided
+        self.assertEqual(ax.get_title(), "Original Title")
+        plt.close(fig)
+    
+    def test_plot_with_kwargs(self):
+        """Test plot with matplotlib kwargs"""
+        fig, ax = plt.subplots()
+        self.seg.plot(ax=ax, color='red', linewidth=2, linestyle='--')
+        plt.close(fig)
+    
+    def test_plot_with_custom_label(self):
+        """Test plot with custom label for legend"""
+        fig, ax = plt.subplots()
+        self.seg.plot(ax=ax, label="Custom Label", show_legend=True)
+        # Check that the label appears in legend handles
+        handles, labels = ax.get_legend_handles_labels()
+        self.assertIn("Custom Label", labels)
+        plt.close(fig)
+    
+    def test_plot_overlay_multiple(self):
+        """Test overlaying multiple segments"""
+        # Create second segment
+        seg2 = SegmentedEyeData.from_masked_array(
+            data=np.random.randn(100, 20),
+            tx=self.tx,
+            variable="right_pupil",
+            name="test_plot2"
+        )
+        
+        fig, ax = plt.subplots()
+        self.seg.plot(ax=ax, color='blue', label='Left')
+        seg2.plot(ax=ax, color='red', label='Right')
+        ax.legend()
+        
+        handles, labels = ax.get_legend_handles_labels()
+        self.assertEqual(len(labels), 2)
+        plt.close(fig)
+    
+    def test_plot_with_missing_overlay(self):
+        """Test plot with missing data overlay in overlay mode"""
+        fig, ax = plt.subplots()
+        self.seg.plot(ax=ax, show_missing=True, show_legend=True)
+        # Should have legend even with show_missing
+        self.assertIsNotNone(ax.get_legend())
+        plt.close(fig)
+    
+    def test_plot_standalone_shows_missing_by_default(self):
+        """Test that standalone mode shows missing data by default"""
+        fig = plt.figure()
+        self.seg.plot()  # standalone mode
+        # Should have two axes (main + twinx for missing)
+        self.assertEqual(len(fig.axes), 2)
+        plt.close(fig)
+    
+    def test_plot_returns_axes(self):
+        """Test that plot returns the axes object"""
+        fig, ax = plt.subplots()
+        returned_ax = self.seg.plot(ax=ax)
+        self.assertIs(returned_ax, ax)
+        plt.close(fig)
+    
+    def test_plot_no_zero_line(self):
+        """Test plot without zero line"""
+        fig, ax = plt.subplots()
+        self.seg.plot(ax=ax, show_zero_line=False)
         plt.close(fig)
 
 
@@ -514,6 +581,156 @@ class TestSegmentedEyeDataTimeAxis(unittest.TestCase):
         
         # interval_window should be expanded
         self.assertEqual(padded.interval_window, (-60, 60))
+
+
+class TestGroupLevelSegmentedData(unittest.TestCase):
+    """Test GroupLevelSegmentedData class"""
+    
+    def setUp(self):
+        """Create test segment data for multiple subjects"""
+        self.n_timepoints = 100
+        self.n_segments = 20
+        self.tx = np.linspace(-200, 800, self.n_timepoints)
+        
+        # Create 3 subjects with different data
+        self.segments = []
+        for i in range(3):
+            data = np.random.randn(self.n_timepoints, self.n_segments) + i * 10
+            # Add some missing data
+            mask = np.zeros((self.n_timepoints, self.n_segments), dtype=bool)
+            mask[0:5, :] = True  # First 5 timepoints masked
+            
+            seg = SegmentedEyeData.from_masked_array(
+                data=data,
+                tx=self.tx,
+                variable="left_pupil",
+                name=f"subject_{i+1}",
+                mask=mask
+            )
+            self.segments.append(seg)
+    
+    def test_from_segments_aggregate(self):
+        """Test combining segments with aggregation"""
+        group = GroupLevelSegmentedData.from_segments(self.segments, meanfct=np.mean)
+        
+        self.assertIsInstance(group, GroupLevelSegmentedData)
+        self.assertEqual(group.n_subjects, 3)
+        self.assertEqual(group.n_timepoints, self.n_timepoints)
+        # In aggregate mode, n_segments = n_subjects
+        self.assertEqual(group.n_segments, 3)
+        self.assertEqual(group.variable, "left_pupil")
+    
+    def test_from_segments_stack(self):
+        """Test combining segments with stacking (meanfct=None)"""
+        group = GroupLevelSegmentedData.from_segments(self.segments, meanfct=None)
+        
+        self.assertIsInstance(group, GroupLevelSegmentedData)
+        self.assertEqual(group.n_subjects, 3)
+        self.assertEqual(group.n_timepoints, self.n_timepoints)
+        # In stack mode, n_segments = sum of all segments
+        self.assertEqual(group.n_segments, self.n_segments * 3)
+    
+    def test_mask_percent_computed(self):
+        """Test that mask_percent is correctly computed"""
+        group = GroupLevelSegmentedData.from_segments(self.segments)
+        
+        self.assertEqual(group.mask_percent.shape, (self.n_timepoints,))
+        # First 5 timepoints were masked for all subjects
+        # 100% missing in those timepoints
+        np.testing.assert_array_almost_equal(group.mask_percent[0:5], 100.0)
+        # Rest should be 0%
+        np.testing.assert_array_almost_equal(group.mask_percent[5:], 0.0)
+    
+    def test_data_not_masked_at_group_level(self):
+        """Test that group-level data has no mask (info in mask_percent)"""
+        group = GroupLevelSegmentedData.from_segments(self.segments)
+        
+        # Data should not be masked
+        self.assertFalse(np.any(group.data.mask))
+    
+    def test_summary(self):
+        """Test summary includes group-level info"""
+        group = GroupLevelSegmentedData.from_segments(self.segments)
+        summary = group.summary()
+        
+        self.assertIn('n_subjects', summary)
+        self.assertIn('mean_mask_percent', summary)
+        self.assertEqual(summary['n_subjects'], 3)
+    
+    def test_repr(self):
+        """Test string representation"""
+        group = GroupLevelSegmentedData.from_segments(self.segments)
+        repr_str = repr(group)
+        
+        self.assertIn("GroupLevelSegmentedData", repr_str)
+        self.assertIn("n_subjects", repr_str)
+    
+    def test_repr_html(self):
+        """Test HTML representation"""
+        group = GroupLevelSegmentedData.from_segments(self.segments)
+        html = group._repr_html_()
+        
+        self.assertIn("GroupLevelSegmentedData", html)
+        self.assertIn("Subjects", html)
+    
+    def test_plot_runs(self):
+        """Test that plot method runs without error"""
+        group = GroupLevelSegmentedData.from_segments(self.segments)
+        fig, ax = plt.subplots()
+        group.plot(ax=ax)
+        plt.close(fig)
+    
+    def test_plot_standalone(self):
+        """Test standalone plot"""
+        group = GroupLevelSegmentedData.from_segments(self.segments)
+        fig = plt.figure()
+        ax = group.plot()
+        self.assertIsNotNone(ax)
+        plt.close(fig)
+    
+    def test_validation_variable_mismatch(self):
+        """Test that mismatched variables raise error"""
+        # Create segment with different variable
+        bad_seg = SegmentedEyeData.from_masked_array(
+            data=np.random.randn(self.n_timepoints, self.n_segments),
+            tx=self.tx,
+            variable="right_pupil",
+            name="bad_subject"
+        )
+        
+        with self.assertRaises(ValueError):
+            GroupLevelSegmentedData.from_segments([self.segments[0], bad_seg])
+    
+    def test_validation_timepoints_mismatch(self):
+        """Test that mismatched timepoints raise error"""
+        # Create segment with different number of timepoints
+        bad_seg = SegmentedEyeData.from_masked_array(
+            data=np.random.randn(50, self.n_segments),  # Different n_timepoints
+            tx=np.linspace(-200, 800, 50),
+            variable="left_pupil",
+            name="bad_subject"
+        )
+        
+        with self.assertRaises(ValueError):
+            GroupLevelSegmentedData.from_segments([self.segments[0], bad_seg])
+    
+    def test_validation_empty_list(self):
+        """Test that empty list raises error"""
+        with self.assertRaises(ValueError):
+            GroupLevelSegmentedData.from_segments([])
+    
+    def test_custom_name(self):
+        """Test custom name parameter"""
+        group = GroupLevelSegmentedData.from_segments(
+            self.segments, 
+            name="my_group"
+        )
+        self.assertEqual(group.name, "my_group")
+    
+    def test_default_name(self):
+        """Test default name generation"""
+        group = GroupLevelSegmentedData.from_segments(self.segments)
+        self.assertEqual(group.name, "group_subject_1")
 
 
 if __name__ == '__main__':
