@@ -1837,6 +1837,45 @@ class GenericEyeData(ABC):
             time_offset=time_offset
         )
 
+    def get_segments(self, intervals, variable: str, name: str = None):
+        """
+        Extract segments from data using intervals.
+        
+        Creates a SegmentedEyeData object containing equal-length segments
+        of a single variable extracted at the specified intervals.
+        
+        Parameters
+        ----------
+        intervals : Intervals
+            Intervals object defining the segments to extract (from get_intervals())
+        variable : str
+            Variable to extract in "eye_variable" format (e.g., "left_pupil", "right_x")
+        name : str, optional
+            Name for the segmented dataset. If None, uses intervals.label or "segments"
+            
+        Returns
+        -------
+        SegmentedEyeData
+            Object containing the extracted segments with mask information
+            
+        Examples
+        --------
+        >>> # Extract pupil segments around stimulus events
+        >>> intervals = data.get_intervals("stimulus", interval=(-200, 800), units="ms")
+        >>> segments = data.get_segments(intervals, "left_pupil")
+        >>> segments.plot()
+        
+        >>> # Apply baseline correction
+        >>> segments_bc = segments.baseline_correct(baseline_win=(-200, 0))
+        
+        See Also
+        --------
+        get_intervals : Create Intervals object from events
+        SegmentedEyeData : Class holding segmented data
+        """
+        from ..segmented import SegmentedEyeData
+        return SegmentedEyeData.from_eyedata(self, intervals, variable, name=name)
+
     @keephistory
     def scale(self, variables=[], mean: Union[float,dict,None]=None, 
               sd: Union[float,dict,None]=None, eyes=[], inplace=None):
