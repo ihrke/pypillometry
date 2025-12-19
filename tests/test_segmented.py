@@ -10,7 +10,7 @@ sys.path.insert(0, "..")
 import pypillometry as pp
 import numpy as np
 import numpy.ma as ma
-from pypillometry.segmented import SegmentedEyeData, GroupLevelSegmentedData
+from pypillometry.segmented import SegmentedEyeData, GroupLevelSegmentedData, group_segments
 from pypillometry.intervals import Intervals
 
 
@@ -731,6 +731,58 @@ class TestGroupLevelSegmentedData(unittest.TestCase):
         """Test default name generation"""
         group = GroupLevelSegmentedData.from_segments(self.segments)
         self.assertEqual(group.name, "group_subject_1")
+
+
+class TestGroupSegmentsFunction(unittest.TestCase):
+    """Test group_segments convenience function"""
+    
+    def setUp(self):
+        """Create test segment data"""
+        self.n_timepoints = 50
+        self.n_segments = 10
+        self.tx = np.linspace(-100, 400, self.n_timepoints)
+        
+        self.segments = []
+        for i in range(3):
+            seg = SegmentedEyeData.from_masked_array(
+                data=np.random.randn(self.n_timepoints, self.n_segments),
+                tx=self.tx,
+                variable="left_pupil",
+                name=f"subj_{i}"
+            )
+            self.segments.append(seg)
+    
+    def test_from_list(self):
+        """Test group_segments with list input"""
+        group = group_segments(self.segments)
+        
+        self.assertIsInstance(group, GroupLevelSegmentedData)
+        self.assertEqual(group.n_subjects, 3)
+    
+    def test_from_dict(self):
+        """Test group_segments with dict input"""
+        seg_dict = {f"S{i:02d}": seg for i, seg in enumerate(self.segments)}
+        group = group_segments(seg_dict)
+        
+        self.assertIsInstance(group, GroupLevelSegmentedData)
+        self.assertEqual(group.n_subjects, 3)
+    
+    def test_stack_mode(self):
+        """Test group_segments with meanfct=None (stack mode)"""
+        group = group_segments(self.segments, meanfct=None)
+        
+        self.assertEqual(group.n_segments, self.n_segments * 3)
+    
+    def test_custom_name(self):
+        """Test group_segments with custom name"""
+        group = group_segments(self.segments, name="my_group")
+        
+        self.assertEqual(group.name, "my_group")
+    
+    def test_available_via_pp(self):
+        """Test that group_segments is available via pp namespace"""
+        self.assertTrue(hasattr(pp, 'group_segments'))
+        self.assertTrue(callable(pp.group_segments))
 
 
 if __name__ == '__main__':

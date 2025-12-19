@@ -904,3 +904,44 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         
         return ax1
 
+
+def group_segments(segments, meanfct=np.mean, name: str = None) -> GroupLevelSegmentedData:
+    """
+    Combine multiple SegmentedEyeData objects into a GroupLevelSegmentedData.
+    
+    Convenience function that wraps GroupLevelSegmentedData.from_segments().
+    
+    Parameters
+    ----------
+    segments : list or dict of SegmentedEyeData
+        SegmentedEyeData objects to combine. If dict, values are used.
+    meanfct : callable or None
+        Function to aggregate within each subject (e.g., np.mean, np.median).
+        If None, all segments from all subjects are stacked (concatenated).
+    name : str, optional
+        Name for the group-level dataset
+        
+    Returns
+    -------
+    GroupLevelSegmentedData
+        Combined group-level data
+        
+    Examples
+    --------
+    >>> import pypillometry as pp
+    >>> # From a list
+    >>> group = pp.group_segments([subj1_seg, subj2_seg, subj3_seg])
+    
+    >>> # From a dict
+    >>> segments = {"S01": subj1_seg, "S02": subj2_seg}
+    >>> group = pp.group_segments(segments)
+    
+    >>> # Stack all trials instead of averaging
+    >>> group = pp.group_segments(segments, meanfct=None)
+    """
+    # Handle dict input
+    if isinstance(segments, dict):
+        segments = list(segments.values())
+    
+    return GroupLevelSegmentedData.from_segments(segments, meanfct=meanfct, name=name)
+
