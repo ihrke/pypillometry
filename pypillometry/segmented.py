@@ -295,6 +295,80 @@ class SegmentedEyeData:
                 s += f"  {k:<{flen}}: {v}\n"
         return s
     
+    def _repr_html_(self) -> str:
+        """Rich HTML representation for Jupyter notebooks."""
+        import base64
+        from io import BytesIO
+        
+        summary = self.summary()
+        
+        # Build overview items
+        window = summary['window']
+        overview = [
+            ("Variable", summary['variable']),
+            ("Segments", f"{summary['n_segments']:,}"),
+            ("Time points", f"{summary['n_timepoints']:,}"),
+            ("Window", f"{window[0]:.0f} to {window[1]:.0f} ms"),
+            ("Missing", f"{summary['percent_masked']:.1f}%"),
+        ]
+        if summary['sampling_rate']:
+            overview.append(("Sampling rate", f"{summary['sampling_rate']:.0f} Hz"))
+        
+        # Add intervals info if available
+        if self.intervals is not None and self.intervals.label:
+            overview.insert(0, ("Intervals", self.intervals.label))
+        
+        # Generate sparkline of mean signal
+        sparkline_html = ""
+        try:
+            from matplotlib.figure import Figure
+            from matplotlib.backends.backend_agg import FigureCanvasAgg
+            
+            mean_signal = np.mean(self.data, axis=1)
+            
+            fig = Figure(figsize=(3, 1), dpi=100)
+            ax = fig.subplots()
+            ax.plot(self.tx, mean_signal, color="#1f77b4", linewidth=1.5)
+            ax.axvline(x=0, color="#d62728", linewidth=1, linestyle="--", alpha=0.7)
+            ax.set_xlim(self.tx[0], self.tx[-1])
+            ax.axis("off")
+            fig.tight_layout(pad=0)
+            
+            canvas = FigureCanvasAgg(fig)
+            buf = BytesIO()
+            canvas.print_png(buf)
+            buf.seek(0)
+            img_b64 = base64.b64encode(buf.read()).decode("ascii")
+            
+            sparkline_html = f'''
+            <div style="margin-top:10px;">
+              <div style="font-size:0.85em; color:#666; margin-bottom:4px;">Mean signal (red line = event onset)</div>
+              <img src="data:image/png;base64,{img_b64}" alt="Mean signal" style="width:100%; max-width:300px; border-radius:4px;">
+            </div>
+            '''
+        except Exception:
+            pass  # Silently skip sparkline if matplotlib not available
+        
+        # Build HTML
+        overview_html = "".join(
+            f'''<div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+                  <div style="font-size:0.85em; color:#666; text-transform:uppercase;">{label}</div>
+                  <div style="font-weight:600;">{value}</div>
+                </div>'''
+            for label, value in overview
+        )
+        
+        html = f'''
+        <div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width:400px;">
+          <h3 style="margin-top:0;">SegmentedEyeData — <span style="color:#555;">{summary['name']}</span></h3>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px;">
+            {overview_html}
+          </div>
+          {sparkline_html}
+        </div>
+        '''
+        return html
+    
     def baseline_correct(self, 
                          window: Union[Tuple[float, float], float, None] = 0) -> 'SegmentedEyeData':
         """
@@ -360,7 +434,7 @@ class SegmentedEyeData:
     def plot(self,
              meanfct=np.mean,
              varfct=scipy.stats.sem,
-             plot_missing: bool = True,
+             show_missing: bool = True,
              title: str = None,
              ax=None):
         """
@@ -373,7 +447,7 @@ class SegmentedEyeData:
         varfct : callable or None
             Function to compute error bands (e.g., np.std, scipy.stats.sem)
             If None, no error bands are plotted
-        plot_missing : bool
+        show_missing : bool
             Plot percentage of missing data per time point
         title : str, optional
             Plot title. If None, uses the dataset name
@@ -387,7 +461,7 @@ class SegmentedEyeData:
         else:
             ax1 = ax
         
-        if plot_missing:
+        if show_missing:
             ax2 = ax1.twinx()
         
         # Compute mean and variance
@@ -412,7 +486,7 @@ class SegmentedEyeData:
         ax1.set_title(title if title is not None else self.name)
         ax1.legend()
         
-        if plot_missing:
+        if show_missing:
             ax2.plot(self.tx, perc_missing, alpha=0.3, color="orange")
             ax2.set_ylim(0, 100)
             ax2.set_ylabel("% missing", color="orange")

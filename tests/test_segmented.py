@@ -177,6 +177,16 @@ class TestSegmentedEyeDataProperties(unittest.TestCase):
         self.assertIn("SegmentedEyeData(test)", repr_str)
         self.assertIn("variable", repr_str)
         self.assertIn("n_segments", repr_str)
+    
+    def test_repr_html(self):
+        """Test HTML representation for notebooks"""
+        html = self.seg._repr_html_()
+        
+        self.assertIn("SegmentedEyeData", html)
+        self.assertIn("test", html)  # name
+        self.assertIn("left_pupil", html)  # variable
+        self.assertIn("Segments", html)
+        self.assertIn("Time points", html)
 
 
 class TestSegmentedEyeDataBaselineCorrection(unittest.TestCase):
@@ -338,7 +348,7 @@ class TestSegmentedEyeDataPlotting(unittest.TestCase):
     def test_plot_without_missing(self):
         """Test plot without missing data overlay"""
         fig, ax = plt.subplots()
-        self.seg.plot(ax=ax, plot_missing=False)
+        self.seg.plot(ax=ax, show_missing=False)
         plt.close(fig)
     
     def test_plot_with_custom_title(self):
