@@ -199,7 +199,30 @@ class SegmentedEyeData:
         
         # Calculate duration and time window
         duration_ix = intervals_idx[0][1] - intervals_idx[0][0]
-        txw = np.linspace(interval_ms[0], interval_ms[1], num=duration_ix)
+        
+        # Use interval_window for relative time axis if available (event-locked intervals)
+        # Otherwise fall back to absolute interval times
+        if intervals.interval_window is not None:
+            # Convert interval_window to ms if needed
+            if intervals.units is None:
+                # interval_window is in indices, convert to ms
+                ms_per_sample = 1000.0 / eyedata.fs
+                txw = np.linspace(
+                    intervals.interval_window[0] * ms_per_sample,
+                    intervals.interval_window[1] * ms_per_sample,
+                    num=duration_ix
+                )
+            else:
+                # interval_window is in the same units as intervals, convert to ms
+                fac_to_ms = 1.0 / eyedata._unit_fac(intervals.units)
+                txw = np.linspace(
+                    intervals.interval_window[0] * fac_to_ms,
+                    intervals.interval_window[1] * fac_to_ms,
+                    num=duration_ix
+                )
+        else:
+            # No interval_window, use absolute times (not event-locked)
+            txw = np.linspace(interval_ms[0], interval_ms[1], num=duration_ix)
         
         n_segments = len(intervals_idx)
         

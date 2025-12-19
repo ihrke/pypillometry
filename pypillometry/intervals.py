@@ -139,10 +139,18 @@ def merge_intervals(*args, label: str = 'merged'):
         # All were empty
         return Intervals([], units=first_units, label=label,
                         data_time_range=intervals_list[0].data_time_range,
-                        sampling_rate=sampling_rate)
+                        sampling_rate=sampling_rate,
+                        interval_window=intervals_list[0].interval_window)
     
     # Use data_time_range from first object if available
     data_time_range = intervals_list[0].data_time_range if intervals_list[0].data_time_range is not None else None
+    
+    # Only preserve interval_window if all objects have the same value
+    combined_window = intervals_list[0].interval_window
+    for obj in intervals_list[1:]:
+        if obj.interval_window != combined_window:
+            combined_window = None
+            break
     
     return Intervals(
         all_intervals,
@@ -152,7 +160,8 @@ def merge_intervals(*args, label: str = 'merged'):
         event_indices=all_event_indices if has_indices else None,
         event_onsets=all_event_onsets if has_onsets else None,
         data_time_range=data_time_range,
-        sampling_rate=sampling_rate
+        sampling_rate=sampling_rate,
+        interval_window=combined_window
     )
 
 def stat_event_interval(tx,sy,intervals,statfct=np.mean):
@@ -223,7 +232,7 @@ class Intervals:
     ...     print(f"{start}-{end}")
     """
     
-    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None, sampling_rate=None, time_offset=None):
+    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None, sampling_rate=None, time_offset=None, interval_window=None):
         """
         Initialize an Intervals object.
         
@@ -249,6 +258,11 @@ class Intervals:
             Time offset in milliseconds. When intervals are stored in indices (units=None),
             this offset is added when converting to time units. This is needed when the
             dataset's time vector doesn't start at 0. Default is 0.
+        interval_window : tuple, optional
+            The relative time window around events (e.g., (-200, 800) for 200ms before 
+            to 800ms after). When set, indicates that intervals are event-locked and 
+            zero corresponds to event onset. Used by SegmentedEyeData to create the
+            appropriate time axis.
         """
         if isinstance(intervals, np.ndarray):
             self.intervals = [tuple(row) for row in intervals]
@@ -265,6 +279,7 @@ class Intervals:
         self.event_onsets = event_onsets
         self.sampling_rate = sampling_rate
         self.time_offset = time_offset if time_offset is not None else 0.0
+        self.interval_window = interval_window
     
     def __len__(self):
         """Return number of intervals."""
@@ -601,6 +616,12 @@ class Intervals:
         # Use self's time_offset (both should have same offset if combining)
         combined_time_offset = self.time_offset if self.time_offset else other.time_offset
         
+        # Only preserve interval_window if both have the same value
+        combined_interval_window = None
+        if self.interval_window is not None and other_converted.interval_window is not None:
+            if self.interval_window == other_converted.interval_window:
+                combined_interval_window = self.interval_window
+        
         return Intervals(
             combined_intervals,
             self.units,
@@ -610,7 +631,8 @@ class Intervals:
             data_time_range=combined_range,
             event_onsets=combined_event_onsets,
             sampling_rate=combined_sampling_rate,
-            time_offset=combined_time_offset
+            time_offset=combined_time_offset,
+            interval_window=combined_interval_window
         )
     
     def __array__(self) -> np.ndarray:
@@ -723,10 +745,19 @@ class Intervals:
             else:
                 event_onsets = None
             
+            # Convert interval_window to indices if it exists
+            interval_window_idx = None
+            if self.interval_window is not None:
+                iw_fac = units_to_ms[self.units]
+                interval_window_idx = (
+                    int(round(self.interval_window[0] * iw_fac * samples_per_ms)),
+                    int(round(self.interval_window[1] * iw_fac * samples_per_ms))
+                )
+            
             return Intervals(converted, None, self.label,
                             self.event_labels, self.event_indices,
                             data_time_range, event_onsets, self.sampling_rate,
-                            time_offset=time_offset)
+                            time_offset=time_offset, interval_window=interval_window_idx)
         
         # Handle conversion to time units
         if target_units not in units_to_ms:
@@ -777,11 +808,30 @@ class Intervals:
             else:
                 event_onsets = None
         
+        # Convert interval_window to target units if it exists
+        interval_window_converted = None
+        if self.interval_window is not None:
+            if self.units is None:
+                # From indices to time units
+                ms_per_sample = 1000.0 / self.sampling_rate
+                fac_iw = ms_per_sample / units_to_ms[target_units]
+                interval_window_converted = (
+                    self.interval_window[0] * fac_iw,
+                    self.interval_window[1] * fac_iw
+                )
+            else:
+                # From time units to time units
+                fac_iw = units_to_ms[self.units] / units_to_ms[target_units]
+                interval_window_converted = (
+                    self.interval_window[0] * fac_iw,
+                    self.interval_window[1] * fac_iw
+                )
+        
         # time_offset is 0 for time-based intervals (offset already incorporated into values)
         return Intervals(converted, target_units, self.label,
                         self.event_labels, self.event_indices,
                         data_time_range, event_onsets, self.sampling_rate,
-                        time_offset=0.0)
+                        time_offset=0.0, interval_window=interval_window_converted)
     
     def merge(self, merge_sep='_', distance: float = 0):
         """
@@ -864,13 +914,15 @@ class Intervals:
             # Keep the first onset from each merge group
             merged_onsets = [self.event_onsets[group[0]] for group in merged_groups]
         
+        # interval_window is not preserved after merge (merged intervals aren't event-locked)
         return Intervals(merged, self.units, self.label, 
                         event_labels=merged_labels,
                         event_indices=merged_indices,
                         data_time_range=self.data_time_range,
                         event_onsets=merged_onsets,
                         sampling_rate=self.sampling_rate,
-                        time_offset=self.time_offset)
+                        time_offset=self.time_offset,
+                        interval_window=None)
     
     def pad(self, left: float = 0, right: float = 0):
         """
@@ -941,6 +993,11 @@ class Intervals:
             for start, end in self.intervals
         ]
         
+        # Update interval_window if it exists
+        padded_window = None
+        if self.interval_window is not None:
+            padded_window = (self.interval_window[0] - left, self.interval_window[1] + right)
+        
         return Intervals(
             padded, 
             self.units, 
@@ -950,7 +1007,8 @@ class Intervals:
             data_time_range=self.data_time_range,
             event_onsets=self.event_onsets,
             sampling_rate=self.sampling_rate,
-            time_offset=self.time_offset
+            time_offset=self.time_offset,
+            interval_window=padded_window
         )
     
     def stats(self):
@@ -1045,7 +1103,8 @@ class Intervals:
                 data_time_range=self.data_time_range,
                 event_onsets=None,
                 sampling_rate=self.sampling_rate,
-                time_offset=self.time_offset
+                time_offset=self.time_offset,
+                interval_window=self.interval_window
             )
         
         mask = np.ones(len(self.intervals), dtype=bool)
@@ -1103,7 +1162,8 @@ class Intervals:
             data_time_range=self.data_time_range,
             event_onsets=filtered_event_onsets,
             sampling_rate=self.sampling_rate,
-            time_offset=self.time_offset
+            time_offset=self.time_offset,
+            interval_window=self.interval_window
         )
 
     @requires_package("pandas")

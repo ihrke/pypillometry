@@ -1721,7 +1721,8 @@ class GenericEyeData(ABC):
                 data_time_range=data_time_range,
                 event_onsets=event_onsets_list,
                 sampling_rate=self.fs,
-                time_offset=time_offset
+                time_offset=time_offset,
+                interval_window=interval
             )
         
         if isinstance(event_select, tuple):
@@ -1834,7 +1835,8 @@ class GenericEyeData(ABC):
             data_time_range=data_time_range,
             event_onsets=event_onsets_list,
             sampling_rate=self.fs,
-            time_offset=time_offset
+            time_offset=time_offset,
+            interval_window=interval
         )
 
     def get_segments(self, intervals, variable: str, name: str = None):

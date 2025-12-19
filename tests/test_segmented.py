@@ -433,6 +433,79 @@ class TestSegmentedEyeDataFromIntervals(unittest.TestCase):
         self.assertEqual(segments.name, "cue")
 
 
+class TestSegmentedEyeDataTimeAxis(unittest.TestCase):
+    """Test that time axis is correctly computed with interval_window"""
+    
+    def test_time_axis_is_relative_to_event(self):
+        """Test that time axis uses interval_window for event-locked intervals"""
+        # Create PupilData with events
+        n_samples = 1000
+        fs = 100
+        pupil = np.random.randn(n_samples) + 500
+        event_onsets = [2000, 5000, 8000]  # in ms (2s, 5s, 8s)
+        event_labels = ["stim"] * 3
+        
+        data = pp.PupilData(
+            sampling_rate=fs,
+            left_pupil=pupil,
+            event_onsets=event_onsets,
+            event_labels=event_labels
+        )
+        
+        # Get intervals with window (-200, 800)
+        intervals = data.get_intervals("stim", interval=(-200, 800), units="ms")
+        
+        # Verify interval_window is set
+        self.assertEqual(intervals.interval_window, (-200, 800))
+        
+        # Get segments
+        segments = data.get_segments(intervals, "left_pupil")
+        
+        # Time axis should go from -200 to 800, NOT from absolute times
+        self.assertLess(segments.tx[0], 0)  # Should start negative
+        self.assertGreater(segments.tx[-1], 0)  # Should end positive
+        self.assertAlmostEqual(segments.tx[0], -200, delta=50)  # Close to -200
+        self.assertAlmostEqual(segments.tx[-1], 800, delta=50)  # Close to 800
+        
+        # Zero should be approximately in the middle of the window
+        zero_idx = np.argmin(np.abs(segments.tx))
+        expected_zero_idx = int(segments.n_timepoints * 200 / 1000)  # 200ms into a 1000ms window
+        self.assertAlmostEqual(zero_idx, expected_zero_idx, delta=5)
+    
+    def test_interval_window_preserved_across_units(self):
+        """Test that interval_window is preserved when converting units"""
+        intervals = Intervals(
+            [(0, 100), (200, 300)],
+            units="ms",
+            label="test",
+            sampling_rate=1000,
+            interval_window=(-50, 50)
+        )
+        
+        # Convert to seconds
+        intervals_sec = intervals.to_units("sec")
+        
+        # interval_window should be converted too
+        self.assertIsNotNone(intervals_sec.interval_window)
+        self.assertAlmostEqual(intervals_sec.interval_window[0], -0.05)
+        self.assertAlmostEqual(intervals_sec.interval_window[1], 0.05)
+    
+    def test_interval_window_updated_by_pad(self):
+        """Test that padding updates interval_window"""
+        intervals = Intervals(
+            [(100, 200), (300, 400)],
+            units="ms",
+            label="test",
+            interval_window=(-50, 50)
+        )
+        
+        # Pad by 10ms on each side
+        padded = intervals.pad(left=10, right=10)
+        
+        # interval_window should be expanded
+        self.assertEqual(padded.interval_window, (-60, 60))
+
+
 if __name__ == '__main__':
     unittest.main()
 
