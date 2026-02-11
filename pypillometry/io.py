@@ -263,8 +263,12 @@ def get_osf_project_files(osf_id: str, session: Optional[requests.Session] = Non
                         pbar.total = estimated_files
                     pbar.set_description(f"Processing: {full_path}")
             elif attrs['kind'] == 'folder':
-                if 'new_folder' in item['links']:
-                    folder_url = item['links']['new_folder']
+                # Use the 'upload' link and replace query params to list folder contents
+                # The 'new_folder' link requires write permissions (403 for public access)
+                if 'upload' in item['links']:
+                    # upload link looks like: .../folder_id/?kind=file
+                    # we need: .../folder_id/ (without query params)
+                    folder_url = item['links']['upload'].split('?')[0]
                     process_files(folder_url, full_path, pbar)
                 
         if isinstance(data.get('links'), dict) and data['links'].get('next'):
