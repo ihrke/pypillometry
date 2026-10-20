@@ -70,6 +70,10 @@ nbsphinx_epilog = """
 # do not create TOC entries for each function/class
 toc_object_entries = False
 
+# numpydoc's "Methods" tables link to the autodoc entries on the same page;
+# do not try to link them to (non-existing) autosummary stub files
+numpydoc_class_members_toctree = False
+
 nbsphinx_prolog=nbsphinx_epilog
 
 # List of patterns, relative to source directory, that match files and
