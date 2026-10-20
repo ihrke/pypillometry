@@ -29,7 +29,7 @@ The configuration file (``pypillometry_conf.py``) should define:
 - ``raw_data``: Dictionary mapping subject IDs to their data files
 - ``read_subject()`` function that processes the raw data files
 
-Here is an template for a configuration file (``pypillometry_conf.py``), see :ref:`examples/pypillometry_conf.py` for a complete example:
+Here is an template for a configuration file (``pypillometry_conf.py``), see :ref:`example-config-file` for a complete example:
 
 .. code-block:: python
 
@@ -86,7 +86,7 @@ Sharing Your Study on OSF
 
 To share your study on OSF:
 
-1. Create a new project on [Open Science Framework](https://osf.io)
+1. Create a new project on `Open Science Framework <https://osf.io>`_
 2. Upload your study data files and configuration file (``pypillometry_conf.py``) to the project
     - the data files must be arranged in a folder structure that matches the one specified in the `raw_data` dictionary of the configuration file
     - NOTE: It is completely fine to upload the data files to an already existing OSF project (simply add a subfolder for the data/configuration file)
@@ -110,6 +110,7 @@ To load a shared study from OSF, use :func:`~pypillometry.io.load_study_osf()`:
         path="local/cache/path",
         subjects=["sub01", "sub02"]
     )
+
 The function will:
 
 1. Download the project's configuration file
@@ -118,6 +119,8 @@ The function will:
 4. Return a dictionary mapping subject IDs to their processed data
 
 Files are cached locally in the specified path to avoid repeated downloads.
+
+.. _example-config-file:
 
 Example configuration file
 --------------------------
