@@ -70,6 +70,10 @@ nbsphinx_epilog = """
 # do not create TOC entries for each function/class
 toc_object_entries = False
 
+# numpydoc's "Methods" tables link to the autodoc entries on the same page;
+# do not try to link them to (non-existing) autosummary stub files
+numpydoc_class_members_toctree = False
+
 nbsphinx_prolog=nbsphinx_epilog
 
 # List of patterns, relative to source directory, that match files and
@@ -105,7 +109,7 @@ html_logo = "../logo/pypillometry_logo_200x200.png"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = []
 
 
 _GITHUB_ADMONITIONS = {

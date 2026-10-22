@@ -13,7 +13,8 @@ When clicking on this link, the notebook will open in an interactive session in 
    :maxdepth: 2
    :caption: List of Notebooks:
 
-   /importdata
+   /importdata_edf
+   /importdata_asc
    /example_datasets
    /pipes
    /blinks
