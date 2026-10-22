@@ -121,6 +121,7 @@ class GazeData(GenericEyeData):
             name=self.name, 
             n=len(self.data),
             sampling_rate=self.fs,
+            eyes=self.eyes,
             data=list(self.data.keys()),
             nevents=self.nevents(), 
             experimental_setup=setup_info,

@@ -692,5 +692,11 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         self.assertEqual(d_masked.data.mask['left_x'][3], 1)  # x=1281 > 1280
         self.assertEqual(d_masked.data.mask['left_y'][3], 1)  # y=1025 > 1024
 
+    def test_summary_and_repr_html(self):
+        x = np.random.randn(100)
+        d = pp.GazeData(left_x=x, left_y=x, sampling_rate=100)
+        self.assertEqual(d.summary()["eyes"], ["left"])
+        self.assertIn("left", d._repr_html_())
+
 if __name__ == '__main__':
     unittest.main()
