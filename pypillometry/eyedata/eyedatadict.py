@@ -235,6 +235,7 @@ class EyeDataDict(MutableMapping):
         """Set mask for a specific key."""
         if key not in self.data:
             raise KeyError(f"No data for key {key}")
+        mask = np.asarray(mask)
         if mask.shape != self.shape:
             raise ValueError(f"Mask must have shape {self.shape}")
         self.mask[key] = mask.astype(int)
@@ -313,7 +314,7 @@ class EyeDataDict(MutableMapping):
         {'left_x': 1, 'left_y': 2}
         """
         if per_key:
-            return {key: np.sum(mask) for key, mask in self.mask.items()}
+            return {key: int(np.sum(mask)) for key, mask in self.mask.items()}
         else:
-            return max(np.sum(mask) for mask in self.mask.values())
+            return max(int(np.sum(mask)) for mask in self.mask.values())
 
