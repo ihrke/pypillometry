@@ -417,39 +417,48 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class representing Eye-Tracking data (x,y) from one or two eyes.</span>
 
-<span class="sd">    If you also want to store pupil-size, use the `EyeData` class.</span>
-<span class="sd">    If you only want to store pupil-size, use the `PupilData` class.</span>
+<span class="sd">    If you also want to store pupil-size, use the :class:`~pypillometry.EyeData` class.</span>
+<span class="sd">    If you only want to store pupil-size, use the :class:`~pypillometry.PupilData` class.</span>
+
+<span class="sd">    Properties such as :attr:`~pypillometry.GenericEyeData.eyes` and</span>
+<span class="sd">    :attr:`~pypillometry.GenericEyeData.variables` are inherited from</span>
+<span class="sd">    :class:`~pypillometry.GenericEyeData`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    time: </span>
-<span class="sd">        timing array or `None`, in which case the time-array goes from [0,maxT]</span>
-<span class="sd">        using `sampling_rate` (in ms)</span>
-<span class="sd">    left_x, left_y:</span>
+<span class="sd">    time : np.ndarray or None</span>
+<span class="sd">        timing array (in ms) or `None`, in which case the time-array goes from [0,maxT]</span>
+<span class="sd">        using `sampling_rate`</span>
+<span class="sd">    left_x, left_y : np.ndarray or None</span>
 <span class="sd">        data from left eye (at least one of the eyes must be provided, both x and y)</span>
-<span class="sd">    right_x, right_y:</span>
+<span class="sd">    right_x, right_y : np.ndarray or None</span>
 <span class="sd">        data from right eye (at least one of the eyes must be provided, both x and y)</span>
-<span class="sd">    sampling_rate: float</span>
-<span class="sd">        sampling-rate of the signal in Hz; if None, </span>
-<span class="sd">    experimental_setup: ExperimentalSetup, optional</span>
+<span class="sd">    event_onsets : np.ndarray or None</span>
+<span class="sd">        time-onsets of any events in the data (in ms, matched in `time` vector)</span>
+<span class="sd">    event_labels : np.ndarray or None</span>
+<span class="sd">        for each event in `event_onsets`, provide a label</span>
+<span class="sd">    sampling_rate : float or None</span>
+<span class="sd">        sampling-rate of the signal in Hz; if `None`, it is estimated from</span>
+<span class="sd">        the median difference in `time` (either `time` or `sampling_rate`</span>
+<span class="sd">        must be provided)</span>
+<span class="sd">    experimental_setup : ExperimentalSetup, optional</span>
 <span class="sd">        Geometric model of the experimental setup including screen geometry,</span>
 <span class="sd">        eye position, camera position, and screen orientation.</span>
-<span class="sd">    name: </span>
+<span class="sd">    name : str or None</span>
 <span class="sd">        name of the dataset or `None` (in which case a random string is selected)</span>
-<span class="sd">    event_onsets: </span>
-<span class="sd">        time-onsets of any events in the data (in ms, matched in `time` vector)</span>
-<span class="sd">    event_labels:</span>
-<span class="sd">        for each event in `event_onsets`, provide a label</span>
-<span class="sd">    calibration: dict, optional</span>
+<span class="sd">    calibration : dict, optional</span>
 <span class="sd">        Dictionary of SpatialCalibration objects, one per eye (keys: 'left', 'right')</span>
-<span class="sd">    keep_orig: bool</span>
-<span class="sd">        keep a copy of the original dataset? If `True`, a copy of the object</span>
-<span class="sd">        as initiated in the constructor is stored in member `original`</span>
-<span class="sd">    fill_time_discontinuities: bool</span>
+<span class="sd">    fill_time_discontinuities : bool</span>
 <span class="sd">        sometimes, when the eyetracker loses signal, no entry in the EDF is made; </span>
 <span class="sd">        when this option is True, such entries will be made and the signal set to 0 there</span>
 <span class="sd">        (or do it later using `fill_time_discontinuities()`)</span>
-<span class="sd">    inplace: bool</span>
+<span class="sd">    keep_orig : bool</span>
+<span class="sd">        keep a copy of the original dataset? If `True`, a copy of the object</span>
+<span class="sd">        as initiated in the constructor is stored in member `original`</span>
+<span class="sd">    info : dict or None</span>
+<span class="sd">        optional dictionary with additional information about the dataset</span>
+<span class="sd">        (stored in member `info`)</span>
+<span class="sd">    inplace : bool</span>
 <span class="sd">        if True, the object is modified in place; if False, a new object is returned</span>
 <span class="sd">        this object-level property can be overwritten by the method-level `inplace` argument</span>
 <span class="sd">        default is "False"</span>
@@ -495,6 +504,7 @@ window.runMermaid = runMermaid;</script>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Plotting functions for this object (a :class:`~pypillometry.GazePlotter`)."""</span>
         <span class="k">return</span> <span class="n">GazePlotter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
 <div class="viewcode-block" id="GazeData.summary">
@@ -545,21 +555,22 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../api.html#pypillometry.GazeData.set_experimental_setup">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_experimental_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Set or update the experimental setup geometry.</span>
+<span class="sd">        Set or update the experimental setup geometry (in-place).</span>
 <span class="sd">        </span>
-<span class="sd">        Creates a new ExperimentalSetup or updates the existing one with</span>
-<span class="sd">        the provided parameters. All parameters are passed through to</span>
-<span class="sd">        ExperimentalSetup constructor.</span>
+<span class="sd">        Creates a new :class:`~pypillometry.ExperimentalSetup` or updates the</span>
+<span class="sd">        existing one with the provided parameters (parameters that are not</span>
+<span class="sd">        given are taken from the existing setup). All parameters are passed</span>
+<span class="sd">        through to the ExperimentalSetup constructor.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        **kwargs : </span>
-<span class="sd">            Any parameters accepted by ExperimentalSetup:</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Any parameters accepted by :class:`~pypillometry.ExperimentalSetup`:</span>
+
 <span class="sd">            - screen_resolution: tuple (width, height) in pixels</span>
 <span class="sd">            - physical_screen_size: tuple (width, height) with units</span>
-<span class="sd">            - eye_to_screen_center: distance (d)</span>
+<span class="sd">            - eye_to_screen_center: distance from the eye to the screen center</span>
 <span class="sd">            - screen_offset: tuple (delta_x, delta_y) - offset of screen center from eye</span>
-<span class="sd">            - eye_to_screen_center: alternative distance specification</span>
 <span class="sd">            - screen_pitch: tilt angle (alpha_tilt)</span>
 <span class="sd">            - screen_yaw: tilt angle (beta_tilt)</span>
 <span class="sd">            - camera_offset: tuple (x, y, z) in eye-centric frame</span>
@@ -623,13 +634,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            If thr_type is "pixel": maximum allowed distance in pixels.</span>
 <span class="sd">        thr_type : str, default="percentile"</span>
 <span class="sd">            Type of threshold to apply:</span>
+
 <span class="sd">            - "percentile": threshold is calculated as the given percentile of the distance distribution</span>
 <span class="sd">            - "pixel": threshold is the maximum allowed distance in pixels</span>
 <span class="sd">        store_as : str or None, default=None</span>
 <span class="sd">            Variable name to store the distance timeseries. If None, distance is not stored.</span>
 <span class="sd">        apply_mask : bool, default=True</span>
 <span class="sd">            If True, apply detected divergences as masks to the data and return self.</span>
-<span class="sd">            If False, return detected divergences as dict of Intervals objects.</span>
+<span class="sd">            If False, return detected divergences as an Intervals object.</span>
 <span class="sd">        ignore_existing_mask : bool, default=True</span>
 <span class="sd">            If True (default), check all data points including those already masked (e.g., from blinks).</span>
 <span class="sd">            If False, only check non-masked data points for divergences.</span>
@@ -641,7 +653,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        GazeData or Intervals</span>
-<span class="sd">            If apply_mask=True: returns self for chaining.</span>
+<span class="sd">            If apply_mask=True: returns the object for chaining.</span>
 <span class="sd">            If apply_mask=False: returns Intervals object containing detected divergence intervals.</span>
 <span class="sd">        </span>
 <span class="sd">        Raises</span>

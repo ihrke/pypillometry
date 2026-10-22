@@ -442,6 +442,26 @@ window.runMermaid = runMermaid;</script>
 <span class="c1">## decorator to keep a history of actions performed on dataset</span>
 <span class="c1"># Only adds history when the function returns a GenericEyeData instance (self) </span>
 <span class="k">def</span><span class="w"> </span><span class="nf">keephistory</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Decorator that records a method call in the history of the returned object.</span>
+
+<span class="sd">    After the decorated method has run, a string representation of the call</span>
+<span class="sd">    and its arguments is added (via ``add_to_history()``) to the object it</span>
+<span class="sd">    returned, provided that object is an eyedata object (i.e., has an</span>
+<span class="sd">    ``add_to_history`` method). The history can be shown with</span>
+<span class="sd">    :meth:`~pypillometry.GenericEyeData.print_history` and replayed with</span>
+<span class="sd">    :meth:`~pypillometry.GenericEyeData.apply_history`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : callable</span>
+<span class="sd">        method to wrap; its first argument must be the object (`self`)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    callable</span>
+<span class="sd">        wrapped method that returns the same value as `func`</span>
+<span class="sd">    """</span>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">obj</span><span class="o">=</span><span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -841,25 +861,29 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.set_blinks">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_blinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intervals</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[],</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Set blinks for specified eyes and variables.</span>
+<span class="sd">        Set blinks for specified eyes and variables (in-place).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        intervals : Intervals or dict</span>
+<span class="sd">        intervals : Intervals, dict or None</span>
 <span class="sd">            Either:</span>
-<span class="sd">            - A single Intervals object: stored for all specified eyes/variables</span>
-<span class="sd">            - A dict of Intervals: keys like "left_pupil", "right_x", etc.</span>
-<span class="sd">              When dict is provided, `eyes` and `variables` are ignored.</span>
-<span class="sd">        eyes : list of str, optional</span>
-<span class="sd">            List of eyes to set blinks for (e.g., ['left', 'right']).</span>
-<span class="sd">            If empty, applies to all available eyes.</span>
-<span class="sd">            Ignored if `intervals` is a dict.</span>
-<span class="sd">        variables : list of str, optional</span>
-<span class="sd">            List of variables to set blinks for (e.g., ['pupil', 'x', 'y']).</span>
-<span class="sd">            If empty, applies to all available variables.</span>
-<span class="sd">            Ignored if `intervals` is a dict.</span>
+
+<span class="sd">            - a single :class:`~pypillometry.Intervals` object: stored for all</span>
+<span class="sd">              specified eyes/variables;</span>
+<span class="sd">            - a dict of Intervals (or `None`) with keys like "left_pupil",</span>
+<span class="sd">              "right_x", etc.; when a dict is provided, `eyes` and</span>
+<span class="sd">              `variables` are ignored;</span>
+<span class="sd">            - `None`: remove the stored blinks for the specified</span>
+<span class="sd">              eyes/variables (the mask is not changed).</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to set blinks for (e.g., ``["left", "right"]``);</span>
+<span class="sd">            if empty, all available eyes. Ignored if `intervals` is a dict.</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            variable(s) to set blinks for (e.g., ``["pupil", "x", "y"]``);</span>
+<span class="sd">            if empty, all available variables. Ignored if `intervals` is a dict.</span>
 <span class="sd">        apply_mask : bool, optional</span>
-<span class="sd">            If True, apply intervals as mask to data. If False, only store intervals.</span>
+<span class="sd">            If True, also apply the intervals as mask to the data</span>
+<span class="sd">            (existing masks are kept). If False, only store intervals.</span>
 <span class="sd">            Default is True.</span>
 <span class="sd">        """</span>
         <span class="c1"># Check if intervals is a dict</span>
@@ -900,13 +924,18 @@ window.runMermaid = runMermaid;</script>
                    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get blinks as Intervals object or dict of Intervals.</span>
-<span class="sd">        </span>
+
+<span class="sd">        If no blinks are stored for an eye/variable, an empty Intervals</span>
+<span class="sd">        object is returned for it.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes : str or list</span>
-<span class="sd">            Eye(s) to get blinks for. If multiple, returns dict.</span>
-<span class="sd">        variables : str or list</span>
-<span class="sd">            Variable(s) to get blinks for. If multiple, returns dict.</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            Eye(s) to get blinks for; if empty, all available eyes.</span>
+<span class="sd">            If multiple, returns dict.</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            Variable(s) to get blinks for; if empty, all available variables.</span>
+<span class="sd">            If multiple, returns dict.</span>
 <span class="sd">        units : str or None, optional</span>
 <span class="sd">            Units for intervals: "ms", "sec", "min", "h", or None for indices</span>
 <span class="sd">            </span>
@@ -994,15 +1023,21 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Interpolated blinks are the blink regions that were successfully interpolated</span>
 <span class="sd">        by `pupil_blinks_interpolate()`. These may differ from detected blinks because:</span>
+
 <span class="sd">        - Blink boundaries are refined using velocity thresholds</span>
 <span class="sd">        - Some blinks may be skipped if they're too short to interpolate</span>
-<span class="sd">        </span>
+
+<span class="sd">        If no interpolated blinks are stored for an eye/variable, an empty</span>
+<span class="sd">        Intervals object is returned for it.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes : str or list</span>
-<span class="sd">            Eye(s) to get interpolated blinks for. If multiple, returns dict.</span>
-<span class="sd">        variables : str or list</span>
-<span class="sd">            Variable(s) to get interpolated blinks for. If multiple, returns dict.</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            Eye(s) to get interpolated blinks for; if empty, all available eyes.</span>
+<span class="sd">            If multiple, returns dict.</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            Variable(s) to get interpolated blinks for; if empty, all available</span>
+<span class="sd">            variables. If multiple, returns dict.</span>
 <span class="sd">        units : str or None, optional</span>
 <span class="sd">            Units for intervals: "ms", "sec", "min", "h", or None for indices</span>
 <span class="sd">            </span>
@@ -1078,13 +1113,18 @@ window.runMermaid = runMermaid;</script>
                           <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert masks to Intervals objects.</span>
-<span class="sd">        </span>
+
+<span class="sd">        Each contiguous run of masked samples becomes one interval.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes : str or list</span>
-<span class="sd">            Eye(s) to get masks for. If multiple, returns dict.</span>
-<span class="sd">        variables : str or list</span>
-<span class="sd">            Variable(s) to get masks for. If multiple, returns dict.</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            Eye(s) to get masks for; if empty, all available eyes.</span>
+<span class="sd">            If multiple, returns dict.</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            Variable(s) to get masks for; if empty, all available variables.</span>
+<span class="sd">            If multiple, returns dict (combinations not present in the data</span>
+<span class="sd">            are left out).</span>
 <span class="sd">        units : str or None, optional</span>
 <span class="sd">            Units for intervals: "ms", "sec", "min", "h", or None for indices.</span>
 <span class="sd">            Default is None (indices).</span>
@@ -1212,19 +1252,22 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.nblinks">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">nblinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Return number of detected blinks. Should be run after `detect_blinks()`.</span>
+<span class="sd">        Return number of detected blinks. Should be run after `pupil_blinks_detect()`.</span>
 
 <span class="sd">        By default, all eyes and variables are considered.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes: list</span>
-<span class="sd">            list of eyes to consider; if empty, all eyes are considered</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to consider; if empty, all available eyes</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            variable(s) to consider; if empty, all available variables</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        int</span>
-<span class="sd">            number of detected blinks</span>
+<span class="sd">        dict</span>
+<span class="sd">            number of detected blinks per eye/variable, with keys like</span>
+<span class="sd">            "left_pupil"; combinations without blinks are left out</span>
 <span class="sd">        """</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">variables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span><span class="n">variables</span><span class="p">)</span>
         
@@ -1239,18 +1282,22 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">blink_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ms"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return statistics on blink durations.</span>
-<span class="sd">        </span>
+
+<span class="sd">        Uses the blinks stored for the "pupil" variable of each eye</span>
+<span class="sd">        (see :meth:`~pypillometry.Intervals.stats`).</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes : list</span>
-<span class="sd">            Eyes to process. If empty, all eyes are processed.</span>
-<span class="sd">        units : str</span>
-<span class="sd">            Units for statistics: "ms", "sec", "min", or "h"</span>
-<span class="sd">            </span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to consider; if empty, all available eyes</span>
+<span class="sd">        units : str, optional</span>
+<span class="sd">            Units for statistics: "ms", "sec", "min", or "h". Default "ms".</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict</span>
-<span class="sd">            Dictionary mapping eye name to stats dict (or None if no blinks)</span>
+<span class="sd">            Dictionary mapping eye name to stats dict (number, mean, sd,</span>
+<span class="sd">            min, max and total duration of blinks), or None if no blinks</span>
 <span class="sd">        """</span>
         <span class="n">eyes</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="p">[])</span>
         
@@ -1301,7 +1348,17 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="GenericEyeData.add_to_history">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.add_to_history">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_to_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Add event to history"""</span>
+<span class="w">        </span><span class="sd">"""Add event to history.</span>
+
+<span class="sd">        Usually called by the ``keephistory`` decorator.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        event : dict</span>
+<span class="sd">            description of the operation with keys "funcstring" (printable</span>
+<span class="sd">            call), "funcname" (method name), "args" and "kwargs" (arguments</span>
+<span class="sd">            used to replay the call in :meth:`apply_history`)</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
@@ -1328,14 +1385,19 @@ window.runMermaid = runMermaid;</script>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply history of operations done on `self` to `obj`.</span>
 <span class="sd">        </span>
+<span class="sd">        The operations are replayed in order with the arguments with which</span>
+<span class="sd">        they were originally called (including `inplace`).</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        obj: :class:`GenericEyedata`</span>
-<span class="sd">            object of class :class:`GenericEyedata` to which the operations are to be transferred</span>
-<span class="sd">            </span>
+<span class="sd">        obj : :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            object to which the operations are to be transferred</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        copy of the :class:`GenericEyedata`-object to which the operations in `self` were applied</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the object returned by the last replayed operation (`obj` itself</span>
+<span class="sd">            or a copy, depending on the `inplace` settings)</span>
 <span class="sd">        """</span>
         <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">:</span>
             <span class="n">obj</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ev</span><span class="p">[</span><span class="s2">"funcname"</span><span class="p">])(</span><span class="o">*</span><span class="n">ev</span><span class="p">[</span><span class="s2">"args"</span><span class="p">],</span> <span class="o">**</span><span class="n">ev</span><span class="p">[</span><span class="s2">"kwargs"</span><span class="p">])</span>
@@ -1359,12 +1421,21 @@ window.runMermaid = runMermaid;</script>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Drop original dataset from record (e.g., to save space).</span>
 
+<span class="sd">        Sets the `original` attribute (stored when the object was created</span>
+<span class="sd">        with ``keep_orig=True``) to `None`.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        inplace: bool</span>
-<span class="sd">            if `True`, make change in-place and return the object</span>
-<span class="sd">            if `False`, make and return copy before making changes</span>
-<span class="sd">            if `None`, use the setting of the object (specified in constructor)</span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the object without the original data (`self` or a copy,</span>
+<span class="sd">            depending on `inplace`)</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">original</span><span class="o">=</span><span class="kc">None</span>
@@ -1377,17 +1448,24 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Resets time so that the time-array starts at time zero (t0).</span>
-<span class="sd">        Resets onsets etc.</span>
-<span class="sd">        </span>
+<span class="sd">        Resets time so that time `t0` becomes time zero.</span>
+
+<span class="sd">        `t0` is subtracted from the time-vector and from the event onsets.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        t0: float or None</span>
-<span class="sd">            time at which the :class:`.PupilData`'s time-vector starts; if None, use the first time point</span>
-<span class="sd">        inplace: bool</span>
-<span class="sd">            if `True`, make change in-place and return the object</span>
-<span class="sd">            if `False`, make and return copy before making changes</span>
-<span class="sd">            if `None`, use the setting of the object (specified in constructor)</span>
+<span class="sd">        t0 : float or None, optional</span>
+<span class="sd">            time (in ms) that becomes the new time zero; if None, use the first</span>
+<span class="sd">            time point (so that the time-vector starts at zero)</span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the object with shifted time (`self` or a copy, depending on `inplace`)</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">t0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1405,26 +1483,32 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">end</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> 
                 <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Return a new `EyeData` object that is a shortened version</span>
-<span class="sd">        of the current one (contains all data between `start` and</span>
-<span class="sd">        `end` in units given by `units` (one of "ms", "sec", "min", "h").</span>
-<span class="sd">        If units is `None`, use the units in the time vector.</span>
+<span class="sd">        Return a shortened version of the current object.</span>
+
+<span class="sd">        The result contains all data (and events) between `start` and `end`</span>
+<span class="sd">        (inclusive), in units given by `units` (one of "ms", "sec", "min", "h").</span>
+<span class="sd">        `start` and `end` refer to the values of the time-vector (not to</span>
+<span class="sd">        the time since the start of the recording).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        </span>
-<span class="sd">        start: float</span>
-<span class="sd">            start for new dataset</span>
-<span class="sd">        end: float</span>
-<span class="sd">            end of new dataset</span>
-<span class="sd">        units: str</span>
-<span class="sd">            time units in which `start` and `end` are provided.</span>
+<span class="sd">        start : float, optional</span>
+<span class="sd">            start for new dataset; default: beginning of the data</span>
+<span class="sd">        end : float, optional</span>
+<span class="sd">            end of new dataset; default: end of the data</span>
+<span class="sd">        units : str or None, optional</span>
+<span class="sd">            time units in which `start` and `end` are provided</span>
 <span class="sd">            (one of "ms", "sec", "min", "h").</span>
-<span class="sd">            If units is `None`, use the units in the time vector.</span>
-<span class="sd">        inplace: bool</span>
-<span class="sd">            if `True`, make change in-place and return the object</span>
-<span class="sd">            if `False`, make and return copy before making changes</span>
-<span class="sd">            if `None`, use the setting of the object (specified in constructor)</span>
+<span class="sd">            If units is `None`, use the units in the time vector (ms).</span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the shortened object (`self` or a copy, depending on `inplace`)</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
 
@@ -1472,14 +1556,22 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Reads a :class:`.GenericEyedata` object from a pickle-file.</span>
+<span class="sd">        Reads a :class:`~pypillometry.GenericEyeData` object from a pickle-file.</span>
 <span class="sd">        Use as ``pypillometry.PupilData.from_file("yourfile.pd")``.</span>
-<span class="sd">        </span>
+
+<span class="sd">        The file is read with :func:`pypillometry.io.read_pickle`, so</span>
+<span class="sd">        `fname` can also be a URL.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        </span>
-<span class="sd">        fname: str</span>
-<span class="sd">            filename</span>
+<span class="sd">        fname : str</span>
+<span class="sd">            filename (or URL)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the object stored in the file (its class is the one that was</span>
+<span class="sd">            stored, independent of the class this method is called on)</span>
 <span class="sd">        """</span>
         <span class="n">r</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">r</span></div>
@@ -1493,34 +1585,39 @@ window.runMermaid = runMermaid;</script>
         <span class="n">return_edf_obj</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
         <span class="n">remove_eyelink_triggers</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Reads a :class:`.GenericEyedata` object from an Eyelink file.</span>
+<span class="sd">        Reads an eyedata object from an Eyelink file.</span>
 
 <span class="sd">        All "messages" are stored as event_labels (can be filtered later) and</span>
 <span class="sd">        it tries to be smart to detect different information from the EDF file.</span>
 <span class="sd">        Spatial calibration/validation data is automatically parsed and stored</span>
 <span class="sd">        in the `calibration` attribute as SpatialCalibration objects.</span>
-<span class="sd">        </span>
+
 <span class="sd">        However, the EDF file may contain other information of interest, e.g.,</span>
 <span class="sd">        eyelink-detected saccades, etc.</span>
-<span class="sd">        If you need more control, use the "eyelinkio" package directly and </span>
-<span class="sd">        create the object manually. </span>
+<span class="sd">        If you need more control, use the "eyelinkio" package directly and</span>
+<span class="sd">        create the object manually.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        fname: str</span>
-<span class="sd">            filename of the EDF file</span>
-<span class="sd">        return_edf_obj: bool</span>
-<span class="sd">            if True, return a tuple with the object of class :class:`.GenericEyedata` and the object returned by the "eyelinkio" package</span>
-<span class="sd">            if False, return only the object of class :class:`.GenericEyedata`</span>
-<span class="sd">        remove_eyelink_triggers: bool</span>
-<span class="sd">            if True, remove all Eyelink triggers from the event_labels (related to eye-tracker settings, calibration, validation etc)</span>
-<span class="sd">        kwargs: dict</span>
-<span class="sd">            additional arguments to pass to the pypillometry.io.read_eyelink()</span>
+<span class="sd">        fname : str</span>
+<span class="sd">            filename of the EDF file (or URL)</span>
+<span class="sd">        return_edf_obj : bool, optional</span>
+<span class="sd">            if True, return a tuple with the eyedata object and the object</span>
+<span class="sd">            returned by the "eyelinkio" package;</span>
+<span class="sd">            if False (default), return only the eyedata object</span>
+<span class="sd">        remove_eyelink_triggers : bool, optional</span>
+<span class="sd">            if True (default), remove all Eyelink triggers from the event_labels</span>
+<span class="sd">            (related to eye-tracker settings, calibration, validation etc)</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            additional arguments passed to :func:`pypillometry.io.read_eyelink`</span>
+<span class="sd">            (e.g., `cache_file`)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        :class:`.GenericEyedata` or tuple</span>
-<span class="sd">            object of class :class:`.GenericEyedata` or tuple with the object of class :class:`.GenericEyedata` and the object returned by the "eyelinkio" package</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData` or tuple</span>
+<span class="sd">            object of the class this method is called on (e.g.,</span>
+<span class="sd">            :class:`~pypillometry.EyeData`), or tuple with that object and the</span>
+<span class="sd">            object returned by the "eyelinkio" package</span>
 <span class="sd">        </span>
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -1529,7 +1626,6 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        &gt;&gt;&gt; # Access calibration data</span>
 <span class="sd">        &gt;&gt;&gt; print(d.calibration['left'])  # doctest: +SKIP</span>
 <span class="sd">        &lt;SpatialCalibration: left eye, HV9, n=9, error=0.45±0.23° (max=0.79°)&gt;</span>
-
 <span class="sd">        """</span>
         <span class="n">edf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">read_eyelink</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         
@@ -1740,12 +1836,17 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Make and return a deep-copy of the pupil data.</span>
-<span class="sd">        </span>
+<span class="sd">        Make and return a deep-copy of the eyedata object.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        new_name : str, optional</span>
 <span class="sd">            New name for the copy. If None, "_copy" is appended to the original name.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            deep copy of the object (same class as the original)</span>
 <span class="sd">        """</span>
         <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
@@ -1765,17 +1866,22 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Drop specified eyes and/or variables from the data and return a new object.</span>
 <span class="sd">        </span>
 <span class="sd">        This method never works in place - it always returns a new object.</span>
+<span class="sd">        All data of the given eyes and all data of the given variables are</span>
+<span class="sd">        dropped (together with their stored blinks).</span>
 <span class="sd">        The returned object's class is determined by what data remains:</span>
+
 <span class="sd">        - If only pupil variables remain: returns PupilData</span>
 <span class="sd">        - If only x/y variables remain: returns GazeData</span>
 <span class="sd">        - If both pupil and x/y remain: returns EyeData</span>
-<span class="sd">        </span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes : list of str</span>
-<span class="sd">            Eyes to drop (e.g., ['left'] or ['right'] or ['left', 'right'])</span>
-<span class="sd">        variables : list of str</span>
-<span class="sd">            Variables to drop (e.g., ['pupil'] or ['x', 'y'])</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            Eyes to drop (e.g., ['left'] or ['right'] or ['left', 'right']);</span>
+<span class="sd">            if empty, no eye is dropped</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            Variables to drop (e.g., ['pupil'] or ['x', 'y']);</span>
+<span class="sd">            if empty, no variable is dropped</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1887,14 +1993,25 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.set_event_onsets">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_event_onsets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_onsets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">event_labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Set onsets of events in the data</span>
+<span class="sd">        Set onsets of events in the data (in-place).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        onsets: np.ndarray</span>
-<span class="sd">            array of onsets (in ms)</span>
-<span class="sd">        labels: np.ndarray</span>
-<span class="sd">            array of labels (strings)</span>
+<span class="sd">        event_onsets : np.ndarray or None</span>
+<span class="sd">            array of onsets (in ms); `None` removes all events</span>
+<span class="sd">        event_labels : np.ndarray or None</span>
+<span class="sd">            array of labels (strings), same length as `event_onsets`;</span>
+<span class="sd">            if `None`, all labels are set to 0</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if any onset is outside the range of the time-vector or if</span>
+<span class="sd">            `event_labels` and `event_onsets` differ in length</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        set_events : set events from an :class:`~pypillometry.Events` object</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">event_onsets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -1916,6 +2033,10 @@ window.runMermaid = runMermaid;</script>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Events (onsets in ms) as an :class:`~pypillometry.Events` object.</span>
+
+<span class="sd">        Shortcut for :meth:`get_events` with default arguments.</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
 
 <div class="viewcode-block" id="GenericEyeData.get_events">
@@ -2044,8 +2165,25 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fill_time_discontinuities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yval</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">print_info</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        find gaps in the time-vector and fill them in</span>
-<span class="sd">        (add zeros to the signal)</span>
+<span class="sd">        Find gaps in the time-vector and fill them in (in-place).</span>
+
+<span class="sd">        A gap is a step between consecutive time points that is larger than</span>
+<span class="sd">        twice the median step. New time points are inserted into each gap</span>
+<span class="sd">        at the median step size and all data variables are set to `yval`</span>
+<span class="sd">        at these new time points. This is called by the constructor when</span>
+<span class="sd">        ``fill_time_discontinuities=True``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        yval : float, optional</span>
+<span class="sd">            value used for the data in the filled-in gaps; default 0</span>
+<span class="sd">        print_info : bool, optional</span>
+<span class="sd">            if True (default), log the number of gaps that are filled in</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the object itself (always modified in-place)</span>
 <span class="sd">        """</span>
         <span class="n">tx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span>
         <span class="n">stepsize</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">tx</span><span class="p">))</span>
@@ -2096,38 +2234,39 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        events matching "stimulus" or "response". It is also </span>
 <span class="sd">        possible to select the intervals situated between two different events,</span>
 <span class="sd">        e.g., trial start and response by specifying `event_select` as a tuple</span>
-<span class="sd">        with two entriess.</span>
+<span class="sd">        with two entries.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
-<span class="sd">        event_select: str, tuple, function, or Events</span>
+<span class="sd">        ----------</span>
+<span class="sd">        event_select : str, tuple, function, or Events</span>
 <span class="sd">            variable describing which events to select and align to</span>
-<span class="sd">            - if str: use all events whose label contains the string</span>
-<span class="sd">            - if function: apply function to all labels, use those where the function returns True</span>
-<span class="sd">            - if tuple: use all events between the two events specified in the tuple. </span>
-<span class="sd">                Both selectors must result in identical number of events.</span>
-<span class="sd">            - if Events: use the events from the Events object directly</span>
 
-<span class="sd">        interval : tuple (min,max)</span>
+<span class="sd">            - if str: use all events whose label contains the string</span>
+<span class="sd">            - if function: apply function to all labels, use those where the</span>
+<span class="sd">              function returns True</span>
+<span class="sd">            - if tuple: use the intervals between the events selected by the</span>
+<span class="sd">              first and the second entry (each a str or function); `interval[0]`</span>
+<span class="sd">              is added to the first and `interval[1]` to the second event.</span>
+<span class="sd">              Both selectors must result in identical number of events.</span>
+<span class="sd">            - if Events: use the events from the</span>
+<span class="sd">              :class:`~pypillometry.Events` object directly</span>
+<span class="sd">        interval : tuple (min,max), optional</span>
 <span class="sd">            time-window relative to event-onset (0 is event-onset); i.e., negative</span>
 <span class="sd">            numbers are before the event, positive numbers after. Units are defined</span>
-<span class="sd">            by the `units` parameter</span>
-
-<span class="sd">        units : str or None</span>
-<span class="sd">            units of the interval (one of "ms", "sec", "min", "h"); units=None means</span>
-<span class="sd">            that the interval in sampling units (i.e., indices into the time-array)</span>
-
-<span class="sd">        label : str or None</span>
+<span class="sd">            by the `units` parameter. Default ``(-200, 200)``.</span>
+<span class="sd">        units : str or None, optional</span>
+<span class="sd">            units of the interval (one of "ms", "sec", "min", "h"); units=None</span>
+<span class="sd">            (default) means that the interval is in sampling units (i.e.,</span>
+<span class="sd">            indices into the time-array)</span>
+<span class="sd">        label : str or None, optional</span>
 <span class="sd">            optional label for the Intervals object. If None, a label is automatically</span>
 <span class="sd">            generated from the event_select parameter</span>
-
-<span class="sd">        kwargs : dict</span>
+<span class="sd">        **kwargs</span>
 <span class="sd">            passed onto the event_select function</span>
-<span class="sd">            </span>
-<span class="sd">        Returns</span>
-<span class="sd">        --------</span>
 
-<span class="sd">        result: Intervals</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.Intervals`</span>
 <span class="sd">            Intervals object containing interval on- and offsets for each match,</span>
 <span class="sd">            with associated metadata (event labels, indices, units)</span>
 <span class="sd">        """</span>
@@ -2336,7 +2475,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        &gt;&gt;&gt; segments.plot()</span>
 <span class="sd">        </span>
 <span class="sd">        &gt;&gt;&gt; # Apply baseline correction</span>
-<span class="sd">        &gt;&gt;&gt; segments_bc = segments.baseline_correct(baseline_win=(-200, 0))</span>
+<span class="sd">        &gt;&gt;&gt; segments_bc = segments.baseline_correct(window=(-200, 0))</span>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -2359,27 +2498,36 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        </span>
-<span class="sd">        variables: str or list</span>
+<span class="sd">        variables : str or list of str, optional</span>
 <span class="sd">            variables to scale; can be "pupil", "x","y", "baseline", "response" or any other variable</span>
 <span class="sd">            that is available in the dataset; either a string or a list of strings;</span>
 <span class="sd">            available variables can be checked with `obj.variables`; empty list means all variables</span>
-<span class="sd">        mean: None, float or dict </span>
-<span class="sd">            mean to subtract from signal; if `None`, use the signal's mean</span>
-<span class="sd">            if dict, provide mean for each eye and variable configuration</span>
-<span class="sd">        sd: None, float or dict</span>
-<span class="sd">            sd to scale with; if `None`, use the signal's std</span>
-<span class="sd">            if dict, provide sd for each eye and variable configuration</span>
-<span class="sd">        eyes: str or list</span>
-<span class="sd">            list of eyes to consider; if empty, all available eyes are considered</span>
-<span class="sd">        inplace: bool</span>
-<span class="sd">            if `True`, make change in-place and return the object</span>
-<span class="sd">            if `False`, make and return copy before making changes    </span>
-<span class="sd">            if `None`, use the object's default setting    </span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        Scaling-parameters are being saved in the `params["scale"]` argument. </span>
+<span class="sd">        mean : None, float or dict, optional</span>
+<span class="sd">            mean to subtract from signal; if `None`, use the signal's mean;</span>
+<span class="sd">            if float, use the same value for all eyes and variables;</span>
+<span class="sd">            if dict, provide mean for each eye and variable as</span>
+<span class="sd">            ``{eye: {variable: value}}``</span>
+<span class="sd">        sd : None, float or dict, optional</span>
+<span class="sd">            sd to scale with; if `None`, use the signal's std;</span>
+<span class="sd">            if float, use the same value for all eyes and variables;</span>
+<span class="sd">            if dict, provide sd for each eye and variable as</span>
+<span class="sd">            ``{eye: {variable: value}}``</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to consider; if empty, all available eyes</span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the scaled object (`self` or a copy, depending on `inplace`)</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Scaling-parameters are being saved in the `params["scale"]` attribute</span>
+<span class="sd">        and are used by :meth:`unscale`.</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">variables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span><span class="n">variables</span><span class="p">)</span>
@@ -2431,26 +2579,33 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">unscale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[],</span> <span class="n">mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Scale back to original values using either values provided as arguments</span>
-<span class="sd">        or the values stored in `scale_params`.</span>
-<span class="sd">        </span>
+<span class="sd">        or the values stored in `params["scale"]` by :meth:`scale`.</span>
+
+<span class="sd">        The signal is multiplied by `sd` and `mean` is added.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        variables: str or list</span>
-<span class="sd">            variables to scale; can be "pupil", "x","y", "baseline", "response" or any other variable</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            variables to unscale; can be "pupil", "x","y", "baseline", "response" or any other variable</span>
 <span class="sd">            that is available in the dataset; either a string or a list of strings;</span>
-<span class="sd">            available variables can be checked with `obj.variables`</span>
-<span class="sd">        eyes: str or list</span>
-<span class="sd">            list of eyes to consider; if empty, all available eyes are considered</span>
-<span class="sd">        mean: None, float or dict</span>
-<span class="sd">            mean to subtract from signal; if `None`, use the signal's mean</span>
-<span class="sd">            if dict, provide mean for each eye and variable configuration</span>
-<span class="sd">        sd: None, float or Parameters</span>
-<span class="sd">            sd to scale with; if `None`, use the signal's std</span>
-<span class="sd">            if dict, provide sd for each eye and variable configuration</span>
-<span class="sd">        inplace: bool</span>
-<span class="sd">            if `True`, make change in-place and return the object</span>
-<span class="sd">            if `False`, make and return copy before making changes    </span>
-<span class="sd">            if `None`, use the object's default setting            </span>
+<span class="sd">            available variables can be checked with `obj.variables`; empty list means all variables</span>
+<span class="sd">        mean : None or dict, optional</span>
+<span class="sd">            mean to add to the signal as ``{eye: {variable: value}}``;</span>
+<span class="sd">            if `None`, use the mean stored by :meth:`scale`</span>
+<span class="sd">        sd : None or dict, optional</span>
+<span class="sd">            sd to multiply the signal with as ``{eye: {variable: value}}``;</span>
+<span class="sd">            if `None`, use the sd stored by :meth:`scale`</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to consider; if empty, all available eyes</span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the unscaled object (`self` or a copy, depending on `inplace`)</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">variables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span><span class="n">variables</span><span class="p">)</span>
@@ -2486,20 +2641,26 @@ window.runMermaid = runMermaid;</script>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Simple downsampling scheme using mean within the downsampling window.</span>
 
-<span class="sd">        All data fields are downsampled simultaneously.</span>
-<span class="sd">        See :func:`baseline.downsample()`.</span>
+<span class="sd">        All data fields and the time-vector are downsampled simultaneously.</span>
+<span class="sd">        See :func:`pypillometry.signal.baseline.downsample`.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
-
-<span class="sd">        fsd: </span>
-<span class="sd">            new sampling-rate or decimate-factor</span>
-<span class="sd">        dsfac:</span>
-<span class="sd">            if False, `fsd` is the new sampling rate;</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fsd : float</span>
+<span class="sd">            new sampling-rate (in Hz) or decimate-factor</span>
+<span class="sd">        dsfac : bool, optional</span>
+<span class="sd">            if False (default), `fsd` is the new sampling rate (the decimate</span>
+<span class="sd">            factor is ``int(fs/fsd)``);</span>
 <span class="sd">            if True, `fsd` is the decimate factor</span>
-<span class="sd">        inplace: bool</span>
-<span class="sd">            if `True`, make change in-place and return the object</span>
-<span class="sd">            if `False`, make and return copy before making changes                                        </span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the downsampled object (`self` or a copy, depending on `inplace`)</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
 
@@ -2529,19 +2690,32 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">merge_eyes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[],</span> <span class="n">method</span><span class="o">=</span><span class="s2">"mean"</span><span class="p">,</span> <span class="n">keep_eyes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Merge data from both eyes into a single variable.</span>
 
+<span class="sd">        The merged data is stored under the eye name "mean" (e.g.,</span>
+<span class="sd">        ``obj["mean", "pupil"]``). A sample is masked in the merged</span>
+<span class="sd">        data if it is masked in any of the merged eyes.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes : list, optional</span>
-<span class="sd">            list of eyes to merge, by default [] meaning all eyes</span>
-<span class="sd">        variables : list, optional</span>
-<span class="sd">            list of variables to merge, by default [] meaning all variables</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to merge; if empty, all available eyes</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            variable(s) to merge; if empty, all available variables</span>
 <span class="sd">        method : str, optional</span>
-<span class="sd">            which method to use for merging (one of "mean", "regress"), by default "mean"</span>
+<span class="sd">            which method to use for merging; currently only "mean" is</span>
+<span class="sd">            implemented, by default "mean"</span>
 <span class="sd">        keep_eyes : bool, optional</span>
-<span class="sd">            keep original eye data or drop?, by default True</span>
-<span class="sd">        inplace : make change inplace, optional</span>
-<span class="sd">            if None, use default value in class, by default None</span>
-<span class="sd">        """</span>        
+<span class="sd">            keep original eye data (True, default) or drop it together</span>
+<span class="sd">            with its stored blinks (False)</span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the object with merged data (`self` or a copy, depending on `inplace`)</span>
+<span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">variables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span><span class="n">variables</span><span class="p">)</span>
 
@@ -2592,19 +2766,24 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes : list</span>
-<span class="sd">            Eyes to process. If empty, all eyes are processed.</span>
-<span class="sd">        variables : list</span>
-<span class="sd">            Variables to process. If empty, all variables are processed.</span>
-<span class="sd">        distance : float</span>
-<span class="sd">            Merge blinks closer than this distance (in units specified by ``units``)</span>
-<span class="sd">        units : str</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to process; if empty, all available eyes</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            variable(s) to process; if empty, all available variables</span>
+<span class="sd">        distance : float, optional</span>
+<span class="sd">            Merge blinks closer than this distance (in units specified by</span>
+<span class="sd">            ``units``). Default 100.</span>
+<span class="sd">        units : str, optional</span>
 <span class="sd">            Units for ``distance``. Can be "ms", "sec", "min", or "h". Default "ms".</span>
 <span class="sd">        apply_mask : bool, default=True</span>
-<span class="sd">            If True, apply merged blinks as masks to the data and return self.</span>
-<span class="sd">            If False, return merged blinks as dict of Intervals objects without applying masks.</span>
-<span class="sd">        inplace : bool or None</span>
-<span class="sd">            If True, modify in place. If False, return copy.</span>
+<span class="sd">            If True, store the merged blinks, apply them as masks to the data</span>
+<span class="sd">            and return the object.</span>
+<span class="sd">            If False, return merged blinks as dict of Intervals objects without</span>
+<span class="sd">            storing them or applying masks.</span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor).</span>
 <span class="sd">            Only relevant when apply_mask=True.</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
@@ -2681,32 +2860,34 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        pupil-size in interval before trial onset.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
-<span class="sd">        intervals: Intervals, optional</span>
-<span class="sd">            Intervals object to use. If provided, interval and event_select are ignored.</span>
+<span class="sd">        ----------</span>
+<span class="sd">        intervals : Intervals, optional</span>
+<span class="sd">            Intervals object to use (with intervals in ms). If provided,</span>
+<span class="sd">            interval and event_select are ignored.</span>
 <span class="sd">        interval : tuple (min,max), optional</span>
-<span class="sd">            time-window in ms relative to event-onset (0 is event-onset).</span>
+<span class="sd">            time-window relative to event-onset (0 is event-onset), in</span>
+<span class="sd">            units given by `units`.</span>
 <span class="sd">            Required if intervals is not provided.</span>
-<span class="sd">        event_select: str or function, optional</span>
+<span class="sd">        event_select : str or function, optional</span>
 <span class="sd">            variable describing which events to select and align to</span>
-<span class="sd">            see :class:`GenericEyeData.get_intervals()` for details.</span>
+<span class="sd">            see :meth:`get_intervals` for details.</span>
 <span class="sd">            Required if intervals is not provided.</span>
-<span class="sd">        eyes: str or list</span>
-<span class="sd">            list of eyes to consider; if empty, consider all</span>
-<span class="sd">        variables: str or list</span>
-<span class="sd">            list of variables to consider; if empty, consider all</span>
-<span class="sd">        statfct : function</span>
-<span class="sd">            function mapping np.array to a single number</span>
-<span class="sd">        units: str</span>
-<span class="sd">            units for interval parameter (if used)</span>
-<span class="sd">        kwargs : dict</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to consider; if empty, all available eyes</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            variable(s) to consider; if empty, all available variables</span>
+<span class="sd">        statfct : function, optional</span>
+<span class="sd">            function mapping np.array to a single number; default `np.mean`</span>
+<span class="sd">        units : str, optional</span>
+<span class="sd">            units for interval parameter (if used); default "ms"</span>
+<span class="sd">        **kwargs</span>
 <span class="sd">            passed onto the event_select function</span>
-<span class="sd">    </span>
-<span class="sd">        Returns</span>
-<span class="sd">        --------</span>
 
-<span class="sd">        result: np.array or dict</span>
-<span class="sd">            number of event-onsets long result array; in case of multiple eyes/variables, a dict is returned</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            one array per eye/variable (keys like "left_pupil"), with one</span>
+<span class="sd">            value per interval/event</span>
 <span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span><span class="p">,</span> <span class="n">stat_event_interval</span>
         
@@ -2827,32 +3008,32 @@ window.runMermaid = runMermaid;</script>
 <span class="w">        </span><span class="sd">"""Apply Intervals as masks to selected data.</span>
 <span class="sd">        </span>
 <span class="sd">        Takes detected intervals (e.g., blinks, artifacts) and applies them</span>
-<span class="sd">        as masks to specified eyes and variables.</span>
-<span class="sd">        </span>
+<span class="sd">        as masks to specified eyes and variables. Existing masks are kept</span>
+<span class="sd">        (the new mask is added to them).</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        intervals : Intervals or dict</span>
 <span class="sd">            Either:</span>
+
 <span class="sd">            - A single Intervals object: applied to all specified eyes/variables</span>
-<span class="sd">            - A dict of Intervals: keys like "left_pupil", "right_x", etc. </span>
+<span class="sd">            - A dict of Intervals: keys like "left_pupil", "right_x", etc.</span>
 <span class="sd">              When dict is provided, `eyes` and `variables` are ignored.</span>
-<span class="sd">        eyes : list of str, optional</span>
-<span class="sd">            List of eyes to apply mask to (e.g., ['left', 'right']).</span>
-<span class="sd">            If empty, applies to all available eyes.</span>
-<span class="sd">            Ignored if `intervals` is a dict.</span>
-<span class="sd">        variables : list of str, optional</span>
-<span class="sd">            List of variables to apply mask to (e.g., ['pupil', 'x', 'y']).</span>
-<span class="sd">            If empty, applies to all available variables.</span>
-<span class="sd">            Ignored if `intervals` is a dict.</span>
-<span class="sd">        inplace : bool, optional</span>
-<span class="sd">            If True, make change in-place and return the object.</span>
-<span class="sd">            If False, make and return copy before making changes.</span>
-<span class="sd">            If None, use the object's default setting.</span>
-<span class="sd">            </span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to apply mask to (e.g., ``["left", "right"]``);</span>
+<span class="sd">            if empty, all available eyes. Ignored if `intervals` is a dict.</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            variable(s) to apply mask to (e.g., ``["pupil", "x", "y"]``);</span>
+<span class="sd">            if empty, all available variables. Ignored if `intervals` is a dict.</span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor)</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        GenericEyeData</span>
-<span class="sd">            The object with masks applied.</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            The object with masks applied (`self` or a copy, depending on `inplace`).</span>
 <span class="sd">            </span>
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -2868,7 +3049,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Chain with other operations:</span>
 <span class="sd">        </span>
-<span class="sd">        &gt;&gt;&gt; data.mask_intervals(blinks).pupil_lowpass_filter()</span>
+<span class="sd">        &gt;&gt;&gt; data.mask_intervals(blinks).pupil_lowpass_filter(cutoff=5)</span>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -2940,20 +3121,24 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Interpolate data within specified intervals.</span>
 <span class="sd">        </span>
 <span class="sd">        This function replaces data within the specified intervals with interpolated</span>
-<span class="sd">        values based on boundary points outside each interval.</span>
-<span class="sd">        </span>
+<span class="sd">        values based on boundary points outside each interval. The</span>
+<span class="sd">        interpolated samples are also marked as masked. Intervals without</span>
+<span class="sd">        valid (non-NaN) boundary points on both sides are skipped with a</span>
+<span class="sd">        warning.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        intervals : Intervals or dict</span>
 <span class="sd">            Either:</span>
+
 <span class="sd">            - A single Intervals object: applied to all specified eyes/variables</span>
 <span class="sd">            - A dict of Intervals: keys like "left_pupil", "right_x", etc.</span>
 <span class="sd">              When dict is provided, `eyes` and `variables` are ignored.</span>
-<span class="sd">        eyes : str or list, optional</span>
-<span class="sd">            Eye(s) to interpolate. If empty, applies to all available eyes.</span>
+<span class="sd">        eyes : str or list of str, optional</span>
+<span class="sd">            eye(s) to interpolate; if empty, all available eyes.</span>
 <span class="sd">            Ignored if `intervals` is a dict.</span>
-<span class="sd">        variables : str or list, optional</span>
-<span class="sd">            Variable(s) to interpolate. If empty, applies to all available variables.</span>
+<span class="sd">        variables : str or list of str, optional</span>
+<span class="sd">            variable(s) to interpolate; if empty, all available variables.</span>
 <span class="sd">            Ignored if `intervals` is a dict.</span>
 <span class="sd">        method : str, default "linear"</span>
 <span class="sd">            Interpolation method. Options: "linear", "nearest", "zero", </span>
@@ -2961,22 +3146,24 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            Passed to scipy.interpolate.interp1d.</span>
 <span class="sd">        margin : tuple, default (-20, 20)</span>
 <span class="sd">            Time window (in ms) before and after the interval to collect boundary</span>
-<span class="sd">            points for interpolation. The first value is subtracted from the start</span>
-<span class="sd">            (should be negative to go back in time), and the second is added to the</span>
-<span class="sd">            end. For higher-order methods like "cubic" or "quadratic", more boundary</span>
-<span class="sd">            points from this margin are used to fit the interpolation curve.</span>
+<span class="sd">            points for interpolation. Boundary points are taken from</span>
+<span class="sd">            ``abs(margin[0])`` ms before the start and ``abs(margin[1])`` ms after</span>
+<span class="sd">            the end of each interval (the signs are ignored). For higher-order</span>
+<span class="sd">            methods like "cubic" or "quadratic", more boundary points from this</span>
+<span class="sd">            margin are used to fit the interpolation curve.</span>
 <span class="sd">        store_as_suffix : str or None, default None</span>
 <span class="sd">            If None, replace the original data.</span>
 <span class="sd">            If a string, store interpolated data in a new variable with this suffix</span>
 <span class="sd">            (e.g., "_interp" creates "left_pupil_interp").</span>
-<span class="sd">        inplace : bool, optional</span>
-<span class="sd">            If True, modify in-place. If False, return a copy.</span>
-<span class="sd">            If None, use object's default setting.</span>
-<span class="sd">            </span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor)</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        GenericEyeData</span>
-<span class="sd">            The object with interpolated data.</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            The object with interpolated data (`self` or a copy, depending on `inplace`).</span>
 <span class="sd">            </span>
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>

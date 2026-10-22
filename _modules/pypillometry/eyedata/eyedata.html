@@ -431,42 +431,57 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../api.html#pypillometry.EyeData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EyeData</span><span class="p">(</span><span class="n">GazeData</span><span class="p">,</span><span class="n">PupilData</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Class for handling eye-tracking data. This class is a subclass of GazeData</span>
-<span class="sd">    and inherits all its methods and attributes. In addition to the methods</span>
-<span class="sd">    in GazeData which implement functions for eye-tracking data, `EyeData` </span>
-<span class="sd">    provides methods for handling pupillometric data.</span>
+<span class="sd">    Class for handling eye-tracking data. This class is a subclass of</span>
+<span class="sd">    :class:`~pypillometry.GazeData` and :class:`~pypillometry.PupilData`</span>
+<span class="sd">    and inherits all their methods and attributes. In addition to the</span>
+<span class="sd">    methods in GazeData which implement functions for eye-tracking data and</span>
+<span class="sd">    those in PupilData for pupillometric data, `EyeData` provides methods</span>
+<span class="sd">    that need both gaze and pupil data (e.g., foreshortening correction).</span>
+
+<span class="sd">    Properties such as :attr:`~pypillometry.GenericEyeData.eyes` and</span>
+<span class="sd">    :attr:`~pypillometry.GenericEyeData.variables` are inherited from</span>
+<span class="sd">    :class:`~pypillometry.GenericEyeData`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    time: </span>
-<span class="sd">        timing array or `None`, in which case the time-array goes from [0,maxT]</span>
-<span class="sd">        using `sampling_rate` (in ms)</span>
-<span class="sd">    left_x, left_y, left_pupil:</span>
+<span class="sd">    time : np.ndarray or None</span>
+<span class="sd">        timing array (in ms) or `None`, in which case the time-array goes from [0,maxT]</span>
+<span class="sd">        using `sampling_rate`</span>
+<span class="sd">    left_x, left_y, left_pupil : np.ndarray or None</span>
 <span class="sd">        data from left eye (at least one of the eyes must be provided, both x and y)</span>
 <span class="sd">        pupil is optional</span>
-<span class="sd">    right_x, right_y, right_pupil:</span>
+<span class="sd">    right_x, right_y, right_pupil : np.ndarray or None</span>
 <span class="sd">        data from right eye (at least one of the eyes must be provided, both x and y)</span>
 <span class="sd">        pupil is optional</span>
-<span class="sd">    sampling_rate: float</span>
-<span class="sd">        sampling-rate of the pupillary signal in Hz; if None, </span>
-<span class="sd">    experimental_setup: ExperimentalSetup, optional</span>
+<span class="sd">    event_onsets : np.ndarray or None</span>
+<span class="sd">        time-onsets of any events in the data (in ms, matched in `time` vector)</span>
+<span class="sd">    event_labels : np.ndarray or None</span>
+<span class="sd">        for each event in `event_onsets`, provide a label</span>
+<span class="sd">    sampling_rate : float or None</span>
+<span class="sd">        sampling-rate of the signal in Hz; if `None`, it is estimated from</span>
+<span class="sd">        the median difference in `time` (either `time` or `sampling_rate`</span>
+<span class="sd">        must be provided)</span>
+<span class="sd">    experimental_setup : ExperimentalSetup, optional</span>
 <span class="sd">        Geometric model of the experimental setup including screen geometry,</span>
 <span class="sd">        eye position, camera position, and screen orientation.</span>
-<span class="sd">    name: </span>
+<span class="sd">    name : str or None</span>
 <span class="sd">        name of the dataset or `None` (in which case a random string is selected)</span>
-<span class="sd">    event_onsets: </span>
-<span class="sd">        time-onsets of any events in the data (in ms, matched in `time` vector)</span>
-<span class="sd">    event_labels:</span>
-<span class="sd">        for each event in `event_onsets`, provide a label</span>
-<span class="sd">    calibration: dict, optional</span>
+<span class="sd">    calibration : dict, optional</span>
 <span class="sd">        Dictionary of SpatialCalibration objects, one per eye (keys: 'left', 'right')</span>
-<span class="sd">    keep_orig: bool</span>
-<span class="sd">        keep a copy of the original dataset? If `True`, a copy of the object</span>
-<span class="sd">        as initiated in the constructor is stored in member `original`</span>
-<span class="sd">    fill_time_discontinuities: bool</span>
+<span class="sd">    fill_time_discontinuities : bool</span>
 <span class="sd">        sometimes, when the eyetracker loses signal, no entry in the EDF is made; </span>
 <span class="sd">        when this option is True, such entries will be made and the signal set to 0 there</span>
 <span class="sd">        (or do it later using `fill_time_discontinuities()`)</span>
+<span class="sd">    keep_orig : bool</span>
+<span class="sd">        keep a copy of the original dataset? If `True`, a copy of the object</span>
+<span class="sd">        as initiated in the constructor is stored in member `original`</span>
+<span class="sd">    info : dict or None</span>
+<span class="sd">        optional dictionary with additional information about the dataset</span>
+<span class="sd">        (stored in member `info`)</span>
+<span class="sd">    inplace : bool</span>
+<span class="sd">        if True, the object is modified in place; if False, a new object is returned</span>
+<span class="sd">        this object-level property can be overwritten by the method-level `inplace` argument</span>
+<span class="sd">        default is "False"</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -521,6 +536,7 @@ window.runMermaid = runMermaid;</script>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Plotting functions for this object (a :class:`~pypillometry.EyePlotter`)."""</span>
         <span class="k">return</span> <span class="n">EyePlotter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
 
@@ -548,12 +564,20 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        eye : str, optional</span>
-<span class="sd">            Which eye to return data for.</span>
+<span class="sd">            Which eye to return data for. If `None`, the dataset must contain</span>
+<span class="sd">            only one eye, which is then used.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        : :class:`PupilData`</span>
-<span class="sd">            A PupilData object containing the pupil data. </span>
+<span class="sd">        PupilData</span>
+<span class="sd">            A PupilData object containing the pupil data of `eye` (as</span>
+<span class="sd">            ``"&lt;eye&gt;_pupil"``), the time vector and the events.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if `eye` is `None` and there is more than one eye, or if there is</span>
+<span class="sd">            no data for `eye`</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">eye</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eyes</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
@@ -581,30 +605,37 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../api.html#pypillometry.EyeData.correct_pupil_foreshortening">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">correct_pupil_foreshortening</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">midpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">store_as</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Correct pupil data using a simple algorithm to correct for foreshortening effects.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Correct pupil data using a simple algorithm to correct for foreshortening effects.</span>
 
 <span class="sd">        Correct the pupil data for foreshortening effects caused</span>
 <span class="sd">        by saccades/eye movements. This method is based on a simple algorithm</span>
-<span class="sd">        described here: </span>
-
-<span class="sd">        :ref:`Correcting pupillary signal using a simple Foreshortening Algorithm &lt;/docs/pupil_correction_carole.rst&gt;`</span>
+<span class="sd">        that assumes the pupil appears perfectly circular when fixating `midpoint`:</span>
+<span class="sd">        for each sample, the distance :math:`\Delta` (in mm) of the gaze position</span>
+<span class="sd">        from `midpoint` is computed and the pupil signal is multiplied by the</span>
+<span class="sd">        correction factor :math:`\sqrt{1+\Delta^2/d^2}`, where :math:`d` is the</span>
+<span class="sd">        eye-to-screen distance from the experimental setup.</span>
+<span class="sd">        For a more complete model that also estimates the camera position,</span>
+<span class="sd">        see :meth:`fit_foreshortening`.</span>
 
 <span class="sd">        Relevant publication (not the description of the algorithm used here):    </span>
 <span class="sd">        https://link.springer.com/article/10.3758/s13428-015-0588-x</span>
 
 <span class="sd">        - [ ] TODO: when using interpolated pupil data, x/y data may still be missing. Make sure that the </span>
 <span class="sd">          pupil data is not touched where x/y is missing</span>
-<span class="sd">        </span>
 
 <span class="sd">        Parameters </span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes: list</span>
-<span class="sd">            Which eyes to correct. If None, correct all available eyes.</span>
-<span class="sd">        midpoint: tuple</span>
-<span class="sd">            The center of the screen (x,y) where it is assumed that the pupil is completely circular.</span>
+<span class="sd">        eyes : list</span>
+<span class="sd">            Which eyes to correct. If empty, correct all available eyes.</span>
+<span class="sd">        midpoint : tuple or None</span>
+<span class="sd">            The center of the screen (x,y) in pixels where it is assumed that the pupil is completely circular.</span>
 <span class="sd">            If None, the midpoint is taken to be the center of the screen as registered</span>
 <span class="sd">            in the experimental_setup. </span>
-<span class="sd">        inplace: bool</span>
+<span class="sd">        store_as : str</span>
+<span class="sd">            name of the variable in which to store the corrected pupil data</span>
+<span class="sd">            (as ``data[eye, store_as]``); the default "pupil" replaces the</span>
+<span class="sd">            original pupil data</span>
+<span class="sd">        inplace : bool or None</span>
 <span class="sd">            Whether to modify the object in place or return a new object.</span>
 <span class="sd">            `true`: modify in place</span>
 <span class="sd">            `false`: return a new object</span>
@@ -612,8 +643,13 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        : :class:`EyeData`</span>
+<span class="sd">        EyeData</span>
 <span class="sd">            An EyeData object with the corrected pupil</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if no experimental setup is set (see :meth:`set_experimental_setup`)</span>
 <span class="sd">        """</span>
         <span class="n">obj</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="p">[])</span>
@@ -681,18 +717,21 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        r : float, str, or pint.Quantity, optional</span>
 <span class="sd">            Eye-to-camera distance. If not provided, uses the </span>
 <span class="sd">            `r` from experimental_setup.</span>
+
 <span class="sd">            - Plain number: assumed to be mm (with warning)</span>
 <span class="sd">            - String: e.g., "600 mm", "60 cm"</span>
 <span class="sd">            - Quantity: e.g., 600 * ureg.mm</span>
 <span class="sd">        d : float, str, or pint.Quantity, optional</span>
 <span class="sd">            Eye-to-screen distance. If not provided, uses the </span>
 <span class="sd">            `d` from experimental_setup.</span>
+
 <span class="sd">            - Plain number: assumed to be mm (with warning)</span>
 <span class="sd">            - String: e.g., "700 mm", "70 cm"</span>
 <span class="sd">            - Quantity: e.g., 700 * ureg.mm</span>
 <span class="sd">        intervals : Intervals, optional</span>
 <span class="sd">            Time intervals to use for fitting. If None, uses all available data.</span>
-<span class="sd">            Useful for fitting only on calibration periods.</span>
+<span class="sd">            Useful for fitting only on calibration periods. The start/end</span>
+<span class="sd">            values are compared to the time vector, so they must be in ms.</span>
 <span class="sd">        target_fs : float, default 50.0</span>
 <span class="sd">            Target sampling rate in Hz after downsampling for efficiency.</span>
 <span class="sd">            Pupil dynamics are typically well-preserved at 50 Hz.</span>
@@ -708,12 +747,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        initial_theta : float, str, or pint.Quantity, optional</span>
 <span class="sd">            Initial guess for camera polar angle. If None, uses</span>
 <span class="sd">            pi/2 (horizontal) as starting point.</span>
+
 <span class="sd">            - Plain number: assumed to be radians (with warning)</span>
 <span class="sd">            - String: e.g., "20 degrees", "0.349 radians"</span>
 <span class="sd">            - Quantity: e.g., 20 * ureg.degree</span>
 <span class="sd">        initial_phi : float, str, or pint.Quantity, optional</span>
 <span class="sd">            Initial guess for camera azimuthal angle. If None,</span>
 <span class="sd">            uses 0 (camera on x-axis) as starting point.</span>
+
 <span class="sd">            - Plain number: assumed to be radians (with warning)</span>
 <span class="sd">            - String: e.g., "-90 degrees", "-1.57 radians"</span>
 <span class="sd">            - Quantity: e.g., -90 * ureg.degree</span>
@@ -729,7 +770,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If specified eye doesn't exist or lacks gaze/pupil data.</span>
+<span class="sd">            If specified eye doesn't exist or lacks gaze/pupil data, if the</span>
+<span class="sd">            experimental setup is not set or lacks required information, if</span>
+<span class="sd">            `lowpass_freq` is not below the Nyquist frequency or if fewer</span>
+<span class="sd">            than 100 valid samples are available.</span>
 <span class="sd">        </span>
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
@@ -737,6 +781,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            A_measured(x,y,t) = A0(t) * cos(alpha(x,y; theta, phi))</span>
 <span class="sd">        </span>
 <span class="sd">        where:</span>
+
 <span class="sd">        - A0(t) = sum_k a_k * B_k(t) is modeled with B-splines</span>
 <span class="sd">        - cos(alpha) is the foreshortening factor depending on viewing angle</span>
 <span class="sd">        - theta, phi parameterize camera position in spherical coordinates</span>
@@ -747,7 +792,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
-<span class="sd">        &gt;&gt;&gt; data = pp.EyeData.from_eyelink('recording.edf')</span>
+<span class="sd">        &gt;&gt;&gt; data = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP</span>
 <span class="sd">        &gt;&gt;&gt; </span>
 <span class="sd">        &gt;&gt;&gt; # Set experimental setup</span>
 <span class="sd">        &gt;&gt;&gt; data.set_experimental_setup(  # doctest: +SKIP</span>
@@ -758,7 +803,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; </span>
 <span class="sd">        &gt;&gt;&gt; # Fit on calibration period (first 2 minutes)</span>
-<span class="sd">        &gt;&gt;&gt; cal_intervals = data.get_intervals(end_time=120000)  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; cal_intervals = pp.Intervals([(0, 120000)], units="ms")  # doctest: +SKIP</span>
 <span class="sd">        &gt;&gt;&gt; calib = data.fit_foreshortening(  # doctest: +SKIP</span>
 <span class="sd">        ...     eye='left',</span>
 <span class="sd">        ...     intervals=cal_intervals</span>

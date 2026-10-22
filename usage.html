@@ -79,7 +79,7 @@ Once the data has been manually parsed into <code class="xref py py-mod docutils
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.GenericEyeData.from_eyelink" title="pypillometry.GenericEyeData.from_eyelink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code></a>(fname[, return_edf_obj, ...])</p></td>
-<td><p>Reads a <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> object from an Eyelink file.</p></td>
+<td><p>Reads an eyedata object from an Eyelink file.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="api.html#pypillometry.io.load_study_osf" title="pypillometry.io.load_study_osf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_study_osf</span></code></a>(osf_id, path[, subjects, ...])</p></td>
 <td><p>Read a study from OSF using the configuration file.</p></td>
@@ -261,19 +261,19 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.sub_slice</span></code>([start, end, units, inplace])</p></td>
-<td><p>Return a new <cite>EyeData</cite> object that is a shortened version of the current one (contains all data between <cite>start</cite> and <cite>end</cite> in units given by <cite>units</cite> (one of &quot;ms&quot;, &quot;sec&quot;, &quot;min&quot;, &quot;h&quot;).</p></td>
+<td><p>Return a shortened version of the current object.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.copy</span></code>([new_name])</p></td>
-<td><p>Make and return a deep-copy of the pupil data.</p></td>
+<td><p>Make and return a deep-copy of the eyedata object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.scale</span></code>([variables, mean, sd, eyes, ...])</p></td>
 <td><p>Scale the signal by subtracting <cite>mean</cite> and dividing by <cite>sd</cite>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.unscale</span></code>([variables, mean, sd, ...])</p></td>
-<td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>scale_params</cite>.</p></td>
+<td><p>Scale back to original values using either values provided as arguments or the values stored in <cite>params[&quot;scale&quot;]</cite> by <code class="xref py py-meth docutils literal notranslate"><span class="pre">scale()</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.reset_time</span></code>([t0, inplace])</p></td>
-<td><p>Resets time so that the time-array starts at time zero (t0).</p></td>
+<td><p>Resets time so that time <cite>t0</cite> becomes time zero.</p></td>
 </tr>
 </tbody>
 </table>
@@ -287,8 +287,8 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <p>Please see the tutorial <a class="reference internal" href="plotting.html"><span class="std std-ref">Plotting of pupillometric data</span></a> for more details.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot</span></code></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.plot" title="pypillometry.PupilData.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot</span></code></a></p></td>
+<td><p>Plotting functions for this object (a <a class="reference internal" href="api.html#pypillometry.PupilPlotter" title="pypillometry.PupilPlotter"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilPlotter</span></code></a>).</p></td>
 </tr>
 </tbody>
 </table>

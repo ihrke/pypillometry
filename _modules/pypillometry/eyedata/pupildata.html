@@ -431,35 +431,44 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class representing pupillometric data. </span>
 
-<span class="sd">    The class is a subclass of :class:`.GenericEyedata` and inherits all its methods.</span>
+<span class="sd">    The class is a subclass of :class:`~pypillometry.GenericEyeData` and inherits all its methods.</span>
 
-<span class="sd">    If eye-tracking data is available in addition to pupillometry, use the :class:`.EyeData` class.</span>
+<span class="sd">    If eye-tracking data is available in addition to pupillometry, use the :class:`~pypillometry.EyeData` class.</span>
+
+<span class="sd">    Properties such as :attr:`~pypillometry.GenericEyeData.eyes` and</span>
+<span class="sd">    :attr:`~pypillometry.GenericEyeData.variables` are inherited from</span>
+<span class="sd">    :class:`~pypillometry.GenericEyeData`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    time: </span>
-<span class="sd">        timing array or `None`, in which case the time-array goes from [0,maxT]</span>
-<span class="sd">        using `sampling_rate` (in ms)</span>
-<span class="sd">    left_pupil:</span>
+<span class="sd">    time : np.ndarray or None</span>
+<span class="sd">        timing array (in ms) or `None`, in which case the time-array goes from [0,maxT]</span>
+<span class="sd">        using `sampling_rate`</span>
+<span class="sd">    left_pupil : np.ndarray or None</span>
 <span class="sd">        data from left eye (at least one of the eyes must be provided)</span>
-<span class="sd">    right_pupil:</span>
+<span class="sd">    right_pupil : np.ndarray or None</span>
 <span class="sd">        data from right eye (at least one of the eyes must be provided)</span>
-<span class="sd">    sampling_rate: float</span>
-<span class="sd">        sampling-rate of the signal in Hz; if None, </span>
-<span class="sd">    name: </span>
-<span class="sd">        name of the dataset or `None` (in which case a random string is selected)</span>
-<span class="sd">    event_onsets: </span>
+<span class="sd">    event_onsets : np.ndarray or None</span>
 <span class="sd">        time-onsets of any events in the data (in ms, matched in `time` vector)</span>
-<span class="sd">    event_labels:</span>
+<span class="sd">    event_labels : np.ndarray or None</span>
 <span class="sd">        for each event in `event_onsets`, provide a label</span>
-<span class="sd">    keep_orig: bool</span>
-<span class="sd">        keep a copy of the original dataset? If `True`, a copy of the object</span>
-<span class="sd">        as initiated in the constructor is stored in member `original`</span>
-<span class="sd">    fill_time_discontinuities: bool</span>
+<span class="sd">    sampling_rate : float or None</span>
+<span class="sd">        sampling-rate of the signal in Hz; if `None`, it is estimated from</span>
+<span class="sd">        the median difference in `time` (either `time` or `sampling_rate`</span>
+<span class="sd">        must be provided)</span>
+<span class="sd">    name : str or None</span>
+<span class="sd">        name of the dataset or `None` (in which case a random string is selected)</span>
+<span class="sd">    fill_time_discontinuities : bool</span>
 <span class="sd">        sometimes, when the eyetracker loses signal, no entry in the EDF is made; </span>
 <span class="sd">        when this option is True, such entries will be made and the signal set to 0 there</span>
 <span class="sd">        (or do it later using `fill_time_discontinuities()`)</span>
-<span class="sd">    inplace: bool</span>
+<span class="sd">    keep_orig : bool</span>
+<span class="sd">        keep a copy of the original dataset? If `True`, a copy of the object</span>
+<span class="sd">        as initiated in the constructor is stored in member `original`</span>
+<span class="sd">    info : dict or None</span>
+<span class="sd">        optional dictionary with additional information about the dataset</span>
+<span class="sd">        (stored in member `info`)</span>
+<span class="sd">    inplace : bool</span>
 <span class="sd">        if True, the object is modified in place; if False, a new object is returned</span>
 <span class="sd">        this object-level property can be overwritten by the method-level `inplace` argument</span>
 <span class="sd">        default is "False"</span>
@@ -496,6 +505,7 @@ window.runMermaid = runMermaid;</script>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Plotting functions for this object (a :class:`~pypillometry.PupilPlotter`)."""</span>
         <span class="k">return</span> <span class="n">PupilPlotter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
 
@@ -538,20 +548,27 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Lowpass-filter pupil signal using a Butterworth-filter.</span>
 <span class="sd">        </span>
 <span class="sd">        Uses an iterative approach to handle NaN/masked values properly,</span>
-<span class="sd">        preventing NaN propagation through the filter.</span>
+<span class="sd">        preventing NaN propagation through the filter</span>
+<span class="sd">        (see :func:`~pypillometry.signal.pupil.lowpass_filter_iterative`).</span>
+<span class="sd">        The filtered signal replaces the pupil data; the mask is preserved.</span>
 <span class="sd">    </span>
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
-<span class="sd">        cutoff: float</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cutoff : float</span>
 <span class="sd">            lowpass-filter cutoff frequency in Hz</span>
-<span class="sd">        order: int</span>
+<span class="sd">        order : int</span>
 <span class="sd">            filter order</span>
-<span class="sd">        eyes: list</span>
+<span class="sd">        eyes : list</span>
 <span class="sd">            list of eyes to filter; if empty, all available eyes are filtered</span>
-<span class="sd">        inplace: bool</span>
+<span class="sd">        inplace : bool or None</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes           </span>
 <span class="sd">            if `None`, use the object-level setting         </span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PupilData</span>
+<span class="sd">            the object with the filtered pupil data</span>
 <span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">..signal.pupil</span><span class="w"> </span><span class="kn">import</span> <span class="n">lowpass_filter_iterative</span>
         
@@ -570,20 +587,28 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_smooth_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">window</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">"hanning"</span><span class="p">,</span> <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Apply smoothing of the signal using a moving window. See :func:`baseline.smooth_window()`.</span>
+<span class="sd">        Apply smoothing of the signal using a moving window.</span>
+<span class="sd">        See :func:`~pypillometry.signal.preproc.smooth_window`.</span>
+<span class="sd">        The smoothed signal replaces the pupil data; the mask is preserved.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes: list</span>
+<span class="sd">        eyes : list</span>
 <span class="sd">            list of eyes to smooth; if empty, all available eyes are smoothed</span>
-<span class="sd">        window: str</span>
+<span class="sd">        window : str</span>
 <span class="sd">            (the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'); </span>
-<span class="sd">             flat window will produce a moving average smoothing.</span>
-<span class="sd">        winsize: float</span>
+<span class="sd">            flat window will produce a moving average smoothing.</span>
+<span class="sd">        winsize : float</span>
 <span class="sd">            the length of the window in ms </span>
-<span class="sd">        inplace: bool</span>
+<span class="sd">        inplace : bool or None</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes                            </span>
+<span class="sd">            if `None`, use the object-level setting</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PupilData</span>
+<span class="sd">            the object with the smoothed pupil data</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
@@ -866,54 +891,60 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        (f.eks., 0 or NaN). Second, blinks are defined as everything between</span>
 <span class="sd">        two crossings of the velocity profile (from negative to positive).</span>
 <span class="sd">        </span>
-<span class="sd">        Detected blinks are always stored internally. When apply_mask=True,</span>
-<span class="sd">        the blinks are also applied as masks to the data. When apply_mask=False,</span>
-<span class="sd">        the detected blinks are returned as Intervals objects.</span>
+<span class="sd">        Detected blinks are always stored in the object (retrieve them with</span>
+<span class="sd">        :meth:`~pypillometry.GenericEyeData.get_blinks`). When `apply_mask=True`,</span>
+<span class="sd">        the blinks are also applied as masks to the data. When `apply_mask=False`</span>
+<span class="sd">        (default), the detected blinks are returned as Intervals objects.</span>
 
 <span class="sd">        Finally, detected blinks have to be at least `min_duration` ms.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes: list</span>
+<span class="sd">        eyes : list</span>
 <span class="sd">            list of eyes to process; if empty, all available eyes are processed</span>
-<span class="sd">        min_duration: float</span>
+<span class="sd">        min_duration : float</span>
 <span class="sd">            minimum duration in ms for a sequence of missing numbers to be treated as blink</span>
-<span class="sd">        blink_val: float</span>
+<span class="sd">        blink_val : float</span>
 <span class="sd">            "missing value" code</span>
-<span class="sd">        winsize: float</span>
+<span class="sd">        winsize : float</span>
 <span class="sd">            window-size for Savitzky-Golay velocity estimation in ms</span>
-<span class="sd">        vel_onset: float or str</span>
+<span class="sd">        vel_onset : float or str</span>
 <span class="sd">            velocity threshold to detect blink onset (negative value).</span>
+
 <span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., -5.0)</span>
 <span class="sd">            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)</span>
-<span class="sd">        vel_offset: float or str</span>
+<span class="sd">        vel_offset : float or str</span>
 <span class="sd">            velocity threshold to detect blink offset (positive value).</span>
+
 <span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., 5.0)</span>
-<span class="sd">            - If str: percentile of velocity distribution (e.g., "95%" for top 95%)</span>
-<span class="sd">        vel_onset_min_duration: float</span>
+<span class="sd">            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)</span>
+<span class="sd">        vel_onset_min_duration : float</span>
 <span class="sd">            minimum duration in ms that velocity must exceed threshold to detect as onset</span>
 <span class="sd">            (to avoid noise-induced false detections)</span>
-<span class="sd">        vel_offset_min_duration: float</span>
+<span class="sd">        vel_offset_min_duration : float</span>
 <span class="sd">            minimum duration in ms that velocity must exceed threshold to detect as offset</span>
 <span class="sd">            (to avoid noise-induced false detections)</span>
-<span class="sd">        strategies: list of strategies to use</span>
+<span class="sd">        strategies : list</span>
+<span class="sd">            list of strategies to use;</span>
 <span class="sd">            so far, use a list containing any combination of "zero" and "velocity"</span>
-<span class="sd">        apply_mask: bool</span>
-<span class="sd">            if `True`, apply detected blinks as masks to the data and return self</span>
+<span class="sd">        apply_mask : bool</span>
+<span class="sd">            if `True`, apply detected blinks as masks to the data and return the object</span>
 <span class="sd">            if `False` (default), return detected blinks as Intervals (or dict of Intervals)</span>
-<span class="sd">        ignore_existing_mask: bool</span>
-<span class="sd">            if `True` (default), use raw data ignoring existing masks</span>
-<span class="sd">            if `False`, only detect blinks in non-masked data (already masked regions are skipped)</span>
-<span class="sd">        inplace: bool</span>
+<span class="sd">        ignore_existing_mask : bool</span>
+<span class="sd">            if `True`, use raw data ignoring existing masks</span>
+<span class="sd">            if `False` (default), only detect blinks in non-masked data (already masked regions are skipped)</span>
+<span class="sd">        inplace : bool or None</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes                                                    </span>
+<span class="sd">            if `None`, use the object-level setting</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        self or Intervals or dict</span>
-<span class="sd">            If apply_mask=True: returns self for chaining</span>
-<span class="sd">            If apply_mask=False and single eye: returns Intervals object</span>
-<span class="sd">            If apply_mask=False and multiple eyes: returns dict of Intervals objects</span>
+<span class="sd">        PupilData or Intervals or dict</span>
+<span class="sd">            If `apply_mask=True`: returns the object (for chaining)</span>
+<span class="sd">            If `apply_mask=False` and single eye: returns Intervals object</span>
+<span class="sd">            If `apply_mask=False` and multiple eyes: returns dict of Intervals objects</span>
+<span class="sd">            (keys like ``"left_pupil"``)</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
@@ -1011,39 +1042,56 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Mahot, 2013:</span>
 <span class="sd">        https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.</span>
 
+<span class="sd">        The blinks to interpolate are taken from the blinks stored in the object,</span>
+<span class="sd">        so blinks have to be detected first (e.g., using :meth:`pupil_blinks_detect`).</span>
+<span class="sd">        The on- and offsets of each blink are refined using the velocity profile</span>
+<span class="sd">        before interpolating. Interpolated samples remain masked; the</span>
+<span class="sd">        interpolated blinks can be retrieved with</span>
+<span class="sd">        :meth:`~pypillometry.GenericEyeData.get_interpolated_blinks`.</span>
+
 <span class="sd">        This procedure relies heavily on eye-balling (reconstructing visually convincing signal),</span>
-<span class="sd">        so a "plot" option is provided that will plot many diagnostics (see paper linked above) that</span>
-<span class="sd">        can help to set good parameter values for `winsize`, `vel_onset`, `vel_offset` and `margin`.</span>
+<span class="sd">        so it can help to inspect the result visually (e.g., using</span>
+<span class="sd">        :meth:`~pypillometry.PupilPlotter.plot_blinks`) to set</span>
+<span class="sd">        good parameter values for `winsize`, `vel_onset`, `vel_offset` and `margin`</span>
+<span class="sd">        (see paper linked above).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes: str or list</span>
+<span class="sd">        eyes : str or list</span>
 <span class="sd">            str or list of eyes to process; if empty, all available eyes are processed</span>
-<span class="sd">        store_as: str</span>
+<span class="sd">        store_as : str</span>
 <span class="sd">            how to store the interpolated data; either "pupil" (default) which replaces</span>
 <span class="sd">            the original pupil data or a string that will be used as the new variable</span>
 <span class="sd">            name in the data (e.g., "pupilinterp")</span>
-<span class="sd">        method: str</span>
+<span class="sd">        method : str</span>
 <span class="sd">            method to use; so far, only "mahot" is implemented</span>
-<span class="sd">        winsize: float</span>
+<span class="sd">        winsize : float</span>
 <span class="sd">            size of the Savitzky-Golay window in ms</span>
-<span class="sd">        vel_onset: float or str</span>
+<span class="sd">        vel_onset : float or str</span>
 <span class="sd">            velocity threshold to detect blink onset (negative value).</span>
+
 <span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., -5.0)</span>
 <span class="sd">            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)</span>
-<span class="sd">        vel_offset: float or str</span>
+<span class="sd">        vel_offset : float or str</span>
 <span class="sd">            velocity threshold to detect blink offset (positive value).</span>
+
 <span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., 5.0)</span>
-<span class="sd">            - If str: percentile of velocity distribution (e.g., "95%" for top 95%)</span>
-<span class="sd">        margin: Tuple[float,float]</span>
+<span class="sd">            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)</span>
+<span class="sd">        margin : Tuple[float,float]</span>
 <span class="sd">            margin that is subtracted/added to onset and offset (in ms)</span>
-<span class="sd">        blinkwindow: float</span>
+<span class="sd">        blinkwindow : float</span>
 <span class="sd">            how much time before and after each blink to include (in ms)</span>
-<span class="sd">        interp_type: str</span>
+<span class="sd">        interp_type : str</span>
 <span class="sd">            type of interpolation accepted by :func:`scipy.interpolate.interp1d()`</span>
-<span class="sd">        inplace: bool</span>
+<span class="sd">        inplace : bool or None</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes              </span>
+<span class="sd">            if `None`, use the object-level setting</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PupilData</span>
+<span class="sd">            the object with the interpolated pupil data</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
@@ -1138,28 +1186,35 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        </span>
-<span class="sd">        eyes: list or str</span>
+<span class="sd">        eyes : list or str</span>
 <span class="sd">            str or list of eyes to process; if empty, all available eyes are processed</span>
-<span class="sd">        variable: str</span>
+<span class="sd">        variable : str</span>
 <span class="sd">            default is to use the "pupil" but it could be used to process, e.g., </span>
 <span class="sd">            interpolated pupil data stored in a different variables, e.g., "pupilinterp"</span>
-<span class="sd">        method: </span>
-<span class="sd">            "envelope_iter_bspline_1": :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` </span>
-<span class="sd">                                        with one iteration</span>
-<span class="sd">            "envelope_iter_bspline_2": :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` </span>
-<span class="sd">                                        with two iterations</span>
-<span class="sd">        inplace: bool</span>
+<span class="sd">        method : str</span>
+<span class="sd">            - "envelope_iter_bspline_1":</span>
+<span class="sd">              :func:`~pypillometry.signal.baseline.baseline_envelope_iter_bspline`</span>
+<span class="sd">              with one iteration</span>
+<span class="sd">            - "envelope_iter_bspline_2" (default):</span>
+<span class="sd">              :func:`~pypillometry.signal.baseline.baseline_envelope_iter_bspline`</span>
+<span class="sd">              with two iterations</span>
+<span class="sd">        inplace : bool or None</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes                                        </span>
-<span class="sd">            </span>
-<span class="sd">        kwargs:</span>
-<span class="sd">            named arguments passed to the low-level function in :py:mod:`pypillometry.baseline`.</span>
+<span class="sd">            if `None`, use the object-level setting</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            named arguments passed to the low-level function in</span>
+<span class="sd">            :mod:`pypillometry.signal.baseline`.</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        PupilData</span>
-<span class="sd">            object with baseline estimated (stored in data["eye_baseline"])        </span>
+<span class="sd">            object with baseline estimated (stored in ``data[eye, "baseline"]``)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if `method` is unknown</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
@@ -1197,31 +1252,43 @@ window.runMermaid = runMermaid;</script>
                           <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Estimate pupil-response based on event-onsets, see</span>
-<span class="sd">        :py:func:`pypillometry.pupil.pupil_response()`.</span>
-<span class="sd">        </span>
+<span class="sd">        :func:`~pypillometry.signal.pupil.pupil_response`.</span>
+
+<span class="sd">        If a baseline has been estimated (see :meth:`pupil_estimate_baseline`),</span>
+<span class="sd">        it is subtracted from the pupil signal before estimating the response;</span>
+<span class="sd">        otherwise, a baseline of zero is used.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes: list or str</span>
+<span class="sd">        eyes : list or str</span>
 <span class="sd">            str or list of eyes to process; if empty, all available eyes are processed</span>
-<span class="sd">        npar: float</span>
+<span class="sd">        npar : float or str</span>
 <span class="sd">            npar-parameter for the canonical response-function or "free";</span>
 <span class="sd">            in case of "free", the function optimizes for this parameter</span>
-<span class="sd">        tmax: float</span>
+<span class="sd">        tmax : float or str</span>
 <span class="sd">            tmax-parameter for the canonical response-function or "free";</span>
 <span class="sd">            in case of "free", the function optimizes for this parameter</span>
-<span class="sd">        bounds: dict</span>
+<span class="sd">        verbose : int</span>
+<span class="sd">            verbosity level, passed on to</span>
+<span class="sd">            :func:`~pypillometry.signal.pupil.pupil_response`</span>
+<span class="sd">        bounds : dict</span>
 <span class="sd">            in case that one or both parameters are estimated, give the lower</span>
 <span class="sd">            and upper bounds for the parameters        </span>
-<span class="sd">        inplace: bool</span>
+<span class="sd">        inplace : bool or None</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes                                        </span>
-<span class="sd">        </span>
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        the results of the estimation is stored in members `response`, `response_x` (design matrix) </span>
-<span class="sd">        and `response_pars`</span>
+<span class="sd">            if `None`, use the object-level setting</span>
 
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PupilData</span>
+<span class="sd">            the object with the estimated response</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The predicted response is stored in ``data[eye, "response"]``; the</span>
+<span class="sd">        estimated parameters (`npar`, `tmax`, the coefficients `coef` and the</span>
+<span class="sd">        `bounds`) are stored in ``params["response"][eye]``.</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
