@@ -14,39 +14,48 @@ class GazeData(GenericEyeData):
     """
     Class representing Eye-Tracking data (x,y) from one or two eyes.
 
-    If you also want to store pupil-size, use the `EyeData` class.
-    If you only want to store pupil-size, use the `PupilData` class.
+    If you also want to store pupil-size, use the :class:`~pypillometry.EyeData` class.
+    If you only want to store pupil-size, use the :class:`~pypillometry.PupilData` class.
+
+    Properties such as :attr:`~pypillometry.GenericEyeData.eyes` and
+    :attr:`~pypillometry.GenericEyeData.variables` are inherited from
+    :class:`~pypillometry.GenericEyeData`.
 
     Parameters
     ----------
-    time: 
-        timing array or `None`, in which case the time-array goes from [0,maxT]
-        using `sampling_rate` (in ms)
-    left_x, left_y:
+    time : np.ndarray or None
+        timing array (in ms) or `None`, in which case the time-array goes from [0,maxT]
+        using `sampling_rate`
+    left_x, left_y : np.ndarray or None
         data from left eye (at least one of the eyes must be provided, both x and y)
-    right_x, right_y:
+    right_x, right_y : np.ndarray or None
         data from right eye (at least one of the eyes must be provided, both x and y)
-    sampling_rate: float
-        sampling-rate of the signal in Hz; if None, 
-    experimental_setup: ExperimentalSetup, optional
+    event_onsets : np.ndarray or None
+        time-onsets of any events in the data (in ms, matched in `time` vector)
+    event_labels : np.ndarray or None
+        for each event in `event_onsets`, provide a label
+    sampling_rate : float or None
+        sampling-rate of the signal in Hz; if `None`, it is estimated from
+        the median difference in `time` (either `time` or `sampling_rate`
+        must be provided)
+    experimental_setup : ExperimentalSetup, optional
         Geometric model of the experimental setup including screen geometry,
         eye position, camera position, and screen orientation.
-    name: 
+    name : str or None
         name of the dataset or `None` (in which case a random string is selected)
-    event_onsets: 
-        time-onsets of any events in the data (in ms, matched in `time` vector)
-    event_labels:
-        for each event in `event_onsets`, provide a label
-    calibration: dict, optional
+    calibration : dict, optional
         Dictionary of SpatialCalibration objects, one per eye (keys: 'left', 'right')
-    keep_orig: bool
-        keep a copy of the original dataset? If `True`, a copy of the object
-        as initiated in the constructor is stored in member `original`
-    fill_time_discontinuities: bool
+    fill_time_discontinuities : bool
         sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
         when this option is True, such entries will be made and the signal set to 0 there
         (or do it later using `fill_time_discontinuities()`)
-    inplace: bool
+    keep_orig : bool
+        keep a copy of the original dataset? If `True`, a copy of the object
+        as initiated in the constructor is stored in member `original`
+    info : dict or None
+        optional dictionary with additional information about the dataset
+        (stored in member `info`)
+    inplace : bool
         if True, the object is modified in place; if False, a new object is returned
         this object-level property can be overwritten by the method-level `inplace` argument
         default is "False"
@@ -92,6 +101,7 @@ class GazeData(GenericEyeData):
 
     @property
     def plot(self):
+        """Plotting functions for this object (a :class:`~pypillometry.GazePlotter`)."""
         return GazePlotter(self)
 
     def summary(self):
@@ -137,21 +147,22 @@ class GazeData(GenericEyeData):
     
     def set_experimental_setup(self, **kwargs):
         """
-        Set or update the experimental setup geometry.
+        Set or update the experimental setup geometry (in-place).
         
-        Creates a new ExperimentalSetup or updates the existing one with
-        the provided parameters. All parameters are passed through to
-        ExperimentalSetup constructor.
+        Creates a new :class:`~pypillometry.ExperimentalSetup` or updates the
+        existing one with the provided parameters (parameters that are not
+        given are taken from the existing setup). All parameters are passed
+        through to the ExperimentalSetup constructor.
 
         Parameters
         ----------
-        **kwargs : 
-            Any parameters accepted by ExperimentalSetup:
+        **kwargs : dict
+            Any parameters accepted by :class:`~pypillometry.ExperimentalSetup`:
+
             - screen_resolution: tuple (width, height) in pixels
             - physical_screen_size: tuple (width, height) with units
-            - eye_to_screen_center: distance (d)
+            - eye_to_screen_center: distance from the eye to the screen center
             - screen_offset: tuple (delta_x, delta_y) - offset of screen center from eye
-            - eye_to_screen_center: alternative distance specification
             - screen_pitch: tilt angle (alpha_tilt)
             - screen_yaw: tilt angle (beta_tilt)
             - camera_offset: tuple (x, y, z) in eye-centric frame
@@ -212,13 +223,14 @@ class GazeData(GenericEyeData):
             If thr_type is "pixel": maximum allowed distance in pixels.
         thr_type : str, default="percentile"
             Type of threshold to apply:
+
             - "percentile": threshold is calculated as the given percentile of the distance distribution
             - "pixel": threshold is the maximum allowed distance in pixels
         store_as : str or None, default=None
             Variable name to store the distance timeseries. If None, distance is not stored.
         apply_mask : bool, default=True
             If True, apply detected divergences as masks to the data and return self.
-            If False, return detected divergences as dict of Intervals objects.
+            If False, return detected divergences as an Intervals object.
         ignore_existing_mask : bool, default=True
             If True (default), check all data points including those already masked (e.g., from blinks).
             If False, only check non-masked data points for divergences.
@@ -230,7 +242,7 @@ class GazeData(GenericEyeData):
         Returns
         -------
         GazeData or Intervals
-            If apply_mask=True: returns self for chaining.
+            If apply_mask=True: returns the object for chaining.
             If apply_mask=False: returns Intervals object containing detected divergence intervals.
         
         Raises

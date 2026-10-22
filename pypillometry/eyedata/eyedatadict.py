@@ -40,6 +40,12 @@ class EyeDataDict(MutableMapping):
         ----------
         variable : str, optional
             If specified, return only eyes for this variable.
+
+        Returns
+        -------
+        list of str
+            names of the available eyes (e.g., ``["left", "right"]``), in no
+            particular order
         """
         if variable is not None:
             eyes=[k.split("_")[0] for k in self.data.keys() if k.endswith("_"+variable)]
@@ -50,6 +56,12 @@ class EyeDataDict(MutableMapping):
     def get_available_variables(self):
         """
         Return a list of available variables.
+
+        Returns
+        -------
+        list of str
+            names of the available variables (e.g., ``["x", "y", "pupil"]``),
+            in no particular order
         """
         variables = []
         for k in self.data.keys():
@@ -84,6 +96,16 @@ class EyeDataDict(MutableMapping):
     def get_variable(self, variable):
         """
         Return a subset EyeDataDict with all eyes for a given variable.
+
+        Parameters
+        ----------
+        variable : str
+            The variable to get data for ('x', 'y', 'pupil', etc.)
+
+        Returns
+        -------
+        EyeDataDict
+            A new EyeDataDict containing only data for the specified variable
         """
         return EyeDataDict({k:v for k,v in self.data.items() if k.endswith("_"+variable)})
 
@@ -232,7 +254,23 @@ class EyeDataDict(MutableMapping):
         return new_dict
 
     def set_mask(self, key: str, mask: NDArray) -> None:
-        """Set mask for a specific key."""
+        """Set mask for a specific key.
+
+        Parameters
+        ----------
+        key : str
+            Key of the data (e.g., "left_pupil")
+        mask : array-like
+            Mask array (1 for masked, 0 for valid values) with the same shape
+            as the data; converted to int
+
+        Raises
+        ------
+        KeyError
+            if there is no data for `key`
+        ValueError
+            if `mask` does not have the same shape as the data
+        """
         if key not in self.data:
             raise KeyError(f"No data for key {key}")
         mask = np.asarray(mask)

@@ -28,35 +28,44 @@ class PupilData(GenericEyeData):
     """
     Class representing pupillometric data. 
 
-    The class is a subclass of :class:`.GenericEyedata` and inherits all its methods.
+    The class is a subclass of :class:`~pypillometry.GenericEyeData` and inherits all its methods.
 
-    If eye-tracking data is available in addition to pupillometry, use the :class:`.EyeData` class.
+    If eye-tracking data is available in addition to pupillometry, use the :class:`~pypillometry.EyeData` class.
+
+    Properties such as :attr:`~pypillometry.GenericEyeData.eyes` and
+    :attr:`~pypillometry.GenericEyeData.variables` are inherited from
+    :class:`~pypillometry.GenericEyeData`.
 
     Parameters
     ----------
-    time: 
-        timing array or `None`, in which case the time-array goes from [0,maxT]
-        using `sampling_rate` (in ms)
-    left_pupil:
+    time : np.ndarray or None
+        timing array (in ms) or `None`, in which case the time-array goes from [0,maxT]
+        using `sampling_rate`
+    left_pupil : np.ndarray or None
         data from left eye (at least one of the eyes must be provided)
-    right_pupil:
+    right_pupil : np.ndarray or None
         data from right eye (at least one of the eyes must be provided)
-    sampling_rate: float
-        sampling-rate of the signal in Hz; if None, 
-    name: 
-        name of the dataset or `None` (in which case a random string is selected)
-    event_onsets: 
+    event_onsets : np.ndarray or None
         time-onsets of any events in the data (in ms, matched in `time` vector)
-    event_labels:
+    event_labels : np.ndarray or None
         for each event in `event_onsets`, provide a label
-    keep_orig: bool
-        keep a copy of the original dataset? If `True`, a copy of the object
-        as initiated in the constructor is stored in member `original`
-    fill_time_discontinuities: bool
+    sampling_rate : float or None
+        sampling-rate of the signal in Hz; if `None`, it is estimated from
+        the median difference in `time` (either `time` or `sampling_rate`
+        must be provided)
+    name : str or None
+        name of the dataset or `None` (in which case a random string is selected)
+    fill_time_discontinuities : bool
         sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
         when this option is True, such entries will be made and the signal set to 0 there
         (or do it later using `fill_time_discontinuities()`)
-    inplace: bool
+    keep_orig : bool
+        keep a copy of the original dataset? If `True`, a copy of the object
+        as initiated in the constructor is stored in member `original`
+    info : dict or None
+        optional dictionary with additional information about the dataset
+        (stored in member `info`)
+    inplace : bool
         if True, the object is modified in place; if False, a new object is returned
         this object-level property can be overwritten by the method-level `inplace` argument
         default is "False"
@@ -93,6 +102,7 @@ class PupilData(GenericEyeData):
 
     @property
     def plot(self):
+        """Plotting functions for this object (a :class:`~pypillometry.PupilPlotter`)."""
         return PupilPlotter(self)
 
 
@@ -130,20 +140,27 @@ class PupilData(GenericEyeData):
         Lowpass-filter pupil signal using a Butterworth-filter.
         
         Uses an iterative approach to handle NaN/masked values properly,
-        preventing NaN propagation through the filter.
+        preventing NaN propagation through the filter
+        (see :func:`~pypillometry.signal.pupil.lowpass_filter_iterative`).
+        The filtered signal replaces the pupil data; the mask is preserved.
     
         Parameters
-        -----------
-        cutoff: float
+        ----------
+        cutoff : float
             lowpass-filter cutoff frequency in Hz
-        order: int
+        order : int
             filter order
-        eyes: list
+        eyes : list
             list of eyes to filter; if empty, all available eyes are filtered
-        inplace: bool
+        inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes           
             if `None`, use the object-level setting         
+
+        Returns
+        -------
+        PupilData
+            the object with the filtered pupil data
         """
         from ..signal.pupil import lowpass_filter_iterative
         
@@ -159,20 +176,28 @@ class PupilData(GenericEyeData):
     @keephistory
     def pupil_smooth_window(self, eyes=[], window: str="hanning", winsize: float=11, inplace=None):
         """
-        Apply smoothing of the signal using a moving window. See :func:`baseline.smooth_window()`.
+        Apply smoothing of the signal using a moving window.
+        See :func:`~pypillometry.signal.preproc.smooth_window`.
+        The smoothed signal replaces the pupil data; the mask is preserved.
         
         Parameters
         ----------
-        eyes: list
+        eyes : list
             list of eyes to smooth; if empty, all available eyes are smoothed
-        window: str
+        window : str
             (the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'); 
-             flat window will produce a moving average smoothing.
-        winsize: float
+            flat window will produce a moving average smoothing.
+        winsize : float
             the length of the window in ms 
-        inplace: bool
+        inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                            
+            if `None`, use the object-level setting
+
+        Returns
+        -------
+        PupilData
+            the object with the smoothed pupil data
         """
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
@@ -449,54 +474,60 @@ class PupilData(GenericEyeData):
         (f.eks., 0 or NaN). Second, blinks are defined as everything between
         two crossings of the velocity profile (from negative to positive).
         
-        Detected blinks are always stored internally. When apply_mask=True,
-        the blinks are also applied as masks to the data. When apply_mask=False,
-        the detected blinks are returned as Intervals objects.
+        Detected blinks are always stored in the object (retrieve them with
+        :meth:`~pypillometry.GenericEyeData.get_blinks`). When `apply_mask=True`,
+        the blinks are also applied as masks to the data. When `apply_mask=False`
+        (default), the detected blinks are returned as Intervals objects.
 
         Finally, detected blinks have to be at least `min_duration` ms.
         
         Parameters
         ----------
-        eyes: list
+        eyes : list
             list of eyes to process; if empty, all available eyes are processed
-        min_duration: float
+        min_duration : float
             minimum duration in ms for a sequence of missing numbers to be treated as blink
-        blink_val: float
+        blink_val : float
             "missing value" code
-        winsize: float
+        winsize : float
             window-size for Savitzky-Golay velocity estimation in ms
-        vel_onset: float or str
+        vel_onset : float or str
             velocity threshold to detect blink onset (negative value).
+
             - If float: threshold in pupil-units per millisecond (e.g., -5.0)
             - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)
-        vel_offset: float or str
+        vel_offset : float or str
             velocity threshold to detect blink offset (positive value).
+
             - If float: threshold in pupil-units per millisecond (e.g., 5.0)
-            - If str: percentile of velocity distribution (e.g., "95%" for top 95%)
-        vel_onset_min_duration: float
+            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)
+        vel_onset_min_duration : float
             minimum duration in ms that velocity must exceed threshold to detect as onset
             (to avoid noise-induced false detections)
-        vel_offset_min_duration: float
+        vel_offset_min_duration : float
             minimum duration in ms that velocity must exceed threshold to detect as offset
             (to avoid noise-induced false detections)
-        strategies: list of strategies to use
+        strategies : list
+            list of strategies to use;
             so far, use a list containing any combination of "zero" and "velocity"
-        apply_mask: bool
-            if `True`, apply detected blinks as masks to the data and return self
+        apply_mask : bool
+            if `True`, apply detected blinks as masks to the data and return the object
             if `False` (default), return detected blinks as Intervals (or dict of Intervals)
-        ignore_existing_mask: bool
-            if `True` (default), use raw data ignoring existing masks
-            if `False`, only detect blinks in non-masked data (already masked regions are skipped)
-        inplace: bool
+        ignore_existing_mask : bool
+            if `True`, use raw data ignoring existing masks
+            if `False` (default), only detect blinks in non-masked data (already masked regions are skipped)
+        inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                                    
+            if `None`, use the object-level setting
             
         Returns
         -------
-        self or Intervals or dict
-            If apply_mask=True: returns self for chaining
-            If apply_mask=False and single eye: returns Intervals object
-            If apply_mask=False and multiple eyes: returns dict of Intervals objects
+        PupilData or Intervals or dict
+            If `apply_mask=True`: returns the object (for chaining)
+            If `apply_mask=False` and single eye: returns Intervals object
+            If `apply_mask=False` and multiple eyes: returns dict of Intervals objects
+            (keys like ``"left_pupil"``)
         """
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
@@ -591,39 +622,56 @@ class PupilData(GenericEyeData):
         Mahot, 2013:
         https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.
 
+        The blinks to interpolate are taken from the blinks stored in the object,
+        so blinks have to be detected first (e.g., using :meth:`pupil_blinks_detect`).
+        The on- and offsets of each blink are refined using the velocity profile
+        before interpolating. Interpolated samples remain masked; the
+        interpolated blinks can be retrieved with
+        :meth:`~pypillometry.GenericEyeData.get_interpolated_blinks`.
+
         This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
-        so a "plot" option is provided that will plot many diagnostics (see paper linked above) that
-        can help to set good parameter values for `winsize`, `vel_onset`, `vel_offset` and `margin`.
+        so it can help to inspect the result visually (e.g., using
+        :meth:`~pypillometry.PupilPlotter.plot_blinks`) to set
+        good parameter values for `winsize`, `vel_onset`, `vel_offset` and `margin`
+        (see paper linked above).
 
         Parameters
         ----------
-        eyes: str or list
+        eyes : str or list
             str or list of eyes to process; if empty, all available eyes are processed
-        store_as: str
+        store_as : str
             how to store the interpolated data; either "pupil" (default) which replaces
             the original pupil data or a string that will be used as the new variable
             name in the data (e.g., "pupilinterp")
-        method: str
+        method : str
             method to use; so far, only "mahot" is implemented
-        winsize: float
+        winsize : float
             size of the Savitzky-Golay window in ms
-        vel_onset: float or str
+        vel_onset : float or str
             velocity threshold to detect blink onset (negative value).
+
             - If float: threshold in pupil-units per millisecond (e.g., -5.0)
             - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)
-        vel_offset: float or str
+        vel_offset : float or str
             velocity threshold to detect blink offset (positive value).
+
             - If float: threshold in pupil-units per millisecond (e.g., 5.0)
-            - If str: percentile of velocity distribution (e.g., "95%" for top 95%)
-        margin: Tuple[float,float]
+            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)
+        margin : Tuple[float,float]
             margin that is subtracted/added to onset and offset (in ms)
-        blinkwindow: float
+        blinkwindow : float
             how much time before and after each blink to include (in ms)
-        interp_type: str
+        interp_type : str
             type of interpolation accepted by :func:`scipy.interpolate.interp1d()`
-        inplace: bool
+        inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes              
+            if `None`, use the object-level setting
+
+        Returns
+        -------
+        PupilData
+            the object with the interpolated pupil data
         """
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
@@ -715,28 +763,35 @@ class PupilData(GenericEyeData):
         
         Parameters
         ----------
-        
-        eyes: list or str
+        eyes : list or str
             str or list of eyes to process; if empty, all available eyes are processed
-        variable: str
+        variable : str
             default is to use the "pupil" but it could be used to process, e.g., 
             interpolated pupil data stored in a different variables, e.g., "pupilinterp"
-        method: 
-            "envelope_iter_bspline_1": :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` 
-                                        with one iteration
-            "envelope_iter_bspline_2": :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` 
-                                        with two iterations
-        inplace: bool
+        method : str
+            - "envelope_iter_bspline_1":
+              :func:`~pypillometry.signal.baseline.baseline_envelope_iter_bspline`
+              with one iteration
+            - "envelope_iter_bspline_2" (default):
+              :func:`~pypillometry.signal.baseline.baseline_envelope_iter_bspline`
+              with two iterations
+        inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                        
-            
-        kwargs:
-            named arguments passed to the low-level function in :py:mod:`pypillometry.baseline`.
+            if `None`, use the object-level setting
+        **kwargs : dict
+            named arguments passed to the low-level function in
+            :mod:`pypillometry.signal.baseline`.
             
         Returns
         -------
         PupilData
-            object with baseline estimated (stored in data["eye_baseline"])        
+            object with baseline estimated (stored in ``data[eye, "baseline"]``)
+
+        Raises
+        ------
+        ValueError
+            if `method` is unknown
         """
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
@@ -771,31 +826,43 @@ class PupilData(GenericEyeData):
                           inplace=None):
         """
         Estimate pupil-response based on event-onsets, see
-        :py:func:`pypillometry.pupil.pupil_response()`.
-        
+        :func:`~pypillometry.signal.pupil.pupil_response`.
+
+        If a baseline has been estimated (see :meth:`pupil_estimate_baseline`),
+        it is subtracted from the pupil signal before estimating the response;
+        otherwise, a baseline of zero is used.
 
         Parameters
         ----------
-        eyes: list or str
+        eyes : list or str
             str or list of eyes to process; if empty, all available eyes are processed
-        npar: float
+        npar : float or str
             npar-parameter for the canonical response-function or "free";
             in case of "free", the function optimizes for this parameter
-        tmax: float
+        tmax : float or str
             tmax-parameter for the canonical response-function or "free";
             in case of "free", the function optimizes for this parameter
-        bounds: dict
+        verbose : int
+            verbosity level, passed on to
+            :func:`~pypillometry.signal.pupil.pupil_response`
+        bounds : dict
             in case that one or both parameters are estimated, give the lower
             and upper bounds for the parameters        
-        inplace: bool
+        inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                                        
-        
-        Note
-        ----
-        the results of the estimation is stored in members `response`, `response_x` (design matrix) 
-        and `response_pars`
+            if `None`, use the object-level setting
 
+        Returns
+        -------
+        PupilData
+            the object with the estimated response
+
+        Notes
+        -----
+        The predicted response is stored in ``data[eye, "response"]``; the
+        estimated parameters (`npar`, `tmax`, the coefficients `coef` and the
+        `bounds`) are stored in ``params["response"][eye]``.
         """
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])

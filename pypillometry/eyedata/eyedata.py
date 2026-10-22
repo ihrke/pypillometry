@@ -28,42 +28,57 @@ from ..signal.baseline import butter_lowpass_filter, downsample
 
 class EyeData(GazeData,PupilData):
     """
-    Class for handling eye-tracking data. This class is a subclass of GazeData
-    and inherits all its methods and attributes. In addition to the methods
-    in GazeData which implement functions for eye-tracking data, `EyeData` 
-    provides methods for handling pupillometric data.
+    Class for handling eye-tracking data. This class is a subclass of
+    :class:`~pypillometry.GazeData` and :class:`~pypillometry.PupilData`
+    and inherits all their methods and attributes. In addition to the
+    methods in GazeData which implement functions for eye-tracking data and
+    those in PupilData for pupillometric data, `EyeData` provides methods
+    that need both gaze and pupil data (e.g., foreshortening correction).
+
+    Properties such as :attr:`~pypillometry.GenericEyeData.eyes` and
+    :attr:`~pypillometry.GenericEyeData.variables` are inherited from
+    :class:`~pypillometry.GenericEyeData`.
 
     Parameters
     ----------
-    time: 
-        timing array or `None`, in which case the time-array goes from [0,maxT]
-        using `sampling_rate` (in ms)
-    left_x, left_y, left_pupil:
+    time : np.ndarray or None
+        timing array (in ms) or `None`, in which case the time-array goes from [0,maxT]
+        using `sampling_rate`
+    left_x, left_y, left_pupil : np.ndarray or None
         data from left eye (at least one of the eyes must be provided, both x and y)
         pupil is optional
-    right_x, right_y, right_pupil:
+    right_x, right_y, right_pupil : np.ndarray or None
         data from right eye (at least one of the eyes must be provided, both x and y)
         pupil is optional
-    sampling_rate: float
-        sampling-rate of the pupillary signal in Hz; if None, 
-    experimental_setup: ExperimentalSetup, optional
+    event_onsets : np.ndarray or None
+        time-onsets of any events in the data (in ms, matched in `time` vector)
+    event_labels : np.ndarray or None
+        for each event in `event_onsets`, provide a label
+    sampling_rate : float or None
+        sampling-rate of the signal in Hz; if `None`, it is estimated from
+        the median difference in `time` (either `time` or `sampling_rate`
+        must be provided)
+    experimental_setup : ExperimentalSetup, optional
         Geometric model of the experimental setup including screen geometry,
         eye position, camera position, and screen orientation.
-    name: 
+    name : str or None
         name of the dataset or `None` (in which case a random string is selected)
-    event_onsets: 
-        time-onsets of any events in the data (in ms, matched in `time` vector)
-    event_labels:
-        for each event in `event_onsets`, provide a label
-    calibration: dict, optional
+    calibration : dict, optional
         Dictionary of SpatialCalibration objects, one per eye (keys: 'left', 'right')
-    keep_orig: bool
-        keep a copy of the original dataset? If `True`, a copy of the object
-        as initiated in the constructor is stored in member `original`
-    fill_time_discontinuities: bool
+    fill_time_discontinuities : bool
         sometimes, when the eyetracker loses signal, no entry in the EDF is made; 
         when this option is True, such entries will be made and the signal set to 0 there
         (or do it later using `fill_time_discontinuities()`)
+    keep_orig : bool
+        keep a copy of the original dataset? If `True`, a copy of the object
+        as initiated in the constructor is stored in member `original`
+    info : dict or None
+        optional dictionary with additional information about the dataset
+        (stored in member `info`)
+    inplace : bool
+        if True, the object is modified in place; if False, a new object is returned
+        this object-level property can be overwritten by the method-level `inplace` argument
+        default is "False"
 
     Examples
     --------
@@ -118,6 +133,7 @@ class EyeData(GazeData,PupilData):
 
     @property
     def plot(self):
+        """Plotting functions for this object (a :class:`~pypillometry.EyePlotter`)."""
         return EyePlotter(self)
 
 
@@ -140,12 +156,20 @@ class EyeData(GazeData,PupilData):
         Parameters
         ----------
         eye : str, optional
-            Which eye to return data for.
+            Which eye to return data for. If `None`, the dataset must contain
+            only one eye, which is then used.
 
         Returns
         -------
-        : :class:`PupilData`
-            A PupilData object containing the pupil data. 
+        PupilData
+            A PupilData object containing the pupil data of `eye` (as
+            ``"<eye>_pupil"``), the time vector and the events.
+
+        Raises
+        ------
+        ValueError
+            if `eye` is `None` and there is more than one eye, or if there is
+            no data for `eye`
         """
         if eye is None:
             if len(self.eyes)==1:
@@ -170,30 +194,37 @@ class EyeData(GazeData,PupilData):
 
     @keephistory
     def correct_pupil_foreshortening(self, eyes=[], midpoint=None, store_as="pupil", inplace=None):
-        """Correct pupil data using a simple algorithm to correct for foreshortening effects.
+        r"""Correct pupil data using a simple algorithm to correct for foreshortening effects.
 
         Correct the pupil data for foreshortening effects caused
         by saccades/eye movements. This method is based on a simple algorithm
-        described here: 
-
-        :ref:`Correcting pupillary signal using a simple Foreshortening Algorithm </docs/pupil_correction_carole.rst>`
+        that assumes the pupil appears perfectly circular when fixating `midpoint`:
+        for each sample, the distance :math:`\Delta` (in mm) of the gaze position
+        from `midpoint` is computed and the pupil signal is multiplied by the
+        correction factor :math:`\sqrt{1+\Delta^2/d^2}`, where :math:`d` is the
+        eye-to-screen distance from the experimental setup.
+        For a more complete model that also estimates the camera position,
+        see :meth:`fit_foreshortening`.
 
         Relevant publication (not the description of the algorithm used here):    
         https://link.springer.com/article/10.3758/s13428-015-0588-x
 
         - [ ] TODO: when using interpolated pupil data, x/y data may still be missing. Make sure that the 
           pupil data is not touched where x/y is missing
-        
 
         Parameters 
         ----------
-        eyes: list
-            Which eyes to correct. If None, correct all available eyes.
-        midpoint: tuple
-            The center of the screen (x,y) where it is assumed that the pupil is completely circular.
+        eyes : list
+            Which eyes to correct. If empty, correct all available eyes.
+        midpoint : tuple or None
+            The center of the screen (x,y) in pixels where it is assumed that the pupil is completely circular.
             If None, the midpoint is taken to be the center of the screen as registered
             in the experimental_setup. 
-        inplace: bool
+        store_as : str
+            name of the variable in which to store the corrected pupil data
+            (as ``data[eye, store_as]``); the default "pupil" replaces the
+            original pupil data
+        inplace : bool or None
             Whether to modify the object in place or return a new object.
             `true`: modify in place
             `false`: return a new object
@@ -201,8 +232,13 @@ class EyeData(GazeData,PupilData):
 
         Returns
         -------
-        : :class:`EyeData`
+        EyeData
             An EyeData object with the corrected pupil
+
+        Raises
+        ------
+        ValueError
+            if no experimental setup is set (see :meth:`set_experimental_setup`)
         """
         obj=self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes, [])
@@ -267,18 +303,21 @@ class EyeData(GazeData,PupilData):
         r : float, str, or pint.Quantity, optional
             Eye-to-camera distance. If not provided, uses the 
             `r` from experimental_setup.
+
             - Plain number: assumed to be mm (with warning)
             - String: e.g., "600 mm", "60 cm"
             - Quantity: e.g., 600 * ureg.mm
         d : float, str, or pint.Quantity, optional
             Eye-to-screen distance. If not provided, uses the 
             `d` from experimental_setup.
+
             - Plain number: assumed to be mm (with warning)
             - String: e.g., "700 mm", "70 cm"
             - Quantity: e.g., 700 * ureg.mm
         intervals : Intervals, optional
             Time intervals to use for fitting. If None, uses all available data.
-            Useful for fitting only on calibration periods.
+            Useful for fitting only on calibration periods. The start/end
+            values are compared to the time vector, so they must be in ms.
         target_fs : float, default 50.0
             Target sampling rate in Hz after downsampling for efficiency.
             Pupil dynamics are typically well-preserved at 50 Hz.
@@ -294,12 +333,14 @@ class EyeData(GazeData,PupilData):
         initial_theta : float, str, or pint.Quantity, optional
             Initial guess for camera polar angle. If None, uses
             pi/2 (horizontal) as starting point.
+
             - Plain number: assumed to be radians (with warning)
             - String: e.g., "20 degrees", "0.349 radians"
             - Quantity: e.g., 20 * ureg.degree
         initial_phi : float, str, or pint.Quantity, optional
             Initial guess for camera azimuthal angle. If None,
             uses 0 (camera on x-axis) as starting point.
+
             - Plain number: assumed to be radians (with warning)
             - String: e.g., "-90 degrees", "-1.57 radians"
             - Quantity: e.g., -90 * ureg.degree
@@ -315,7 +356,10 @@ class EyeData(GazeData,PupilData):
         Raises
         ------
         ValueError
-            If specified eye doesn't exist or lacks gaze/pupil data.
+            If specified eye doesn't exist or lacks gaze/pupil data, if the
+            experimental setup is not set or lacks required information, if
+            `lowpass_freq` is not below the Nyquist frequency or if fewer
+            than 100 valid samples are available.
         
         Notes
         -----
@@ -323,6 +367,7 @@ class EyeData(GazeData,PupilData):
             A_measured(x,y,t) = A0(t) * cos(alpha(x,y; theta, phi))
         
         where:
+
         - A0(t) = sum_k a_k * B_k(t) is modeled with B-splines
         - cos(alpha) is the foreshortening factor depending on viewing angle
         - theta, phi parameterize camera position in spherical coordinates
@@ -333,7 +378,7 @@ class EyeData(GazeData,PupilData):
         Examples
         --------
         >>> import pypillometry as pp
-        >>> data = pp.EyeData.from_eyelink('recording.edf')
+        >>> data = pp.EyeData.from_eyelink('recording.edf')  # doctest: +SKIP
         >>> 
         >>> # Set experimental setup
         >>> data.set_experimental_setup(  # doctest: +SKIP
@@ -344,7 +389,7 @@ class EyeData(GazeData,PupilData):
         ... )
         >>> 
         >>> # Fit on calibration period (first 2 minutes)
-        >>> cal_intervals = data.get_intervals(end_time=120000)  # doctest: +SKIP
+        >>> cal_intervals = pp.Intervals([(0, 120000)], units="ms")  # doctest: +SKIP
         >>> calib = data.fit_foreshortening(  # doctest: +SKIP
         ...     eye='left',
         ...     intervals=cal_intervals

@@ -11,12 +11,14 @@ class FakeEyeData(EyeData):
     EyeData with simulation metadata for testing and validation.
     
     Extends EyeData with four attributes:
+
     - sim_fct: Reference to the function used to generate this data
     - sim_fct_name: Name of the generation function (str)
     - sim_params: Dictionary with generation parameters (excludes function reference)
     - sim_data: EyeDataDict with ground truth time series
     
     This class enables:
+
     1. Printing how the data was generated via get_generation_call()
     2. Regenerating data with the same or modified parameters via regenerate()
     3. Accessing ground truth for validation
@@ -33,8 +35,8 @@ class FakeEyeData(EyeData):
         
         Parameters
         ----------
-        time, left_*, right_* : arrays
-            Standard EyeData parameters
+        time, left_x, left_y, left_pupil, right_x, right_y, right_pupil : np.ndarray or None
+            Standard EyeData parameters (see :class:`~pypillometry.EyeData`)
         sim_fct : callable, optional
             Function reference used to generate this data
         sim_fct_name : str, optional
@@ -43,7 +45,8 @@ class FakeEyeData(EyeData):
             Parameters used for generation (excludes function reference)
         sim_data : EyeDataDict, optional
             Ground truth time series
-        **kwargs : additional EyeData parameters
+        **kwargs : dict
+            additional parameters passed to :class:`~pypillometry.EyeData`
         """
         super().__init__(time=time, left_x=left_x, left_y=left_y, 
                         left_pupil=left_pupil, right_x=right_x, 
