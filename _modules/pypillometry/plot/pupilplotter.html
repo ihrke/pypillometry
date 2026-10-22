@@ -423,6 +423,15 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class for plotting pupil data. The class is initialized with a GenericEyeData object</span>
 <span class="sd">    and provides methods to plot the data in various ways.</span>
+
+<span class="sd">    It is usually not created directly; instead, it is available as the `plot`</span>
+<span class="sd">    attribute of a :class:`~pypillometry.PupilData` object, e.g.</span>
+<span class="sd">    ``d.plot.pupil_plot()``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obj : GenericEyeData</span>
+<span class="sd">        the data object to plot (stored as `obj`)</span>
 <span class="sd">    """</span>
     <span class="n">obj</span><span class="p">:</span> <span class="n">GenericEyeData</span> <span class="c1"># link to the data object</span>
 
@@ -442,29 +451,37 @@ window.runMermaid = runMermaid;</script>
             <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Make a plot of the pupil data using `matplotlib`.</span>
 
-<span class="sd">        Has pupil-specific options which makes it different from </span>
-<span class="sd">        :func:`GazePlotter.plot_timeseries()`.</span>
+<span class="sd">        Has pupil-specific options which makes it different from</span>
+<span class="sd">        :meth:`plot_timeseries`. All eyes are plotted into the current axes.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        eyes: list  </span>
-<span class="sd">            list of eyes to plot; if empty, all available eyes are plotted            </span>
-<span class="sd">        plot_range: tuple (start,end)</span>
+<span class="sd">        eyes : str or list</span>
+<span class="sd">            eye(s) to plot; if empty, all eyes with pupil data are plotted</span>
+<span class="sd">        plot_range : tuple (start,end)</span>
 <span class="sd">            plot from start to end (in units of `units`)</span>
-<span class="sd">        units: str</span>
-<span class="sd">            one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours</span>
-<span class="sd">        show_events: bool</span>
+<span class="sd">        show_events : bool</span>
 <span class="sd">            plot events as vertical lines with labels</span>
-<span class="sd">        show_blinks: bool</span>
-<span class="sd">            highlight detected blinks</span>
-<span class="sd">        label_prefix: str</span>
+<span class="sd">        show_blinks : bool</span>
+<span class="sd">            highlight masked regions of the pupil data (e.g., detected blinks)</span>
+<span class="sd">            with a red background</span>
+<span class="sd">        units : str</span>
+<span class="sd">            one of "sec"=seconds (default), "ms"=millisec, "min"=minutes, "h"=hours</span>
+<span class="sd">        label_prefix : str</span>
 <span class="sd">            Prefix to add to labels in the legend. Useful for overlaying multiple datasets.</span>
 <span class="sd">            Default is "" (no prefix).</span>
-<span class="sd">        style: dict or dict of dicts</span>
+<span class="sd">        style : dict or dict of dicts</span>
 <span class="sd">            Styling for plotted lines. Can be:</span>
+
 <span class="sd">            - Single dict: Applied to all eyes with automatic differentiation (e.g., {'color': 'red'})</span>
 <span class="sd">            - Dict of dicts: Per-eye styling (e.g., {'left': {'linestyle': '-'}, 'right': {'linestyle': '--'}})</span>
+
 <span class="sd">            Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if `plot_range` does not overlap with the data</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">eyes</span><span class="p">]</span>
@@ -601,22 +618,23 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-
-<span class="sd">        pdf_file: str or None</span>
-<span class="sd">            file name to store the PDF; if None, no PDF is written </span>
-<span class="sd">        interv: float</span>
+<span class="sd">        pdf_file : str or None</span>
+<span class="sd">            file name to store the PDF; if None, no PDF is written</span>
+<span class="sd">        interv : float</span>
 <span class="sd">            duration of each of the segments to be plotted (in units specified by ``units``)</span>
-<span class="sd">        figsize: Tuple[int,int]</span>
+<span class="sd">        figsize : Tuple[int,int]</span>
 <span class="sd">            dimensions of the figures</span>
-<span class="sd">        units: str, optional</span>
-<span class="sd">            Time units for segment boundaries passed to :func:`PupilData.pupil_plot`. Default "min".</span>
-<span class="sd">        kwargs:</span>
-<span class="sd">            arguments passed to :func:`PupilData.pupil_plot()`</span>
+<span class="sd">        ylim : Tuple[float,float] or None</span>
+<span class="sd">            y-axis limits for the plots; if None, matplotlib's automatic limits are used</span>
+<span class="sd">        units : str, optional</span>
+<span class="sd">            Time units for segment boundaries passed to :meth:`pupil_plot`. Default "min".</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            arguments passed to :meth:`pupil_plot`</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-
-<span class="sd">        figs: list of :class:`matplotlib.Figure` objects</span>
+<span class="sd">        list of matplotlib.figure.Figure or None</span>
+<span class="sd">            one figure per segment; None if `pdf_file` is given</span>
 <span class="sd">        """</span>
 
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>

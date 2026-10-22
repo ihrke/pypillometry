@@ -419,8 +419,17 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../api.html#pypillometry.GazePlotter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GazePlotter</span><span class="p">(</span><span class="n">GenericPlotter</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Class for plotting eye data. The class is initialized with an EyeData object</span>
-<span class="sd">    and provides methods to plot the data in various ways.</span>
+<span class="sd">    Class for plotting gaze data. The class is initialized with a GenericEyeData</span>
+<span class="sd">    object and provides methods to plot the data in various ways.</span>
+
+<span class="sd">    It is usually not created directly; instead, it is available as the `plot`</span>
+<span class="sd">    attribute of a :class:`~pypillometry.GazeData` object, e.g.</span>
+<span class="sd">    ``d.plot.plot_heatmap()``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obj : GenericEyeData</span>
+<span class="sd">        the data object to plot (stored as `obj`)</span>
 <span class="sd">    """</span>
     <span class="n">obj</span><span class="p">:</span> <span class="n">GenericEyeData</span> <span class="c1"># link to the data object</span>
 
@@ -449,49 +458,59 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Plot EyeData as a heatmap. Typically used for a large amount of data</span>
 <span class="sd">        to spot the most frequent locations.</span>
 <span class="sd">        To plot a scanpath, use :meth:`.plot_scanpath()` instead.</span>
-<span class="sd">        Each eye is plotted in a separate subplot.</span>
+<span class="sd">        Each eye is plotted in a separate subplot of the current figure</span>
+<span class="sd">        (a new figure is created if none exists); the colorbar shows the</span>
+<span class="sd">        number of samples per bin.</span>
 
-<span class="sd">        Parameters:</span>
-<span class="sd">        -----------</span>
-
-<span class="sd">        plot_range: tuple</span>
-<span class="sd">            The time range to plot. Default is (-np.inf, +np.inf), i.e. all data.</span>
-<span class="sd">        eyes: list</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        plot_range : tuple</span>
+<span class="sd">            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.</span>
+<span class="sd">        eyes : list</span>
 <span class="sd">            The eyes to plot. Default is [], which means all available data ("left", "right",</span>
 <span class="sd">            average, regression, ...)</span>
-<span class="sd">        show_screen: bool</span>
-<span class="sd">            Whether to plot the screen limits. Default is True.</span>
-<span class="sd">        show_masked: bool</span>
+<span class="sd">        show_screen : bool</span>
+<span class="sd">            Whether to plot the screen limits (if an experimental setup is</span>
+<span class="sd">            available). Default is True.</span>
+<span class="sd">        show_masked : bool</span>
 <span class="sd">            Whether to plot the masked data (because of blinks, artifacts, ...). Default is False.</span>
-<span class="sd">        rois: List[ROI], optional</span>
-<span class="sd">            List of ROIs to plot. Default is None.</span>
-<span class="sd">        roi_style: dict, optional</span>
-<span class="sd">            Style for the ROIs. Default is None.</span>
-<span class="sd">            Example:</span>
-<span class="sd">            {</span>
-<span class="sd">                "facecolor": "red",</span>
-<span class="sd">                "edgecolor": "black",</span>
-<span class="sd">                "linewidth": 2,</span>
-<span class="sd">                "alpha": 0.5</span>
-<span class="sd">            }</span>
-<span class="sd">        units: str</span>
-<span class="sd">            The units to plot. Default is "sec".</span>
-<span class="sd">        cmap: str</span>
+<span class="sd">        rois : List[ROI], optional</span>
+<span class="sd">            List of ROIs (:class:`~pypillometry.ROI`) to plot. Default is None.</span>
+<span class="sd">        roi_style : dict, optional</span>
+<span class="sd">            Style for the ROIs, passed as keyword arguments to the ROIs'</span>
+<span class="sd">            ``plot()`` method. Default is {} (ROI defaults). Example::</span>
+
+<span class="sd">                {</span>
+<span class="sd">                    "facecolor": "red",</span>
+<span class="sd">                    "edgecolor": "black",</span>
+<span class="sd">                    "linewidth": 2,</span>
+<span class="sd">                    "alpha": 0.5</span>
+<span class="sd">                }</span>
+
+<span class="sd">        units : str</span>
+<span class="sd">            The units of `plot_range` ("ms", "sec", "min", "h"). Default is "sec".</span>
+<span class="sd">        cmap : str</span>
 <span class="sd">            The colormap to use. Default is "jet".</span>
-<span class="sd">        gridsize: str or int</span>
-<span class="sd">            The gridsize for the hexbin plot or histogram. Default is 30.</span>
-<span class="sd">        min_samples: int, optional</span>
+<span class="sd">        gridsize : int or str</span>
+<span class="sd">            The gridsize for the hexbin plot or histogram. If "auto", the square</span>
+<span class="sd">            root of the number of samples in `plot_range` is used. Default is 30.</span>
+<span class="sd">        min_samples : int, optional</span>
 <span class="sd">            Minimum number of samples required in a bin to display it. Bins with</span>
-<span class="sd">            fewer samples will not be shown. If None, automatically calculates a </span>
+<span class="sd">            fewer samples will not be shown. If None, automatically calculates a</span>
 <span class="sd">            threshold at the 10th percentile of bin counts. Default is 1.</span>
-<span class="sd">        smooth: float, optional</span>
+<span class="sd">        smooth : float, optional</span>
 <span class="sd">            If provided, applies Gaussian smoothing to the binned histogram. The value</span>
 <span class="sd">            is the sigma of the Gaussian kernel in bin units (e.g., smooth=1 applies</span>
 <span class="sd">            minimal smoothing with a 1-bin sigma, smooth=2 applies more smoothing).</span>
 <span class="sd">            When smooth is provided, uses a rectangular grid instead of hexbin.</span>
-<span class="sd">        limits: tuple, optional</span>
+<span class="sd">        limits : tuple, optional</span>
 <span class="sd">            Axis limits as (xmin, xmax, ymin, ymax). If not provided, uses screen</span>
 <span class="sd">            limits when available (and data falls within), otherwise uses data extent.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if `plot_range` does not overlap with the data</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
         
@@ -688,40 +707,49 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        or another small amount of data. To plot a larger amount of data,</span>
 <span class="sd">        use :meth:`.plot_heatmap()` instead.</span>
 
-<span class="sd">        If several eyes are available, they are plotted in the same figure </span>
-<span class="sd">        in different colors. You can choose between them using the `plot_eyes` </span>
-<span class="sd">        parameter.</span>
+<span class="sd">        If several eyes are available, they are plotted in the same figure</span>
+<span class="sd">        in different colors. You can choose between them using the `eyes`</span>
+<span class="sd">        parameter. The samples are drawn as dots colored by time.</span>
+<span class="sd">        A new figure is created for the plot.</span>
 
-<span class="sd">        Parameters:</span>
-<span class="sd">        -----------</span>
-
-<span class="sd">        plot_range: tuple</span>
-<span class="sd">            The time range to plot. Default is (-np.inf, +np.inf), i.e. all data.</span>
-<span class="sd">        eyes: list</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        plot_range : tuple</span>
+<span class="sd">            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.</span>
+<span class="sd">        eyes : list</span>
 <span class="sd">            The eyes to plot. Default is [], which means all available data ("left", "right",</span>
 <span class="sd">            average, regression, ...)</span>
-<span class="sd">        show_screen: bool</span>
-<span class="sd">            Whether to plot the screen limits. Default is True.</span>
-<span class="sd">        rois: List[ROI], optional</span>
-<span class="sd">            List of ROIs to plot. Default is None.</span>
-<span class="sd">        roi_style: dict, optional</span>
-<span class="sd">            Style for the ROIs. Default is None.</span>
-<span class="sd">            Example:</span>
-<span class="sd">            {</span>
-<span class="sd">                "facecolor": "red",</span>
-<span class="sd">                "edgecolor": "black",</span>
-<span class="sd">                "linewidth": 2,</span>
-<span class="sd">                "alpha": 0.5</span>
-<span class="sd">            }</span>
-<span class="sd">        show_onsets: bool</span>
-<span class="sd">            Whether to plot the event onsets. Default is True.</span>
-<span class="sd">        title: str</span>
+<span class="sd">        show_screen : bool</span>
+<span class="sd">            Whether to plot the screen limits (if an experimental setup is</span>
+<span class="sd">            available). Default is True.</span>
+<span class="sd">        rois : List[ROI], optional</span>
+<span class="sd">            List of ROIs (:class:`~pypillometry.ROI`) to plot. Default is None.</span>
+<span class="sd">        roi_style : dict, optional</span>
+<span class="sd">            Style for the ROIs, passed as keyword arguments to the ROIs'</span>
+<span class="sd">            ``plot()`` method. Default is {} (ROI defaults). Example::</span>
+
+<span class="sd">                {</span>
+<span class="sd">                    "facecolor": "red",</span>
+<span class="sd">                    "edgecolor": "black",</span>
+<span class="sd">                    "linewidth": 2,</span>
+<span class="sd">                    "alpha": 0.5</span>
+<span class="sd">                }</span>
+
+<span class="sd">        show_onsets : bool</span>
+<span class="sd">            Whether to plot the event labels at the gaze position at event</span>
+<span class="sd">            onset. Plotted only for the first eye. Default is True.</span>
+<span class="sd">        title : str</span>
 <span class="sd">            The title of the plot. Default is "".</span>
-<span class="sd">        units: str</span>
-<span class="sd">            The units to plot. Default is "sec". Plotted only for the first "eye".</span>
-<span class="sd">            If None, the units are taken from the data.</span>
-<span class="sd">        figsize: tuple</span>
-<span class="sd">            The figure size (per subplot). Default is (10,5).</span>
+<span class="sd">        units : str or None</span>
+<span class="sd">            The units of `plot_range` ("ms", "sec", "min", "h"). If None (default),</span>
+<span class="sd">            the units of the time vector (ms) are used.</span>
+<span class="sd">        figsize : tuple</span>
+<span class="sd">            The figure size (width, height) in inches. Default is (10,10).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if `plot_range` does not overlap with the data</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
 

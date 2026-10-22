@@ -416,6 +416,20 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="EyePlotter">
 <a class="viewcode-back" href="../../../api.html#pypillometry.EyePlotter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EyePlotter</span><span class="p">(</span><span class="n">GazePlotter</span><span class="p">,</span><span class="n">PupilPlotter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Class for plotting combined gaze and pupil data. It provides all methods of</span>
+<span class="sd">    :class:`~pypillometry.GazePlotter` and :class:`~pypillometry.PupilPlotter`</span>
+<span class="sd">    and additional plots that combine gaze and pupil data.</span>
+
+<span class="sd">    It is usually not created directly; instead, it is available as the `plot`</span>
+<span class="sd">    attribute of an :class:`~pypillometry.EyeData` object, e.g.</span>
+<span class="sd">    ``d.plot.plot_pupil_foreshortening_error_surface()``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obj : GenericEyeData</span>
+<span class="sd">        the data object to plot (stored as `obj`)</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="EyePlotter.plot_pupil_foreshortening_error_surface">
 <a class="viewcode-back" href="../../../api.html#pypillometry.EyePlotter.plot_pupil_foreshortening_error_surface">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_pupil_foreshortening_error_surface</span><span class="p">(</span>
@@ -755,10 +769,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        theta : float, optional</span>
-<span class="sd">            Camera polar angle in radians. If None, uses setup's theta or calibration's theta.</span>
-<span class="sd">        phi : float, optional</span>
-<span class="sd">            Camera azimuthal angle in radians. If None, uses setup's phi or calibration's phi.</span>
+<span class="sd">        theta : float or str, optional</span>
+<span class="sd">            Camera polar angle; a float is interpreted as radians, a string</span>
+<span class="sd">            can carry units (e.g., "20 deg"). If None, uses calibration's theta</span>
+<span class="sd">            (if `calibration` is given), else setup's theta.</span>
+<span class="sd">        phi : float or str, optional</span>
+<span class="sd">            Camera azimuthal angle; a float is interpreted as radians, a string</span>
+<span class="sd">            can carry units (e.g., "-90 deg"). If None, uses calibration's phi</span>
+<span class="sd">            (if `calibration` is given), else setup's phi.</span>
 <span class="sd">        calibration : ForeshorteningCalibration, optional</span>
 <span class="sd">            Fitted calibration object containing theta and phi.</span>
 <span class="sd">        show_gaze_samples : bool, default True</span>
@@ -768,15 +786,23 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        ax : matplotlib axis, optional</span>
 <span class="sd">            Existing axis to plot on (only for '3d' projection)</span>
 <span class="sd">        viewing_angle : tuple, optional</span>
-<span class="sd">            Viewing angle for 3D projection (elev, azim) or (elev, azim, roll) in degrees.</span>
+<span class="sd">            Viewing angle for 3D projection (elev, azim) or (elev, azim, roll).</span>
+<span class="sd">            Each element is parsed like `theta`, i.e. use strings with units</span>
+<span class="sd">            (e.g., ``("30 deg", "-60 deg")``); plain numbers are interpreted</span>
+<span class="sd">            as radians.</span>
 <span class="sd">        projection : str, default '2d'</span>
 <span class="sd">            '2d' for three orthogonal views, '3d' for interactive 3D view</span>
-<span class="sd">        </span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        fig : matplotlib Figure</span>
 <span class="sd">        ax : matplotlib axis or array of axes</span>
-<span class="sd">        </span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            if the data object has no `experimental_setup`</span>
+
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; # Use camera geometry from setup</span>

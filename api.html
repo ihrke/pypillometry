@@ -1860,7 +1860,18 @@ through to the ExperimentalSetup constructor.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pypillometry.EyePlotter">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">EyePlotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/eyeplotter.html#EyePlotter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyePlotter" title="Link to this definition">¶</a></dt>
-<dd><p class="rubric">Methods</p>
+<dd><p>Class for plotting combined gaze and pupil data. It provides all methods of
+<a class="reference internal" href="#pypillometry.GazePlotter" title="pypillometry.GazePlotter"><code class="xref py py-class docutils literal notranslate"><span class="pre">GazePlotter</span></code></a> and <a class="reference internal" href="#pypillometry.PupilPlotter" title="pypillometry.PupilPlotter"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilPlotter</span></code></a>
+and additional plots that combine gaze and pupil data.</p>
+<p>It is usually not created directly; instead, it is available as the <cite>plot</cite>
+attribute of an <a class="reference internal" href="#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a> object, e.g.
+<code class="docutils literal notranslate"><span class="pre">d.plot.plot_pupil_foreshortening_error_surface()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.GenericEyeData" title="pypillometry.eyedata.generic.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a></span>) – the data object to plot (stored as <cite>obj</cite>)</p>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_blinks</span></code>([eyes, variables, pdf_file, ...])</p></td>
@@ -1876,7 +1887,7 @@ through to the ExperimentalSetup constructor.</p>
 <td><p>Plot EyeData as a heatmap.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_intervals</span></code>(intervals[, eyes, variables, ...])</p></td>
-<td><p></p></td>
+<td><p>Plotting data around intervals.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_masked</span></code>([eyes, variables, units, merge, ...])</p></td>
 <td><p>Plot masked intervals for specified eyes and variables.</p></td>
@@ -1911,13 +1922,20 @@ to ExperimentalSetup.plot().</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>theta</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – Camera polar angle in radians. If None, uses setup’s theta or calibration’s theta.</p></li>
-<li><p><strong>phi</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – Camera azimuthal angle in radians. If None, uses setup’s phi or calibration’s phi.</p></li>
+<li><p><strong>theta</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – Camera polar angle; a float is interpreted as radians, a string
+can carry units (e.g., “20 deg”). If None, uses calibration’s theta
+(if <cite>calibration</cite> is given), else setup’s theta.</p></li>
+<li><p><strong>phi</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – Camera azimuthal angle; a float is interpreted as radians, a string
+can carry units (e.g., “-90 deg”). If None, uses calibration’s phi
+(if <cite>calibration</cite> is given), else setup’s phi.</p></li>
 <li><p><strong>calibration</strong> (<em>ForeshorteningCalibration</em><em>, </em><em>optional</em>) – Fitted calibration object containing theta and phi.</p></li>
 <li><p><strong>show_gaze_samples</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Show sample gaze vectors to screen positions</p></li>
 <li><p><strong>n_gaze_samples</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Number of sample gaze positions</p></li>
 <li><p><strong>ax</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]</span>) – Existing axis to plot on (only for ‘3d’ projection)</p></li>
-<li><p><strong>viewing_angle</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – Viewing angle for 3D projection (elev, azim) or (elev, azim, roll) in degrees.</p></li>
+<li><p><strong>viewing_angle</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – Viewing angle for 3D projection (elev, azim) or (elev, azim, roll).
+Each element is parsed like <cite>theta</cite>, i.e. use strings with units
+(e.g., <code class="docutils literal notranslate"><span class="pre">(&quot;30</span> <span class="pre">deg&quot;,</span> <span class="pre">&quot;-60</span> <span class="pre">deg&quot;)</span></code>); plain numbers are interpreted
+as radians.</p></li>
 <li><p><strong>projection</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – ‘2d’ for three orthogonal views, ‘3d’ for interactive 3D view</p></li>
 </ul>
 </dd>
@@ -1930,6 +1948,9 @@ to ExperimentalSetup.plot().</p>
 <li><p><strong>ax</strong> (<em>matplotlib axis or array of axes</em>)</p></li>
 </ul>
 </p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if the data object has no <cite>experimental_setup</cite></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -2020,6 +2041,14 @@ limits when available (and data falls within), otherwise uses data extent.</p></
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">PupilPlotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/pupilplotter.html#PupilPlotter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilPlotter" title="Link to this definition">¶</a></dt>
 <dd><p>Class for plotting pupil data. The class is initialized with a GenericEyeData object
 and provides methods to plot the data in various ways.</p>
+<p>It is usually not created directly; instead, it is available as the <cite>plot</cite>
+attribute of a <a class="reference internal" href="#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a> object, e.g.
+<code class="docutils literal notranslate"><span class="pre">d.plot.pupil_plot()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.GenericEyeData" title="pypillometry.eyedata.generic.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a></span>) – the data object to plot (stored as <cite>obj</cite>)</p>
+</dd>
+</dl>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -2027,7 +2056,7 @@ and provides methods to plot the data in various ways.</p>
 <td><p>Plot detected blinks in separate subplots.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_intervals</span></code>(intervals[, eyes, variables, ...])</p></td>
-<td><p></p></td>
+<td><p>Plotting data around intervals.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_masked</span></code>([eyes, variables, units, merge, ...])</p></td>
 <td><p>Plot masked intervals for specified eyes and variables.</p></td>
@@ -2079,25 +2108,32 @@ and provides methods to plot the data in various ways.</p>
 <span class="sig-name descname"><span class="pre">pupil_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-inf,</span> <span class="pre">inf)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_events</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_blinks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sec'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/pupilplotter.html#PupilPlotter.pupil_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.PupilPlotter.pupil_plot" title="Link to this definition">¶</a></dt>
 <dd><p>Make a plot of the pupil data using <cite>matplotlib</cite>.</p>
 <p>Has pupil-specific options which makes it different from
-<code class="xref py py-func docutils literal notranslate"><span class="pre">GazePlotter.plot_timeseries()</span></code>.</p>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_timeseries()</span></code>. All eyes are plotted into the current axes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – list of eyes to plot; if empty, all available eyes are plotted</p></li>
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – eye(s) to plot; if empty, all eyes with pupil data are plotted</p></li>
 <li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – plot from start to end (in units of <cite>units</cite>)</p></li>
-<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – one of “sec”=seconds, “ms”=millisec, “min”=minutes, “h”=hours</p></li>
 <li><p><strong>show_events</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – plot events as vertical lines with labels</p></li>
-<li><p><strong>show_blinks</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – highlight detected blinks</p></li>
+<li><p><strong>show_blinks</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – highlight masked regions of the pupil data (e.g., detected blinks)
+with a red background</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – one of “sec”=seconds (default), “ms”=millisec, “min”=minutes, “h”=hours</p></li>
 <li><p><strong>label_prefix</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
 Default is “” (no prefix).</p></li>
-<li><p><strong>style</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span>) – Styling for plotted lines. Can be:
-- Single dict: Applied to all eyes with automatic differentiation (e.g., {‘color’: ‘red’})
-- Dict of dicts: Per-eye styling (e.g., {‘left’: {‘linestyle’: ‘-‘}, ‘right’: {‘linestyle’: ‘–‘}})
-Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).</p></li>
+<li><p><strong>style</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span>) – <p>Styling for plotted lines. Can be:</p>
+<ul>
+<li><p>Single dict: Applied to all eyes with automatic differentiation (e.g., {‘color’: ‘red’})</p></li>
+<li><p>Dict of dicts: Per-eye styling (e.g., {‘left’: {‘linestyle’: ‘-‘}, ‘right’: {‘linestyle’: ‘–‘}})</p></li>
+</ul>
+<p>Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).</p>
+</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span></p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if <cite>plot_range</cite> does not overlap with the data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2112,16 +2148,16 @@ Default is None (uses matplotlib defaults with automatic per-eye colors and line
 <li><p><strong>pdf_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – file name to store the PDF; if None, no PDF is written</p></li>
 <li><p><strong>interv</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – duration of each of the segments to be plotted (in units specified by <code class="docutils literal notranslate"><span class="pre">units</span></code>)</p></li>
 <li><p><strong>figsize</strong> (<em>Tuple</em><em>[</em><em>int</em><em>,</em><em>int</em><em>]</em>) – dimensions of the figures</p></li>
-<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Time units for segment boundaries passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.pupil_plot()</span></code>. Default “min”.</p></li>
-<li><p><strong>kwargs</strong> – arguments passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.pupil_plot()</span></code></p></li>
+<li><p><strong>ylim</strong> (<em>Tuple</em><em>[</em><em>float</em><em>,</em><em>float</em><em>] or </em><em>None</em>) – y-axis limits for the plots; if None, matplotlib’s automatic limits are used</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Time units for segment boundaries passed to <a class="reference internal" href="#pypillometry.PupilPlotter.pupil_plot" title="pypillometry.PupilPlotter.pupil_plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_plot()</span></code></a>. Default “min”.</p></li>
+<li><p><strong>**kwargs</strong> – arguments passed to <a class="reference internal" href="#pypillometry.PupilPlotter.pupil_plot" title="pypillometry.PupilPlotter.pupil_plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_plot()</span></code></a></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li></li>
-<li><p><strong>figs</strong> (list of <code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.Figure</span></code> objects)</p></li>
-</ul>
-</p>
+<dd class="field-even"><p>one figure per segment; None if <cite>pdf_file</cite> is given</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of matplotlib.figure.Figure or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2131,8 +2167,16 @@ Default is None (uses matplotlib defaults with automatic per-eye colors and line
 <dl class="py class">
 <dt class="sig sig-object py" id="pypillometry.GazePlotter">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">GazePlotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/plot/gazeplotter.html#GazePlotter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GazePlotter" title="Link to this definition">¶</a></dt>
-<dd><p>Class for plotting eye data. The class is initialized with an EyeData object
-and provides methods to plot the data in various ways.</p>
+<dd><p>Class for plotting gaze data. The class is initialized with a GenericEyeData
+object and provides methods to plot the data in various ways.</p>
+<p>It is usually not created directly; instead, it is available as the <cite>plot</cite>
+attribute of a <a class="reference internal" href="#pypillometry.GazeData" title="pypillometry.GazeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GazeData</span></code></a> object, e.g.
+<code class="docutils literal notranslate"><span class="pre">d.plot.plot_heatmap()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.GenericEyeData" title="pypillometry.eyedata.generic.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a></span>) – the data object to plot (stored as <cite>obj</cite>)</p>
+</dd>
+</dl>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -2143,7 +2187,7 @@ and provides methods to plot the data in various ways.</p>
 <td><p>Plot EyeData as a heatmap.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_intervals</span></code>(intervals[, eyes, variables, ...])</p></td>
-<td><p></p></td>
+<td><p>Plotting data around intervals.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_masked</span></code>([eyes, variables, units, merge, ...])</p></td>
 <td><p>Plot masked intervals for specified eyes and variables.</p></td>
@@ -2211,8 +2255,48 @@ Options: ‘rbf’, ‘linear’, ‘cubic’, ‘nearest’</p></li>
 <dd><p>Plot EyeData as a heatmap. Typically used for a large amount of data
 to spot the most frequent locations.
 To plot a scanpath, use <a class="reference internal" href="#pypillometry.GazePlotter.plot_scanpath" title="pypillometry.GazePlotter.plot_scanpath"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_scanpath()</span></code></a> instead.
-Each eye is plotted in a separate subplot.</p>
+Each eye is plotted in a separate subplot of the current figure
+(a new figure is created if none exists); the colorbar shows the
+number of samples per bin.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to plot (in <cite>units</cite>). Default is (-np.inf, +np.inf), i.e. all data.</p></li>
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – The eyes to plot. Default is [], which means all available data (“left”, “right”,
+average, regression, …)</p></li>
+<li><p><strong>show_screen</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to plot the screen limits (if an experimental setup is
+available). Default is True.</p></li>
+<li><p><strong>show_masked</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to plot the masked data (because of blinks, artifacts, …). Default is False.</p></li>
+<li><p><strong>rois</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ROI</span></code>]</span>) – List of ROIs (<code class="xref py py-class docutils literal notranslate"><span class="pre">ROI</span></code>) to plot. Default is None.</p></li>
+<li><p><strong>roi_style</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span>) – <p>Style for the ROIs, passed as keyword arguments to the ROIs’
+<code class="docutils literal notranslate"><span class="pre">plot()</span></code> method. Default is {} (ROI defaults). Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"facecolor"</span><span class="p">:</span> <span class="s2">"red"</span><span class="p">,</span>
+    <span class="s2">"edgecolor"</span><span class="p">:</span> <span class="s2">"black"</span><span class="p">,</span>
+    <span class="s2">"linewidth"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">"alpha"</span><span class="p">:</span> <span class="mf">0.5</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The units of <cite>plot_range</cite> (“ms”, “sec”, “min”, “h”). Default is “sec”.</p></li>
+<li><p><strong>cmap</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The colormap to use. Default is “jet”.</p></li>
+<li><p><strong>gridsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The gridsize for the hexbin plot or histogram. If “auto”, the square
+root of the number of samples in <cite>plot_range</cite> is used. Default is 30.</p></li>
+<li><p><strong>min_samples</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span>) – Minimum number of samples required in a bin to display it. Bins with
+fewer samples will not be shown. If None, automatically calculates a
+threshold at the 10th percentile of bin counts. Default is 1.</p></li>
+<li><p><strong>smooth</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – If provided, applies Gaussian smoothing to the binned histogram. The value
+is the sigma of the Gaussian kernel in bin units (e.g., smooth=1 applies
+minimal smoothing with a 1-bin sigma, smooth=2 applies more smoothing).
+When smooth is provided, uses a rectangular grid instead of hexbin.</p></li>
+<li><p><strong>limits</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</span>) – Axis limits as (xmin, xmax, ymin, ymax). If not provided, uses screen
+limits when available (and data falls within), otherwise uses data extent.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if <cite>plot_range</cite> does not overlap with the data</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span></p>
 </dd>
@@ -2226,9 +2310,40 @@ Each eye is plotted in a separate subplot.</p>
 or another small amount of data. To plot a larger amount of data,
 use <a class="reference internal" href="#pypillometry.GazePlotter.plot_heatmap" title="pypillometry.GazePlotter.plot_heatmap"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_heatmap()</span></code></a> instead.</p>
 <p>If several eyes are available, they are plotted in the same figure
-in different colors. You can choose between them using the <cite>plot_eyes</cite>
-parameter.</p>
+in different colors. You can choose between them using the <cite>eyes</cite>
+parameter. The samples are drawn as dots colored by time.
+A new figure is created for the plot.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to plot (in <cite>units</cite>). Default is (-np.inf, +np.inf), i.e. all data.</p></li>
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – The eyes to plot. Default is [], which means all available data (“left”, “right”,
+average, regression, …)</p></li>
+<li><p><strong>show_screen</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to plot the screen limits (if an experimental setup is
+available). Default is True.</p></li>
+<li><p><strong>rois</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ROI</span></code>]</span>) – List of ROIs (<code class="xref py py-class docutils literal notranslate"><span class="pre">ROI</span></code>) to plot. Default is None.</p></li>
+<li><p><strong>roi_style</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span>) – <p>Style for the ROIs, passed as keyword arguments to the ROIs’
+<code class="docutils literal notranslate"><span class="pre">plot()</span></code> method. Default is {} (ROI defaults). Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">"facecolor"</span><span class="p">:</span> <span class="s2">"red"</span><span class="p">,</span>
+    <span class="s2">"edgecolor"</span><span class="p">:</span> <span class="s2">"black"</span><span class="p">,</span>
+    <span class="s2">"linewidth"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">"alpha"</span><span class="p">:</span> <span class="mf">0.5</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</p></li>
+<li><p><strong>show_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to plot the event labels at the gaze position at event
+onset. Plotted only for the first eye. Default is True.</p></li>
+<li><p><strong>title</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The title of the plot. Default is “”.</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The units of <cite>plot_range</cite> (“ms”, “sec”, “min”, “h”). If None (default),
+the units of the time vector (ms) are used.</p></li>
+<li><p><strong>figsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The figure size (width, height) in inches. Default is (10,10).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if <cite>plot_range</cite> does not overlap with the data</p>
+</dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span></p>
 </dd>
