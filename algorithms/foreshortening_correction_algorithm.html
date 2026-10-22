@@ -8,6 +8,7 @@
     <title>Foreshortening Correction for Pupil Size Measurements &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
@@ -265,7 +266,7 @@ $$\boldsymbol{\xi}<em>{\text{full}}^* = (\mathbf{a}</em>{\text{full}}^<em>, \the
 <section id="practical-implementation">
 <h3>6.2 Practical Implementation<a class="headerlink" href="#practical-implementation" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compute_foreshortening_factor</span><span class="p">(</span><span class="n">x_gaze</span><span class="p">,</span> <span class="n">y_gaze</span><span class="p">,</span> <span class="n">theta_cam</span><span class="p">,</span> <span class="n">phi_cam</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute cos(alpha) for given gaze position and camera geometry.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -283,7 +284,7 @@ $$\boldsymbol{\xi}<em>{\text{full}}^* = (\mathbf{a}</em>{\text{full}}^<em>, \the
 <span class="sd">    -------</span>
 <span class="sd">    cos_alpha : float</span>
 <span class="sd">        Foreshortening factor (1.0 = no foreshortening)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Camera position</span>
     <span class="n">cx</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_cam</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi_cam</span><span class="p">)</span>
     <span class="n">cy</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_cam</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi_cam</span><span class="p">)</span>
@@ -299,7 +300,7 @@ $$\boldsymbol{\xi}<em>{\text{full}}^* = (\mathbf{a}</em>{\text{full}}^<em>, \the
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">correct_pupil_size</span><span class="p">(</span><span class="n">A_measured</span><span class="p">,</span> <span class="n">x_gaze</span><span class="p">,</span> <span class="n">y_gaze</span><span class="p">,</span> <span class="n">calibration</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.15</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Correct measured pupil size for foreshortening.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -309,7 +310,7 @@ $$\boldsymbol{\xi}<em>{\text{full}}^* = (\mathbf{a}</em>{\text{full}}^<em>, \the
 <span class="sd">    x_gaze, y_gaze : float or array</span>
 <span class="sd">        Gaze coordinates (mm)</span>
 <span class="sd">    calibration : dict</span>
-<span class="sd">        Contains &#39;theta&#39;, &#39;phi&#39;, &#39;r&#39;, &#39;d&#39; from calibration</span>
+<span class="sd">        Contains 'theta', 'phi', 'r', 'd' from calibration</span>
 <span class="sd">    threshold : float</span>
 <span class="sd">        Minimum cos(alpha) for reliable correction (default 0.15)</span>
 <span class="sd">    </span>
@@ -317,11 +318,11 @@ $$\boldsymbol{\xi}<em>{\text{full}}^* = (\mathbf{a}</em>{\text{full}}^<em>, \the
 <span class="sd">    -------</span>
 <span class="sd">    A0_corrected : float or array</span>
 <span class="sd">        True pupil size (corrected for foreshortening)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cos_alpha</span> <span class="o">=</span> <span class="n">compute_foreshortening_factor</span><span class="p">(</span>
         <span class="n">x_gaze</span><span class="p">,</span> <span class="n">y_gaze</span><span class="p">,</span>
-        <span class="n">calibration</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">],</span> <span class="n">calibration</span><span class="p">[</span><span class="s1">&#39;phi&#39;</span><span class="p">],</span>
-        <span class="n">calibration</span><span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">],</span> <span class="n">calibration</span><span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span>
+        <span class="n">calibration</span><span class="p">[</span><span class="s1">'theta'</span><span class="p">],</span> <span class="n">calibration</span><span class="p">[</span><span class="s1">'phi'</span><span class="p">],</span>
+        <span class="n">calibration</span><span class="p">[</span><span class="s1">'r'</span><span class="p">],</span> <span class="n">calibration</span><span class="p">[</span><span class="s1">'d'</span><span class="p">]</span>
     <span class="p">)</span>
     
     <span class="c1"># Only correct when angle is not too oblique</span>
@@ -399,14 +400,14 @@ $$\Delta\theta = |\theta_{\text{full}}^* - \theta_{\text{cal}}^<em>|, \quad \Del
 <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># Uncorrected</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">A_measured</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Measured (uncorrected)&#39;</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Measured pupil size&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">A_measured</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'Measured (uncorrected)'</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'Measured pupil size'</span><span class="p">)</span>
 <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 
 <span class="c1"># Corrected</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">A0_corrected</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Corrected&#39;</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;True pupil size A₀(t)&#39;</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Time (s)&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">A0_corrected</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'C1'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">'Corrected'</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'True pupil size A₀(t)'</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'Time (s)'</span><span class="p">)</span>
 <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -1481,7 +1482,7 @@ T_z &amp;\approx d - x_s \beta + y_s \alpha
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

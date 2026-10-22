@@ -8,6 +8,7 @@
     <title>Plotting pupillometric data for exploration &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -64,11 +65,11 @@ Interactive version:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">".."</span><span class="p">)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span> <span class="c1">## access matplotlib functions</span>
 
-<span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;../data/test.pd&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../data/test.pd"</span><span class="p">)</span>
 <span class="n">faked</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">create_fake_pupildata</span><span class="p">(</span><span class="n">ntrials</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -97,9 +98,9 @@ Interactive version:
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mf">4.5</span><span class="p">,</span> <span class="mf">4.7</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mf">4.5</span><span class="p">,</span> <span class="mf">4.7</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -111,7 +112,7 @@ Interactive version:
 </div>
 </div>
 <p>Note that the scale of the plots went all the way to zero because missing data is represented by <code class="docutils literal notranslate"><span class="pre">0</span></code> in the used eyetracker.</p>
-<p>When we detect and interpolate blinks (see <a class="reference external" href="blinks.html">blinks-notebook</a>), the scale is adjusted and detected blinks highlighted in red.</p>
+<p>When we detect and interpolate blinks (see <a class="reference internal" href="blinks.html"><span class="doc">blinks-notebook</span></a>), the scale is adjusted and detected blinks highlighted in red.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
@@ -123,9 +124,9 @@ Interactive version:
 <span class="c1">## plot results</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">d2</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="n">d2</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -179,7 +180,7 @@ Using matplotlib backend: MacOSX
 </pre></div>
 </div>
 </div>
-<p>In case you are interested in modeling the signal (see notebook <a class="reference external" href="modeling.html">modeling pupillometric signal</a>), the <code class="docutils literal notranslate"><span class="pre">plot()</span></code> function allows to plot the different components (baseline and response-model) as well as the full model.</p>
+<p>In case you are interested in modeling the signal (see notebook <a class="reference internal" href="modeling.html"><span class="doc">modeling pupillometric signal</span></a>), the <code class="docutils literal notranslate"><span class="pre">plot()</span></code> function allows to plot the different components (baseline and response-model) as well as the full model.</p>
 <p>Furthermore, it is also possible to plot several datasets simultaneously using the module-level function <code class="docutils literal notranslate"><span class="pre">plotpd()</span></code>.</p>
 <p>By default, the signals are plotted into the same figure in different colors:</p>
 <div class="nbinput docutils container">
@@ -268,7 +269,7 @@ Using matplotlib backend: MacOSX
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot_segments</span><span class="p">(</span><span class="n">pdffile</span><span class="o">=</span><span class="s2">&quot;/tmp/test.pdf&quot;</span><span class="p">);</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot_segments</span><span class="p">(</span><span class="n">pdffile</span><span class="o">=</span><span class="s2">"/tmp/test.pdf"</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -423,7 +424,7 @@ Interactive version:
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

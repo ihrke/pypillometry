@@ -7,6 +7,7 @@
     <title>pypillometry.eyedata.pupildata &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
     <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
@@ -16,7 +17,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
     <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
 
@@ -25,173 +25,11 @@
 
 const initStyles = () => {
     const defaultStyle = document.createElement('style');
-    defaultStyle.textContent = `pre.mermaid {
-    /* Same as .mermaid-container > pre */
-    display: block;
-    width: 100%;
-}
-
-pre.mermaid > svg {
-    /* Same as .mermaid-container > pre > svg */
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}`;
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
     document.head.appendChild(defaultStyle);
 
     const fullscreenStyle = document.createElement('style');
-    fullscreenStyle.textContent = `.mermaid-container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-}
-
-.mermaid-container > pre {
-    display: block;
-    width: 100%;
-}
-
-.mermaid-container > pre > svg {
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}
-
-.mermaid-fullscreen-btn {
-    width: 28px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-    color: #333;
-}
-
-.mermaid-fullscreen-btn:hover {
-    opacity: 100% !important;
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-btn.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-btn.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal {
-    display: none;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 95vw;
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.98);
-    z-index: 9999;
-    padding: 20px;
-    overflow: auto;
-}
-
-.mermaid-fullscreen-modal.dark-theme {
-    background: rgba(0, 0, 0, 0.98);
-}
-
-.mermaid-fullscreen-modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen {
-    position: relative;
-    width: 95vw;
-    height: 90vh;
-    max-width: 95vw;
-    max-height: 90vh;
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    overflow: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen.dark-theme {
-    background: #1a1a1a;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-}
-
-.mermaid-container-fullscreen pre.mermaid {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen .mermaid svg {
-    height: 100% !important;
-    width: 100% !important;
-    cursor: grab;
-}
-
-.mermaid-fullscreen-close {
-    position: fixed !important;
-    top: 20px !important;
-    right: 20px !important;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s;
-    font-size: 24px;
-    line-height: 1;
-    color: #333;
-}
-
-.mermaid-fullscreen-close:hover {
-    background: white;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-close.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-close.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
-    display: none !important;
-}`;
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
     document.head.appendChild(fullscreenStyle);
 }
 
@@ -236,6 +74,32 @@ let darkTheme = isDarkTheme();
 let modal = null;
 let modalContent = null;
 let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
 
 const runMermaid = async (rerun) => {
     console.log("Running mermaid diagrams, rerun =", rerun);
@@ -243,7 +107,15 @@ const runMermaid = async (rerun) => {
     let all_mermaids = document.querySelectorAll(".mermaid");
 
     if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
         all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
             if(!el.hasAttribute("data-original-code")) {
                 // store original code
                 // console.log(`Storing original code for first run: `, el.innerHTML);
@@ -260,42 +132,100 @@ const runMermaid = async (rerun) => {
                 el.setAttribute('data-original-code', el.innerHTML);
             }
         });
-        await mermaid.run();
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
     }
 
     all_mermaids = document.querySelectorAll(".mermaid");
-    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
 
-    if ("False" === "True") {
-        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
         if(mermaids_to_add_zoom > 0) {
-            var svgs = d3.selectAll("");
-            if(all_mermaids.length !== mermaids_processed.length) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
                 setTimeout(() => runMermaid(false), 200);
                 return;
-            } else if(svgs.size() !== mermaids_to_add_zoom) {
-                setTimeout(() => runMermaid(false), 200);
-                return;
-            } else {
-                svgs.each(function() {
-                    var svg = d3.select(this);
-                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
-                    var inner = svg.select("g");
-                    var zoom = d3.zoom().on("zoom", function(event) {
-                        inner.attr("transform", event.transform);
-                    });
-                    svg.call(zoom);
-                });
             }
+            addZoomToSvgs(svgs);
         }
-    } else if(all_mermaids.length !== mermaids_processed.length) {
+    } else if(mermaids_active.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
         setTimeout(() => runMermaid(false), 200);
         return;
     }
 
     // Stop here if not adding fullscreen capability
-    if ("True" !== "True") return;
+    if (!true) return;
 
     if (modal !== null ) {
         // Destroy existing modal
@@ -318,7 +248,7 @@ const runMermaid = async (rerun) => {
     modalContent = modal.querySelector('.mermaid-container-fullscreen');
     const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
 
-    const closeModal = () => {
+    closeModal = () => {
         modal.classList.remove('active');
         modalContent.innerHTML = '';
         document.body.style.overflow = ''
@@ -329,12 +259,6 @@ const runMermaid = async (rerun) => {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-
     document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
         if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
             mermaidDiv.closest('.mermaid-fullscreen-modal')) {
@@ -354,8 +278,8 @@ const runMermaid = async (rerun) => {
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
         fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.style.opacity = '50%';
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
 
         // Calculate dynamic position based on diagram's margin and padding
         const diagramStyle = window.getComputedStyle(mermaidDiv);
@@ -367,7 +291,7 @@ const runMermaid = async (rerun) => {
         fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
 
         fullscreenBtn.addEventListener('click', () => {
-            previousScrollOffset = [window.scroll, window.scrollY];
+            previousScrollOffset = [window.scrollX, window.scrollY];
             const clone = mermaidDiv.cloneNode(true);
             modalContent.innerHTML = '';
             modalContent.appendChild(clone);
@@ -379,9 +303,9 @@ const runMermaid = async (rerun) => {
                 svg.style.width = '100%';
                 svg.style.height = 'auto';
                 svg.style.maxWidth = '100%';
-                svg.style.sdisplay = 'block';
+                svg.style.display = 'block';
 
-                if ("False" === "True") {
+                if (false) {
                     setTimeout(() => {
                         const g = svg.querySelector('g');
                         if (g) {
@@ -404,8 +328,11 @@ const runMermaid = async (rerun) => {
     });
 };
 
+
+
 const load = async () => {
     initStyles();
+
 
     await runMermaid(true);
 
@@ -415,10 +342,8 @@ const load = async () => {
             darkTheme = newDarkTheme;
             console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
             await mermaid.initialize(
-                {...JSON.parse(
-                    `{"startOnLoad": false}`
-                ),
-                ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
                 }
             );
             await runMermaid(true);
@@ -443,14 +368,13 @@ const load = async () => {
 
 console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
 mermaid.initialize(
-    {...JSON.parse(
-        `{"startOnLoad": false}`
-    ),
-    ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
     }
 );
 
-window.addEventListener("load", load);</script>
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -475,12 +399,12 @@ window.addEventListener("load", load);</script>
           <div class="body" role="main">
             
   <h1>Source code for pypillometry.eyedata.pupildata</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">pupildata.py</span>
 <span class="sd">============</span>
 
 <span class="sd">Class representing pupillometric data.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
@@ -504,7 +428,7 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="PupilData">
 <a class="viewcode-back" href="../../../api.html#pypillometry.PupilData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PupilData</span><span class="p">(</span><span class="n">GenericEyeData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class representing pupillometric data. </span>
 
 <span class="sd">    The class is a subclass of :class:`.GenericEyedata` and inherits all its methods.</span>
@@ -538,8 +462,8 @@ window.addEventListener("load", load);</script>
 <span class="sd">    inplace: bool</span>
 <span class="sd">        if True, the object is modified in place; if False, a new object is returned</span>
 <span class="sd">        this object-level property can be overwritten by the method-level `inplace` argument</span>
-<span class="sd">        default is &quot;False&quot;</span>
-<span class="sd">    &quot;&quot;&quot;</span>    
+<span class="sd">        default is "False"</span>
+<span class="sd">    """</span>    
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">left_pupil</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -552,12 +476,12 @@ window.addEventListener("load", load);</script>
                  <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for PupilData object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Constructor for PupilData object.</span>
+<span class="sd">        """</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating PupilData object&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Creating PupilData object"</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">left_pupil</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">right_pupil</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one of the eyes, left_pupil or right_pupil, must be provided&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"At least one of the eyes, left_pupil or right_pupil, must be provided"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">=</span><span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_pupil</span><span class="o">=</span><span class="n">left_pupil</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_pupil</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_init_common</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">,</span> 
@@ -578,14 +502,14 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="PupilData.summary">
 <a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.summary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return a summary of the dataset as a dictionary.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dict</span>
 <span class="sd">            dictionary containing description of dataset</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="n">summary</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> 
@@ -596,7 +520,7 @@ window.addEventListener("load", load);</script>
             <span class="n">nevents</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nevents</span><span class="p">(),</span> 
             <span class="n">nblinks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nblinks</span><span class="p">(),</span> 
             <span class="n">blinks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">blink_stats</span><span class="p">(),</span>
-            <span class="n">duration_minutes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">),</span>
+            <span class="n">duration_minutes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="s2">"min"</span><span class="p">),</span>
             <span class="n">start_min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="p">,</span>
             <span class="n">end_min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">/</span><span class="mf">1000.</span><span class="o">/</span><span class="mf">60.</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_strfy_params</span><span class="p">(),</span>
@@ -610,7 +534,7 @@ window.addEventListener("load", load);</script>
 <a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_lowpass_filter">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_lowpass_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">cutoff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Lowpass-filter pupil signal using a Butterworth-filter.</span>
 <span class="sd">        </span>
 <span class="sd">        Uses an iterative approach to handle NaN/masked values properly,</span>
@@ -628,7 +552,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes           </span>
 <span class="sd">            if `None`, use the object-level setting         </span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">..signal.pupil</span><span class="w"> </span><span class="kn">import</span> <span class="n">lowpass_filter_iterative</span>
         
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
@@ -636,16 +560,16 @@ window.addEventListener("load", load);</script>
 
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
             <span class="c1"># Use iterative filter that handles NaN values properly</span>
-            <span class="n">filtered</span> <span class="o">=</span> <span class="n">lowpass_filter_iterative</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil&quot;</span><span class="p">,</span> <span class="n">filtered</span><span class="p">,</span> <span class="n">preserve_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">filtered</span> <span class="o">=</span> <span class="n">lowpass_filter_iterative</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"pupil"</span><span class="p">],</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">,</span> <span class="n">filtered</span><span class="p">,</span> <span class="n">preserve_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">obj</span></div>
 
 
 <div class="viewcode-block" id="PupilData.pupil_smooth_window">
 <a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_smooth_window">[docs]</a>
     <span class="nd">@keephistory</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_smooth_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">window</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;hanning&quot;</span><span class="p">,</span> <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_smooth_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">window</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">"hanning"</span><span class="p">,</span> <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply smoothing of the signal using a moving window. See :func:`baseline.smooth_window()`.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -653,14 +577,14 @@ window.addEventListener("load", load);</script>
 <span class="sd">        eyes: list</span>
 <span class="sd">            list of eyes to smooth; if empty, all available eyes are smoothed</span>
 <span class="sd">        window: str</span>
-<span class="sd">            (the type of window from &#39;flat&#39;, &#39;hanning&#39;, &#39;hamming&#39;, &#39;bartlett&#39;, &#39;blackman&#39;); </span>
+<span class="sd">            (the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'); </span>
 <span class="sd">             flat window will produce a moving average smoothing.</span>
 <span class="sd">        winsize: float</span>
 <span class="sd">            the length of the window in ms </span>
 <span class="sd">        inplace: bool</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes                            </span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
 
@@ -669,8 +593,8 @@ window.addEventListener("load", load);</script>
 
         <span class="c1"># process requested eyes</span>
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
-            <span class="n">smoothed</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">smooth_window</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil&quot;</span><span class="p">,</span> <span class="n">smoothed</span><span class="p">,</span> <span class="n">preserve_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">smoothed</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">smooth_window</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"pupil"</span><span class="p">],</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">,</span> <span class="n">smoothed</span><span class="p">,</span> <span class="n">preserve_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">obj</span></div>
 
@@ -678,17 +602,17 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="PupilData.pupil_merge_eyes">
 <a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_merge_eyes">[docs]</a>
     <span class="nd">@keephistory</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_merge_eyes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;local_offset&quot;</span><span class="p">,</span> 
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_merge_eyes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"local_offset"</span><span class="p">,</span> 
                          <span class="n">lowpass_cutoff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
                          <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                          <span class="n">keep_eyes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
                          <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Merge pupil data from both eyes into a single &quot;merged&quot; variable.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Merge pupil data from both eyes into a single "merged" variable.</span>
 <span class="sd">        </span>
 <span class="sd">        This method combines left and right pupil signals, handling missing data</span>
 <span class="sd">        (masked values) intelligently. Where both eyes are valid, the signals are</span>
-<span class="sd">        averaged to reduce noise. Where only one eye is valid, that eye&#39;s data is</span>
+<span class="sd">        averaged to reduce noise. Where only one eye is valid, that eye's data is</span>
 <span class="sd">        used (with offset correction if applicable).</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -696,35 +620,35 @@ window.addEventListener("load", load);</script>
 <span class="sd">        method : str, optional</span>
 <span class="sd">            Method for merging the two eyes. Options:</span>
 <span class="sd">            </span>
-<span class="sd">            - &quot;local_offset&quot; (default): Compute a slowly-varying offset between eyes</span>
+<span class="sd">            - "local_offset" (default): Compute a slowly-varying offset between eyes</span>
 <span class="sd">              using lowpass filtering. This handles drift over the session. The right</span>
-<span class="sd">              eye is shifted to match the left eye&#39;s level before merging.</span>
-<span class="sd">            - &quot;offset&quot;: Use a single global offset (mean difference) computed over</span>
+<span class="sd">              eye is shifted to match the left eye's level before merging.</span>
+<span class="sd">            - "offset": Use a single global offset (mean difference) computed over</span>
 <span class="sd">              the entire signal where both eyes are valid.</span>
-<span class="sd">            - &quot;both_available&quot;: Only use data where both eyes are valid (take mean).</span>
+<span class="sd">            - "both_available": Only use data where both eyes are valid (take mean).</span>
 <span class="sd">              Timepoints where only one eye is valid remain masked.</span>
 <span class="sd">            </span>
-<span class="sd">            # TODO: Implement &quot;signal_quality&quot; method that weights eyes by their</span>
+<span class="sd">            # TODO: Implement "signal_quality" method that weights eyes by their</span>
 <span class="sd">            # local signal quality (SNR), giving more weight to the cleaner eye.</span>
 <span class="sd">            </span>
 <span class="sd">        lowpass_cutoff : float, optional</span>
-<span class="sd">            Cutoff frequency (Hz) for the lowpass filter used in &quot;local_offset&quot; method.</span>
+<span class="sd">            Cutoff frequency (Hz) for the lowpass filter used in "local_offset" method.</span>
 <span class="sd">            Lower values produce a more stable offset that only tracks very slow drift.</span>
 <span class="sd">            Default is 0.2 Hz (~5 second time constant).</span>
 <span class="sd">        max_iter : int, optional</span>
-<span class="sd">            Maximum iterations for iterative lowpass filtering in &quot;local_offset&quot; method.</span>
+<span class="sd">            Maximum iterations for iterative lowpass filtering in "local_offset" method.</span>
 <span class="sd">            Default is 10.</span>
 <span class="sd">        keep_eyes : bool, optional</span>
 <span class="sd">            If True (default), keep the original left/right pupil data.</span>
 <span class="sd">            If False, remove the original eye data after merging.</span>
 <span class="sd">        inplace : bool or None, optional</span>
 <span class="sd">            If True, modify in-place. If False, return a copy.</span>
-<span class="sd">            If None, use the object&#39;s default setting.</span>
+<span class="sd">            If None, use the object's default setting.</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        PupilData</span>
-<span class="sd">            The object with merged pupil data stored as &quot;merged_pupil&quot;.</span>
+<span class="sd">            The object with merged pupil data stored as "merged_pupil".</span>
 <span class="sd">            </span>
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
@@ -734,15 +658,15 @@ window.addEventListener("load", load);</script>
 <span class="sd">            </span>
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        The merged signal is stored as &quot;merged_pupil&quot; and can be accessed via</span>
-<span class="sd">        `data[&quot;merged&quot;, &quot;pupil&quot;]` or `data[&quot;merged_pupil&quot;]`.</span>
+<span class="sd">        The merged signal is stored as "merged_pupil" and can be accessed via</span>
+<span class="sd">        `data["merged", "pupil"]` or `data["merged_pupil"]`.</span>
 <span class="sd">        </span>
 <span class="sd">        The mask for the merged signal reflects which timepoints have valid data:</span>
-<span class="sd">        - For &quot;local_offset&quot; and &quot;offset&quot;: masked only where BOTH eyes are masked</span>
-<span class="sd">        - For &quot;both_available&quot;: masked where EITHER eye is masked</span>
+<span class="sd">        - For "local_offset" and "offset": masked only where BOTH eyes are masked</span>
+<span class="sd">        - For "both_available": masked where EITHER eye is masked</span>
 <span class="sd">        </span>
-<span class="sd">        The &quot;local_offset&quot; method is recommended for most use cases as it:</span>
-<span class="sd">        1. Uses all available data (doesn&#39;t discard single-eye timepoints)</span>
+<span class="sd">        The "local_offset" method is recommended for most use cases as it:</span>
+<span class="sd">        1. Uses all available data (doesn't discard single-eye timepoints)</span>
 <span class="sd">        2. Handles session-long drift in the inter-ocular difference</span>
 <span class="sd">        3. Produces smooth transitions at boundaries between single/both-eye regions</span>
 <span class="sd">        </span>
@@ -750,13 +674,13 @@ window.addEventListener("load", load);</script>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; # Default: local offset correction</span>
 <span class="sd">        &gt;&gt;&gt; data.pupil_merge_eyes()</span>
-<span class="sd">        &gt;&gt;&gt; merged = data[&quot;merged&quot;, &quot;pupil&quot;]</span>
+<span class="sd">        &gt;&gt;&gt; merged = data["merged", "pupil"]</span>
 <span class="sd">        </span>
 <span class="sd">        &gt;&gt;&gt; # Use global offset (simpler, assumes no drift)</span>
-<span class="sd">        &gt;&gt;&gt; data.pupil_merge_eyes(method=&quot;offset&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; data.pupil_merge_eyes(method="offset")</span>
 <span class="sd">        </span>
 <span class="sd">        &gt;&gt;&gt; # Only use timepoints where both eyes are valid</span>
-<span class="sd">        &gt;&gt;&gt; data.pupil_merge_eyes(method=&quot;both_available&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; data.pupil_merge_eyes(method="both_available")</span>
 <span class="sd">        </span>
 <span class="sd">        &gt;&gt;&gt; # Remove original eye data after merging</span>
 <span class="sd">        &gt;&gt;&gt; data.pupil_merge_eyes(keep_eyes=False)</span>
@@ -765,26 +689,26 @@ window.addEventListener("load", load);</script>
 <span class="sd">        --------</span>
 <span class="sd">        merge_eyes : Generic merge method in GenericEyeData (masks if either eye invalid)</span>
 <span class="sd">        pypillometry.signal.pupil.pupil_eye_offset : Compute local offset between eyes</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         
         <span class="c1"># Check that we have both eyes</span>
-        <span class="n">available_eyes</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_available_eyes</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">)</span>
+        <span class="n">available_eyes</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get_available_eyes</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">available_eyes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Need both eyes to merge, but only have: </span><span class="si">{</span><span class="n">available_eyes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Need both eyes to merge, but only have: </span><span class="si">{</span><span class="n">available_eyes</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         
-        <span class="k">if</span> <span class="s2">&quot;left&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_eyes</span> <span class="ow">or</span> <span class="s2">&quot;right&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_eyes</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Need &#39;left&#39; and &#39;right&#39; eyes, but have: </span><span class="si">{</span><span class="n">available_eyes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"left"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_eyes</span> <span class="ow">or</span> <span class="s2">"right"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_eyes</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Need 'left' and 'right' eyes, but have: </span><span class="si">{</span><span class="n">available_eyes</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         
-        <span class="n">valid_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;local_offset&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">,</span> <span class="s2">&quot;both_available&quot;</span><span class="p">]</span>
+        <span class="n">valid_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"local_offset"</span><span class="p">,</span> <span class="s2">"offset"</span><span class="p">,</span> <span class="s2">"both_available"</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_methods</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown method &#39;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39;. Must be one of: </span><span class="si">{</span><span class="n">valid_methods</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown method '</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">'. Must be one of: </span><span class="si">{</span><span class="n">valid_methods</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># get data and mask from object</span>
-        <span class="n">left_data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;left_pupil&quot;</span><span class="p">]</span>
-        <span class="n">right_data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;right_pupil&quot;</span><span class="p">]</span>
-        <span class="n">left_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="s2">&quot;left_pupil&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
-        <span class="n">right_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="s2">&quot;right_pupil&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">left_data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+        <span class="n">right_data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"right_pupil"</span><span class="p">]</span>
+        <span class="n">left_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">right_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="s2">"right_pupil"</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         
         <span class="c1"># Determine valid regions</span>
         <span class="n">both_valid</span> <span class="o">=</span> <span class="o">~</span><span class="n">left_mask</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">right_mask</span>
@@ -797,27 +721,27 @@ window.addEventListener("load", load);</script>
         <span class="n">n_right_only</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">only_right</span><span class="p">)</span>
         <span class="n">n_neither</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">neither_valid</span><span class="p">)</span>
         
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Merge regions: both=</span><span class="si">{</span><span class="n">n_both</span><span class="si">}</span><span class="s2">, left_only=</span><span class="si">{</span><span class="n">n_left_only</span><span class="si">}</span><span class="s2">, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;right_only=</span><span class="si">{</span><span class="n">n_right_only</span><span class="si">}</span><span class="s2">, neither=</span><span class="si">{</span><span class="n">n_neither</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Merge regions: both=</span><span class="si">{</span><span class="n">n_both</span><span class="si">}</span><span class="s2">, left_only=</span><span class="si">{</span><span class="n">n_left_only</span><span class="si">}</span><span class="s2">, "</span>
+                    <span class="sa">f</span><span class="s2">"right_only=</span><span class="si">{</span><span class="n">n_right_only</span><span class="si">}</span><span class="s2">, neither=</span><span class="si">{</span><span class="n">n_neither</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         
         <span class="c1"># Initialize merged array</span>
         <span class="n">merged</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">left_data</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
         <span class="n">merged_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">left_data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         
-        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;both_available&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"both_available"</span><span class="p">:</span>
             <span class="c1"># Only use timepoints where both eyes are valid</span>
             <span class="n">merged</span><span class="p">[</span><span class="n">both_valid</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">left_data</span><span class="p">[</span><span class="n">both_valid</span><span class="p">]</span> <span class="o">+</span> <span class="n">right_data</span><span class="p">[</span><span class="n">both_valid</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
             <span class="n">merged_mask</span><span class="p">[</span><span class="n">both_valid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
             
-        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;offset&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"offset"</span><span class="p">:</span>
             <span class="c1"># Compute global offset where both valid</span>
             <span class="k">if</span> <span class="n">n_both</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No timepoints with both eyes valid. Using zero offset.&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No timepoints with both eyes valid. Using zero offset."</span><span class="p">)</span>
                 <span class="n">offset</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">left_data</span><span class="p">[</span><span class="n">both_valid</span><span class="p">]</span> <span class="o">-</span> <span class="n">right_data</span><span class="p">[</span><span class="n">both_valid</span><span class="p">])</span>
             
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Global offset (left - right): </span><span class="si">{</span><span class="n">offset</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Global offset (left - right): </span><span class="si">{</span><span class="n">offset</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             
             <span class="c1"># Merge: use true midpoint where both valid</span>
             <span class="c1"># Where only one eye: shift it to midpoint level (half the offset)</span>
@@ -826,7 +750,7 @@ window.addEventListener("load", load);</script>
             <span class="n">merged</span><span class="p">[</span><span class="n">only_right</span><span class="p">]</span> <span class="o">=</span> <span class="n">right_data</span><span class="p">[</span><span class="n">only_right</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># shift up to midpoint</span>
             <span class="n">merged_mask</span><span class="p">[</span><span class="o">~</span><span class="n">neither_valid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
             
-        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;local_offset&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"local_offset"</span><span class="p">:</span>
             <span class="c1"># Compute local (time-varying) offset</span>
             <span class="n">offset</span> <span class="o">=</span> <span class="n">pupil</span><span class="o">.</span><span class="n">pupil_eye_offset</span><span class="p">(</span>
                 <span class="n">left_data</span><span class="p">,</span> <span class="n">right_data</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
@@ -842,28 +766,28 @@ window.addEventListener("load", load);</script>
             <span class="n">merged_mask</span><span class="p">[</span><span class="o">~</span><span class="n">neither_valid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         
         <span class="c1"># Store merged data</span>
-        <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;merged_pupil&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">merged</span>
-        <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="s2">&quot;merged_pupil&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">merged_mask</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"merged_pupil"</span><span class="p">]</span> <span class="o">=</span> <span class="n">merged</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="s2">"merged_pupil"</span><span class="p">]</span> <span class="o">=</span> <span class="n">merged_mask</span>
         
         <span class="c1"># Initialize blinks for merged variable</span>
-        <span class="n">obj</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="s2">&quot;merged_pupil&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">obj</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="s2">&quot;merged_pupil&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_blinks</span><span class="p">[</span><span class="s2">"merged_pupil"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="s2">"merged_pupil"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         
         <span class="c1"># Optionally remove original eye data</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_eyes</span><span class="p">:</span>
-            <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;left_pupil&quot;</span><span class="p">]</span>
-            <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;right_pupil&quot;</span><span class="p">]</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">_blinks</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;left_pupil&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">_blinks</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;right_pupil&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;left_pupil&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;right_pupil&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Removed original left/right pupil data&quot;</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"right_pupil"</span><span class="p">]</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">_blinks</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">_blinks</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"right_pupil"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"right_pupil"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Removed original left/right pupil data"</span><span class="p">)</span>
         
         <span class="k">return</span> <span class="n">obj</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_convert_velocity_thresholds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pupil_data</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert velocity thresholds from per-ms or percentile to per-sample units.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -873,18 +797,18 @@ window.addEventListener("load", load);</script>
 <span class="sd">        winsize_ix : int</span>
 <span class="sd">            window size in samples for velocity calculation</span>
 <span class="sd">        vel_onset : float or str</span>
-<span class="sd">            onset threshold (per-ms float or percentile string like &quot;5%&quot;)</span>
+<span class="sd">            onset threshold (per-ms float or percentile string like "5%")</span>
 <span class="sd">        vel_offset : float or str</span>
-<span class="sd">            offset threshold (per-ms float or percentile string like &quot;95%&quot;)</span>
+<span class="sd">            offset threshold (per-ms float or percentile string like "95%")</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        tuple (float, float)</span>
 <span class="sd">            (vel_onset_samples, vel_offset_samples) thresholds in per-sample units</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Helper to parse percentile string</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">parse_percentile</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">val</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;%&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">val</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'%'</span><span class="p">):</span>
                 <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
             <span class="k">return</span> <span class="kc">None</span>
         
@@ -904,27 +828,27 @@ window.addEventListener("load", load);</script>
                 <span class="p">)</span>
             
             <span class="c1"># Compute velocity profile</span>
-            <span class="n">vel</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">velocity_savgol</span><span class="p">(</span><span class="n">pupil_filled</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+            <span class="n">vel</span> <span class="o">=</span> <span class="n">preproc</span><span class="o">.</span><span class="n">velocity_savgol</span><span class="p">(</span><span class="n">pupil_filled</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">polyorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">"center"</span><span class="p">)</span>
             <span class="c1"># Mask out invalid regions for percentile calculation</span>
             <span class="n">vel_valid</span> <span class="o">=</span> <span class="n">vel</span><span class="p">[</span><span class="o">~</span><span class="n">invalid_mask</span><span class="p">]</span>
         
         <span class="c1"># Convert onset threshold</span>
         <span class="k">if</span> <span class="n">onset_pct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">vel_onset_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">vel_valid</span><span class="p">,</span> <span class="n">onset_pct</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vel_onset </span><span class="si">{</span><span class="n">vel_onset</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">vel_onset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> (percentile)&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"vel_onset </span><span class="si">{</span><span class="n">vel_onset</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">vel_onset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> (percentile)"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Convert from per-ms to per-sample</span>
             <span class="n">vel_onset_samples</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vel_onset</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vel_onset </span><span class="si">{</span><span class="n">vel_onset</span><span class="si">}</span><span class="s2">/ms -&gt; </span><span class="si">{</span><span class="n">vel_onset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">/sample&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"vel_onset </span><span class="si">{</span><span class="n">vel_onset</span><span class="si">}</span><span class="s2">/ms -&gt; </span><span class="si">{</span><span class="n">vel_onset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">/sample"</span><span class="p">)</span>
         
         <span class="c1"># Convert offset threshold</span>
         <span class="k">if</span> <span class="n">offset_pct</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">vel_offset_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">vel_valid</span><span class="p">,</span> <span class="n">offset_pct</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vel_offset </span><span class="si">{</span><span class="n">vel_offset</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">vel_offset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> (percentile)&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"vel_offset </span><span class="si">{</span><span class="n">vel_offset</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">vel_offset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> (percentile)"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Convert from per-ms to per-sample</span>
             <span class="n">vel_offset_samples</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">vel_offset</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1000</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vel_offset </span><span class="si">{</span><span class="n">vel_offset</span><span class="si">}</span><span class="s2">/ms -&gt; </span><span class="si">{</span><span class="n">vel_offset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">/sample&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"vel_offset </span><span class="si">{</span><span class="n">vel_offset</span><span class="si">}</span><span class="s2">/ms -&gt; </span><span class="si">{</span><span class="n">vel_offset_samples</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">/sample"</span><span class="p">)</span>
         
         <span class="k">return</span> <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span>
 
@@ -934,9 +858,9 @@ window.addEventListener("load", load);</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_blinks_detect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">min_duration</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                       <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">vel_offset</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> 
                       <span class="n">vel_onset_min_duration</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">vel_offset_min_duration</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
-                      <span class="n">strategies</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span><span class="s2">&quot;velocity&quot;</span><span class="p">],</span>
+                      <span class="n">strategies</span><span class="p">:</span> <span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="s2">"zero"</span><span class="p">,</span><span class="s2">"velocity"</span><span class="p">],</span>
                       <span class="n">apply_mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ignore_existing_mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Detect blinks in the pupillary signal using several strategies.</span>
 <span class="sd">        First, blinks are detected as consecutive sequence of `blink_val` </span>
 <span class="sd">        (f.eks., 0 or NaN). Second, blinks are defined as everything between</span>
@@ -955,17 +879,17 @@ window.addEventListener("load", load);</script>
 <span class="sd">        min_duration: float</span>
 <span class="sd">            minimum duration in ms for a sequence of missing numbers to be treated as blink</span>
 <span class="sd">        blink_val: float</span>
-<span class="sd">            &quot;missing value&quot; code</span>
+<span class="sd">            "missing value" code</span>
 <span class="sd">        winsize: float</span>
 <span class="sd">            window-size for Savitzky-Golay velocity estimation in ms</span>
 <span class="sd">        vel_onset: float or str</span>
 <span class="sd">            velocity threshold to detect blink onset (negative value).</span>
 <span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., -5.0)</span>
-<span class="sd">            - If str: percentile of velocity distribution (e.g., &quot;5%&quot; for bottom 5%)</span>
+<span class="sd">            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)</span>
 <span class="sd">        vel_offset: float or str</span>
 <span class="sd">            velocity threshold to detect blink offset (positive value).</span>
 <span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., 5.0)</span>
-<span class="sd">            - If str: percentile of velocity distribution (e.g., &quot;95%&quot; for top 95%)</span>
+<span class="sd">            - If str: percentile of velocity distribution (e.g., "95%" for top 95%)</span>
 <span class="sd">        vel_onset_min_duration: float</span>
 <span class="sd">            minimum duration in ms that velocity must exceed threshold to detect as onset</span>
 <span class="sd">            (to avoid noise-induced false detections)</span>
@@ -973,7 +897,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">            minimum duration in ms that velocity must exceed threshold to detect as offset</span>
 <span class="sd">            (to avoid noise-induced false detections)</span>
 <span class="sd">        strategies: list of strategies to use</span>
-<span class="sd">            so far, use a list containing any combination of &quot;zero&quot; and &quot;velocity&quot;</span>
+<span class="sd">            so far, use a list containing any combination of "zero" and "velocity"</span>
 <span class="sd">        apply_mask: bool</span>
 <span class="sd">            if `True`, apply detected blinks as masks to the data and return self</span>
 <span class="sd">            if `False` (default), return detected blinks as Intervals (or dict of Intervals)</span>
@@ -990,7 +914,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">            If apply_mask=True: returns self for chaining</span>
 <span class="sd">            If apply_mask=False and single eye: returns Intervals object</span>
 <span class="sd">            If apply_mask=False and multiple eyes: returns dict of Intervals objects</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
 
@@ -1005,58 +929,58 @@ window.addEventListener("load", load);</script>
         
         <span class="c1"># check for unknown strategies</span>
         <span class="k">for</span> <span class="n">strat</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">strat</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span> <span class="s2">&quot;velocity&quot;</span><span class="p">]:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Strategy &#39;</span><span class="si">%s</span><span class="s2">&#39; unknown&quot;</span><span class="o">%</span><span class="n">strat</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">strat</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"zero"</span><span class="p">,</span> <span class="s2">"velocity"</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Strategy '</span><span class="si">%s</span><span class="s2">' unknown"</span><span class="o">%</span><span class="n">strat</span><span class="p">)</span>
         
         <span class="n">detected_intervals</span> <span class="o">=</span> <span class="p">{}</span>
         
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detecting blinks for eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Detecting blinks for eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             
             <span class="c1"># Get pupil data, optionally ignoring existing mask</span>
             <span class="k">if</span> <span class="n">ignore_existing_mask</span><span class="p">:</span>
-                <span class="n">pupil_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span>
+                <span class="n">pupil_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"pupil"</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">pupil_data</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                <span class="n">pupil_data</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
             
             <span class="c1">## detect blinks with the different strategies</span>
-            <span class="k">if</span> <span class="s2">&quot;velocity&quot;</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">"velocity"</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
                 <span class="c1"># Convert velocity thresholds to per-sample units</span>
                 <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_velocity_thresholds</span><span class="p">(</span>
                     <span class="n">pupil_data</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span>
                 <span class="p">)</span>
                 <span class="n">blinks_vel</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_velocity</span><span class="p">(</span><span class="n">pupil_data</span><span class="p">,</span> <span class="n">winsize_ix</span><span class="p">,</span> <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span><span class="p">,</span> <span class="n">vel_onset_min_samples</span><span class="p">,</span> <span class="n">vel_offset_min_samples</span><span class="p">,</span> <span class="n">min_duration_ix</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with velocity strategy&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with velocity strategy"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span> 
                 <span class="n">blinks_vel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
                 
-            <span class="k">if</span> <span class="s2">&quot;zero&quot;</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">"zero"</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
                 <span class="n">blinks_zero</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_zero</span><span class="p">(</span><span class="n">pupil_data</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_zero</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with zero strategy&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_zero</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with zero strategy"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">blinks_zero</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
 
             <span class="c1">## merge the two blinks</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Merging </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_zero</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Merging </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_zero</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks"</span><span class="p">)</span>
             <span class="n">blinks</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">helper_merge_blinks</span><span class="p">(</span><span class="n">blinks_vel</span><span class="p">,</span> <span class="n">blinks_zero</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Merged </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Merged </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks"</span><span class="p">)</span>
             
             <span class="c1"># Filter by minimum duration and create Intervals object</span>
             <span class="n">filtered_blinks</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">int</span><span class="p">(</span><span class="n">on</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">off</span><span class="p">))</span> <span class="k">for</span> <span class="p">(</span><span class="n">on</span><span class="p">,</span><span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="n">blinks</span> <span class="k">if</span> <span class="n">off</span><span class="o">-</span><span class="n">on</span><span class="o">&gt;=</span><span class="n">min_duration_ix</span><span class="p">]</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtered </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">filtered_blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks by minimum duration&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Filtered </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">filtered_blinks</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks by minimum duration"</span><span class="p">)</span>
             <span class="n">intervals_obj</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
                 <span class="n">intervals</span><span class="o">=</span><span class="n">filtered_blinks</span><span class="p">,</span>
                 <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Using index units</span>
-                <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil_blinks&quot;</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil_blinks"</span><span class="p">,</span>
                 <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
                 <span class="n">sampling_rate</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
                 <span class="n">time_offset</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Store starting time for correct unit conversion</span>
             <span class="p">)</span>
             
             <span class="c1"># Store detected blinks internally (always)</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil&quot;</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span>
             <span class="n">detected_intervals</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">intervals_obj</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">set_blinks</span><span class="p">(</span><span class="n">intervals_obj</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">eye</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;pupil&quot;</span><span class="p">],</span> <span class="n">apply_mask</span><span class="o">=</span><span class="n">apply_mask</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">set_blinks</span><span class="p">(</span><span class="n">intervals_obj</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">eye</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">"pupil"</span><span class="p">],</span> <span class="n">apply_mask</span><span class="o">=</span><span class="n">apply_mask</span><span class="p">)</span>
         
         <span class="c1"># Return based on apply_mask</span>
         <span class="k">if</span> <span class="n">apply_mask</span><span class="p">:</span>
@@ -1064,7 +988,7 @@ window.addEventListener("load", load);</script>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Return single Intervals or dict depending on number of eyes</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eyes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">detected_intervals</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_pupil&quot;</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">detected_intervals</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_pupil"</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">detected_intervals</span>    </div>
 
@@ -1073,14 +997,14 @@ window.addEventListener("load", load);</script>
 <a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_blinks_interpolate">[docs]</a>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_blinks_interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">list</span><span class="o">=</span><span class="p">[],</span>
-                                 <span class="n">store_as</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span> 
-                                 <span class="n">method</span><span class="o">=</span><span class="s2">&quot;mahot&quot;</span><span class="p">,</span> <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> 
+                                 <span class="n">store_as</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">,</span> 
+                                 <span class="n">method</span><span class="o">=</span><span class="s2">"mahot"</span><span class="p">,</span> <span class="n">winsize</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> 
                                  <span class="n">vel_onset</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">vel_offset</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> 
                                  <span class="n">margin</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> 
                                  <span class="n">blinkwindow</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-                                 <span class="n">interp_type</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span>
+                                 <span class="n">interp_type</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">"cubic"</span><span class="p">,</span>
                                  <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolating blinks in the pupillary signal.</span>
+<span class="w">        </span><span class="sd">"""Interpolating blinks in the pupillary signal.</span>
 
 <span class="sd">        Implements the blink-interpolation method by Mahot (2013).</span>
 <span class="sd">        </span>
@@ -1088,7 +1012,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">        https://figshare.com/articles/A_simple_way_to_reconstruct_pupil_size_during_eye_blinks/688001.</span>
 
 <span class="sd">        This procedure relies heavily on eye-balling (reconstructing visually convincing signal),</span>
-<span class="sd">        so a &quot;plot&quot; option is provided that will plot many diagnostics (see paper linked above) that</span>
+<span class="sd">        so a "plot" option is provided that will plot many diagnostics (see paper linked above) that</span>
 <span class="sd">        can help to set good parameter values for `winsize`, `vel_onset`, `vel_offset` and `margin`.</span>
 
 <span class="sd">        Parameters</span>
@@ -1096,21 +1020,21 @@ window.addEventListener("load", load);</script>
 <span class="sd">        eyes: str or list</span>
 <span class="sd">            str or list of eyes to process; if empty, all available eyes are processed</span>
 <span class="sd">        store_as: str</span>
-<span class="sd">            how to store the interpolated data; either &quot;pupil&quot; (default) which replaces</span>
+<span class="sd">            how to store the interpolated data; either "pupil" (default) which replaces</span>
 <span class="sd">            the original pupil data or a string that will be used as the new variable</span>
-<span class="sd">            name in the data (e.g., &quot;pupilinterp&quot;)</span>
+<span class="sd">            name in the data (e.g., "pupilinterp")</span>
 <span class="sd">        method: str</span>
-<span class="sd">            method to use; so far, only &quot;mahot&quot; is implemented</span>
+<span class="sd">            method to use; so far, only "mahot" is implemented</span>
 <span class="sd">        winsize: float</span>
 <span class="sd">            size of the Savitzky-Golay window in ms</span>
 <span class="sd">        vel_onset: float or str</span>
 <span class="sd">            velocity threshold to detect blink onset (negative value).</span>
 <span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., -5.0)</span>
-<span class="sd">            - If str: percentile of velocity distribution (e.g., &quot;5%&quot; for bottom 5%)</span>
+<span class="sd">            - If str: percentile of velocity distribution (e.g., "5%" for bottom 5%)</span>
 <span class="sd">        vel_offset: float or str</span>
 <span class="sd">            velocity threshold to detect blink offset (positive value).</span>
 <span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., 5.0)</span>
-<span class="sd">            - If str: percentile of velocity distribution (e.g., &quot;95%&quot; for top 95%)</span>
+<span class="sd">            - If str: percentile of velocity distribution (e.g., "95%" for top 95%)</span>
 <span class="sd">        margin: Tuple[float,float]</span>
 <span class="sd">            margin that is subtracted/added to onset and offset (in ms)</span>
 <span class="sd">        blinkwindow: float</span>
@@ -1120,7 +1044,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">        inplace: bool</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes              </span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
 
@@ -1132,15 +1056,15 @@ window.addEventListener("load", load);</script>
             <span class="n">winsize_ix</span><span class="o">+=</span><span class="mi">1</span> 
 
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Interpolating blinks for eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">syr</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1">## interpolated signal</span>
-            <span class="n">mask</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_pupil&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1"># copy of mask</span>
-            <span class="n">bls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Interpolating blinks for eye </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">syr</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1">## interpolated signal</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">"_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1"># copy of mask</span>
+            <span class="n">bls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eye</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">)</span>
             
             <span class="c1"># Use raw data for velocity computation - blink_onsets_mahot handles NaN/zeros internally</span>
-            <span class="c1"># Don&#39;t use mask-applied data here because the mask includes blink regions,</span>
+            <span class="c1"># Don't use mask-applied data here because the mask includes blink regions,</span>
             <span class="c1"># which would smooth out the velocity transitions we need to detect boundaries</span>
-            <span class="n">pupil_data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span>
+            <span class="n">pupil_data</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"pupil"</span><span class="p">]</span>
             
             <span class="c1"># Convert velocity thresholds to per-sample units</span>
             <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_velocity_thresholds</span><span class="p">(</span>
@@ -1150,7 +1074,7 @@ window.addEventListener("load", load);</script>
                                                     <span class="n">winsize_ix</span><span class="p">,</span> 
                                                     <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span><span class="p">,</span>
                                                     <span class="n">margin_ix</span><span class="p">,</span> <span class="n">blinkwindow_ix</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Refined </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blink_onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> blink boundaries&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Refined </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blink_onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> blink boundaries"</span><span class="p">)</span>
 
             <span class="c1"># Collect successfully interpolated blinks</span>
             <span class="n">interpolated_intervals</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1170,11 +1094,11 @@ window.addEventListener("load", load);</script>
                 
                 <span class="c1"># Check if blink is too short to interpolate (need at least 4 distinct points)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">t1</span> <span class="o">&lt;</span> <span class="n">t2</span> <span class="o">&lt;</span> <span class="n">t3</span> <span class="o">&lt;</span> <span class="n">t4</span><span class="p">):</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping blink </span><span class="si">{</span><span class="n">ix</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">: blink too short to interpolate (t1=</span><span class="si">{</span><span class="n">t1</span><span class="si">}</span><span class="s2">, t2=</span><span class="si">{</span><span class="n">t2</span><span class="si">}</span><span class="s2">, t3=</span><span class="si">{</span><span class="n">t3</span><span class="si">}</span><span class="s2">, t4=</span><span class="si">{</span><span class="n">t4</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Skipping blink </span><span class="si">{</span><span class="n">ix</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">: blink too short to interpolate (t1=</span><span class="si">{</span><span class="n">t1</span><span class="si">}</span><span class="s2">, t2=</span><span class="si">{</span><span class="n">t2</span><span class="si">}</span><span class="s2">, t3=</span><span class="si">{</span><span class="n">t3</span><span class="si">}</span><span class="s2">, t4=</span><span class="si">{</span><span class="n">t4</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
                     <span class="k">continue</span>
                 
                 <span class="n">txpts</span><span class="o">=</span><span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">pt</span><span class="p">]</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="p">[</span><span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">,</span><span class="n">t3</span><span class="p">,</span><span class="n">t4</span><span class="p">]]</span>
-                <span class="n">sypts</span><span class="o">=</span><span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">][</span><span class="n">pt</span><span class="p">]</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="p">[</span><span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">,</span><span class="n">t3</span><span class="p">,</span><span class="n">t4</span><span class="p">]]</span>
+                <span class="n">sypts</span><span class="o">=</span><span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"pupil"</span><span class="p">][</span><span class="n">pt</span><span class="p">]</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="p">[</span><span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">,</span><span class="n">t3</span><span class="p">,</span><span class="n">t4</span><span class="p">]]</span>
                 <span class="n">intfct</span><span class="o">=</span><span class="n">interp1d</span><span class="p">(</span><span class="n">txpts</span><span class="p">,</span><span class="n">sypts</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">interp_type</span><span class="p">)</span>
                 <span class="n">islic</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">)</span>
                 <span class="n">syr</span><span class="p">[</span><span class="n">islic</span><span class="p">]</span><span class="o">=</span><span class="n">intfct</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">islic</span><span class="p">])</span>
@@ -1185,19 +1109,19 @@ window.addEventListener("load", load);</script>
                 <span class="n">interpolated_intervals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">))</span>
 
             <span class="c1"># store interpolated data with mask preservation</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">store_as</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">syr</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">store_as</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">syr</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
             
             <span class="c1"># Store interpolated blinks as Intervals object</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil&quot;</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span>
             <span class="n">obj</span><span class="o">.</span><span class="n">_interpolated_blinks</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span>
                 <span class="n">intervals</span><span class="o">=</span><span class="n">interpolated_intervals</span><span class="p">,</span>
                 <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Using index units</span>
-                <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_interpolated_blinks&quot;</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_interpolated_blinks"</span><span class="p">,</span>
                 <span class="n">data_time_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)),</span>
                 <span class="n">sampling_rate</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
                 <span class="n">time_offset</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stored </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">interpolated_intervals</span><span class="p">)</span><span class="si">}</span><span class="s2"> interpolated blinks for </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Stored </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">interpolated_intervals</span><span class="p">)</span><span class="si">}</span><span class="s2"> interpolated blinks for </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">obj</span></div>
 
@@ -1207,9 +1131,9 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="PupilData.pupil_estimate_baseline">
 <a class="viewcode-back" href="../../../api.html#pypillometry.PupilData.pupil_estimate_baseline">[docs]</a>
     <span class="nd">@keephistory</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_estimate_baseline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span>
-                                <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;envelope_iter_bspline_2&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pupil_estimate_baseline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variable</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">,</span>
+                                <span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">"envelope_iter_bspline_2"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply one of the baseline-estimation methods.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -1218,12 +1142,12 @@ window.addEventListener("load", load);</script>
 <span class="sd">        eyes: list or str</span>
 <span class="sd">            str or list of eyes to process; if empty, all available eyes are processed</span>
 <span class="sd">        variable: str</span>
-<span class="sd">            default is to use the &quot;pupil&quot; but it could be used to process, e.g., </span>
-<span class="sd">            interpolated pupil data stored in a different variables, e.g., &quot;pupilinterp&quot;</span>
+<span class="sd">            default is to use the "pupil" but it could be used to process, e.g., </span>
+<span class="sd">            interpolated pupil data stored in a different variables, e.g., "pupilinterp"</span>
 <span class="sd">        method: </span>
-<span class="sd">            &quot;envelope_iter_bspline_1&quot;: :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` </span>
+<span class="sd">            "envelope_iter_bspline_1": :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` </span>
 <span class="sd">                                        with one iteration</span>
-<span class="sd">            &quot;envelope_iter_bspline_2&quot;: :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` </span>
+<span class="sd">            "envelope_iter_bspline_2": :py:func:`pypillometry.baseline.baseline_envelope_iter_bspline()` </span>
 <span class="sd">                                        with two iterations</span>
 <span class="sd">        inplace: bool</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
@@ -1235,29 +1159,29 @@ window.addEventListener("load", load);</script>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        PupilData</span>
-<span class="sd">            object with baseline estimated (stored in data[&quot;eye_baseline&quot;])        </span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            object with baseline estimated (stored in data["eye_baseline"])        </span>
+<span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;variable must be a string; using default &#39;pupil&#39;&quot;</span><span class="p">)</span>
-            <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"variable must be a string; using default 'pupil'"</span><span class="p">)</span>
+            <span class="n">variable</span><span class="o">=</span><span class="s2">"pupil"</span>
 
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Estimating baseline for eye </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">eye</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Estimating baseline for eye </span><span class="si">%s</span><span class="s2">"</span><span class="o">%</span><span class="n">eye</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">method</span><span class="o">==</span><span class="s2">&quot;envelope_iter_bspline_2&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">method</span><span class="o">==</span><span class="s2">"envelope_iter_bspline_2"</span><span class="p">:</span>
                 <span class="n">txd</span><span class="p">,</span><span class="n">syd</span><span class="p">,</span><span class="n">base2</span><span class="p">,</span><span class="n">base1</span><span class="o">=</span><span class="n">baseline</span><span class="o">.</span><span class="n">baseline_envelope_iter_bspline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">variable</span><span class="p">],</span>
                                                                             <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="n">f</span><span class="o">=</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">base2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
-                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;baseline&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">method</span><span class="o">==</span><span class="s2">&quot;envelope_iter_bspline_1&quot;</span><span class="p">:</span> 
+                <span class="n">f</span><span class="o">=</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">base2</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"cubic"</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">"extrapolate"</span><span class="p">)</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"baseline"</span><span class="p">]</span><span class="o">=</span><span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">method</span><span class="o">==</span><span class="s2">"envelope_iter_bspline_1"</span><span class="p">:</span> 
                 <span class="n">txd</span><span class="p">,</span><span class="n">syd</span><span class="p">,</span><span class="n">base2</span><span class="p">,</span><span class="n">base1</span><span class="o">=</span><span class="n">baseline</span><span class="o">.</span><span class="n">baseline_envelope_iter_bspline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">variable</span><span class="p">],</span>
                                                                             <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="n">f</span><span class="o">=</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">base1</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">)</span>
-                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;baseline&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">=</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">base1</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"cubic"</span><span class="p">,</span> <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="s2">"extrapolate"</span><span class="p">)</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"baseline"</span><span class="p">]</span><span class="o">=</span><span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Undefined method for baseline estimation: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">method</span><span class="p">)</span>         
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Undefined method for baseline estimation: </span><span class="si">%s</span><span class="s2">"</span><span class="o">%</span><span class="n">method</span><span class="p">)</span>         
             
         <span class="k">return</span> <span class="n">obj</span></div>
 
@@ -1267,11 +1191,11 @@ window.addEventListener("load", load);</script>
     <span class="nd">@keephistory</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pupil_estimate_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                           <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> 
-                          <span class="n">npar</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">float</span><span class="o">=</span><span class="s2">&quot;free&quot;</span><span class="p">,</span> <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">float</span><span class="o">=</span><span class="s2">&quot;free&quot;</span><span class="p">,</span> 
+                          <span class="n">npar</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">float</span><span class="o">=</span><span class="s2">"free"</span><span class="p">,</span> <span class="n">tmax</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="nb">float</span><span class="o">=</span><span class="s2">"free"</span><span class="p">,</span> 
                           <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
-                          <span class="n">bounds</span><span class="p">:</span> <span class="nb">dict</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;npar&quot;</span><span class="p">:(</span><span class="mi">1</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="s2">&quot;tmax&quot;</span><span class="p">:(</span><span class="mi">100</span><span class="p">,</span><span class="mi">2000</span><span class="p">)},</span>
+                          <span class="n">bounds</span><span class="p">:</span> <span class="nb">dict</span><span class="o">=</span><span class="p">{</span><span class="s2">"npar"</span><span class="p">:(</span><span class="mi">1</span><span class="p">,</span><span class="mi">20</span><span class="p">),</span> <span class="s2">"tmax"</span><span class="p">:(</span><span class="mi">100</span><span class="p">,</span><span class="mi">2000</span><span class="p">)},</span>
                           <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Estimate pupil-response based on event-onsets, see</span>
 <span class="sd">        :py:func:`pypillometry.pupil.pupil_response()`.</span>
 <span class="sd">        </span>
@@ -1281,11 +1205,11 @@ window.addEventListener("load", load);</script>
 <span class="sd">        eyes: list or str</span>
 <span class="sd">            str or list of eyes to process; if empty, all available eyes are processed</span>
 <span class="sd">        npar: float</span>
-<span class="sd">            npar-parameter for the canonical response-function or &quot;free&quot;;</span>
-<span class="sd">            in case of &quot;free&quot;, the function optimizes for this parameter</span>
+<span class="sd">            npar-parameter for the canonical response-function or "free";</span>
+<span class="sd">            in case of "free", the function optimizes for this parameter</span>
 <span class="sd">        tmax: float</span>
-<span class="sd">            tmax-parameter for the canonical response-function or &quot;free&quot;;</span>
-<span class="sd">            in case of &quot;free&quot;, the function optimizes for this parameter</span>
+<span class="sd">            tmax-parameter for the canonical response-function or "free";</span>
+<span class="sd">            in case of "free", the function optimizes for this parameter</span>
 <span class="sd">        bounds: dict</span>
 <span class="sd">            in case that one or both parameters are estimated, give the lower</span>
 <span class="sd">            and upper bounds for the parameters        </span>
@@ -1298,33 +1222,33 @@ window.addEventListener("load", load);</script>
 <span class="sd">        the results of the estimation is stored in members `response`, `response_x` (design matrix) </span>
 <span class="sd">        and `response_pars`</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
 
-        <span class="n">obj</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;response&quot;</span><span class="p">]</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"response"</span><span class="p">]</span><span class="o">=</span><span class="nb">dict</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Estimating response for eye </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">eye</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_baseline&quot;</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Eye </span><span class="si">%s</span><span class="s2">: no baseline estimated yet, using zero as baseline&quot;</span><span class="o">%</span><span class="n">eye</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Estimating response for eye </span><span class="si">%s</span><span class="s2">"</span><span class="o">%</span><span class="n">eye</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">eye</span><span class="o">+</span><span class="s2">"_baseline"</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Eye </span><span class="si">%s</span><span class="s2">: no baseline estimated yet, using zero as baseline"</span><span class="o">%</span><span class="n">eye</span><span class="p">)</span>
                 <span class="n">base</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">base</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;baseline&quot;</span><span class="p">]</span>
+                <span class="n">base</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"baseline"</span><span class="p">]</span>
         
-            <span class="n">syd</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">&quot;pupil&quot;</span><span class="p">]</span><span class="o">-</span><span class="n">base</span>
+            <span class="n">syd</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="s2">"pupil"</span><span class="p">]</span><span class="o">-</span><span class="n">base</span>
             <span class="n">pred</span><span class="p">,</span> <span class="n">coef</span><span class="p">,</span> <span class="n">npar_est</span><span class="p">,</span> <span class="n">tmax_est</span><span class="p">,</span> <span class="n">x1</span><span class="o">=</span><span class="n">pupil</span><span class="o">.</span><span class="n">pupil_response</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">syd</span><span class="p">,</span> 
                                                             <span class="n">obj</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> 
                                                             <span class="n">npar</span><span class="o">=</span><span class="n">npar</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
                                                             <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">)</span>
             
-            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_response&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">pred</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">"_response"</span><span class="p">]</span><span class="o">=</span><span class="n">pred</span>
 
-            <span class="n">obj</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;response&quot;</span><span class="p">][</span><span class="n">eye</span><span class="p">]</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;npar&quot;</span><span class="p">:</span><span class="n">npar_est</span><span class="p">,</span>
-                                <span class="s2">&quot;npar_free&quot;</span><span class="p">:</span><span class="kc">True</span> <span class="k">if</span> <span class="n">npar</span><span class="o">==</span><span class="s2">&quot;free&quot;</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
-                                <span class="s2">&quot;tmax&quot;</span><span class="p">:</span><span class="n">tmax_est</span><span class="p">,</span>
-                                <span class="s2">&quot;tmax_free&quot;</span><span class="p">:</span><span class="kc">True</span> <span class="k">if</span> <span class="n">tmax</span><span class="o">==</span><span class="s2">&quot;free&quot;</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
-                                <span class="s2">&quot;coef&quot;</span><span class="p">:</span><span class="n">coef</span><span class="p">,</span>
-                                <span class="s2">&quot;bounds&quot;</span><span class="p">:</span><span class="n">bounds</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"response"</span><span class="p">][</span><span class="n">eye</span><span class="p">]</span><span class="o">=</span><span class="p">{</span><span class="s2">"npar"</span><span class="p">:</span><span class="n">npar_est</span><span class="p">,</span>
+                                <span class="s2">"npar_free"</span><span class="p">:</span><span class="kc">True</span> <span class="k">if</span> <span class="n">npar</span><span class="o">==</span><span class="s2">"free"</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
+                                <span class="s2">"tmax"</span><span class="p">:</span><span class="n">tmax_est</span><span class="p">,</span>
+                                <span class="s2">"tmax_free"</span><span class="p">:</span><span class="kc">True</span> <span class="k">if</span> <span class="n">tmax</span><span class="o">==</span><span class="s2">"free"</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
+                                <span class="s2">"coef"</span><span class="p">:</span><span class="n">coef</span><span class="p">,</span>
+                                <span class="s2">"bounds"</span><span class="p">:</span><span class="n">bounds</span>
                             <span class="p">}</span>
         
         <span class="k">return</span> <span class="n">obj</span></div>
@@ -1372,7 +1296,7 @@ window.addEventListener("load", load);</script>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

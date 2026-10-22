@@ -7,6 +7,7 @@
     <title>pypillometry.signal.baseline &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
     <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
@@ -16,7 +17,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
     <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
 
@@ -25,173 +25,11 @@
 
 const initStyles = () => {
     const defaultStyle = document.createElement('style');
-    defaultStyle.textContent = `pre.mermaid {
-    /* Same as .mermaid-container > pre */
-    display: block;
-    width: 100%;
-}
-
-pre.mermaid > svg {
-    /* Same as .mermaid-container > pre > svg */
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}`;
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
     document.head.appendChild(defaultStyle);
 
     const fullscreenStyle = document.createElement('style');
-    fullscreenStyle.textContent = `.mermaid-container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-}
-
-.mermaid-container > pre {
-    display: block;
-    width: 100%;
-}
-
-.mermaid-container > pre > svg {
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}
-
-.mermaid-fullscreen-btn {
-    width: 28px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-    color: #333;
-}
-
-.mermaid-fullscreen-btn:hover {
-    opacity: 100% !important;
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-btn.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-btn.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal {
-    display: none;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 95vw;
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.98);
-    z-index: 9999;
-    padding: 20px;
-    overflow: auto;
-}
-
-.mermaid-fullscreen-modal.dark-theme {
-    background: rgba(0, 0, 0, 0.98);
-}
-
-.mermaid-fullscreen-modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen {
-    position: relative;
-    width: 95vw;
-    height: 90vh;
-    max-width: 95vw;
-    max-height: 90vh;
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    overflow: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen.dark-theme {
-    background: #1a1a1a;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-}
-
-.mermaid-container-fullscreen pre.mermaid {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen .mermaid svg {
-    height: 100% !important;
-    width: 100% !important;
-    cursor: grab;
-}
-
-.mermaid-fullscreen-close {
-    position: fixed !important;
-    top: 20px !important;
-    right: 20px !important;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s;
-    font-size: 24px;
-    line-height: 1;
-    color: #333;
-}
-
-.mermaid-fullscreen-close:hover {
-    background: white;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-close.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-close.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
-    display: none !important;
-}`;
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
     document.head.appendChild(fullscreenStyle);
 }
 
@@ -236,6 +74,32 @@ let darkTheme = isDarkTheme();
 let modal = null;
 let modalContent = null;
 let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
 
 const runMermaid = async (rerun) => {
     console.log("Running mermaid diagrams, rerun =", rerun);
@@ -243,7 +107,15 @@ const runMermaid = async (rerun) => {
     let all_mermaids = document.querySelectorAll(".mermaid");
 
     if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
         all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
             if(!el.hasAttribute("data-original-code")) {
                 // store original code
                 // console.log(`Storing original code for first run: `, el.innerHTML);
@@ -260,42 +132,100 @@ const runMermaid = async (rerun) => {
                 el.setAttribute('data-original-code', el.innerHTML);
             }
         });
-        await mermaid.run();
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
     }
 
     all_mermaids = document.querySelectorAll(".mermaid");
-    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
 
-    if ("False" === "True") {
-        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
         if(mermaids_to_add_zoom > 0) {
-            var svgs = d3.selectAll("");
-            if(all_mermaids.length !== mermaids_processed.length) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
                 setTimeout(() => runMermaid(false), 200);
                 return;
-            } else if(svgs.size() !== mermaids_to_add_zoom) {
-                setTimeout(() => runMermaid(false), 200);
-                return;
-            } else {
-                svgs.each(function() {
-                    var svg = d3.select(this);
-                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
-                    var inner = svg.select("g");
-                    var zoom = d3.zoom().on("zoom", function(event) {
-                        inner.attr("transform", event.transform);
-                    });
-                    svg.call(zoom);
-                });
             }
+            addZoomToSvgs(svgs);
         }
-    } else if(all_mermaids.length !== mermaids_processed.length) {
+    } else if(mermaids_active.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
         setTimeout(() => runMermaid(false), 200);
         return;
     }
 
     // Stop here if not adding fullscreen capability
-    if ("True" !== "True") return;
+    if (!true) return;
 
     if (modal !== null ) {
         // Destroy existing modal
@@ -318,7 +248,7 @@ const runMermaid = async (rerun) => {
     modalContent = modal.querySelector('.mermaid-container-fullscreen');
     const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
 
-    const closeModal = () => {
+    closeModal = () => {
         modal.classList.remove('active');
         modalContent.innerHTML = '';
         document.body.style.overflow = ''
@@ -329,12 +259,6 @@ const runMermaid = async (rerun) => {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-
     document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
         if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
             mermaidDiv.closest('.mermaid-fullscreen-modal')) {
@@ -354,8 +278,8 @@ const runMermaid = async (rerun) => {
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
         fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.style.opacity = '50%';
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
 
         // Calculate dynamic position based on diagram's margin and padding
         const diagramStyle = window.getComputedStyle(mermaidDiv);
@@ -367,7 +291,7 @@ const runMermaid = async (rerun) => {
         fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
 
         fullscreenBtn.addEventListener('click', () => {
-            previousScrollOffset = [window.scroll, window.scrollY];
+            previousScrollOffset = [window.scrollX, window.scrollY];
             const clone = mermaidDiv.cloneNode(true);
             modalContent.innerHTML = '';
             modalContent.appendChild(clone);
@@ -379,9 +303,9 @@ const runMermaid = async (rerun) => {
                 svg.style.width = '100%';
                 svg.style.height = 'auto';
                 svg.style.maxWidth = '100%';
-                svg.style.sdisplay = 'block';
+                svg.style.display = 'block';
 
-                if ("False" === "True") {
+                if (false) {
                     setTimeout(() => {
                         const g = svg.querySelector('g');
                         if (g) {
@@ -404,8 +328,11 @@ const runMermaid = async (rerun) => {
     });
 };
 
+
+
 const load = async () => {
     initStyles();
+
 
     await runMermaid(true);
 
@@ -415,10 +342,8 @@ const load = async () => {
             darkTheme = newDarkTheme;
             console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
             await mermaid.initialize(
-                {...JSON.parse(
-                    `{"startOnLoad": false}`
-                ),
-                ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
                 }
             );
             await runMermaid(true);
@@ -443,14 +368,13 @@ const load = async () => {
 
 console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
 mermaid.initialize(
-    {...JSON.parse(
-        `{"startOnLoad": false}`
-    ),
-    ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
     }
 );
 
-window.addEventListener("load", load);</script>
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -475,12 +399,12 @@ window.addEventListener("load", load);</script>
           <div class="body" role="main">
             
   <h1>Source code for pypillometry.signal.baseline</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">baseline.py</span>
 <span class="sd">===========</span>
 
 <span class="sd">Functions for estimating tonic pupillary fluctuations (baseline).</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">signal</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
@@ -500,9 +424,9 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="bspline">
 <a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.bspline">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">bspline</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">spline_degree</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Re-implementation from https://mc-stan.org/users/documentation/case-studies/splines_in_stan.html.</span>
-<span class="sd">    Similar behaviour as R&#39;s bs() function from the splines-library.</span>
+<span class="sd">    Similar behaviour as R's bs() function from the splines-library.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    -----------</span>
@@ -519,7 +443,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">    </span>
 <span class="sd">    B: np.array</span>
 <span class="sd">        matrix of basis functions</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span><span class="o">=</span><span class="n">txd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">num_knots</span><span class="o">=</span><span class="n">knots</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -552,7 +476,7 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="butter_lowpass">
 <a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.butter_lowpass">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">butter_lowpass</span><span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get lowpass-filter coefficients for Butterworth-filter.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -570,17 +494,17 @@ window.addEventListener("load", load);</script>
 <span class="sd">    </span>
 <span class="sd">    (b,a): tuple (float,float)</span>
 <span class="sd">        filter coefficients</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">nyq</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">fs</span>
     <span class="n">normal_cutoff</span> <span class="o">=</span> <span class="n">cutoff</span> <span class="o">/</span> <span class="n">nyq</span>
-    <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">normal_cutoff</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s1">&#39;low&#39;</span><span class="p">,</span> <span class="n">analog</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">butter</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">normal_cutoff</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s1">'low'</span><span class="p">,</span> <span class="n">analog</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span></div>
 
 
 <div class="viewcode-block" id="butter_lowpass_filter">
 <a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.butter_lowpass_filter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">butter_lowpass_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Lowpass-filter signal using a Butterworth-filter.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -600,7 +524,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">    </span>
 <span class="sd">    y: np.array</span>
 <span class="sd">        filtered data</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">butter_lowpass</span><span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">filtfilt</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">y</span></div>
@@ -609,7 +533,7 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="downsample">
 <a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.downsample">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">downsample</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">R</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Simple downsampling scheme using mean within the downsampling window.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
@@ -626,7 +550,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">    </span>
 <span class="sd">    y: np.array</span>
 <span class="sd">        downsampled data</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">pad_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">/</span><span class="n">R</span><span class="p">)</span><span class="o">*</span><span class="n">R</span> <span class="o">-</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
     <span class="n">y_padded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">pad_size</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
     <span class="n">y2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">y_padded</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">R</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -640,7 +564,7 @@ window.addEventListener("load", load);</script>
 <span class="k">def</span><span class="w"> </span><span class="nf">baseline_envelope_iter_bspline</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span> <span class="n">fsd</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
                                    <span class="n">lam_sig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                                    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract baseline based (re-)estimating the lower envelope using B-splines.</span>
 <span class="sd">    See notebook `baseline_interp.ipynb` for details.</span>
 <span class="sd">    The signal is downsampled (to `fsd` Hz) for speed.</span>
@@ -684,9 +608,9 @@ window.addEventListener("load", load);</script>
 <span class="sd">        base1: is the estimated base after the first round</span>
 <span class="sd">        base2: is the final baseline estimate</span>
 <span class="sd">        </span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">dsfac</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">fs</span><span class="o">/</span><span class="n">fsd</span><span class="p">)</span> <span class="c1"># calculate downsampling factor</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Downsampling factor is </span><span class="si">%i</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">dsfac</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Downsampling factor is </span><span class="si">%i</span><span class="s2">"</span><span class="o">%</span><span class="n">dsfac</span><span class="p">)</span>
     
     <span class="c1"># downsampling</span>
     <span class="n">syc</span><span class="o">=</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">lp</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -696,16 +620,16 @@ window.addEventListener("load", load);</script>
     <span class="n">symean</span><span class="p">,</span><span class="n">sysd</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">syd</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">syd</span><span class="p">)</span>
     <span class="n">syd</span><span class="o">=</span><span class="p">(</span><span class="n">syd</span><span class="o">-</span><span class="n">symean</span><span class="p">)</span><span class="o">/</span><span class="n">sysd</span>
     <span class="n">txd</span><span class="o">=</span><span class="n">downsample</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">dsfac</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Downsampling done&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Downsampling done"</span><span class="p">)</span>
 
     <span class="c1"># peak finding and spline-building</span>
     <span class="n">peaks_ix</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">syd</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">prominences</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">peak_prominences</span><span class="p">(</span><span class="o">-</span><span class="n">syd</span><span class="p">,</span> <span class="n">peaks_ix</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">peaks</span><span class="o">=</span><span class="n">txd</span><span class="p">[</span><span class="n">peaks_ix</span><span class="p">]</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Peak-detection done, </span><span class="si">%i</span><span class="s2"> peaks detected&quot;</span><span class="o">%</span><span class="n">peaks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Peak-detection done, </span><span class="si">%i</span><span class="s2"> peaks detected"</span><span class="o">%</span><span class="n">peaks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">knots</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">txd</span><span class="o">.</span><span class="n">min</span><span class="p">()],</span> <span class="n">peaks</span><span class="p">,</span> <span class="p">[</span><span class="n">txd</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span> <span class="p">)</span> <span class="c1">## peaks as knots</span>
     <span class="n">B</span><span class="o">=</span><span class="n">bspline</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;B-spline matrix built, dims=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>    
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"B-spline matrix built, dims=</span><span class="si">%s</span><span class="s2">"</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>    
 
     <span class="c1"># convert</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">prominence_to_lambda</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
@@ -715,10 +639,10 @@ window.addEventListener("load", load);</script>
     <span class="n">w</span><span class="o">=</span><span class="n">prominence_to_lambda</span><span class="p">(</span><span class="n">prominences</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="n">lam_min</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="n">lam_max</span><span class="p">)</span>
     
     <span class="c1"># load or compile model</span>
-    <span class="n">fpath</span><span class="o">=</span><span class="n">files</span><span class="p">(</span><span class="s1">&#39;pypillometry.stan&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;baseline_model_asym_laplac.stan&#39;</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Compiling Stan model: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">fpath</span><span class="p">)</span>
+    <span class="n">fpath</span><span class="o">=</span><span class="n">files</span><span class="p">(</span><span class="s1">'pypillometry.stan'</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">'baseline_model_asym_laplac.stan'</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Compiling Stan model: </span><span class="si">%s</span><span class="s2">"</span><span class="o">%</span><span class="n">fpath</span><span class="p">)</span>
 
-    <span class="c1">#fname=&quot;stan/baseline_model_asym_laplac.stan&quot;</span>
+    <span class="c1">#fname="stan/baseline_model_asym_laplac.stan"</span>
     <span class="c1">#fpath=os.path.join(os.path.split(__file__)[0], fname)</span>
     <span class="n">sm</span> <span class="o">=</span> <span class="n">cmdstanpy</span><span class="o">.</span><span class="n">CmdStanModel</span><span class="p">(</span><span class="n">stan_file</span><span class="o">=</span><span class="n">fpath</span><span class="p">)</span>
     <span class="c1">#sm.compile()</span>
@@ -726,28 +650,28 @@ window.addEventListener("load", load);</script>
     
     <span class="c1">## put the data for the model together</span>
     <span class="n">data</span><span class="o">=</span><span class="p">{</span>
-        <span class="s1">&#39;n&#39;</span><span class="p">:</span><span class="n">syd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="s1">&#39;sy&#39;</span><span class="p">:</span><span class="n">syd</span><span class="p">,</span>
-        <span class="s1">&#39;ncol&#39;</span><span class="p">:</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-        <span class="s1">&#39;B&#39;</span><span class="p">:</span><span class="n">B</span><span class="p">,</span>
-        <span class="s1">&#39;npeaks&#39;</span><span class="p">:</span><span class="n">peaks_ix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="s1">&#39;peakix&#39;</span><span class="p">:</span><span class="n">peaks_ix</span><span class="p">,</span>
-        <span class="s1">&#39;lam_sig&#39;</span><span class="p">:</span><span class="n">lam_sig</span><span class="p">,</span>
-        <span class="s1">&#39;pa&#39;</span><span class="p">:</span><span class="mf">0.05</span><span class="p">,</span>
-        <span class="s1">&#39;lam_prominences&#39;</span><span class="p">:</span><span class="n">w</span>
+        <span class="s1">'n'</span><span class="p">:</span><span class="n">syd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="s1">'sy'</span><span class="p">:</span><span class="n">syd</span><span class="p">,</span>
+        <span class="s1">'ncol'</span><span class="p">:</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="s1">'B'</span><span class="p">:</span><span class="n">B</span><span class="p">,</span>
+        <span class="s1">'npeaks'</span><span class="p">:</span><span class="n">peaks_ix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="s1">'peakix'</span><span class="p">:</span><span class="n">peaks_ix</span><span class="p">,</span>
+        <span class="s1">'lam_sig'</span><span class="p">:</span><span class="n">lam_sig</span><span class="p">,</span>
+        <span class="s1">'pa'</span><span class="p">:</span><span class="mf">0.05</span><span class="p">,</span>
+        <span class="s1">'lam_prominences'</span><span class="p">:</span><span class="n">w</span>
     <span class="p">}</span>
     
     <span class="c1">## variational optimization</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Optimizing Stan model&quot;</span><span class="p">)</span>    
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Optimizing Stan model"</span><span class="p">)</span>    
     <span class="n">opt</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">variational</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">vbc</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">stan_variable</span><span class="p">(</span><span class="s2">&quot;coef&quot;</span><span class="p">)</span><span class="c1">#, mean=True)</span>
+    <span class="n">vbc</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">stan_variable</span><span class="p">(</span><span class="s2">"coef"</span><span class="p">)</span><span class="c1">#, mean=True)</span>
     <span class="n">meansigvb</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">vbc</span><span class="p">)</span>
     
     <span class="c1">## PRF model</span>
-    <span class="c1"># new &quot;signal&quot;</span>
+    <span class="c1"># new "signal"</span>
     <span class="n">syd2</span><span class="o">=</span><span class="n">syd</span><span class="o">-</span><span class="n">meansigvb</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Estimating PRF model (NNLS)&quot;</span><span class="p">)</span>    
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Estimating PRF model (NNLS)"</span><span class="p">)</span>    
     <span class="c1">#coef,pred,resid=pupilresponse_nnls(txd,syd2,event_onsets,fs=fsd)</span>
     <span class="n">pred</span><span class="p">,</span> <span class="n">coef</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="o">=</span><span class="n">pupil_response</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">syd2</span><span class="p">,</span> <span class="n">event_onsets</span><span class="p">,</span> <span class="n">fsd</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">917</span><span class="p">)</span>
     <span class="n">resid</span><span class="o">=</span><span class="n">syd</span><span class="o">-</span><span class="n">pred</span>
@@ -758,30 +682,30 @@ window.addEventListener("load", load);</script>
     <span class="n">peaks2_ix</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">syd3</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">prominences2</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">peak_prominences</span><span class="p">(</span><span class="o">-</span><span class="n">syd3</span><span class="p">,</span> <span class="n">peaks2_ix</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">peaks2</span><span class="o">=</span><span class="n">txd</span><span class="p">[</span><span class="n">peaks2_ix</span><span class="p">]</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;2nd Peak-detection done, </span><span class="si">%i</span><span class="s2"> peaks detected&quot;</span><span class="o">%</span><span class="n">peaks2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"2nd Peak-detection done, </span><span class="si">%i</span><span class="s2"> peaks detected"</span><span class="o">%</span><span class="n">peaks2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="n">knots2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">txd</span><span class="o">.</span><span class="n">min</span><span class="p">()],</span> <span class="n">peaks2</span><span class="p">,</span> <span class="p">[</span><span class="n">txd</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span> <span class="p">)</span> <span class="c1">## peaks as knots</span>
     <span class="n">B2</span><span class="o">=</span><span class="n">bspline</span><span class="p">(</span><span class="n">txd</span><span class="p">,</span> <span class="n">knots2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;2nd B-spline matrix built, dims=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">B2</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"2nd B-spline matrix built, dims=</span><span class="si">%s</span><span class="s2">"</span><span class="o">%</span><span class="nb">str</span><span class="p">(</span><span class="n">B2</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
 
     <span class="n">w2</span><span class="o">=</span><span class="n">prominence_to_lambda</span><span class="p">(</span><span class="n">prominences2</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="n">lam_min</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="n">lam_max</span><span class="p">)</span>
 
     <span class="n">data2</span><span class="o">=</span><span class="p">{</span>
-        <span class="s1">&#39;n&#39;</span><span class="p">:</span><span class="n">syd3</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="s1">&#39;sy&#39;</span><span class="p">:</span><span class="n">syd3</span><span class="p">,</span>
-        <span class="s1">&#39;ncol&#39;</span><span class="p">:</span><span class="n">B2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-        <span class="s1">&#39;B&#39;</span><span class="p">:</span><span class="n">B2</span><span class="p">,</span>
-        <span class="s1">&#39;npeaks&#39;</span><span class="p">:</span><span class="n">peaks2_ix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="s1">&#39;peakix&#39;</span><span class="p">:</span><span class="n">peaks2_ix</span><span class="p">,</span>
-        <span class="s1">&#39;lam_sig&#39;</span><span class="p">:</span><span class="n">lam_sig</span><span class="p">,</span>
-        <span class="s1">&#39;pa&#39;</span><span class="p">:</span><span class="mf">0.05</span><span class="p">,</span>
-        <span class="s1">&#39;lam_prominences&#39;</span><span class="p">:</span><span class="n">w2</span>
+        <span class="s1">'n'</span><span class="p">:</span><span class="n">syd3</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="s1">'sy'</span><span class="p">:</span><span class="n">syd3</span><span class="p">,</span>
+        <span class="s1">'ncol'</span><span class="p">:</span><span class="n">B2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="s1">'B'</span><span class="p">:</span><span class="n">B2</span><span class="p">,</span>
+        <span class="s1">'npeaks'</span><span class="p">:</span><span class="n">peaks2_ix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="s1">'peakix'</span><span class="p">:</span><span class="n">peaks2_ix</span><span class="p">,</span>
+        <span class="s1">'lam_sig'</span><span class="p">:</span><span class="n">lam_sig</span><span class="p">,</span>
+        <span class="s1">'pa'</span><span class="p">:</span><span class="mf">0.05</span><span class="p">,</span>
+        <span class="s1">'lam_prominences'</span><span class="p">:</span><span class="n">w2</span>
     <span class="p">}</span>
     
     <span class="c1">##  variational optimization</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Optimizing 2nd Stan model&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Optimizing 2nd Stan model"</span><span class="p">)</span>
     <span class="n">opt</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">variational</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data2</span><span class="p">)</span>
-    <span class="n">vbc2</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">stan_variable</span><span class="p">(</span><span class="s2">&quot;coef&quot;</span><span class="p">)</span><span class="c1">#, mean=True)</span>
+    <span class="n">vbc2</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">stan_variable</span><span class="p">(</span><span class="s2">"coef"</span><span class="p">)</span><span class="c1">#, mean=True)</span>
     <span class="n">meansigvb2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B2</span><span class="p">,</span> <span class="n">vbc2</span><span class="p">)</span>  
     
     <span class="k">return</span> <span class="n">txd</span><span class="p">,(</span><span class="n">syd</span><span class="o">*</span><span class="n">sysd</span><span class="p">)</span><span class="o">+</span><span class="n">symean</span><span class="p">,(</span><span class="n">meansigvb2</span><span class="o">*</span><span class="n">sysd</span><span class="p">)</span><span class="o">+</span><span class="n">symean</span><span class="p">,</span> <span class="p">(</span><span class="n">meansigvb</span><span class="o">*</span><span class="n">sysd</span><span class="p">)</span><span class="o">+</span><span class="n">symean</span></div>
@@ -789,8 +713,8 @@ window.addEventListener("load", load);</script>
 
 <div class="viewcode-block" id="baseline_envelope">
 <a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.baseline_envelope">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">baseline_envelope</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">prominence_thr</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">interp_method</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">baseline_envelope</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">prominence_thr</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">interp_method</span><span class="o">=</span><span class="s2">"cubic"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract baseline based on the lower envelope of the (filtered) signal.</span>
 
 <span class="sd">    Steps: </span>
@@ -821,10 +745,10 @@ window.addEventListener("load", load);</script>
 <span class="sd">        percentile of the prominence distribution (of the peaks) to </span>
 <span class="sd">        use for determining prominent peaks (see `scipy.stats.peak_prominences()`)</span>
 <span class="sd">        </span>
-<span class="sd">    interp_method : string, one of [&quot;linear&quot;, &quot;cubic&quot;, &quot;spline&quot;]</span>
-<span class="sd">        &quot;linear&quot; - linear interpolation between the high-prominence peaks</span>
-<span class="sd">        &quot;cubic&quot;  - cubic interpolation through all high-prominence peaks</span>
-<span class="sd">        &quot;spline&quot; - a smoothing spline that is guaranteed to go through all</span>
+<span class="sd">    interp_method : string, one of ["linear", "cubic", "spline"]</span>
+<span class="sd">        "linear" - linear interpolation between the high-prominence peaks</span>
+<span class="sd">        "cubic"  - cubic interpolation through all high-prominence peaks</span>
+<span class="sd">        "spline" - a smoothing spline that is guaranteed to go through all</span>
 <span class="sd">                   high-prominence peaks and smoothes through all the other</span>
 <span class="sd">                   (lower-prominence) peaks</span>
 <span class="sd">                   </span>
@@ -833,7 +757,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">    </span>
 <span class="sd">    base: np.array</span>
 <span class="sd">        baseline estimate</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">syc</span><span class="o">=</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">lp</span><span class="p">)</span>
     <span class="n">peaks_ix</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">syc</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">prominences</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">peak_prominences</span><span class="p">(</span><span class="o">-</span><span class="n">syc</span><span class="p">,</span> <span class="n">peaks_ix</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -846,18 +770,18 @@ window.addEventListener("load", load);</script>
     <span class="n">real_peaks</span><span class="o">=</span><span class="n">peaks</span><span class="p">[</span><span class="n">prominences</span><span class="o">&gt;</span><span class="n">prominence_cutoff</span><span class="p">]</span>
     <span class="n">real_peaks_ix</span><span class="o">=</span><span class="n">peaks_ix</span><span class="p">[</span><span class="n">prominences</span><span class="o">&gt;</span><span class="n">prominence_cutoff</span><span class="p">]</span>
     
-    <span class="k">if</span> <span class="n">interp_method</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span><span class="s2">&quot;cubic&quot;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">interp_method</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"linear"</span><span class="p">,</span><span class="s2">"cubic"</span><span class="p">]:</span>
         <span class="c1">## interpolate only most prominent peaks</span>
         <span class="n">xinterp</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">tx</span><span class="o">.</span><span class="n">min</span><span class="p">()],</span><span class="n">real_peaks</span><span class="p">,[</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span> <span class="p">)</span>
         <span class="n">yinterp</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">syc</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">syc</span><span class="p">[</span><span class="n">real_peaks_ix</span><span class="p">],</span> <span class="p">[</span><span class="n">syc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span> <span class="p">)</span>
         <span class="n">f</span><span class="o">=</span><span class="n">interp1d</span><span class="p">(</span><span class="n">xinterp</span><span class="p">,</span><span class="n">yinterp</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">interp_method</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">interp_method</span><span class="o">==</span><span class="s2">&quot;spline&quot;</span><span class="p">:</span>
-        <span class="c1">## use all peaks for interpolation and use &quot;real&quot; peaks as inner knots</span>
+    <span class="k">elif</span> <span class="n">interp_method</span><span class="o">==</span><span class="s2">"spline"</span><span class="p">:</span>
+        <span class="c1">## use all peaks for interpolation and use "real" peaks as inner knots</span>
         <span class="n">xinterp</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">tx</span><span class="o">.</span><span class="n">min</span><span class="p">()],</span><span class="n">peaks</span><span class="p">,[</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span> <span class="p">)</span>
         <span class="n">yinterp</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">([</span><span class="n">syc</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">syc</span><span class="p">[</span><span class="n">peaks_ix</span><span class="p">],</span> <span class="p">[</span><span class="n">syc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span> <span class="p">)</span>
         <span class="n">f</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">LSQUnivariateSpline</span><span class="p">(</span><span class="n">xinterp</span><span class="p">,</span><span class="n">yinterp</span><span class="p">,</span><span class="n">real_peaks</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;interp_method must be one of &#39;linear&#39;,&#39;cubic&#39;,&#39;spline&#39;&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"interp_method must be one of 'linear','cubic','spline'"</span><span class="p">)</span>
     <span class="n">x0</span><span class="o">=</span><span class="n">f</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">x0</span></div>
@@ -867,7 +791,7 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="baseline_pupil_model">
 <a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.baseline_pupil_model">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">baseline_pupil_model</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">lp1</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lp2</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract baseline based on filtering after removing stim-locked activity.</span>
 <span class="sd">    </span>
 <span class="sd">    Steps:</span>
@@ -903,7 +827,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">    </span>
 <span class="sd">    base: np.array</span>
 <span class="sd">        baseline estimate        </span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">syc</span><span class="o">=</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">lp1</span><span class="p">)</span>
     
     <span class="c1"># calculate indices for event-onsets</span>
@@ -913,7 +837,7 @@ window.addEventListener("load", load);</script>
     <span class="n">x1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">sy</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">x1</span><span class="p">[</span><span class="n">event_onsets_ix</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
     <span class="n">kernel</span><span class="o">=</span><span class="n">pupil_kernel</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">)</span>
-    <span class="n">x1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="n">x1</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
+    <span class="n">x1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"full"</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="n">x1</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
 
     <span class="c1"># solve with non-negative least-squares</span>
     <span class="n">X</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x1</span><span class="o">.</span><span class="n">size</span><span class="p">)))</span>
@@ -967,7 +891,7 @@ window.addEventListener("load", load);</script>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

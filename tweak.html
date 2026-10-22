@@ -8,6 +8,7 @@
     <title>Interactive Parameter Tweaking (pp.tweak) &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <script src="_static/documentation_options.js?v=5929fcd5"></script>
@@ -65,12 +66,12 @@
 <span class="c1"># Define a smoothing function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">smooth</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
     <span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">window_size</span><span class="p">))</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">window_size</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'same'</span><span class="p">)</span>
 
 <span class="c1"># Tweak the window_size parameter interactively</span>
-<span class="n">final_params</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">tweak</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">smooth</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;window_size&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">},</span> <span class="n">time</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
+<span class="n">final_params</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">tweak</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">smooth</span><span class="p">,</span> <span class="p">{</span><span class="s1">'window_size'</span><span class="p">:</span> <span class="mi">20</span><span class="p">},</span> <span class="n">time</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final window_size: </span><span class="si">{</span><span class="n">final_params</span><span class="p">[</span><span class="s1">&#39;window_size&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Final window_size: </span><span class="si">{</span><span class="n">final_params</span><span class="p">[</span><span class="s1">'window_size'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/tweak_basic.png"><img alt="Tweak viewer with smoothing function and parameter panel" src="_images/tweak_basic.png" style="width: 100%;" />
@@ -82,7 +83,7 @@
 <p>For pupillometry analysis, you often need to tune filter parameters. The <a class="reference internal" href="#pypillometry.tweak" title="pypillometry.tweak"><code class="xref py py-func docutils literal notranslate"><span class="pre">tweak()</span></code></a> function works with <a class="reference internal" href="api.html#pypillometry.EyeData" title="pypillometry.EyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeData</span></code></a> objects - the function receives the full EyeData and should return an EyeData:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 
-<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
 
 <span class="c1"># Define a function that applies lowpass filtering</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">lowpass</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mf">4.0</span><span class="p">):</span>
@@ -92,11 +93,11 @@
 <span class="n">final_params</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">tweak</span><span class="p">(</span>
     <span class="n">eyedata</span><span class="p">,</span>
     <span class="n">lowpass</span><span class="p">,</span>
-    <span class="p">{</span><span class="s1">&#39;cutoff&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">},</span>
-    <span class="n">variable</span><span class="o">=</span><span class="s1">&#39;left_pupil&#39;</span>
+    <span class="p">{</span><span class="s1">'cutoff'</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">},</span>
+    <span class="n">variable</span><span class="o">=</span><span class="s1">'left_pupil'</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final cutoff: </span><span class="si">{</span><span class="n">final_params</span><span class="p">[</span><span class="s1">&#39;cutoff&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> Hz&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Final cutoff: </span><span class="si">{</span><span class="n">final_params</span><span class="p">[</span><span class="s1">'cutoff'</span><span class="p">]</span><span class="si">}</span><span class="s2"> Hz"</span><span class="p">)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="_images/tweak_eyedata.png"><img alt="Tweak viewer with lowpass filter on EyeData" src="_images/tweak_eyedata.png" style="width: 100%;" />
@@ -108,7 +109,7 @@
 <p>Another common use case is tuning blink detection parameters. Functions can return <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> objects, which are displayed as highlighted regions:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 
-<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
 
 <span class="c1"># Define a function that detects blinks and returns intervals</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">detect_blinks</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">vel_offset</span><span class="o">=</span><span class="mf">5.0</span><span class="p">):</span>
@@ -117,14 +118,14 @@
         <span class="n">vel_onset</span><span class="o">=</span><span class="n">vel_onset</span><span class="p">,</span>
         <span class="n">vel_offset</span><span class="o">=</span><span class="n">vel_offset</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">blinks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;left_pupil&#39;</span><span class="p">)</span>  <span class="c1"># Returns Intervals</span>
+    <span class="k">return</span> <span class="n">blinks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'left_pupil'</span><span class="p">)</span>  <span class="c1"># Returns Intervals</span>
 
 <span class="c1"># Tweak the velocity thresholds</span>
 <span class="n">final_params</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">tweak</span><span class="p">(</span>
     <span class="n">eyedata</span><span class="p">,</span>
     <span class="n">detect_blinks</span><span class="p">,</span>
-    <span class="p">{</span><span class="s1">&#39;vel_onset&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="s1">&#39;vel_offset&#39;</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">},</span>
-    <span class="n">variable</span><span class="o">=</span><span class="s1">&#39;left_pupil&#39;</span>
+    <span class="p">{</span><span class="s1">'vel_onset'</span><span class="p">:</span> <span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="s1">'vel_offset'</span><span class="p">:</span> <span class="mf">5.0</span><span class="p">},</span>
+    <span class="n">variable</span><span class="o">=</span><span class="s1">'left_pupil'</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -156,27 +157,27 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 
-<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">):</span>
     <span class="c1"># Apply filter</span>
     <span class="n">filtered</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">filtered_signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">filtered</span><span class="p">[</span><span class="s1">&#39;left_pupil&#39;</span><span class="p">])</span>
+    <span class="n">filtered_signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">filtered</span><span class="p">[</span><span class="s1">'left_pupil'</span><span class="p">])</span>
 
     <span class="c1"># Detect blinks</span>
     <span class="n">blinks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">vel_onset</span><span class="o">=</span><span class="n">vel_onset</span><span class="p">)</span>
 
     <span class="c1"># Return both</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s1">&#39;filtered&#39;</span><span class="p">:</span> <span class="n">filtered_signal</span><span class="p">,</span>
-        <span class="s1">&#39;blinks&#39;</span><span class="p">:</span> <span class="n">blinks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;left_pupil&#39;</span><span class="p">)</span>
+        <span class="s1">'filtered'</span><span class="p">:</span> <span class="n">filtered_signal</span><span class="p">,</span>
+        <span class="s1">'blinks'</span><span class="p">:</span> <span class="n">blinks</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'left_pupil'</span><span class="p">)</span>
     <span class="p">}</span>
 
 <span class="n">final_params</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">tweak</span><span class="p">(</span>
     <span class="n">eyedata</span><span class="p">,</span>
     <span class="n">process</span><span class="p">,</span>
-    <span class="p">{</span><span class="s1">&#39;cutoff&#39;</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s1">&#39;vel_onset&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">5.0</span><span class="p">},</span>
-    <span class="n">variable</span><span class="o">=</span><span class="s1">&#39;left_pupil&#39;</span>
+    <span class="p">{</span><span class="s1">'cutoff'</span><span class="p">:</span> <span class="mf">4.0</span><span class="p">,</span> <span class="s1">'vel_onset'</span><span class="p">:</span> <span class="o">-</span><span class="mf">5.0</span><span class="p">},</span>
+    <span class="n">variable</span><span class="o">=</span><span class="s1">'left_pupil'</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -219,13 +220,13 @@ dict as it was when the viewer was closed.</p>
 <p>With EyeData - function receives full EyeData object:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">smooth</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">lp</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Tweak lowpass filter cutoff, display left_pupil</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">params</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">tweak</span><span class="p">(</span><span class="n">eyedata</span><span class="p">,</span> <span class="n">smooth</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;lp&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span> <span class="n">variable</span><span class="o">=</span><span class="s1">&#39;left_pupil&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">params</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">tweak</span><span class="p">(</span><span class="n">eyedata</span><span class="p">,</span> <span class="n">smooth</span><span class="p">,</span> <span class="p">{</span><span class="s1">'lp'</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span> <span class="n">variable</span><span class="o">=</span><span class="s1">'left_pupil'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Basic usage with numpy arrays:</p>
@@ -237,10 +238,10 @@ dict as it was when the viewer was closed.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Define a smoothing function</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">smooth</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">window_size</span><span class="p">)</span> <span class="o">/</span> <span class="n">window_size</span>
-<span class="gp">... </span>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'same'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Tweak the window_size parameter</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">final_params</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">tweak</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">smooth</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;window_size&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">final_params</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">tweak</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">smooth</span><span class="p">,</span> <span class="p">{</span><span class="s1">'window_size'</span><span class="p">:</span> <span class="mi">10</span><span class="p">})</span>
 </pre></div>
 </div>
 <p class="rubric">Notes</p>
@@ -336,7 +337,7 @@ parameters are applied immediately and the overlay updates in real-time.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

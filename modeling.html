@@ -8,6 +8,7 @@
     <title>Modeling the pupillometric signal &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -69,7 +70,7 @@ Interactive version:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1">## not necessary if pypillometry is installed on your system</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">".."</span><span class="p">)</span> <span class="c1">## not necessary if pypillometry is installed on your system</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -158,7 +159,7 @@ Interactive version:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">faked</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span> <span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">&quot;event&quot;</span><span class="p">,</span> <span class="n">statfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span> <span class="n">return_missing</span><span class="o">=</span><span class="s2">&quot;nmiss&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">faked</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span> <span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">"event"</span><span class="p">,</span> <span class="n">statfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">,</span> <span class="n">return_missing</span><span class="o">=</span><span class="s2">"nmiss"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -393,7 +394,7 @@ array([5506.60211363, 5506.59273533, 5506.5834325 , ..., 5485.23638076,
 <span class="n">traditional_response</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span> <span class="p">(</span> <span class="mi">800</span><span class="p">,</span><span class="mi">1200</span><span class="p">)</span> <span class="p">)</span><span class="o">-</span><span class="n">traditional_baseline</span>
 
 <span class="n">novel_baseline</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">stat_event_interval</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">baseline</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
-<span class="n">novel_response</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">response_pars</span><span class="p">[</span><span class="s2">&quot;coef&quot;</span><span class="p">]</span>
+<span class="n">novel_response</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">response_pars</span><span class="p">[</span><span class="s2">"coef"</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -402,13 +403,13 @@ array([5506.60211363, 5506.59273533, 5506.5834325 , ..., 5485.23638076,
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Traditional method:&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Baseline: Corr(trad,real)=&quot;</span><span class="p">,</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">traditional_baseline</span><span class="p">,</span> <span class="n">real_baseline</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Response: Corr(trad,real)=&quot;</span><span class="p">,</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">traditional_response</span><span class="p">,</span> <span class="n">real_response</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Novel method:&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Baseline: Corr(nov, real)=&quot;</span><span class="p">,</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">novel_baseline</span><span class="p">,</span> <span class="n">real_baseline</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Response: Corr(nov, real)=&quot;</span><span class="p">,</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">novel_response</span><span class="p">,</span> <span class="n">real_response</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Traditional method:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Baseline: Corr(trad,real)="</span><span class="p">,</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">traditional_baseline</span><span class="p">,</span> <span class="n">real_baseline</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Response: Corr(trad,real)="</span><span class="p">,</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">traditional_response</span><span class="p">,</span> <span class="n">real_response</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Novel method:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Baseline: Corr(nov, real)="</span><span class="p">,</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">novel_baseline</span><span class="p">,</span> <span class="n">real_baseline</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Response: Corr(nov, real)="</span><span class="p">,</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">novel_response</span><span class="p">,</span> <span class="n">real_response</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -512,7 +513,7 @@ Interactive version:
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

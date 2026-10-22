@@ -7,6 +7,7 @@
     <title>pypillometry.eyedata.eyedata &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
     <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
@@ -16,7 +17,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
     <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
 
@@ -25,173 +25,11 @@
 
 const initStyles = () => {
     const defaultStyle = document.createElement('style');
-    defaultStyle.textContent = `pre.mermaid {
-    /* Same as .mermaid-container > pre */
-    display: block;
-    width: 100%;
-}
-
-pre.mermaid > svg {
-    /* Same as .mermaid-container > pre > svg */
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}`;
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
     document.head.appendChild(defaultStyle);
 
     const fullscreenStyle = document.createElement('style');
-    fullscreenStyle.textContent = `.mermaid-container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-}
-
-.mermaid-container > pre {
-    display: block;
-    width: 100%;
-}
-
-.mermaid-container > pre > svg {
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}
-
-.mermaid-fullscreen-btn {
-    width: 28px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-    color: #333;
-}
-
-.mermaid-fullscreen-btn:hover {
-    opacity: 100% !important;
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-btn.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-btn.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal {
-    display: none;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 95vw;
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.98);
-    z-index: 9999;
-    padding: 20px;
-    overflow: auto;
-}
-
-.mermaid-fullscreen-modal.dark-theme {
-    background: rgba(0, 0, 0, 0.98);
-}
-
-.mermaid-fullscreen-modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen {
-    position: relative;
-    width: 95vw;
-    height: 90vh;
-    max-width: 95vw;
-    max-height: 90vh;
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    overflow: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen.dark-theme {
-    background: #1a1a1a;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-}
-
-.mermaid-container-fullscreen pre.mermaid {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen .mermaid svg {
-    height: 100% !important;
-    width: 100% !important;
-    cursor: grab;
-}
-
-.mermaid-fullscreen-close {
-    position: fixed !important;
-    top: 20px !important;
-    right: 20px !important;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s;
-    font-size: 24px;
-    line-height: 1;
-    color: #333;
-}
-
-.mermaid-fullscreen-close:hover {
-    background: white;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-close.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-close.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
-    display: none !important;
-}`;
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
     document.head.appendChild(fullscreenStyle);
 }
 
@@ -236,6 +74,32 @@ let darkTheme = isDarkTheme();
 let modal = null;
 let modalContent = null;
 let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
 
 const runMermaid = async (rerun) => {
     console.log("Running mermaid diagrams, rerun =", rerun);
@@ -243,7 +107,15 @@ const runMermaid = async (rerun) => {
     let all_mermaids = document.querySelectorAll(".mermaid");
 
     if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
         all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
             if(!el.hasAttribute("data-original-code")) {
                 // store original code
                 // console.log(`Storing original code for first run: `, el.innerHTML);
@@ -260,42 +132,100 @@ const runMermaid = async (rerun) => {
                 el.setAttribute('data-original-code', el.innerHTML);
             }
         });
-        await mermaid.run();
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
     }
 
     all_mermaids = document.querySelectorAll(".mermaid");
-    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
 
-    if ("False" === "True") {
-        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
         if(mermaids_to_add_zoom > 0) {
-            var svgs = d3.selectAll("");
-            if(all_mermaids.length !== mermaids_processed.length) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
                 setTimeout(() => runMermaid(false), 200);
                 return;
-            } else if(svgs.size() !== mermaids_to_add_zoom) {
-                setTimeout(() => runMermaid(false), 200);
-                return;
-            } else {
-                svgs.each(function() {
-                    var svg = d3.select(this);
-                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
-                    var inner = svg.select("g");
-                    var zoom = d3.zoom().on("zoom", function(event) {
-                        inner.attr("transform", event.transform);
-                    });
-                    svg.call(zoom);
-                });
             }
+            addZoomToSvgs(svgs);
         }
-    } else if(all_mermaids.length !== mermaids_processed.length) {
+    } else if(mermaids_active.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
         setTimeout(() => runMermaid(false), 200);
         return;
     }
 
     // Stop here if not adding fullscreen capability
-    if ("True" !== "True") return;
+    if (!true) return;
 
     if (modal !== null ) {
         // Destroy existing modal
@@ -318,7 +248,7 @@ const runMermaid = async (rerun) => {
     modalContent = modal.querySelector('.mermaid-container-fullscreen');
     const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
 
-    const closeModal = () => {
+    closeModal = () => {
         modal.classList.remove('active');
         modalContent.innerHTML = '';
         document.body.style.overflow = ''
@@ -329,12 +259,6 @@ const runMermaid = async (rerun) => {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-
     document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
         if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
             mermaidDiv.closest('.mermaid-fullscreen-modal')) {
@@ -354,8 +278,8 @@ const runMermaid = async (rerun) => {
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
         fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.style.opacity = '50%';
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
 
         // Calculate dynamic position based on diagram's margin and padding
         const diagramStyle = window.getComputedStyle(mermaidDiv);
@@ -367,7 +291,7 @@ const runMermaid = async (rerun) => {
         fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
 
         fullscreenBtn.addEventListener('click', () => {
-            previousScrollOffset = [window.scroll, window.scrollY];
+            previousScrollOffset = [window.scrollX, window.scrollY];
             const clone = mermaidDiv.cloneNode(true);
             modalContent.innerHTML = '';
             modalContent.appendChild(clone);
@@ -379,9 +303,9 @@ const runMermaid = async (rerun) => {
                 svg.style.width = '100%';
                 svg.style.height = 'auto';
                 svg.style.maxWidth = '100%';
-                svg.style.sdisplay = 'block';
+                svg.style.display = 'block';
 
-                if ("False" === "True") {
+                if (false) {
                     setTimeout(() => {
                         const g = svg.querySelector('g');
                         if (g) {
@@ -404,8 +328,11 @@ const runMermaid = async (rerun) => {
     });
 };
 
+
+
 const load = async () => {
     initStyles();
+
 
     await runMermaid(true);
 
@@ -415,10 +342,8 @@ const load = async () => {
             darkTheme = newDarkTheme;
             console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
             await mermaid.initialize(
-                {...JSON.parse(
-                    `{"startOnLoad": false}`
-                ),
-                ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
                 }
             );
             await runMermaid(true);
@@ -443,14 +368,13 @@ const load = async () => {
 
 console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
 mermaid.initialize(
-    {...JSON.parse(
-        `{"startOnLoad": false}`
-    ),
-    ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
     }
 );
 
-window.addEventListener("load", load);</script>
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
   </head><body>
@@ -506,7 +430,7 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="EyeData">
 <a class="viewcode-back" href="../../../api.html#pypillometry.EyeData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EyeData</span><span class="p">(</span><span class="n">GazeData</span><span class="p">,</span><span class="n">PupilData</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class for handling eye-tracking data. This class is a subclass of GazeData</span>
 <span class="sd">    and inherits all its methods and attributes. In addition to the methods</span>
 <span class="sd">    in GazeData which implement functions for eye-tracking data, `EyeData` </span>
@@ -535,7 +459,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">    event_labels:</span>
 <span class="sd">        for each event in `event_onsets`, provide a label</span>
 <span class="sd">    calibration: dict, optional</span>
-<span class="sd">        Dictionary of SpatialCalibration objects, one per eye (keys: &#39;left&#39;, &#39;right&#39;)</span>
+<span class="sd">        Dictionary of SpatialCalibration objects, one per eye (keys: 'left', 'right')</span>
 <span class="sd">    keep_orig: bool</span>
 <span class="sd">        keep a copy of the original dataset? If `True`, a copy of the object</span>
 <span class="sd">        as initiated in the constructor is stored in member `original`</span>
@@ -552,7 +476,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">    ...         left_x=np.random.randn(1000),</span>
 <span class="sd">    ...         left_y=np.random.randn(1000))</span>
 <span class="sd">    &gt;&gt;&gt; print(d)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                     <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">left_x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -571,11 +495,11 @@ window.addEventListener("load", load);</script>
                     <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
                     <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for the EyeData class.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating EyeData object&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Constructor for the EyeData class.</span>
+<span class="sd">        """</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Creating EyeData object"</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">left_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">left_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">right_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">right_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;At least one of the eye-traces must be provided (both x and y)&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"At least one of the eye-traces must be provided (both x and y)"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">=</span><span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">left_pupil</span><span class="p">,</span>
                                 <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_pupil</span><span class="p">)</span>
         
@@ -603,13 +527,13 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="EyeData.summary">
 <a class="viewcode-back" href="../../../api.html#pypillometry.EyeData.summary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a summary of the dataset as a dictionary.</span>
+<span class="w">        </span><span class="sd">"""Return a summary of the dataset as a dictionary.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        : dict</span>
 <span class="sd">            A dictionary summarizing the dataset.</span>
-<span class="sd">        &quot;&quot;&quot;</span>        
+<span class="sd">        """</span>        
         <span class="n">ds</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">GazeData</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
                   <span class="o">**</span><span class="n">PupilData</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">ds</span></div>
@@ -618,7 +542,7 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="EyeData.get_pupildata">
 <a class="viewcode-back" href="../../../api.html#pypillometry.EyeData.get_pupildata">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_pupildata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eye</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return the pupil data as a PupilData object.</span>
 
 <span class="sd">        Parameters</span>
@@ -630,23 +554,23 @@ window.addEventListener("load", load);</script>
 <span class="sd">        -------</span>
 <span class="sd">        : :class:`PupilData`</span>
 <span class="sd">            A PupilData object containing the pupil data. </span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">eye</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eyes</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
                 <span class="n">eye</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eyes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;More than one eye in the dataset. Please specify which eye to use.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">eye</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No pupil data for eye: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">eye</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"More than one eye in the dataset. Please specify which eye to use."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eye</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No pupil data for eye: </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="n">eye</span><span class="p">)</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span>
-            <span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_pupil&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">&quot;_pupil&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;sampling_rate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
-            <span class="s2">&quot;event_onsets&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span>
-            <span class="s2">&quot;event_labels&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_labels</span><span class="p">,</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s2">&quot;_pd&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;keep_orig&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-            <span class="s2">&quot;inplace&quot;</span><span class="p">:</span> <span class="kc">False</span>
+            <span class="s2">"time"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span>
+            <span class="n">eye</span><span class="o">+</span><span class="s2">"_pupil"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="o">+</span><span class="s2">"_pupil"</span><span class="p">],</span>
+            <span class="s2">"sampling_rate"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+            <span class="s2">"event_onsets"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">,</span>
+            <span class="s2">"event_labels"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_labels</span><span class="p">,</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="o">+</span><span class="s2">"_pd"</span><span class="p">,</span>
+            <span class="s2">"keep_orig"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">"inplace"</span><span class="p">:</span> <span class="kc">False</span>
         <span class="p">}</span>
         <span class="n">pobj</span> <span class="o">=</span> <span class="n">PupilData</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">pobj</span>        </div>
@@ -656,8 +580,8 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="EyeData.correct_pupil_foreshortening">
 <a class="viewcode-back" href="../../../api.html#pypillometry.EyeData.correct_pupil_foreshortening">[docs]</a>
     <span class="nd">@keephistory</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">correct_pupil_foreshortening</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">midpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">store_as</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Correct pupil data using a simple algorithm to correct for foreshortening effects.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">correct_pupil_foreshortening</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">midpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">store_as</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Correct pupil data using a simple algorithm to correct for foreshortening effects.</span>
 
 <span class="sd">        Correct the pupil data for foreshortening effects caused</span>
 <span class="sd">        by saccades/eye movements. This method is based on a simple algorithm</span>
@@ -684,25 +608,25 @@ window.addEventListener("load", load);</script>
 <span class="sd">            Whether to modify the object in place or return a new object.</span>
 <span class="sd">            `true`: modify in place</span>
 <span class="sd">            `false`: return a new object</span>
-<span class="sd">            `None`: use the object&#39;s default setting (initialized in __init__)</span>
+<span class="sd">            `None`: use the object's default setting (initialized in __init__)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        : :class:`EyeData`</span>
 <span class="sd">            An EyeData object with the corrected pupil</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">obj</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="p">[])</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">store_as</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;store_as must be a string; using &#39;pupil&#39; instead&quot;</span><span class="p">)</span>
-            <span class="n">store_as</span><span class="o">=</span><span class="s2">&quot;pupil&quot;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"store_as must be a string; using 'pupil' instead"</span><span class="p">)</span>
+            <span class="n">store_as</span><span class="o">=</span><span class="s2">"pupil"</span>
 
         <span class="c1"># Require experimental_setup for this correction</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Cannot correct pupil foreshortening: experimental_setup not set. &quot;</span>
-                <span class="s2">&quot;Use set_experimental_setup() to configure it.&quot;</span>
+                <span class="s2">"Cannot correct pupil foreshortening: experimental_setup not set. "</span>
+                <span class="s2">"Use set_experimental_setup() to configure it."</span>
             <span class="p">)</span>
         <span class="n">setup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span>
 
@@ -714,14 +638,14 @@ window.addEventListener("load", load);</script>
 
         <span class="c1"># calculate distance of x,y from midpoint</span>
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
-            <span class="n">vx</span><span class="o">=</span><span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">])</span>
-            <span class="n">vy</span><span class="o">=</span><span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">])</span>
+            <span class="n">vx</span><span class="o">=</span><span class="s2">"_"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">eye</span><span class="p">,</span> <span class="s2">"x"</span><span class="p">])</span>
+            <span class="n">vy</span><span class="o">=</span><span class="s2">"_"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">eye</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">])</span>
             <span class="n">xdist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vx</span><span class="p">]</span> <span class="o">-</span> <span class="n">midpoint</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">scaling_factor_x</span>
             <span class="n">ydist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">vy</span><span class="p">]</span> <span class="o">-</span> <span class="n">midpoint</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">scaling_factor_y</span>
             <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">xdist</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">ydist</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="n">corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">dist</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">setup</span><span class="o">.</span><span class="n">d</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># correction factor</span>
             <span class="c1"># Use masked array access to preserve masks from blinks/artifacts</span>
-            <span class="n">obj</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">store_as</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">corr</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">store_as</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">]</span> <span class="o">*</span> <span class="n">corr</span>
 
         <span class="k">return</span> <span class="n">obj</span></div>
 
@@ -742,7 +666,7 @@ window.addEventListener("load", load);</script>
         <span class="n">initial_phi</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ForeshorteningCalibration</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fit foreshortening correction model to estimate camera geometry and true pupil size.</span>
 <span class="sd">        </span>
 <span class="sd">        This method implements Stage 1 of the foreshortening correction algorithm,</span>
@@ -753,18 +677,18 @@ window.addEventListener("load", load);</script>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        eye : str</span>
-<span class="sd">            Which eye to fit (&#39;left&#39; or &#39;right&#39;)</span>
+<span class="sd">            Which eye to fit ('left' or 'right')</span>
 <span class="sd">        r : float, str, or pint.Quantity, optional</span>
 <span class="sd">            Eye-to-camera distance. If not provided, uses the </span>
 <span class="sd">            `r` from experimental_setup.</span>
 <span class="sd">            - Plain number: assumed to be mm (with warning)</span>
-<span class="sd">            - String: e.g., &quot;600 mm&quot;, &quot;60 cm&quot;</span>
+<span class="sd">            - String: e.g., "600 mm", "60 cm"</span>
 <span class="sd">            - Quantity: e.g., 600 * ureg.mm</span>
 <span class="sd">        d : float, str, or pint.Quantity, optional</span>
 <span class="sd">            Eye-to-screen distance. If not provided, uses the </span>
 <span class="sd">            `d` from experimental_setup.</span>
 <span class="sd">            - Plain number: assumed to be mm (with warning)</span>
-<span class="sd">            - String: e.g., &quot;700 mm&quot;, &quot;70 cm&quot;</span>
+<span class="sd">            - String: e.g., "700 mm", "70 cm"</span>
 <span class="sd">            - Quantity: e.g., 700 * ureg.mm</span>
 <span class="sd">        intervals : Intervals, optional</span>
 <span class="sd">            Time intervals to use for fitting. If None, uses all available data.</span>
@@ -785,13 +709,13 @@ window.addEventListener("load", load);</script>
 <span class="sd">            Initial guess for camera polar angle. If None, uses</span>
 <span class="sd">            pi/2 (horizontal) as starting point.</span>
 <span class="sd">            - Plain number: assumed to be radians (with warning)</span>
-<span class="sd">            - String: e.g., &quot;20 degrees&quot;, &quot;0.349 radians&quot;</span>
+<span class="sd">            - String: e.g., "20 degrees", "0.349 radians"</span>
 <span class="sd">            - Quantity: e.g., 20 * ureg.degree</span>
 <span class="sd">        initial_phi : float, str, or pint.Quantity, optional</span>
 <span class="sd">            Initial guess for camera azimuthal angle. If None,</span>
 <span class="sd">            uses 0 (camera on x-axis) as starting point.</span>
 <span class="sd">            - Plain number: assumed to be radians (with warning)</span>
-<span class="sd">            - String: e.g., &quot;-90 degrees&quot;, &quot;-1.57 radians&quot;</span>
+<span class="sd">            - String: e.g., "-90 degrees", "-1.57 radians"</span>
 <span class="sd">            - Quantity: e.g., -90 * ureg.degree</span>
 <span class="sd">        verbose : bool, default True</span>
 <span class="sd">            Print optimization progress and fit statistics.</span>
@@ -805,7 +729,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If specified eye doesn&#39;t exist or lacks gaze/pupil data.</span>
+<span class="sd">            If specified eye doesn't exist or lacks gaze/pupil data.</span>
 <span class="sd">        </span>
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
@@ -823,66 +747,66 @@ window.addEventListener("load", load);</script>
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; import pypillometry as pp</span>
-<span class="sd">        &gt;&gt;&gt; data = pp.EyeData.from_eyelink(&#39;recording.edf&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; data = pp.EyeData.from_eyelink('recording.edf')</span>
 <span class="sd">        &gt;&gt;&gt; </span>
 <span class="sd">        &gt;&gt;&gt; # Set experimental setup</span>
 <span class="sd">        &gt;&gt;&gt; data.set_experimental_setup(  # doctest: +SKIP</span>
 <span class="sd">        ...     screen_resolution=(1920, 1080),</span>
-<span class="sd">        ...     physical_screen_size=(&quot;52 cm&quot;, &quot;29 cm&quot;),</span>
-<span class="sd">        ...     eye_to_screen_center=&quot;65 cm&quot;,</span>
-<span class="sd">        ...     camera_offset=(&quot;0 cm&quot;, &quot;-30 cm&quot;, &quot;0 cm&quot;),</span>
+<span class="sd">        ...     physical_screen_size=("52 cm", "29 cm"),</span>
+<span class="sd">        ...     eye_to_screen_center="65 cm",</span>
+<span class="sd">        ...     camera_offset=("0 cm", "-30 cm", "0 cm"),</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; </span>
 <span class="sd">        &gt;&gt;&gt; # Fit on calibration period (first 2 minutes)</span>
 <span class="sd">        &gt;&gt;&gt; cal_intervals = data.get_intervals(end_time=120000)  # doctest: +SKIP</span>
 <span class="sd">        &gt;&gt;&gt; calib = data.fit_foreshortening(  # doctest: +SKIP</span>
-<span class="sd">        ...     eye=&#39;left&#39;,</span>
+<span class="sd">        ...     eye='left',</span>
 <span class="sd">        ...     intervals=cal_intervals</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; </span>
 <span class="sd">        &gt;&gt;&gt; # Or provide r and d explicitly</span>
 <span class="sd">        &gt;&gt;&gt; calib = data.fit_foreshortening(  # doctest: +SKIP</span>
-<span class="sd">        ...     eye=&#39;left&#39;,</span>
-<span class="sd">        ...     r=&quot;60 cm&quot;,</span>
-<span class="sd">        ...     d=&quot;70 cm&quot;,</span>
+<span class="sd">        ...     eye='left',</span>
+<span class="sd">        ...     r="60 cm",</span>
+<span class="sd">        ...     d="70 cm",</span>
 <span class="sd">        ...     intervals=cal_intervals</span>
 <span class="sd">        ... )</span>
 <span class="sd">        &gt;&gt;&gt; </span>
 <span class="sd">        &gt;&gt;&gt; # Inspect fit quality</span>
 <span class="sd">        &gt;&gt;&gt; print(calib)  # doctest: +SKIP</span>
-<span class="sd">        &gt;&gt;&gt; print(f&quot;R² = {calib.fit_metrics[&#39;r2&#39;]:.3f}&quot;)  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; print(f"R² = {calib.fit_metrics['r2']:.3f}")  # doctest: +SKIP</span>
 <span class="sd">        &gt;&gt;&gt; </span>
 <span class="sd">        &gt;&gt;&gt; # Compute correction for all data</span>
 <span class="sd">        &gt;&gt;&gt; correction_factor = calib.get_correction_factor(  # doctest: +SKIP</span>
-<span class="sd">        ...     data[&#39;left&#39;, &#39;x&#39;], </span>
-<span class="sd">        ...     data[&#39;left&#39;, &#39;y&#39;]</span>
+<span class="sd">        ...     data['left', 'x'], </span>
+<span class="sd">        ...     data['left', 'y']</span>
 <span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; corrected_pupil = data[&#39;left&#39;, &#39;pupil&#39;] * correction_factor  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; corrected_pupil = data['left', 'pupil'] * correction_factor  # doctest: +SKIP</span>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        ForeshorteningCalibration : Container for fitted parameters</span>
 <span class="sd">        correct_pupil_foreshortening : Simple foreshortening correction method</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Validate eye</span>
         <span class="k">if</span> <span class="n">eye</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">eyes</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Eye &#39;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">&#39; not found in dataset. Available: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">eyes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Eye '</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">' not found in dataset. Available: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">eyes</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         
         <span class="c1"># Check for required data</span>
-        <span class="n">x_var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x&quot;</span>
-        <span class="n">y_var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_y&quot;</span>
-        <span class="n">pupil_var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil&quot;</span>
+        <span class="n">x_var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_x"</span>
+        <span class="n">y_var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_y"</span>
+        <span class="n">pupil_var</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_pupil"</span>
         
         <span class="k">if</span> <span class="n">x_var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">or</span> <span class="n">y_var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Gaze data (x, y) not available for </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> eye&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Gaze data (x, y) not available for </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> eye"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">pupil_var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pupil data not available for </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> eye&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Pupil data not available for </span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2"> eye"</span><span class="p">)</span>
         
         <span class="c1"># Require experimental_setup for screen dimensions</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Cannot fit foreshortening: experimental_setup not set. &quot;</span>
-                <span class="s2">&quot;Use set_experimental_setup() to configure it.&quot;</span>
+                <span class="s2">"Cannot fit foreshortening: experimental_setup not set. "</span>
+                <span class="s2">"Use set_experimental_setup() to configure it."</span>
             <span class="p">)</span>
         <span class="n">setup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental_setup</span>
         
@@ -890,24 +814,24 @@ window.addEventListener("load", load);</script>
         <span class="k">if</span> <span class="n">r</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">setup</span><span class="o">.</span><span class="n">has_camera_position</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;Camera position not set in experimental_setup. &quot;</span>
-                    <span class="s2">&quot;Either provide r explicitly or set camera_offset in experimental_setup.&quot;</span>
+                    <span class="s2">"Camera position not set in experimental_setup. "</span>
+                    <span class="s2">"Either provide r explicitly or set camera_offset in experimental_setup."</span>
                 <span class="p">)</span>
             <span class="n">r</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">r</span>
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using camera distance from experimental_setup: </span><span class="si">{</span><span class="n">r</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> mm&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using camera distance from experimental_setup: </span><span class="si">{</span><span class="n">r</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> mm"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">r</span> <span class="o">=</span> <span class="n">parse_distance</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">setup</span><span class="o">.</span><span class="n">has_eye_distance</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;Eye-to-screen distance not set in experimental_setup. &quot;</span>
-                    <span class="s2">&quot;Either provide d explicitly or set eye_to_screen_center in experimental_setup.&quot;</span>
+                    <span class="s2">"Eye-to-screen distance not set in experimental_setup. "</span>
+                    <span class="s2">"Either provide d explicitly or set eye_to_screen_center in experimental_setup."</span>
                 <span class="p">)</span>
             <span class="n">d</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">d</span>
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using screen distance from experimental_setup: </span><span class="si">{</span><span class="n">d</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> mm&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using screen distance from experimental_setup: </span><span class="si">{</span><span class="n">d</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> mm"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">d</span> <span class="o">=</span> <span class="n">parse_distance</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
         
@@ -920,19 +844,19 @@ window.addEventListener("load", load);</script>
         
         <span class="c1"># Validate geometric parameters</span>
         <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Eye-to-camera distance r must be positive, got </span><span class="si">{</span><span class="n">r</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Eye-to-camera distance r must be positive, got </span><span class="si">{</span><span class="n">r</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Eye-to-screen distance d must be positive, got </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Eye-to-screen distance d must be positive, got </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Eye-to-camera distance: </span><span class="si">{</span><span class="n">r</span><span class="si">}</span><span class="s2"> mm&quot;</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Eye-to-screen distance: </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2"> mm&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Eye-to-camera distance: </span><span class="si">{</span><span class="n">r</span><span class="si">}</span><span class="s2"> mm"</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Eye-to-screen distance: </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2"> mm"</span><span class="p">)</span>
         
         <span class="c1"># Extract data (using masked array access to exclude blinks/artifacts)</span>
-        <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">&quot;time_ms&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">x_gaze</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">y_gaze</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">pupil</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s1">&#39;pupil&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="s2">"time_ms"</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">x_gaze</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s1">'x'</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">y_gaze</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">pupil</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s1">'pupil'</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         
         <span class="c1"># Apply interval mask if provided</span>
         <span class="k">if</span> <span class="n">intervals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -946,7 +870,7 @@ window.addEventListener("load", load);</script>
             <span class="n">pupil</span> <span class="o">=</span> <span class="n">pupil</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
             
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples from specified intervals&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples from specified intervals"</span><span class="p">)</span>
         
         <span class="c1"># Scale and center using experimental_setup</span>
         <span class="n">scale_x</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">mm_per_pixel_x</span>
@@ -965,18 +889,18 @@ window.addEventListener("load", load);</script>
         
         <span class="n">n_valid</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">n_valid</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Insufficient valid samples for fitting: </span><span class="si">{</span><span class="n">n_valid</span><span class="si">}</span><span class="s2"> &lt; 100&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Insufficient valid samples for fitting: </span><span class="si">{</span><span class="n">n_valid</span><span class="si">}</span><span class="s2"> &lt; 100"</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Valid samples after preprocessing: </span><span class="si">{</span><span class="n">n_valid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Valid samples after preprocessing: </span><span class="si">{</span><span class="n">n_valid</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         
         <span class="c1"># Preprocessing: lowpass filter</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Applying </span><span class="si">{</span><span class="n">lowpass_freq</span><span class="si">}</span><span class="s2"> Hz lowpass filter&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Applying </span><span class="si">{</span><span class="n">lowpass_freq</span><span class="si">}</span><span class="s2"> Hz lowpass filter"</span><span class="p">)</span>
         
         <span class="n">nyquist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="mi">2</span>
         <span class="k">if</span> <span class="n">lowpass_freq</span> <span class="o">&gt;=</span> <span class="n">nyquist</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lowpass frequency (</span><span class="si">{</span><span class="n">lowpass_freq</span><span class="si">}</span><span class="s2"> Hz) must be &lt; Nyquist (</span><span class="si">{</span><span class="n">nyquist</span><span class="si">}</span><span class="s2"> Hz)&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Lowpass frequency (</span><span class="si">{</span><span class="n">lowpass_freq</span><span class="si">}</span><span class="s2"> Hz) must be &lt; Nyquist (</span><span class="si">{</span><span class="n">nyquist</span><span class="si">}</span><span class="s2"> Hz)"</span><span class="p">)</span>
         
         <span class="c1"># Apply Butterworth lowpass filter (order 3)</span>
         <span class="n">pupil_filt</span> <span class="o">=</span> <span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">pupil</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">lowpass_freq</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
@@ -986,7 +910,7 @@ window.addEventListener("load", load);</script>
             <span class="n">downsample_factor</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="n">target_fs</span><span class="p">))</span>
             
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downsampling by factor </span><span class="si">{</span><span class="n">downsample_factor</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="si">}</span><span class="s2"> Hz → </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="o">/</span><span class="n">downsample_factor</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> Hz&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downsampling by factor </span><span class="si">{</span><span class="n">downsample_factor</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="si">}</span><span class="s2"> Hz → </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="o">/</span><span class="n">downsample_factor</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> Hz"</span><span class="p">)</span>
             
             <span class="n">time</span> <span class="o">=</span> <span class="n">downsample</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">downsample_factor</span><span class="p">)</span>
             <span class="n">x_gaze_mm</span> <span class="o">=</span> <span class="n">downsample</span><span class="p">(</span><span class="n">x_gaze_mm</span><span class="p">,</span> <span class="n">downsample_factor</span><span class="p">)</span>
@@ -1004,7 +928,7 @@ window.addEventListener("load", load);</script>
         <span class="n">n_basis</span> <span class="o">=</span> <span class="n">basis_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;B-spline basis: </span><span class="si">{</span><span class="n">n_basis</span><span class="si">}</span><span class="s2"> functions over </span><span class="si">{</span><span class="n">duration_sec</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"B-spline basis: </span><span class="si">{</span><span class="n">n_basis</span><span class="si">}</span><span class="s2"> functions over </span><span class="si">{</span><span class="n">duration_sec</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> seconds"</span><span class="p">)</span>
         
         <span class="c1"># Initialize parameters</span>
         <span class="c1"># Spline coefficients: initialize to mean pupil size</span>
@@ -1024,27 +948,27 @@ window.addEventListener("load", load);</script>
         <span class="c1"># check that the initial values are within the bounds</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bounds</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">params_init</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">lb</span> <span class="ow">or</span> <span class="n">params_init</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">ub</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initial parameter </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> is out of bounds: </span><span class="si">{</span><span class="n">params_init</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> not in [</span><span class="si">{</span><span class="n">lb</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">ub</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Initial parameter </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> is out of bounds: </span><span class="si">{</span><span class="n">params_init</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> not in [</span><span class="si">{</span><span class="n">lb</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">ub</span><span class="si">}</span><span class="s2">]"</span><span class="p">)</span>
                 <span class="n">params_init</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">lb</span> <span class="o">+</span> <span class="n">ub</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
         <span class="c1"># Run optimization</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting optimization...&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Starting optimization..."</span><span class="p">)</span>
         
         <span class="n">result</span> <span class="o">=</span> <span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span>
             <span class="n">fun</span><span class="o">=</span><span class="n">_objective_function</span><span class="p">,</span>
             <span class="n">x0</span><span class="o">=</span><span class="n">params_init</span><span class="p">,</span>
             <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">x_gaze_mm</span><span class="p">,</span> <span class="n">y_gaze_mm</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">pupil_filt</span><span class="p">,</span> <span class="n">basis_matrix</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">lambda_smooth</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-            <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s1">'L-BFGS-B'</span><span class="p">,</span>
             <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
             <span class="n">jac</span><span class="o">=</span><span class="n">_objective_gradient</span><span class="p">,</span>
-            <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;disp&#39;</span><span class="p">:</span> <span class="n">verbose</span><span class="p">,</span> <span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="mi">500</span><span class="p">}</span>
+            <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">'disp'</span><span class="p">:</span> <span class="n">verbose</span><span class="p">,</span> <span class="s1">'maxiter'</span><span class="p">:</span> <span class="mi">500</span><span class="p">}</span>
         <span class="p">)</span>
         
         <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimization did not converge: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Optimization did not converge: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">message</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimization converged in </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">nit</span><span class="si">}</span><span class="s2"> iterations&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Optimization converged in </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">nit</span><span class="si">}</span><span class="s2"> iterations"</span><span class="p">)</span>
         
         <span class="c1"># Extract fitted parameters</span>
         <span class="n">params_opt</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span>
@@ -1064,17 +988,17 @@ window.addEventListener("load", load);</script>
         <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
         
         <span class="n">fit_metrics</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;r2&#39;</span><span class="p">:</span> <span class="n">r2</span><span class="p">,</span>
-            <span class="s1">&#39;rmse&#39;</span><span class="p">:</span> <span class="n">rmse</span><span class="p">,</span>
-            <span class="s1">&#39;n_samples&#39;</span><span class="p">:</span> <span class="n">n_samples</span><span class="p">,</span>
-            <span class="s1">&#39;loss&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">fun</span><span class="p">,</span>
-            <span class="s1">&#39;n_iterations&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">nit</span><span class="p">,</span>
-            <span class="s1">&#39;converged&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span>
+            <span class="s1">'r2'</span><span class="p">:</span> <span class="n">r2</span><span class="p">,</span>
+            <span class="s1">'rmse'</span><span class="p">:</span> <span class="n">rmse</span><span class="p">,</span>
+            <span class="s1">'n_samples'</span><span class="p">:</span> <span class="n">n_samples</span><span class="p">,</span>
+            <span class="s1">'loss'</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">fun</span><span class="p">,</span>
+            <span class="s1">'n_iterations'</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">nit</span><span class="p">,</span>
+            <span class="s1">'converged'</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span>
         <span class="p">}</span>
         
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fit quality: R² = </span><span class="si">{</span><span class="n">r2</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, RMSE = </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Camera position: theta = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">theta_opt</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">°, phi = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">phi_opt</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">°&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Fit quality: R² = </span><span class="si">{</span><span class="n">r2</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, RMSE = </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Camera position: theta = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">theta_opt</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">°, phi = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">phi_opt</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">°"</span><span class="p">)</span>
         
         <span class="c1"># Create ForeshorteningCalibration object</span>
         <span class="n">calibration</span> <span class="o">=</span> <span class="n">ForeshorteningCalibration</span><span class="p">(</span>
@@ -1133,7 +1057,7 @@ window.addEventListener("load", load);</script>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

@@ -6,7 +6,7 @@
    "source": [
     "# Importing Data from Eyelink ASC files Example\n",
     "\n",
-    "This example shows how to read `.asc` files generated from Eyelink EDF files using `edf2asc`. Most likely, it will be better to read the EDF file directly, see the [notebook on reading EDF files]()."
+    "This example shows how to read `.asc` files generated from Eyelink EDF files using `edf2asc`. Most likely, it will be better to read the EDF file directly, see the [notebook on reading EDF files](importdata_edf.ipynb)."
    ]
   },
   {

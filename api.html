@@ -8,6 +8,7 @@
     <title>API documentation &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <script src="_static/documentation_options.js?v=5929fcd5"></script>
@@ -17,7 +18,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
     <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
 
@@ -26,173 +26,11 @@
 
 const initStyles = () => {
     const defaultStyle = document.createElement('style');
-    defaultStyle.textContent = `pre.mermaid {
-    /* Same as .mermaid-container > pre */
-    display: block;
-    width: 100%;
-}
-
-pre.mermaid > svg {
-    /* Same as .mermaid-container > pre > svg */
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}`;
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
     document.head.appendChild(defaultStyle);
 
     const fullscreenStyle = document.createElement('style');
-    fullscreenStyle.textContent = `.mermaid-container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-}
-
-.mermaid-container > pre {
-    display: block;
-    width: 100%;
-}
-
-.mermaid-container > pre > svg {
-    height: 500px;
-    width: 100%;
-    max-width: 100% !important;
-}
-
-.mermaid-fullscreen-btn {
-    width: 28px;
-    height: 28px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-    color: #333;
-}
-
-.mermaid-fullscreen-btn:hover {
-    opacity: 100% !important;
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-btn.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-btn.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal {
-    display: none;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 95vw;
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.98);
-    z-index: 9999;
-    padding: 20px;
-    overflow: auto;
-}
-
-.mermaid-fullscreen-modal.dark-theme {
-    background: rgba(0, 0, 0, 0.98);
-}
-
-.mermaid-fullscreen-modal.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen {
-    position: relative;
-    width: 95vw;
-    height: 90vh;
-    max-width: 95vw;
-    max-height: 90vh;
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    overflow: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen.dark-theme {
-    background: #1a1a1a;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-}
-
-.mermaid-container-fullscreen pre.mermaid {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mermaid-container-fullscreen .mermaid svg {
-    height: 100% !important;
-    width: 100% !important;
-    cursor: grab;
-}
-
-.mermaid-fullscreen-close {
-    position: fixed !important;
-    top: 20px !important;
-    right: 20px !important;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.2s;
-    font-size: 24px;
-    line-height: 1;
-    color: #333;
-}
-
-.mermaid-fullscreen-close:hover {
-    background: white;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-    transform: scale(1.1);
-}
-
-.mermaid-fullscreen-close.dark-theme {
-    background: rgba(50, 50, 50, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #e0e0e0;
-}
-
-.mermaid-fullscreen-close.dark-theme:hover {
-    background: rgba(60, 60, 60, 1);
-    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
-}
-
-.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
-    display: none !important;
-}`;
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
     document.head.appendChild(fullscreenStyle);
 }
 
@@ -237,6 +75,32 @@ let darkTheme = isDarkTheme();
 let modal = null;
 let modalContent = null;
 let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
 
 const runMermaid = async (rerun) => {
     console.log("Running mermaid diagrams, rerun =", rerun);
@@ -244,7 +108,15 @@ const runMermaid = async (rerun) => {
     let all_mermaids = document.querySelectorAll(".mermaid");
 
     if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
         all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
             if(!el.hasAttribute("data-original-code")) {
                 // store original code
                 // console.log(`Storing original code for first run: `, el.innerHTML);
@@ -261,42 +133,100 @@ const runMermaid = async (rerun) => {
                 el.setAttribute('data-original-code', el.innerHTML);
             }
         });
-        await mermaid.run();
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
     }
 
     all_mermaids = document.querySelectorAll(".mermaid");
-    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
 
-    if ("False" === "True") {
-        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
         if(mermaids_to_add_zoom > 0) {
-            var svgs = d3.selectAll("");
-            if(all_mermaids.length !== mermaids_processed.length) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
                 setTimeout(() => runMermaid(false), 200);
                 return;
-            } else if(svgs.size() !== mermaids_to_add_zoom) {
-                setTimeout(() => runMermaid(false), 200);
-                return;
-            } else {
-                svgs.each(function() {
-                    var svg = d3.select(this);
-                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
-                    var inner = svg.select("g");
-                    var zoom = d3.zoom().on("zoom", function(event) {
-                        inner.attr("transform", event.transform);
-                    });
-                    svg.call(zoom);
-                });
             }
+            addZoomToSvgs(svgs);
         }
-    } else if(all_mermaids.length !== mermaids_processed.length) {
+    } else if(mermaids_active.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
         setTimeout(() => runMermaid(false), 200);
         return;
     }
 
     // Stop here if not adding fullscreen capability
-    if ("True" !== "True") return;
+    if (!true) return;
 
     if (modal !== null ) {
         // Destroy existing modal
@@ -319,7 +249,7 @@ const runMermaid = async (rerun) => {
     modalContent = modal.querySelector('.mermaid-container-fullscreen');
     const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
 
-    const closeModal = () => {
+    closeModal = () => {
         modal.classList.remove('active');
         modalContent.innerHTML = '';
         document.body.style.overflow = ''
@@ -330,12 +260,6 @@ const runMermaid = async (rerun) => {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.classList.contains('active')) {
-            closeModal();
-        }
-    });
-
     document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
         if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
             mermaidDiv.closest('.mermaid-fullscreen-modal')) {
@@ -355,8 +279,8 @@ const runMermaid = async (rerun) => {
         const fullscreenBtn = document.createElement('button');
         fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
         fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
-        fullscreenBtn.textContent = '⛶';
-        fullscreenBtn.style.opacity = '50%';
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
 
         // Calculate dynamic position based on diagram's margin and padding
         const diagramStyle = window.getComputedStyle(mermaidDiv);
@@ -368,7 +292,7 @@ const runMermaid = async (rerun) => {
         fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
 
         fullscreenBtn.addEventListener('click', () => {
-            previousScrollOffset = [window.scroll, window.scrollY];
+            previousScrollOffset = [window.scrollX, window.scrollY];
             const clone = mermaidDiv.cloneNode(true);
             modalContent.innerHTML = '';
             modalContent.appendChild(clone);
@@ -380,9 +304,9 @@ const runMermaid = async (rerun) => {
                 svg.style.width = '100%';
                 svg.style.height = 'auto';
                 svg.style.maxWidth = '100%';
-                svg.style.sdisplay = 'block';
+                svg.style.display = 'block';
 
-                if ("False" === "True") {
+                if (false) {
                     setTimeout(() => {
                         const g = svg.querySelector('g');
                         if (g) {
@@ -405,8 +329,11 @@ const runMermaid = async (rerun) => {
     });
 };
 
+
+
 const load = async () => {
     initStyles();
+
 
     await runMermaid(true);
 
@@ -416,10 +343,8 @@ const load = async () => {
             darkTheme = newDarkTheme;
             console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
             await mermaid.initialize(
-                {...JSON.parse(
-                    `{"startOnLoad": false}`
-                ),
-                ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
                 }
             );
             await runMermaid(true);
@@ -444,14 +369,13 @@ const load = async () => {
 
 console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
 mermaid.initialize(
-    {...JSON.parse(
-        `{"startOnLoad": false}`
-    ),
-    ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
     }
 );
 
-window.addEventListener("load", load);</script>
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Developers" href="dev.html" />
@@ -611,16 +535,16 @@ pupil is optional</p></li>
 pupil is optional</p></li>
 <li><p><strong>right_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided, both x and y)
 pupil is optional</p></li>
-<li><p><strong>sampling_rate</strong> (<em>float</em>) – sampling-rate of the pupillary signal in Hz; if None,</p></li>
-<li><p><strong>experimental_setup</strong> (<em>ExperimentalSetup</em><em>, </em><em>optional</em>) – Geometric model of the experimental setup including screen geometry,
+<li><p><strong>sampling_rate</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – sampling-rate of the pupillary signal in Hz; if None,</p></li>
+<li><p><strong>experimental_setup</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentalSetup</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Geometric model of the experimental setup including screen geometry,
 eye position, camera position, and screen orientation.</p></li>
 <li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
 <li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
 <li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
-<li><p><strong>calibration</strong> (<em>dict</em><em>, </em><em>optional</em>) – Dictionary of SpatialCalibration objects, one per eye (keys: ‘left’, ‘right’)</p></li>
-<li><p><strong>keep_orig</strong> (<em>bool</em>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
+<li><p><strong>calibration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">SpatialCalibration</span></code>] | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Dictionary of SpatialCalibration objects, one per eye (keys: ‘left’, ‘right’)</p></li>
+<li><p><strong>keep_orig</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
 as initiated in the constructor is stored in member <cite>original</cite></p></li>
-<li><p><strong>fill_time_discontinuities</strong> (<em>bool</em>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
+<li><p><strong>fill_time_discontinuities</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
 when this option is True, such entries will be made and the signal set to 0 there
 (or do it later using <cite>fill_time_discontinuities()</cite>)</p></li>
 </ul>
@@ -638,13 +562,13 @@ when this option is True, such entries will be made and the signal set to 0 ther
 <dl class="field-list simple">
 <dt class="field-odd">Attributes<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">blinks</span></code></dt><dd><p>Return blinks (intervals) for all eyes.</p>
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.blinks" title="pypillometry.GenericEyeData.blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blinks</span></code></a></dt><dd><p>Return blinks (intervals) for all eyes.</p>
 </dd>
 <dt><strong>events</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyes</span></code></dt><dd><p>Return a list of available eyes in the dataset.</p>
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.eyes" title="pypillometry.GenericEyeData.eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyes</span></code></a></dt><dd><p>Return a list of available eyes in the dataset.</p>
 </dd>
 <dt><strong>plot</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></dt><dd><p>Return a list of available variables in the dataset.</p>
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.variables" title="pypillometry.GenericEyeData.variables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></a></dt><dd><p>Return a list of available variables in the dataset.</p>
 </dd>
 </dl>
 </dd>
@@ -848,38 +772,38 @@ preprocessed (filtered and downsampled) before fitting.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eye</strong> (<em>str</em>) – Which eye to fit (‘left’ or ‘right’)</p></li>
-<li><p><strong>r</strong> (<em>float</em><em>, </em><em>str</em><em>, or </em><em>pint.Quantity</em><em>, </em><em>optional</em>) – Eye-to-camera distance. If not provided, uses the
+<li><p><strong>eye</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Which eye to fit (‘left’ or ‘right’)</p></li>
+<li><p><strong>r</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Eye-to-camera distance. If not provided, uses the
 <cite>r</cite> from experimental_setup.
 - Plain number: assumed to be mm (with warning)
 - String: e.g., “600 mm”, “60 cm”
 - Quantity: e.g., 600 * ureg.mm</p></li>
-<li><p><strong>d</strong> (<em>float</em><em>, </em><em>str</em><em>, or </em><em>pint.Quantity</em><em>, </em><em>optional</em>) – Eye-to-screen distance. If not provided, uses the
+<li><p><strong>d</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Eye-to-screen distance. If not provided, uses the
 <cite>d</cite> from experimental_setup.
 - Plain number: assumed to be mm (with warning)
 - String: e.g., “700 mm”, “70 cm”
 - Quantity: e.g., 700 * ureg.mm</p></li>
-<li><p><strong>intervals</strong> (<em>Intervals</em><em>, </em><em>optional</em>) – Time intervals to use for fitting. If None, uses all available data.
+<li><p><strong>intervals</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Time intervals to use for fitting. If None, uses all available data.
 Useful for fitting only on calibration periods.</p></li>
-<li><p><strong>target_fs</strong> (<em>float</em><em>, </em><em>default 50.0</em>) – Target sampling rate in Hz after downsampling for efficiency.
+<li><p><strong>target_fs</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Target sampling rate in Hz after downsampling for efficiency.
 Pupil dynamics are typically well-preserved at 50 Hz.</p></li>
-<li><p><strong>lowpass_freq</strong> (<em>float</em><em>, </em><em>default 4.0</em>) – Lowpass filter cutoff frequency in Hz. Removes high-frequency noise
+<li><p><strong>lowpass_freq</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Lowpass filter cutoff frequency in Hz. Removes high-frequency noise
 before downsampling. Should be below target_fs/2 (Nyquist).</p></li>
-<li><p><strong>lambda_smooth</strong> (<em>float</em><em>, </em><em>default 1.0</em>) – Smoothness regularization weight. Higher values produce smoother
+<li><p><strong>lambda_smooth</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Smoothness regularization weight. Higher values produce smoother
 A0(t) estimates. Tune via cross-validation if needed.</p></li>
-<li><p><strong>knots_per_second</strong> (<em>float</em><em>, </em><em>default 1.0</em>) – Number of B-spline knots per second. Controls temporal resolution
+<li><p><strong>knots_per_second</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Number of B-spline knots per second. Controls temporal resolution
 of A0(t) model. Typical values: 0.5-2.0.</p></li>
-<li><p><strong>initial_theta</strong> (<em>float</em><em>, </em><em>str</em><em>, or </em><em>pint.Quantity</em><em>, </em><em>optional</em>) – Initial guess for camera polar angle. If None, uses
+<li><p><strong>initial_theta</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Initial guess for camera polar angle. If None, uses
 pi/2 (horizontal) as starting point.
 - Plain number: assumed to be radians (with warning)
 - String: e.g., “20 degrees”, “0.349 radians”
 - Quantity: e.g., 20 * ureg.degree</p></li>
-<li><p><strong>initial_phi</strong> (<em>float</em><em>, </em><em>str</em><em>, or </em><em>pint.Quantity</em><em>, </em><em>optional</em>) – Initial guess for camera azimuthal angle. If None,
+<li><p><strong>initial_phi</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Initial guess for camera azimuthal angle. If None,
 uses 0 (camera on x-axis) as starting point.
 - Plain number: assumed to be radians (with warning)
 - String: e.g., “-90 degrees”, “-1.57 radians”
 - Quantity: e.g., -90 * ureg.degree</p></li>
-<li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>default True</em>) – Print optimization progress and fit statistics.</p></li>
+<li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Print optimization progress and fit statistics.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -887,7 +811,7 @@ uses 0 (camera on x-axis) as starting point.
 spline coefficients for A0(t), and fit quality metrics.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ForeshorteningCalibration</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ForeshorteningCalibration</span></code></span></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – If specified eye doesn’t exist or lacks gaze/pupil data.</p>
@@ -908,41 +832,41 @@ spline coefficients for A0(t), and fit quality metrics.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s1">&#39;recording.edf&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s1">'recording.edf'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set experimental setup</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">set_experimental_setup</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;52 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;29 cm&quot;</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">&quot;65 cm&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">camera_offset</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;0 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;-30 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;0 cm&quot;</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"52 cm"</span><span class="p">,</span> <span class="s2">"29 cm"</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">"65 cm"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">camera_offset</span><span class="o">=</span><span class="p">(</span><span class="s2">"0 cm"</span><span class="p">,</span> <span class="s2">"-30 cm"</span><span class="p">,</span> <span class="s2">"0 cm"</span><span class="p">),</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Fit on calibration period (first 2 minutes)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cal_intervals</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">end_time</span><span class="o">=</span><span class="mi">120000</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">calib</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">fit_foreshortening</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">eye</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">eye</span><span class="o">=</span><span class="s1">'left'</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">intervals</span><span class="o">=</span><span class="n">cal_intervals</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Or provide r and d explicitly</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">calib</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">fit_foreshortening</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">eye</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">r</span><span class="o">=</span><span class="s2">&quot;60 cm&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">d</span><span class="o">=</span><span class="s2">&quot;70 cm&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">eye</span><span class="o">=</span><span class="s1">'left'</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">r</span><span class="o">=</span><span class="s2">"60 cm"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">d</span><span class="o">=</span><span class="s2">"70 cm"</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">intervals</span><span class="o">=</span><span class="n">cal_intervals</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Inspect fit quality</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">calib</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;R² = </span><span class="si">{</span><span class="n">calib</span><span class="o">.</span><span class="n">fit_metrics</span><span class="p">[</span><span class="s1">&#39;r2&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"R² = </span><span class="si">{</span><span class="n">calib</span><span class="o">.</span><span class="n">fit_metrics</span><span class="p">[</span><span class="s1">'r2'</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Compute correction for all data</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">correction_factor</span> <span class="o">=</span> <span class="n">calib</span><span class="o">.</span><span class="n">get_correction_factor</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'x'</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">]</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">corrected_pupil</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;pupil&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">correction_factor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">corrected_pupil</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'pupil'</span><span class="p">]</span> <span class="o">*</span> <span class="n">correction_factor</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
@@ -1005,29 +929,29 @@ spline coefficients for A0(t), and fit quality metrics.</p>
 using <cite>sampling_rate</cite> (in ms)</p></li>
 <li><p><strong>left_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from left eye (at least one of the eyes must be provided)</p></li>
 <li><p><strong>right_pupil</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided)</p></li>
-<li><p><strong>sampling_rate</strong> (<em>float</em>) – sampling-rate of the signal in Hz; if None,</p></li>
+<li><p><strong>sampling_rate</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – sampling-rate of the signal in Hz; if None,</p></li>
 <li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
 <li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
 <li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
-<li><p><strong>keep_orig</strong> (<em>bool</em>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
+<li><p><strong>keep_orig</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
 as initiated in the constructor is stored in member <cite>original</cite></p></li>
-<li><p><strong>fill_time_discontinuities</strong> (<em>bool</em>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
+<li><p><strong>fill_time_discontinuities</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
 when this option is True, such entries will be made and the signal set to 0 there
 (or do it later using <cite>fill_time_discontinuities()</cite>)</p></li>
-<li><p><strong>inplace</strong> (<em>bool</em>) – if True, the object is modified in place; if False, a new object is returned
+<li><p><strong>inplace</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, the object is modified in place; if False, a new object is returned
 this object-level property can be overwritten by the method-level <cite>inplace</cite> argument
 default is “False”</p></li>
 </ul>
 </dd>
 <dt class="field-even">Attributes<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">blinks</span></code></dt><dd><p>Return blinks (intervals) for all eyes.</p>
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.blinks" title="pypillometry.GenericEyeData.blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blinks</span></code></a></dt><dd><p>Return blinks (intervals) for all eyes.</p>
 </dd>
 <dt><strong>events</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyes</span></code></dt><dd><p>Return a list of available eyes in the dataset.</p>
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.eyes" title="pypillometry.GenericEyeData.eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyes</span></code></a></dt><dd><p>Return a list of available eyes in the dataset.</p>
 </dd>
 <dt><strong>plot</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></dt><dd><p>Return a list of available variables in the dataset.</p>
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.variables" title="pypillometry.GenericEyeData.variables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></a></dt><dd><p>Return a list of available variables in the dataset.</p>
 </dd>
 </dl>
 </dd>
@@ -1181,20 +1105,20 @@ the detected blinks are returned as Intervals objects.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>min_duration</strong> (<em>float</em>) – minimum duration in ms for a sequence of missing numbers to be treated as blink</p></li>
-<li><p><strong>blink_val</strong> (<em>float</em>) – “missing value” code</p></li>
-<li><p><strong>winsize</strong> (<em>float</em>) – window-size for Savitzky-Golay velocity estimation in ms</p></li>
+<li><p><strong>min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – minimum duration in ms for a sequence of missing numbers to be treated as blink</p></li>
+<li><p><strong>blink_val</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – “missing value” code</p></li>
+<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – window-size for Savitzky-Golay velocity estimation in ms</p></li>
 <li><p><strong>vel_onset</strong> (<em>float</em><em> or </em><em>str</em>) – velocity threshold to detect blink onset (negative value).
 - If float: threshold in pupil-units per millisecond (e.g., -5.0)
 - If str: percentile of velocity distribution (e.g., “5%” for bottom 5%)</p></li>
 <li><p><strong>vel_offset</strong> (<em>float</em><em> or </em><em>str</em>) – velocity threshold to detect blink offset (positive value).
 - If float: threshold in pupil-units per millisecond (e.g., 5.0)
 - If str: percentile of velocity distribution (e.g., “95%” for top 95%)</p></li>
-<li><p><strong>vel_onset_min_duration</strong> (<em>float</em>) – minimum duration in ms that velocity must exceed threshold to detect as onset
+<li><p><strong>vel_onset_min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – minimum duration in ms that velocity must exceed threshold to detect as onset
 (to avoid noise-induced false detections)</p></li>
-<li><p><strong>vel_offset_min_duration</strong> (<em>float</em>) – minimum duration in ms that velocity must exceed threshold to detect as offset
+<li><p><strong>vel_offset_min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – minimum duration in ms that velocity must exceed threshold to detect as offset
 (to avoid noise-induced false detections)</p></li>
-<li><p><strong>strategies</strong> (<em>list</em><em> of </em><em>strategies to use</em>) – so far, use a list containing any combination of “zero” and “velocity”</p></li>
+<li><p><strong>strategies</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – so far, use a list containing any combination of “zero” and “velocity”</p></li>
 <li><p><strong>apply_mask</strong> (<em>bool</em>) – if <cite>True</cite>, apply detected blinks as masks to the data and return self
 if <cite>False</cite> (default), return detected blinks as Intervals (or dict of Intervals)</p></li>
 <li><p><strong>ignore_existing_mask</strong> (<em>bool</em>) – if <cite>True</cite> (default), use raw data ignoring existing masks
@@ -1227,21 +1151,21 @@ can help to set good parameter values for <cite>winsize</cite>, <cite>vel_onset<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>store_as</strong> (<em>str</em>) – how to store the interpolated data; either “pupil” (default) which replaces
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
+<li><p><strong>store_as</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – how to store the interpolated data; either “pupil” (default) which replaces
 the original pupil data or a string that will be used as the new variable
 name in the data (e.g., “pupilinterp”)</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – method to use; so far, only “mahot” is implemented</p></li>
-<li><p><strong>winsize</strong> (<em>float</em>) – size of the Savitzky-Golay window in ms</p></li>
+<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – size of the Savitzky-Golay window in ms</p></li>
 <li><p><strong>vel_onset</strong> (<em>float</em><em> or </em><em>str</em>) – velocity threshold to detect blink onset (negative value).
 - If float: threshold in pupil-units per millisecond (e.g., -5.0)
 - If str: percentile of velocity distribution (e.g., “5%” for bottom 5%)</p></li>
 <li><p><strong>vel_offset</strong> (<em>float</em><em> or </em><em>str</em>) – velocity threshold to detect blink offset (positive value).
 - If float: threshold in pupil-units per millisecond (e.g., 5.0)
 - If str: percentile of velocity distribution (e.g., “95%” for top 95%)</p></li>
-<li><p><strong>margin</strong> (<em>Tuple</em><em>[</em><em>float</em><em>,</em><em>float</em><em>]</em>) – margin that is subtracted/added to onset and offset (in ms)</p></li>
-<li><p><strong>blinkwindow</strong> (<em>float</em>) – how much time before and after each blink to include (in ms)</p></li>
-<li><p><strong>interp_type</strong> (<em>str</em>) – type of interpolation accepted by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.interpolate.interp1d()</span></code></p></li>
+<li><p><strong>margin</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – margin that is subtracted/added to onset and offset (in ms)</p></li>
+<li><p><strong>blinkwindow</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – how much time before and after each blink to include (in ms)</p></li>
+<li><p><strong>interp_type</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – type of interpolation accepted by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.interpolate.interp1d()</span></code></p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
@@ -1289,11 +1213,11 @@ if <cite>False</cite>, make and return copy before making changes</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<em>list</em><em> or </em><em>str</em>) – str or list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>npar</strong> (<em>float</em>) – npar-parameter for the canonical response-function or “free”;
+<li><p><strong>npar</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – npar-parameter for the canonical response-function or “free”;
 in case of “free”, the function optimizes for this parameter</p></li>
-<li><p><strong>tmax</strong> (<em>float</em>) – tmax-parameter for the canonical response-function or “free”;
+<li><p><strong>tmax</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – tmax-parameter for the canonical response-function or “free”;
 in case of “free”, the function optimizes for this parameter</p></li>
-<li><p><strong>bounds</strong> (<em>dict</em>) – in case that one or both parameters are estimated, give the lower
+<li><p><strong>bounds</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span>) – in case that one or both parameters are estimated, give the lower
 and upper bounds for the parameters</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
@@ -1316,8 +1240,8 @@ preventing NaN propagation through the filter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff frequency in Hz</p></li>
-<li><p><strong>order</strong> (<em>int</em>) – filter order</p></li>
+<li><p><strong>cutoff</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – lowpass-filter cutoff frequency in Hz</p></li>
+<li><p><strong>order</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – filter order</p></li>
 <li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to filter; if empty, all available eyes are filtered</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes
@@ -1338,7 +1262,7 @@ used (with offset correction if applicable).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>Method for merging the two eyes. Options:</p>
+<li><p><strong>method</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – <p>Method for merging the two eyes. Options:</p>
 <ul>
 <li><p>”local_offset” (default): Compute a slowly-varying offset between eyes
 using lowpass filtering. This handles drift over the session. The right
@@ -1351,14 +1275,14 @@ Timepoints where only one eye is valid remain masked.</p></li>
 <p># TODO: Implement “signal_quality” method that weights eyes by their
 # local signal quality (SNR), giving more weight to the cleaner eye.</p>
 </p></li>
-<li><p><strong>lowpass_cutoff</strong> (<em>float</em><em>, </em><em>optional</em>) – Cutoff frequency (Hz) for the lowpass filter used in “local_offset” method.
+<li><p><strong>lowpass_cutoff</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Cutoff frequency (Hz) for the lowpass filter used in “local_offset” method.
 Lower values produce a more stable offset that only tracks very slow drift.
 Default is 0.2 Hz (~5 second time constant).</p></li>
-<li><p><strong>max_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum iterations for iterative lowpass filtering in “local_offset” method.
+<li><p><strong>max_iter</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Maximum iterations for iterative lowpass filtering in “local_offset” method.
 Default is 10.</p></li>
-<li><p><strong>keep_eyes</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True (default), keep the original left/right pupil data.
+<li><p><strong>keep_eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True (default), keep the original left/right pupil data.
 If False, remove the original eye data after merging.</p></li>
-<li><p><strong>inplace</strong> (<em>bool</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – If True, modify in-place. If False, return a copy.
+<li><p><strong>inplace</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – If True, modify in-place. If False, return a copy.
 If None, use the object’s default setting.</p></li>
 </ul>
 </dd>
@@ -1386,15 +1310,15 @@ If an unknown method is specified.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Default: local offset correction</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">pupil_merge_eyes</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">merged</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;merged&quot;</span><span class="p">,</span> <span class="s2">&quot;pupil&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">merged</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">"merged"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use global offset (simpler, assumes no drift)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">pupil_merge_eyes</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;offset&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">pupil_merge_eyes</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"offset"</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Only use timepoints where both eyes are valid</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">pupil_merge_eyes</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;both_available&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">pupil_merge_eyes</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"both_available"</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Remove original eye data after merging</span>
@@ -1420,12 +1344,12 @@ If an unknown method is specified.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to smooth; if empty, all available eyes are smoothed</p></li>
-<li><p><strong>window</strong> (<em>str</em>) – <dl class="simple">
+<li><p><strong>window</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – <dl class="simple">
 <dt>(the type of window from ‘flat’, ‘hanning’, ‘hamming’, ‘bartlett’, ‘blackman’);</dt><dd><p>flat window will produce a moving average smoothing.</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>winsize</strong> (<em>float</em>) – the length of the window in ms</p></li>
+<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – the length of the window in ms</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes</p></li>
 </ul>
@@ -1467,32 +1391,32 @@ using <cite>sampling_rate</cite> (in ms)</p></li>
 <li><p><strong>left_y</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from left eye (at least one of the eyes must be provided, both x and y)</p></li>
 <li><p><strong>right_x</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided, both x and y)</p></li>
 <li><p><strong>right_y</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – data from right eye (at least one of the eyes must be provided, both x and y)</p></li>
-<li><p><strong>sampling_rate</strong> (<em>float</em>) – sampling-rate of the signal in Hz; if None,</p></li>
-<li><p><strong>experimental_setup</strong> (<em>ExperimentalSetup</em><em>, </em><em>optional</em>) – Geometric model of the experimental setup including screen geometry,
+<li><p><strong>sampling_rate</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – sampling-rate of the signal in Hz; if None,</p></li>
+<li><p><strong>experimental_setup</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentalSetup</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Geometric model of the experimental setup including screen geometry,
 eye position, camera position, and screen orientation.</p></li>
 <li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – name of the dataset or <cite>None</cite> (in which case a random string is selected)</p></li>
 <li><p><strong>event_onsets</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – time-onsets of any events in the data (in ms, matched in <cite>time</cite> vector)</p></li>
 <li><p><strong>event_labels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></span>) – for each event in <cite>event_onsets</cite>, provide a label</p></li>
-<li><p><strong>calibration</strong> (<em>dict</em><em>, </em><em>optional</em>) – Dictionary of SpatialCalibration objects, one per eye (keys: ‘left’, ‘right’)</p></li>
-<li><p><strong>keep_orig</strong> (<em>bool</em>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
+<li><p><strong>calibration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">SpatialCalibration</span></code>] | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Dictionary of SpatialCalibration objects, one per eye (keys: ‘left’, ‘right’)</p></li>
+<li><p><strong>keep_orig</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – keep a copy of the original dataset? If <cite>True</cite>, a copy of the object
 as initiated in the constructor is stored in member <cite>original</cite></p></li>
-<li><p><strong>fill_time_discontinuities</strong> (<em>bool</em>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
+<li><p><strong>fill_time_discontinuities</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – sometimes, when the eyetracker loses signal, no entry in the EDF is made;
 when this option is True, such entries will be made and the signal set to 0 there
 (or do it later using <cite>fill_time_discontinuities()</cite>)</p></li>
-<li><p><strong>inplace</strong> (<em>bool</em>) – if True, the object is modified in place; if False, a new object is returned
+<li><p><strong>inplace</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, the object is modified in place; if False, a new object is returned
 this object-level property can be overwritten by the method-level <cite>inplace</cite> argument
 default is “False”</p></li>
 </ul>
 </dd>
 <dt class="field-even">Attributes<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">blinks</span></code></dt><dd><p>Return blinks (intervals) for all eyes.</p>
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.blinks" title="pypillometry.GenericEyeData.blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blinks</span></code></a></dt><dd><p>Return blinks (intervals) for all eyes.</p>
 </dd>
 <dt><strong>events</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyes</span></code></dt><dd><p>Return a list of available eyes in the dataset.</p>
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.eyes" title="pypillometry.GenericEyeData.eyes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eyes</span></code></a></dt><dd><p>Return a list of available eyes in the dataset.</p>
 </dd>
 <dt><strong>plot</strong></dt><dd></dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></dt><dd><p>Return a list of available variables in the dataset.</p>
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.variables" title="pypillometry.GenericEyeData.variables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></a></dt><dd><p>Return a list of available variables in the dataset.</p>
 </dd>
 </dl>
 </dd>
@@ -1630,15 +1554,15 @@ are returned as Intervals objects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>default=.99</em>) – If thr_type is “percentile”: percentile value (0-1) for threshold calculation.
+<li><p><strong>threshold</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – If thr_type is “percentile”: percentile value (0-1) for threshold calculation.
 If thr_type is “pixel”: maximum allowed distance in pixels.</p></li>
-<li><p><strong>thr_type</strong> (<em>str</em><em>, </em><em>default=&quot;percentile&quot;</em>) – Type of threshold to apply:
+<li><p><strong>thr_type</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Type of threshold to apply:
 - “percentile”: threshold is calculated as the given percentile of the distance distribution
 - “pixel”: threshold is the maximum allowed distance in pixels</p></li>
-<li><p><strong>store_as</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>default=None</em>) – Variable name to store the distance timeseries. If None, distance is not stored.</p></li>
-<li><p><strong>apply_mask</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True, apply detected divergences as masks to the data and return self.
+<li><p><strong>store_as</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Variable name to store the distance timeseries. If None, distance is not stored.</p></li>
+<li><p><strong>apply_mask</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, apply detected divergences as masks to the data and return self.
 If False, return detected divergences as dict of Intervals objects.</p></li>
-<li><p><strong>ignore_existing_mask</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True (default), check all data points including those already masked (e.g., from blinks).
+<li><p><strong>ignore_existing_mask</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True (default), check all data points including those already masked (e.g., from blinks).
 If False, only check non-masked data points for divergences.</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em><em> or </em><em>None</em>) – If True, make change in-place and return the object.
 If False, make and return copy before making changes.
@@ -1659,7 +1583,7 @@ If thr_type is not “percentile” or “pixel”.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Mask divergences at 99th percentile</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">gaze_data</span> <span class="o">=</span> <span class="n">gaze_data</span><span class="o">.</span><span class="n">mask_eye_divergences</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span> <span class="n">thr_type</span><span class="o">=</span><span class="s2">&quot;percentile&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gaze_data</span> <span class="o">=</span> <span class="n">gaze_data</span><span class="o">.</span><span class="n">mask_eye_divergences</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span> <span class="n">thr_type</span><span class="o">=</span><span class="s2">"percentile"</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Detect divergences without masking</span>
@@ -1667,7 +1591,7 @@ If thr_type is not “percentile” or “pixel”.</p>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Mask divergences beyond 100 pixels</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">gaze_data</span> <span class="o">=</span> <span class="n">gaze_data</span><span class="o">.</span><span class="n">mask_eye_divergences</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">thr_type</span><span class="o">=</span><span class="s2">&quot;pixel&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gaze_data</span> <span class="o">=</span> <span class="n">gaze_data</span><span class="o">.</span><span class="n">mask_eye_divergences</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">thr_type</span><span class="o">=</span><span class="s2">"pixel"</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Only check non-masked data points</span>
@@ -1686,11 +1610,11 @@ When apply_mask=False, the offscreen periods are returned as Intervals objects.<
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em><em>, </em><em>default=</em><em>[</em><em>]</em>) – Eye(s) to check for offscreen coordinates. If empty, checks all available eyes.
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Eye(s) to check for offscreen coordinates. If empty, checks all available eyes.
 Can be a single eye name (e.g., “left”) or a list (e.g., [“left”, “right”]).</p></li>
-<li><p><strong>apply_mask</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True, apply detected offscreen periods as masks to the data and return self.
+<li><p><strong>apply_mask</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, apply detected offscreen periods as masks to the data and return self.
 If False, return detected offscreen periods as dict of Intervals objects.</p></li>
-<li><p><strong>ignore_existing_mask</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If False (default), only check non-masked data points for offscreen coordinates.
+<li><p><strong>ignore_existing_mask</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If False (default), only check non-masked data points for offscreen coordinates.
 If True, check all data points including those already masked (e.g., from blinks).</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em><em> or </em><em>None</em>) – If True, make change in-place and return the object.
 If False, make and return copy before making changes.
@@ -1716,7 +1640,7 @@ detected offscreen intervals.</p>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Mask offscreen coordinates for left eye only</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">gaze_data</span> <span class="o">=</span> <span class="n">gaze_data</span><span class="o">.</span><span class="n">mask_offscreen_coords</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gaze_data</span> <span class="o">=</span> <span class="n">gaze_data</span><span class="o">.</span><span class="n">mask_offscreen_coords</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Check all data including already masked points (e.g., during blinks)</span>
@@ -1750,8 +1674,8 @@ ExperimentalSetup constructor.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">set_experimental_setup</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;52 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;29 cm&quot;</span><span class="p">),</span>
-<span class="gp">... </span>    <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">&quot;65 cm&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"52 cm"</span><span class="p">,</span> <span class="s2">"29 cm"</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">"65 cm"</span><span class="p">,</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1831,14 +1755,14 @@ to ExperimentalSetup.plot().</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>theta</strong> (<em>float</em><em>, </em><em>optional</em>) – Camera polar angle in radians. If None, uses setup’s theta or calibration’s theta.</p></li>
-<li><p><strong>phi</strong> (<em>float</em><em>, </em><em>optional</em>) – Camera azimuthal angle in radians. If None, uses setup’s phi or calibration’s phi.</p></li>
+<li><p><strong>theta</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Camera polar angle in radians. If None, uses setup’s theta or calibration’s theta.</p></li>
+<li><p><strong>phi</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Camera azimuthal angle in radians. If None, uses setup’s phi or calibration’s phi.</p></li>
 <li><p><strong>calibration</strong> (<em>ForeshorteningCalibration</em><em>, </em><em>optional</em>) – Fitted calibration object containing theta and phi.</p></li>
-<li><p><strong>show_gaze_samples</strong> (<em>bool</em><em>, </em><em>default True</em>) – Show sample gaze vectors to screen positions</p></li>
-<li><p><strong>n_gaze_samples</strong> (<em>int</em><em>, </em><em>default 9</em>) – Number of sample gaze positions</p></li>
-<li><p><strong>ax</strong> (<em>matplotlib axis</em><em>, </em><em>optional</em>) – Existing axis to plot on (only for ‘3d’ projection)</p></li>
-<li><p><strong>viewing_angle</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Viewing angle for 3D projection (elev, azim) or (elev, azim, roll) in degrees.</p></li>
-<li><p><strong>projection</strong> (<em>str</em><em>, </em><em>default '2d'</em>) – ‘2d’ for three orthogonal views, ‘3d’ for interactive 3D view</p></li>
+<li><p><strong>show_gaze_samples</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Show sample gaze vectors to screen positions</p></li>
+<li><p><strong>n_gaze_samples</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Number of sample gaze positions</p></li>
+<li><p><strong>ax</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Existing axis to plot on (only for ‘3d’ projection)</p></li>
+<li><p><strong>viewing_angle</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – Viewing angle for 3D projection (elev, azim) or (elev, azim, roll) in degrees.</p></li>
+<li><p><strong>projection</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – ‘2d’ for three orthogonal views, ‘3d’ for interactive 3D view</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -1857,7 +1781,7 @@ to ExperimentalSetup.plot().</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_experimental_setup</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use fitted angles from calibration</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">calib</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">fit_foreshortening</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">calib</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">fit_foreshortening</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_experimental_setup</span><span class="p">(</span><span class="n">calibration</span><span class="o">=</span><span class="n">calib</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Override angles</span>
@@ -1877,25 +1801,25 @@ Each eye is plotted in a separate subplot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em><em>, </em><em>optional</em>) – Which eye(s) to plot: “left”, “right”, “average”, or a list of these.
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Which eye(s) to plot: “left”, “right”, “average”, or a list of these.
 Default is [] which plots all available eyes.</p></li>
-<li><p><strong>plot_range</strong> (<em>tuple</em><em>, </em><em>optional</em>) – The time range to include in the analysis. Default is (-np.inf, +np.inf),
+<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to include in the analysis. Default is (-np.inf, +np.inf),
 i.e. all data.</p></li>
-<li><p><strong>units</strong> (<em>str</em><em>, </em><em>optional</em>) – Time units for plot_range. Default is “sec”.</p></li>
-<li><p><strong>show_screen</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot the screen limits. Default is True.</p></li>
-<li><p><strong>cmap</strong> (<em>str</em><em>, </em><em>optional</em>) – Colormap to use. Default is “jet”.</p></li>
-<li><p><strong>gridsize</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bins in each direction. Default is 30.</p></li>
-<li><p><strong>vmin</strong> (<em>float</em><em>, </em><em>optional</em>) – Minimum value for color scale. If None, uses data minimum.</p></li>
-<li><p><strong>vmax</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximum value for color scale. If None, uses data maximum.</p></li>
-<li><p><strong>min_samples</strong> (<em>int</em><em>, </em><em>optional</em>) – Minimum number of samples required in a bin to display it. Bins with
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Time units for plot_range. Default is “sec”.</p></li>
+<li><p><strong>show_screen</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to plot the screen limits. Default is True.</p></li>
+<li><p><strong>cmap</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Colormap to use. Default is “jet”.</p></li>
+<li><p><strong>gridsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Number of bins in each direction. Default is 30.</p></li>
+<li><p><strong>vmin</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Minimum value for color scale. If None, uses data minimum.</p></li>
+<li><p><strong>vmax</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Maximum value for color scale. If None, uses data maximum.</p></li>
+<li><p><strong>min_samples</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Minimum number of samples required in a bin to display it. Bins with
 fewer samples will not be shown. If None (default), automatically
 calculates a threshold at the 10th percentile of bin counts, effectively
 displaying only the top 90% of bins by sample count.</p></li>
-<li><p><strong>smooth</strong> (<em>float</em><em>, </em><em>optional</em>) – If provided, applies Gaussian smoothing to the binned surface. The value
+<li><p><strong>smooth</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – If provided, applies Gaussian smoothing to the binned surface. The value
 is the sigma of the Gaussian kernel in bin units (e.g., smooth=1 applies
 minimal smoothing with a 1-bin sigma, smooth=2 applies more smoothing).
 When smooth is provided, uses a rectangular grid instead of hexbin.</p></li>
-<li><p><strong>limits</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Axis limits as (xmin, xmax, ymin, ymax). If not provided, uses screen
+<li><p><strong>limits</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>] | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Axis limits as (xmin, xmax, ymin, ymax). If not provided, uses screen
 limits when available (and data falls within), otherwise uses data extent.</p></li>
 </ul>
 </dd>
@@ -1903,16 +1827,16 @@ limits when available (and data falls within), otherwise uses data extent.</p></
 <dd class="field-even"><p>Creates a matplotlib figure with the heatmap(s)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
 <p>Plot foreshortening effect for left eye:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil_foreshortening_error_surface</span><span class="p">(</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil_foreshortening_error_surface</span><span class="p">(</span><span class="s1">'left'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Plot for multiple eyes:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil_foreshortening_error_surface</span><span class="p">([</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_pupil_foreshortening_error_surface</span><span class="p">([</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'right'</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Plot all available eyes with custom color range:</p>
@@ -1973,23 +1897,23 @@ and provides methods to plot the data in various ways.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – Eyes to plot</p></li>
-<li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em>) – Variables to plot</p></li>
-<li><p><strong>pdf_file</strong> (<em>str</em><em> or </em><em>None</em>) – Save to PDF file if provided</p></li>
-<li><p><strong>nrow</strong> (<em>int</em>) – Number of rows per figure</p></li>
-<li><p><strong>ncol</strong> (<em>int</em>) – Number of columns per figure</p></li>
-<li><p><strong>figsize</strong> (<em>tuple</em>) – Figure size (width, height)</p></li>
-<li><p><strong>pre_blink</strong> (<em>float</em>) – Time before blink to include (in ms)</p></li>
-<li><p><strong>post_blink</strong> (<em>float</em>) – Time after blink to include (in ms)</p></li>
-<li><p><strong>units</strong> (<em>str</em>) – Display units for time axis</p></li>
-<li><p><strong>show_index</strong> (<em>bool</em>) – Show blink index numbers</p></li>
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Eyes to plot</p></li>
+<li><p><strong>variables</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Variables to plot</p></li>
+<li><p><strong>pdf_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Save to PDF file if provided</p></li>
+<li><p><strong>nrow</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Number of rows per figure</p></li>
+<li><p><strong>ncol</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Number of columns per figure</p></li>
+<li><p><strong>figsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – Figure size (width, height)</p></li>
+<li><p><strong>pre_blink</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Time before blink to include (in ms)</p></li>
+<li><p><strong>post_blink</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Time after blink to include (in ms)</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Display units for time axis</p></li>
+<li><p><strong>show_index</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Show blink index numbers</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of matplotlib Figure objects</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2003,21 +1927,21 @@ and provides methods to plot the data in various ways.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to plot; if empty, all available eyes are plotted</p></li>
-<li><p><strong>plot_range</strong> (<em>tuple</em><em> (</em><em>start</em><em>,</em><em>end</em><em>)</em>) – plot from start to end (in units of <cite>units</cite>)</p></li>
-<li><p><strong>units</strong> (<em>str</em>) – one of “sec”=seconds, “ms”=millisec, “min”=minutes, “h”=hours</p></li>
-<li><p><strong>show_events</strong> (<em>bool</em>) – plot events as vertical lines with labels</p></li>
-<li><p><strong>show_blinks</strong> (<em>bool</em>) – highlight detected blinks</p></li>
-<li><p><strong>label_prefix</strong> (<em>str</em>) – Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – list of eyes to plot; if empty, all available eyes are plotted</p></li>
+<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – plot from start to end (in units of <cite>units</cite>)</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – one of “sec”=seconds, “ms”=millisec, “min”=minutes, “h”=hours</p></li>
+<li><p><strong>show_events</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – plot events as vertical lines with labels</p></li>
+<li><p><strong>show_blinks</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – highlight detected blinks</p></li>
+<li><p><strong>label_prefix</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
 Default is “” (no prefix).</p></li>
-<li><p><strong>style</strong> (<em>dict</em><em> or </em><em>dict</em><em> of </em><em>dicts</em>) – Styling for plotted lines. Can be:
+<li><p><strong>style</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span>) – Styling for plotted lines. Can be:
 - Single dict: Applied to all eyes with automatic differentiation (e.g., {‘color’: ‘red’})
 - Dict of dicts: Per-eye styling (e.g., {‘left’: {‘linestyle’: ‘-‘}, ‘right’: {‘linestyle’: ‘–‘}})
 Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2029,10 +1953,10 @@ Default is None (uses matplotlib defaults with automatic per-eye colors and line
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>pdf_file</strong> (<em>str</em><em> or </em><em>None</em>) – file name to store the PDF; if None, no PDF is written</p></li>
-<li><p><strong>interv</strong> (<em>float</em>) – duration of each of the segments to be plotted (in units specified by <code class="docutils literal notranslate"><span class="pre">units</span></code>)</p></li>
+<li><p><strong>pdf_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – file name to store the PDF; if None, no PDF is written</p></li>
+<li><p><strong>interv</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – duration of each of the segments to be plotted (in units specified by <code class="docutils literal notranslate"><span class="pre">units</span></code>)</p></li>
 <li><p><strong>figsize</strong> (<em>Tuple</em><em>[</em><em>int</em><em>,</em><em>int</em><em>]</em>) – dimensions of the figures</p></li>
-<li><p><strong>units</strong> (<em>str</em><em>, </em><em>optional</em>) – Time units for segment boundaries passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.pupil_plot()</span></code>. Default “min”.</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Time units for segment boundaries passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.pupil_plot()</span></code>. Default “min”.</p></li>
 <li><p><strong>kwargs</strong> – arguments passed to <code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.pupil_plot()</span></code></p></li>
 </ul>
 </dd>
@@ -2090,13 +2014,13 @@ interpolated error surface.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>str</em><em>, </em><em>list</em><em>, or </em><em>None</em><em>, </em><em>default None</em>) – Which eye(s) to plot. If None or empty list, plots all available eyes.
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Which eye(s) to plot. If None or empty list, plots all available eyes.
 Can be a single eye name (e.g., ‘left’) or list of eye names (e.g., [‘left’, ‘right’]).</p></li>
-<li><p><strong>show_surface</strong> (<em>bool</em><em>, </em><em>default True</em>) – If True, show interpolated error surface as background.
+<li><p><strong>show_surface</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, show interpolated error surface as background.
 If False, show only the calibration points.</p></li>
-<li><p><strong>interpolation</strong> (<em>str</em><em>, </em><em>default 'rbf'</em>) – Interpolation method for surface (only used if show_surface=True).
+<li><p><strong>interpolation</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Interpolation method for surface (only used if show_surface=True).
 Options: ‘rbf’, ‘linear’, ‘cubic’, ‘nearest’</p></li>
-<li><p><strong>figsize</strong> (<em>tuple</em><em>, </em><em>default</em><em> (</em><em>10</em><em>, </em><em>8</em><em>)</em>) – Figure size per subplot (width, height) in inches.</p></li>
+<li><p><strong>figsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – Figure size per subplot (width, height) in inches.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2112,15 +2036,15 @@ Options: ‘rbf’, ‘linear’, ‘cubic’, ‘nearest’</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s1">&#39;data.edf&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s1">'data.edf'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Plot all eyes with surface</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_calibration</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Plot only left eye without surface</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_calibration</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">show_surface</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_calibration</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s1">'left'</span><span class="p">,</span> <span class="n">show_surface</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Plot specific eyes</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_calibration</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_calibration</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'right'</span><span class="p">])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2134,7 +2058,7 @@ To plot a scanpath, use <a class="reference internal" href="#pypillometry.GazePl
 Each eye is plotted in a separate subplot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2150,7 +2074,7 @@ in different colors. You can choose between them using the <cite>plot_eyes</cite
 parameter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2322,15 +2246,15 @@ implements some basic functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>list</em>) – Eyes to process. If empty, all eyes are processed.</p></li>
-<li><p><strong>units</strong> (<em>str</em>) – Units for statistics: “ms”, “sec”, “min”, or “h”</p></li>
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Eyes to process. If empty, all eyes are processed.</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Units for statistics: “ms”, “sec”, “min”, or “h”</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dictionary mapping eye name to stats dict (or None if no blinks)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2356,13 +2280,13 @@ implements some basic functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>list</em>) – Eyes to process. If empty, all eyes are processed.</p></li>
-<li><p><strong>variables</strong> (<em>list</em>) – Variables to process. If empty, all variables are processed.</p></li>
-<li><p><strong>distance</strong> (<em>float</em>) – Merge blinks closer than this distance (in units specified by <code class="docutils literal notranslate"><span class="pre">units</span></code>)</p></li>
-<li><p><strong>units</strong> (<em>str</em>) – Units for <code class="docutils literal notranslate"><span class="pre">distance</span></code>. Can be “ms”, “sec”, “min”, or “h”. Default “ms”.</p></li>
-<li><p><strong>apply_mask</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True, apply merged blinks as masks to the data and return self.
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Eyes to process. If empty, all eyes are processed.</p></li>
+<li><p><strong>variables</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Variables to process. If empty, all variables are processed.</p></li>
+<li><p><strong>distance</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Merge blinks closer than this distance (in units specified by <code class="docutils literal notranslate"><span class="pre">units</span></code>)</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Units for <code class="docutils literal notranslate"><span class="pre">distance</span></code>. Can be “ms”, “sec”, “min”, or “h”. Default “ms”.</p></li>
+<li><p><strong>apply_mask</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, apply merged blinks as masks to the data and return self.
 If False, return merged blinks as dict of Intervals objects without applying masks.</p></li>
-<li><p><strong>inplace</strong> (<em>bool</em><em> or </em><em>None</em>) – If True, modify in place. If False, return copy.
+<li><p><strong>inplace</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – If True, modify in place. If False, return copy.
 Only relevant when apply_mask=True.</p></li>
 </ul>
 </dd>
@@ -2382,7 +2306,7 @@ If apply_mask=False: returns dict of Intervals objects (one per eye/variable com
 <dd><p>Make and return a deep-copy of the pupil data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new_name</strong> (<em>str</em><em>, </em><em>optional</em>) – New name for the copy. If None, “_copy” is appended to the original name.</p>
+<dd class="field-odd"><p><strong>new_name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – New name for the copy. If None, “_copy” is appended to the original name.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2418,8 +2342,8 @@ The returned object’s class is determined by what data remains:
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>list</em><em> of </em><em>str</em>) – Eyes to drop (e.g., [‘left’] or [‘right’] or [‘left’, ‘right’])</p></li>
-<li><p><strong>variables</strong> (<em>list</em><em> of </em><em>str</em>) – Variables to drop (e.g., [‘pupil’] or [‘x’, ‘y’])</p></li>
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Eyes to drop (e.g., [‘left’] or [‘right’] or [‘left’, ‘right’])</p></li>
+<li><p><strong>variables</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Variables to drop (e.g., [‘pupil’] or [‘x’, ‘y’])</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2434,13 +2358,13 @@ The returned object’s class is determined by what data remains:
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Drop left eye data</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">right_only</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">right_only</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">'left'</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Drop pupil data, keep only gaze</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">gaze_only</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gaze_only</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">'pupil'</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Drop right eye and pupil data</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">left_gaze</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">left_gaze</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_data</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">'right'</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">'pupil'</span><span class="p">])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2486,10 +2410,10 @@ create the object manually.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fname</strong> (<em>str</em>) – filename of the EDF file</p></li>
-<li><p><strong>return_edf_obj</strong> (<em>bool</em>) – if True, return a tuple with the object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> and the object returned by the “eyelinkio” package
+<li><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename of the EDF file</p></li>
+<li><p><strong>return_edf_obj</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, return a tuple with the object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code> and the object returned by the “eyelinkio” package
 if False, return only the object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyedata</span></code></p></li>
-<li><p><strong>remove_eyelink_triggers</strong> (<em>bool</em>) – if True, remove all Eyelink triggers from the event_labels (related to eye-tracker settings, calibration, validation etc)</p></li>
+<li><p><strong>remove_eyelink_triggers</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, remove all Eyelink triggers from the event_labels (related to eye-tracker settings, calibration, validation etc)</p></li>
 <li><p><strong>kwargs</strong> (<em>dict</em>) – additional arguments to pass to the pypillometry.io.read_eyelink()</p></li>
 </ul>
 </dd>
@@ -2502,9 +2426,9 @@ if False, return only the object of class <code class="xref py py-class docutils
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s1">&#39;data.edf&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s1">'data.edf'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access calibration data</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">calibration</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">calibration</span><span class="p">[</span><span class="s1">'left'</span><span class="p">])</span>
 <span class="go">&lt;SpatialCalibration: left eye, HV9, n=9, error=0.45±0.23° (max=0.79°)&gt;</span>
 </pre></div>
 </div>
@@ -2517,7 +2441,7 @@ if False, return only the object of class <code class="xref py py-class docutils
 Use as <code class="docutils literal notranslate"><span class="pre">pypillometry.PupilData.from_file(&quot;yourfile.pd&quot;)</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – filename</p>
+<dd class="field-odd"><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2529,9 +2453,9 @@ Use as <code class="docutils literal notranslate"><span class="pre">pypillometry
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – Eye(s) to get blinks for. If multiple, returns dict.</p></li>
-<li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em>) – Variable(s) to get blinks for. If multiple, returns dict.</p></li>
-<li><p><strong>units</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Units for intervals: “ms”, “sec”, “min”, “h”, or None for indices</p></li>
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Eye(s) to get blinks for. If multiple, returns dict.</p></li>
+<li><p><strong>variables</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Variable(s) to get blinks for. If multiple, returns dict.</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Units for intervals: “ms”, “sec”, “min”, “h”, or None for indices</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2543,10 +2467,10 @@ If multiple eyes/variables: returns dict with keys like “left_pupil”.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">blinks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;pupil&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">blinks_ms</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;pupil&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">blinks_dict</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">([</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">],</span> <span class="s1">&#39;pupil&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">blinks_idx</span> <span class="o">=</span> <span class="n">blinks_ms</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">&quot;indices&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">blinks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'pupil'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blinks_ms</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'pupil'</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blinks_dict</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">([</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'right'</span><span class="p">],</span> <span class="s1">'pupil'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">blinks_idx</span> <span class="o">=</span> <span class="n">blinks_ms</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"indices"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2576,7 +2500,7 @@ If multiple eyes/variables: returns dict with keys like “left_pupil”.</p>
 Events object, which provides convenient filtering and display capabilities.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>units</strong> (<em>str</em><em>, </em><em>optional</em>) – Units for the event onsets: “ms”, “sec”, “min”, or “h”.
+<dd class="field-odd"><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Units for the event onsets: “ms”, “sec”, “min”, or “h”.
 Default is “ms” (the internal storage format).</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2593,11 +2517,11 @@ Default is “ms” (the internal storage format).</p>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get events in seconds</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">events_sec</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">events_sec</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Filter and work with events</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">stim_events</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">&quot;stim&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stim_events</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
@@ -2622,9 +2546,9 @@ by <cite>pupil_blinks_interpolate()</cite>. These may differ from detected blink
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – Eye(s) to get interpolated blinks for. If multiple, returns dict.</p></li>
-<li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em>) – Variable(s) to get interpolated blinks for. If multiple, returns dict.</p></li>
-<li><p><strong>units</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Units for intervals: “ms”, “sec”, “min”, “h”, or None for indices</p></li>
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Eye(s) to get interpolated blinks for. If multiple, returns dict.</p></li>
+<li><p><strong>variables</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Variable(s) to get interpolated blinks for. If multiple, returns dict.</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Units for intervals: “ms”, “sec”, “min”, “h”, or None for indices</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2670,12 +2594,12 @@ with two entriess.</p>
 <li><p>if Events: use the events from the Events object directly</p></li>
 </ul>
 </p></li>
-<li><p><strong>interval</strong> (<em>tuple</em><em> (</em><em>min</em><em>,</em><em>max</em><em>)</em>) – time-window relative to event-onset (0 is event-onset); i.e., negative
+<li><p><strong>interval</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – time-window relative to event-onset (0 is event-onset); i.e., negative
 numbers are before the event, positive numbers after. Units are defined
 by the <cite>units</cite> parameter</p></li>
-<li><p><strong>units</strong> (<em>str</em><em> or </em><em>None</em>) – units of the interval (one of “ms”, “sec”, “min”, “h”); units=None means
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – units of the interval (one of “ms”, “sec”, “min”, “h”); units=None means
 that the interval in sampling units (i.e., indices into the time-array)</p></li>
-<li><p><strong>label</strong> (<em>str</em><em> or </em><em>None</em>) – optional label for the Intervals object. If None, a label is automatically
+<li><p><strong>label</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – optional label for the Intervals object. If None, a label is automatically
 generated from the event_select parameter</p></li>
 <li><p><strong>kwargs</strong> (<em>dict</em>) – passed onto the event_select function</p></li>
 </ul>
@@ -2701,8 +2625,8 @@ of a single variable extracted at the specified intervals.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>intervals</strong> (<em>Intervals</em>) – Intervals object defining the segments to extract (from get_intervals())</p></li>
-<li><p><strong>variable</strong> (<em>str</em>) – Variable to extract in “eye_variable” format (e.g., “left_pupil”, “right_x”)</p></li>
-<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name for the segmented dataset. If None, uses intervals.label or “segments”</p></li>
+<li><p><strong>variable</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Variable to extract in “eye_variable” format (e.g., “left_pupil”, “right_x”)</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Name for the segmented dataset. If None, uses intervals.label or “segments”</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2714,8 +2638,8 @@ of a single variable extracted at the specified intervals.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Extract pupil segments around stimulus events</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">intervals</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">&quot;stimulus&quot;</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">800</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">segments</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="s2">&quot;left_pupil&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">intervals</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"stimulus"</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">800</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">segments</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="s2">"left_pupil"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">segments</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -2743,7 +2667,7 @@ of a single variable extracted at the specified intervals.</p>
 <dd class="field-odd"><p>Total size of the object, including data and all attributes.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>ByteSize</p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ByteSize</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2792,8 +2716,8 @@ If None, use object’s default setting.</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <p>Interpolate blinks for left eye pupil data:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">blinks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s1">&#39;pupil&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">blinks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_blinks</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s1">'left'</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="s1">'pupil'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">'left'</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">'pupil'</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Interpolate using a dict of intervals:</p>
@@ -2802,12 +2726,12 @@ If None, use object’s default setting.</p></li>
 </pre></div>
 </div>
 <p>Store interpolated data in a new variable:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">store_as_suffix</span><span class="o">=</span><span class="s2">&quot;_interp&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access via data[&#39;left&#39;, &#39;pupil_interp&#39;]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">store_as_suffix</span><span class="o">=</span><span class="s2">"_interp"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Access via data['left', 'pupil_interp']</span>
 </pre></div>
 </div>
 <p>Use cubic interpolation with wider margin:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">interpolate_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"cubic"</span><span class="p">,</span> <span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
@@ -2828,11 +2752,11 @@ If None, use object’s default setting.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – Eye(s) to get masks for. If multiple, returns dict.</p></li>
-<li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em>) – Variable(s) to get masks for. If multiple, returns dict.</p></li>
-<li><p><strong>units</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Units for intervals: “ms”, “sec”, “min”, “h”, or None for indices.
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Eye(s) to get masks for. If multiple, returns dict.</p></li>
+<li><p><strong>variables</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – Variable(s) to get masks for. If multiple, returns dict.</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Units for intervals: “ms”, “sec”, “min”, “h”, or None for indices.
 Default is None (indices).</p></li>
-<li><p><strong>label</strong> (<em>str</em><em>, </em><em>optional</em>) – Descriptive label for the intervals. Default is None.</p></li>
+<li><p><strong>label</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Descriptive label for the intervals. Default is None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2844,9 +2768,9 @@ If multiple eyes/variables: returns dict with keys like “left_pupil”.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mask_intervals</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mask_as_intervals</span><span class="p">(</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;pupil&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_ms</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mask_as_intervals</span><span class="p">(</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;pupil&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;ms&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_dict</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mask_as_intervals</span><span class="p">([</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">],</span> <span class="s1">&#39;pupil&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mask_intervals</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mask_as_intervals</span><span class="p">(</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'pupil'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_ms</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mask_as_intervals</span><span class="p">(</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'pupil'</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'ms'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask_dict</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mask_as_intervals</span><span class="p">([</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'right'</span><span class="p">],</span> <span class="s1">'pupil'</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2888,7 +2812,7 @@ If None, use the object’s default setting.</p></li>
 <p class="rubric">Examples</p>
 <p>Apply blinks from a single Intervals object to left eye pupil data:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">blinks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">[</span><span class="s1">&#39;left_pupil&#39;</span><span class="p">],</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pupil&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">blinks</span><span class="p">[</span><span class="s1">'left_pupil'</span><span class="p">],</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">'left'</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">'pupil'</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Apply a dict of intervals (one per eye/variable):</p>
@@ -2962,7 +2886,7 @@ If None, use the object’s default setting.</p>
 <dd class="field-even"><p>number of detected blinks</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2998,7 +2922,7 @@ Resets onsets etc.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>t0</strong> (<em>float</em><em> or </em><em>None</em>) – time at which the <a class="reference internal" href="#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>’s time-vector starts; if None, use the first time point</p></li>
+<li><p><strong>t0</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – time at which the <a class="reference internal" href="#pypillometry.PupilData" title="pypillometry.PupilData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code></a>’s time-vector starts; if None, use the first time point</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes
 if <cite>None</cite>, use the setting of the object (specified in constructor)</p></li>
@@ -3019,9 +2943,9 @@ Specify whether to scale <cite>x</cite>, <cite>y</cite>, <cite>pupil</cite> or o
 <li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em>) – variables to scale; can be “pupil”, “x”,”y”, “baseline”, “response” or any other variable
 that is available in the dataset; either a string or a list of strings;
 available variables can be checked with <cite>obj.variables</cite>; empty list means all variables</p></li>
-<li><p><strong>mean</strong> (<em>None</em><em>, </em><em>float</em><em> or </em><em>dict</em>) – mean to subtract from signal; if <cite>None</cite>, use the signal’s mean
+<li><p><strong>mean</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – mean to subtract from signal; if <cite>None</cite>, use the signal’s mean
 if dict, provide mean for each eye and variable configuration</p></li>
-<li><p><strong>sd</strong> (<em>None</em><em>, </em><em>float</em><em> or </em><em>dict</em>) – sd to scale with; if <cite>None</cite>, use the signal’s std
+<li><p><strong>sd</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – sd to scale with; if <cite>None</cite>, use the signal’s std
 if dict, provide sd for each eye and variable configuration</p></li>
 <li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – list of eyes to consider; if empty, all available eyes are considered</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
@@ -3103,7 +3027,7 @@ if <cite>None</cite>, use the setting of the object (specified in constructor)</
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Filter events and set them back</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">events</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">stim_events</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">&quot;stim&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stim_events</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span><span class="o">.</span><span class="n">set_events</span><span class="p">(</span><span class="n">stim_events</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -3134,15 +3058,15 @@ pupil-size in interval before trial onset.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>intervals</strong> (<em>Intervals</em><em>, </em><em>optional</em>) – Intervals object to use. If provided, interval and event_select are ignored.</p></li>
-<li><p><strong>interval</strong> (<em>tuple</em><em> (</em><em>min</em><em>,</em><em>max</em><em>)</em><em>, </em><em>optional</em>) – time-window in ms relative to event-onset (0 is event-onset).
+<li><p><strong>interval</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – time-window in ms relative to event-onset (0 is event-onset).
 Required if intervals is not provided.</p></li>
 <li><p><strong>event_select</strong> (<em>str</em><em> or </em><em>function</em><em>, </em><em>optional</em>) – variable describing which events to select and align to
 see <a class="reference internal" href="#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData.get_intervals()</span></code></a> for details.
 Required if intervals is not provided.</p></li>
-<li><p><strong>eyes</strong> (<em>str</em><em> or </em><em>list</em>) – list of eyes to consider; if empty, consider all</p></li>
-<li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em>) – list of variables to consider; if empty, consider all</p></li>
-<li><p><strong>statfct</strong> (<em>function</em>) – function mapping np.array to a single number</p></li>
-<li><p><strong>units</strong> (<em>str</em>) – units for interval parameter (if used)</p></li>
+<li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – list of eyes to consider; if empty, consider all</p></li>
+<li><p><strong>variables</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – list of variables to consider; if empty, consider all</p></li>
+<li><p><strong>statfct</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></span>) – function mapping np.array to a single number</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – units for interval parameter (if used)</p></li>
 <li><p><strong>kwargs</strong> (<em>dict</em>) – passed onto the event_select function</p></li>
 </ul>
 </dd>
@@ -3166,9 +3090,9 @@ If units is <cite>None</cite>, use the units in the time vector.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>start</strong> (<em>float</em>) – start for new dataset</p></li>
-<li><p><strong>end</strong> (<em>float</em>) – end of new dataset</p></li>
-<li><p><strong>units</strong> (<em>str</em>) – time units in which <cite>start</cite> and <cite>end</cite> are provided.
+<li><p><strong>start</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – start for new dataset</p></li>
+<li><p><strong>end</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – end of new dataset</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – time units in which <cite>start</cite> and <cite>end</cite> are provided.
 (one of “ms”, “sec”, “min”, “h”).
 If units is <cite>None</cite>, use the units in the time vector.</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em>) – if <cite>True</cite>, make change in-place and return the object
@@ -3226,7 +3150,7 @@ if <cite>None</cite>, use the object’s default setting</p></li>
 <dd><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – filename</p>
+<dd class="field-odd"><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3299,7 +3223,7 @@ custom identifier).</p>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pop</span></code>(k[,d])</p></td>
-<td><p>If key is not found, d is returned if given, otherwise KeyError is raised.</p></td>
+<td><p>value.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">popitem</span></code>()</p></td>
 <td><p>as a 2-tuple; but raise KeyError if D is empty.</p></td>
@@ -3314,7 +3238,7 @@ custom identifier).</p>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>([E, ]**F)</p></td>
-<td><p>If E present and has a .keys() method, does:     for k in E.keys(): D[k] = E[k] If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v In either case, this is followed by: for k, v in F.items(): D[k] = v</p></td>
+<td><p>If E present and has a .keys() method, does:</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">values</span></code>()</p></td>
 <td><p></p></td>
@@ -3338,7 +3262,7 @@ custom identifier).</p>
 <dd><p>Count the number of missing values based on masks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>per_key</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, return a dictionary with counts per key.
+<dd class="field-odd"><p><strong>per_key</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, return a dictionary with counts per key.
 If False, return maximum count across all keys.
 Default is False.</p>
 </dd>
@@ -3347,17 +3271,17 @@ Default is False.</p>
 If per_key is True, returns a dictionary mapping keys to their missing value counts.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[int, Dict[str, int]]</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_x</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">left_y</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># second value is missing</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># first and last values are missing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="s2">"left_x"</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># second value is missing</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">set_mask</span><span class="p">(</span><span class="s2">"left_y"</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># first and last values are missing</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">count_masked</span><span class="p">()</span>  <span class="c1"># max missing values</span>
 <span class="go">2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">count_masked</span><span class="p">(</span><span class="n">per_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># missing values per key</span>
-<span class="go">{&#39;left_x&#39;: 1, &#39;left_y&#39;: 2}</span>
+<span class="go">{'left_x': 1, 'left_y': 2}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3391,20 +3315,20 @@ If per_key is True, returns a dictionary mapping keys to their missing value cou
 <dd><p>Return a subset EyeDataDict with all variables for a given eye.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>eye</strong> (<em>str</em>) – The eye to get data for (‘left’, ‘right’, ‘mean’, etc.)</p>
+<dd class="field-odd"><p><strong>eye</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The eye to get data for (‘left’, ‘right’, ‘mean’, etc.)</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A new EyeDataDict containing only data for the specified eye</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#pypillometry.EyeDataDict" title="pypillometry.EyeDataDict">EyeDataDict</a></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.EyeDataDict" title="pypillometry.eyedata.eyedatadict.EyeDataDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeDataDict</span></code></a></span></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">EyeDataDict</span><span class="p">(</span><span class="n">left_x</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">left_y</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="n">right_x</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">left_data</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_eye</span><span class="p">(</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">left_data</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_eye</span><span class="p">(</span><span class="s1">'left'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">left_data</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-<span class="go">dict_keys([&#39;left_x&#39;, &#39;left_y&#39;])</span>
+<span class="go">dict_keys(['left_x', 'left_y'])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3415,13 +3339,13 @@ If per_key is True, returns a dictionary mapping keys to their missing value cou
 <dd><p>Get mask for a specific key or joint mask across all keys.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>key</strong> (<em>str</em><em>, </em><em>optional</em>) – Key to get mask for. If None, returns logical OR of all masks.</p>
+<dd class="field-odd"><p><strong>key</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Key to get mask for. If None, returns logical OR of all masks.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Mask array for specified key, or joint mask if no key given.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>NDArray</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -3435,7 +3359,7 @@ If per_key is True, returns a dictionary mapping keys to their missing value cou
 <dd class="field-odd"><p>Total size in bytes.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>ByteSize</p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ByteSize</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -3452,7 +3376,7 @@ If per_key is True, returns a dictionary mapping keys to their missing value cou
 <dd><p>Set mask for a specific key.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -3466,29 +3390,29 @@ which always resets the mask to zeros (except for NaN values).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>key</strong> (<em>str</em><em> or </em><em>tuple</em>) – Dictionary key for the data (e.g., “left_pupil” or (“left”, “pupil”))</p></li>
-<li><p><strong>value</strong> (<em>NDArray</em>) – Data array to store</p></li>
-<li><p><strong>mask</strong> (<em>NDArray</em><em>, </em><em>optional</em>) – Mask array to use. If None and preserve_mask=True, keeps existing mask.
+<li><p><strong>key</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Dictionary key for the data (e.g., “left_pupil” or (“left”, “pupil”))</p></li>
+<li><p><strong>value</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code></span>) – Data array to store</p></li>
+<li><p><strong>mask</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArray</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Mask array to use. If None and preserve_mask=True, keeps existing mask.
 If None and preserve_mask=False, creates new zero mask (with NaNs masked).</p></li>
-<li><p><strong>preserve_mask</strong> (<em>bool</em><em>, </em><em>default False</em>) – If True and mask is None, preserve the existing mask for this key.
+<li><p><strong>preserve_mask</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True and mask is None, preserve the existing mask for this key.
 Ignored if mask is explicitly provided.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set data and preserve existing mask</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data_dict</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">&quot;left_pupil&quot;</span><span class="p">,</span> <span class="n">new_values</span><span class="p">,</span> <span class="n">preserve_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_dict</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">new_values</span><span class="p">,</span> <span class="n">preserve_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set data with explicit mask</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data_dict</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">&quot;left_pupil&quot;</span><span class="p">,</span> <span class="n">new_values</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">new_mask</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_dict</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">new_values</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">new_mask</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Set data with fresh zero mask (same as __setitem__)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data_dict</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">&quot;left_pupil&quot;</span><span class="p">,</span> <span class="n">new_values</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data_dict</span><span class="o">.</span><span class="n">set_with_mask</span><span class="p">(</span><span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">new_values</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -3749,9 +3673,9 @@ You can also set the log-level to <cite>DEBUG</cite> or <cite>WARN</cite> by run
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<em>str</em>) – Local path where the study data is stored</p></li>
-<li><p><strong>config_file</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the configuration file. Default is “pypillometry_conf.py”</p></li>
-<li><p><strong>subjects</strong> (<em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – List of subject IDs to load. If None, all subjects will be loaded.
+<li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Local path where the study data is stored</p></li>
+<li><p><strong>config_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Name of the configuration file. Default is “pypillometry_conf.py”</p></li>
+<li><p><strong>subjects</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of subject IDs to load. If None, all subjects will be loaded.
 If a subject ID is provided that doesn’t exist in the data, it will be skipped.</p></li>
 </ul>
 </dd>
@@ -3773,13 +3697,13 @@ Example: <a class="reference external" href="https://osf.io/p2u74/">https://osf.
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>osf_id</strong> (<em>str</em>) – The OSF project ID</p></li>
-<li><p><strong>path</strong> (<em>str</em>) – Local path where files should be downloaded/stored</p></li>
-<li><p><strong>subjects</strong> (<em>list</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – List of subject IDs to load. If None, all subjects will be loaded.
+<li><p><strong>osf_id</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The OSF project ID</p></li>
+<li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Local path where files should be downloaded/stored</p></li>
+<li><p><strong>subjects</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of subject IDs to load. If None, all subjects will be loaded.
 If a subject ID is provided that doesn’t exist in the data, it will be skipped.</p></li>
-<li><p><strong>force_download</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, force re-download even if files exist locally. Default False.</p></li>
-<li><p><strong>config_file</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the configuration file. Default is “pypillometry_conf.py”</p></li>
-<li><p><strong>session</strong> (<em>requests.Session</em><em>, </em><em>optional</em>) – Authenticated session for accessing private projects. If None, uses unauthenticated requests.</p></li>
+<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, force re-download even if files exist locally. Default False.</p></li>
+<li><p><strong>config_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Name of the configuration file. Default is “pypillometry_conf.py”</p></li>
+<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Authenticated session for accessing private projects. If None, uses unauthenticated requests.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3799,17 +3723,17 @@ If a subject ID is provided that doesn’t exist in the data, it will be skipped
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>access_token</strong> (<em>str</em>) – Personal access token generated on OSF.</p></li>
-<li><p><strong>validate</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True (default), verify the token by calling <code class="docutils literal notranslate"><span class="pre">/v2/users/me/</span></code>.</p></li>
-<li><p><strong>session</strong> (<em>requests.Session</em><em>, </em><em>optional</em>) – Existing session to configure. If None, a new session is created.</p></li>
-<li><p><strong>timeout</strong> (<em>float</em><em>, </em><em>optional</em>) – Timeout (in seconds) for the validation request when <code class="docutils literal notranslate"><span class="pre">validate</span></code> is True.</p></li>
+<li><p><strong>access_token</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Personal access token generated on OSF.</p></li>
+<li><p><strong>validate</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True (default), verify the token by calling <code class="docutils literal notranslate"><span class="pre">/v2/users/me/</span></code>.</p></li>
+<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – Existing session to configure. If None, a new session is created.</p></li>
+<li><p><strong>timeout</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Timeout (in seconds) for the validation request when <code class="docutils literal notranslate"><span class="pre">validate</span></code> is True.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Session configured with the OSF bearer token.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>requests.Session</p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></span></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – If no access token is provided or validation fails.</p>
@@ -3824,14 +3748,31 @@ If a subject ID is provided that doesn’t exist in the data, it will be skipped
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>source</strong> (<em>str</em>) – filename of the Eyelink file or URL</p></li>
-<li><p><strong>cache_file</strong> (<em>str</em><em>, </em><em>optional</em>) – filename to cache the file in case it is downloaded from a URL</p></li>
-<li><p><strong>force_download</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True, force re-download even if file exists locally</p></li>
-<li><p><strong>session</strong> (<em>requests.Session</em><em>, </em><em>optional</em>) – requests session to use for the download.</p></li>
+<li><p><strong>source</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename of the Eyelink file or URL</p></li>
+<li><p><strong>cache_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename to cache the file in case it is downloaded from a URL</p></li>
+<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, force re-download even if file exists locally</p></li>
+<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – requests session to use for the download.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>object returned by the “eyelinkio” package</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.io.read_pickle">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">read_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#read_pickle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.read_pickle" title="Link to this definition">¶</a></dt>
+<dd><p>Read a Python object from a file using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – filename or URL to load data from</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>loaded object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>object</p>
@@ -3881,7 +3822,7 @@ with columns for Dataset name, Type, and Description.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># In Jupyter, this displays as a nice DataFrame</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">datasets</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># But you can still use it like a normal dict</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">datasets</span><span class="p">[</span><span class="s1">&#39;rlmw_002&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">datasets</span><span class="p">[</span><span class="s1">'rlmw_002'</span><span class="p">]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -4011,7 +3952,7 @@ with columns for Dataset name, Type, and Description.</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

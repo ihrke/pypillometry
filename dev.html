@@ -8,6 +8,7 @@
     <title>Developers &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <script src="_static/documentation_options.js?v=5929fcd5"></script>
@@ -66,7 +67,7 @@ The log-level can be set by the user using the <a class="reference internal" hre
 <p>For more detailed logging of specific sub-modules, use</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="n">pp</span><span class="o">.</span><span class="n">disable_logging</span><span class="p">()</span>
-<span class="n">pp</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s2">&quot;pypillometry.submodule&quot;</span><span class="p">)</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s2">"pypillometry.submodule"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -101,7 +102,7 @@ as users can easily find and chain commands together (see the following page mor
 <p>This is only necessary when extending <cite>pypillometry</cite>’s documentation (i.e., updating the website at <a class="reference external" href="https://ihrke.github.io/pypillometry">https://ihrke.github.io/pypillometry</a>).</p>
 <p>The package uses the <a class="reference external" href="https://www.sphinx-doc.org/">Sphinx documentation generator</a> to create this website. All source-files are located under <cite>/docs</cite> (both <cite>.rst</cite> and <cite>.ipynb</cite> files are being used). In addition, the API-documentation is placed within each function or classes’ docstring.</p>
 <p>To compile the documentation, sphinx must be installed. In addition, a couple of non-standard sphinx extensions are being used:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;sphinx_math_dollar&#39;</span><span class="p">,</span>  <span class="s2">&quot;sphinx-mdinclude&quot;</span><span class="p">,</span><span class="s1">&#39;sphinx_autodoc_typehints&#39;</span><span class="p">,</span> <span class="s1">&#39;nbsphinx&#39;</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">'sphinx_math_dollar'</span><span class="p">,</span>  <span class="s2">"sphinx-mdinclude"</span><span class="p">,</span><span class="s1">'sphinx_autodoc_typehints'</span><span class="p">,</span> <span class="s1">'nbsphinx'</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>These can be installed by using the following commands:</p>
@@ -220,7 +221,7 @@ and a <a class="reference external" href="https://pypi.org/">PyPI</a> release is
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

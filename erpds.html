@@ -8,6 +8,7 @@
     <title>Event-Related Pupil Dilations &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -64,7 +65,7 @@ Interactive version:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">".."</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -72,16 +73,16 @@ Interactive version:
 </pre></div>
 </div>
 </div>
-<p>Here, we will use the dataset created in the <a class="reference external" href="importdata.html">importdata</a> example. We download this dataset <code class="docutils literal notranslate"><span class="pre">test.pd</span></code> from the Github page.</p>
+<p>Here, we will use the dataset created in the <a class="reference internal" href="importdata_edf.html"><span class="doc">importdata</span></a> example. We download this dataset <code class="docutils literal notranslate"><span class="pre">test.pd</span></code> from the Github page.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;https://github.com/ihrke/pypillometry/raw/master/data/test.pd&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"https://github.com/ihrke/pypillometry/raw/master/data/test.pd"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<p>Next, we apply a basic blink-detection and interpolation pipeline as illustrated in the <a class="reference external" href="blinks.html">blinks</a> example.</p>
+<p>Next, we apply a basic blink-detection and interpolation pipeline as illustrated in the <a class="reference internal" href="blinks.html"><span class="doc">blinks</span></a> example.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -94,7 +95,7 @@ Interactive version:
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 <span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
-<span class="n">d2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+<span class="n">d2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -133,7 +134,7 @@ argument. This will match all labels that contain the string “C_” somewhere.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[69]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">erpd_cue</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">&quot;cue&quot;</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">&quot;C_&quot;</span><span class="p">,</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">erpd_cue</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">"cue"</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">"C_"</span><span class="p">,</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
 <span class="n">erpd_cue</span>
 </pre></div>
 </div>
@@ -178,14 +179,14 @@ should be used and <code class="docutils literal notranslate"><span class="pre">
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">is_conflict_cue</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">xs</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span><span class="o">&gt;=</span><span class="mi">2</span> <span class="ow">and</span> <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;C&quot;</span> <span class="ow">and</span> <span class="n">xs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;NW&quot;</span><span class="p">,</span><span class="s2">&quot;GA&quot;</span><span class="p">]:</span>
+    <span class="n">xs</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span><span class="o">&gt;=</span><span class="mi">2</span> <span class="ow">and</span> <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s2">"C"</span> <span class="ow">and</span> <span class="n">xs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"NW"</span><span class="p">,</span><span class="s2">"GA"</span><span class="p">]:</span>
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_congruent_cue</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">xs</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span><span class="o">&gt;=</span><span class="mi">2</span> <span class="ow">and</span> <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;C&quot;</span> <span class="ow">and</span> <span class="n">xs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;GW&quot;</span><span class="p">,</span><span class="s2">&quot;NA&quot;</span><span class="p">]:</span>
+    <span class="n">xs</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span><span class="o">&gt;=</span><span class="mi">2</span> <span class="ow">and</span> <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s2">"C"</span> <span class="ow">and</span> <span class="n">xs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"GW"</span><span class="p">,</span><span class="s2">"NA"</span><span class="p">]:</span>
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
@@ -197,7 +198,7 @@ should be used and <code class="docutils literal notranslate"><span class="pre">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[73]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">is_congruent_cue</span><span class="p">(</span><span class="s2">&quot;C_GW&quot;</span><span class="p">),</span> <span class="n">is_congruent_cue</span><span class="p">(</span><span class="s2">&quot;C_GA&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">is_congruent_cue</span><span class="p">(</span><span class="s2">"C_GW"</span><span class="p">),</span> <span class="n">is_congruent_cue</span><span class="p">(</span><span class="s2">"C_GA"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -215,8 +216,8 @@ should be used and <code class="docutils literal notranslate"><span class="pre">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[74]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">erpd_conf</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">&quot;conflict&quot;</span><span class="p">,</span>  <span class="n">event_select</span><span class="o">=</span><span class="n">is_conflict_cue</span><span class="p">,</span>  <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
-<span class="n">erpd_cong</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">&quot;congruent&quot;</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="n">is_congruent_cue</span><span class="p">,</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">erpd_conf</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">"conflict"</span><span class="p">,</span>  <span class="n">event_select</span><span class="o">=</span><span class="n">is_conflict_cue</span><span class="p">,</span>  <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">erpd_cong</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">get_erpd</span><span class="p">(</span><span class="s2">"congruent"</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="n">is_congruent_cue</span><span class="p">,</span> <span class="n">baseline_win</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -307,7 +308,7 @@ Interactive version:
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

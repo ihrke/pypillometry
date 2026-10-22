@@ -8,6 +8,7 @@
     <title>Pipeline-based processing in pypillometry &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -65,7 +66,7 @@ Interactive version:
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">load_ext</span> autoreload
 <span class="o">%</span><span class="k">autoreload</span> 2
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">".."</span><span class="p">)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <br/></pre></div>
 </div>
@@ -76,7 +77,7 @@ Interactive version:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># load a small example dataset</span>
-<span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
 <span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">()</span>\
     <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">()</span>\
     <span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>\
@@ -311,11 +312,11 @@ Interactive version:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
 <span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d2 has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d and d2 are the same: </span><span class="si">{</span><span class="n">d</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="n">d2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"d has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"d2 has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"d and d2 are the same: </span><span class="si">{</span><span class="n">d</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="n">d2</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -345,11 +346,11 @@ d and d2 are the same: True
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># using inplace=False</span>
-<span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
 <span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d2 has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d and d2 are the same: </span><span class="si">{</span><span class="n">d</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="n">d2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"d has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"d2 has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"d and d2 are the same: </span><span class="si">{</span><span class="n">d</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="n">d2</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -377,12 +378,12 @@ d and d2 are the same: False
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># using copy()</span>
-<span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">&quot;rlmw_002_short&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
 <span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="n">d2</span><span class="o">.</span><span class="n">downsample</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d2 has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d and d2 are the same: </span><span class="si">{</span><span class="n">d</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="n">d2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"d has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"d2 has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"d and d2 are the same: </span><span class="si">{</span><span class="n">d</span><span class="w"> </span><span class="ow">is</span><span class="w"> </span><span class="n">d2</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -614,7 +615,7 @@ Interactive version:
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

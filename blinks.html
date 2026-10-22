@@ -8,6 +8,7 @@
     <title>Blink preprocessing &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -64,7 +65,7 @@ Interactive version:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">".."</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 </pre></div>
@@ -77,7 +78,7 @@ Interactive version:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;../data/example_shortblinks.pd&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../data/example_shortblinks.pd"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
 <span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
@@ -97,7 +98,7 @@ Interactive version:
 <li><p>Second, blinks are defined as everything between two crossings of the velocity profile (from negative to positive).</p></li>
 <li><p>Finally, detected blinks have to be at least <code class="docutils literal notranslate"><span class="pre">min_duration</span></code> duration (in customizable <code class="docutils literal notranslate"><span class="pre">units</span></code>).</p></li>
 </ul>
-<p>As a consequence, there are several parameters that can be adjusted (see the <a class="reference external" href="api.html">API-docs</a> for details). The most important ones are the following:</p>
+<p>As a consequence, there are several parameters that can be adjusted (see the <a class="reference internal" href="api.html"><span class="doc">API-docs</span></a> for details). The most important ones are the following:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">min_duration</span></code>: minimum duration for a sequence of missing numbers to be treated as blink</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">vel_onset</span></code>: negative velocity that needs to be crossed; arbitrary units that depend on sampling rate etc</p></li>
@@ -105,15 +106,15 @@ Interactive version:
 <li><p><code class="docutils literal notranslate"><span class="pre">min_onset_len</span></code>: minimum number of consecutive samples that crossed threshold in the velocity profile to detect as onset (to avoid noise-induced changes)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">min_offset_len</span></code>: same for the offset</p></li>
 </ul>
-<p>In practice, it often makes sense to start with a default set of parameters and adjust them for each subject by visually inspecting the results (see <a class="reference external" href="preproc_example_pavlov.html">this example notebook for a fully worked example</a>).</p>
+<p>In practice, it often makes sense to start with a default set of parameters and adjust them for each subject by visually inspecting the results (see <a class="reference internal" href="preproc_example_pavlov.html"><span class="doc">this example notebook for a fully worked example</span></a>).</p>
 <p>In the next example, default parameters produce suboptimal results:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;../data/test.pd&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../data/test.pd"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-<span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mf">4.3</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mf">4.3</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -135,11 +136,11 @@ Interactive version:
 <span class="n">d2</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">15</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">d1</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mf">4.3</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;min_onset_len=15&quot;</span><span class="p">)</span>
+<span class="n">d1</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mf">4.3</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"min_onset_len=15"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">d2</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mf">4.3</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;vel_onset=-15&quot;</span><span class="p">);</span>
+<span class="n">d2</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mf">4.3</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"vel_onset=-15"</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -156,7 +157,7 @@ Interactive version:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-<span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">15</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mf">4.3</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">15</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mf">4.3</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -176,7 +177,7 @@ Interactive version:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;../data/example_shortblinks.pd&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../data/example_shortblinks.pd"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
 <span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
@@ -195,7 +196,7 @@ Interactive version:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-<span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">130</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">()</span><span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">130</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
 <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -356,7 +357,7 @@ Interactive version:
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

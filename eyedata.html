@@ -8,6 +8,7 @@
     <title>Importing Eye data &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -61,7 +62,7 @@ Interactive version:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">".."</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">__package_path__</span><span class="p">)</span> <span class="c1"># check that correct version is being used</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
@@ -92,26 +93,26 @@ Interactive version:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## loading the raw samples from the asc file</span>
-<span class="n">fname_samples</span><span class="o">=</span><span class="s2">&quot;../data/002_rlmw_samples.asc&quot;</span>
+<span class="n">fname_samples</span><span class="o">=</span><span class="s2">"../data/002_rlmw_samples.asc"</span>
 <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                  <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;left_x&quot;</span><span class="p">,</span> <span class="s2">&quot;left_y&quot;</span><span class="p">,</span> <span class="s2">&quot;left_p&quot;</span><span class="p">,</span>
-                         <span class="s2">&quot;right_x&quot;</span><span class="p">,</span> <span class="s2">&quot;right_y&quot;</span><span class="p">,</span> <span class="s2">&quot;right_p&quot;</span><span class="p">])</span>
+                  <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"left_x"</span><span class="p">,</span> <span class="s2">"left_y"</span><span class="p">,</span> <span class="s2">"left_p"</span><span class="p">,</span>
+                         <span class="s2">"right_x"</span><span class="p">,</span> <span class="s2">"right_y"</span><span class="p">,</span> <span class="s2">"right_p"</span><span class="p">])</span>
 
-<span class="c1">## Eyelink tracker puts &quot;   .&quot; when no data is available for x/y coordinates</span>
+<span class="c1">## Eyelink tracker puts "   ." when no data is available for x/y coordinates</span>
 <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
-<span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">left_x</span><span class="p">[</span><span class="n">left_x</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 <span class="n">left_x</span> <span class="o">=</span> <span class="n">left_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
 <span class="n">left_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_y</span><span class="o">.</span><span class="n">values</span>
-<span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">left_y</span><span class="p">[</span><span class="n">left_y</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 <span class="n">left_y</span> <span class="o">=</span> <span class="n">left_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
 <span class="n">right_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_x</span><span class="o">.</span><span class="n">values</span>
-<span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">right_x</span><span class="p">[</span><span class="n">right_x</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 <span class="n">right_x</span> <span class="o">=</span> <span class="n">right_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
 <span class="n">right_y</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_y</span><span class="o">.</span><span class="n">values</span>
-<span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">&quot;   .&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+<span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -130,18 +131,18 @@ Interactive version:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Loading the events from the events file</span>
-<span class="n">fname_events</span><span class="o">=</span><span class="s2">&quot;../data/002_rlmw_events.asc&quot;</span>
+<span class="n">fname_events</span><span class="o">=</span><span class="s2">"../data/002_rlmw_events.asc"</span>
 <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">events</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
 
-<span class="c1"># keep only lines starting with &quot;MSG&quot;</span>
-<span class="n">events</span><span class="o">=</span><span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MSG&quot;</span><span class="p">)]</span>
-<span class="n">experiment_start_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">&quot;experiment_start&quot;</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1"># keep only lines starting with "MSG"</span>
+<span class="n">events</span><span class="o">=</span><span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"MSG"</span><span class="p">)]</span>
+<span class="n">experiment_start_index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="s2">"experiment_start"</span> <span class="ow">in</span> <span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">[</span><span class="n">experiment_start_index</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span>
 <span class="n">df_ev</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">ev</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span><span class="p">])</span>
 <span class="n">df_ev</span><span class="o">=</span><span class="n">df_ev</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
-<span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;event&quot;</span><span class="p">]</span>
+<span class="n">df_ev</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"event"</span><span class="p">]</span>
 <span class="n">df_ev</span>
 </pre></div>
 </div>
@@ -255,7 +256,7 @@ Interactive version:
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Creating EyeData object that contains both X-Y coordinates</span>
 <span class="c1"># and pupil data</span>
-<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;002_ceylin&quot;</span><span class="p">,</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"002_ceylin"</span><span class="p">,</span>
                <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span>
                <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span>
                <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
@@ -306,16 +307,16 @@ EyeData(002_ceylin_va, 65.0MiB):
 <span class="c1"># clean pupil data using XY saccade data</span>
 <span class="n">d</span><span class="o">.</span><span class="n">set_experimental_setup</span><span class="p">(</span>
     <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1280</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span>
-    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;30 cm&quot;</span><span class="p">,</span> <span class="s2">&quot;20 cm&quot;</span><span class="p">),</span>
-    <span class="n">eye_screen_distance</span><span class="o">=</span><span class="s2">&quot;60 cm&quot;</span>
+    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"30 cm"</span><span class="p">,</span> <span class="s2">"20 cm"</span><span class="p">),</span>
+    <span class="n">eye_screen_distance</span><span class="o">=</span><span class="s2">"60 cm"</span>
 <span class="p">)</span>
-<span class="n">pd1</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
-<span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">correct_pupil_foreshortening</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
-<span class="n">pd2</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+<span class="n">pd1</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">"right"</span><span class="p">)</span>
+<span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">correct_pupil_foreshortening</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s2">"right"</span><span class="p">)</span>
+<span class="n">pd2</span><span class="o">=</span><span class="n">d2</span><span class="o">.</span><span class="n">get_pupildata</span><span class="p">(</span><span class="n">eye</span><span class="o">=</span><span class="s2">"right"</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
-<span class="n">pd1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
-<span class="n">pd2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">)</span>
+<span class="n">pd1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<span class="n">pd2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -348,9 +349,9 @@ True
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd2</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_duration&quot;</span><span class="p">],</span><span class="n">strategies</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;strategies&quot;</span><span class="p">],</span>
-                     <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">],</span>
-                     <span class="n">min_onset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_onset_len&quot;</span><span class="p">],</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_offset_len&quot;</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd2</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"min_duration"</span><span class="p">],</span><span class="n">strategies</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"strategies"</span><span class="p">],</span>
+                     <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">],</span>
+                     <span class="n">min_onset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"min_onset_len"</span><span class="p">],</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"min_offset_len"</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -394,25 +395,25 @@ File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#pd = d.get_pupildata(&quot;left&quot;)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#pd = d.get_pupildata("left")</span>
 <span class="n">pd</span><span class="o">=</span><span class="n">pd2</span>
-<span class="n">default_param</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;min_duration&quot;</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span>    <span class="c1"># min duration of a blink</span>
-               <span class="s2">&quot;min_offset_len&quot;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>   <span class="c1"># offset/onset-length for blink-detection</span>
-               <span class="s2">&quot;min_onset_len&quot;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span>
-               <span class="s2">&quot;vel_onset&quot;</span><span class="p">:</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span>       <span class="c1"># velocity thresholds for onset and offset</span>
-               <span class="s2">&quot;vel_offset&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span>
-               <span class="s2">&quot;strategies&quot;</span><span class="p">:[</span><span class="s2">&quot;zero&quot;</span><span class="p">,</span><span class="s2">&quot;velocity&quot;</span><span class="p">],</span>  <span class="c1"># strategies for blink-detection</span>
-               <span class="s2">&quot;distance&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span>        <span class="c1"># minimum distance between two blinks</span>
-               <span class="s2">&quot;margin&quot;</span><span class="p">:(</span><span class="mi">50</span><span class="p">,</span><span class="mi">150</span><span class="p">),</span>     <span class="c1"># margins for Mahot algorithm</span>
-               <span class="s2">&quot;cutoff&quot;</span><span class="p">:</span><span class="mi">5</span><span class="p">}</span>            <span class="c1"># lowpass-filter cutoff (Hz)</span>
+<span class="n">default_param</span><span class="o">=</span><span class="p">{</span><span class="s2">"min_duration"</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span>    <span class="c1"># min duration of a blink</span>
+               <span class="s2">"min_offset_len"</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>   <span class="c1"># offset/onset-length for blink-detection</span>
+               <span class="s2">"min_onset_len"</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span>
+               <span class="s2">"vel_onset"</span><span class="p">:</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span>       <span class="c1"># velocity thresholds for onset and offset</span>
+               <span class="s2">"vel_offset"</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span>
+               <span class="s2">"strategies"</span><span class="p">:[</span><span class="s2">"zero"</span><span class="p">,</span><span class="s2">"velocity"</span><span class="p">],</span>  <span class="c1"># strategies for blink-detection</span>
+               <span class="s2">"distance"</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span>        <span class="c1"># minimum distance between two blinks</span>
+               <span class="s2">"margin"</span><span class="p">:(</span><span class="mi">50</span><span class="p">,</span><span class="mi">150</span><span class="p">),</span>     <span class="c1"># margins for Mahot algorithm</span>
+               <span class="s2">"cutoff"</span><span class="p">:</span><span class="mi">5</span><span class="p">}</span>            <span class="c1"># lowpass-filter cutoff (Hz)</span>
 <span class="n">pars</span><span class="o">=</span><span class="n">default_param</span>
-<span class="n">pd3</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_duration&quot;</span><span class="p">],</span><span class="n">strategies</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;strategies&quot;</span><span class="p">],</span>
-                     <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">],</span>
-                     <span class="n">min_onset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_onset_len&quot;</span><span class="p">],</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;min_offset_len&quot;</span><span class="p">])</span>\
-            <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">])</span>\
-            <span class="o">.</span><span class="n">blinks_interp_mahot</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;margin&quot;</span><span class="p">],</span> <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_onset&quot;</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;vel_offset&quot;</span><span class="p">])</span>\
-            <span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">&quot;cutoff&quot;</span><span class="p">])</span>
-<span class="n">pd</span><span class="o">.</span><span class="n">plot_segments</span><span class="p">(</span><span class="n">overlay</span><span class="o">=</span><span class="n">pd2</span><span class="p">,</span> <span class="n">pdffile</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.pdf&quot;</span><span class="o">%</span><span class="k">pd</span>.name, ylim=(pd2.sy.min(), pd2.sy.max()))
+<span class="n">pd3</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"min_duration"</span><span class="p">],</span><span class="n">strategies</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"strategies"</span><span class="p">],</span>
+                     <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">],</span>
+                     <span class="n">min_onset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"min_onset_len"</span><span class="p">],</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"min_offset_len"</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"distance"</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">blinks_interp_mahot</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"margin"</span><span class="p">],</span> <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">])</span>\
+            <span class="o">.</span><span class="n">lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"cutoff"</span><span class="p">])</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">plot_segments</span><span class="p">(</span><span class="n">overlay</span><span class="o">=</span><span class="n">pd2</span><span class="p">,</span> <span class="n">pdffile</span><span class="o">=</span><span class="s2">"</span><span class="si">%s</span><span class="s2">.pdf"</span><span class="o">%</span><span class="k">pd</span>.name, ylim=(pd2.sy.min(), pd2.sy.max()))
 </pre></div>
 </div>
 </div>
@@ -468,19 +469,19 @@ File <span class="ansi-green-fg">~/Dropbox/work/projects/pupil/pypillometry/docs
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">fixcross</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="n">ttype</span><span class="p">,</span><span class="n">trialnum</span><span class="p">,</span><span class="o">*</span><span class="n">rest</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="n">ttype</span><span class="p">,</span><span class="n">trialnum</span><span class="p">,</span><span class="o">*</span><span class="n">rest</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">trial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;F&quot;</span> <span class="ow">and</span> <span class="n">trialnum</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">"F"</span> <span class="ow">and</span> <span class="n">trialnum</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;F&quot;</span>
+        <span class="k">return</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">"F"</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">response</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="n">ttype</span><span class="p">,</span><span class="n">trialnum</span><span class="p">,</span><span class="o">*</span><span class="n">rest</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+    <span class="n">ttype</span><span class="p">,</span><span class="n">trialnum</span><span class="p">,</span><span class="o">*</span><span class="n">rest</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">trial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;R&quot;</span> <span class="ow">or</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;RP&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">trialnum</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ttype</span><span class="o">==</span><span class="s2">"R"</span> <span class="ow">or</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">"RP"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">trialnum</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trial</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;R&quot;</span> <span class="ow">or</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">&quot;RP&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ttype</span><span class="o">==</span><span class="s2">"R"</span> <span class="ow">or</span> <span class="n">ttype</span><span class="o">==</span><span class="s2">"RP"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">trialno</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">trialno</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trialno</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">trialno</span><span class="p">)</span>
 
 <span class="n">d</span><span class="o">.</span><span class="n">test_selector</span><span class="p">(</span><span class="n">fixcross</span><span class="p">,</span> <span class="n">trial</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <br/></pre></div>
@@ -499,14 +500,14 @@ array([&#39;F_10&#39;], dtype=object)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">&quot;F_1&quot;</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
-<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">fixcross</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
-<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">trialno</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">trialno</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span> <span class="p">(</span><span class="n">fixcross</span><span class="p">,</span> <span class="n">response</span><span class="p">),</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"F_1"</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">fixcross</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">trialno</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">trialno</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">ints</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span> <span class="p">(</span><span class="n">fixcross</span><span class="p">,</span> <span class="n">response</span><span class="p">),</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
 <span class="n">ints</span>
 
-<span class="n">d</span><span class="o">.</span><span class="n">plot_scanpath</span><span class="p">(</span> <span class="n">ints</span><span class="p">[</span><span class="mi">20</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="n">ints</span><span class="p">[</span><span class="mi">20</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;ms&quot;</span><span class="p">,</span> <span class="n">plot_onsets</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot_scanpath</span><span class="p">(</span> <span class="n">ints</span><span class="p">[</span><span class="mi">20</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="n">ints</span><span class="p">[</span><span class="mi">20</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">plot_onsets</span><span class="o">=</span><span class="s2">"both"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -514,7 +515,7 @@ array([&#39;F_10&#39;], dtype=object)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot_scanpath</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;blub&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot_scanpath</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"blub"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -522,7 +523,7 @@ array([&#39;F_10&#39;], dtype=object)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot_heatmap</span><span class="p">(</span><span class="n">plot_eyes</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot_heatmap</span><span class="p">(</span><span class="n">plot_eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -530,7 +531,7 @@ array([&#39;F_10&#39;], dtype=object)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">14</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;sec&quot;</span><span class="p">,</span> <span class="n">plot_onsets</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">14</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">,</span> <span class="n">plot_onsets</span><span class="o">=</span><span class="s2">"both"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -595,7 +596,7 @@ Interactive version:
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>

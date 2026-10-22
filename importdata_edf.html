@@ -8,6 +8,7 @@
     <title>Importing Data from Eyelink EDF files Example &#8212; pypillometry  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -21,7 +22,9 @@
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Importing Data from Eyelink ASC files Example" href="importdata_asc.html" />
+    <link rel="prev" title="Tutorials/Example Notebooks" href="notebooks.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="Related">
       <h3>Navigation</h3>
@@ -32,7 +35,14 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="importdata_asc.html" title="Importing Data from Eyelink ASC files Example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="notebooks.html" title="Tutorials/Example Notebooks"
+             accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Importing Data from Eyelink EDF files Example</a></li> 
       </ul>
     </div>  
@@ -54,7 +64,7 @@ Interactive version:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="s2">".."</span><span class="p">)</span> <span class="c1"># this is not needed if you have installed pypillometry</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -67,7 +77,7 @@ Interactive version:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">url</span><span class="o">=</span><span class="s1">&#39;https://osf.io/trsuq/download&#39;</span> <span class="c1"># will download the file from OSF</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">url</span><span class="o">=</span><span class="s1">'https://osf.io/trsuq/download'</span> <span class="c1"># will download the file from OSF</span>
 <span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 <span class="n">d</span>
 </pre></div>
@@ -123,7 +133,7 @@ EyeData(tmpfxwzpzg0, 61.1MiB):
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="s2">&quot;example_data/test.edf&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">=</span><span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="s2">"example_data/test.edf"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -141,10 +151,10 @@ EyeData(tmpfxwzpzg0, 61.1MiB):
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">private_url</span> <span class="o">=</span> <span class="s2">&quot;https://osf.io/5vkj3/download&quot;</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">private_url</span> <span class="o">=</span> <span class="s2">"https://osf.io/5vkj3/download"</span>
 
 <span class="c1"># read the token from the file</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;my_osf_token.secret&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"my_osf_token.secret"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
 <span class="c1"># use the token to authenticate to OSF</span>
@@ -170,7 +180,7 @@ tmpml4svjq1: 100%|██████████| 43.9M/43.9M [00:05&lt;00:00, 8
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># plot the timeseries for a minute of data (min 10-11)</span>
-<span class="n">d</span><span class="o">.</span><span class="n">plot_timeseries</span><span class="p">(</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot_timeseries</span><span class="p">(</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -224,7 +234,7 @@ tmpr8bngegk: 100%|██████████| 43.9M/43.9M [00:03&lt;00:00, 1
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">edfobj</span><span class="p">[</span><span class="s2">&quot;discrete&quot;</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">edfobj</span><span class="p">[</span><span class="s2">"discrete"</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -282,6 +292,16 @@ Interactive version:
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
             </a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="notebooks.html"
+                          title="previous chapter">Tutorials/Example Notebooks</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="importdata_asc.html"
+                          title="next chapter">Importing Data from Eyelink ASC files Example</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -312,13 +332,20 @@ Interactive version:
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="importdata_asc.html" title="Importing Data from Eyelink ASC files Example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="notebooks.html" title="Tutorials/Example Notebooks"
+             >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Importing Data from Eyelink EDF files Example</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>
