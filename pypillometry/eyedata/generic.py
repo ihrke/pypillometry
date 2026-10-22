@@ -1585,38 +1585,26 @@ class GenericEyeData(ABC):
             gaps_start_ix=gaps_end_ix-1
             logger.info( str(((tx[gaps_end_ix]-tx[gaps_start_ix])/1000))+ " seconds" )
             
-            ## build new time-vector
-            ntx=[tx[0:gaps_start_ix[0]]] # initial
-            for i in range(ngaps):
-                start,end=gaps_start_ix[i], gaps_end_ix[i]
-                # fill in the gap
-                ntx.append( np.linspace(tx[start],tx[end], int((tx[end]-tx[start])/stepsize), endpoint=False) )
-
-                # append valid signal
-                if i==ngaps-1:
-                    nstart=n
-                else:
-                    nstart=gaps_start_ix[i+1]
-                ntx.append( tx[end:nstart] )
+            ## build new time-vector and data: keep all valid segments
+            ## and insert `yval` at regularly spaced time points in each gap
+            bounds=np.r_[0, gaps_end_ix, n]
+            ntx=[]
+            nv={k:[] for k in self.data.keys()}
+            for i in range(ngaps+1):
+                seg=slice(bounds[i], bounds[i+1])
+                ntx.append( tx[seg] )
+                for k,v in self.data.items():
+                    nv[k].append( v[seg] )
+                if i<ngaps:
+                    start,end=gaps_start_ix[i], gaps_end_ix[i]
+                    nfill=int((tx[end]-tx[start])/stepsize)-1
+                    filltx=tx[start]+stepsize*np.arange(1, nfill+1)
+                    ntx.append( filltx )
+                    for k in nv:
+                        nv[k].append( yval*np.ones_like(filltx, dtype=float) )
             ntx=np.concatenate(ntx)
 
-            ## fill in missing data
-            newd = {}
-            for k,v in self.data.items():
-                nv = np.zeros_like(ntx)
-                nv=[v[0:gaps_start_ix[0]]]
-                for i in range(ngaps):
-                    start,end=gaps_start_ix[i], gaps_end_ix[i]
-                    nv.append( yval*np.ones_like(ntx[start:end], dtype=float) )
-                # append valid signal
-                if i==ngaps-1:
-                    nstart=n
-                else:
-                    nstart=gaps_start_ix[i+1]                    
-                nv.append( v[end:nstart] )
-                newd[k]=np.concatenate(nv)
-            
-            self.data=EyeDataDict(newd)
+            self.data=EyeDataDict({k:np.concatenate(v) for k,v in nv.items()})
             self.tx=ntx
         return self
     
