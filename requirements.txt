@@ -3,6 +3,7 @@ scipy
 cmdstanpy
 matplotlib
 pandas
+jinja2
 pint>=0.20
 typing
 requests
