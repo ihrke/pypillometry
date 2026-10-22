@@ -961,6 +961,11 @@ class ExperimentalSetup:
         
         if viewing_angle is None:
             viewing_angle = (-49, 50, 45)
+        # plain numbers are degrees; strings/quantities ("30 deg") are parsed
+        viewing_angle = tuple(
+            float(a) if isinstance(a, (int, float, np.number)) else np.degrees(parse_angle(a))
+            for a in viewing_angle
+        )
         
         if ax is None:
             fig = plt.figure(figsize=(10, 8))
