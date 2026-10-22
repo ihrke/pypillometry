@@ -414,15 +414,43 @@ class ForeshorteningCalibration:
     
     This class stores the fitted camera geometry and temporal pupil model
     needed to correct pupil size measurements for viewing angle effects.
+    It is usually created by
+    :meth:`~pypillometry.EyeData.fit_foreshortening`.
+    
+    Parameters
+    ----------
+    eye : str
+        Which eye ('left' or 'right')
+    theta : float
+        Fitted camera polar angle from the z-axis in radians
+        (the fit constrains it to [0, pi/2])
+    phi : float
+        Fitted camera azimuthal angle in the x-y plane in radians
+        (the fit constrains it to [-pi, pi])
+    experimental_setup : ExperimentalSetup
+        Experimental setup containing known geometry; its camera distance
+        r and eye-to-screen distance d are used for the correction
+    spline_coeffs : np.ndarray
+        B-spline coefficients for true pupil size A0(t)
+    spline_knots : np.ndarray
+        Knot vector for B-spline (time in ms)
+    spline_degree : int, default 3
+        Degree of B-spline (3 for cubic)
+    fit_intervals : Intervals, optional
+        Intervals used for fitting, if any
+    fit_metrics : dict, optional
+        Fit quality metrics; :meth:`~pypillometry.EyeData.fit_foreshortening`
+        stores 'r2', 'rmse', 'n_samples', 'loss', 'n_iterations' and
+        'converged'. Default is an empty dict.
     
     Attributes
     ----------
     eye : str
         Which eye ('left' or 'right')
     theta : float
-        Fitted camera polar angle in radians (0 to pi)
+        Fitted camera polar angle in radians
     phi : float
-        Fitted camera azimuthal angle in radians (0 to 2*pi)
+        Fitted camera azimuthal angle in radians
     experimental_setup : ExperimentalSetup
         Experimental setup containing known geometry (r, d, screen info)
     spline_coeffs : np.ndarray
@@ -567,14 +595,19 @@ class ForeshorteningCalibration:
         Parameters
         ----------
         x : float or array
-            Gaze x-coordinate(s) in pixels (default) or mm (relative to screen center)
+            Gaze x-coordinate(s) in screen pixels (default) or in mm relative
+            to screen center (if `from_pixels` is False)
         y : float or array
-            Gaze y-coordinate(s) in pixels (default) or mm (relative to screen center)
+            Gaze y-coordinate(s) in screen pixels (default) or in mm relative
+            to screen center (if `from_pixels` is False)
         threshold : float, default 0.15
             Minimum cos(alpha) for reliable correction
             (0.15 corresponds to ~81° viewing angle)
         from_pixels : bool, default True
-            If True (default), x and y are in pixels and will be converted to mm.
+            If True (default), x and y are in pixels and are converted to mm
+            with :meth:`~pypillometry.ExperimentalSetup.pixels_to_mm`
+            (centered, no y-flip; as in
+            :meth:`~pypillometry.EyeData.fit_foreshortening`).
             If False, x and y are already in mm relative to screen center.
             Requires experimental_setup to have screen info when True.
         
@@ -583,9 +616,19 @@ class ForeshorteningCalibration:
         correction_factor : numpy.ma.MaskedArray
             Correction factor(s), with values masked where cos(alpha) < threshold.
         
+        Raises
+        ------
+        ValueError
+            If `from_pixels` is True and the setup has no screen info, or if
+            the setup has no camera position or eye-to-screen distance
+            (r and d are taken from `experimental_setup`).
+        
         Notes
         -----
         To apply correction: A0_corrected = A_measured * correction_factor
+        
+        Only the monocular model is used (no eye offset), and screen offset
+        and tilt in `experimental_setup` are not taken into account.
         
         Masked arrays multiply cleanly with other masked arrays, combining masks
         automatically (union of masks).

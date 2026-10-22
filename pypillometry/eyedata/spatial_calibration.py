@@ -13,6 +13,25 @@ class SpatialCalibration:
     """
     Store and analyze spatial calibration/validation data from eye-tracking.
     
+    Usually created from EyeLink data with :meth:`from_eyelink`.
+    
+    Parameters
+    ----------
+    eye : str
+        Eye identifier ('left', 'right', 'binocular')
+    model : str
+        Calibration model name (e.g., 'HV9', 'HV13')
+    points : np.ndarray
+        Target points (N x 2): [x, y] in pixels
+    measured : np.ndarray
+        Measured gaze points (N x 2): [x, y] in pixels
+    errors : np.ndarray
+        Error values (N x 3): [offset, diff_x, diff_y], where offset is the
+        error in degrees of visual angle and diff_x, diff_y are in pixels
+    screen_resolution : tuple, optional
+        Screen resolution (width, height) in pixels; needed for the
+        error surface in :meth:`plot`
+    
     Attributes
     ----------
     eye : str
@@ -24,7 +43,7 @@ class SpatialCalibration:
     measured : np.ndarray
         Measured gaze points (N x 2): [x, y] in pixels
     errors : np.ndarray
-        Errors (N x 3): [offset, diff_x, diff_y]
+        Errors (N x 3): [offset (degrees), diff_x, diff_y (pixels)]
     screen_resolution : tuple or None
         Screen resolution (width, height) in pixels
     
@@ -102,10 +121,11 @@ class SpatialCalibration:
         ----------
         calibration_data : dict
             Single calibration/validation entry from eyelinkio.
-            Expected keys: 'eye', 'model', 'validation'
-            validation is structured array with dtype:
-            [('point_x', '<f8'), ('point_y', '<f8'), ('offset', '<f8'),
-             ('diff_x', '<f8'), ('diff_y', '<f8')]
+            Expected keys: 'validation' (required), 'eye' and 'model'
+            (both default to 'unknown'; 'eye' is lower-cased).
+            'validation' is a structured array with fields 'point_x',
+            'point_y' (target, pixels), 'offset' (error, degrees),
+            'diff_x' and 'diff_y' (error, pixels).
         screen_resolution : tuple, optional
             Screen resolution (width, height) in pixels
         
@@ -203,15 +223,18 @@ class SpatialCalibration:
         Plot calibration accuracy with target points, measured points, and optional error surface.
         
         Shows target points as black crosses, measured points as colored plus markers
-        overlaid on an optional interpolated error surface.
+        overlaid on an optional interpolated error surface (offset in degrees).
+        Draws into the current matplotlib axes (``plt.gca()``).
         
         Parameters
         ----------
         show_surface : bool, default True
-            If True, show interpolated error surface as background.
+            If True, show interpolated error surface as background
+            (requires `screen_resolution`).
             If False, show only the calibration points.
         interpolation : str, default 'rbf'
             Interpolation method for surface (only used if show_surface=True). Options:
+            
             - 'rbf': Radial basis function (smooth, good for scattered data)
             - 'linear', 'cubic', 'nearest': griddata methods
         
@@ -221,6 +244,11 @@ class SpatialCalibration:
             The figure object
         ax : matplotlib.axes.Axes
             The axis object used for plotting
+        
+        Raises
+        ------
+        ValueError
+            If `show_surface` is True and `screen_resolution` is not set.
         
         Examples
         --------

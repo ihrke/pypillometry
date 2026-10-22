@@ -17,6 +17,7 @@ class ExperimentalSetup:
     Complete geometric model of an eye-tracking experimental setup.
     
     Encapsulates:
+
     - Screen geometry (resolution, physical size)
     - Eye position relative to screen (perpendicular distance and offset)
     - Screen orientation (pitch and yaw tilt angles)
@@ -24,60 +25,62 @@ class ExperimentalSetup:
     - Inter-pupillary distance (for binocular setups)
     
     Provides:
+
     - Coordinate conversion between pixels and mm
     - Transformation from screen coordinates to eye-centered 3D frame
     - Validation of parameter consistency
     - Visualization of the setup geometry
     - Serialization for saving/loading
     
+    All parameters are optional; an incomplete setup can be created and
+    used for whatever is set (accessing a missing value raises ``ValueError``).
+    Lengths and angles can be given as plain numbers, as strings with units
+    (e.g., ``"52 cm"``, ``"-5 deg"``) or as :class:`pint.Quantity` (e.g.,
+    ``52 * pypillometry.units.ureg.cm``). Plain numbers are interpreted as mm
+    (lengths) or radians (angles), with a one-time warning.
+    
     Parameters
     ----------
-    screen_resolution : tuple
-        Screen resolution in pixels (width, height)
-    physical_screen_size : tuple
-        Physical screen dimensions. Each element can be:
-        - float: assumed to be mm
-        - str: with units, e.g., "52 cm", "520 mm"
+    screen_resolution : tuple of int, optional
+        Screen resolution in pixels (width, height).
+    physical_screen_size : tuple, optional
+        Physical screen dimensions (width, height); each element a length
+        (default unit mm), e.g., ``("52 cm", "29 cm")``.
     screen_offset : tuple, optional
-        Offset of screen center from the eye reference point (delta_x, delta_y).
-        Each element can be float (mm) or str with units.
+        Offset of screen center from the eye reference point (delta_x, delta_y);
+        each element a length (default unit mm). Default (0, 0).
         Positive delta_x = screen center is to the right of eye.
         Positive delta_y = screen center is above eye.
         Note: For binocular setups, the reference is the midpoint between
         the two eyes (root of nose).
-    eye_to_screen_center : float, str, optional
-        Distance from eye to screen center.
-        - float: assumed to be mm
-        - str: with units, e.g., "65 cm", "650 mm"
-        The perpendicular distance d between midpoint and eye-plane is computed from:
-        d = sqrt(eye_to_screen_center^2 - delta_x^2 - delta_y^2)
+    eye_to_screen_center : float, str or pint.Quantity, optional
+        Distance from eye to screen center (default unit mm), e.g., ``"65 cm"``.
+        The perpendicular distance d between eye and screen plane is computed from
+        ``d = sqrt(eye_to_screen_center**2 - delta_x**2 - delta_y**2)``.
         If screen_offset is (0, 0) or not set, d equals eye_to_screen_center.
+        Raises ``ValueError`` if it is smaller than the screen offset.
         Note: For binocular setups, "eye" refers to the midpoint between
         the two eyes (root of nose).
-    screen_pitch : float, str, optional
-        Screen pitch angle (alpha_tilt). Rotation about horizontal axis.
-        Positive = top of screen tilted away from eye.
-        - float: assumed to be radians
-        - str: with units, e.g., "-5 deg", "0.087 rad"
-    screen_yaw : float, str, optional
-        Screen yaw angle (beta_tilt). Rotation about vertical axis.
-        Positive = right side of screen closer to eye.
-        - float: assumed to be radians
-        - str: with units, e.g., "3 deg", "0.052 rad"
+    screen_pitch : float, str or pint.Quantity, optional
+        Screen pitch angle (alpha_tilt; default unit radians), e.g., ``"-5 deg"``.
+        Rotation about horizontal axis.
+        Positive = top of screen tilted away from eye. Default 0.
+    screen_yaw : float, str or pint.Quantity, optional
+        Screen yaw angle (beta_tilt; default unit radians), e.g., ``"3 deg"``.
+        Rotation about vertical axis.
+        Positive = right side of screen closer to eye. Default 0.
     camera_offset : tuple, optional
-        Camera position as (x, y, z) offset from eye in mm.
-        Each element can be float (mm) or str with units.
-        z-axis points toward screen center.
+        Camera position as (x, y, z) offset from eye; each element a length
+        (default unit mm). z-axis points toward screen center.
+        Takes precedence over `camera_spherical` if both are given.
     camera_spherical : tuple, optional
         Alternative: camera position in spherical coordinates (theta, phi, r)
-        relative to eye.
-        theta: polar angle from z-axis (radians or str)
-        phi: azimuthal angle in x-y plane (radians or str)
-        r: distance from eye (mm or str)
-    ipd : float, str, optional
-        Inter-pupillary distance for binocular setups.
-        - float: assumed to be mm
-        - str: with units, e.g., "63 mm", "6.3 cm"
+        relative to eye: theta is the polar angle from the z-axis and phi the
+        azimuthal angle in the x-y plane (angles, default unit radians);
+        r is the distance from eye (length, default unit mm).
+    ipd : float, str or pint.Quantity, optional
+        Inter-pupillary distance for binocular setups (default unit mm),
+        e.g., ``"63 mm"``.
     
     Attributes
     ----------
@@ -107,6 +110,7 @@ class ExperimentalSetup:
     Notes
     -----
     All coordinates are in an eye-centric reference frame where:
+
     - The origin is at the eye position
     - For binocular setups, this is the midpoint between the two eyes (root of nose)
     - z-axis points toward the screen center
@@ -123,6 +127,7 @@ class ExperimentalSetup:
     ...     camera_offset=("0 cm", "-30 cm", "0 cm"),  # camera below screen
     ... )
     >>> print(f"d = {setup.d} mm")
+    d = 650.0 mm
     
     >>> # Setup with screen offset and tilt
     >>> setup = ExperimentalSetup(
@@ -135,7 +140,7 @@ class ExperimentalSetup:
     ... )
     
     >>> # Visualize the setup
-    >>> setup.plot(view='side')
+    >>> fig, axes = setup.plot()
     """
     
     def __init__(
@@ -476,6 +481,12 @@ class ExperimentalSetup:
         -------
         x_mm, y_mm : float or array
             Coordinates in mm
+        
+        Notes
+        -----
+        Requires `screen_resolution` and `physical_screen_size`.
+        No axis is flipped: `y_mm` increases in the same direction as `y_px`
+        (unlike :meth:`pixels_to_degrees`, which makes positive y point up).
         """
         x_mm = x_px * self.mm_per_pixel_x
         y_mm = y_px * self.mm_per_pixel_y
@@ -507,6 +518,11 @@ class ExperimentalSetup:
         -------
         x_px, y_px : float or array
             Coordinates in pixels
+        
+        Notes
+        -----
+        Requires `screen_resolution` and `physical_screen_size`.
+        Inverse of :meth:`pixels_to_mm`; no axis is flipped.
         """
         if centered:
             x_mm = x_mm + self._physical_screen_size[0] / 2
@@ -539,8 +555,10 @@ class ExperimentalSetup:
         
         Notes
         -----
-        Uses the small-angle approximation: angle = arctan(distance / d)
-        where d is the eye-to-screen distance.
+        Computes ``angle = arctan(distance / d)`` separately for x and y,
+        where d is the perpendicular eye-to-screen distance. This assumes the
+        eye is opposite the screen center; `screen_offset` and screen tilt
+        are not taken into account.
         """
         if self._d is None:
             raise ValueError(
@@ -560,12 +578,13 @@ class ExperimentalSetup:
         
         Parameters
         ----------
-        angle_x, angle_y : float, str, or array
-            Visual angles. Can be:
-            - float: assumed to be radians
-            - str: with units, e.g., "5 deg", "0.087 rad"
-            - pint Quantity
-            - array of floats (radians)
+        angle_x, angle_y : float, str or pint.Quantity
+            Visual angles. Plain numbers are interpreted as radians (not
+            degrees; with a one-time warning). Strings with units, e.g.,
+            ``"5 deg"``, ``"0.087 rad"``, or pint Quantities are converted.
+            For arrays, use a pint Quantity, e.g.,
+            ``np.array([1, 2]) * pypillometry.units.ureg.deg``; plain numpy
+            arrays with more than one element are not supported.
             Positive x = right, positive y = up.
         
         Returns
@@ -636,12 +655,10 @@ class ExperimentalSetup:
         
         Parameters
         ----------
-        angle_x, angle_y : float, str, or array
-            Visual angles. Can be:
-            - float: assumed to be radians
-            - str: with units, e.g., "5 deg", "0.087 rad"
-            - pint Quantity
-            - array of floats (radians)
+        angle_x, angle_y : float, str or pint.Quantity
+            Visual angles, in the same forms as for :meth:`degrees_to_mm`:
+            plain numbers are radians, strings and pint Quantities carry
+            their units; arrays only as pint Quantity.
             Positive x = right, positive y = up.
         
         Returns
@@ -746,18 +763,39 @@ class ExperimentalSetup:
         )
     
     def has_screen_info(self) -> bool:
-        """Check if screen resolution and physical size are set."""
+        """
+        Check if screen resolution and physical size are set.
+        
+        Returns
+        -------
+        bool
+            True if both `screen_resolution` and `physical_screen_size` are set.
+        """
         return (
             self._screen_resolution is not None and
             self._physical_screen_size is not None
         )
     
     def has_eye_distance(self) -> bool:
-        """Check if eye-to-screen distance is set."""
+        """
+        Check if eye-to-screen distance is set.
+        
+        Returns
+        -------
+        bool
+            True if the eye-to-screen distance (`d`) is set.
+        """
         return self._d is not None
     
     def has_camera_position(self) -> bool:
-        """Check if camera position is set."""
+        """
+        Check if camera position is set.
+        
+        Returns
+        -------
+        bool
+            True if `camera_offset` or `camera_spherical` was given.
+        """
         return self._camera_offset is not None or self._camera_spherical is not None
     
     def summary(self) -> Dict[str, Any]:
@@ -888,27 +926,43 @@ class ExperimentalSetup:
         Parameters
         ----------
         theta : float, optional
-            Camera polar angle in radians. If None, uses setup's theta.
+            Camera polar angle in radians (plain number only). If None, uses
+            setup's theta. The camera distance is always taken from the setup
+            (0 if no camera position is set).
         phi : float, optional
-            Camera azimuthal angle in radians. If None, uses setup's phi.
+            Camera azimuthal angle in radians (plain number only). If None,
+            uses setup's phi.
         projection : str, default '2d'
-            Type of projection:
+            Type of projection (case-insensitive):
+            
             - '2d': Three orthogonal 2D views (front, top, side)
             - '3d': Interactive 3D view
         show_gaze_samples : bool, default True
             Whether to show sample gaze vectors to screen
         n_gaze_samples : int, default 9
-            Number of sample gaze positions (grid)
+            Number of sample gaze positions; drawn as a square grid with
+            ``int(sqrt(n_gaze_samples))`` points per side.
         ax : matplotlib Axes, optional
-            Existing axis to plot on (only for '3d' projection).
+            Existing 3D axis to plot on (only for '3d' projection; ignored
+            for '2d', which always creates a new figure).
         viewing_angle : tuple, optional
             Viewing angle for 3D projection (elev, azim) or (elev, azim, roll) in degrees.
             Default is (-49, 50, 45) for 3D.
         
         Returns
         -------
-        fig : matplotlib Figure
-        ax : matplotlib Axes or array of Axes
+        fig : matplotlib.figure.Figure
+            The figure.
+        ax : matplotlib.axes.Axes or numpy.ndarray
+            The 3D axis for '3d'; an array of the three axes (front, top,
+            side) for '2d'.
+        
+        Raises
+        ------
+        ValueError
+            If screen info or eye-to-screen distance is not set, if `theta`
+            or `phi` is None and no camera position is set, or if
+            `projection` is not '2d' or '3d'.
         
         Examples
         --------
