@@ -32,8 +32,9 @@ class ROI:
     """Base class for Region of Interest (ROI).
     
     This class provides common functionality for different types of ROIs.
-    Subclasses should implement the `__contains__` method to define their specific
-    containment logic.
+    Subclasses should implement the :meth:`contains` method to define their specific
+    containment logic (``coords in roi`` uses it for single points) and the
+    :meth:`plot` method.
     
     Coordinates are specified in pixels with origin at the upper-left corner
     of the screen (y increases downward). Use factory methods `from_mm()` or
@@ -72,7 +73,20 @@ class ROI:
 
     def contains(self, coords: Union[Tuple[float, float], np.ndarray]) -> Union[bool, np.ndarray]:
         """Test if coordinates are within the ROI.
+
         Supports both single coordinate and array of coordinates.
+
+        Parameters
+        ----------
+        coords : tuple of float or np.ndarray
+            a single (x, y) point or an array of shape (n, 2) with one
+            point per row (in pixels)
+
+        Returns
+        -------
+        bool or np.ndarray
+            for a single point, whether it is inside the ROI; for an array,
+            a boolean array of length n
         """
         raise NotImplementedError("Subclasses must implement contains()")
     
@@ -103,9 +117,30 @@ class ROI:
 
 class CircularROI(ROI):
     """Circular Region of Interest defined by center point and radius.
-    
+
     Coordinates are in pixels (origin at upper-left, y increases downward) by default.
     Use `from_mm()` or `from_degrees()` factory methods for alternative coordinate systems.
+
+    Parameters
+    ----------
+    center : Tuple[float, float]
+        (x, y) coordinates of the center point in pixels
+    radius : float
+        radius of the circle in pixels (must not be negative)
+    name : str, optional
+        Name of the ROI
+    setup : ExperimentalSetup, optional
+        Experimental setup for coordinate conversions
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pypillometry import CircularROI
+    >>> roi = CircularROI(center=(640, 512), radius=100, name="center")
+    >>> bool((650, 500) in roi)
+    True
+    >>> roi.contains(np.array([[640, 512], [900, 900]]))
+    array([ True, False])
     """
     
     def __init__(
@@ -269,6 +304,20 @@ class CircularROI(ROI):
         return self.contains(coords)
 
     def contains(self, coords: Union[Tuple[float, float], np.ndarray]) -> Union[bool, np.ndarray]:
+        """Test if coordinates are within the circle (boundary included).
+
+        Parameters
+        ----------
+        coords : tuple of float or np.ndarray
+            a single (x, y) point or an array of shape (n, 2) with one
+            point per row (in pixels)
+
+        Returns
+        -------
+        bool or np.ndarray
+            for a single point, whether it is inside the ROI; for an array,
+            a boolean array of length n
+        """
         coords = np.asarray(coords)
         if coords.ndim == 1:
             return np.sqrt(np.sum((coords - self.center)**2)) <= self.radius
@@ -320,9 +369,21 @@ class CircularROI(ROI):
 
 class RectangularROI(ROI):
     """Rectangular Region of Interest defined by two corners.
-    
+
     Coordinates are in pixels (origin at upper-left, y increases downward) by default.
     Use `from_mm()` or `from_degrees()` factory methods for alternative coordinate systems.
+
+    Parameters
+    ----------
+    corner1 : Tuple[float, float]
+        (x, y) coordinates of the first corner in pixels
+    corner2 : Tuple[float, float]
+        (x, y) coordinates of the opposite corner in pixels (the order of
+        the corners does not matter)
+    name : str, optional
+        Name of the ROI
+    setup : ExperimentalSetup, optional
+        Experimental setup for coordinate conversions
     """
     
     def __init__(
@@ -485,6 +546,20 @@ class RectangularROI(ROI):
         return self.contains(coords)
 
     def contains(self, coords: Union[Tuple[float, float], np.ndarray]) -> Union[bool, np.ndarray]:
+        """Test if coordinates are within the rectangle (boundary included).
+
+        Parameters
+        ----------
+        coords : tuple of float or np.ndarray
+            a single (x, y) point or an array of shape (n, 2) with one
+            point per row (in pixels)
+
+        Returns
+        -------
+        bool or np.ndarray
+            for a single point, whether it is inside the ROI; for an array,
+            a boolean array of length n
+        """
         coords = np.asarray(coords)
         if coords.ndim == 1:
             return np.all(coords >= self.min_coords) and np.all(coords <= self.max_coords)

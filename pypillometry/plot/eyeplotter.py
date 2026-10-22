@@ -13,6 +13,20 @@ from scipy.ndimage import gaussian_filter
 from scipy.stats import binned_statistic_2d
 
 class EyePlotter(GazePlotter,PupilPlotter):
+    """
+    Class for plotting combined gaze and pupil data. It provides all methods of
+    :class:`~pypillometry.GazePlotter` and :class:`~pypillometry.PupilPlotter`
+    and additional plots that combine gaze and pupil data.
+
+    It is usually not created directly; instead, it is available as the `plot`
+    attribute of an :class:`~pypillometry.EyeData` object, e.g.
+    ``d.plot.plot_pupil_foreshortening_error_surface()``.
+
+    Parameters
+    ----------
+    obj : GenericEyeData
+        the data object to plot (stored as `obj`)
+    """
     def plot_pupil_foreshortening_error_surface(
         self,
         eyes: str | List[str] = [],
@@ -347,10 +361,14 @@ class EyePlotter(GazePlotter,PupilPlotter):
         
         Parameters
         ----------
-        theta : float, optional
-            Camera polar angle in radians. If None, uses setup's theta or calibration's theta.
-        phi : float, optional
-            Camera azimuthal angle in radians. If None, uses setup's phi or calibration's phi.
+        theta : float or str, optional
+            Camera polar angle; a float is interpreted as radians, a string
+            can carry units (e.g., "20 deg"). If None, uses calibration's theta
+            (if `calibration` is given), else setup's theta.
+        phi : float or str, optional
+            Camera azimuthal angle; a float is interpreted as radians, a string
+            can carry units (e.g., "-90 deg"). If None, uses calibration's phi
+            (if `calibration` is given), else setup's phi.
         calibration : ForeshorteningCalibration, optional
             Fitted calibration object containing theta and phi.
         show_gaze_samples : bool, default True
@@ -360,15 +378,23 @@ class EyePlotter(GazePlotter,PupilPlotter):
         ax : matplotlib axis, optional
             Existing axis to plot on (only for '3d' projection)
         viewing_angle : tuple, optional
-            Viewing angle for 3D projection (elev, azim) or (elev, azim, roll) in degrees.
+            Viewing angle for 3D projection (elev, azim) or (elev, azim, roll).
+            Each element is parsed like `theta`, i.e. use strings with units
+            (e.g., ``("30 deg", "-60 deg")``); plain numbers are interpreted
+            as radians.
         projection : str, default '2d'
             '2d' for three orthogonal views, '3d' for interactive 3D view
-        
+
         Returns
         -------
         fig : matplotlib Figure
         ax : matplotlib axis or array of axes
-        
+
+        Raises
+        ------
+        ValueError
+            if the data object has no `experimental_setup`
+
         Examples
         --------
         >>> # Use camera geometry from setup

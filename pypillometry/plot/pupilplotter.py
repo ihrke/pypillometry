@@ -20,6 +20,15 @@ class PupilPlotter(GenericPlotter):
     """
     Class for plotting pupil data. The class is initialized with a GenericEyeData object
     and provides methods to plot the data in various ways.
+
+    It is usually not created directly; instead, it is available as the `plot`
+    attribute of a :class:`~pypillometry.PupilData` object, e.g.
+    ``d.plot.pupil_plot()``.
+
+    Parameters
+    ----------
+    obj : GenericEyeData
+        the data object to plot (stored as `obj`)
     """
     obj: GenericEyeData # link to the data object
 
@@ -37,29 +46,37 @@ class PupilPlotter(GenericPlotter):
             ) -> None:
         """Make a plot of the pupil data using `matplotlib`.
 
-        Has pupil-specific options which makes it different from 
-        :func:`GazePlotter.plot_timeseries()`.
+        Has pupil-specific options which makes it different from
+        :meth:`plot_timeseries`. All eyes are plotted into the current axes.
 
         Parameters
         ----------
-        eyes: list  
-            list of eyes to plot; if empty, all available eyes are plotted            
-        plot_range: tuple (start,end)
+        eyes : str or list
+            eye(s) to plot; if empty, all eyes with pupil data are plotted
+        plot_range : tuple (start,end)
             plot from start to end (in units of `units`)
-        units: str
-            one of "sec"=seconds, "ms"=millisec, "min"=minutes, "h"=hours
-        show_events: bool
+        show_events : bool
             plot events as vertical lines with labels
-        show_blinks: bool
-            highlight detected blinks
-        label_prefix: str
+        show_blinks : bool
+            highlight masked regions of the pupil data (e.g., detected blinks)
+            with a red background
+        units : str
+            one of "sec"=seconds (default), "ms"=millisec, "min"=minutes, "h"=hours
+        label_prefix : str
             Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
             Default is "" (no prefix).
-        style: dict or dict of dicts
+        style : dict or dict of dicts
             Styling for plotted lines. Can be:
+
             - Single dict: Applied to all eyes with automatic differentiation (e.g., {'color': 'red'})
             - Dict of dicts: Per-eye styling (e.g., {'left': {'linestyle': '-'}, 'right': {'linestyle': '--'}})
+
             Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).
+
+        Raises
+        ------
+        ValueError
+            if `plot_range` does not overlap with the data
         """
         if not isinstance(eyes, list):
             eyes=[eyes]
@@ -193,22 +210,23 @@ class PupilPlotter(GenericPlotter):
 
         Parameters
         ----------
-
-        pdf_file: str or None
-            file name to store the PDF; if None, no PDF is written 
-        interv: float
+        pdf_file : str or None
+            file name to store the PDF; if None, no PDF is written
+        interv : float
             duration of each of the segments to be plotted (in units specified by ``units``)
-        figsize: Tuple[int,int]
+        figsize : Tuple[int,int]
             dimensions of the figures
-        units: str, optional
-            Time units for segment boundaries passed to :func:`PupilData.pupil_plot`. Default "min".
-        kwargs:
-            arguments passed to :func:`PupilData.pupil_plot()`
+        ylim : Tuple[float,float] or None
+            y-axis limits for the plots; if None, matplotlib's automatic limits are used
+        units : str, optional
+            Time units for segment boundaries passed to :meth:`pupil_plot`. Default "min".
+        **kwargs
+            arguments passed to :meth:`pupil_plot`
 
         Returns
         -------
-
-        figs: list of :class:`matplotlib.Figure` objects
+        list of matplotlib.figure.Figure or None
+            one figure per segment; None if `pdf_file` is given
         """
 
         obj = self.obj

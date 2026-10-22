@@ -16,8 +16,17 @@ from scipy.ndimage import gaussian_filter
 
 class GazePlotter(GenericPlotter):
     """
-    Class for plotting eye data. The class is initialized with an EyeData object
-    and provides methods to plot the data in various ways.
+    Class for plotting gaze data. The class is initialized with a GenericEyeData
+    object and provides methods to plot the data in various ways.
+
+    It is usually not created directly; instead, it is available as the `plot`
+    attribute of a :class:`~pypillometry.GazeData` object, e.g.
+    ``d.plot.plot_heatmap()``.
+
+    Parameters
+    ----------
+    obj : GenericEyeData
+        the data object to plot (stored as `obj`)
     """
     obj: GenericEyeData # link to the data object
 
@@ -44,49 +53,59 @@ class GazePlotter(GenericPlotter):
         Plot EyeData as a heatmap. Typically used for a large amount of data
         to spot the most frequent locations.
         To plot a scanpath, use :meth:`.plot_scanpath()` instead.
-        Each eye is plotted in a separate subplot.
+        Each eye is plotted in a separate subplot of the current figure
+        (a new figure is created if none exists); the colorbar shows the
+        number of samples per bin.
 
-        Parameters:
-        -----------
-
-        plot_range: tuple
-            The time range to plot. Default is (-np.inf, +np.inf), i.e. all data.
-        eyes: list
+        Parameters
+        ----------
+        plot_range : tuple
+            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.
+        eyes : list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
-        show_screen: bool
-            Whether to plot the screen limits. Default is True.
-        show_masked: bool
+        show_screen : bool
+            Whether to plot the screen limits (if an experimental setup is
+            available). Default is True.
+        show_masked : bool
             Whether to plot the masked data (because of blinks, artifacts, ...). Default is False.
-        rois: List[ROI], optional
-            List of ROIs to plot. Default is None.
-        roi_style: dict, optional
-            Style for the ROIs. Default is None.
-            Example:
-            {
-                "facecolor": "red",
-                "edgecolor": "black",
-                "linewidth": 2,
-                "alpha": 0.5
-            }
-        units: str
-            The units to plot. Default is "sec".
-        cmap: str
+        rois : List[ROI], optional
+            List of ROIs (:class:`~pypillometry.ROI`) to plot. Default is None.
+        roi_style : dict, optional
+            Style for the ROIs, passed as keyword arguments to the ROIs'
+            ``plot()`` method. Default is {} (ROI defaults). Example::
+
+                {
+                    "facecolor": "red",
+                    "edgecolor": "black",
+                    "linewidth": 2,
+                    "alpha": 0.5
+                }
+
+        units : str
+            The units of `plot_range` ("ms", "sec", "min", "h"). Default is "sec".
+        cmap : str
             The colormap to use. Default is "jet".
-        gridsize: str or int
-            The gridsize for the hexbin plot or histogram. Default is 30.
-        min_samples: int, optional
+        gridsize : int or str
+            The gridsize for the hexbin plot or histogram. If "auto", the square
+            root of the number of samples in `plot_range` is used. Default is 30.
+        min_samples : int, optional
             Minimum number of samples required in a bin to display it. Bins with
-            fewer samples will not be shown. If None, automatically calculates a 
+            fewer samples will not be shown. If None, automatically calculates a
             threshold at the 10th percentile of bin counts. Default is 1.
-        smooth: float, optional
+        smooth : float, optional
             If provided, applies Gaussian smoothing to the binned histogram. The value
             is the sigma of the Gaussian kernel in bin units (e.g., smooth=1 applies
             minimal smoothing with a 1-bin sigma, smooth=2 applies more smoothing).
             When smooth is provided, uses a rectangular grid instead of hexbin.
-        limits: tuple, optional
+        limits : tuple, optional
             Axis limits as (xmin, xmax, ymin, ymax). If not provided, uses screen
             limits when available (and data falls within), otherwise uses data extent.
+
+        Raises
+        ------
+        ValueError
+            if `plot_range` does not overlap with the data
         """
         obj = self.obj
         
@@ -280,40 +299,49 @@ class GazePlotter(GenericPlotter):
         or another small amount of data. To plot a larger amount of data,
         use :meth:`.plot_heatmap()` instead.
 
-        If several eyes are available, they are plotted in the same figure 
-        in different colors. You can choose between them using the `plot_eyes` 
-        parameter.
+        If several eyes are available, they are plotted in the same figure
+        in different colors. You can choose between them using the `eyes`
+        parameter. The samples are drawn as dots colored by time.
+        A new figure is created for the plot.
 
-        Parameters:
-        -----------
-
-        plot_range: tuple
-            The time range to plot. Default is (-np.inf, +np.inf), i.e. all data.
-        eyes: list
+        Parameters
+        ----------
+        plot_range : tuple
+            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.
+        eyes : list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
-        show_screen: bool
-            Whether to plot the screen limits. Default is True.
-        rois: List[ROI], optional
-            List of ROIs to plot. Default is None.
-        roi_style: dict, optional
-            Style for the ROIs. Default is None.
-            Example:
-            {
-                "facecolor": "red",
-                "edgecolor": "black",
-                "linewidth": 2,
-                "alpha": 0.5
-            }
-        show_onsets: bool
-            Whether to plot the event onsets. Default is True.
-        title: str
+        show_screen : bool
+            Whether to plot the screen limits (if an experimental setup is
+            available). Default is True.
+        rois : List[ROI], optional
+            List of ROIs (:class:`~pypillometry.ROI`) to plot. Default is None.
+        roi_style : dict, optional
+            Style for the ROIs, passed as keyword arguments to the ROIs'
+            ``plot()`` method. Default is {} (ROI defaults). Example::
+
+                {
+                    "facecolor": "red",
+                    "edgecolor": "black",
+                    "linewidth": 2,
+                    "alpha": 0.5
+                }
+
+        show_onsets : bool
+            Whether to plot the event labels at the gaze position at event
+            onset. Plotted only for the first eye. Default is True.
+        title : str
             The title of the plot. Default is "".
-        units: str
-            The units to plot. Default is "sec". Plotted only for the first "eye".
-            If None, the units are taken from the data.
-        figsize: tuple
-            The figure size (per subplot). Default is (10,5).
+        units : str or None
+            The units of `plot_range` ("ms", "sec", "min", "h"). If None (default),
+            the units of the time vector (ms) are used.
+        figsize : tuple
+            The figure size (width, height) in inches. Default is (10,10).
+
+        Raises
+        ------
+        ValueError
+            if `plot_range` does not overlap with the data
         """
         obj = self.obj
 

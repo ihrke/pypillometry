@@ -76,33 +76,50 @@ class GenericPlotter:
                        figsize: Tuple[int,int]=(10,10), 
                        show_mask: bool=False,
                        show_index: bool=True):
-        """"
+        """
         Plotting data around intervals.
 
-        Intervals can be extracted with EyeData.get_intervals(). 
-        Each interval gets a separate subplot. 
+        Intervals can be extracted with
+        :meth:`~pypillometry.GenericEyeData.get_intervals`.
+        Each interval gets a separate subplot.
         The data is plotted for each eye and variable in different colors.
         The x-axis is plotted in the units of the Intervals object.
-        
+        If the intervals contain event onsets, these are marked by a
+        dashed red line.
+
         Parameters
         ----------
-        intervals: Intervals
-            Intervals object containing the intervals to plot (from get_intervals())
-        eyes: str or list
-            eyes to plot
-        variables: str or list
-            variables to plot
-        pdf_file: str or None
-            if the name of a file is given, the figures are saved into a 
-            multi-page PDF file
-        ncol: int
-            number of columns for the subplots for the intervals
-        nrow: int
+        intervals : Intervals
+            :class:`~pypillometry.Intervals` object containing the intervals
+            to plot (from :meth:`~pypillometry.GenericEyeData.get_intervals`)
+        eyes : str or list
+            eyes to plot; if empty, all available eyes are plotted
+        variables : str or list
+            variables to plot; if empty, all available variables are plotted
+        pdf_file : str or None
+            if the name of a file is given, the figures are saved into a
+            multi-page PDF file (missing directories are created)
+        nrow : int
             number of rows for the subplots for the intervals
-        show_index: bool
-            plot a number with the interval's index (e.g., for identifying abnormal blinks)
-        show_mask: bool
+        ncol : int
+            number of columns for the subplots for the intervals
+        figsize : Tuple[int,int]
+            size (width, height) of each figure in inches
+        show_mask : bool
             plot the "mask" array of the underlying data object
+        show_index : bool
+            plot a number with the interval's index (e.g., for identifying abnormal blinks)
+
+        Returns
+        -------
+        list of matplotlib.figure.Figure
+            one figure per `nrow` x `ncol` intervals (also returned when
+            `pdf_file` is given; the figures are then closed)
+
+        Raises
+        ------
+        TypeError
+            if `intervals` is not an :class:`~pypillometry.Intervals` object
         """
         if not isinstance(intervals, Intervals):
             raise TypeError("intervals must be an Intervals object. Use get_intervals() to create one.")
@@ -192,35 +209,44 @@ class GenericPlotter:
         
         Uses the current figure/axes. If no figure exists, creates one automatically.
 
-        Parameters:
-        -----------
-
-        plot_range: tuple
-            The time range to plot. Default is (-np.inf, +np.inf), i.e. all data.
-        variables: list
+        Parameters
+        ----------
+        plot_range : tuple
+            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.
+        variables : list
             The data to plot. Default is [], which means all available data will be plotted.
             Available data are ["x","y","pupil"] but can be extended by the user.
-        eyes: list
+        eyes : list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             "average", "regression", ...)
-        show_onsets: str
+        units : str or None
+            The units of `plot_range` and the time axis ("ms", "sec", "min", "h").
+            If None (default), use the units in the time vector (ms).
+        show_onsets : str
             Whether to plot markers for the event onsets. One of "line" (vertical lines),
             "label" (text label), "both" (both lines and labels), or "none" (no markers).
-        units: str
-            The units to plot. Default is "sec". If None, use the units in the time vector.
-        show_masked: bool
+            Default is "line".
+        show_masked : bool
             Whether to plot the data in masked regions. If True (default), plots all data including
             masked regions. If False, masked data points are not plotted (gaps in the line).
-        show_mask_highlight: bool
+        show_mask_highlight : bool
             Whether to highlight masked regions with a light red background. Default is True.
-        label_prefix: str
+        label_prefix : str
             Prefix to add to labels in the legend. Useful for overlaying multiple datasets.
             Default is "" (no prefix).
-        style: dict or dict of dicts
+        style : dict or dict of dicts
             Styling for plotted lines. Can be:
+
             - Single dict: Applied to all eyes with automatic differentiation (e.g., {'color': 'red'})
             - Dict of dicts: Per-eye styling (e.g., {'left': {'linestyle': '-'}, 'right': {'linestyle': '--'}})
+
             Default is None (uses matplotlib defaults with automatic per-eye colors and linestyles).
+
+        Raises
+        ------
+        ValueError
+            if `show_onsets` is not one of the allowed values or if
+            `plot_range` does not overlap with the data
         """
         obj = self.obj
         eyes,variables=obj._get_eye_var(eyes, variables)
@@ -378,29 +404,28 @@ class GenericPlotter:
 
         Parameters
         ----------
-
-        pdf_file: str or None
-            file name to store the PDF; if None, no PDF is written 
-        interv: float
+        pdf_file : str or None
+            file name to store the PDF; if None, no PDF is written
+        interv : float
             duration of each of the segments to be plotted (in the units specified by `units`)
-        figsize: Tuple[int,int]
+        figsize : Tuple[int,int]
             dimensions of the figures
-        ylim: Tuple[float,float] or None
+        ylim : Tuple[float,float] or None
             y-axis limits for the plots
-        eyes: list
+        eyes : list
             list of eyes to plot; if empty, all available eyes are plotted
-        variables: list
+        variables : list
             list of variables to plot; if empty, all available variables are plotted
-        units: str
-            units for the time axis; default is "min" (minutes). 
+        units : str
+            units for the time axis; default is "min" (minutes).
             The `interv` parameter is also interpreted in these units.
-        kwargs: 
-            additional arguments passed to :func:`plot_timeseries()`
+        **kwargs
+            additional arguments passed to :meth:`plot_timeseries`
 
         Returns
         -------
-
-        figs: list of :class:`matplotlib.Figure` objects
+        list of matplotlib.figure.Figure or None
+            one figure per segment; None if `pdf_file` is given
         """
 
         # Calculate start and end times in the specified units
@@ -466,7 +491,7 @@ class GenericPlotter:
             Variable(s) to plot masks for. If empty, uses all available variables.
         units : str, optional
             Time units for x-axis: "ms", "sec", "min", "h", or None for indices.
-            Default is "min
+            Default is "min".
         merge : bool, optional
             If True, merge all masks into a single set of intervals for plotting.
             If False, plot each eye/variable separately with different colors.
