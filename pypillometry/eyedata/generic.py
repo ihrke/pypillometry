@@ -41,6 +41,26 @@ from abc import ABC, abstractmethod
 ## decorator to keep a history of actions performed on dataset
 # Only adds history when the function returns a GenericEyeData instance (self) 
 def keephistory(func):
+    """
+    Decorator that records a method call in the history of the returned object.
+
+    After the decorated method has run, a string representation of the call
+    and its arguments is added (via ``add_to_history()``) to the object it
+    returned, provided that object is an eyedata object (i.e., has an
+    ``add_to_history`` method). The history can be shown with
+    :meth:`~pypillometry.GenericEyeData.print_history` and replayed with
+    :meth:`~pypillometry.GenericEyeData.apply_history`.
+
+    Parameters
+    ----------
+    func : callable
+        method to wrap; its first argument must be the object (`self`)
+
+    Returns
+    -------
+    callable
+        wrapped method that returns the same value as `func`
+    """
     @functools.wraps(func)
     def wrapper(*args,**kwargs):
         obj=func(*args,**kwargs)
@@ -433,25 +453,29 @@ class GenericEyeData(ABC):
     
     def set_blinks(self, intervals, eyes=[], variables=[], apply_mask=True):
         """
-        Set blinks for specified eyes and variables.
+        Set blinks for specified eyes and variables (in-place).
 
         Parameters
         ----------
-        intervals : Intervals or dict
+        intervals : Intervals, dict or None
             Either:
-            - A single Intervals object: stored for all specified eyes/variables
-            - A dict of Intervals: keys like "left_pupil", "right_x", etc.
-              When dict is provided, `eyes` and `variables` are ignored.
-        eyes : list of str, optional
-            List of eyes to set blinks for (e.g., ['left', 'right']).
-            If empty, applies to all available eyes.
-            Ignored if `intervals` is a dict.
-        variables : list of str, optional
-            List of variables to set blinks for (e.g., ['pupil', 'x', 'y']).
-            If empty, applies to all available variables.
-            Ignored if `intervals` is a dict.
+
+            - a single :class:`~pypillometry.Intervals` object: stored for all
+              specified eyes/variables;
+            - a dict of Intervals (or `None`) with keys like "left_pupil",
+              "right_x", etc.; when a dict is provided, `eyes` and
+              `variables` are ignored;
+            - `None`: remove the stored blinks for the specified
+              eyes/variables (the mask is not changed).
+        eyes : str or list of str, optional
+            eye(s) to set blinks for (e.g., ``["left", "right"]``);
+            if empty, all available eyes. Ignored if `intervals` is a dict.
+        variables : str or list of str, optional
+            variable(s) to set blinks for (e.g., ``["pupil", "x", "y"]``);
+            if empty, all available variables. Ignored if `intervals` is a dict.
         apply_mask : bool, optional
-            If True, apply intervals as mask to data. If False, only store intervals.
+            If True, also apply the intervals as mask to the data
+            (existing masks are kept). If False, only store intervals.
             Default is True.
         """
         # Check if intervals is a dict
@@ -489,13 +513,18 @@ class GenericEyeData(ABC):
                    units: str|None = None):
         """
         Get blinks as Intervals object or dict of Intervals.
-        
+
+        If no blinks are stored for an eye/variable, an empty Intervals
+        object is returned for it.
+
         Parameters
         ----------
-        eyes : str or list
-            Eye(s) to get blinks for. If multiple, returns dict.
-        variables : str or list
-            Variable(s) to get blinks for. If multiple, returns dict.
+        eyes : str or list of str, optional
+            Eye(s) to get blinks for; if empty, all available eyes.
+            If multiple, returns dict.
+        variables : str or list of str, optional
+            Variable(s) to get blinks for; if empty, all available variables.
+            If multiple, returns dict.
         units : str or None, optional
             Units for intervals: "ms", "sec", "min", "h", or None for indices
             
@@ -580,15 +609,21 @@ class GenericEyeData(ABC):
         
         Interpolated blinks are the blink regions that were successfully interpolated
         by `pupil_blinks_interpolate()`. These may differ from detected blinks because:
+
         - Blink boundaries are refined using velocity thresholds
         - Some blinks may be skipped if they're too short to interpolate
-        
+
+        If no interpolated blinks are stored for an eye/variable, an empty
+        Intervals object is returned for it.
+
         Parameters
         ----------
-        eyes : str or list
-            Eye(s) to get interpolated blinks for. If multiple, returns dict.
-        variables : str or list
-            Variable(s) to get interpolated blinks for. If multiple, returns dict.
+        eyes : str or list of str, optional
+            Eye(s) to get interpolated blinks for; if empty, all available eyes.
+            If multiple, returns dict.
+        variables : str or list of str, optional
+            Variable(s) to get interpolated blinks for; if empty, all available
+            variables. If multiple, returns dict.
         units : str or None, optional
             Units for intervals: "ms", "sec", "min", "h", or None for indices
             
@@ -661,13 +696,18 @@ class GenericEyeData(ABC):
                           units: str|None = None, label: str|None = None):
         """
         Convert masks to Intervals objects.
-        
+
+        Each contiguous run of masked samples becomes one interval.
+
         Parameters
         ----------
-        eyes : str or list
-            Eye(s) to get masks for. If multiple, returns dict.
-        variables : str or list
-            Variable(s) to get masks for. If multiple, returns dict.
+        eyes : str or list of str, optional
+            Eye(s) to get masks for; if empty, all available eyes.
+            If multiple, returns dict.
+        variables : str or list of str, optional
+            Variable(s) to get masks for; if empty, all available variables.
+            If multiple, returns dict (combinations not present in the data
+            are left out).
         units : str or None, optional
             Units for intervals: "ms", "sec", "min", "h", or None for indices.
             Default is None (indices).
@@ -792,19 +832,22 @@ class GenericEyeData(ABC):
 
     def nblinks(self, eyes=[], variables=[]) -> int:
         """
-        Return number of detected blinks. Should be run after `detect_blinks()`.
+        Return number of detected blinks. Should be run after `pupil_blinks_detect()`.
 
         By default, all eyes and variables are considered.
 
         Parameters
         ----------
-        eyes: list
-            list of eyes to consider; if empty, all eyes are considered
+        eyes : str or list of str, optional
+            eye(s) to consider; if empty, all available eyes
+        variables : str or list of str, optional
+            variable(s) to consider; if empty, all available variables
 
         Returns
         -------
-        int
-            number of detected blinks
+        dict
+            number of detected blinks per eye/variable, with keys like
+            "left_pupil"; combinations without blinks are left out
         """
         eyes,variables=self._get_eye_var(eyes,variables)
         
@@ -816,18 +859,22 @@ class GenericEyeData(ABC):
     def blink_stats(self, eyes: list = [], units: str = "ms") -> dict:
         """
         Return statistics on blink durations.
-        
+
+        Uses the blinks stored for the "pupil" variable of each eye
+        (see :meth:`~pypillometry.Intervals.stats`).
+
         Parameters
         ----------
-        eyes : list
-            Eyes to process. If empty, all eyes are processed.
-        units : str
-            Units for statistics: "ms", "sec", "min", or "h"
-            
+        eyes : str or list of str, optional
+            eye(s) to consider; if empty, all available eyes
+        units : str, optional
+            Units for statistics: "ms", "sec", "min", or "h". Default "ms".
+
         Returns
         -------
         dict
-            Dictionary mapping eye name to stats dict (or None if no blinks)
+            Dictionary mapping eye name to stats dict (number, mean, sd,
+            min, max and total duration of blinks), or None if no blinks
         """
         eyes, _ = self._get_eye_var(eyes, [])
         
@@ -872,7 +919,17 @@ class GenericEyeData(ABC):
         return (len(self)/self.fs*1000)*fac
 
     def add_to_history(self, event):
-        """Add event to history"""
+        """Add event to history.
+
+        Usually called by the ``keephistory`` decorator.
+
+        Parameters
+        ----------
+        event : dict
+            description of the operation with keys "funcstring" (printable
+            call), "funcname" (method name), "args" and "kwargs" (arguments
+            used to replay the call in :meth:`apply_history`)
+        """
         try:
             self.history.append(event)
         except:
@@ -893,14 +950,19 @@ class GenericEyeData(ABC):
         """
         Apply history of operations done on `self` to `obj`.
         
+        The operations are replayed in order with the arguments with which
+        they were originally called (including `inplace`).
+
         Parameters
         ----------
-        obj: :class:`GenericEyedata`
-            object of class :class:`GenericEyedata` to which the operations are to be transferred
-            
+        obj : :class:`~pypillometry.GenericEyeData`
+            object to which the operations are to be transferred
+
         Returns
         -------
-        copy of the :class:`GenericEyedata`-object to which the operations in `self` were applied
+        :class:`~pypillometry.GenericEyeData`
+            the object returned by the last replayed operation (`obj` itself
+            or a copy, depending on the `inplace` settings)
         """
         for ev in self.history:
             obj=getattr(obj, ev["funcname"])(*ev["args"], **ev["kwargs"])
@@ -921,12 +983,21 @@ class GenericEyeData(ABC):
         """
         Drop original dataset from record (e.g., to save space).
 
+        Sets the `original` attribute (stored when the object was created
+        with ``keep_orig=True``) to `None`.
+
         Parameters
         ----------
-        inplace: bool
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes
-            if `None`, use the setting of the object (specified in constructor)
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object without the original data (`self` or a copy,
+            depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
         obj.original=None
@@ -936,17 +1007,24 @@ class GenericEyeData(ABC):
     @keephistory
     def reset_time(self, t0: float|None=None, inplace=None):
         """
-        Resets time so that the time-array starts at time zero (t0).
-        Resets onsets etc.
-        
+        Resets time so that time `t0` becomes time zero.
+
+        `t0` is subtracted from the time-vector and from the event onsets.
+
         Parameters
         ----------
-        t0: float or None
-            time at which the :class:`.PupilData`'s time-vector starts; if None, use the first time point
-        inplace: bool
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes
-            if `None`, use the setting of the object (specified in constructor)
+        t0 : float or None, optional
+            time (in ms) that becomes the new time zero; if None, use the first
+            time point (so that the time-vector starts at zero)
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object with shifted time (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
         if t0 is None:
@@ -961,26 +1039,32 @@ class GenericEyeData(ABC):
                 end: float=np.inf, 
                 units: str=None, inplace=None):
         """
-        Return a new `EyeData` object that is a shortened version
-        of the current one (contains all data between `start` and
-        `end` in units given by `units` (one of "ms", "sec", "min", "h").
-        If units is `None`, use the units in the time vector.
+        Return a shortened version of the current object.
+
+        The result contains all data (and events) between `start` and `end`
+        (inclusive), in units given by `units` (one of "ms", "sec", "min", "h").
+        `start` and `end` refer to the values of the time-vector (not to
+        the time since the start of the recording).
 
         Parameters
         ----------
-        
-        start: float
-            start for new dataset
-        end: float
-            end of new dataset
-        units: str
-            time units in which `start` and `end` are provided.
+        start : float, optional
+            start for new dataset; default: beginning of the data
+        end : float, optional
+            end of new dataset; default: end of the data
+        units : str or None, optional
+            time units in which `start` and `end` are provided
             (one of "ms", "sec", "min", "h").
-            If units is `None`, use the units in the time vector.
-        inplace: bool
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes
-            if `None`, use the setting of the object (specified in constructor)
+            If units is `None`, use the units in the time vector (ms).
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the shortened object (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
 
@@ -1022,14 +1106,22 @@ class GenericEyeData(ABC):
     @classmethod
     def from_file(cls, fname:str):
         """
-        Reads a :class:`.GenericEyedata` object from a pickle-file.
+        Reads a :class:`~pypillometry.GenericEyeData` object from a pickle-file.
         Use as ``pypillometry.PupilData.from_file("yourfile.pd")``.
-        
+
+        The file is read with :func:`pypillometry.io.read_pickle`, so
+        `fname` can also be a URL.
+
         Parameters
         ----------
-        
-        fname: str
-            filename
+        fname : str
+            filename (or URL)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object stored in the file (its class is the one that was
+            stored, independent of the class this method is called on)
         """
         r=io.read_pickle(fname)
         return r
@@ -1040,34 +1132,39 @@ class GenericEyeData(ABC):
         return_edf_obj:bool=False, 
         remove_eyelink_triggers:bool=True, **kwargs):
         """
-        Reads a :class:`.GenericEyedata` object from an Eyelink file.
+        Reads an eyedata object from an Eyelink file.
 
         All "messages" are stored as event_labels (can be filtered later) and
         it tries to be smart to detect different information from the EDF file.
         Spatial calibration/validation data is automatically parsed and stored
         in the `calibration` attribute as SpatialCalibration objects.
-        
+
         However, the EDF file may contain other information of interest, e.g.,
         eyelink-detected saccades, etc.
-        If you need more control, use the "eyelinkio" package directly and 
-        create the object manually. 
+        If you need more control, use the "eyelinkio" package directly and
+        create the object manually.
 
         Parameters
         ----------
-        fname: str
-            filename of the EDF file
-        return_edf_obj: bool
-            if True, return a tuple with the object of class :class:`.GenericEyedata` and the object returned by the "eyelinkio" package
-            if False, return only the object of class :class:`.GenericEyedata`
-        remove_eyelink_triggers: bool
-            if True, remove all Eyelink triggers from the event_labels (related to eye-tracker settings, calibration, validation etc)
-        kwargs: dict
-            additional arguments to pass to the pypillometry.io.read_eyelink()
+        fname : str
+            filename of the EDF file (or URL)
+        return_edf_obj : bool, optional
+            if True, return a tuple with the eyedata object and the object
+            returned by the "eyelinkio" package;
+            if False (default), return only the eyedata object
+        remove_eyelink_triggers : bool, optional
+            if True (default), remove all Eyelink triggers from the event_labels
+            (related to eye-tracker settings, calibration, validation etc)
+        **kwargs
+            additional arguments passed to :func:`pypillometry.io.read_eyelink`
+            (e.g., `cache_file`)
 
         Returns
         -------
-        :class:`.GenericEyedata` or tuple
-            object of class :class:`.GenericEyedata` or tuple with the object of class :class:`.GenericEyedata` and the object returned by the "eyelinkio" package
+        :class:`~pypillometry.GenericEyeData` or tuple
+            object of the class this method is called on (e.g.,
+            :class:`~pypillometry.EyeData`), or tuple with that object and the
+            object returned by the "eyelinkio" package
         
         Examples
         --------
@@ -1076,7 +1173,6 @@ class GenericEyeData(ABC):
         >>> # Access calibration data
         >>> print(d.calibration['left'])  # doctest: +SKIP
         <SpatialCalibration: left eye, HV9, n=9, error=0.45±0.23° (max=0.79°)>
-
         """
         edf = io.read_eyelink(fname, **kwargs)
         
@@ -1281,12 +1377,17 @@ class GenericEyeData(ABC):
 
     def copy(self, new_name: Optional[str]=None):
         """
-        Make and return a deep-copy of the pupil data.
-        
+        Make and return a deep-copy of the eyedata object.
+
         Parameters
         ----------
         new_name : str, optional
             New name for the copy. If None, "_copy" is appended to the original name.
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            deep copy of the object (same class as the original)
         """
         cls = self.__class__
         result = cls.__new__(cls)
@@ -1303,17 +1404,22 @@ class GenericEyeData(ABC):
         Drop specified eyes and/or variables from the data and return a new object.
         
         This method never works in place - it always returns a new object.
+        All data of the given eyes and all data of the given variables are
+        dropped (together with their stored blinks).
         The returned object's class is determined by what data remains:
+
         - If only pupil variables remain: returns PupilData
         - If only x/y variables remain: returns GazeData
         - If both pupil and x/y remain: returns EyeData
-        
+
         Parameters
         ----------
-        eyes : list of str
-            Eyes to drop (e.g., ['left'] or ['right'] or ['left', 'right'])
-        variables : list of str
-            Variables to drop (e.g., ['pupil'] or ['x', 'y'])
+        eyes : str or list of str, optional
+            Eyes to drop (e.g., ['left'] or ['right'] or ['left', 'right']);
+            if empty, no eye is dropped
+        variables : str or list of str, optional
+            Variables to drop (e.g., ['pupil'] or ['x', 'y']);
+            if empty, no variable is dropped
             
         Returns
         -------
@@ -1422,14 +1528,25 @@ class GenericEyeData(ABC):
 
     def set_event_onsets(self, event_onsets: np.ndarray, event_labels: np.ndarray):
         """
-        Set onsets of events in the data
+        Set onsets of events in the data (in-place).
 
         Parameters
         ----------
-        onsets: np.ndarray
-            array of onsets (in ms)
-        labels: np.ndarray
-            array of labels (strings)
+        event_onsets : np.ndarray or None
+            array of onsets (in ms); `None` removes all events
+        event_labels : np.ndarray or None
+            array of labels (strings), same length as `event_onsets`;
+            if `None`, all labels are set to 0
+
+        Raises
+        ------
+        ValueError
+            if any onset is outside the range of the time-vector or if
+            `event_labels` and `event_onsets` differ in length
+
+        See Also
+        --------
+        set_events : set events from an :class:`~pypillometry.Events` object
         """
         if event_onsets is None:
             self.event_onsets=np.array([], dtype=float)
@@ -1450,6 +1567,10 @@ class GenericEyeData(ABC):
 
     @property
     def events(self):
+        """Events (onsets in ms) as an :class:`~pypillometry.Events` object.
+
+        Shortcut for :meth:`get_events` with default arguments.
+        """
         return self.get_events()
 
     def get_events(self, units: str = "ms"):
@@ -1570,8 +1691,25 @@ class GenericEyeData(ABC):
     @keephistory
     def fill_time_discontinuities(self, yval=0, print_info=True):
         """
-        find gaps in the time-vector and fill them in
-        (add zeros to the signal)
+        Find gaps in the time-vector and fill them in (in-place).
+
+        A gap is a step between consecutive time points that is larger than
+        twice the median step. New time points are inserted into each gap
+        at the median step size and all data variables are set to `yval`
+        at these new time points. This is called by the constructor when
+        ``fill_time_discontinuities=True``.
+
+        Parameters
+        ----------
+        yval : float, optional
+            value used for the data in the filled-in gaps; default 0
+        print_info : bool, optional
+            if True (default), log the number of gaps that are filled in
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object itself (always modified in-place)
         """
         tx=self.tx
         stepsize=np.median(np.diff(tx))
@@ -1619,38 +1757,39 @@ class GenericEyeData(ABC):
         events matching "stimulus" or "response". It is also 
         possible to select the intervals situated between two different events,
         e.g., trial start and response by specifying `event_select` as a tuple
-        with two entriess.
+        with two entries.
 
         Parameters
-        -----------
-        event_select: str, tuple, function, or Events
+        ----------
+        event_select : str, tuple, function, or Events
             variable describing which events to select and align to
-            - if str: use all events whose label contains the string
-            - if function: apply function to all labels, use those where the function returns True
-            - if tuple: use all events between the two events specified in the tuple. 
-                Both selectors must result in identical number of events.
-            - if Events: use the events from the Events object directly
 
-        interval : tuple (min,max)
+            - if str: use all events whose label contains the string
+            - if function: apply function to all labels, use those where the
+              function returns True
+            - if tuple: use the intervals between the events selected by the
+              first and the second entry (each a str or function); `interval[0]`
+              is added to the first and `interval[1]` to the second event.
+              Both selectors must result in identical number of events.
+            - if Events: use the events from the
+              :class:`~pypillometry.Events` object directly
+        interval : tuple (min,max), optional
             time-window relative to event-onset (0 is event-onset); i.e., negative
             numbers are before the event, positive numbers after. Units are defined
-            by the `units` parameter
-
-        units : str or None
-            units of the interval (one of "ms", "sec", "min", "h"); units=None means
-            that the interval in sampling units (i.e., indices into the time-array)
-
-        label : str or None
+            by the `units` parameter. Default ``(-200, 200)``.
+        units : str or None, optional
+            units of the interval (one of "ms", "sec", "min", "h"); units=None
+            (default) means that the interval is in sampling units (i.e.,
+            indices into the time-array)
+        label : str or None, optional
             optional label for the Intervals object. If None, a label is automatically
             generated from the event_select parameter
-
-        kwargs : dict
+        **kwargs
             passed onto the event_select function
-            
-        Returns
-        --------
 
-        result: Intervals
+        Returns
+        -------
+        :class:`~pypillometry.Intervals`
             Intervals object containing interval on- and offsets for each match,
             with associated metadata (event labels, indices, units)
         """
@@ -1856,7 +1995,7 @@ class GenericEyeData(ABC):
         >>> segments.plot()
         
         >>> # Apply baseline correction
-        >>> segments_bc = segments.baseline_correct(baseline_win=(-200, 0))
+        >>> segments_bc = segments.baseline_correct(window=(-200, 0))
         
         See Also
         --------
@@ -1876,27 +2015,36 @@ class GenericEyeData(ABC):
         
         Parameters
         ----------
-        
-        variables: str or list
+        variables : str or list of str, optional
             variables to scale; can be "pupil", "x","y", "baseline", "response" or any other variable
             that is available in the dataset; either a string or a list of strings;
             available variables can be checked with `obj.variables`; empty list means all variables
-        mean: None, float or dict 
-            mean to subtract from signal; if `None`, use the signal's mean
-            if dict, provide mean for each eye and variable configuration
-        sd: None, float or dict
-            sd to scale with; if `None`, use the signal's std
-            if dict, provide sd for each eye and variable configuration
-        eyes: str or list
-            list of eyes to consider; if empty, all available eyes are considered
-        inplace: bool
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes    
-            if `None`, use the object's default setting    
-        
-        Note
-        ----
-        Scaling-parameters are being saved in the `params["scale"]` argument. 
+        mean : None, float or dict, optional
+            mean to subtract from signal; if `None`, use the signal's mean;
+            if float, use the same value for all eyes and variables;
+            if dict, provide mean for each eye and variable as
+            ``{eye: {variable: value}}``
+        sd : None, float or dict, optional
+            sd to scale with; if `None`, use the signal's std;
+            if float, use the same value for all eyes and variables;
+            if dict, provide sd for each eye and variable as
+            ``{eye: {variable: value}}``
+        eyes : str or list of str, optional
+            eye(s) to consider; if empty, all available eyes
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the scaled object (`self` or a copy, depending on `inplace`)
+
+        Notes
+        -----
+        Scaling-parameters are being saved in the `params["scale"]` attribute
+        and are used by :meth:`unscale`.
         """
         obj = self._get_inplace(inplace)
         eyes,variables=self._get_eye_var(eyes,variables)
@@ -1945,26 +2093,33 @@ class GenericEyeData(ABC):
     def unscale(self, variables=[], mean=None, sd=None, eyes=[], inplace=None):
         """
         Scale back to original values using either values provided as arguments
-        or the values stored in `scale_params`.
-        
+        or the values stored in `params["scale"]` by :meth:`scale`.
+
+        The signal is multiplied by `sd` and `mean` is added.
+
         Parameters
         ----------
-        variables: str or list
-            variables to scale; can be "pupil", "x","y", "baseline", "response" or any other variable
+        variables : str or list of str, optional
+            variables to unscale; can be "pupil", "x","y", "baseline", "response" or any other variable
             that is available in the dataset; either a string or a list of strings;
-            available variables can be checked with `obj.variables`
-        eyes: str or list
-            list of eyes to consider; if empty, all available eyes are considered
-        mean: None, float or dict
-            mean to subtract from signal; if `None`, use the signal's mean
-            if dict, provide mean for each eye and variable configuration
-        sd: None, float or Parameters
-            sd to scale with; if `None`, use the signal's std
-            if dict, provide sd for each eye and variable configuration
-        inplace: bool
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes    
-            if `None`, use the object's default setting            
+            available variables can be checked with `obj.variables`; empty list means all variables
+        mean : None or dict, optional
+            mean to add to the signal as ``{eye: {variable: value}}``;
+            if `None`, use the mean stored by :meth:`scale`
+        sd : None or dict, optional
+            sd to multiply the signal with as ``{eye: {variable: value}}``;
+            if `None`, use the sd stored by :meth:`scale`
+        eyes : str or list of str, optional
+            eye(s) to consider; if empty, all available eyes
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the unscaled object (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
         eyes,variables=self._get_eye_var(eyes,variables)
@@ -1997,20 +2152,26 @@ class GenericEyeData(ABC):
         """
         Simple downsampling scheme using mean within the downsampling window.
 
-        All data fields are downsampled simultaneously.
-        See :func:`baseline.downsample()`.
+        All data fields and the time-vector are downsampled simultaneously.
+        See :func:`pypillometry.signal.baseline.downsample`.
 
         Parameters
-        -----------
-
-        fsd: 
-            new sampling-rate or decimate-factor
-        dsfac:
-            if False, `fsd` is the new sampling rate;
+        ----------
+        fsd : float
+            new sampling-rate (in Hz) or decimate-factor
+        dsfac : bool, optional
+            if False (default), `fsd` is the new sampling rate (the decimate
+            factor is ``int(fs/fsd)``);
             if True, `fsd` is the decimate factor
-        inplace: bool
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes                                        
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the downsampled object (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
 
@@ -2037,19 +2198,32 @@ class GenericEyeData(ABC):
     def merge_eyes(self, eyes=[], variables=[], method="mean", keep_eyes=True, inplace=None):
         """Merge data from both eyes into a single variable.
 
+        The merged data is stored under the eye name "mean" (e.g.,
+        ``obj["mean", "pupil"]``). A sample is masked in the merged
+        data if it is masked in any of the merged eyes.
+
         Parameters
         ----------
-        eyes : list, optional
-            list of eyes to merge, by default [] meaning all eyes
-        variables : list, optional
-            list of variables to merge, by default [] meaning all variables
+        eyes : str or list of str, optional
+            eye(s) to merge; if empty, all available eyes
+        variables : str or list of str, optional
+            variable(s) to merge; if empty, all available variables
         method : str, optional
-            which method to use for merging (one of "mean", "regress"), by default "mean"
+            which method to use for merging; currently only "mean" is
+            implemented, by default "mean"
         keep_eyes : bool, optional
-            keep original eye data or drop?, by default True
-        inplace : make change inplace, optional
-            if None, use default value in class, by default None
-        """        
+            keep original eye data (True, default) or drop it together
+            with its stored blinks (False)
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
+        Returns
+        -------
+        :class:`~pypillometry.GenericEyeData`
+            the object with merged data (`self` or a copy, depending on `inplace`)
+        """
         obj = self._get_inplace(inplace)
         eyes,variables=self._get_eye_var(eyes,variables)
 
@@ -2097,19 +2271,24 @@ class GenericEyeData(ABC):
         
         Parameters
         ----------
-        eyes : list
-            Eyes to process. If empty, all eyes are processed.
-        variables : list
-            Variables to process. If empty, all variables are processed.
-        distance : float
-            Merge blinks closer than this distance (in units specified by ``units``)
-        units : str
+        eyes : str or list of str, optional
+            eye(s) to process; if empty, all available eyes
+        variables : str or list of str, optional
+            variable(s) to process; if empty, all available variables
+        distance : float, optional
+            Merge blinks closer than this distance (in units specified by
+            ``units``). Default 100.
+        units : str, optional
             Units for ``distance``. Can be "ms", "sec", "min", or "h". Default "ms".
         apply_mask : bool, default=True
-            If True, apply merged blinks as masks to the data and return self.
-            If False, return merged blinks as dict of Intervals objects without applying masks.
-        inplace : bool or None
-            If True, modify in place. If False, return copy.
+            If True, store the merged blinks, apply them as masks to the data
+            and return the object.
+            If False, return merged blinks as dict of Intervals objects without
+            storing them or applying masks.
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor).
             Only relevant when apply_mask=True.
             
         Returns
@@ -2183,32 +2362,34 @@ class GenericEyeData(ABC):
         pupil-size in interval before trial onset.
 
         Parameters
-        -----------
-        intervals: Intervals, optional
-            Intervals object to use. If provided, interval and event_select are ignored.
+        ----------
+        intervals : Intervals, optional
+            Intervals object to use (with intervals in ms). If provided,
+            interval and event_select are ignored.
         interval : tuple (min,max), optional
-            time-window in ms relative to event-onset (0 is event-onset).
+            time-window relative to event-onset (0 is event-onset), in
+            units given by `units`.
             Required if intervals is not provided.
-        event_select: str or function, optional
+        event_select : str or function, optional
             variable describing which events to select and align to
-            see :class:`GenericEyeData.get_intervals()` for details.
+            see :meth:`get_intervals` for details.
             Required if intervals is not provided.
-        eyes: str or list
-            list of eyes to consider; if empty, consider all
-        variables: str or list
-            list of variables to consider; if empty, consider all
-        statfct : function
-            function mapping np.array to a single number
-        units: str
-            units for interval parameter (if used)
-        kwargs : dict
+        eyes : str or list of str, optional
+            eye(s) to consider; if empty, all available eyes
+        variables : str or list of str, optional
+            variable(s) to consider; if empty, all available variables
+        statfct : function, optional
+            function mapping np.array to a single number; default `np.mean`
+        units : str, optional
+            units for interval parameter (if used); default "ms"
+        **kwargs
             passed onto the event_select function
-    
-        Returns
-        --------
 
-        result: np.array or dict
-            number of event-onsets long result array; in case of multiple eyes/variables, a dict is returned
+        Returns
+        -------
+        dict
+            one array per eye/variable (keys like "left_pupil"), with one
+            value per interval/event
         """
         from ..intervals import Intervals, stat_event_interval
         
@@ -2320,32 +2501,32 @@ class GenericEyeData(ABC):
         """Apply Intervals as masks to selected data.
         
         Takes detected intervals (e.g., blinks, artifacts) and applies them
-        as masks to specified eyes and variables.
-        
+        as masks to specified eyes and variables. Existing masks are kept
+        (the new mask is added to them).
+
         Parameters
         ----------
         intervals : Intervals or dict
             Either:
+
             - A single Intervals object: applied to all specified eyes/variables
-            - A dict of Intervals: keys like "left_pupil", "right_x", etc. 
+            - A dict of Intervals: keys like "left_pupil", "right_x", etc.
               When dict is provided, `eyes` and `variables` are ignored.
-        eyes : list of str, optional
-            List of eyes to apply mask to (e.g., ['left', 'right']).
-            If empty, applies to all available eyes.
-            Ignored if `intervals` is a dict.
-        variables : list of str, optional
-            List of variables to apply mask to (e.g., ['pupil', 'x', 'y']).
-            If empty, applies to all available variables.
-            Ignored if `intervals` is a dict.
-        inplace : bool, optional
-            If True, make change in-place and return the object.
-            If False, make and return copy before making changes.
-            If None, use the object's default setting.
-            
+        eyes : str or list of str, optional
+            eye(s) to apply mask to (e.g., ``["left", "right"]``);
+            if empty, all available eyes. Ignored if `intervals` is a dict.
+        variables : str or list of str, optional
+            variable(s) to apply mask to (e.g., ``["pupil", "x", "y"]``);
+            if empty, all available variables. Ignored if `intervals` is a dict.
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
         Returns
         -------
-        GenericEyeData
-            The object with masks applied.
+        :class:`~pypillometry.GenericEyeData`
+            The object with masks applied (`self` or a copy, depending on `inplace`).
             
         Examples
         --------
@@ -2361,7 +2542,7 @@ class GenericEyeData(ABC):
         
         Chain with other operations:
         
-        >>> data.mask_intervals(blinks).pupil_lowpass_filter()
+        >>> data.mask_intervals(blinks).pupil_lowpass_filter(cutoff=5)
         
         See Also
         --------
@@ -2430,20 +2611,24 @@ class GenericEyeData(ABC):
         Interpolate data within specified intervals.
         
         This function replaces data within the specified intervals with interpolated
-        values based on boundary points outside each interval.
-        
+        values based on boundary points outside each interval. The
+        interpolated samples are also marked as masked. Intervals without
+        valid (non-NaN) boundary points on both sides are skipped with a
+        warning.
+
         Parameters
         ----------
         intervals : Intervals or dict
             Either:
+
             - A single Intervals object: applied to all specified eyes/variables
             - A dict of Intervals: keys like "left_pupil", "right_x", etc.
               When dict is provided, `eyes` and `variables` are ignored.
-        eyes : str or list, optional
-            Eye(s) to interpolate. If empty, applies to all available eyes.
+        eyes : str or list of str, optional
+            eye(s) to interpolate; if empty, all available eyes.
             Ignored if `intervals` is a dict.
-        variables : str or list, optional
-            Variable(s) to interpolate. If empty, applies to all available variables.
+        variables : str or list of str, optional
+            variable(s) to interpolate; if empty, all available variables.
             Ignored if `intervals` is a dict.
         method : str, default "linear"
             Interpolation method. Options: "linear", "nearest", "zero", 
@@ -2451,22 +2636,24 @@ class GenericEyeData(ABC):
             Passed to scipy.interpolate.interp1d.
         margin : tuple, default (-20, 20)
             Time window (in ms) before and after the interval to collect boundary
-            points for interpolation. The first value is subtracted from the start
-            (should be negative to go back in time), and the second is added to the
-            end. For higher-order methods like "cubic" or "quadratic", more boundary
-            points from this margin are used to fit the interpolation curve.
+            points for interpolation. Boundary points are taken from
+            ``abs(margin[0])`` ms before the start and ``abs(margin[1])`` ms after
+            the end of each interval (the signs are ignored). For higher-order
+            methods like "cubic" or "quadratic", more boundary points from this
+            margin are used to fit the interpolation curve.
         store_as_suffix : str or None, default None
             If None, replace the original data.
             If a string, store interpolated data in a new variable with this suffix
             (e.g., "_interp" creates "left_pupil_interp").
-        inplace : bool, optional
-            If True, modify in-place. If False, return a copy.
-            If None, use object's default setting.
-            
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
         Returns
         -------
-        GenericEyeData
-            The object with interpolated data.
+        :class:`~pypillometry.GenericEyeData`
+            The object with interpolated data (`self` or a copy, depending on `inplace`).
             
         Examples
         --------
