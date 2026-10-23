@@ -2624,7 +2624,10 @@ If apply_mask=False: returns dict of Intervals objects (one per eye/variable com
 <span class="sig-name descname"><span class="pre">downsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fsd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dsfac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.downsample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.downsample" title="Link to this definition">¶</a></dt>
 <dd><p>Simple downsampling scheme using mean within the downsampling window.</p>
 <p>All data fields and the time-vector are downsampled simultaneously.
-See <a class="reference internal" href="#pypillometry.signal.baseline.downsample" title="pypillometry.signal.baseline.downsample"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.signal.baseline.downsample()</span></code></a>.</p>
+See <a class="reference internal" href="#pypillometry.signal.baseline.downsample" title="pypillometry.signal.baseline.downsample"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.signal.baseline.downsample()</span></code></a>. Masked samples are
+left out of the window means; a new sample is masked only if all
+samples in its window were masked. Stored blinks (in sample indices)
+are rescaled to the new sampling rate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2733,7 +2736,9 @@ depending on <cite>inplace</cite>)</p>
 <p>A gap is a step between consecutive time points that is larger than
 twice the median step. New time points are inserted into each gap
 at the median step size and all data variables are set to <cite>yval</cite>
-at these new time points. This is called by the constructor when
+at these new time points; they are masked as missing. Existing masks
+are kept and stored blinks (in sample indices) are moved to the new
+sample positions. This is called by the constructor when
 <code class="docutils literal notranslate"><span class="pre">fill_time_discontinuities=True</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -3536,7 +3541,8 @@ value per interval/event</p>
 <p>The result contains all data (and events) between <cite>start</cite> and <cite>end</cite>
 (inclusive), in units given by <cite>units</cite> (one of “ms”, “sec”, “min”, “h”).
 <cite>start</cite> and <cite>end</cite> refer to the values of the time-vector (not to
-the time since the start of the recording).</p>
+the time since the start of the recording). Masks are kept; stored
+blinks (in sample indices) are shifted and cut to the new range.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
