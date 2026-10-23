@@ -641,12 +641,46 @@ class TestGroupLevelSegmentedData(unittest.TestCase):
         # Rest should be 0%
         np.testing.assert_array_almost_equal(group.mask_percent[5:], 0.0)
     
-    def test_data_not_masked_at_group_level(self):
-        """Test that group-level data has no mask (info in mask_percent)"""
-        group = GroupLevelSegmentedData.from_segments(self.segments)
-        
-        # Data should not be masked
-        self.assertFalse(np.any(group.data.mask))
+    def junk_segments(self):
+        """Two subjects, value 10 everywhere except masked junk (padding 0, blink 999)."""
+        segs = []
+        for name in ["a", "b"]:
+            d = np.full((5, 4), 10.)
+            m = np.zeros((5, 4), dtype=bool)
+            d[1, 0], m[1, 0] = 0., True
+            d[3, 1], m[3, 1] = 999., True
+            segs.append(SegmentedEyeData(name=name, variable="left_pupil", tx=np.arange(5.),
+                                         data=ma.masked_array(d, mask=m), sampling_rate=1000))
+        return segs
+
+    def test_stack_keeps_mask(self):
+        """Stacking keeps each segment's mask, so masked junk is not averaged (H5)"""
+        group = GroupLevelSegmentedData.from_segments(self.junk_segments(), meanfct=None)
+        self.assertEqual(group.data.shape, (5, 8))
+        self.assertEqual(int(group.data.mask.sum()), 4)
+        np.testing.assert_array_equal(np.mean(group.data, axis=1), 10.)
+
+    def test_aggregate_keeps_mask(self):
+        """A subject's mean stays masked where all of their segments are masked (M5)"""
+        segs = self.junk_segments()
+        segs[1].data[2, :] = ma.masked
+        group = GroupLevelSegmentedData.from_segments(segs, meanfct=np.mean)
+        np.testing.assert_array_equal(group.data.mask[2], [False, True])
+        np.testing.assert_array_equal(np.mean(group.data, axis=1), 10.)
+
+    def test_warns_for_mask_ignoring_meanfct(self):
+        """A meanfct that ignores masks (np.median) triggers a warning"""
+        from loguru import logger
+        messages = []
+        hid = logger.add(lambda m: messages.append(m), level="WARNING")
+        try:
+            GroupLevelSegmentedData.from_segments(self.junk_segments(), meanfct=np.ma.median)
+            self.assertEqual(messages, [])
+            GroupLevelSegmentedData.from_segments(self.junk_segments(), meanfct=np.median)
+            self.assertEqual(len(messages), 1)
+            self.assertIn("does not ignore masked", messages[0])
+        finally:
+            logger.remove(hid)
     
     def test_summary(self):
         """Test summary includes group-level info"""

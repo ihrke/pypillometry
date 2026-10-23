@@ -15,6 +15,20 @@ import scipy.stats
 from .io import write_pickle, read_pickle
 
 
+def _warn_if_ignores_mask(fct, name):
+    """Log a warning if `fct` uses masked values (e.g., `np.median`)."""
+    # mean and median of the unmasked values are both 3
+    probe = ma.masked_array([[5.0, 1.0, 1e9]], mask=[[False, False, True]])
+    try:
+        res = float(np.asarray(fct(probe, axis=1)).ravel()[0])
+    except Exception:
+        return  # cannot check this function
+    if not np.isclose(res, 3.0):
+        logger.warning(f"{name}={getattr(fct, '__name__', fct)} does not ignore masked "
+                       "values; masked samples (blinks, padding) enter the result. "
+                       "Use a mask-aware function such as np.mean or np.ma.median.")
+
+
 class SegmentedEyeData:
     """
     Class representing segmented eye data (e.g., event-related pupil dilation).
@@ -606,8 +620,10 @@ class GroupLevelSegmentedData(SegmentedEyeData):
     :meth:`from_segments`) from a list or dict of
     :class:`~pypillometry.SegmentedEyeData` objects, one per subject.
 
-    The mask is replaced with `mask_percent`, which stores the average percentage
-    of masked trials per subject at each timepoint.
+    The data keep their mask: stacked segments keep their own mask, and in
+    aggregate mode a subject's mean is masked where all of their segments are
+    masked. In addition, `mask_percent` stores the average percentage of masked
+    trials per subject at each timepoint.
     
     Parameters
     ----------
@@ -663,7 +679,9 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         segments : list of SegmentedEyeData
             List of SegmentedEyeData objects (one per subject)
         meanfct : callable or None
-            Function to aggregate within each subject (e.g., np.mean, np.median).
+            Function to aggregate within each subject; it must ignore masked
+            values (e.g., np.mean or np.ma.median, but not np.median; a warning
+            is logged otherwise).
             If None, all segments from all subjects are stacked (concatenated).
         name : str, optional
             Name for the group-level dataset. If None, uses ``"group_"`` + first
@@ -714,23 +732,15 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         mask_percent = np.mean(mask_percents, axis=0)
         
         if meanfct is None:
-            # Stack mode: concatenate all segments from all subjects
-            all_data = [seg.data for seg in segments]
-            combined_data = ma.concatenate(all_data, axis=1)
-            # Don't mask at group level - mask_percent stores the info
-            combined_data = ma.masked_array(combined_data.data, mask=False)
+            # Stack mode: concatenate all segments from all subjects (keeps masks)
+            combined_data = ma.concatenate([seg.data for seg in segments], axis=1)
         else:
             # Aggregate mode: apply meanfct within each subject, then stack
-            subject_means = []
-            for seg in segments:
-                subj_mean = meanfct(seg.data, axis=1)
-                subject_means.append(subj_mean)
-            
-            # Stack as columns (n_timepoints, n_subjects)
-            combined_data = ma.masked_array(
-                np.column_stack(subject_means),
-                mask=False
-            )
+            _warn_if_ignores_mask(meanfct, "meanfct")
+            subject_means = [ma.asarray(meanfct(seg.data, axis=1)) for seg in segments]
+            # Stack as columns (n_timepoints, n_subjects); a timepoint where all
+            # of a subject's segments are masked stays masked
+            combined_data = ma.column_stack(subject_means)
         
         # Determine name
         if name is None:
@@ -964,7 +974,9 @@ def group_segments(segments, meanfct=np.mean, name: str = None) -> GroupLevelSeg
     segments : list or dict of SegmentedEyeData
         SegmentedEyeData objects to combine. If dict, values are used.
     meanfct : callable or None
-        Function to aggregate within each subject (e.g., np.mean, np.median).
+        Function to aggregate within each subject; it must ignore masked
+        values (e.g., np.mean or np.ma.median, but not np.median; a warning
+        is logged otherwise).
         If None, all segments from all subjects are stacked (concatenated).
     name : str, optional
         Name for the group-level dataset. If None, uses ``"group_"`` + first

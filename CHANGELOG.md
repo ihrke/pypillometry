@@ -25,6 +25,9 @@
   were dropped, so time and data had different lengths
 - `pupil_blinks_detect()`: the "zero" strategy never detected blinks
 - `stat_per_event()` gave wrong results for intervals not in ms 
+- `group_segments()`/`GroupLevelSegmentedData.from_segments()` dropped masks,
+  so blinks and padding entered group means; now warns if `meanfct` ignores
+  masks (e.g., `np.median`)
 - `GazeData.summary()` was missing the `eyes` entry
 - `ExperimentalSetup`: viewing angles given as strings (e.g., `"30 deg"`) are
   parsed before plotting.
