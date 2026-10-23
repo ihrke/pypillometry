@@ -906,7 +906,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        min_duration : float</span>
 <span class="sd">            minimum duration in ms for a sequence of missing numbers to be treated as blink</span>
 <span class="sd">        blink_val : float</span>
-<span class="sd">            "missing value" code</span>
+<span class="sd">            "missing value" code for the "zero" strategy. Missing samples</span>
+<span class="sd">            (NaN) are always detected; samples equal to `blink_val` (default</span>
+<span class="sd">            0) are detected in addition. Use `np.nan` to detect only NaN</span>
+<span class="sd">            (e.g., for baseline-corrected data where 0 is a valid value).</span>
+<span class="sd">            The "zero" strategy always uses the raw data, so regions masked</span>
+<span class="sd">            for other reasons are not detected as blinks.</span>
 <span class="sd">        winsize : float</span>
 <span class="sd">            window-size for Savitzky-Golay velocity estimation in ms</span>
 <span class="sd">        vel_onset : float or str</span>
@@ -987,7 +992,13 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">blinks_vel</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
                 
             <span class="k">if</span> <span class="s2">"zero"</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
-                <span class="n">blinks_zero</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_zero</span><span class="p">(</span><span class="n">pupil_data</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">blink_val</span><span class="p">)</span>
+                <span class="c1"># Look for runs of NaN or `blink_val` in the raw data. Use the</span>
+                <span class="c1"># raw data even when `ignore_existing_mask=False`: other masks</span>
+                <span class="c1"># (e.g., offscreen gaze) must not be turned into blinks.</span>
+                <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">blink_val</span><span class="p">):</span>
+                    <span class="n">raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">raw</span> <span class="o">==</span> <span class="n">blink_val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">raw</span><span class="p">)</span>
+                <span class="n">blinks_zero</span><span class="o">=</span><span class="n">preproc</span><span class="o">.</span><span class="n">detect_blinks_zero</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blinks_zero</span><span class="p">)</span><span class="si">}</span><span class="s2"> blinks with zero strategy"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">blinks_zero</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>

@@ -1595,6 +1595,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        it tries to be smart to detect different information from the EDF file.</span>
 <span class="sd">        Spatial calibration/validation data is automatically parsed and stored</span>
 <span class="sd">        in the `calibration` attribute as SpatialCalibration objects.</span>
+<span class="sd">        Eyelink codes missing pupil samples (e.g., during blinks) as 0; these</span>
+<span class="sd">        are converted to NaN (and therefore masked).</span>
 
 <span class="sd">        However, the EDF file may contain other information of interest, e.g.,</span>
 <span class="sd">        eyelink-detected saccades, etc.</span>
@@ -1663,7 +1665,12 @@ window.runMermaid = runMermaid;</script>
             <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">tracked_eye</span><span class="si">}</span><span class="s1">_x'</span><span class="p">]</span> <span class="o">=</span> <span class="n">edf</span><span class="p">[</span><span class="s2">"samples"</span><span class="p">][</span><span class="n">avail_data_fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">"xpos"</span><span class="p">)]</span>
             <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">tracked_eye</span><span class="si">}</span><span class="s1">_y'</span><span class="p">]</span> <span class="o">=</span> <span class="n">edf</span><span class="p">[</span><span class="s2">"samples"</span><span class="p">][</span><span class="n">avail_data_fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">"ypos"</span><span class="p">)]</span>
             <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">tracked_eye</span><span class="si">}</span><span class="s1">_pupil'</span><span class="p">]</span> <span class="o">=</span> <span class="n">edf</span><span class="p">[</span><span class="s2">"samples"</span><span class="p">][</span><span class="n">avail_data_fields</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">"ps"</span><span class="p">)]</span>
-        
+
+        <span class="c1"># Eyelink codes missing pupil samples (e.g., blinks) as 0</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"_pupil"</span><span class="p">):</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
         <span class="c1"># get events (Eyelink stores in seconds, convert to ms)</span>
         <span class="n">evon</span> <span class="o">=</span> <span class="n">edf</span><span class="p">[</span><span class="s2">"discrete"</span><span class="p">][</span><span class="s2">"messages"</span><span class="p">][</span><span class="s2">"stime"</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span>
         <span class="n">evlab</span> <span class="o">=</span> <span class="n">edf</span><span class="p">[</span><span class="s2">"discrete"</span><span class="p">][</span><span class="s2">"messages"</span><span class="p">][</span><span class="s2">"msg"</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
@@ -2167,7 +2174,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="GenericEyeData.fill_time_discontinuities">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.fill_time_discontinuities">[docs]</a>
     <span class="nd">@keephistory</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">fill_time_discontinuities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yval</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">print_info</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fill_time_discontinuities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">yval</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">print_info</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Find gaps in the time-vector and fill them in (in-place).</span>
 
@@ -2180,7 +2187,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        yval : float, optional</span>
-<span class="sd">            value used for the data in the filled-in gaps; default 0</span>
+<span class="sd">            value used for the data in the filled-in gaps; default NaN,</span>
+<span class="sd">            so the filled-in samples are masked as missing data</span>
 <span class="sd">        print_info : bool, optional</span>
 <span class="sd">            if True (default), log the number of gaps that are filled in</span>
 

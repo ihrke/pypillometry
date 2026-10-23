@@ -424,6 +424,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    string identifier (e.g., "x", "y", "pupil", "baseline", "response", or any other </span>
 <span class="sd">    custom identifier).</span>
 
+<span class="sd">    Values are stored as given (converted to float); NaN values are masked.</span>
+<span class="sd">    No other values are treated as missing (e.g., a pupil size of 0 is kept);</span>
+<span class="sd">    converting missing-value codes to NaN is up to the code that reads the data.</span>
+
 <span class="sd">    The dictionary can be indexed by a string "eye_variable" or by a tuple</span>
 <span class="sd">    ("eye", "variable") like data["left","x"] or data["left_x"].</span>
 <span class="sd">    """</span>
@@ -547,11 +551,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">!=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Array must have same dimensions as existing arrays"</span><span class="p">)</span>
         <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>  <span class="c1"># Only validate key when setting values</span>
-        
-        <span class="c1"># For pupil variables, convert 0 values to NaN (0 pupil size is invalid)</span>
-        <span class="k">if</span> <span class="s1">'pupil'</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">value</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">value</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># set mask to 1 for missing values</span>
@@ -609,11 +609,8 @@ window.runMermaid = runMermaid;</script>
         
         <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_key</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         
-        <span class="c1"># For pupil variables, convert 0 values to NaN (0 pupil size is invalid)</span>
         <span class="n">value_float</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s1">'pupil'</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
-            <span class="n">value_float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">value_float</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">value_float</span><span class="p">)</span>
-        
+
         <span class="c1"># Store data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_float</span>
         

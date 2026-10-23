@@ -1181,7 +1181,12 @@ the blinks are also applied as masks to the data. When <cite>apply_mask=False</c
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to process; if empty, all available eyes are processed</p></li>
 <li><p><strong>min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – minimum duration in ms for a sequence of missing numbers to be treated as blink</p></li>
-<li><p><strong>blink_val</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – “missing value” code</p></li>
+<li><p><strong>blink_val</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – “missing value” code for the “zero” strategy. Missing samples
+(NaN) are always detected; samples equal to <cite>blink_val</cite> (default
+0) are detected in addition. Use <cite>np.nan</cite> to detect only NaN
+(e.g., for baseline-corrected data where 0 is a valid value).
+The “zero” strategy always uses the raw data, so regions masked
+for other reasons are not detected as blinks.</p></li>
 <li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – window-size for Savitzky-Golay velocity estimation in ms</p></li>
 <li><p><strong>vel_onset</strong> (<em>float</em><em> or </em><em>str</em>) – <p>velocity threshold to detect blink onset (negative value).</p>
 <ul>
@@ -2723,7 +2728,7 @@ depending on <cite>inplace</cite>)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.fill_time_discontinuities">
-<span class="sig-name descname"><span class="pre">fill_time_discontinuities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.fill_time_discontinuities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.fill_time_discontinuities" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">fill_time_discontinuities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.fill_time_discontinuities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.fill_time_discontinuities" title="Link to this definition">¶</a></dt>
 <dd><p>Find gaps in the time-vector and fill them in (in-place).</p>
 <p>A gap is a step between consecutive time points that is larger than
 twice the median step. New time points are inserted into each gap
@@ -2733,7 +2738,8 @@ at these new time points. This is called by the constructor when
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>yval</strong> (<em>float</em><em>, </em><em>optional</em>) – value used for the data in the filled-in gaps; default 0</p></li>
+<li><p><strong>yval</strong> (<em>float</em><em>, </em><em>optional</em>) – value used for the data in the filled-in gaps; default NaN,
+so the filled-in samples are masked as missing data</p></li>
 <li><p><strong>print_info</strong> (<em>bool</em><em>, </em><em>optional</em>) – if True (default), log the number of gaps that are filled in</p></li>
 </ul>
 </dd>
@@ -2753,7 +2759,9 @@ at these new time points. This is called by the constructor when
 <p>All “messages” are stored as event_labels (can be filtered later) and
 it tries to be smart to detect different information from the EDF file.
 Spatial calibration/validation data is automatically parsed and stored
-in the <cite>calibration</cite> attribute as SpatialCalibration objects.</p>
+in the <cite>calibration</cite> attribute as SpatialCalibration objects.
+Eyelink codes missing pupil samples (e.g., during blinks) as 0; these
+are converted to NaN (and therefore masked).</p>
 <p>However, the EDF file may contain other information of interest, e.g.,
 eyelink-detected saccades, etc.
 If you need more control, use the “eyelinkio” package directly and
@@ -3620,6 +3628,9 @@ Drops empty entries (None or length-0 ndarrays).</p>
 “mean”, “median”, “regress”, or any other custom identifier) and variable is any
 string identifier (e.g., “x”, “y”, “pupil”, “baseline”, “response”, or any other
 custom identifier).</p>
+<p>Values are stored as given (converted to float); NaN values are masked.
+No other values are treated as missing (e.g., a pupil size of 0 is kept);
+converting missing-value codes to NaN is up to the code that reads the data.</p>
 <p>The dictionary can be indexed by a string “eye_variable” or by a tuple
 (“eye”, “variable”) like data[“left”,”x”] or data[“left_x”].</p>
 <dl class="field-list simple">

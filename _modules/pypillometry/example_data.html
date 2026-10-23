@@ -550,7 +550,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Binocular gaze and pupil data from a 20-minute reinforcement learning</span>
 <span class="sd">    task (single participant). The ASC files are downloaded into a</span>
 <span class="sd">    temporary directory on every call. Events are the "MSG" lines after</span>
-<span class="sd">    "experiment_start"; time is reset to start at 0 and the original data</span>
+<span class="sd">    "experiment_start"; missing pupil samples (coded as 0 by Eyelink) are</span>
+<span class="sd">    set to NaN; time is reset to start at 0 and the original data</span>
 <span class="sd">    are kept (`keep_orig=True`). Usually called via</span>
 <span class="sd">    :func:`~pypillometry.get_example_data`.</span>
 
@@ -592,6 +593,10 @@ window.runMermaid = runMermaid;</script>
     <span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
+    <span class="c1">## Eyelink tracker codes missing pupil data (e.g., blinks) as 0</span>
+    <span class="n">left_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">)</span>
+    <span class="n">right_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">)</span>
+
 
     <span class="c1"># keep only lines starting with "MSG"</span>
     <span class="n">events</span><span class="o">=</span><span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"MSG"</span><span class="p">)]</span>
@@ -611,8 +616,8 @@ window.runMermaid = runMermaid;</script>
     <span class="p">)</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"test short"</span><span class="p">,</span>
                 <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span>
-                <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span>
-                <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span>
+                <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">left_p</span><span class="p">,</span>
+                <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_p</span><span class="p">,</span>
                 <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
                 <span class="n">keep_orig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
                 <span class="o">.</span><span class="n">reset_time</span><span class="p">()</span>
@@ -626,7 +631,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">    Short version (first 40 sec) of the "rlmw_002" dataset: binocular gaze</span>
 <span class="sd">    and pupil data from a reinforcement learning task. No download is</span>
-<span class="sd">    needed. Events are the "MSG" lines after "experiment_start"; time is</span>
+<span class="sd">    needed. Events are the "MSG" lines after "experiment_start"; missing</span>
+<span class="sd">    pupil samples (coded as 0 by Eyelink) are set to NaN; time is</span>
 <span class="sd">    reset to start at 0 and the original data are kept (`keep_orig=True`).</span>
 <span class="sd">    Usually called via :func:`~pypillometry.get_example_data`.</span>
 
@@ -658,6 +664,10 @@ window.runMermaid = runMermaid;</script>
     <span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
+    <span class="c1">## Eyelink tracker codes missing pupil data (e.g., blinks) as 0</span>
+    <span class="n">left_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">)</span>
+    <span class="n">right_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">)</span>
+
     <span class="c1">## Loading the events from the events file</span>
     <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -681,8 +691,8 @@ window.runMermaid = runMermaid;</script>
     <span class="p">)</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"test short"</span><span class="p">,</span>
                 <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span>
-                <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="p">,</span>
-                <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="p">,</span>
+                <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">left_p</span><span class="p">,</span>
+                <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_p</span><span class="p">,</span>
                 <span class="n">event_onsets</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">df_ev</span><span class="o">.</span><span class="n">event</span><span class="p">,</span>
                 <span class="n">keep_orig</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
                 <span class="o">.</span><span class="n">reset_time</span><span class="p">()</span>

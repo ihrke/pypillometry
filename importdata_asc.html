@@ -166,7 +166,7 @@ Converted successfully: 37139 events, 0 samples, 6 blocks.
 3385918   814.4   343.6  1713.0   863.9   380.7  1747.0 .....
 </pre></div></div>
 </div>
-<p>We can easily read this file using <code class="docutils literal notranslate"><span class="pre">pandas.read_csv()</span></code>.</p>
+<p>We can easily read this file using <code class="docutils literal notranslate"><span class="pre">pandas.read_csv()</span></code>. Eyelink marks missing x/y-coordinates with <code class="docutils literal notranslate"><span class="pre">&quot;</span>&#160;&#160; <span class="pre">.&quot;</span></code> and missing pupil data with <code class="docutils literal notranslate"><span class="pre">0</span></code>. We convert both to <code class="docutils literal notranslate"><span class="pre">NaN</span></code>, which pypillometry treats as missing data. This is an explicit step: pypillometry does not interpret <code class="docutils literal notranslate"><span class="pre">0</span></code> as missing by itself.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
@@ -193,6 +193,11 @@ Converted successfully: 37139 events, 0 samples, 6 blocks.
 <span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 <span class="n">df</span><span class="o">.</span><span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span>
+
+<span class="c1">## Eyelink codes missing pupil data (e.g., blinks) as 0;</span>
+<span class="c1">## set it to NaN so that pypillometry treats it as missing</span>
+<span class="n">df</span><span class="o">.</span><span class="n">left_p</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">right_p</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
 
 
 <span class="n">df</span>
@@ -1055,6 +1060,11 @@ PupilData(test, 14.4MiB):
     <span class="n">right_y</span><span class="p">[</span><span class="n">right_y</span><span class="o">==</span><span class="s2">"   ."</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
     <span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">df</span><span class="o">.</span><span class="n">right_y</span> <span class="o">=</span> <span class="n">right_y</span>
+
+    <span class="c1">## Eyelink codes missing pupil data (e.g., blinks) as 0;</span>
+    <span class="c1">## set it to NaN so that pypillometry treats it as missing</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">left_p</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">left_p</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">right_p</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">right_p</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
 
     <span class="c1">## read events-file</span>
     <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
