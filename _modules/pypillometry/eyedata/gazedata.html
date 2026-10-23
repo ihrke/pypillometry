@@ -458,10 +458,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    info : dict or None</span>
 <span class="sd">        optional dictionary with additional information about the dataset</span>
 <span class="sd">        (stored in member `info`)</span>
-<span class="sd">    inplace : bool</span>
-<span class="sd">        if True, the object is modified in place; if False, a new object is returned</span>
-<span class="sd">        this object-level property can be overwritten by the method-level `inplace` argument</span>
-<span class="sd">        default is "False"</span>
+<span class="sd">    inplace : bool or None</span>
+<span class="sd">        default for methods called with `inplace=None`: if True, they modify the</span>
+<span class="sd">        object in place; if False, they return a modified copy; if None (default),</span>
+<span class="sd">        use the package-level setting (see :func:`~pypillometry.set_default_inplace`,</span>
+<span class="sd">        initially True). The method-level `inplace` argument overrides this.</span>
 <span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                     <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -478,7 +479,7 @@ window.runMermaid = runMermaid;</script>
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                     <span class="n">keep_orig</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                     <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="n">inplace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Constructor for the GazeData class.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">left_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">left_y</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">right_x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">right_y</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
@@ -754,7 +755,7 @@ window.runMermaid = runMermaid;</script>
         
         <span class="c1"># Apply mask if requested</span>
         <span class="k">if</span> <span class="n">apply_mask</span><span class="p">:</span>
-            <span class="n">obj</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">intervals_obj</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'right'</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">'x'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">])</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">intervals_obj</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">'left'</span><span class="p">,</span> <span class="s1">'right'</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">'x'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">obj</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">intervals_obj</span></div>
@@ -880,7 +881,7 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># Apply mask if requested</span>
         <span class="k">if</span> <span class="n">apply_mask</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">eye</span><span class="p">,</span> <span class="n">intervals_obj</span> <span class="ow">in</span> <span class="n">intervals_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">obj</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">intervals_obj</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">eye</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">'x'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">])</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">mask_intervals</span><span class="p">(</span><span class="n">intervals_obj</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="n">eye</span><span class="p">],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">'x'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">obj</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">intervals_dict</span></div>

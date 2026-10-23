@@ -416,6 +416,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">baseline</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">stat_event_interval</span><span class="p">,</span> <span class="n">Intervals</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_get_level</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
@@ -495,7 +496,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">data</span><span class="p">:</span> <span class="n">EyeDataDict</span> <span class="c1">## dictionary with data (contains ndarrays)</span>
     <span class="n">tx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="c1">## time vector</span>
     <span class="n">event_onsets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="c1">## vector with event onsets in time units</span>
-    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="c1">## whether to make changes in-place</span>
+    <span class="n">inplace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="c1">## whether to make changes in-place (None: package default)</span>
     <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="c1">## optional info about the dataset</span>
     <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span> <span class="c1">## parameters </span>
 
@@ -510,7 +511,7 @@ window.runMermaid = runMermaid;</script>
                     <span class="n">event_labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">fill_time_discontinuities</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-                    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+                    <span class="n">inplace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span>
                     <span class="n">info</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Common code for the child-classes of GenericEyeData.</span>
@@ -836,14 +837,17 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_inplace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Private helper function.</span>
 <span class="sd">        </span>
-<span class="sd">        Returns self or a copy depending on inplace setting.</span>
+<span class="sd">        Returns self or a copy depending on inplace setting. `inplace=None`</span>
+<span class="sd">        falls back to the object-level setting (constructor), and if that is</span>
+<span class="sd">        None too, to the package-level default (:func:`set_default_inplace`).</span>
 <span class="sd">        When copying, preserves the original name to avoid name changes</span>
 <span class="sd">        during internal processing.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">inplace</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">new_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">inplace</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"inplace"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># object-level setting</span>
+        <span class="k">if</span> <span class="n">inplace</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inplace</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_default_inplace</span><span class="p">()</span>    <span class="c1"># package-level setting</span>
+        <span class="k">return</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">new_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
 
     <span class="nd">@property</span>

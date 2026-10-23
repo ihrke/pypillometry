@@ -186,30 +186,47 @@ Example: <code class="docutils literal notranslate"><span class="pre">variables=
 Example: <code class="docutils literal notranslate"><span class="pre">eyes=['left']</span></code> shows only left eye data.
 If not provided, all available eyes are detected and displayed.</p></li>
 <li><p><strong>time</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Time vector for raw array viewing. If not provided, uses sample
-index (0, 1, 2, …). Should have same length as data arrays.</p></li>
-<li><p><strong>overlay_pupil</strong> (<em>dict</em><em>, </em><em>optional</em>) – (EyeData only) Additional timeseries to overlay on the pupil plot.
-Keys are labels for legend, values are either:
-- str: name of data in eyedata.data (e.g., ‘left_pupil_filtered’)
-- array-like: timeseries of same length as eyedata</p></li>
+index (0, 1, 2, …). Should have same length as data arrays.
+Ignored for EyeData objects, where <cite>data.tx</cite> (converted to seconds)
+is used.</p></li>
+<li><p><strong>overlay_pupil</strong> (<em>dict</em><em>, </em><em>optional</em>) – <p>(EyeData only) Additional timeseries to overlay on the pupil plot.
+Keys are labels for legend, values are either:</p>
+<ul>
+<li><p>str: name of data in eyedata.data (e.g., ‘left_pupil_filtered’)</p></li>
+<li><p>array-like: timeseries of same length as eyedata</p></li>
+</ul>
+<p>Overlays with an unknown key or a wrong length are skipped with a
+warning.</p>
+</p></li>
 <li><p><strong>overlay_x</strong> (<em>dict</em><em>, </em><em>optional</em>) – (EyeData only) Additional timeseries to overlay on the gaze X plot.</p></li>
 <li><p><strong>overlay_y</strong> (<em>dict</em><em>, </em><em>optional</em>) – (EyeData only) Additional timeseries to overlay on the gaze Y plot.</p></li>
 <li><p><strong>extra_plots</strong> (<em>dict</em><em>, </em><em>optional</em>) – (EyeData only) Additional numpy arrays to display as separate subplots
 below the EyeData variables. Keys become subplot labels (y-axis),
 values are arrays or lists of arrays. Arrays must have the same length
 as the EyeData. Example: <code class="docutils literal notranslate"><span class="pre">extra_plots={&quot;velocity&quot;:</span> <span class="pre">vel,</span> <span class="pre">&quot;custom&quot;:</span> <span class="pre">[a,</span> <span class="pre">b]}</span></code></p></li>
-<li><p><strong>highlight</strong> (<em>Intervals</em><em> or </em><em>dict</em><em>, </em><em>optional</em>) – Intervals to highlight in the plots. Can be:
-- An Intervals object (applied to all plots)
-- A dict mapping variable type (‘pupil’, ‘x’, ‘y’) to Intervals objects</p></li>
+<li><p><strong>highlight</strong> (<em>Intervals</em><em> or </em><em>dict</em><em>, </em><em>optional</em>) – <p>Intervals to highlight in the plots. Can be:</p>
+<ul>
+<li><p>An <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> object (applied to all plots)</p></li>
+<li><p>A dict mapping plot key to <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code>
+objects; keys are ‘pupil’, ‘x’, ‘y’ and <code class="docutils literal notranslate"><span class="pre">'extra_&lt;label&gt;'</span></code> for
+<cite>extra_plots</cite> (EyeData), or the plot labels (arrays)</p></li>
+</ul>
+<p>Intervals not in seconds are converted (for EyeData using the
+sampling rate of <cite>data</cite> if the Intervals have none).</p>
+</p></li>
 <li><p><strong>highlight_color</strong> (<em>str</em><em>, </em><em>optional</em>) – Color for highlighted regions (default: ‘lightblue’)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>If regions were selected (using ‘s’ key + mouse clicks), returns a dict
-mapping plot label to Intervals objects containing the selected regions
-in seconds. Returns None if no selections were made.</p>
+<dd class="field-even"><p>If regions were selected (<code class="docutils literal notranslate"><span class="pre">S</span></code> key, then drag with the left mouse
+button), returns a dict mapping plot key (same keys as for
+<cite>highlight</cite>) to <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> objects containing
+the selected regions with <code class="docutils literal notranslate"><span class="pre">units='sec'</span></code> (for raw arrays the values
+are in the units of <cite>time</cite>, i.e. sample indices if <cite>time</cite> is not
+given). Returns None if no selections were made.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, Intervals]]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code>]]</span></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
@@ -222,17 +239,21 @@ in seconds. Returns None if no selections were made.</p>
 <p>Keyboard controls:</p>
 <ul class="simple">
 <li><p>Left/Right arrows: Pan 10% of view</p></li>
-<li><p>Up/Down arrows: Zoom in/out 20%</p></li>
+<li><p>Up/Down arrows: Zoom in/out (20%/25%)</p></li>
 <li><p>PgUp/PgDn: Pan 50% of view</p></li>
 <li><p>Home/End: Jump to start/end</p></li>
 <li><p>Space: Reset to full view</p></li>
 <li><p>+/-: Zoom in/out</p></li>
+<li><p>Mouse wheel: Zoom X-axis around the mouse position</p></li>
+<li><p>Shift + Up/Down, Shift + mouse wheel: Zoom Y-axis of the plot under
+the mouse</p></li>
+<li><p>Shift + Space: Reset Y-axis of the plot under the mouse</p></li>
 <li><p>M: Toggle mask regions (EyeData only)</p></li>
 <li><p>O: Toggle event markers (EyeData only)</p></li>
-<li><p>S: Enter selection mode (drag to mark a region)</p></li>
+<li><p>S: Enter/exit selection mode (drag to mark a region)</p></li>
 <li><p>D/Backspace: Remove last selection</p></li>
 <li><p>H/?: Show help</p></li>
-<li><p>Q/Esc: Close viewer</p></li>
+<li><p>Q/Esc: Close viewer (Esc first leaves selection mode)</p></li>
 </ul>
 <p class="rubric">Examples</p>
 <p>View EyeData:</p>

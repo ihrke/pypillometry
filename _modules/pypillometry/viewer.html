@@ -428,8 +428,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">- Support for viewing raw numpy arrays and masked arrays</span>
 <span class="sd">"""</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'view'</span><span class="p">,</span> <span class="s1">'tweak'</span><span class="p">]</span>
 
@@ -555,11 +558,17 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    time : ndarray, optional</span>
 <span class="sd">        Time vector for raw array viewing. If not provided, uses sample</span>
 <span class="sd">        index (0, 1, 2, ...). Should have same length as data arrays.</span>
+<span class="sd">        Ignored for EyeData objects, where `data.tx` (converted to seconds)</span>
+<span class="sd">        is used.</span>
 <span class="sd">    overlay_pupil : dict, optional</span>
 <span class="sd">        (EyeData only) Additional timeseries to overlay on the pupil plot.</span>
 <span class="sd">        Keys are labels for legend, values are either:</span>
+
 <span class="sd">        - str: name of data in eyedata.data (e.g., 'left_pupil_filtered')</span>
 <span class="sd">        - array-like: timeseries of same length as eyedata</span>
+
+<span class="sd">        Overlays with an unknown key or a wrong length are skipped with a</span>
+<span class="sd">        warning.</span>
 <span class="sd">    overlay_x : dict, optional</span>
 <span class="sd">        (EyeData only) Additional timeseries to overlay on the gaze X plot.</span>
 <span class="sd">    overlay_y : dict, optional</span>
@@ -571,17 +580,26 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        as the EyeData. Example: ``extra_plots={"velocity": vel, "custom": [a, b]}``</span>
 <span class="sd">    highlight : Intervals or dict, optional</span>
 <span class="sd">        Intervals to highlight in the plots. Can be:</span>
-<span class="sd">        - An Intervals object (applied to all plots)</span>
-<span class="sd">        - A dict mapping variable type ('pupil', 'x', 'y') to Intervals objects</span>
+
+<span class="sd">        - An :class:`~pypillometry.Intervals` object (applied to all plots)</span>
+<span class="sd">        - A dict mapping plot key to :class:`~pypillometry.Intervals`</span>
+<span class="sd">          objects; keys are 'pupil', 'x', 'y' and ``'extra_&lt;label&gt;'`` for</span>
+<span class="sd">          `extra_plots` (EyeData), or the plot labels (arrays)</span>
+
+<span class="sd">        Intervals not in seconds are converted (for EyeData using the</span>
+<span class="sd">        sampling rate of `data` if the Intervals have none).</span>
 <span class="sd">    highlight_color : str, optional</span>
 <span class="sd">        Color for highlighted regions (default: 'lightblue')</span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    Optional[Dict[str, Intervals]]</span>
-<span class="sd">        If regions were selected (using 's' key + mouse clicks), returns a dict</span>
-<span class="sd">        mapping plot label to Intervals objects containing the selected regions</span>
-<span class="sd">        in seconds. Returns None if no selections were made.</span>
+<span class="sd">    dict of Intervals or None</span>
+<span class="sd">        If regions were selected (``S`` key, then drag with the left mouse</span>
+<span class="sd">        button), returns a dict mapping plot key (same keys as for</span>
+<span class="sd">        `highlight`) to :class:`~pypillometry.Intervals` objects containing</span>
+<span class="sd">        the selected regions with ``units='sec'`` (for raw arrays the values</span>
+<span class="sd">        are in the units of `time`, i.e. sample indices if `time` is not</span>
+<span class="sd">        given). Returns None if no selections were made.</span>
 <span class="sd">    </span>
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
@@ -595,17 +613,21 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Keyboard controls:</span>
 <span class="sd">    </span>
 <span class="sd">    - Left/Right arrows: Pan 10% of view</span>
-<span class="sd">    - Up/Down arrows: Zoom in/out 20%</span>
+<span class="sd">    - Up/Down arrows: Zoom in/out (20%/25%)</span>
 <span class="sd">    - PgUp/PgDn: Pan 50% of view  </span>
 <span class="sd">    - Home/End: Jump to start/end</span>
 <span class="sd">    - Space: Reset to full view</span>
 <span class="sd">    - +/-: Zoom in/out</span>
+<span class="sd">    - Mouse wheel: Zoom X-axis around the mouse position</span>
+<span class="sd">    - Shift + Up/Down, Shift + mouse wheel: Zoom Y-axis of the plot under</span>
+<span class="sd">      the mouse</span>
+<span class="sd">    - Shift + Space: Reset Y-axis of the plot under the mouse</span>
 <span class="sd">    - M: Toggle mask regions (EyeData only)</span>
 <span class="sd">    - O: Toggle event markers (EyeData only)</span>
-<span class="sd">    - S: Enter selection mode (drag to mark a region)</span>
+<span class="sd">    - S: Enter/exit selection mode (drag to mark a region)</span>
 <span class="sd">    - D/Backspace: Remove last selection</span>
 <span class="sd">    - H/?: Show help</span>
-<span class="sd">    - Q/Esc: Close viewer</span>
+<span class="sd">    - Q/Esc: Close viewer (Esc first leaves selection mode)</span>
 <span class="sd">    </span>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -819,25 +841,34 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">"""Interactively tweak function parameters while viewing the result.</span>
 <span class="sd">    </span>
 <span class="sd">    Opens a viewer showing the original data with the function result overlaid.</span>
-<span class="sd">    A separate parameter window allows adjusting numeric parameters in real-time,</span>
-<span class="sd">    with the overlay updating to reflect the changes.</span>
+<span class="sd">    A parameter panel next to the plot allows adjusting numeric parameters in</span>
+<span class="sd">    real-time, with the overlay updating to reflect the changes.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : EyeData, ndarray, or list of ndarrays</span>
-<span class="sd">        Original data to display and pass to the function.</span>
+<span class="sd">        Original data to display and pass to the function. For a list of</span>
+<span class="sd">        arrays, only the first array is displayed (the whole list is passed</span>
+<span class="sd">        to `func`).</span>
 <span class="sd">    func : callable</span>
-<span class="sd">        Function that takes (data, **params) and returns transformed data</span>
-<span class="sd">        of the same type. For EyeData input, function receives the full EyeData</span>
-<span class="sd">        object and should return an EyeData object. For arrays, receives and</span>
-<span class="sd">        returns arrays.</span>
+<span class="sd">        Function called as ``func(data, **params)``. It receives `data`</span>
+<span class="sd">        unchanged (for EyeData input the full EyeData object) and may return:</span>
+
+<span class="sd">        - an EyeData object: channel `variable` (and its mask) is overlaid</span>
+<span class="sd">        - an array of the same length as the displayed data: overlaid as a line</span>
+<span class="sd">        - an :class:`~pypillometry.Intervals` object: shown as highlighted</span>
+<span class="sd">          regions</span>
+<span class="sd">        - a dict of arrays and/or :class:`~pypillometry.Intervals` objects:</span>
+<span class="sd">          one overlay line or highlight per entry</span>
+
 <span class="sd">    params : dict</span>
 <span class="sd">        Initial parameter values. Only numeric types (int, float) are supported.</span>
 <span class="sd">        These become the adjustable parameters in the GUI.</span>
 <span class="sd">    variable : str, optional</span>
 <span class="sd">        For EyeData objects, specifies which variable to display (e.g., </span>
 <span class="sd">        'left_pupil', 'right_pupil', 'left_x', 'right_y'). If not provided,</span>
-<span class="sd">        uses the first available pupil channel.</span>
+<span class="sd">        uses the first available of 'left_pupil', 'right_pupil', 'left_x',</span>
+<span class="sd">        'right_x', 'left_y', 'right_y'.</span>
 <span class="sd">    time : ndarray, optional</span>
 <span class="sd">        Time vector for array data. If not provided, uses sample indices.</span>
 <span class="sd">        For EyeData, the time vector is taken from the object.</span>
@@ -847,6 +878,17 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    dict</span>
 <span class="sd">        Final parameter values after user adjustments. Returns the parameter</span>
 <span class="sd">        dict as it was when the viewer was closed.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If a value in `params` is not an int or float.</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `variable` is not found in the EyeData object, or if `func`</span>
+<span class="sd">        returns an array with a different length than the displayed data.</span>
+<span class="sd">    RuntimeError</span>
+<span class="sd">        If `func` fails with the initial parameters (failures with later</span>
+<span class="sd">        parameter values only print a warning).</span>
 <span class="sd">    </span>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -881,13 +923,21 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    -----</span>
 <span class="sd">    Keyboard controls in the viewer:</span>
 <span class="sd">    </span>
-<span class="sd">    - Left/Right arrows: Pan view</span>
-<span class="sd">    - Up/Down arrows: Zoom in/out</span>
+<span class="sd">    - Left/Right arrows, PgUp/PgDn: Pan view (10%/50%)</span>
+<span class="sd">    - Up/Down arrows, +/-, mouse wheel: Zoom X-axis in/out</span>
+<span class="sd">    - Home/End: Jump to start/end</span>
 <span class="sd">    - Space: Reset to full view</span>
+<span class="sd">    - Shift + Up/Down, Shift + mouse wheel: Zoom Y-axis</span>
+<span class="sd">    - Shift + Space: Reset Y-axis</span>
+<span class="sd">    - M: Toggle mask regions</span>
+<span class="sd">    - I: Toggle interval highlights</span>
+<span class="sd">    - H/?: Show help</span>
 <span class="sd">    - Q/Esc: Close viewer</span>
 <span class="sd">    </span>
-<span class="sd">    The parameter window stays on top and can be repositioned. Changes to</span>
-<span class="sd">    parameters are applied immediately and the overlay updates in real-time.</span>
+<span class="sd">    With "Auto Update" checked (default), changes to parameters are applied</span>
+<span class="sd">    immediately and the overlay updates in real-time; otherwise use the</span>
+<span class="sd">    "Update" button or press Enter in a parameter field. "Reset to Initial"</span>
+<span class="sd">    restores the initial parameter values.</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">locale</span>

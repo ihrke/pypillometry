@@ -189,21 +189,31 @@
 <span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">tweak</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/viewer.html#tweak"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.tweak" title="Link to this definition">¶</a></dt>
 <dd><p>Interactively tweak function parameters while viewing the result.</p>
 <p>Opens a viewer showing the original data with the function result overlaid.
-A separate parameter window allows adjusting numeric parameters in real-time,
-with the overlay updating to reflect the changes.</p>
+A parameter panel next to the plot allows adjusting numeric parameters in
+real-time, with the overlay updating to reflect the changes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference internal" href="api.html#pypillometry.EyeData" title="pypillometry.EyeData"><em>EyeData</em></a><em>, </em><em>ndarray</em><em>, or </em><em>list</em><em> of </em><em>ndarrays</em>) – Original data to display and pass to the function.</p></li>
-<li><p><strong>func</strong> (<em>callable</em>) – Function that takes (data, <a href="#id1"><span class="problematic" id="id2">**</span></a>params) and returns transformed data
-of the same type. For EyeData input, function receives the full EyeData
-object and should return an EyeData object. For arrays, receives and
-returns arrays.</p></li>
+<li><p><strong>data</strong> (<a class="reference internal" href="api.html#pypillometry.EyeData" title="pypillometry.EyeData"><em>EyeData</em></a><em>, </em><em>ndarray</em><em>, or </em><em>list</em><em> of </em><em>ndarrays</em>) – Original data to display and pass to the function. For a list of
+arrays, only the first array is displayed (the whole list is passed
+to <cite>func</cite>).</p></li>
+<li><p><strong>func</strong> (<em>callable</em>) – <p>Function called as <code class="docutils literal notranslate"><span class="pre">func(data,</span> <span class="pre">**params)</span></code>. It receives <cite>data</cite>
+unchanged (for EyeData input the full EyeData object) and may return:</p>
+<ul>
+<li><p>an EyeData object: channel <cite>variable</cite> (and its mask) is overlaid</p></li>
+<li><p>an array of the same length as the displayed data: overlaid as a line</p></li>
+<li><p>an <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> object: shown as highlighted
+regions</p></li>
+<li><p>a dict of arrays and/or <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> objects:
+one overlay line or highlight per entry</p></li>
+</ul>
+</p></li>
 <li><p><strong>params</strong> (<em>dict</em>) – Initial parameter values. Only numeric types (int, float) are supported.
 These become the adjustable parameters in the GUI.</p></li>
 <li><p><strong>variable</strong> (<em>str</em><em>, </em><em>optional</em>) – For EyeData objects, specifies which variable to display (e.g.,
 ‘left_pupil’, ‘right_pupil’, ‘left_x’, ‘right_y’). If not provided,
-uses the first available pupil channel.</p></li>
+uses the first available of ‘left_pupil’, ‘right_pupil’, ‘left_x’,
+‘right_x’, ‘left_y’, ‘right_y’.</p></li>
 <li><p><strong>time</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – Time vector for array data. If not provided, uses sample indices.
 For EyeData, the time vector is taken from the object.</p></li>
 </ul>
@@ -214,6 +224,15 @@ dict as it was when the viewer was closed.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If a value in <cite>params</cite> is not an int or float.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>variable</cite> is not found in the EyeData object, or if <cite>func</cite>
+returns an array with a different length than the displayed data.</p></li>
+<li><p><strong>RuntimeError</strong> – If <cite>func</cite> fails with the initial parameters (failures with later
+parameter values only print a warning).</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -247,13 +266,21 @@ dict as it was when the viewer was closed.</p>
 <p class="rubric">Notes</p>
 <p>Keyboard controls in the viewer:</p>
 <ul class="simple">
-<li><p>Left/Right arrows: Pan view</p></li>
-<li><p>Up/Down arrows: Zoom in/out</p></li>
+<li><p>Left/Right arrows, PgUp/PgDn: Pan view (10%/50%)</p></li>
+<li><p>Up/Down arrows, +/-, mouse wheel: Zoom X-axis in/out</p></li>
+<li><p>Home/End: Jump to start/end</p></li>
 <li><p>Space: Reset to full view</p></li>
+<li><p>Shift + Up/Down, Shift + mouse wheel: Zoom Y-axis</p></li>
+<li><p>Shift + Space: Reset Y-axis</p></li>
+<li><p>M: Toggle mask regions</p></li>
+<li><p>I: Toggle interval highlights</p></li>
+<li><p>H/?: Show help</p></li>
 <li><p>Q/Esc: Close viewer</p></li>
 </ul>
-<p>The parameter window stays on top and can be repositioned. Changes to
-parameters are applied immediately and the overlay updates in real-time.</p>
+<p>With “Auto Update” checked (default), changes to parameters are applied
+immediately and the overlay updates in real-time; otherwise use the
+“Update” button or press Enter in a parameter field. “Reset to Initial”
+restores the initial parameter values.</p>
 </dd></dl>
 
 </section>
