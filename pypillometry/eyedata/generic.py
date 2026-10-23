@@ -2032,12 +2032,14 @@ class GenericEyeData(ABC):
             that is available in the dataset; either a string or a list of strings;
             available variables can be checked with `obj.variables`; empty list means all variables
         mean : None, float or dict, optional
-            mean to subtract from signal; if `None`, use the signal's mean;
+            mean to subtract from signal; if `None`, use the signal's mean
+            (of the non-masked samples);
             if float, use the same value for all eyes and variables;
             if dict, provide mean for each eye and variable as
             ``{eye: {variable: value}}``
         sd : None, float or dict, optional
-            sd to scale with; if `None`, use the signal's std;
+            sd to scale with; if `None`, use the signal's std (of the
+            non-masked samples);
             if float, use the same value for all eyes and variables;
             if dict, provide sd for each eye and variable as
             ``{eye: {variable: value}}``
@@ -2062,14 +2064,15 @@ class GenericEyeData(ABC):
         eyes,variables=self._get_eye_var(eyes,variables)
 
         if mean is None:
-            mean={eye:{var:np.nanmean(obj.data[eye,var]) for var in variables} for eye in eyes}
+            # use only non-masked samples
+            mean={eye:{var:np.nanmean(obj[eye,var].compressed()) for var in variables} for eye in eyes}
         elif isinstance(mean, float):
             mean={eye:{var:mean for var in variables} for eye in eyes}            
         elif not isinstance(mean, dict):
             raise ValueError("mean must be None, float or dict")
 
         if sd is None:
-            sd={eye:{var:np.nanstd(obj.data[eye,var]) for var in variables} for eye in eyes}
+            sd={eye:{var:np.nanstd(obj[eye,var].compressed()) for var in variables} for eye in eyes}
         elif isinstance(sd, float):
             sd={eye:{var:sd for var in variables} for eye in eyes}
         elif not isinstance(sd, dict):

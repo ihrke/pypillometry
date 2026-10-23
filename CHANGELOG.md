@@ -32,6 +32,7 @@
   windows with only masked samples now give NaN
 - `SegmentedEyeData.plot()`/`GroupLevelSegmentedData.plot()` warn if `meanfct`
   or `varfct` ignore masks (e.g., `np.median`)
+- `scale()` computed mean and SD including masked samples
 - `GazeData.summary()` was missing the `eyes` entry
 - `ExperimentalSetup`: viewing angles given as strings (e.g., `"30 deg"`) are
   parsed before plotting.

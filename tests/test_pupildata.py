@@ -19,6 +19,13 @@ class TestPupilData(unittest.TestCase):
         self.assertEqual(d.data["right","pupil"].mean(), 0)
         self.assertEqual(d.params["scale"]["mean"]["left"]["pupil"], 1.5)
         self.assertEqual(d.params["scale"]["mean"]["right"]["pupil"], 3.5)
+    def test_scale_ignores_masked(self):
+        # masked (non-NaN) and NaN samples do not enter mean/sd
+        d = pp.PupilData(sampling_rate=10, left_pupil=[1., 3., 1., 3., 999., np.nan])
+        d.data.mask["left_pupil"][4] = 1
+        d = d.scale("pupil", inplace=False)
+        self.assertEqual(d.params["scale"]["mean"]["left"]["pupil"], 2.)
+        self.assertEqual(d.params["scale"]["sd"]["left"]["pupil"], 1.)
     def test_scale_fixed(self):
         d = pp.PupilData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         scalepars = {
