@@ -13,20 +13,7 @@ from loguru import logger
 import scipy.stats
 
 from .io import write_pickle, read_pickle
-
-
-def _warn_if_ignores_mask(fct, name):
-    """Log a warning if `fct` uses masked values (e.g., `np.median`)."""
-    # mean and median of the unmasked values are both 3
-    probe = ma.masked_array([[5.0, 1.0, 1e9]], mask=[[False, False, True]])
-    try:
-        res = float(np.asarray(fct(probe, axis=1)).ravel()[0])
-    except Exception:
-        return  # cannot check this function
-    if not np.isclose(res, 3.0):
-        logger.warning(f"{name}={getattr(fct, '__name__', fct)} does not ignore masked "
-                       "values; masked samples (blinks, padding) enter the result. "
-                       "Use a mask-aware function such as np.mean or np.ma.median.")
+from .convenience import _warn_if_ignores_mask
 
 
 class SegmentedEyeData:
@@ -736,7 +723,7 @@ class GroupLevelSegmentedData(SegmentedEyeData):
             combined_data = ma.concatenate([seg.data for seg in segments], axis=1)
         else:
             # Aggregate mode: apply meanfct within each subject, then stack
-            _warn_if_ignores_mask(meanfct, "meanfct")
+            _warn_if_ignores_mask(meanfct, "meanfct", axis=1)
             subject_means = [ma.asarray(meanfct(seg.data, axis=1)) for seg in segments]
             # Stack as columns (n_timepoints, n_subjects); a timepoint where all
             # of a subject's segments are masked stays masked

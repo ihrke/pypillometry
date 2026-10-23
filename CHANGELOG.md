@@ -28,6 +28,8 @@
 - `group_segments()`/`GroupLevelSegmentedData.from_segments()` dropped masks,
   so blinks and padding entered group means; now warns if `meanfct` ignores
   masks (e.g., `np.median`)
+- `stat_per_event()` ignored masks (masked samples entered the statistic);
+  windows with only masked samples now give NaN
 - `GazeData.summary()` was missing the `eyes` entry
 - `ExperimentalSetup`: viewing angles given as strings (e.g., `"30 deg"`) are
   parsed before plotting.

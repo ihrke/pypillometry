@@ -542,3 +542,25 @@ def normalize_unit(unit: Union[str, None]) -> Union[str, None]:
     raise ValueError(f"Unknown unit '{unit}'. Valid units are: {valid_units_str}")
 
 
+def _warn_if_ignores_mask(fct, name, axis=None):
+    """Log a warning if `fct` uses masked values of a masked array (e.g., `np.median`).
+
+    `fct` is called once on a small masked array, as ``fct(x)`` or, if `axis`
+    is given, as ``fct(x, axis=axis)``. Functions that fail on it are not checked.
+    """
+    import numpy.ma as ma
+    from loguru import logger
+    # mean and median of the unmasked values are both 3
+    probe = ma.masked_array([5.0, 1.0, 1e9], mask=[False, False, True])
+    try:
+        if axis is None:
+            res = fct(probe)
+        else:
+            res = fct(probe.reshape(1, -1), axis=axis)
+        res = float(np.asarray(res).ravel()[0])
+    except Exception:
+        return  # cannot check this function
+    if not np.isclose(res, 3.0):
+        logger.warning(f"{name}={getattr(fct, '__name__', fct)} does not ignore masked "
+                       "values; masked samples (blinks, padding) enter the result. "
+                       "Use a mask-aware function such as np.mean or np.ma.median.")

@@ -177,8 +177,10 @@ def stat_event_interval(tx,sy,intervals,statfct=np.mean):
     ----------
     tx : np.ndarray
         time-vector (e.g., in ms)
-    sy : np.ndarray
-        (baseline-corrected) pupil signal, same length as `tx`
+    sy : np.ndarray or np.ma.MaskedArray
+        (baseline-corrected) pupil signal, same length as `tx`; for a masked
+        array, `statfct` should ignore masked samples (e.g., `np.mean`), and
+        intervals where all samples are masked give NaN
     intervals : list of tuples (start, end)
         absolute start and end times of the intervals, in the same units as
         `tx`; each is matched to the closest sample in `tx`
@@ -201,7 +203,12 @@ def stat_event_interval(tx,sy,intervals,statfct=np.mean):
         end_ix=np.argmin(np.abs(interv[1]-tx))
         if start_ix==end_ix:
             end_ix+=1
-        res[i]=statfct(sy[start_ix:end_ix])
+        seg=sy[start_ix:end_ix]
+        if np.ma.getmaskarray(seg).all():
+            res[i]=np.nan  # all samples masked
+            continue
+        r=statfct(seg)
+        res[i]=np.nan if r is np.ma.masked else r
     return res
 
 

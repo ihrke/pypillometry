@@ -807,6 +807,22 @@ class TestEyeData(unittest.TestCase):
             with self.subTest(**{k: str(v) for k, v in kw.items()}):
                 np.testing.assert_allclose(d.stat_per_event(**kw)["left_pupil"], expected)
 
+    def test_stat_per_event_ignores_masked(self):
+        """stat_per_event ignores masked samples; fully masked windows give NaN"""
+        from pypillometry.intervals import Intervals
+        t = np.arange(1000)*10.
+        p = np.full(1000, 10.)
+        p[110:115] = np.nan   # missing
+        p[310:315] = 999.     # masked below
+        p[500:520] = np.nan   # whole third window missing
+        d = pp.PupilData(left_pupil=p, time=t, sampling_rate=100,
+                         event_onsets=np.array([1200., 3200., 5200.]), event_labels=np.array(["a"]*3))
+        d.mask_intervals(Intervals([(310, 315)], units=None, sampling_rate=100), inplace=True)
+        for f in (np.mean, np.nanmean, np.ma.median):
+            with self.subTest(statfct=f.__name__):
+                res = d.stat_per_event(interval=(-200, 0), event_select="a", statfct=f)["left_pupil"]
+                np.testing.assert_array_equal(res, [10., 10., np.nan])
+
     def test_get_duration(self):
         """Test getting duration in different units"""
         duration_min = self.eyedata.get_duration(units='min')

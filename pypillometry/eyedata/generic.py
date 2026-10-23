@@ -8,7 +8,7 @@ All other eyedata classes should inherit from this class.
 
 from collections.abc import Iterable
 from .. import io
-from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, suppress_all_output, normalize_unit
+from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..io import download
 from .eyedatadict import EyeDataDict
 from .experimental_setup import ExperimentalSetup
@@ -2392,7 +2392,10 @@ class GenericEyeData(ABC):
         variables : str or list of str, optional
             variable(s) to consider; if empty, all available variables
         statfct : function, optional
-            function mapping np.array to a single number; default `np.mean`
+            function mapping a masked array to a single number; it must
+            ignore masked samples (e.g., `np.mean` (default) or
+            `np.ma.median`, but not `np.median`; a warning is logged
+            otherwise). Intervals where all samples are masked give NaN.
         units : str, optional
             units for interval parameter (if used); default "ms"
         **kwargs
@@ -2427,9 +2430,11 @@ class GenericEyeData(ABC):
             tx = self.tx
             intervals_list = intervs.to_units("ms").intervals
 
+        _warn_if_ignores_mask(statfct, "statfct")
         stat={}
         for eye,var in itertools.product(eyes, variables):
-            stat[eye+"_"+var]=stat_event_interval(tx, self.data[eye,var], intervals_list, statfct)
+            # masked array, so that masked samples are ignored
+            stat[eye+"_"+var]=stat_event_interval(tx, self[eye,var], intervals_list, statfct)
 
         return stat
 
