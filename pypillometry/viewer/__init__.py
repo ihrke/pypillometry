@@ -27,8 +27,11 @@ Features
 - Support for viewing raw numpy arrays and masked arrays
 """
 
-from typing import Dict, Optional, Union, List
+from typing import Dict, Optional, Union, List, TYPE_CHECKING
 import numpy as np
+
+if TYPE_CHECKING:
+    from ..intervals import Intervals
 
 __all__ = ['view', 'tweak']
 
@@ -152,11 +155,17 @@ def view(data, variables=None, eyes=None, time=None,
     time : ndarray, optional
         Time vector for raw array viewing. If not provided, uses sample
         index (0, 1, 2, ...). Should have same length as data arrays.
+        Ignored for EyeData objects, where `data.tx` (converted to seconds)
+        is used.
     overlay_pupil : dict, optional
         (EyeData only) Additional timeseries to overlay on the pupil plot.
         Keys are labels for legend, values are either:
+
         - str: name of data in eyedata.data (e.g., 'left_pupil_filtered')
         - array-like: timeseries of same length as eyedata
+
+        Overlays with an unknown key or a wrong length are skipped with a
+        warning.
     overlay_x : dict, optional
         (EyeData only) Additional timeseries to overlay on the gaze X plot.
     overlay_y : dict, optional
@@ -168,17 +177,26 @@ def view(data, variables=None, eyes=None, time=None,
         as the EyeData. Example: ``extra_plots={"velocity": vel, "custom": [a, b]}``
     highlight : Intervals or dict, optional
         Intervals to highlight in the plots. Can be:
-        - An Intervals object (applied to all plots)
-        - A dict mapping variable type ('pupil', 'x', 'y') to Intervals objects
+
+        - An :class:`~pypillometry.Intervals` object (applied to all plots)
+        - A dict mapping plot key to :class:`~pypillometry.Intervals`
+          objects; keys are 'pupil', 'x', 'y' and ``'extra_<label>'`` for
+          `extra_plots` (EyeData), or the plot labels (arrays)
+
+        Intervals not in seconds are converted (for EyeData using the
+        sampling rate of `data` if the Intervals have none).
     highlight_color : str, optional
         Color for highlighted regions (default: 'lightblue')
     
     Returns
     -------
-    Optional[Dict[str, Intervals]]
-        If regions were selected (using 's' key + mouse clicks), returns a dict
-        mapping plot label to Intervals objects containing the selected regions
-        in seconds. Returns None if no selections were made.
+    dict of Intervals or None
+        If regions were selected (``S`` key, then drag with the left mouse
+        button), returns a dict mapping plot key (same keys as for
+        `highlight`) to :class:`~pypillometry.Intervals` objects containing
+        the selected regions with ``units='sec'`` (for raw arrays the values
+        are in the units of `time`, i.e. sample indices if `time` is not
+        given). Returns None if no selections were made.
     
     Raises
     ------
@@ -192,17 +210,21 @@ def view(data, variables=None, eyes=None, time=None,
     Keyboard controls:
     
     - Left/Right arrows: Pan 10% of view
-    - Up/Down arrows: Zoom in/out 20%
+    - Up/Down arrows: Zoom in/out (20%/25%)
     - PgUp/PgDn: Pan 50% of view  
     - Home/End: Jump to start/end
     - Space: Reset to full view
     - +/-: Zoom in/out
+    - Mouse wheel: Zoom X-axis around the mouse position
+    - Shift + Up/Down, Shift + mouse wheel: Zoom Y-axis of the plot under
+      the mouse
+    - Shift + Space: Reset Y-axis of the plot under the mouse
     - M: Toggle mask regions (EyeData only)
     - O: Toggle event markers (EyeData only)
-    - S: Enter selection mode (drag to mark a region)
+    - S: Enter/exit selection mode (drag to mark a region)
     - D/Backspace: Remove last selection
     - H/?: Show help
-    - Q/Esc: Close viewer
+    - Q/Esc: Close viewer (Esc first leaves selection mode)
     
     Examples
     --------
@@ -413,25 +435,34 @@ def tweak(data, func, params, variable=None, time=None):
     """Interactively tweak function parameters while viewing the result.
     
     Opens a viewer showing the original data with the function result overlaid.
-    A separate parameter window allows adjusting numeric parameters in real-time,
-    with the overlay updating to reflect the changes.
+    A parameter panel next to the plot allows adjusting numeric parameters in
+    real-time, with the overlay updating to reflect the changes.
     
     Parameters
     ----------
     data : EyeData, ndarray, or list of ndarrays
-        Original data to display and pass to the function.
+        Original data to display and pass to the function. For a list of
+        arrays, only the first array is displayed (the whole list is passed
+        to `func`).
     func : callable
-        Function that takes (data, **params) and returns transformed data
-        of the same type. For EyeData input, function receives the full EyeData
-        object and should return an EyeData object. For arrays, receives and
-        returns arrays.
+        Function called as ``func(data, **params)``. It receives `data`
+        unchanged (for EyeData input the full EyeData object) and may return:
+
+        - an EyeData object: channel `variable` (and its mask) is overlaid
+        - an array of the same length as the displayed data: overlaid as a line
+        - an :class:`~pypillometry.Intervals` object: shown as highlighted
+          regions
+        - a dict of arrays and/or :class:`~pypillometry.Intervals` objects:
+          one overlay line or highlight per entry
+
     params : dict
         Initial parameter values. Only numeric types (int, float) are supported.
         These become the adjustable parameters in the GUI.
     variable : str, optional
         For EyeData objects, specifies which variable to display (e.g., 
         'left_pupil', 'right_pupil', 'left_x', 'right_y'). If not provided,
-        uses the first available pupil channel.
+        uses the first available of 'left_pupil', 'right_pupil', 'left_x',
+        'right_x', 'left_y', 'right_y'.
     time : ndarray, optional
         Time vector for array data. If not provided, uses sample indices.
         For EyeData, the time vector is taken from the object.
@@ -441,6 +472,17 @@ def tweak(data, func, params, variable=None, time=None):
     dict
         Final parameter values after user adjustments. Returns the parameter
         dict as it was when the viewer was closed.
+
+    Raises
+    ------
+    TypeError
+        If a value in `params` is not an int or float.
+    ValueError
+        If `variable` is not found in the EyeData object, or if `func`
+        returns an array with a different length than the displayed data.
+    RuntimeError
+        If `func` fails with the initial parameters (failures with later
+        parameter values only print a warning).
     
     Examples
     --------
@@ -475,13 +517,21 @@ def tweak(data, func, params, variable=None, time=None):
     -----
     Keyboard controls in the viewer:
     
-    - Left/Right arrows: Pan view
-    - Up/Down arrows: Zoom in/out
+    - Left/Right arrows, PgUp/PgDn: Pan view (10%/50%)
+    - Up/Down arrows, +/-, mouse wheel: Zoom X-axis in/out
+    - Home/End: Jump to start/end
     - Space: Reset to full view
+    - Shift + Up/Down, Shift + mouse wheel: Zoom Y-axis
+    - Shift + Space: Reset Y-axis
+    - M: Toggle mask regions
+    - I: Toggle interval highlights
+    - H/?: Show help
     - Q/Esc: Close viewer
     
-    The parameter window stays on top and can be repositioned. Changes to
-    parameters are applied immediately and the overlay updates in real-time.
+    With "Auto Update" checked (default), changes to parameters are applied
+    immediately and the overlay updates in real-time; otherwise use the
+    "Update" button or press Enter in a parameter field. "Reset to Initial"
+    restores the initial parameter values.
     """
     import sys
     import locale
