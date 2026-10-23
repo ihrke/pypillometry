@@ -4166,18 +4166,25 @@ You can also set the log-level to <cite>DEBUG</cite> or <cite>WARN</cite> by run
 <dt class="sig sig-object py" id="pypillometry.io.load_study_local">
 <span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">load_study_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pypillometry_conf.py'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subjects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#load_study_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.load_study_local" title="Link to this definition">¶</a></dt>
 <dd><p>Read a study from a local directory using the configuration file.</p>
+<p>The configuration file must define a dict <cite>raw_data</cite> (subject ID -&gt;
+dict of data files, relative to <cite>path</cite>) and a function
+<cite>read_subject(info)</cite> that returns the data for one subject; it is
+called with the working directory changed to <cite>path</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Local path where the study data is stored</p></li>
-<li><p><strong>config_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Name of the configuration file. Default is “pypillometry_conf.py”</p></li>
+<li><p><strong>config_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Name of the configuration file. Default is “pypillometry_conf.py”.
+It is first looked up in the current working directory and, if
+not found there, in <cite>path</cite>.</p></li>
 <li><p><strong>subjects</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of subject IDs to load. If None, all subjects will be loaded.
 If a subject ID is provided that doesn’t exist in the data, it will be skipped.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>study_data</strong> (<em>dict</em>) – Dictionary containing the loaded study data</p></li>
+<li><p><strong>study_data</strong> (<em>dict</em>) – Dictionary containing the loaded study data (subject ID -&gt; result
+of <cite>read_subject</cite>)</p></li>
 <li><p><strong>config</strong> (<em>module</em>) – Module containing the configuration (pypillometry_conf.py imported as a module)</p></li>
 </ul>
 </p>
@@ -4190,6 +4197,11 @@ If a subject ID is provided that doesn’t exist in the data, it will be skipped
 <span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">load_study_osf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">osf_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subjects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pypillometry_conf.py'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#load_study_osf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.load_study_osf" title="Link to this definition">¶</a></dt>
 <dd><p>Read a study from OSF using the configuration file.
 Example: <a class="reference external" href="https://osf.io/p2u74/">https://osf.io/p2u74/</a></p>
+<p>The configuration file (downloaded from the project) must define a
+dict <cite>raw_data</cite> (subject ID -&gt; dict of data files) and a function
+<cite>read_subject(info)</cite> that returns the data for one subject. The
+listing of the project’s files is cached in <cite>path/info_osf.pkl</cite> and
+data files are only downloaded if they are not yet in <cite>path</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -4197,14 +4209,16 @@ Example: <a class="reference external" href="https://osf.io/p2u74/">https://osf.
 <li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Local path where files should be downloaded/stored</p></li>
 <li><p><strong>subjects</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of subject IDs to load. If None, all subjects will be loaded.
 If a subject ID is provided that doesn’t exist in the data, it will be skipped.</p></li>
-<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, force re-download even if files exist locally. Default False.</p></li>
+<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, force re-download (including the file listing) even if
+files exist locally. Default False.</p></li>
 <li><p><strong>config_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Name of the configuration file. Default is “pypillometry_conf.py”</p></li>
 <li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code>]</span>) – Authenticated session for accessing private projects. If None, uses unauthenticated requests.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>study_data</strong> (<em>dict</em>) – Dictionary containing the loaded study data</p></li>
+<li><p><strong>study_data</strong> (<em>dict</em>) – Dictionary containing the loaded study data (subject ID -&gt; result
+of <cite>read_subject</cite>)</p></li>
 <li><p><strong>config</strong> (<em>module</em>) – Module containing the configuration (pypillometry_conf.py imported as a module)</p></li>
 </ul>
 </p>
@@ -4241,22 +4255,34 @@ If a subject ID is provided that doesn’t exist in the data, it will be skipped
 <dt class="sig sig-object py" id="pypillometry.io.read_eyelink">
 <span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">read_eyelink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#read_eyelink"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.read_eyelink" title="Link to this definition">¶</a></dt>
 <dd><p>Read an Eyelink file/URL and return the object returned by the “eyelinkio” package.</p>
+<p>Requires the optional package <cite>eyelinkio</cite>. Its console output is only
+shown when the log level is “DEBUG”.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>source</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename of the Eyelink file or URL</p></li>
-<li><p><strong>cache_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename to cache the file in case it is downloaded from a URL</p></li>
-<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, force re-download even if file exists locally</p></li>
-<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code>]</span>) – requests session to use for the download.</p></li>
+<li><p><strong>source</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename of the Eyelink EDF file or URL (OSF client URLs such as
+<code class="docutils literal notranslate"><span class="pre">https://osf.io/&lt;id&gt;</span></code> are converted to download URLs)</p></li>
+<li><p><strong>cache_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename to cache the file in case it is downloaded from a URL;
+if None, the file is downloaded to a temporary file</p></li>
+<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, force re-download even if <cite>cache_file</cite> exists locally</p></li>
+<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code>]</span>) – requests session to use for the download (e.g., from
+<a class="reference internal" href="#pypillometry.io.osf_authenticate" title="pypillometry.io.osf_authenticate"><code class="xref py py-func docutils literal notranslate"><span class="pre">osf_authenticate()</span></code></a> for private projects)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>object returned by the “eyelinkio” package</p>
+<dd class="field-even"><p>object returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">eyelinkio.read_edf()</span></code></p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>object</p>
+<dd class="field-odd"><p>eyelinkio.EDF</p>
 </dd>
 </dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#pypillometry.GenericEyeData.from_eyelink" title="pypillometry.GenericEyeData.from_eyelink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pypillometry.GenericEyeData.from_eyelink</span></code></a></dt><dd><p>create an eyedata object from an EDF file</p>
+</dd>
+</dl>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -4265,7 +4291,8 @@ If a subject ID is provided that doesn’t exist in the data, it will be skipped
 <dd><p>Read a Python object from a file using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – filename or URL to load data from</p>
+<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – filename or URL to load data from (URLs are downloaded into
+memory, without authentication)</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>loaded object</p>

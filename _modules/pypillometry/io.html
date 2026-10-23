@@ -695,6 +695,12 @@ window.runMermaid = runMermaid;</script>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Read a study from OSF using the configuration file.</span>
 <span class="sd">    Example: https://osf.io/p2u74/</span>
+
+<span class="sd">    The configuration file (downloaded from the project) must define a</span>
+<span class="sd">    dict `raw_data` (subject ID -&gt; dict of data files) and a function</span>
+<span class="sd">    `read_subject(info)` that returns the data for one subject. The</span>
+<span class="sd">    listing of the project's files is cached in `path/info_osf.pkl` and</span>
+<span class="sd">    data files are only downloaded if they are not yet in `path`.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -706,7 +712,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        List of subject IDs to load. If None, all subjects will be loaded.</span>
 <span class="sd">        If a subject ID is provided that doesn't exist in the data, it will be skipped.</span>
 <span class="sd">    force_download : bool, optional</span>
-<span class="sd">        If True, force re-download even if files exist locally. Default False.</span>
+<span class="sd">        If True, force re-download (including the file listing) even if</span>
+<span class="sd">        files exist locally. Default False.</span>
 <span class="sd">    config_file : str, optional</span>
 <span class="sd">        Name of the configuration file. Default is "pypillometry_conf.py"</span>
 <span class="sd">    session : requests.Session, optional</span>
@@ -714,9 +721,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    study_data: dict</span>
-<span class="sd">        Dictionary containing the loaded study data</span>
-<span class="sd">    config: module</span>
+<span class="sd">    study_data : dict</span>
+<span class="sd">        Dictionary containing the loaded study data (subject ID -&gt; result</span>
+<span class="sd">        of `read_subject`)</span>
+<span class="sd">    config : module</span>
 <span class="sd">        Module containing the configuration (pypillometry_conf.py imported as a module)</span>
 <span class="sd">    """</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading study from OSF project '</span><span class="si">{</span><span class="n">osf_id</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
@@ -838,22 +846,30 @@ window.runMermaid = runMermaid;</script>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_study_local</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pypillometry_conf.py"</span><span class="p">,</span> <span class="n">subjects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Read a study from a local directory using the configuration file.</span>
+
+<span class="sd">    The configuration file must define a dict `raw_data` (subject ID -&gt;</span>
+<span class="sd">    dict of data files, relative to `path`) and a function</span>
+<span class="sd">    `read_subject(info)` that returns the data for one subject; it is</span>
+<span class="sd">    called with the working directory changed to `path`.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    path : str</span>
 <span class="sd">        Local path where the study data is stored</span>
 <span class="sd">    config_file : str, optional</span>
-<span class="sd">        Name of the configuration file. Default is "pypillometry_conf.py"</span>
+<span class="sd">        Name of the configuration file. Default is "pypillometry_conf.py".</span>
+<span class="sd">        It is first looked up in the current working directory and, if</span>
+<span class="sd">        not found there, in `path`.</span>
 <span class="sd">    subjects : list[str], optional</span>
 <span class="sd">        List of subject IDs to load. If None, all subjects will be loaded.</span>
 <span class="sd">        If a subject ID is provided that doesn't exist in the data, it will be skipped.</span>
 <span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    study_data: dict</span>
-<span class="sd">        Dictionary containing the loaded study data</span>
-<span class="sd">    config: module</span>
+<span class="sd">    study_data : dict</span>
+<span class="sd">        Dictionary containing the loaded study data (subject ID -&gt; result</span>
+<span class="sd">        of `read_subject`)</span>
+<span class="sd">    config : module</span>
 <span class="sd">        Module containing the configuration (pypillometry_conf.py imported as a module)</span>
 <span class="sd">    """</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading study from local directory '</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
@@ -916,9 +932,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    obj: object</span>
+<span class="sd">    obj : object</span>
 <span class="sd">        object to save</span>
-<span class="sd">    fname: str</span>
+<span class="sd">    fname : str</span>
 <span class="sd">        filename to save to</span>
 <span class="sd">    """</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -934,8 +950,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    fname: str</span>
-<span class="sd">        filename or URL to load data from</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        filename or URL to load data from (URLs are downloaded into</span>
+<span class="sd">        memory, without authentication)</span>
 <span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -975,21 +992,32 @@ window.runMermaid = runMermaid;</script>
     <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Read an Eyelink file/URL and return the object returned by the "eyelinkio" package.</span>
+
+<span class="sd">    Requires the optional package `eyelinkio`. Its console output is only</span>
+<span class="sd">    shown when the log level is "DEBUG".</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    source: str</span>
-<span class="sd">        filename of the Eyelink file or URL</span>
-<span class="sd">    cache_file: str, optional</span>
-<span class="sd">        filename to cache the file in case it is downloaded from a URL</span>
-<span class="sd">    force_download: bool, optional</span>
-<span class="sd">        if True, force re-download even if file exists locally</span>
-<span class="sd">    session: requests.Session, optional</span>
-<span class="sd">        requests session to use for the download. </span>
+<span class="sd">    source : str</span>
+<span class="sd">        filename of the Eyelink EDF file or URL (OSF client URLs such as</span>
+<span class="sd">        ``https://osf.io/&lt;id&gt;`` are converted to download URLs)</span>
+<span class="sd">    cache_file : str, optional</span>
+<span class="sd">        filename to cache the file in case it is downloaded from a URL;</span>
+<span class="sd">        if None, the file is downloaded to a temporary file</span>
+<span class="sd">    force_download : bool, optional</span>
+<span class="sd">        if True, force re-download even if `cache_file` exists locally</span>
+<span class="sd">    session : requests.Session, optional</span>
+<span class="sd">        requests session to use for the download (e.g., from</span>
+<span class="sd">        :func:`~pypillometry.io.osf_authenticate` for private projects)</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    object</span>
-<span class="sd">        object returned by the "eyelinkio" package</span>
+<span class="sd">    eyelinkio.EDF</span>
+<span class="sd">        object returned by :func:`eyelinkio.read_edf`</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    pypillometry.GenericEyeData.from_eyelink : create an eyedata object from an EDF file</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">eyelinkio</span>
 

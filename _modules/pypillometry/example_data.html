@@ -545,6 +545,20 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_rlmw_002</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Load the "rlmw_002" example dataset (downloaded from OSF).</span>
+
+<span class="sd">    Binocular gaze and pupil data from a 20-minute reinforcement learning</span>
+<span class="sd">    task (single participant). The ASC files are downloaded into a</span>
+<span class="sd">    temporary directory on every call. Events are the "MSG" lines after</span>
+<span class="sd">    "experiment_start"; time is reset to start at 0 and the original data</span>
+<span class="sd">    are kept (`keep_orig=True`). Usually called via</span>
+<span class="sd">    :func:`~pypillometry.get_example_data`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EyeData</span>
+<span class="sd">        the example dataset</span>
+<span class="sd">    """</span>
     <span class="c1"># download file from osf   </span>
     <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdirname</span><span class="p">:</span> 
         <span class="n">fname_samples</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdirname</span><span class="p">,</span><span class="s2">"002_rlmw_samples.asc"</span><span class="p">)</span>
@@ -608,6 +622,19 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_rlmw_002_short</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Load the "rlmw_002_short" example dataset (included in the package).</span>
+
+<span class="sd">    Short version (first 40 sec) of the "rlmw_002" dataset: binocular gaze</span>
+<span class="sd">    and pupil data from a reinforcement learning task. No download is</span>
+<span class="sd">    needed. Events are the "MSG" lines after "experiment_start"; time is</span>
+<span class="sd">    reset to start at 0 and the original data are kept (`keep_orig=True`).</span>
+<span class="sd">    Usually called via :func:`~pypillometry.get_example_data`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EyeData</span>
+<span class="sd">        the example dataset</span>
+<span class="sd">    """</span>
     <span class="n">fname_samples</span> <span class="o">=</span> <span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002_short"</span><span class="p">][</span><span class="s2">"sample_asc"</span><span class="p">]</span>
     <span class="n">fname_events</span> <span class="o">=</span> <span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002_short"</span><span class="p">][</span><span class="s2">"events_asc"</span><span class="p">]</span>
     <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
