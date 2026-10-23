@@ -33,6 +33,7 @@
 - `SegmentedEyeData.plot()`/`GroupLevelSegmentedData.plot()` warn if `meanfct`
   or `varfct` ignore masks (e.g., `np.median`)
 - `scale()` computed mean and SD including masked samples
+- `fit_foreshortening()` used masked samples for fitting
 - `GazeData.summary()` was missing the `eyes` entry
 - `ExperimentalSetup`: viewing angles given as strings (e.g., `"30 deg"`) are
   parsed before plotting.

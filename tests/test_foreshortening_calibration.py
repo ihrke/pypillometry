@@ -383,6 +383,21 @@ class TestFitForeshorteningMethod:
         assert 'rmse' in calib.fit_metrics
         assert calib.fit_metrics['r2'] > 0.5  # Should have reasonable fit
     
+    def test_fit_excludes_masked_samples(self):
+        """Masked samples (with finite, valid-looking values) are not used for fitting."""
+        from loguru import logger
+        data, *_ = self.create_synthetic_data(n_samples=500, fs=100.0)
+        data.data["left_pupil"][100:150] = 50.0   # junk, but finite and > 0
+        data.data.mask["left_pupil"][100:150] = 1
+        data.data.mask["left_x"][300:310] = 1
+        messages = []
+        hid = logger.add(lambda m: messages.append(str(m)), level="INFO")
+        try:
+            data.fit_foreshortening(eye='left', target_fs=50.0, lowpass_freq=3.0, verbose=True)
+        finally:
+            logger.remove(hid)
+        assert any("Valid samples after preprocessing: 440" in m for m in messages)
+
     def test_fit_with_intervals(self):
         """Test fitting on subset of data using intervals."""
         from pypillometry.intervals import Intervals

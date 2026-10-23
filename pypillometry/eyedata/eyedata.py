@@ -511,9 +511,16 @@ class EyeData(GazeData,PupilData):
         x_gaze_mm = (x_gaze - setup.screen_width / 2) * scale_x
         y_gaze_mm = (y_gaze - setup.screen_height / 2) * scale_y
         
-        # Remove invalid samples (NaN, masked, etc.)
-        valid = np.isfinite(x_gaze_mm) & np.isfinite(y_gaze_mm) & np.isfinite(pupil) & (pupil > 0)
-        
+        # Remove invalid samples (masked, NaN, pupil <= 0); the masks must be
+        # checked explicitly, comparisons on masked arrays keep masked samples
+        masked = (np.ma.getmaskarray(x_gaze_mm) | np.ma.getmaskarray(y_gaze_mm)
+                  | np.ma.getmaskarray(pupil))
+        x_gaze_mm = np.ma.getdata(x_gaze_mm)
+        y_gaze_mm = np.ma.getdata(y_gaze_mm)
+        pupil = np.ma.getdata(pupil)
+        valid = (~masked & np.isfinite(x_gaze_mm) & np.isfinite(y_gaze_mm)
+                 & np.isfinite(pupil) & (pupil > 0))
+
         time = time[valid]
         x_gaze_mm = x_gaze_mm[valid]
         y_gaze_mm = y_gaze_mm[valid]
