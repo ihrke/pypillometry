@@ -12,9 +12,7 @@
   given to the constructor, then the new package default.
 - `fill_time_discontinuities()` fills gaps with NaN (was 0), so filled-in
   samples are masked for all variables, not only pupil.
-- `apply_history()` was removed: replaying the history was unreliable (e.g., it
-  re-applied one dataset's blinks to another). The history is kept as a log
-  of the operations (see `print_history()`).
+- `apply_history()` was removed
 
 ### Added
 
@@ -48,12 +46,7 @@
   and did not rescale stored blinks
 - `fill_time_discontinuities()` called after creation dropped all masks and
   did not move stored blinks
-- History: internal calls (e.g., `mask_intervals()` inside
-  `pupil_blinks_detect()`) are no longer recorded; entries are text only and
-  summarize large arguments (e.g., `Intervals(13)`)
-- History: in-place setters are now recorded too (`d[...] = ...`, `del d[...]`,
-  `set_blinks()`, `set_event_onsets()`, `set_experimental_setup()`,
-  `drop_data()`)
+- History: internal calls no longer recorded, setters are now recorded
 
 ### Documentation
 
