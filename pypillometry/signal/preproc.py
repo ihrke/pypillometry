@@ -39,11 +39,11 @@ def smooth_window(x, window_len=11, window='hanning', direction='center'):
         The type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'.
         'flat' window will produce a moving average smoothing.
     direction : str
-        'center' - symmetric smoothing using both past and future samples (default)
-        'backward' - only uses current and past samples (useful for onset detection
-                     before missing data, where future NaN shouldn't affect the estimate)
-        'forward' - only uses current and future samples (useful for offset detection
-                    after missing data, where past NaN shouldn't affect the estimate)
+        - 'center': symmetric smoothing using both past and future samples (default)
+        - 'backward': only uses current and past samples (useful for onset detection
+          before missing data, where future NaN shouldn't affect the estimate)
+        - 'forward': only uses current and future samples (useful for offset detection
+          after missing data, where past NaN shouldn't affect the estimate)
 
     Returns
     -------
@@ -190,6 +190,25 @@ def velocity_savgol(x, window_len=11, polyorder=2, direction='center'):
 
 
 def helper_merge_blinks(b1,b2):
+    """
+    Merge two sets of blink intervals into one set of non-overlapping intervals.
+
+    Intervals from `b1` and `b2` that overlap or touch (onset of one
+    `<=` offset of the previous one) are combined into a single interval.
+
+    Parameters
+    ----------
+    b1 : np.ndarray
+        blink onset/offset indices (nblinks x 2); may be empty
+    b2 : np.ndarray
+        blink onset/offset indices (nblinks x 2); may be empty
+
+    Returns
+    -------
+    np.ndarray
+        merged blink onset/offset indices (nblinks x 2), sorted by onset;
+        if one of the inputs is empty, the other one is returned unchanged
+    """
     if b1.size==0:
         return b2
     elif b2.size==0:
@@ -223,26 +242,31 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     
     Parameters
     ----------
-    sy: np.array
-        pupil data (can contain NaN for missing values)
-    smooth_winsize: int (odd)
-        size of the Savitzky-Golay window in sampling points
-    vel_onset: float
+    sy : np.ndarray
+        pupil data (can contain NaN or zeros for missing values)
+    smooth_winsize : int
+        size of the Savitzky-Golay window in samples (odd)
+    vel_onset : float
         velocity-threshold to detect the onset of the blink; in units per sample (negative value)
-    vel_offset: float
+    vel_offset : float
         velocity-threshold to detect the offset of the blink; in units per sample (positive value)
-    min_onset_len: int
-        minimum number of consecutive samples that cross the threshold to detect onset
-    min_offset_len: int
-        minimum number of consecutive samples that cross the threshold to detect offset
-    min_blink_samples: int
+    min_onset_len : int
+        number of consecutive samples that must cross the threshold to detect an onset
+        (runs must be longer than `min_onset_len` samples)
+    min_offset_len : int
+        number of consecutive samples that must cross the threshold to detect an offset
+        (runs must be longer than `min_offset_len` samples)
+    min_blink_samples : int
         minimum duration of a blink in samples; offsets that would create shorter intervals
         are skipped during matching (to avoid spurious short offsets stealing real onsets)
-        
+
     Returns
     -------
-    np.array (nblinks x 2)
-        Array of blink onset/offset index pairs
+    np.ndarray
+        array (nblinks x 2) of blink onset/offset sample indices; the offset
+        is the last sample of the matching offset run, or `len(sy)` if no
+        offset was found after the last onset; empty array if no blinks
+        were found
     """
     n = len(sy)
     
@@ -348,23 +372,30 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
 
 def detect_blinks_zero(sy, min_duration, blink_val=0):
     """
-    Detect blinks as consecutive sequence of `blink_val` (f.eks., 0 or NaN) of at least
+    Detect blinks as consecutive sequence of `blink_val` (e.g., 0) of at least
     `min_duration` successive values in the signal `sy`.
     Detected blinks are put a matrix `blinks` (nblinks x 2) where start and end
     are stored as indexes.
-    
+
+    Values are compared with `sy == blink_val`, so `blink_val=np.nan` does not
+    detect anything; NaN-coded data must be converted first.
+
     Parameters
     ----------
-    sy: np.array (float)
+    sy : np.ndarray
         signal
-    min_duration: int
-        minimum number of consecutive samples for a sequence of missing numbers to be treated as blink
-    blink_val: 
-        "missing value" code
-    
+    min_duration : int
+        minimum duration in samples for a sequence of missing numbers to be
+        treated as blink; a sequence is kept if `end-start >= min_duration`
+        (i.e., it has at least `min_duration+1` samples)
+    blink_val : float
+        "missing value" code (default 0)
+
     Returns
     -------
-    np.array (nblinks x 2) containing the indices of the start/end of the blinks
+    np.ndarray
+        array (nblinks x 2) containing the indices of the start/end of the
+        blinks (both inclusive); empty array if no blinks were found
     """
     x=np.r_[0, np.diff((sy==blink_val).astype(int))]
     starts=np.where(x==1)[0]
@@ -413,24 +444,35 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
     
     Parameters
     ----------
-    sy: np.array
+    sy : np.ndarray
         pupil data (can contain NaN or zeros for missing values)
-    blinks: np.array (nblinks x 2) 
-        blink onset/offset matrix (contiguous zeros)
-    smooth_winsize: int (odd)
-        size of the Savitzky-Golay window in sampling points
-    vel_onset: float
+    blinks : np.ndarray or Intervals
+        blink onset/offset sample indices (nblinks x 2), e.g. from
+        :func:`detect_blinks_zero` or an :class:`~pypillometry.Intervals`
+        object in index units; anything that iterates over
+        `(start, end)` pairs works
+    smooth_winsize : int
+        size of the Savitzky-Golay window in samples (odd)
+    vel_onset : float
         velocity-threshold to detect the onset of the blink; in units per sample (negative value)
-    vel_offset: float
+    vel_offset : float
         velocity-threshold to detect the offset of the blink; in units per sample (positive value)
-    margin: tuple (int,int)
-        margin that is subtracted/added to onset and offset (in sampling points)
-    blinkwindow: int
-        how much time before and after each blink to include (in sampling points)
-    min_onset_len: int
+    margin : tuple of int
+        `(before, after)` margin that is subtracted/added to onset and offset (in samples)
+    blinkwindow : int
+        how much time before and after each blink to search for the
+        on-/offset (in samples)
+    min_onset_len : int
         minimum number of consecutive samples in an onset run to be considered valid
-    min_offset_len: int
+    min_offset_len : int
         minimum number of consecutive samples in an offset run to be considered valid
+
+    Returns
+    -------
+    np.ndarray
+        array (n x 2) of refined onset/offset sample indices; blinks for
+        which no valid velocity-threshold crossing was found are dropped,
+        so `n` can be smaller than the number of input blinks
     """
     # Generate asymmetric velocity profiles
     # Backward-looking for onset detection (doesn't peek into blink)

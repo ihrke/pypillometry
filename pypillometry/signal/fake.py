@@ -182,12 +182,14 @@ def generate_foreshortening_data(
         Standard deviation of Gaussian measurement noise added to pupil signal (in AU)
     seed : int, optional
         Random seed for reproducibility
-    **kwargs : additional parameters for FakeEyeData
-    
+    **kwargs
+        additional parameters passed to :class:`~pypillometry.eyedata.FakeEyeData`
+
     Returns
     -------
     data : FakeEyeData
         Synthetic eye-tracking data with:
+
         - sim_fct: reference to this function
         - sim_fct_name: 'generate_foreshortening_data'
         - sim_params: all generation parameters

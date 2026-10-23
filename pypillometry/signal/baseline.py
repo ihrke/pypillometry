@@ -26,20 +26,19 @@ def bspline(txd, knots, spline_degree=3):
     Similar behaviour as R's bs() function from the splines-library.
     
     Parameters
-    -----------
-    
-    txd: np.array
-        time-vector
-    knots: np.array
-        location of the knots
-    spline_degree: int
-        degree of the spline
-        
+    ----------
+    txd : np.ndarray
+        time-vector (any unit, same as `knots`)
+    knots : np.ndarray
+        location of the knots (including the boundary knots)
+    spline_degree : int
+        degree of the spline (default 3, cubic)
+
     Returns
-    --------
-    
-    B: np.array
-        matrix of basis functions
+    -------
+    B : np.ndarray
+        matrix of basis functions, shape
+        `(len(txd), len(knots)+spline_degree-1)`
     """
     n=txd.shape[0]
     num_knots=knots.shape[0]
@@ -74,20 +73,19 @@ def butter_lowpass(cutoff, fs, order=5):
     Get lowpass-filter coefficients for Butterworth-filter.
     
     Parameters
-    -----------
-    
-    cutoff: float
-        lowpass-filter cutoff
-    fs: float
-        sampling rate
-    order: int
+    ----------
+    cutoff : float
+        lowpass-filter cutoff in Hz
+    fs : float
+        sampling rate in Hz
+    order : int
         filter order
-        
+
     Returns
     -------
-    
-    (b,a): tuple (float,float)
-        filter coefficients
+    b, a : np.ndarray
+        numerator and denominator filter coefficients
+        (see :func:`scipy.signal.butter`)
     """
     nyq = 0.5 * fs
     normal_cutoff = cutoff / nyq
@@ -97,23 +95,24 @@ def butter_lowpass(cutoff, fs, order=5):
 def butter_lowpass_filter(data, cutoff, fs, order=5):
     """
     Lowpass-filter signal using a Butterworth-filter.
-    
+
+    The filter is applied forward and backward (:func:`scipy.signal.filtfilt`),
+    so the result has zero phase shift. `data` must not contain NaN values.
+
     Parameters
-    -----------
-    
-    data: np.array
+    ----------
+    data : np.ndarray
         data to lowpass-filter
-    cutoff: float
-        lowpass-filter cutoff
-    fs: float
-        sampling rate
-    order: int
+    cutoff : float
+        lowpass-filter cutoff in Hz
+    fs : float
+        sampling rate in Hz
+    order : int
         filter order
-        
+
     Returns
     -------
-    
-    y: np.array
+    y : np.ndarray
         filtered data
     """
     b, a = butter_lowpass(cutoff, fs, order=order)
@@ -123,21 +122,22 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
 def downsample(y,R):
     """
     Simple downsampling scheme using mean within the downsampling window.
-    
+
+    The signal is split into consecutive windows of `R` samples and each
+    window is replaced by its mean (ignoring NaN). If the length of `y` is
+    not a multiple of `R`, the last window is shorter.
+
     Parameters
-    -----------
-    
-    y: np.array
+    ----------
+    y : np.ndarray
         signal to downsample
-        
-    R: int
-        decimate-factor
-        
+    R : int
+        decimate-factor (number of samples per window)
+
     Returns
     -------
-    
-    y: np.array
-        downsampled data
+    y2 : np.ndarray
+        downsampled data of length `ceil(len(y)/R)`
     """
     pad_size = int(math.ceil(float(y.size)/R)*R - y.size)
     y_padded = np.append(y, np.zeros(pad_size)*np.nan)
@@ -153,46 +153,47 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     Extract baseline based (re-)estimating the lower envelope using B-splines.
     See notebook `baseline_interp.ipynb` for details.
     The signal is downsampled (to `fsd` Hz) for speed.
-    
+
+    The B-spline fits are done with a Stan model
+    (`baseline_model_asym_laplac.stan`, variational inference via
+    :mod:`cmdstanpy`); in between, the event-related responses are
+    estimated with :func:`pupil_response` (fixed `npar=10`, `tmax=917`) and
+    removed before the second round of peak detection.
+
     Parameters
-    -----------
-    
+    ----------
     tx : np.ndarray
-        time-vector in seconds
-        
+        time-vector in milliseconds
     sy : np.ndarray
-        raw pupil signal
-        
-    event_onsets : list
+        raw pupil signal (must not contain NaN)
+    event_onsets : np.ndarray
         onsets of events (stimuli/responses) in milliseconds
-        
     fs : float
         sampling rate in Hz
-    
     fsd : float
-        downsampled sampling rate (if too slow, decrease)
-       
+        downsampled sampling rate in Hz (if too slow, decrease)
     lp : float
-        lowpass-filter cutoff (Hz)
-    
-    lam_sig: float
+        lowpass-filter cutoff in Hz (applied before downsampling)
+    lam_sig : float
         parameter steering how much the baseline is shaped by the non-peaks of the signal
-    
-    lam_min,lam_max: float
-        parameters mapping how much low- and high-prominence peaks influence the baseline
-        
-    verbose: int [0, 100]
-        how much information to print (0 nothing, 100 everything)
-    
+    lam_min : float
+        weight given to the lowest-prominence peaks; peak prominences are
+        mapped linearly to `[lam_min, lam_max]`
+    lam_max : float
+        weight given to the highest-prominence peaks
+    verbose : int
+        not used (progress is reported via the logger)
+
     Returns
     -------
-    
-    (txd,syd,base2,base1) : tuple
-        txd: downsampled time-array
-        syd: downsampled and lowpass-filtered pupil signal
-        base1: is the estimated base after the first round
-        base2: is the final baseline estimate
-        
+    txd : np.ndarray
+        downsampled time-vector (ms)
+    syd : np.ndarray
+        downsampled and lowpass-filtered pupil signal
+    base2 : np.ndarray
+        final baseline estimate (after the second round), sampled at `txd`
+    base1 : np.ndarray
+        baseline estimate after the first round, sampled at `txd`
     """
     dsfac=int(fs/fsd) # calculate downsampling factor
     logger.debug("Downsampling factor is %i"%dsfac)
@@ -302,43 +303,40 @@ def baseline_envelope(tx,sy,event_onsets, fs=1000, lp=2, prominence_thr=80, inte
     Steps: 
     
     - filter away noise
-    - detect high-prominence throughs in the signal 
+    - detect high-prominence troughs in the signal
     - calculate lower envelope based on these peaks
-    
+
     Parameters
-    -----------
-    
+    ----------
     tx : np.ndarray
-        time-vector in seconds
-        
+        time-vector (any unit; the baseline is evaluated at `tx`)
     sy : np.ndarray
-        raw pupil signal
-        
-    event_onsets : list
-        onsets of events (stimuli/responses) in seconds
-        
+        raw pupil signal (must not contain NaN)
+    event_onsets : np.ndarray
+        onsets of events (stimuli/responses); currently not used
     fs : float
         sampling rate in Hz
-    
     lp : float
-        low-pass filter cutoff for removing random noise
-        
-    prominence_thr : float in [0,100]
-        percentile of the prominence distribution (of the peaks) to 
-        use for determining prominent peaks (see `scipy.stats.peak_prominences()`)
-        
-    interp_method : string, one of ["linear", "cubic", "spline"]
-        "linear" - linear interpolation between the high-prominence peaks
-        "cubic"  - cubic interpolation through all high-prominence peaks
-        "spline" - a smoothing spline that is guaranteed to go through all
-                   high-prominence peaks and smoothes through all the other
-                   (lower-prominence) peaks
-                   
+        low-pass filter cutoff in Hz for removing random noise
+    prominence_thr : float
+        percentile (in [0, 100]) of the prominence distribution (of the peaks) to
+        use for determining prominent peaks (see :func:`scipy.signal.peak_prominences`)
+    interp_method : {"cubic", "linear", "spline"}
+        - "linear": linear interpolation between the high-prominence peaks
+        - "cubic": cubic interpolation through all high-prominence peaks
+        - "spline": a smoothing spline that is guaranteed to go through all
+          high-prominence peaks and smoothes through all the other
+          (lower-prominence) peaks
+
     Returns
-    --------
-    
-    base: np.array
-        baseline estimate
+    -------
+    base : np.ndarray
+        baseline estimate (same length as `tx`)
+
+    Raises
+    ------
+    ValueError
+        if `interp_method` is not one of the supported methods
     """
     syc=butter_lowpass_filter(sy, fs=fs, order=2, cutoff=lp)
     peaks_ix=signal.find_peaks(-syc)[0]
@@ -381,31 +379,25 @@ def baseline_pupil_model(tx,sy,event_onsets, fs=1000, lp1=2, lp2=0.2):
     - run another lowpass-filter to get rid of spurious signals
     
     Parameters
-    -----------
-    
+    ----------
     tx : np.ndarray
-        time-vector in seconds
-        
+        time-vector
     sy : np.ndarray
-        raw pupil signal
-        
-    event_onsets : list
-        onsets of events (stimuli/responses) in seconds
-        
+        raw pupil signal (must not contain NaN)
+    event_onsets : np.ndarray
+        onsets of events (stimuli/responses), in the same units as `tx`
+        (each onset is assigned to the closest sample in `tx`)
     fs : float
         sampling rate in Hz
-    
     lp1 : float
-        low-pass filter cutoff for removing random noise
-        
+        low-pass filter cutoff in Hz for removing random noise
     lp2 : float
-        low-pass filter cutoff for removing spurious peaks from the baseline-signal        
-        
+        low-pass filter cutoff in Hz for removing spurious peaks from the baseline-signal
+
     Returns
-    --------
-    
-    base: np.array
-        baseline estimate        
+    -------
+    base : np.ndarray
+        baseline estimate (same length as `sy`)
     """
     syc=butter_lowpass_filter(sy, fs=fs, order=2, cutoff=lp1)
     

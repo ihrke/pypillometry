@@ -97,6 +97,7 @@ def pupil_signal_quality(signal, fs, mask=None, lowpass_cutoff=4.0,
     ----------
     signal : np.ndarray or np.ma.MaskedArray
         Pupil signal. Can be either:
+
         - A regular numpy array, in which case `mask` must be provided
         - A numpy masked array, in which case its mask is used
     fs : float
@@ -112,6 +113,7 @@ def pupil_signal_quality(signal, fs, mask=None, lowpass_cutoff=4.0,
         Window size for local quality estimation in milliseconds (default: 500 ms)
     metric : str, optional
         Quality metric to return:
+
         - "snr": signal-to-noise ratio (signal_power / noise_power)
         - "snr_db": SNR in decibels, 10 * log10(snr)
           (0 dB = equal, +10 dB = 10x better, -10 dB = 10x worse)
@@ -222,31 +224,31 @@ def pupil_signal_quality(signal, fs, mask=None, lowpass_cutoff=4.0,
 
 
 def pupil_kernel_t(t,npar,tmax):
-    """
-    According to Hoeks and Levelt (1993, 
-    https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf), 
+    r"""
+    According to Hoeks and Levelt (1993,
+    https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf),
     the PRF can be described by the so-called Erlang gamma function
     $$h_{HL}(t) = t^n e^{-nt/t_{max}}$$
     which we normalize to
-    $$h(t)=\\frac{1}{h_{max}} h_{HL}(t)$$
-    where $$h_{max} = \max_t{\\left(h_{HL}(t)\\right)} = e^{-n}t_{max}^{n}$$
-    which yields a maximum value of 1 for this function. 
+    $$h(t)=\frac{1}{h_{max}} h_{HL}(t)$$
+    where $$h_{max} = \max_t{\left(h_{HL}(t)\right)} = e^{-n}t_{max}^{n}$$
+    which yields a maximum value of 1 for this function.
     The function $h(t)$ is implemented in :py:func:`pupil_kernel()`.
-    
+
     This version of the function evaluates the PRF at inputs `t`.
-    
+
     Parameters
-    -----------
-    t: float/np.array
-        in ms
-    npar: float
+    ----------
+    t : float or np.ndarray
+        time(s) at which to evaluate the PRF, in ms
+    npar : float
         n in the equation above
-    tmax: float
-        t_{max} in the equation above
+    tmax : float
+        $t_{max}$ in the equation above (time of the peak), in ms
 
     Returns
-    --------
-    h: np.array
+    -------
+    h : np.ndarray
         PRF evaluated at `t`
     """
     t=np.array(t)
@@ -264,18 +266,21 @@ def pupil_get_max_duration(npar,tmax,thr=1e-8,stepsize=1.):
     in :py:func:`pupil_kernel()` should be chosen.
     
     Parameters
-    -----------
-    npar,tmax: float
-        PRF parameters, see :py:func:`pupil_kernel()`
-    thr: float
+    ----------
+    npar : float
+        PRF parameter $n$, see :py:func:`pupil_kernel()`
+    tmax : float
+        PRF parameter $t_{max}$ in ms, see :py:func:`pupil_kernel()`
+    thr : float
         desired value to which the PRF is decayed (the lower `thr`, the longer the duration)
-    stepsize: float
+    stepsize : float
         precision of the maximum duration in ms
-        
+
     Returns
-    --------
-    tdur: float
-        first value of t so that PRF(t)<`thr`
+    -------
+    tdur : float
+        first value of t (in ms, searched from `tmax` onwards in steps of
+        `stepsize`) so that PRF(t) <= `thr`
     """
     # start looking from `tmax` (which is time of the peak)
     tdur=tmax
@@ -284,34 +289,33 @@ def pupil_get_max_duration(npar,tmax,thr=1e-8,stepsize=1.):
     return tdur
 
 def pupil_kernel(duration=4000, fs=1000, npar=10.1, tmax=930.0):
-    """
-    According to Hoeks and Levelt (1993, 
-    https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf), 
+    r"""
+    According to Hoeks and Levelt (1993,
+    https://link.springer.com/content/pdf/10.3758%2FBF03204445.pdf),
     the PRF can be described by the so-called Erlang gamma function
     $$h_{HL}(t) = t^n e^{-nt/t_{max}}$$
     which we normalize to
-    $$h(t)=\\frac{1}{h_{max}} h_{HL}(t)$$
-    where $$h_{max} = \max_t{\\left(h_{HL}(t)\\right)} = e^{-n}t_{max}^{n}$$
-    which yields a maximum value of 1 for this function. 
+    $$h(t)=\frac{1}{h_{max}} h_{HL}(t)$$
+    where $$h_{max} = \max_t{\left(h_{HL}(t)\right)} = e^{-n}t_{max}^{n}$$
+    which yields a maximum value of 1 for this function.
     The function $h(t)$ is implemented in `pp.pupil_kernel()`.
-    
+
     Parameters
-    -----------
-    
-    duration: float
+    ----------
+    duration : float
         in ms; maximum of the time window for which to calculate the PRF [0,duration]
-    fs: float
-        sampling rate for resolving the PRF
-    npar: float
+    fs : float
+        sampling rate in Hz for resolving the PRF
+    npar : float
         n in the equation above
-    tmax: float
-        t_{max} in the equation above
-        
+    tmax : float
+        $t_{max}$ in the equation above, in ms
+
     Returns
-    --------
-    
-    h: np.array
-        sampled version of h(t) over the interval [0,`duration`] with sampling rate `fs`
+    -------
+    h : np.ndarray
+        sampled version of h(t) over the interval [0,`duration`] with
+        `int(duration/1000*fs)` samples (approximately sampling rate `fs`)
     """
     n=int(duration/1000.*fs)
     t = np.linspace(0,duration, n, dtype = float)
@@ -322,8 +326,24 @@ def pupil_kernel(duration=4000, fs=1000, npar=10.1, tmax=930.0):
 
 def plot_prf(npar=10.1,tmax=930,max_duration="estimate",fs=500,**kwargs):
     """
-    Plot profile of the pupil-response function (PRF) with 
+    Plot profile of the pupil-response function (PRF) with
     parameters `npar` and `tmax`.
+
+    The PRF is plotted into the current matplotlib axes.
+
+    Parameters
+    ----------
+    npar : float
+        PRF parameter $n$, see :py:func:`pupil_kernel()`
+    tmax : float
+        PRF parameter $t_{max}$ in ms, see :py:func:`pupil_kernel()`
+    max_duration : float or "estimate"
+        length of the plotted time window in ms; "estimate" uses
+        :py:func:`pupil_get_max_duration()`
+    fs : float
+        sampling rate in Hz used to evaluate the PRF
+    **kwargs
+        passed on to :func:`matplotlib.pyplot.plot`
     """
     if max_duration=="estimate":
         max_duration=pupil_get_max_duration(npar,tmax)
@@ -338,31 +358,31 @@ def plot_prf(npar=10.1,tmax=930,max_duration="estimate",fs=500,**kwargs):
 def pupil_build_design_matrix(tx,event_onsets,fs,npar,tmax,max_duration="estimate"):
     """
     Construct design matrix (nevents x n).
-    Each column has a single pupil-kernel with parameters `npar`, `tmax` starting at 
+    Each row has a single pupil-kernel with parameters `npar`, `tmax` starting at
     each `event_onset`.
-    
+
     Parameters
     ----------
-    
-    tx: np.array
-        in ms
-    event_onsets: np.array
-        timing of the events
-    fs: float
+    tx : np.ndarray
+        time-vector in ms, sampled at `fs`
+    event_onsets : np.ndarray
+        timing of the events in ms (each onset is assigned to the closest
+        sample in `tx`)
+    fs : float
         sampling rate (Hz)
-    npar: float
-        n in the equation of :py:func:`pypillometry.pupil.pupil_kernel()`
-    tmax: float
-        t_{max} in :py:func:`pypillometry.pupil.pupil_kernel()`
-    max_duration: float or "estimate"
+    npar : float
+        n in the equation of :py:func:`pupil_kernel()`
+    tmax : float
+        $t_{max}$ in :py:func:`pupil_kernel()`, in ms
+    max_duration : float or "estimate"
         either maximum duration in milliseconds or string "estimate" which
         causes the function to determine an appropriate duration based on the
         kernel parameters `npar` and `tmax`
-        
+
     Returns
     -------
-    x1: np.array (nevents x n) 
-        design matrix
+    x1 : np.ndarray
+        design matrix (nevents x n), where `n` is the length of `tx`
     """
     if max_duration=="estimate":
         max_duration=pupil_get_max_duration(npar,tmax)
@@ -403,24 +423,50 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
                    bounds={"npar":(1,20), "tmax":(100,2000)}, display_progress=True):
     """
     Estimate pupil-response based on event-onsets.
-    
+
+    The amplitudes of one PRF per event (see :py:func:`pupil_kernel()`) are
+    estimated with non-negative least-squares (NNLS). If `npar` and/or
+    `tmax` are "free", they are optimized (minimizing the sum of squared
+    residuals) within `bounds`.
+
+    Parameters
+    ----------
     tx : np.ndarray
-        time-vector in milliseconds        
+        time-vector in milliseconds
     sy : np.ndarray
         (baseline-corrected) pupil signal
-    event_onsets : list
-        onsets of events (stimuli/responses) in milliseconds        
+    event_onsets : np.ndarray
+        onsets of events (stimuli/responses) in milliseconds
     fs : float
         sampling rate in Hz
-    npar: float
+    npar : float or "free"
         npar-parameter for the canonical response-function or "free";
         in case of "free", the function optimizes for this parameter
-    tmax: float
-        tmax-parameter for the canonical response-function or "free";
+    tmax : float or "free"
+        tmax-parameter (in ms) for the canonical response-function or "free";
         in case of "free", the function optimizes for this parameter
-    bounds: dict
+    verbose : int
+        not used (progress is reported via the logger)
+    bounds : dict
         in case that one or both parameters are estimated, give the lower
-        and upper bounds for the parameters
+        and upper bounds for the parameters (keys "npar" and "tmax", `tmax`
+        in ms)
+    display_progress : bool
+        passed as `disp` option to the :mod:`scipy.optimize` routine
+
+    Returns
+    -------
+    pred : np.ndarray
+        predicted signal (same length as `sy`)
+    coef : np.ndarray
+        non-negative amplitude of each event's PRF
+    npar : float
+        `npar` used (estimated if "free")
+    tmax : float
+        `tmax` used in ms (estimated if "free")
+    x1 : np.ndarray
+        design matrix (nevents x len(tx)),
+        see :py:func:`pupil_build_design_matrix()`
     """
     if npar=="free" and tmax=="free":
         logger.info("optimizing both npar and tmax, might take a while...")
@@ -496,30 +542,28 @@ def pupilresponse_nnls(tx, sy, event_onsets, fs, npar=10.1, tmax=930):
     using non-negative least-squares (NNLS).
         
     Parameters
-    -----------
-    
+    ----------
     tx : np.ndarray
         time-vector in milliseconds
-        
     sy : np.ndarray
         (baseline-corrected) pupil signal
-        
-    event_onsets : list
-        onsets of events (stimuli/responses) in seconds
-        
+    event_onsets : np.ndarray
+        onsets of events (stimuli/responses) in milliseconds
     fs : float
         sampling rate in Hz
-        
-    npar,tmax: float
-        parameters for :py:func:`pypillometry.pupil.pupil_kernel()`
-        
+    npar : float
+        parameter $n$ for :py:func:`pupil_kernel()`
+    tmax : float
+        parameter $t_{max}$ (in ms) for :py:func:`pupil_kernel()`
+
     Returns
-    --------
-    
-    (coef,pred,resid): tuple
-        coef: purely-positive regression coefficients
-        pred: predicted signal
-        resid: residuals (sy-pred)
+    -------
+    coef : np.ndarray
+        purely-positive regression coefficients (one per event)
+    pred : np.ndarray
+        predicted signal
+    resid : np.ndarray
+        residuals (sy-pred)
     """
     x1=pupil_build_design_matrix(tx, event_onsets, fs, npar, tmax, "estimate")
     
