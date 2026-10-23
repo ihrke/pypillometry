@@ -50,8 +50,7 @@ def keephistory(func):
     and its arguments is added (via ``add_to_history()``) to the object it
     returned, provided that object is an eyedata object (i.e., has an
     ``add_to_history`` method). The history can be shown with
-    :meth:`~pypillometry.GenericEyeData.print_history` and replayed with
-    :meth:`~pypillometry.GenericEyeData.apply_history`.
+    :meth:`~pypillometry.GenericEyeData.print_history`.
 
     Parameters
     ----------
@@ -932,8 +931,7 @@ class GenericEyeData(ABC):
         ----------
         event : dict
             description of the operation with keys "funcstring" (printable
-            call), "funcname" (method name), "args" and "kwargs" (arguments
-            used to replay the call in :meth:`apply_history`)
+            call), "funcname" (method name), "args" and "kwargs" (arguments)
         """
         try:
             self.history.append(event)
@@ -951,28 +949,6 @@ class GenericEyeData(ABC):
         except:
             print("no history")
    
-    def apply_history(self, obj):
-        """
-        Apply history of operations done on `self` to `obj`.
-        
-        The operations are replayed in order with the arguments with which
-        they were originally called (including `inplace`).
-
-        Parameters
-        ----------
-        obj : :class:`~pypillometry.GenericEyeData`
-            object to which the operations are to be transferred
-
-        Returns
-        -------
-        :class:`~pypillometry.GenericEyeData`
-            the object returned by the last replayed operation (`obj` itself
-            or a copy, depending on the `inplace` settings)
-        """
-        for ev in self.history:
-            obj=getattr(obj, ev["funcname"])(*ev["args"], **ev["kwargs"])
-        return obj
-
     def _random_id(self, n:int=8) -> str:
         """
         Create a random ID string that is easy to recognise.

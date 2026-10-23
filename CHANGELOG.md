@@ -12,6 +12,9 @@
   given to the constructor, then the new package default.
 - `fill_time_discontinuities()` fills gaps with NaN (was 0), so filled-in
   samples are masked for all variables, not only pupil.
+- `apply_history()` was removed: replaying the history was unreliable (e.g., it
+  re-applied one dataset's blinks to another). The history is kept as a log
+  of the operations (see `print_history()`).
 
 ### Added
 

@@ -53,7 +53,7 @@ Pipeline-based processing
 
     d=pp.get_example_data("rlmw_002_short").pupil_blinks_detect().blinks_merge_close().pupil_lowpass_filter(3).downsample(50)
 
-This command loads an example data-file, applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object `d`. This object stores also the complete history of the operations applied to the dataset and allows to transfer it to a new dataset.
+This command loads an example data-file, applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object `d`. This object also stores a log of the operations applied to the dataset (shown when printing it or with :meth:`~pypillometry.GenericEyeData.print_history`).
 
 By default, the operations are executed in place and the original object is modified. However, this can be changed by setting the `inplace` argument to `False`.
 This will return a new object with the results of the operations.
