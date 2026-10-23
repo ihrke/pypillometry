@@ -51,6 +51,9 @@
 - History: internal calls (e.g., `mask_intervals()` inside
   `pupil_blinks_detect()`) are no longer recorded; entries are text only and
   summarize large arguments (e.g., `Intervals(13)`)
+- History: in-place setters are now recorded too (`d[...] = ...`, `del d[...]`,
+  `set_blinks()`, `set_event_onsets()`, `set_experimental_setup()`,
+  `drop_data()`)
 
 ### Documentation
 

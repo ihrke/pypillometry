@@ -50,10 +50,13 @@ def _history_arg(v):
         return f"array{v.shape}"
     if callable(v):
         return getattr(v, "__name__", type(v).__name__)
-    r = repr(v)
-    if isinstance(v, (list, tuple, dict)) and len(r) <= 40:
-        return r
-    return f"{type(v).__name__}({len(v)})" if hasattr(v, "__len__") else type(v).__name__
+    r = repr(v) if isinstance(v, (list, tuple, dict)) else str(v)
+    if len(r) <= 40 and "\n" not in r:
+        return r  # short enough, e.g. [1, 2], (1280, 1024), 30 cm
+    try:
+        return f"{type(v).__name__}({len(v)})"  # e.g. Intervals(13)
+    except TypeError:
+        return type(v).__name__
 
 
 # number of decorated methods currently running; only the outermost call
@@ -66,8 +69,9 @@ def keephistory(func):
     Decorator that records a method call in the history of the returned object.
 
     After the decorated method has run, a short text version of the call is
-    added (via ``add_to_history()``) to the object it returned, provided that
-    object is an eyedata object (i.e., has an ``add_to_history`` method).
+    added (via ``add_to_history()``) to the object it returned (or to `self`
+    if it returned nothing, e.g. for setters), provided that object is an
+    eyedata object (i.e., has an ``add_to_history`` method).
     Calls made from inside another decorated method are not recorded, and
     large arguments are only summarized (e.g., ``Intervals(13)``). The history
     is a log of the operations; show it with
@@ -91,11 +95,14 @@ def keephistory(func):
             obj=func(*args,**kwargs)
         finally:
             _history_depth -= 1
-        if _history_depth == 0 and hasattr(obj, 'add_to_history'):
+        # record in the returned object, or in `self` for in-place setters
+        # that return nothing
+        target = obj if obj is not None else args[0]
+        if _history_depth == 0 and hasattr(target, 'add_to_history'):
             allargs = [_history_arg(v) for v in args[1:]]
             allargs += [f"{k}={_history_arg(v)}" for k, v in kwargs.items()]
             fstr = f"{func.__name__}({','.join(allargs)})"
-            obj.add_to_history({"funcstring": fstr, "funcname": func.__name__})
+            target.add_to_history({"funcstring": fstr, "funcname": func.__name__})
         return obj
     return wrapper
         
@@ -251,6 +258,7 @@ class GenericEyeData(ABC):
 
         return np.ma.masked_array(data_array, mask=mask, fill_value=np.nan)
 
+    @keephistory
     def __setitem__(self, key, value):
         """
         Set data arrays using dict-style access.
@@ -341,6 +349,7 @@ class GenericEyeData(ABC):
             factor = self._unit_fac(unit)
             self.tx = (value / factor).astype(float)
 
+    @keephistory
     def __delitem__(self, key):
         """
         Delete data arrays using dict-style access.
@@ -473,6 +482,7 @@ class GenericEyeData(ABC):
         """
         return self._blinks
     
+    @keephistory
     def set_blinks(self, intervals, eyes=[], variables=[], apply_mask=True):
         """
         Set blinks for specified eyes and variables (in-place).
@@ -1419,6 +1429,7 @@ class GenericEyeData(ABC):
             result.name = new_name
         return result
 
+    @keephistory
     def drop_data(self, eyes: list = [], variables: list = []):
         """
         Drop specified eyes and/or variables from the data and return a new object.
@@ -1546,6 +1557,7 @@ class GenericEyeData(ABC):
         
         return result
 
+    @keephistory
     def set_event_onsets(self, event_onsets: np.ndarray, event_labels: np.ndarray):
         """
         Set onsets of events in the data (in-place).

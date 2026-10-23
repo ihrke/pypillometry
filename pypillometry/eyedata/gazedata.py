@@ -146,6 +146,7 @@ class GazeData(GenericEyeData):
         
         return summary            
     
+    @keephistory
     def set_experimental_setup(self, **kwargs):
         """
         Set or update the experimental setup geometry (in-place).
