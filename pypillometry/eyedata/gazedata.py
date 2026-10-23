@@ -344,7 +344,7 @@ class GazeData(GenericEyeData):
         
         # Apply mask if requested
         if apply_mask:
-            obj.mask_intervals(intervals_obj, eyes=['left', 'right'], variables=['x', 'y'])
+            obj.mask_intervals(intervals_obj, eyes=['left', 'right'], variables=['x', 'y'], inplace=True)
             return obj
         else:
             return intervals_obj
@@ -467,7 +467,7 @@ class GazeData(GenericEyeData):
         # Apply mask if requested
         if apply_mask:
             for eye, intervals_obj in intervals_dict.items():
-                obj.mask_intervals(intervals_obj, eyes=[eye], variables=['x', 'y'])
+                obj.mask_intervals(intervals_obj, eyes=[eye], variables=['x', 'y'], inplace=True)
             return obj
         else:
             return intervals_dict

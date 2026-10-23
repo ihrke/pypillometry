@@ -57,6 +57,22 @@ class TestInplaceDefault(unittest.TestCase):
                        sampling_rate=100)
         self.assertIsNone(d.get_pupildata("left").inplace)
 
+    def test_internal_mask_calls_with_copy_default(self):
+        # methods that mask internally must still mask the returned copy
+        from pypillometry.eyedata.experimental_setup import ExperimentalSetup
+        pp.set_default_inplace(False)
+        x = np.array([100., 200, 300, 1500, 500])
+        d = pp.GazeData(sampling_rate=10, left_x=x, left_y=x, right_x=x, right_y=x,
+                        experimental_setup=ExperimentalSetup(screen_resolution=(1280, 1024)))
+        r = d.mask_offscreen_coords(eyes="left")
+        self.assertIsNot(r, d)
+        self.assertEqual(r.data.mask["left_x"][3], 1)
+        self.assertEqual(d.data.mask["left_x"][3], 0)
+        d.data["right_x"] = x + np.array([0., 0, 0, 0, 900])
+        r = d.mask_eye_divergences(threshold=.5)
+        self.assertGreater(r.data.mask["left_x"].sum(), 0)
+        self.assertEqual(d.data.mask["left_x"].sum(), 0)
+
     def test_setter_rejects_non_bool(self):
         with self.assertRaises(TypeError):
             pp.set_default_inplace(None)
