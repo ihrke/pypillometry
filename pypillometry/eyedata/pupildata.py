@@ -489,7 +489,12 @@ class PupilData(GenericEyeData):
         min_duration : float
             minimum duration in ms for a sequence of missing numbers to be treated as blink
         blink_val : float
-            "missing value" code
+            "missing value" code for the "zero" strategy. Missing samples
+            (NaN) are always detected; pupil values of 0 are stored as NaN
+            when the data is created, so `0` (default) and `np.nan` behave
+            the same. Samples equal to `blink_val` (e.g., -1) are detected
+            in addition to NaN. The "zero" strategy always uses the raw data, so regions
+            masked for other reasons are not detected as blinks.
         winsize : float
             window-size for Savitzky-Golay velocity estimation in ms
         vel_onset : float or str
@@ -570,7 +575,14 @@ class PupilData(GenericEyeData):
                 blinks_vel=np.array([])
                 
             if "zero" in strategies:
-                blinks_zero=preproc.detect_blinks_zero(pupil_data, 1, blink_val)
+                # Pupil values of 0 are stored as NaN (see EyeDataDict), so
+                # look for NaN runs in the raw data. Use the raw data even when
+                # `ignore_existing_mask=False`: other masks (e.g., offscreen
+                # gaze) must not be turned into blinks.
+                raw = self.data[eye, "pupil"]
+                if not np.isnan(blink_val):
+                    raw = np.where(raw == blink_val, np.nan, raw)
+                blinks_zero=preproc.detect_blinks_zero(raw, 1, np.nan)
                 logger.debug(f"Detected {len(blinks_zero)} blinks with zero strategy")
             else:
                 blinks_zero=np.array([])
