@@ -3927,35 +3927,37 @@ Ignored if mask is explicitly provided.</p></li>
 <p>Steps:</p>
 <ul class="simple">
 <li><p>filter away noise</p></li>
-<li><p>detect high-prominence throughs in the signal</p></li>
+<li><p>detect high-prominence troughs in the signal</p></li>
 <li><p>calculate lower envelope based on these peaks</p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
-<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
-<li><p><strong>event_onsets</strong> (<em>list</em>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector (any unit; the baseline is evaluated at <cite>tx</cite>)</p></li>
+<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal (must not contain NaN)</p></li>
+<li><p><strong>event_onsets</strong> (<em>np.ndarray</em>) – onsets of events (stimuli/responses); currently not used</p></li>
 <li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
-<li><p><strong>lp</strong> (<em>float</em>) – low-pass filter cutoff for removing random noise</p></li>
-<li><p><strong>prominence_thr</strong> (<em>float in</em><em> [</em><em>0</em><em>,</em><em>100</em><em>]</em>) – percentile of the prominence distribution (of the peaks) to
-use for determining prominent peaks (see <cite>scipy.stats.peak_prominences()</cite>)</p></li>
-<li><p><strong>interp_method</strong> (<em>string</em><em>, </em><em>one</em><em> of </em><em>[</em><em>&quot;linear&quot;</em><em>, </em><em>&quot;cubic&quot;</em><em>, </em><em>&quot;spline&quot;</em><em>]</em>) – <p>“linear” - linear interpolation between the high-prominence peaks
-“cubic”  - cubic interpolation through all high-prominence peaks
-“spline” - a smoothing spline that is guaranteed to go through all</p>
-<blockquote>
-<div><p>high-prominence peaks and smoothes through all the other
-(lower-prominence) peaks</p>
-</div></blockquote>
+<li><p><strong>lp</strong> (<em>float</em>) – low-pass filter cutoff in Hz for removing random noise</p></li>
+<li><p><strong>prominence_thr</strong> (<em>float</em>) – percentile (in [0, 100]) of the prominence distribution (of the peaks) to
+use for determining prominent peaks (see <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.signal.peak_prominences()</span></code>)</p></li>
+<li><p><strong>interp_method</strong> (<em>{&quot;cubic&quot;</em><em>, </em><em>&quot;linear&quot;</em><em>, </em><em>&quot;spline&quot;}</em>) – <ul>
+<li><p>“linear”: linear interpolation between the high-prominence peaks</p></li>
+<li><p>”cubic”: cubic interpolation through all high-prominence peaks</p></li>
+<li><p>”spline”: a smoothing spline that is guaranteed to go through all
+high-prominence peaks and smoothes through all the other
+(lower-prominence) peaks</p></li>
+</ul>
 </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li></li>
-<li><p><strong>base</strong> (<em>np.array</em>) – baseline estimate</p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>base</strong> – baseline estimate (same length as <cite>tx</cite>)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if <cite>interp_method</cite> is not one of the supported methods</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3966,28 +3968,33 @@ use for determining prominent peaks (see <cite>scipy.stats.peak_prominences()</c
 <dd><p>Extract baseline based (re-)estimating the lower envelope using B-splines.
 See notebook <cite>baseline_interp.ipynb</cite> for details.
 The signal is downsampled (to <cite>fsd</cite> Hz) for speed.</p>
+<p>The B-spline fits are done with a Stan model
+(<cite>baseline_model_asym_laplac.stan</cite>, variational inference via
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmdstanpy</span></code>); in between, the event-related responses are
+estimated with <code class="xref py py-func docutils literal notranslate"><span class="pre">pupil_response()</span></code> (fixed <cite>npar=10</cite>, <cite>tmax=917</cite>) and
+removed before the second round of peak detection.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
-<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
-<li><p><strong>event_onsets</strong> (<em>list</em>) – onsets of events (stimuli/responses) in milliseconds</p></li>
+<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in milliseconds</p></li>
+<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal (must not contain NaN)</p></li>
+<li><p><strong>event_onsets</strong> (<em>np.ndarray</em>) – onsets of events (stimuli/responses) in milliseconds</p></li>
 <li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
-<li><p><strong>fsd</strong> (<em>float</em>) – downsampled sampling rate (if too slow, decrease)</p></li>
-<li><p><strong>lp</strong> (<em>float</em>) – lowpass-filter cutoff (Hz)</p></li>
+<li><p><strong>fsd</strong> (<em>float</em>) – downsampled sampling rate in Hz (if too slow, decrease)</p></li>
+<li><p><strong>lp</strong> (<em>float</em>) – lowpass-filter cutoff in Hz (applied before downsampling)</p></li>
 <li><p><strong>lam_sig</strong> (<em>float</em>) – parameter steering how much the baseline is shaped by the non-peaks of the signal</p></li>
-<li><p><strong>lam_min</strong> (<em>float</em>) – parameters mapping how much low- and high-prominence peaks influence the baseline</p></li>
-<li><p><strong>lam_max</strong> (<em>float</em>) – parameters mapping how much low- and high-prominence peaks influence the baseline</p></li>
-<li><p><strong>verbose</strong> (<em>int</em><em> [</em><em>0</em><em>, </em><em>100</em><em>]</em>) – how much information to print (0 nothing, 100 everything)</p></li>
+<li><p><strong>lam_min</strong> (<em>float</em>) – weight given to the lowest-prominence peaks; peak prominences are
+mapped linearly to <cite>[lam_min, lam_max]</cite></p></li>
+<li><p><strong>lam_max</strong> (<em>float</em>) – weight given to the highest-prominence peaks</p></li>
+<li><p><strong>verbose</strong> (<em>int</em>) – not used (progress is reported via the logger)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li></li>
-<li><p><strong>(txd,syd,base2,base1)</strong> (<em>tuple</em>) – txd: downsampled time-array
-syd: downsampled and lowpass-filtered pupil signal
-base1: is the estimated base after the first round
-base2: is the final baseline estimate</p></li>
+<li><p><strong>txd</strong> (<em>np.ndarray</em>) – downsampled time-vector (ms)</p></li>
+<li><p><strong>syd</strong> (<em>np.ndarray</em>) – downsampled and lowpass-filtered pupil signal</p></li>
+<li><p><strong>base2</strong> (<em>np.ndarray</em>) – final baseline estimate (after the second round), sampled at <cite>txd</cite></p></li>
+<li><p><strong>base1</strong> (<em>np.ndarray</em>) – baseline estimate after the first round, sampled at <cite>txd</cite></p></li>
 </ul>
 </p>
 </dd>
@@ -4008,20 +4015,20 @@ base2: is the final baseline estimate</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector in seconds</p></li>
-<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal</p></li>
-<li><p><strong>event_onsets</strong> (<em>list</em>) – onsets of events (stimuli/responses) in seconds</p></li>
+<li><p><strong>tx</strong> (<em>np.ndarray</em>) – time-vector</p></li>
+<li><p><strong>sy</strong> (<em>np.ndarray</em>) – raw pupil signal (must not contain NaN)</p></li>
+<li><p><strong>event_onsets</strong> (<em>np.ndarray</em>) – onsets of events (stimuli/responses), in the same units as <cite>tx</cite>
+(each onset is assigned to the closest sample in <cite>tx</cite>)</p></li>
 <li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
-<li><p><strong>lp1</strong> (<em>float</em>) – low-pass filter cutoff for removing random noise</p></li>
-<li><p><strong>lp2</strong> (<em>float</em>) – low-pass filter cutoff for removing spurious peaks from the baseline-signal</p></li>
+<li><p><strong>lp1</strong> (<em>float</em>) – low-pass filter cutoff in Hz for removing random noise</p></li>
+<li><p><strong>lp2</strong> (<em>float</em>) – low-pass filter cutoff in Hz for removing spurious peaks from the baseline-signal</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li></li>
-<li><p><strong>base</strong> (<em>np.array</em>) – baseline estimate</p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>base</strong> – baseline estimate (same length as <cite>sy</cite>)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4034,17 +4041,17 @@ Similar behaviour as R’s bs() function from the splines-library.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>txd</strong> (<em>np.array</em>) – time-vector</p></li>
-<li><p><strong>knots</strong> (<em>np.array</em>) – location of the knots</p></li>
-<li><p><strong>spline_degree</strong> (<em>int</em>) – degree of the spline</p></li>
+<li><p><strong>txd</strong> (<em>np.ndarray</em>) – time-vector (any unit, same as <cite>knots</cite>)</p></li>
+<li><p><strong>knots</strong> (<em>np.ndarray</em>) – location of the knots (including the boundary knots)</p></li>
+<li><p><strong>spline_degree</strong> (<em>int</em>) – degree of the spline (default 3, cubic)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li></li>
-<li><p><strong>B</strong> (<em>np.array</em>) – matrix of basis functions</p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>B</strong> – matrix of basis functions, shape
+<cite>(len(txd), len(knots)+spline_degree-1)</cite></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4056,17 +4063,17 @@ Similar behaviour as R’s bs() function from the splines-library.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff</p></li>
-<li><p><strong>fs</strong> (<em>float</em>) – sampling rate</p></li>
+<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff in Hz</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
 <li><p><strong>order</strong> (<em>int</em>) – filter order</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li></li>
-<li><p><strong>(b,a)</strong> (<em>tuple (float,float)</em>) – filter coefficients</p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>b, a</strong> – numerator and denominator filter coefficients
+(see <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.signal.butter()</span></code>)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4075,21 +4082,22 @@ Similar behaviour as R’s bs() function from the splines-library.</p>
 <dt class="sig sig-object py" id="pypillometry.signal.baseline.butter_lowpass_filter">
 <span class="sig-prename descclassname"><span class="pre">pypillometry.signal.baseline.</span></span><span class="sig-name descname"><span class="pre">butter_lowpass_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/signal/baseline.html#butter_lowpass_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.signal.baseline.butter_lowpass_filter" title="Link to this definition">¶</a></dt>
 <dd><p>Lowpass-filter signal using a Butterworth-filter.</p>
+<p>The filter is applied forward and backward (<code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.signal.filtfilt()</span></code>),
+so the result has zero phase shift. <cite>data</cite> must not contain NaN values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>np.array</em>) – data to lowpass-filter</p></li>
-<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff</p></li>
-<li><p><strong>fs</strong> (<em>float</em>) – sampling rate</p></li>
+<li><p><strong>data</strong> (<em>np.ndarray</em>) – data to lowpass-filter</p></li>
+<li><p><strong>cutoff</strong> (<em>float</em>) – lowpass-filter cutoff in Hz</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – sampling rate in Hz</p></li>
 <li><p><strong>order</strong> (<em>int</em>) – filter order</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li></li>
-<li><p><strong>y</strong> (<em>np.array</em>) – filtered data</p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>y</strong> – filtered data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4098,19 +4106,21 @@ Similar behaviour as R’s bs() function from the splines-library.</p>
 <dt class="sig sig-object py" id="pypillometry.signal.baseline.downsample">
 <span class="sig-prename descclassname"><span class="pre">pypillometry.signal.baseline.</span></span><span class="sig-name descname"><span class="pre">downsample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/signal/baseline.html#downsample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.signal.baseline.downsample" title="Link to this definition">¶</a></dt>
 <dd><p>Simple downsampling scheme using mean within the downsampling window.</p>
+<p>The signal is split into consecutive windows of <cite>R</cite> samples and each
+window is replaced by its mean (ignoring NaN). If the length of <cite>y</cite> is
+not a multiple of <cite>R</cite>, the last window is shorter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>y</strong> (<em>np.array</em>) – signal to downsample</p></li>
-<li><p><strong>R</strong> (<em>int</em>) – decimate-factor</p></li>
+<li><p><strong>y</strong> (<em>np.ndarray</em>) – signal to downsample</p></li>
+<li><p><strong>R</strong> (<em>int</em>) – decimate-factor (number of samples per window)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li></li>
-<li><p><strong>y</strong> (<em>np.array</em>) – downsampled data</p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>y2</strong> – downsampled data of length <cite>ceil(len(y)/R)</cite></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>

@@ -429,20 +429,19 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Similar behaviour as R's bs() function from the splines-library.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
-<span class="sd">    -----------</span>
-<span class="sd">    </span>
-<span class="sd">    txd: np.array</span>
-<span class="sd">        time-vector</span>
-<span class="sd">    knots: np.array</span>
-<span class="sd">        location of the knots</span>
-<span class="sd">    spline_degree: int</span>
-<span class="sd">        degree of the spline</span>
-<span class="sd">        </span>
+<span class="sd">    ----------</span>
+<span class="sd">    txd : np.ndarray</span>
+<span class="sd">        time-vector (any unit, same as `knots`)</span>
+<span class="sd">    knots : np.ndarray</span>
+<span class="sd">        location of the knots (including the boundary knots)</span>
+<span class="sd">    spline_degree : int</span>
+<span class="sd">        degree of the spline (default 3, cubic)</span>
+
 <span class="sd">    Returns</span>
-<span class="sd">    --------</span>
-<span class="sd">    </span>
-<span class="sd">    B: np.array</span>
-<span class="sd">        matrix of basis functions</span>
+<span class="sd">    -------</span>
+<span class="sd">    B : np.ndarray</span>
+<span class="sd">        matrix of basis functions, shape</span>
+<span class="sd">        `(len(txd), len(knots)+spline_degree-1)`</span>
 <span class="sd">    """</span>
     <span class="n">n</span><span class="o">=</span><span class="n">txd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">num_knots</span><span class="o">=</span><span class="n">knots</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -480,20 +479,19 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Get lowpass-filter coefficients for Butterworth-filter.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
-<span class="sd">    -----------</span>
-<span class="sd">    </span>
-<span class="sd">    cutoff: float</span>
-<span class="sd">        lowpass-filter cutoff</span>
-<span class="sd">    fs: float</span>
-<span class="sd">        sampling rate</span>
-<span class="sd">    order: int</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cutoff : float</span>
+<span class="sd">        lowpass-filter cutoff in Hz</span>
+<span class="sd">    fs : float</span>
+<span class="sd">        sampling rate in Hz</span>
+<span class="sd">    order : int</span>
 <span class="sd">        filter order</span>
-<span class="sd">        </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    </span>
-<span class="sd">    (b,a): tuple (float,float)</span>
-<span class="sd">        filter coefficients</span>
+<span class="sd">    b, a : np.ndarray</span>
+<span class="sd">        numerator and denominator filter coefficients</span>
+<span class="sd">        (see :func:`scipy.signal.butter`)</span>
 <span class="sd">    """</span>
     <span class="n">nyq</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">fs</span>
     <span class="n">normal_cutoff</span> <span class="o">=</span> <span class="n">cutoff</span> <span class="o">/</span> <span class="n">nyq</span>
@@ -506,23 +504,24 @@ window.runMermaid = runMermaid;</script>
 <span class="k">def</span><span class="w"> </span><span class="nf">butter_lowpass_filter</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Lowpass-filter signal using a Butterworth-filter.</span>
-<span class="sd">    </span>
+
+<span class="sd">    The filter is applied forward and backward (:func:`scipy.signal.filtfilt`),</span>
+<span class="sd">    so the result has zero phase shift. `data` must not contain NaN values.</span>
+
 <span class="sd">    Parameters</span>
-<span class="sd">    -----------</span>
-<span class="sd">    </span>
-<span class="sd">    data: np.array</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : np.ndarray</span>
 <span class="sd">        data to lowpass-filter</span>
-<span class="sd">    cutoff: float</span>
-<span class="sd">        lowpass-filter cutoff</span>
-<span class="sd">    fs: float</span>
-<span class="sd">        sampling rate</span>
-<span class="sd">    order: int</span>
+<span class="sd">    cutoff : float</span>
+<span class="sd">        lowpass-filter cutoff in Hz</span>
+<span class="sd">    fs : float</span>
+<span class="sd">        sampling rate in Hz</span>
+<span class="sd">    order : int</span>
 <span class="sd">        filter order</span>
-<span class="sd">        </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    </span>
-<span class="sd">    y: np.array</span>
+<span class="sd">    y : np.ndarray</span>
 <span class="sd">        filtered data</span>
 <span class="sd">    """</span>
     <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">butter_lowpass</span><span class="p">(</span><span class="n">cutoff</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">)</span>
@@ -535,21 +534,22 @@ window.runMermaid = runMermaid;</script>
 <span class="k">def</span><span class="w"> </span><span class="nf">downsample</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">R</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Simple downsampling scheme using mean within the downsampling window.</span>
-<span class="sd">    </span>
+
+<span class="sd">    The signal is split into consecutive windows of `R` samples and each</span>
+<span class="sd">    window is replaced by its mean (ignoring NaN). If the length of `y` is</span>
+<span class="sd">    not a multiple of `R`, the last window is shorter.</span>
+
 <span class="sd">    Parameters</span>
-<span class="sd">    -----------</span>
-<span class="sd">    </span>
-<span class="sd">    y: np.array</span>
+<span class="sd">    ----------</span>
+<span class="sd">    y : np.ndarray</span>
 <span class="sd">        signal to downsample</span>
-<span class="sd">        </span>
-<span class="sd">    R: int</span>
-<span class="sd">        decimate-factor</span>
-<span class="sd">        </span>
+<span class="sd">    R : int</span>
+<span class="sd">        decimate-factor (number of samples per window)</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    </span>
-<span class="sd">    y: np.array</span>
-<span class="sd">        downsampled data</span>
+<span class="sd">    y2 : np.ndarray</span>
+<span class="sd">        downsampled data of length `ceil(len(y)/R)`</span>
 <span class="sd">    """</span>
     <span class="n">pad_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">/</span><span class="n">R</span><span class="p">)</span><span class="o">*</span><span class="n">R</span> <span class="o">-</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
     <span class="n">y_padded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">pad_size</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
@@ -568,46 +568,47 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Extract baseline based (re-)estimating the lower envelope using B-splines.</span>
 <span class="sd">    See notebook `baseline_interp.ipynb` for details.</span>
 <span class="sd">    The signal is downsampled (to `fsd` Hz) for speed.</span>
-<span class="sd">    </span>
+
+<span class="sd">    The B-spline fits are done with a Stan model</span>
+<span class="sd">    (`baseline_model_asym_laplac.stan`, variational inference via</span>
+<span class="sd">    :mod:`cmdstanpy`); in between, the event-related responses are</span>
+<span class="sd">    estimated with :func:`pupil_response` (fixed `npar=10`, `tmax=917`) and</span>
+<span class="sd">    removed before the second round of peak detection.</span>
+
 <span class="sd">    Parameters</span>
-<span class="sd">    -----------</span>
-<span class="sd">    </span>
+<span class="sd">    ----------</span>
 <span class="sd">    tx : np.ndarray</span>
-<span class="sd">        time-vector in seconds</span>
-<span class="sd">        </span>
+<span class="sd">        time-vector in milliseconds</span>
 <span class="sd">    sy : np.ndarray</span>
-<span class="sd">        raw pupil signal</span>
-<span class="sd">        </span>
-<span class="sd">    event_onsets : list</span>
+<span class="sd">        raw pupil signal (must not contain NaN)</span>
+<span class="sd">    event_onsets : np.ndarray</span>
 <span class="sd">        onsets of events (stimuli/responses) in milliseconds</span>
-<span class="sd">        </span>
 <span class="sd">    fs : float</span>
 <span class="sd">        sampling rate in Hz</span>
-<span class="sd">    </span>
 <span class="sd">    fsd : float</span>
-<span class="sd">        downsampled sampling rate (if too slow, decrease)</span>
-<span class="sd">       </span>
+<span class="sd">        downsampled sampling rate in Hz (if too slow, decrease)</span>
 <span class="sd">    lp : float</span>
-<span class="sd">        lowpass-filter cutoff (Hz)</span>
-<span class="sd">    </span>
-<span class="sd">    lam_sig: float</span>
+<span class="sd">        lowpass-filter cutoff in Hz (applied before downsampling)</span>
+<span class="sd">    lam_sig : float</span>
 <span class="sd">        parameter steering how much the baseline is shaped by the non-peaks of the signal</span>
-<span class="sd">    </span>
-<span class="sd">    lam_min,lam_max: float</span>
-<span class="sd">        parameters mapping how much low- and high-prominence peaks influence the baseline</span>
-<span class="sd">        </span>
-<span class="sd">    verbose: int [0, 100]</span>
-<span class="sd">        how much information to print (0 nothing, 100 everything)</span>
-<span class="sd">    </span>
+<span class="sd">    lam_min : float</span>
+<span class="sd">        weight given to the lowest-prominence peaks; peak prominences are</span>
+<span class="sd">        mapped linearly to `[lam_min, lam_max]`</span>
+<span class="sd">    lam_max : float</span>
+<span class="sd">        weight given to the highest-prominence peaks</span>
+<span class="sd">    verbose : int</span>
+<span class="sd">        not used (progress is reported via the logger)</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    </span>
-<span class="sd">    (txd,syd,base2,base1) : tuple</span>
-<span class="sd">        txd: downsampled time-array</span>
-<span class="sd">        syd: downsampled and lowpass-filtered pupil signal</span>
-<span class="sd">        base1: is the estimated base after the first round</span>
-<span class="sd">        base2: is the final baseline estimate</span>
-<span class="sd">        </span>
+<span class="sd">    txd : np.ndarray</span>
+<span class="sd">        downsampled time-vector (ms)</span>
+<span class="sd">    syd : np.ndarray</span>
+<span class="sd">        downsampled and lowpass-filtered pupil signal</span>
+<span class="sd">    base2 : np.ndarray</span>
+<span class="sd">        final baseline estimate (after the second round), sampled at `txd`</span>
+<span class="sd">    base1 : np.ndarray</span>
+<span class="sd">        baseline estimate after the first round, sampled at `txd`</span>
 <span class="sd">    """</span>
     <span class="n">dsfac</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">fs</span><span class="o">/</span><span class="n">fsd</span><span class="p">)</span> <span class="c1"># calculate downsampling factor</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Downsampling factor is </span><span class="si">%i</span><span class="s2">"</span><span class="o">%</span><span class="n">dsfac</span><span class="p">)</span>
@@ -720,43 +721,40 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Steps: </span>
 <span class="sd">    </span>
 <span class="sd">    - filter away noise</span>
-<span class="sd">    - detect high-prominence throughs in the signal </span>
+<span class="sd">    - detect high-prominence troughs in the signal</span>
 <span class="sd">    - calculate lower envelope based on these peaks</span>
-<span class="sd">    </span>
+
 <span class="sd">    Parameters</span>
-<span class="sd">    -----------</span>
-<span class="sd">    </span>
+<span class="sd">    ----------</span>
 <span class="sd">    tx : np.ndarray</span>
-<span class="sd">        time-vector in seconds</span>
-<span class="sd">        </span>
+<span class="sd">        time-vector (any unit; the baseline is evaluated at `tx`)</span>
 <span class="sd">    sy : np.ndarray</span>
-<span class="sd">        raw pupil signal</span>
-<span class="sd">        </span>
-<span class="sd">    event_onsets : list</span>
-<span class="sd">        onsets of events (stimuli/responses) in seconds</span>
-<span class="sd">        </span>
+<span class="sd">        raw pupil signal (must not contain NaN)</span>
+<span class="sd">    event_onsets : np.ndarray</span>
+<span class="sd">        onsets of events (stimuli/responses); currently not used</span>
 <span class="sd">    fs : float</span>
 <span class="sd">        sampling rate in Hz</span>
-<span class="sd">    </span>
 <span class="sd">    lp : float</span>
-<span class="sd">        low-pass filter cutoff for removing random noise</span>
-<span class="sd">        </span>
-<span class="sd">    prominence_thr : float in [0,100]</span>
-<span class="sd">        percentile of the prominence distribution (of the peaks) to </span>
-<span class="sd">        use for determining prominent peaks (see `scipy.stats.peak_prominences()`)</span>
-<span class="sd">        </span>
-<span class="sd">    interp_method : string, one of ["linear", "cubic", "spline"]</span>
-<span class="sd">        "linear" - linear interpolation between the high-prominence peaks</span>
-<span class="sd">        "cubic"  - cubic interpolation through all high-prominence peaks</span>
-<span class="sd">        "spline" - a smoothing spline that is guaranteed to go through all</span>
-<span class="sd">                   high-prominence peaks and smoothes through all the other</span>
-<span class="sd">                   (lower-prominence) peaks</span>
-<span class="sd">                   </span>
+<span class="sd">        low-pass filter cutoff in Hz for removing random noise</span>
+<span class="sd">    prominence_thr : float</span>
+<span class="sd">        percentile (in [0, 100]) of the prominence distribution (of the peaks) to</span>
+<span class="sd">        use for determining prominent peaks (see :func:`scipy.signal.peak_prominences`)</span>
+<span class="sd">    interp_method : {"cubic", "linear", "spline"}</span>
+<span class="sd">        - "linear": linear interpolation between the high-prominence peaks</span>
+<span class="sd">        - "cubic": cubic interpolation through all high-prominence peaks</span>
+<span class="sd">        - "spline": a smoothing spline that is guaranteed to go through all</span>
+<span class="sd">          high-prominence peaks and smoothes through all the other</span>
+<span class="sd">          (lower-prominence) peaks</span>
+
 <span class="sd">    Returns</span>
-<span class="sd">    --------</span>
-<span class="sd">    </span>
-<span class="sd">    base: np.array</span>
-<span class="sd">        baseline estimate</span>
+<span class="sd">    -------</span>
+<span class="sd">    base : np.ndarray</span>
+<span class="sd">        baseline estimate (same length as `tx`)</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        if `interp_method` is not one of the supported methods</span>
 <span class="sd">    """</span>
     <span class="n">syc</span><span class="o">=</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">lp</span><span class="p">)</span>
     <span class="n">peaks_ix</span><span class="o">=</span><span class="n">signal</span><span class="o">.</span><span class="n">find_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">syc</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -802,31 +800,25 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    - run another lowpass-filter to get rid of spurious signals</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
-<span class="sd">    -----------</span>
-<span class="sd">    </span>
+<span class="sd">    ----------</span>
 <span class="sd">    tx : np.ndarray</span>
-<span class="sd">        time-vector in seconds</span>
-<span class="sd">        </span>
+<span class="sd">        time-vector</span>
 <span class="sd">    sy : np.ndarray</span>
-<span class="sd">        raw pupil signal</span>
-<span class="sd">        </span>
-<span class="sd">    event_onsets : list</span>
-<span class="sd">        onsets of events (stimuli/responses) in seconds</span>
-<span class="sd">        </span>
+<span class="sd">        raw pupil signal (must not contain NaN)</span>
+<span class="sd">    event_onsets : np.ndarray</span>
+<span class="sd">        onsets of events (stimuli/responses), in the same units as `tx`</span>
+<span class="sd">        (each onset is assigned to the closest sample in `tx`)</span>
 <span class="sd">    fs : float</span>
 <span class="sd">        sampling rate in Hz</span>
-<span class="sd">    </span>
 <span class="sd">    lp1 : float</span>
-<span class="sd">        low-pass filter cutoff for removing random noise</span>
-<span class="sd">        </span>
+<span class="sd">        low-pass filter cutoff in Hz for removing random noise</span>
 <span class="sd">    lp2 : float</span>
-<span class="sd">        low-pass filter cutoff for removing spurious peaks from the baseline-signal        </span>
-<span class="sd">        </span>
+<span class="sd">        low-pass filter cutoff in Hz for removing spurious peaks from the baseline-signal</span>
+
 <span class="sd">    Returns</span>
-<span class="sd">    --------</span>
-<span class="sd">    </span>
-<span class="sd">    base: np.array</span>
-<span class="sd">        baseline estimate        </span>
+<span class="sd">    -------</span>
+<span class="sd">    base : np.ndarray</span>
+<span class="sd">        baseline estimate (same length as `sy`)</span>
 <span class="sd">    """</span>
     <span class="n">syc</span><span class="o">=</span><span class="n">butter_lowpass_filter</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="n">lp1</span><span class="p">)</span>
     
