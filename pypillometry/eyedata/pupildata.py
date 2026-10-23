@@ -65,10 +65,11 @@ class PupilData(GenericEyeData):
     info : dict or None
         optional dictionary with additional information about the dataset
         (stored in member `info`)
-    inplace : bool
-        if True, the object is modified in place; if False, a new object is returned
-        this object-level property can be overwritten by the method-level `inplace` argument
-        default is "False"
+    inplace : bool or None
+        default for methods called with `inplace=None`: if True, they modify the
+        object in place; if False, they return a modified copy; if None (default),
+        use the package-level setting (see :func:`~pypillometry.set_default_inplace`,
+        initially True). The method-level `inplace` argument overrides this.
     """    
     def __init__(self,
                  time: np.ndarray = None,
@@ -81,7 +82,7 @@ class PupilData(GenericEyeData):
                  fill_time_discontinuities: bool = True,
                  keep_orig: bool = False,
                  info: dict = None,
-                 inplace: bool = False):
+                 inplace: Optional[bool] = None):
         """Constructor for PupilData object.
         """
 

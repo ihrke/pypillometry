@@ -15,6 +15,7 @@ from .experimental_setup import ExperimentalSetup
 from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals
 from ..logging import logging_get_level
+from .. import config
 
 import numpy as np
 import itertools
@@ -92,7 +93,7 @@ class GenericEyeData(ABC):
     data: EyeDataDict ## dictionary with data (contains ndarrays)
     tx: np.ndarray ## time vector
     event_onsets: np.ndarray ## vector with event onsets in time units
-    inplace: bool ## whether to make changes in-place
+    inplace: Optional[bool] ## whether to make changes in-place (None: package default)
     info: dict ## optional info about the dataset
     params: dict ## parameters 
 
@@ -107,7 +108,7 @@ class GenericEyeData(ABC):
                     event_labels: np.ndarray,
                     name: str|None,
                     fill_time_discontinuities: bool,
-                    inplace: bool,
+                    inplace: Optional[bool],
                     info: dict = None):
         """
         Common code for the child-classes of GenericEyeData.
@@ -430,14 +431,17 @@ class GenericEyeData(ABC):
     def _get_inplace(self, inplace):
         """Private helper function.
         
-        Returns self or a copy depending on inplace setting.
+        Returns self or a copy depending on inplace setting. `inplace=None`
+        falls back to the object-level setting (constructor), and if that is
+        None too, to the package-level default (:func:`set_default_inplace`).
         When copying, preserves the original name to avoid name changes
         during internal processing.
         """
         if inplace is None:
-            return self
-        else:
-            return self if inplace else self.copy(new_name=self.name)
+            inplace = getattr(self, "inplace", None)  # object-level setting
+        if inplace is None:
+            inplace = config.get_default_inplace()    # package-level setting
+        return self if inplace else self.copy(new_name=self.name)
 
 
     @property

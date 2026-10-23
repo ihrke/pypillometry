@@ -80,6 +80,11 @@ globals().update(_imported_objects)
 # Import unit registry for advanced users
 from .units import ureg
 __all__.add('ureg')
+
+## -------------------------------------
+# --------- settings -------------------
+from .config import set_default_inplace, get_default_inplace
+__all__.update(['set_default_inplace', 'get_default_inplace'])
 __all__ = sorted(list(__all__))
 
 ## ------------------------------------- 
