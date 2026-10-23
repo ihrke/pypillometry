@@ -31,7 +31,9 @@ def merge_intervals(*args, label: str = 'merged'):
     ------
     ValueError
         If no Intervals objects are provided or if units don't match.
-        
+    TypeError
+        If any argument is not an Intervals object (or a list/dict of them).
+
     Examples
     --------
     Combine multiple Intervals objects:
@@ -46,7 +48,7 @@ def merge_intervals(*args, label: str = 'merged'):
     
     Combine from a list:
     
-    >>> intervals_list = [intervals1, intervals2, intervals3]
+    >>> intervals_list = [intervals1, intervals2]
     >>> combined = merge_intervals(intervals_list)
     
     Combine from a dict:
@@ -166,27 +168,27 @@ def merge_intervals(*args, label: str = 'merged'):
 
 def stat_event_interval(tx,sy,intervals,statfct=np.mean):
     """
-    Return result of applying a statistical function to pupillometric data in a
-    given interval relative to event-onsets. For example, extract mean 
-    pupil-size in interval before trial onset.
-        
+    Return result of applying a statistical function to pupillometric data in
+    each of a list of intervals. For example, extract mean pupil-size in the
+    interval before each trial onset (intervals as returned by
+    :meth:`~pypillometry.GenericEyeData.get_intervals`).
+
     Parameters
-    -----------
-    
+    ----------
     tx : np.ndarray
-        time-vector in milliseconds        
+        time-vector (e.g., in ms)
     sy : np.ndarray
-        (baseline-corrected) pupil signal
-    intervals : list of tuples (min,max)
-        time-window in ms relative to event-onset (0 is event-onset)
-    statfct : function
-        function mapping np.array to a single number
-    
+        (baseline-corrected) pupil signal, same length as `tx`
+    intervals : list of tuples (start, end)
+        absolute start and end times of the intervals, in the same units as
+        `tx`; each is matched to the closest sample in `tx`
+    statfct : callable
+        function mapping np.array to a single number (default: `np.mean`)
+
     Returns
-    --------
-    
-    result: np.array
-        number of event-onsets long result array
+    -------
+    np.ndarray
+        array with one result per interval
     """
     intervals=np.array(intervals)
     starts=intervals[:,0]
@@ -209,20 +211,47 @@ class Intervals:
     
     This class wraps a list of (start, end) intervals and provides additional
     metadata such as units, labels, and associated event information.
-    
-    Attributes
+
+    Usually, Intervals objects are not created directly but returned by
+    methods of the eye-data classes, e.g.,
+    :meth:`~pypillometry.GenericEyeData.get_intervals` (event-locked
+    intervals, input for :meth:`~pypillometry.GenericEyeData.get_segments`),
+    :meth:`~pypillometry.GenericEyeData.get_blinks` or
+    :meth:`~pypillometry.GenericEyeData.mask_as_intervals`.
+    Detection methods such as
+    :meth:`~pypillometry.PupilData.pupil_blinks_detect` store their results
+    as Intervals. Several Intervals can be combined with ``+`` or
+    :func:`~pypillometry.merge_intervals` and subtracted with ``-``.
+
+    Parameters
     ----------
-    intervals : list of tuples
-        List of (start, end) tuples representing intervals
+    intervals : list of tuples or np.ndarray
+        Intervals as list of (start, end) tuples or 2D array
     units : str or None
         Units of the intervals ("ms", "sec", "min", "h", or None for indices)
-    label : str or None
-        Optional descriptive label for the interval collection
-    event_labels : list or None
+    label : str, optional
+        Descriptive label for the interval collection
+    event_labels : list, optional
         Event labels corresponding to each interval
-    event_indices : np.ndarray or None
-        Event indices corresponding to each interval
-        
+    event_indices : np.ndarray, optional
+        Indices (into the dataset's events) of the event corresponding to
+        each interval
+    data_time_range : tuple, optional
+        Time range (min, max) of the original dataset (in same units as intervals)
+    event_onsets : list or np.ndarray, optional
+        Original event onset times (in same units as intervals)
+    sampling_rate : float, optional
+        Sampling rate in Hz. Required to convert index-based intervals to time units.
+    time_offset : float, optional
+        Time offset in milliseconds. When intervals are stored in indices (units=None),
+        this offset is added when converting to time units. This is needed when the
+        dataset's time vector doesn't start at 0. Default is 0.
+    interval_window : tuple, optional
+        The relative time window around events, in same units as intervals
+        (e.g., (-200, 800) for 200ms before to 800ms after). When set, indicates that intervals are event-locked and
+        zero corresponds to event onset. Used by
+        :class:`~pypillometry.SegmentedEyeData` to create the appropriate time axis.
+
     Examples
     --------
     >>> intervals = Intervals([(0, 100), (200, 300)], units="ms", label="stimulus")
@@ -234,35 +263,7 @@ class Intervals:
     
     def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None, sampling_rate=None, time_offset=None, interval_window=None):
         """
-        Initialize an Intervals object.
-        
-        Parameters
-        ----------
-        intervals : list of tuples or np.ndarray
-            Intervals as list of (start, end) tuples or 2D array
-        units : str or None
-            Units of the intervals
-        label : str, optional
-            Descriptive label for the intervals
-        event_labels : list, optional
-            Labels for each interval
-        event_indices : np.ndarray, optional
-            Indices for each interval
-        data_time_range : tuple, optional
-            Time range (min, max) of the original dataset (in same units as intervals)
-        event_onsets : list or np.ndarray, optional
-            Original event onset times (in same units as intervals)
-        sampling_rate : float, optional
-            Sampling rate in Hz. Required to convert index-based intervals to time units.
-        time_offset : float, optional
-            Time offset in milliseconds. When intervals are stored in indices (units=None),
-            this offset is added when converting to time units. This is needed when the
-            dataset's time vector doesn't start at 0. Default is 0.
-        interval_window : tuple, optional
-            The relative time window around events (e.g., (-200, 800) for 200ms before 
-            to 800ms after). When set, indicates that intervals are event-locked and 
-            zero corresponds to event onset. Used by SegmentedEyeData to create the
-            appropriate time axis.
+        Initialize an Intervals object (see class docstring for parameters).
         """
         if isinstance(intervals, np.ndarray):
             self.intervals = [tuple(row) for row in intervals]
@@ -959,7 +960,7 @@ class Intervals:
         
         >>> # Padding that would go out of bounds is clipped
         >>> intervals = Intervals([(10, 50)], units="ms", data_time_range=(0, 100))
-        >>> intervals.pad(left=20)  # Would go to -10, clipped to 0
+        >>> intervals.pad(left=20).intervals  # Would go to -10, clipped to 0
         [(0, 50)]
         
         >>> # Pad and then merge overlapping intervals
@@ -1049,8 +1050,8 @@ class Intervals:
         Parameters
         ----------
         selector : callable, optional
-            Function that takes an interval tuple (start, end) and returns bool.
-            Returns True to keep the interval, False to discard it.
+            Function called as ``selector(start, end)`` for each interval that
+            returns bool: True to keep the interval, False to discard it.
         min_duration : float, optional
             Minimum duration of intervals to keep (in current units)
         max_duration : float, optional
@@ -1307,7 +1308,8 @@ class Intervals:
             Transparency level, 0-1 (default 0.3)
         **kwargs : dict
             Additional keyword arguments passed to ax.axvspan()
-            (e.g., zorder, label, linestyle, edgecolor)
+            (e.g., label, linestyle, edgecolor); `zorder` is fixed to 0 and
+            cannot be passed
             
         Returns
         -------

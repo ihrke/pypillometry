@@ -14,18 +14,30 @@ class Events:
     
     This class wraps arrays of event onsets and labels and provides additional
     functionality such as unit conversion, filtering, and display capabilities.
-    
-    Attributes
+
+    The events of a dataset are obtained with
+    :meth:`~pypillometry.GenericEyeData.get_events`. An (e.g., filtered)
+    Events object can be passed as `event_select` to
+    :meth:`~pypillometry.GenericEyeData.get_intervals` or stored in a dataset
+    with :meth:`~pypillometry.GenericEyeData.set_events`.
+
+    Parameters
     ----------
-    onsets : np.ndarray
-        Array of event onset times
-    labels : np.ndarray
-        Array of event labels (strings)
-    units : str or None
-        Units of the onsets ("ms", "sec", "min", "h", or None for indices)
-    data_time_range : tuple or None
-        Time range (min, max) of the original dataset
-        
+    onsets : np.ndarray or list
+        Event onset times (stored as float array)
+    labels : np.ndarray or list
+        Event labels (stored as array of strings), same length as `onsets`
+    units : str or None, optional
+        Units of the onsets ("ms", "sec", "min", "h", or None for indices).
+        Default is "ms".
+    data_time_range : tuple or None, optional
+        Time range (min, max) of the original dataset (in same units as onsets)
+
+    Raises
+    ------
+    ValueError
+        If `onsets` and `labels` differ in length.
+
     Examples
     --------
     >>> events = Events(onsets=[100, 500, 1000], labels=["A", "B", "C"], units="ms")
@@ -41,19 +53,7 @@ class Events:
                  units: Optional[str] = "ms",
                  data_time_range: Optional[Tuple[float, float]] = None):
         """
-        Initialize an Events object.
-        
-        Parameters
-        ----------
-        onsets : np.ndarray or list
-            Event onset times
-        labels : np.ndarray or list
-            Event labels (strings)
-        units : str or None, optional
-            Units of the onsets ("ms", "sec", "min", "h", or None for indices)
-            Default is "ms"
-        data_time_range : tuple, optional
-            Time range (min, max) of the original dataset
+        Initialize an Events object (see class docstring for parameters).
         """
         self.onsets = np.array(onsets, dtype=float)
         self.labels = np.array(labels, dtype=str)
@@ -304,7 +304,7 @@ class Events:
             Labeling strategy. "auto" (default) shows a subset spaced apart,
             "all" annotates every event, "none" disables labels.
         marker : str, optional
-            Matplotlib marker style for the events (default 'o').
+            Matplotlib marker style for the events (default '.').
         units : str or None, optional
             Units to display in the plot. Defaults to "min". Use None to keep existing units.
         **kwargs :
@@ -412,10 +412,12 @@ class Events:
         ----------
         selector : str, callable, or tuple
             Filtering criterion:
+
             - str: substring to search for in labels
             - callable: function that takes a label and returns bool
             - tuple: (min_time, max_time) to filter by onset time range
-            
+              (inclusive, in the units of the Events object)
+
         Returns
         -------
         Events

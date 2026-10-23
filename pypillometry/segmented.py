@@ -22,6 +22,13 @@ class SegmentedEyeData:
     Holds equal-length segments of a single eye data variable (e.g., "left_pupil", 
     "right_x") extracted around events. Tracks masked/missing data.
 
+    Usually created with :meth:`~pypillometry.GenericEyeData.get_segments`
+    from the Intervals returned by
+    :meth:`~pypillometry.GenericEyeData.get_intervals`, e.g.
+    ``d.get_segments(d.get_intervals("F", interval=(-200, 800), units="ms"),
+    "left_pupil")``. Segments of several subjects can be combined with
+    :func:`~pypillometry.group_segments`.
+
     Parameters
     ----------
     name : str
@@ -108,8 +115,8 @@ class SegmentedEyeData:
             Variable name in "eye_variable" format
         intervals : Intervals, optional
             Source Intervals object with event metadata
-        name : str
-            Name for the dataset
+        name : str, optional
+            Name for the dataset (default "segments")
         sampling_rate : float, optional
             Original sampling rate in Hz
         mask : np.ndarray, optional
@@ -382,16 +389,19 @@ class SegmentedEyeData:
         ----------
         window : tuple (float, float), float, or None
             Baseline window in ms relative to event onset (time 0):
+
             - If None, no baseline correction is applied
             - If tuple (start, end), the mean value in this time window is subtracted
             - If float, the value at the time point closest to this value is used
+
             Default is 0 (baseline at event onset).
-            
+
         Returns
         -------
         SegmentedEyeData
-            New instance with baseline-corrected data
-            
+            New instance with baseline-corrected data (the object itself if
+            `window` is None)
+
         Examples
         --------
         >>> # Use pre-event period as baseline
@@ -591,7 +601,11 @@ class GroupLevelSegmentedData(SegmentedEyeData):
     This class inherits from SegmentedEyeData and adds group-level functionality.
     It combines multiple SegmentedEyeData objects (one per subject) into a single
     group-level object, either by stacking or aggregating.
-    
+
+    Usually created with :func:`~pypillometry.group_segments` (or
+    :meth:`from_segments`) from a list or dict of
+    :class:`~pypillometry.SegmentedEyeData` objects, one per subject.
+
     The mask is replaced with `mask_percent`, which stores the average percentage
     of masked trials per subject at each timepoint.
     
@@ -652,7 +666,8 @@ class GroupLevelSegmentedData(SegmentedEyeData):
             Function to aggregate within each subject (e.g., np.mean, np.median).
             If None, all segments from all subjects are stacked (concatenated).
         name : str, optional
-            Name for the group-level dataset. If None, uses "group_" + first segment's name
+            Name for the group-level dataset. If None, uses ``"group_"`` + first
+            segment's name
             
         Returns
         -------
@@ -845,9 +860,42 @@ class GroupLevelSegmentedData(SegmentedEyeData):
              **kwargs):
         """
         Plot grand mean and error ribbons.
-        
-        Overrides parent to use mask_percent for missing data display.
-        See SegmentedEyeData.plot() for full parameter documentation.
+
+        Overrides :meth:`SegmentedEyeData.plot` to use `mask_percent` for the
+        missing-data display. Mean and error are computed across the columns
+        of `data` (subjects when aggregated, all segments when stacked).
+
+        Parameters
+        ----------
+        meanfct : callable
+            Function to compute mean across columns (default: np.mean)
+        varfct : callable or None
+            Function to compute error bands (e.g., np.std, scipy.stats.sem;
+            default: scipy.stats.sem). If None, no error bands are plotted
+        show_missing : bool or None
+            Plot `mask_percent` (average percentage of missing data per
+            subject) on secondary y-axis. If None, defaults to True in
+            standalone mode, False in overlay mode.
+        show_zero_line : bool
+            Show vertical line at time 0 (default: True)
+        show_legend : bool or None
+            Show legend. If None, only shows legend in standalone mode (ax=None)
+        title : str, optional
+            Plot title. If None and ax is None, uses the dataset name.
+            Ignored when ax is provided (for overlay use).
+        label : str, optional
+            Label for legend. If None, uses self.name
+        ribbon_alpha : float
+            Alpha (transparency) for error ribbon (default: 0.3)
+        ax : matplotlib.axes.Axes, optional
+            Axes to plot on. If None, uses current axes (standalone mode)
+        **kwargs : dict
+            Additional arguments passed to ax.plot() (e.g., color, linestyle, linewidth)
+
+        Returns
+        -------
+        ax : matplotlib.axes.Axes
+            The axes object for further customization
         """
         import matplotlib.pyplot as plt
         
@@ -919,8 +967,9 @@ def group_segments(segments, meanfct=np.mean, name: str = None) -> GroupLevelSeg
         Function to aggregate within each subject (e.g., np.mean, np.median).
         If None, all segments from all subjects are stacked (concatenated).
     name : str, optional
-        Name for the group-level dataset
-        
+        Name for the group-level dataset. If None, uses ``"group_"`` + first
+        segment's name
+
     Returns
     -------
     GroupLevelSegmentedData
