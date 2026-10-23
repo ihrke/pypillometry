@@ -3360,11 +3360,13 @@ Specify whether to scale <cite>x</cite>, <cite>y</cite>, <cite>pupil</cite> or o
 <li><p><strong>variables</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – variables to scale; can be “pupil”, “x”,”y”, “baseline”, “response” or any other variable
 that is available in the dataset; either a string or a list of strings;
 available variables can be checked with <cite>obj.variables</cite>; empty list means all variables</p></li>
-<li><p><strong>mean</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>, <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span>]</span>) – mean to subtract from signal; if <cite>None</cite>, use the signal’s mean;
+<li><p><strong>mean</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>, <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span>]</span>) – mean to subtract from signal; if <cite>None</cite>, use the signal’s mean
+(of the non-masked samples);
 if float, use the same value for all eyes and variables;
 if dict, provide mean for each eye and variable as
 <code class="docutils literal notranslate"><span class="pre">{eye:</span> <span class="pre">{variable:</span> <span class="pre">value}}</span></code></p></li>
-<li><p><strong>sd</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>, <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span>]</span>) – sd to scale with; if <cite>None</cite>, use the signal’s std;
+<li><p><strong>sd</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>, <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span>]</span>) – sd to scale with; if <cite>None</cite>, use the signal’s std (of the
+non-masked samples);
 if float, use the same value for all eyes and variables;
 if dict, provide sd for each eye and variable as
 <code class="docutils literal notranslate"><span class="pre">{eye:</span> <span class="pre">{variable:</span> <span class="pre">value}}</span></code></p></li>
@@ -3498,8 +3500,9 @@ pupil-size in interval before trial onset.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>intervals</strong> (<em>Intervals</em><em>, </em><em>optional</em>) – Intervals object to use (with intervals in ms). If provided,
-interval and event_select are ignored.</p></li>
+<li><p><strong>intervals</strong> (<em>Intervals</em><em>, </em><em>optional</em>) – Intervals object to use, in any time units or in sample indices
+(<cite>units=None</cite>, the default of <a class="reference internal" href="#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a>). If
+provided, interval and event_select are ignored.</p></li>
 <li><p><strong>interval</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – time-window relative to event-onset (0 is event-onset), in
 units given by <cite>units</cite>.
 Required if intervals is not provided.</p></li>
@@ -3508,7 +3511,10 @@ see <a class="reference internal" href="#pypillometry.GenericEyeData.get_interva
 Required if intervals is not provided.</p></li>
 <li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – eye(s) to consider; if empty, all available eyes</p></li>
 <li><p><strong>variables</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – variable(s) to consider; if empty, all available variables</p></li>
-<li><p><strong>statfct</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></span>) – function mapping np.array to a single number; default <cite>np.mean</cite></p></li>
+<li><p><strong>statfct</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></span>) – function mapping a masked array to a single number; it must
+ignore masked samples (e.g., <cite>np.mean</cite> (default) or
+<cite>np.ma.median</cite>, but not <cite>np.median</cite>; a warning is logged
+otherwise). Intervals where all samples are masked give NaN.</p></li>
 <li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – units for interval parameter (if used); default “ms”</p></li>
 <li><p><strong>**kwargs</strong> – passed onto the event_select function</p></li>
 </ul>
