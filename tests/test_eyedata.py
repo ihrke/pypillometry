@@ -170,14 +170,14 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(len(self.eyedata.data['left_pupil']), len(self.eyedata.tx))
         self.assertEqual(len(self.eyedata.data['right_pupil']), len(self.eyedata.tx))
         
-        # Check pupil data contains valid values (finite or NaN for missing/zero values)
-        # Note: zeros are automatically converted to NaN as they represent invalid pupil sizes
+        # Check pupil data contains valid values (finite or NaN for missing values)
+        # Note: the example-data loader converts Eyelink's missing-value code 0 to NaN
         left_finite = self.eyedata.data['left_pupil'][np.isfinite(self.eyedata.data['left_pupil'])]
         right_finite = self.eyedata.data['right_pupil'][np.isfinite(self.eyedata.data['right_pupil'])]
         self.assertTrue(len(left_finite) > 0)  # At least some valid data
         self.assertTrue(len(right_finite) > 0)
         
-        # Check finite pupil data is positive (no zeros, as they're converted to NaN)
+        # Check finite pupil data is positive (no zeros left after loading)
         self.assertTrue(np.all(left_finite > 0))
         self.assertTrue(np.all(right_finite > 0))
 
@@ -2126,3 +2126,42 @@ class TestPupilBlinksDetectZero(unittest.TestCase):
         d.data.mask["left_pupil"][2000:2100] = 1
         iv = d.pupil_blinks_detect(eyes=["left"], strategies=["zero"])
         self.assertEqual(len(iv), 0)
+
+
+class TestMissingPupilOnImport(unittest.TestCase):
+    """0 -> NaN is an explicit import step, not done by EyeDataDict."""
+
+    def fake_edf(self, ps):
+        from types import SimpleNamespace
+        n = len(ps)
+        samples = np.vstack([np.full(n, 100.), np.full(n, 200.), ps])
+        msgs = {"stime": np.array([0.001]), "msg": np.array([b"start"])}
+        return {"info": {"sample_fields": ["xpos", "ypos", "ps"], "eye": "LEFT",
+                         "sfreq": 1000., "filename": "fake.edf",
+                         "screen_coords": None, "calibrations": []},
+                "samples": samples, "times": np.arange(n)/1000.,
+                "discrete": {"messages": msgs}}
+
+    def test_from_eyelink_converts_zero_pupil(self):
+        from unittest.mock import patch
+        ps = np.array([500., 0., 0., 510., 520.])
+        with patch("pypillometry.io.read_eyelink", return_value=self.fake_edf(ps)):
+            d = pp.EyeData.from_eyelink("fake.edf")
+        np.testing.assert_array_equal(np.isnan(d.data["left_pupil"]), ps == 0)
+        np.testing.assert_array_equal(d.data.mask["left_pupil"], (ps == 0).astype(int))
+        # gaze is not touched
+        np.testing.assert_array_equal(d.data["left_x"], 100.)
+
+    def test_constructor_keeps_zero_pupil(self):
+        p = np.array([1., 0., -1., 0., 2.])  # e.g. baseline-corrected data
+        d = pp.PupilData(left_pupil=p, time=np.arange(5), sampling_rate=1000)
+        np.testing.assert_array_equal(d.data["left_pupil"], p)
+        self.assertEqual(d.data.mask["left_pupil"].sum(), 0)
+
+    def test_fill_time_discontinuities_nan_for_all_variables(self):
+        t = np.r_[np.arange(0, 100), np.arange(200, 300)].astype(float)
+        d = pp.EyeData(left_x=np.ones(200), left_y=np.ones(200), left_pupil=np.ones(200),
+                       time=t, sampling_rate=1000)
+        for k in ["left_x", "left_y", "left_pupil"]:
+            self.assertEqual(np.isnan(d.data[k]).sum(), 100)  # t=100..199
+            self.assertEqual(d.data.mask[k].sum(), 100)

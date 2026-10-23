@@ -21,6 +21,10 @@ class EyeDataDict(MutableMapping):
     string identifier (e.g., "x", "y", "pupil", "baseline", "response", or any other 
     custom identifier).
 
+    Values are stored as given (converted to float); NaN values are masked.
+    No other values are treated as missing (e.g., a pupil size of 0 is kept);
+    converting missing-value codes to NaN is up to the code that reads the data.
+
     The dictionary can be indexed by a string "eye_variable" or by a tuple
     ("eye", "variable") like data["left","x"] or data["left_x"].
     """
@@ -132,11 +136,7 @@ class EyeDataDict(MutableMapping):
         if np.any(np.array(self.shape)!=np.array(value.shape)):
             raise ValueError("Array must have same dimensions as existing arrays")
         key = self._validate_key(key)  # Only validate key when setting values
-        
-        # For pupil variables, convert 0 values to NaN (0 pupil size is invalid)
-        if 'pupil' in key:
-            value = np.where(value == 0, np.nan, value)
-        
+
         self.data[key] = value
         self.mask[key] = np.zeros(self.shape, dtype=int)
         self.mask[key][np.isnan(value)] = 1 # set mask to 1 for missing values
@@ -192,11 +192,8 @@ class EyeDataDict(MutableMapping):
         
         key = self._validate_key(key)
         
-        # For pupil variables, convert 0 values to NaN (0 pupil size is invalid)
         value_float = value.astype(float)
-        if 'pupil' in key:
-            value_float = np.where(value_float == 0, np.nan, value_float)
-        
+
         # Store data
         self.data[key] = value_float
         

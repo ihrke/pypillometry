@@ -1142,6 +1142,8 @@ class GenericEyeData(ABC):
         it tries to be smart to detect different information from the EDF file.
         Spatial calibration/validation data is automatically parsed and stored
         in the `calibration` attribute as SpatialCalibration objects.
+        Eyelink codes missing pupil samples (e.g., during blinks) as 0; these
+        are converted to NaN (and therefore masked).
 
         However, the EDF file may contain other information of interest, e.g.,
         eyelink-detected saccades, etc.
@@ -1210,7 +1212,12 @@ class GenericEyeData(ABC):
             d[f'{tracked_eye}_x'] = edf["samples"][avail_data_fields.index("xpos")]
             d[f'{tracked_eye}_y'] = edf["samples"][avail_data_fields.index("ypos")]
             d[f'{tracked_eye}_pupil'] = edf["samples"][avail_data_fields.index("ps")]
-        
+
+        # Eyelink codes missing pupil samples (e.g., blinks) as 0
+        for key in d:
+            if key.endswith("_pupil"):
+                d[key] = np.where(d[key] == 0, np.nan, d[key])
+
         # get events (Eyelink stores in seconds, convert to ms)
         evon = edf["discrete"]["messages"]["stime"]*1000
         evlab = edf["discrete"]["messages"]["msg"].astype(str)
@@ -1693,7 +1700,7 @@ class GenericEyeData(ABC):
         return obj
 
     @keephistory
-    def fill_time_discontinuities(self, yval=0, print_info=True):
+    def fill_time_discontinuities(self, yval=np.nan, print_info=True):
         """
         Find gaps in the time-vector and fill them in (in-place).
 
@@ -1706,7 +1713,8 @@ class GenericEyeData(ABC):
         Parameters
         ----------
         yval : float, optional
-            value used for the data in the filled-in gaps; default 0
+            value used for the data in the filled-in gaps; default NaN,
+            so the filled-in samples are masked as missing data
         print_info : bool, optional
             if True (default), log the number of gaps that are filled in
 

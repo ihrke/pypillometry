@@ -143,7 +143,8 @@ def get_rlmw_002():
     Binocular gaze and pupil data from a 20-minute reinforcement learning
     task (single participant). The ASC files are downloaded into a
     temporary directory on every call. Events are the "MSG" lines after
-    "experiment_start"; time is reset to start at 0 and the original data
+    "experiment_start"; missing pupil samples (coded as 0 by Eyelink) are
+    set to NaN; time is reset to start at 0 and the original data
     are kept (`keep_orig=True`). Usually called via
     :func:`~pypillometry.get_example_data`.
 
@@ -185,6 +186,10 @@ def get_rlmw_002():
     right_y[right_y=="   ."] = np.nan
     right_y = right_y.astype(float)
 
+    ## Eyelink tracker codes missing pupil data (e.g., blinks) as 0
+    left_p = np.where(df.left_p == 0, np.nan, df.left_p)
+    right_p = np.where(df.right_p == 0, np.nan, df.right_p)
+
 
     # keep only lines starting with "MSG"
     events=[ev for ev in events if ev.startswith("MSG")]
@@ -204,8 +209,8 @@ def get_rlmw_002():
     )
     d = EyeData(time=df.time, name="test short",
                 experimental_setup=setup,
-                left_x=left_x, left_y=left_y, left_pupil=df.left_p,
-                right_x=right_x, right_y=right_y, right_pupil=df.right_p,
+                left_x=left_x, left_y=left_y, left_pupil=left_p,
+                right_x=right_x, right_y=right_y, right_pupil=right_p,
                 event_onsets=df_ev.time, event_labels=df_ev.event,
                 keep_orig=True)\
                 .reset_time()
@@ -219,7 +224,8 @@ def get_rlmw_002_short():
 
     Short version (first 40 sec) of the "rlmw_002" dataset: binocular gaze
     and pupil data from a reinforcement learning task. No download is
-    needed. Events are the "MSG" lines after "experiment_start"; time is
+    needed. Events are the "MSG" lines after "experiment_start"; missing
+    pupil samples (coded as 0 by Eyelink) are set to NaN; time is
     reset to start at 0 and the original data are kept (`keep_orig=True`).
     Usually called via :func:`~pypillometry.get_example_data`.
 
@@ -251,6 +257,10 @@ def get_rlmw_002_short():
     right_y[right_y=="   ."] = np.nan
     right_y = right_y.astype(float)
 
+    ## Eyelink tracker codes missing pupil data (e.g., blinks) as 0
+    left_p = np.where(df.left_p == 0, np.nan, df.left_p)
+    right_p = np.where(df.right_p == 0, np.nan, df.right_p)
+
     ## Loading the events from the events file
     # read the whole file into variable `events` (list with one entry per line)
     with open(fname_events) as f:
@@ -274,8 +284,8 @@ def get_rlmw_002_short():
     )
     d = EyeData(time=df.time, name="test short",
                 experimental_setup=setup,
-                left_x=left_x, left_y=left_y, left_pupil=df.left_p,
-                right_x=right_x, right_y=right_y, right_pupil=df.right_p,
+                left_x=left_x, left_y=left_y, left_pupil=left_p,
+                right_x=right_x, right_y=right_y, right_pupil=right_p,
                 event_onsets=df_ev.time, event_labels=df_ev.event,
                 keep_orig=True)\
                 .reset_time()

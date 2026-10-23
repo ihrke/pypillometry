@@ -314,6 +314,10 @@ def read_subject(info):
     right_y[right_y=="   ."] = np.nan
     right_y = right_y.astype(float)
 
+    ## Eyelink tracker codes missing pupil data (e.g., blinks) as 0
+    left_p = np.where(df.left_p == 0, np.nan, df.left_p)
+    right_p = np.where(df.right_p == 0, np.nan, df.right_p)
+
     ## Loading the events from the events file
     fname_events=os.path.join(info["events"])
     # read the whole file into variable `events` (list with one entry per line)
@@ -337,8 +341,8 @@ def read_subject(info):
     )
     d = pp.EyeData(time=df.time, name=info["subject"],
                 experimental_setup=setup,
-                left_x=left_x, left_y=left_y, left_pupil=df.left_p,
-                right_x=right_x, right_y=right_y, right_pupil=df.right_p,
+                left_x=left_x, left_y=left_y, left_pupil=left_p,
+                right_x=right_x, right_y=right_y, right_pupil=right_p,
                 event_onsets=df_ev.time, event_labels=df_ev.event, 
                 info={**study_info, "notes": notes[info["subject"]]},
                 keep_orig=True)\

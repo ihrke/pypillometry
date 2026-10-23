@@ -49,7 +49,7 @@ class TestPupilData(unittest.TestCase):
         self.assertEqual(len(d.data["left_pupil"]), len(d.tx))
         np.testing.assert_allclose(np.diff(d.tx), 2.)
         # original samples are kept at their time points, gaps are filled
-        # with 0 (stored as masked NaN for pupil variables)
+        # with NaN (masked)
         for i, s in enumerate(segs):
             ix = np.isin(d.tx, s)
             self.assertEqual(ix.sum(), len(s))
