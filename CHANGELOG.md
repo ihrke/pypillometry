@@ -39,6 +39,7 @@
 - `GazeData.summary()` was missing the `eyes` entry
 - `ExperimentalSetup`: viewing angles given as strings (e.g., `"30 deg"`) are
   parsed before plotting.
+- `test_selector()` raised a `NameError` on every call
 
 ### Documentation
 

@@ -385,7 +385,7 @@ def test_selector(obj, selfun, **kwargs):
     """
     if not callable(selfun):
         raise ValueError("selfun must be a function")
-    return obj.event_labels[np.array([selfun(evlab, **kwargs) for evlab in self.event_labels])]
+    return obj.event_labels[np.array([selfun(evlab, **kwargs) for evlab in obj.event_labels])]
 
 def is_url(url):
     """Check if a string is a URL.
