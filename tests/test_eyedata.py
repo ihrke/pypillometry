@@ -2265,3 +2265,35 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         self.assertEqual(int(m.sum()), 1 + 30 + 30 + 20)
         # blinks after the gap move by the 30 inserted samples
         self.assertEqual(list(g.get_blinks("left", "pupil").intervals), [(490, 520), (600, 620)])
+
+
+class TestHistoryLog(unittest.TestCase):
+    """The history is a text log of the calls made by the user (M2)."""
+
+    def make(self):
+        p = np.full(1000, 10.)
+        p[300:330] = np.nan
+        return pp.PupilData(left_pupil=p, time=np.arange(1000)*10., sampling_rate=100)
+
+    def test_nested_calls_not_recorded(self):
+        d = self.make()
+        d.pupil_blinks_detect(apply_mask=True, inplace=True)
+        names = [h["funcname"] for h in d.history]
+        self.assertEqual(names[-1], "pupil_blinks_detect")
+        self.assertNotIn("mask_intervals", names)  # called internally
+
+    def test_entries_are_text_only(self):
+        from pypillometry.intervals import Intervals
+        d = self.make()
+        iv = Intervals([(10, 20), (50, 60)], units=None, sampling_rate=100)
+        d.mask_intervals(iv, eyes=["left"], inplace=True)
+        h = d.history[-1]
+        self.assertEqual(set(h), {"funcname", "funcstring"})
+        self.assertEqual(h["funcstring"], "mask_intervals(Intervals(2),eyes=['left'],inplace=True)")
+
+    def test_failed_call_does_not_break_recording(self):
+        d = self.make()
+        with self.assertRaises(Exception):
+            d.sub_slice(0, 1000, units="no-such-unit", inplace=True)
+        d.sub_slice(0, 5000, inplace=True)
+        self.assertEqual(d.history[-1]["funcname"], "sub_slice")

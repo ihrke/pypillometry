@@ -40,16 +40,37 @@ import sys
 from abc import ABC, abstractmethod 
 
 
-## decorator to keep a history of actions performed on dataset
-# Only adds history when the function returns a GenericEyeData instance (self) 
+def _history_arg(v):
+    """Short text for an argument in the history (no reference to the object)."""
+    if isinstance(v, str):
+        return repr(v)
+    if v is None or isinstance(v, (bool, int, float, np.number)):
+        return str(v)
+    if isinstance(v, np.ndarray):
+        return f"array{v.shape}"
+    if callable(v):
+        return getattr(v, "__name__", type(v).__name__)
+    r = repr(v)
+    if isinstance(v, (list, tuple, dict)) and len(r) <= 40:
+        return r
+    return f"{type(v).__name__}({len(v)})" if hasattr(v, "__len__") else type(v).__name__
+
+
+# number of decorated methods currently running; only the outermost call
+# (the one made by the user) is recorded
+_history_depth = 0
+
+
 def keephistory(func):
     """
     Decorator that records a method call in the history of the returned object.
 
-    After the decorated method has run, a string representation of the call
-    and its arguments is added (via ``add_to_history()``) to the object it
-    returned, provided that object is an eyedata object (i.e., has an
-    ``add_to_history`` method). The history can be shown with
+    After the decorated method has run, a short text version of the call is
+    added (via ``add_to_history()``) to the object it returned, provided that
+    object is an eyedata object (i.e., has an ``add_to_history`` method).
+    Calls made from inside another decorated method are not recorded, and
+    large arguments are only summarized (e.g., ``Intervals(13)``). The history
+    is a log of the operations; show it with
     :meth:`~pypillometry.GenericEyeData.print_history`.
 
     Parameters
@@ -64,20 +85,17 @@ def keephistory(func):
     """
     @functools.wraps(func)
     def wrapper(*args,**kwargs):
-        obj=func(*args,**kwargs)
-        funcname=func.__name__
-        argstr=",".join(["%s"%(v) for v in args[1:]])
-        kwargstr=",".join(["%s=%s"%(k,v) for k,v in kwargs.items()])
-        allargs=argstr
-        if len(allargs)>0 and len(kwargstr)>0:
-            allargs+=","+kwargstr
-        elif len(kwargstr)>0:
-            allargs+=kwargstr
-        fstr="{func}({allargs})".format(func=funcname, allargs=allargs)
-        #fstr="{func}({argstr},{kwargstr})".format(func=funcname,argstr=argstr,kwargstr=kwargstr)
-        # Only add to history if obj is a GenericEyeData instance (has add_to_history method)
-        if hasattr(obj, 'add_to_history'):
-            obj.add_to_history({"funcstring":fstr, "funcname":funcname, "args":args[1:], "kwargs":kwargs})
+        global _history_depth
+        _history_depth += 1
+        try:
+            obj=func(*args,**kwargs)
+        finally:
+            _history_depth -= 1
+        if _history_depth == 0 and hasattr(obj, 'add_to_history'):
+            allargs = [_history_arg(v) for v in args[1:]]
+            allargs += [f"{k}={_history_arg(v)}" for k, v in kwargs.items()]
+            fstr = f"{func.__name__}({','.join(allargs)})"
+            obj.add_to_history({"funcstring": fstr, "funcname": func.__name__})
         return obj
     return wrapper
         
@@ -931,7 +949,7 @@ class GenericEyeData(ABC):
         ----------
         event : dict
             description of the operation with keys "funcstring" (printable
-            call), "funcname" (method name), "args" and "kwargs" (arguments)
+            call) and "funcname" (method name)
         """
         try:
             self.history.append(event)
