@@ -65,12 +65,40 @@ def suppress_all_output():
         os.close(devnull_fd)
 
 def nprange(ar):
+    """
+    Return minimum and maximum of an array.
+
+    Parameters
+    ----------
+    ar : np.ndarray
+        input array
+
+    Returns
+    -------
+    tuple
+        `(min, max)` of `ar` (NaNs are not ignored)
+    """
     return (ar.min(),ar.max())
 
 import pickle
 from hashlib import md5
 
 def zscale(y):
+    """
+    Z-transform an array, ignoring NaNs.
+
+    Parameters
+    ----------
+    y : np.ndarray
+        input array
+
+    Returns
+    -------
+    np.ndarray
+        `y` with mean subtracted and divided by its standard deviation
+        (both computed with :func:`numpy.nanmean`/:func:`numpy.nanstd`);
+        NaNs are kept
+    """
     return (y-np.nanmean(y))/np.nanstd(y)
 
 
@@ -78,8 +106,22 @@ def p_asym_laplac(y, mu, sigma, tau):
     """
     Asymmetric laplace distribution https://en.wikipedia.org/wiki/Asymmetric_Laplace_distribution;
     Parametrization as here: https://github.com/stan-dev/stan/issues/2312
-    
-    tau in [0,1]
+
+    Parameters
+    ----------
+    y : float or np.ndarray
+        value(s) at which to evaluate the density
+    mu : float
+        location parameter
+    sigma : float
+        scale parameter (> 0)
+    tau : float
+        asymmetry parameter in [0,1] (0.5 is symmetric)
+
+    Returns
+    -------
+    float or np.ndarray
+        density evaluated at `y`
     """
     I=np.array(y<=mu, dtype=int)
     return (2*tau*(1-tau))/sigma*np.exp(-2/sigma * ( (1-tau)*I*(mu-y) + tau*(1-I)*(y-mu) ) )
@@ -88,8 +130,22 @@ def p_asym_laplac_kappa(y, mu, lam, kappa):
     """
     Asymmetric laplace distribution https://en.wikipedia.org/wiki/Asymmetric_Laplace_distribution;
     Wikipedia parametrization.
-    
-    kappa in [0, infty] where 1 means symmetry
+
+    Parameters
+    ----------
+    y : float or np.ndarray
+        value(s) at which to evaluate the density
+    mu : float
+        location parameter
+    lam : float
+        scale parameter (lambda, > 0)
+    kappa : float
+        asymmetry parameter in [0, infty] where 1 means symmetry
+
+    Returns
+    -------
+    float or np.ndarray
+        density evaluated at `y`
     """
     I=np.array(y<=mu, dtype=int)
     return (lam)/(kappa+1./kappa)*np.exp( ( (lam/kappa)*I*(y-mu) - lam*kappa*(1-I)*(y-mu) ) )
@@ -97,12 +153,29 @@ def p_asym_laplac_kappa(y, mu, lam, kappa):
 
 def trans_logistic_vec(x, a, b, inverse=False):
     """
-    vectorized version of trans_logistic()
-    
-    goes from [a,b] to [-inf,+inf] and back;
-    inverse=False: [a,b] -> [-inf, +inf]
-    inverse=True:  [-inf,+inf] -> [a,b]
-    if a or b is +/-infty, a logarithmic/exponential transform is used
+    Transform bounded variables to an unbounded range and back.
+
+    Goes from [a,b] to [-inf,+inf] and back (elementwise, so `a` and
+    `b` can be arrays of the same shape as `x`); if a or b is +/-infty,
+    a logarithmic/exponential transform is used; if both are infinite,
+    `x` is returned unchanged.
+
+    Parameters
+    ----------
+    x : float or np.ndarray
+        values to transform
+    a : float or np.ndarray
+        lower bound(s), can be `-np.inf`
+    b : float or np.ndarray
+        upper bound(s), can be `np.inf`
+    inverse : bool
+        if False (default): [a,b] -> [-inf, +inf];
+        if True: [-inf,+inf] -> [a,b]
+
+    Returns
+    -------
+    np.ndarray
+        transformed values
     """
     eps=1e-15
     if inverse==False:
@@ -135,22 +208,27 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
 
     Parameters
     ----------
-    
     tx : np.ndarray
-        time-vector in seconds    
+        time-vector (any unit, e.g., ms as in `EyeData.tx`)
     sy : np.ndarray
-        raw pupil signal        
+        raw pupil signal
     event_onsets : list
-        onsets of events (stimuli/responses) in seconds
-    overlays: tuple of np.array
+        onsets of events (stimuli/responses) in the same units as `tx`
+    overlays : tuple of np.array
         signals to overlay over the plot, given as tuple of arrays of same length as `tx`
-    overlay_labels: tuple of strings
+    overlay_labels : tuple of strings
         labels for the overlays to be displayed in the legend
-    figsize: tuple of int
+    blinks : list of tuple or Intervals
+        blinks as `(start, end)` index pairs, shaded in red (e.g.,
+        ``d.get_blinks("left", "pupil")``); must be given (use `[]` for none)
+    interpolated : list of tuple or Intervals
+        interpolated periods as `(start, end)` index pairs, shaded in
+        green; must be given (use `[]` for none)
+    figsize : tuple of int
         dimensions for the plot
-    xlab: str
+    xlab : str
         label for x-axis
-    nsteps: int
+    nsteps : int
         number of steps for slider
     """
     import pylab as plt
@@ -204,6 +282,18 @@ def sizeof_fmt(num, suffix='B'):
     """
     Convert number of bytes in `num` into human-readable string representation.
     Taken from https://stackoverflow.com/a/1094933
+
+    Parameters
+    ----------
+    num : int or float
+        number of bytes
+    suffix : str
+        suffix appended after the binary prefix (default "B")
+
+    Returns
+    -------
+    str
+        formatted size, e.g. "1.5KiB"
     """
     for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
         if abs(num) < 1024.0:
@@ -212,7 +302,15 @@ def sizeof_fmt(num, suffix='B'):
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
 class ByteSize(int):
-    """Class to represent size in bytes with human-readable formatting."""
+    """Class to represent size in bytes with human-readable formatting.
+
+    Parameters
+    ----------
+    bytes : int or dict
+        number of bytes; or a dict with keys `"memory"` and `"disk"`, in
+        which case the total is the sum of both and the `"disk"` part is
+        reported as cached
+    """
     def __new__(cls, bytes: Union[int, Dict[str, int]]):
         if isinstance(bytes, dict):
             total_bytes = bytes['memory'] + bytes['disk']
@@ -230,6 +328,14 @@ class ByteSize(int):
             return sizeof_fmt(int(self))
         
     def is_cached(self):
+        """
+        Check whether part of the size refers to cached (on-disk) data.
+
+        Returns
+        -------
+        bool
+            True if the number of cached bytes is larger than 0
+        """
         return self.cached_bytes > 0
             
     def __repr__(self):
@@ -240,31 +346,42 @@ def test_selector(obj, selfun, **kwargs):
     Function to help test the output of a selector function.
 
     Parameters
-    -----------
-    obj: GenericEyeData object
+    ----------
+    obj : GenericEyeData
         object to test the selector function on
-    selfun: function
+    selfun : function
         function that takes a single event label as input and returns True/False
         to indicate whether the event should be included or not
-    kwargs: dict
+    **kwargs : dict
         arguments to pass onto the selector function
+
+    Returns
+    -------
+    np.ndarray
+        the event labels of `obj` for which `selfun` returns True
 
     Examples
     --------
-    # here, events are coded as F_1, S_1, R_1, F_2, S_2, R_2, ...
-    # to indicate fixation cross, stimulus, response for each trial
-    # we build selector functions to extract all fixation crosses etc
-    def fix_selector(evlab):
-        return evlab.startswith("F")
-    def stim_selector(evlab):
-        return evlab.startswith("S")
-    obj.test_selector(fix_selector)
+    Here, events are coded as F_1, S_1, R_1, F_2, S_2, R_2, ...
+    to indicate fixation cross, stimulus, response for each trial.
+    We build selector functions to extract all fixation crosses etc.
 
-    # we can do use kwargs to pass on arguments to the selector function
-    # for example, we can restrict to only a single trial
-    def fix_selector(evlab, trial=None):
-        return evlag.startswith("F") and evlab.endswith("_{}".format(trial))
-    obj.test_selector(fix_selector, trial=1)
+    .. code-block:: python
+
+        def fix_selector(evlab):
+            return evlab.startswith("F")
+        def stim_selector(evlab):
+            return evlab.startswith("S")
+        test_selector(obj, fix_selector)
+
+    We can use kwargs to pass on arguments to the selector function,
+    for example, to restrict to only a single trial:
+
+    .. code-block:: python
+
+        def fix_selector(evlab, trial=None):
+            return evlab.startswith("F") and evlab.endswith("_{}".format(trial))
+        test_selector(obj, fix_selector, trial=1)
     """
     if not callable(selfun):
         raise ValueError("selfun must be a function")
@@ -300,13 +417,23 @@ from typing import Callable, Any
 def requires_package(package_name: str, install_hint: str = None):
     """
     Decorator to mark functions that require optional dependencies.
-    
+
+    The check is done each time the decorated function is called; if
+    `package_name` cannot be imported, an :class:`ImportError` with an
+    installation hint is raised.
+
     Parameters
     ----------
     package_name : str
-        Name of the required package
+        Name of the required package (as used in `import`)
     install_hint : str, optional
-        Custom installation instruction
+        Custom installation instruction; default is
+        ``pip install <package_name>``
+
+    Returns
+    -------
+    callable
+        decorator that wraps the function
     """
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
@@ -364,18 +491,21 @@ def normalize_unit(unit: Union[str, None]) -> Union[str, None]:
     Normalize a time unit string to its canonical form.
     
     Accepts various aliases (e.g., "seconds", "s", "secs") and returns the
-    canonical unit name ("sec"). Returns None if input is None.
+    canonical unit name ("sec"). Returns None if input is None or one of
+    the index aliases ("index", "indices", "idx", "sample", "samples").
 
     Parameters
     ----------
     unit : str or None
-        Unit string to normalize (e.g., "seconds", "ms", "h"). If None, returns None.
-    
+        Unit string to normalize (e.g., "seconds", "ms", "h"); case and
+        surrounding whitespace are ignored. If None, returns None.
+
     Returns
     -------
     str or None
-        Canonical unit name ("ms", "sec", "min", "h") or None if input is None
-    
+        Canonical unit name ("ms", "sec", "min", "h") or None for
+        indices/samples (or if input is None)
+
     Raises
     ------
     ValueError
@@ -389,10 +519,12 @@ def normalize_unit(unit: Union[str, None]) -> Union[str, None]:
     'ms'
     >>> normalize_unit("hours")
     'h'
-    >>> normalize_unit(None)
-    None
+    >>> normalize_unit("samples") is None
+    True
     >>> normalize_unit("invalid")
-    ValueError: Unknown unit 'invalid'. Valid units are: ms, sec, min, h
+    Traceback (most recent call last):
+        ...
+    ValueError: Unknown unit 'invalid'. Valid units are: h, min, ms, sec
     """
     # Handle None case
     if unit is None:

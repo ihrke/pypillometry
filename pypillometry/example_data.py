@@ -138,6 +138,20 @@ def get_example_data(key):
 
 
 def get_rlmw_002():
+    """Load the "rlmw_002" example dataset (downloaded from OSF).
+
+    Binocular gaze and pupil data from a 20-minute reinforcement learning
+    task (single participant). The ASC files are downloaded into a
+    temporary directory on every call. Events are the "MSG" lines after
+    "experiment_start"; time is reset to start at 0 and the original data
+    are kept (`keep_orig=True`). Usually called via
+    :func:`~pypillometry.get_example_data`.
+
+    Returns
+    -------
+    EyeData
+        the example dataset
+    """
     # download file from osf   
     with tempfile.TemporaryDirectory() as tmpdirname: 
         fname_samples = os.path.join(tmpdirname,"002_rlmw_samples.asc")
@@ -201,6 +215,19 @@ def get_rlmw_002():
 
 
 def get_rlmw_002_short():
+    """Load the "rlmw_002_short" example dataset (included in the package).
+
+    Short version (first 40 sec) of the "rlmw_002" dataset: binocular gaze
+    and pupil data from a reinforcement learning task. No download is
+    needed. Events are the "MSG" lines after "experiment_start"; time is
+    reset to start at 0 and the original data are kept (`keep_orig=True`).
+    Usually called via :func:`~pypillometry.get_example_data`.
+
+    Returns
+    -------
+    EyeData
+        the example dataset
+    """
     fname_samples = example_datasets["rlmw_002_short"]["sample_asc"]
     fname_events = example_datasets["rlmw_002_short"]["events_asc"]
     df=pd.read_table(fname_samples, index_col=False,

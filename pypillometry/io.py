@@ -289,6 +289,12 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     """
     Read a study from OSF using the configuration file.
     Example: https://osf.io/p2u74/
+
+    The configuration file (downloaded from the project) must define a
+    dict `raw_data` (subject ID -> dict of data files) and a function
+    `read_subject(info)` that returns the data for one subject. The
+    listing of the project's files is cached in `path/info_osf.pkl` and
+    data files are only downloaded if they are not yet in `path`.
     
     Parameters
     ----------
@@ -300,7 +306,8 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         List of subject IDs to load. If None, all subjects will be loaded.
         If a subject ID is provided that doesn't exist in the data, it will be skipped.
     force_download : bool, optional
-        If True, force re-download even if files exist locally. Default False.
+        If True, force re-download (including the file listing) even if
+        files exist locally. Default False.
     config_file : str, optional
         Name of the configuration file. Default is "pypillometry_conf.py"
     session : requests.Session, optional
@@ -308,9 +315,10 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         
     Returns
     -------
-    study_data: dict
-        Dictionary containing the loaded study data
-    config: module
+    study_data : dict
+        Dictionary containing the loaded study data (subject ID -> result
+        of `read_subject`)
+    config : module
         Module containing the configuration (pypillometry_conf.py imported as a module)
     """
     logger.info(f"Loading study from OSF project '{osf_id}'")
@@ -429,22 +437,30 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
 def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subjects: list[str] = None):
     """
     Read a study from a local directory using the configuration file.
+
+    The configuration file must define a dict `raw_data` (subject ID ->
+    dict of data files, relative to `path`) and a function
+    `read_subject(info)` that returns the data for one subject; it is
+    called with the working directory changed to `path`.
     
     Parameters
     ----------
     path : str
         Local path where the study data is stored
     config_file : str, optional
-        Name of the configuration file. Default is "pypillometry_conf.py"
+        Name of the configuration file. Default is "pypillometry_conf.py".
+        It is first looked up in the current working directory and, if
+        not found there, in `path`.
     subjects : list[str], optional
         List of subject IDs to load. If None, all subjects will be loaded.
         If a subject ID is provided that doesn't exist in the data, it will be skipped.
         
     Returns
     -------
-    study_data: dict
-        Dictionary containing the loaded study data
-    config: module
+    study_data : dict
+        Dictionary containing the loaded study data (subject ID -> result
+        of `read_subject`)
+    config : module
         Module containing the configuration (pypillometry_conf.py imported as a module)
     """
     logger.info(f"Loading study from local directory '{path}'")
@@ -504,9 +520,9 @@ def write_pickle(obj, fname):
     
     Parameters
     ----------
-    obj: object
+    obj : object
         object to save
-    fname: str
+    fname : str
         filename to save to
     """
     with open(fname, "wb") as f:
@@ -519,8 +535,9 @@ def read_pickle(fname):
     
     Parameters
     ----------
-    fname: str
-        filename or URL to load data from
+    fname : str
+        filename or URL to load data from (URLs are downloaded into
+        memory, without authentication)
         
     Returns
     -------
@@ -557,21 +574,32 @@ def read_eyelink(
     session: Optional[requests.Session] = None):
     """
     Read an Eyelink file/URL and return the object returned by the "eyelinkio" package.
+
+    Requires the optional package `eyelinkio`. Its console output is only
+    shown when the log level is "DEBUG".
     
     Parameters
     ----------
-    source: str
-        filename of the Eyelink file or URL
-    cache_file: str, optional
-        filename to cache the file in case it is downloaded from a URL
-    force_download: bool, optional
-        if True, force re-download even if file exists locally
-    session: requests.Session, optional
-        requests session to use for the download. 
+    source : str
+        filename of the Eyelink EDF file or URL (OSF client URLs such as
+        ``https://osf.io/<id>`` are converted to download URLs)
+    cache_file : str, optional
+        filename to cache the file in case it is downloaded from a URL;
+        if None, the file is downloaded to a temporary file
+    force_download : bool, optional
+        if True, force re-download even if `cache_file` exists locally
+    session : requests.Session, optional
+        requests session to use for the download (e.g., from
+        :func:`~pypillometry.io.osf_authenticate` for private projects)
+
     Returns
     -------
-    object
-        object returned by the "eyelinkio" package
+    eyelinkio.EDF
+        object returned by :func:`eyelinkio.read_edf`
+
+    See Also
+    --------
+    pypillometry.GenericEyeData.from_eyelink : create an eyedata object from an EDF file
     """
     import eyelinkio
 
