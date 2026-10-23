@@ -465,7 +465,9 @@ class SegmentedEyeData:
             Function to compute mean across segments (default: np.mean)
         varfct : callable or None
             Function to compute error bands (e.g., np.std, scipy.stats.sem)
-            If None, no error bands are plotted
+            If None, no error bands are plotted.
+            Both functions must ignore masked values (e.g., np.ma.median, not
+            np.median); a warning is logged otherwise.
         show_missing : bool or None
             Plot percentage of missing data per time point on secondary y-axis.
             If None, defaults to True in standalone mode, False in overlay mode.
@@ -516,7 +518,10 @@ class SegmentedEyeData:
         plot_label = label if label is not None else self.name
         
         # Compute mean and variance
+        _warn_if_ignores_mask(meanfct, "meanfct", axis=1)
         mean_data = meanfct(self.data, axis=1)
+        if callable(varfct):
+            _warn_if_ignores_mask(varfct, "varfct", axis=1)
         sd_data = varfct(self.data, axis=1) if callable(varfct) else None
         
         # Get color from kwargs for consistent ribbon color, or use default
@@ -868,7 +873,9 @@ class GroupLevelSegmentedData(SegmentedEyeData):
             Function to compute mean across columns (default: np.mean)
         varfct : callable or None
             Function to compute error bands (e.g., np.std, scipy.stats.sem;
-            default: scipy.stats.sem). If None, no error bands are plotted
+            default: scipy.stats.sem). If None, no error bands are plotted.
+            Both functions must ignore masked values (e.g., np.ma.median, not
+            np.median); a warning is logged otherwise.
         show_missing : bool or None
             Plot `mask_percent` (average percentage of missing data per
             subject) on secondary y-axis. If None, defaults to True in
@@ -906,7 +913,10 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         plot_label = label if label is not None else self.name
         
         # Compute mean and variance
+        _warn_if_ignores_mask(meanfct, "meanfct", axis=1)
         mean_data = meanfct(self.data, axis=1)
+        if callable(varfct):
+            _warn_if_ignores_mask(varfct, "varfct", axis=1)
         sd_data = varfct(self.data, axis=1) if callable(varfct) else None
         
         # Get color from kwargs

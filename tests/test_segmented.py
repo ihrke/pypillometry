@@ -681,7 +681,27 @@ class TestGroupLevelSegmentedData(unittest.TestCase):
             self.assertIn("does not ignore masked", messages[0])
         finally:
             logger.remove(hid)
-    
+
+    def test_plot_warns_for_mask_ignoring_functions(self):
+        """plot() warns if meanfct/varfct ignore masks, not for the defaults"""
+        from loguru import logger
+        import scipy.stats
+        segs = self.junk_segments()
+        group = GroupLevelSegmentedData.from_segments(segs, meanfct=None)
+        messages = []
+        hid = logger.add(lambda m: messages.append(m), level="WARNING")
+        try:
+            for obj in (segs[0], group):
+                obj.plot()
+                obj.plot(meanfct=np.ma.median, varfct=np.std)
+                self.assertEqual(messages, [])
+                obj.plot(meanfct=np.median, varfct=lambda a, axis: np.percentile(a, 50, axis=axis))
+                self.assertEqual(len(messages), 2)
+                messages.clear()
+                plt.close("all")
+        finally:
+            logger.remove(hid)
+
     def test_summary(self):
         """Test summary includes group-level info"""
         group = GroupLevelSegmentedData.from_segments(self.segments)

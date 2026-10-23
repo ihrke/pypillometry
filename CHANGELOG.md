@@ -30,6 +30,8 @@
   masks (e.g., `np.median`)
 - `stat_per_event()` ignored masks (masked samples entered the statistic);
   windows with only masked samples now give NaN
+- `SegmentedEyeData.plot()`/`GroupLevelSegmentedData.plot()` warn if `meanfct`
+  or `varfct` ignore masks (e.g., `np.median`)
 - `GazeData.summary()` was missing the `eyes` entry
 - `ExperimentalSetup`: viewing angles given as strings (e.g., `"30 deg"`) are
   parsed before plotting.
