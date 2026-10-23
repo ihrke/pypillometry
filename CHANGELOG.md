@@ -40,6 +40,11 @@
 - `ExperimentalSetup`: viewing angles given as strings (e.g., `"30 deg"`) are
   parsed before plotting.
 - `test_selector()` raised a `NameError` on every call
+- `sub_slice()` dropped all masks and did not shift stored blinks
+- `downsample()` dropped all masks (masked samples entered the window means)
+  and did not rescale stored blinks
+- `fill_time_discontinuities()` called after creation dropped all masks and
+  did not move stored blinks
 
 ### Documentation
 

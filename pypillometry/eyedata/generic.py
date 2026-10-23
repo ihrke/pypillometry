@@ -19,6 +19,7 @@ from .. import config
 
 import numpy as np
 import itertools
+import warnings
 from loguru import logger
 #from pytypes import typechecked
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable, Dict, Any
@@ -1038,7 +1039,7 @@ class GenericEyeData(ABC):
         return obj
 
     @keephistory
-    def sub_slice(self, 
+    def sub_slice(self,
                 start: float=-np.inf, 
                 end: float=np.inf, 
                 units: str=None, inplace=None):
@@ -1048,7 +1049,8 @@ class GenericEyeData(ABC):
         The result contains all data (and events) between `start` and `end`
         (inclusive), in units given by `units` (one of "ms", "sec", "min", "h").
         `start` and `end` refer to the values of the time-vector (not to
-        the time since the start of the recording).
+        the time since the start of the recording). Masks are kept; stored
+        blinks (in sample indices) are shifted and cut to the new range.
 
         Parameters
         ----------
@@ -1081,13 +1083,26 @@ class GenericEyeData(ABC):
             evon=obj.event_onsets.copy()
         keepix=np.where(np.logical_and(tx>=start, tx<=end))
 
-        ndata={}
+        keepix=keepix[0]
+        ndata=EyeDataDict()
         for k,v in obj.data.items():
-            ndata[k]=v[keepix]
-        obj.data=EyeDataDict(ndata)
+            ndata.set_with_mask(k, v[keepix], mask=obj.data.mask[k][keepix])
+        obj.data=ndata
         obj.tx=obj.tx[keepix]
 
-        
+        # shift stored blinks in sample indices and cut them to the new range
+        # (blinks in time units stay valid)
+        first = int(keepix[0]) if keepix.size>0 else 0
+        n = len(obj.tx)
+        for store in (obj._blinks, obj._interpolated_blinks):
+            for key, iv in store.items():
+                if iv is None or iv.units is not None:
+                    continue
+                shifted = [(max(int(on)-first, 0), min(int(off)-first, n)) for on, off in iv.intervals]
+                store[key] = Intervals([(on, off) for on, off in shifted if off > on], None,
+                                       label=iv.label, data_time_range=(0, n), sampling_rate=obj.fs,
+                                       time_offset=obj.tx[0] if n > 0 else 0.0)
+
         keepev=np.logical_and(evon>=start, evon<=end)
         obj.event_onsets=obj.event_onsets[keepev]
         obj.event_labels=obj.event_labels[keepev]
@@ -1707,7 +1722,9 @@ class GenericEyeData(ABC):
         A gap is a step between consecutive time points that is larger than
         twice the median step. New time points are inserted into each gap
         at the median step size and all data variables are set to `yval`
-        at these new time points. This is called by the constructor when
+        at these new time points; they are masked as missing. Existing masks
+        are kept and stored blinks (in sample indices) are moved to the new
+        sample positions. This is called by the constructor when
         ``fill_time_discontinuities=True``.
 
         Parameters
@@ -1740,11 +1757,13 @@ class GenericEyeData(ABC):
             bounds=np.r_[0, gaps_end_ix, n]
             ntx=[]
             nv={k:[] for k in self.data.keys()}
+            nm={k:[] for k in self.data.keys()}
             for i in range(ngaps+1):
                 seg=slice(bounds[i], bounds[i+1])
                 ntx.append( tx[seg] )
                 for k,v in self.data.items():
                     nv[k].append( v[seg] )
+                    nm[k].append( self.data.mask[k][seg] )
                 if i<ngaps:
                     start,end=gaps_start_ix[i], gaps_end_ix[i]
                     nfill=int((tx[end]-tx[start])/stepsize)-1
@@ -1752,10 +1771,30 @@ class GenericEyeData(ABC):
                     ntx.append( filltx )
                     for k in nv:
                         nv[k].append( yval*np.ones_like(filltx, dtype=float) )
+                        nm[k].append( np.ones(len(filltx), dtype=int) )  # filled = missing
+            # new position of each original sample (ntx alternates kept
+            # segments and filled gaps)
+            lens=[len(t) for t in ntx]
+            offsets=np.cumsum([0]+lens[:-1])
+            newpos=np.concatenate([offsets[2*i]+np.arange(lens[2*i]) for i in range(ngaps+1)])
             ntx=np.concatenate(ntx)
 
-            self.data=EyeDataDict({k:np.concatenate(v) for k,v in nv.items()})
+            ndata=EyeDataDict()
+            for k in nv:
+                ndata.set_with_mask(k, np.concatenate(nv[k]), mask=np.concatenate(nm[k]))
+            self.data=ndata
             self.tx=ntx
+
+            # move stored blinks in sample indices to the new sample positions
+            # (blinks in time units stay valid)
+            for store in (self._blinks, self._interpolated_blinks):
+                for key, iv in store.items():
+                    if iv is None or iv.units is not None:
+                        continue
+                    moved = [(int(newpos[on]), int(newpos[off-1])+1) for on, off in iv.intervals]
+                    store[key] = Intervals(moved, None, label=iv.label,
+                                           data_time_range=(0, len(ntx)), sampling_rate=self.fs,
+                                           time_offset=ntx[0])
         return self
     
     def get_intervals(self, 
@@ -2168,7 +2207,10 @@ class GenericEyeData(ABC):
         Simple downsampling scheme using mean within the downsampling window.
 
         All data fields and the time-vector are downsampled simultaneously.
-        See :func:`pypillometry.signal.baseline.downsample`.
+        See :func:`pypillometry.signal.baseline.downsample`. Masked samples are
+        left out of the window means; a new sample is masked only if all
+        samples in its window were masked. Stored blinks (in sample indices)
+        are rescaled to the new sampling rate.
 
         Parameters
         ----------
@@ -2196,17 +2238,35 @@ class GenericEyeData(ABC):
         else:
             dsfac=int(obj.fs/fsd) # calculate downsampling factor
             
-        # downsample all of the variables/eyes in the data
-        ndata={}
+        dsfac=int(dsfac)
+        # downsample all of the variables/eyes in the data; masked samples are
+        # left out of the window means, and a new sample is masked (NaN) only
+        # if all samples in its window were masked
+        ndata=EyeDataDict()
         for k,v in obj.data.items():
-            ndata[k]=baseline.downsample(v, dsfac)
-        obj.data=EyeDataDict(ndata)
+            v=np.where(obj.data.mask[k].astype(bool), np.nan, v)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)  # all-NaN windows
+                y=baseline.downsample(v, dsfac)
+            ndata.set_with_mask(k, y, mask=np.isnan(y).astype(int))
+        obj.data=ndata
 
         # also downsample the time-vector
         obj.tx=baseline.downsample(obj.tx, dsfac)
 
-        # set new sampling rate            
+        # set new sampling rate
         obj.fs=fsd
+
+        # rescale stored blinks in sample indices so that they still cover the
+        # blinks: round starts down and ends up (blinks in time units stay valid)
+        n=len(obj.tx)
+        for store in (obj._blinks, obj._interpolated_blinks):
+            for key, iv in store.items():
+                if iv is None or iv.units is not None:
+                    continue
+                rescaled = [(int(on)//dsfac, min(int(np.ceil(off/dsfac)), n)) for on, off in iv.intervals]
+                store[key] = Intervals(rescaled, None, label=iv.label, data_time_range=(0, n),
+                                       sampling_rate=obj.fs, time_offset=obj.tx[0])
         return obj
 
     @keephistory

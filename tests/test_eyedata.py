@@ -2199,3 +2199,69 @@ class TestMissingPupilOnImport(unittest.TestCase):
         for k in ["left_x", "left_y", "left_pupil"]:
             self.assertEqual(np.isnan(d.data[k]).sum(), 100)  # t=100..199
             self.assertEqual(d.data.mask[k].sum(), 100)
+
+
+class TestMasksAndBlinksKept(unittest.TestCase):
+    """Operations that change the samples keep masks and stored blinks (H7)."""
+
+    def make(self):
+        from pypillometry.intervals import Intervals
+        t = np.arange(1000)*10.  # 100 Hz
+        p = np.full(1000, 10.)
+        p[400:410] = np.nan
+        d = pp.PupilData(left_pupil=p, time=t, sampling_rate=100)
+        blinks = Intervals([(490, 520), (600, 620)], units=None, sampling_rate=100,
+                           data_time_range=(0, 1000), time_offset=0.)
+        d.set_blinks(blinks, eyes=["left"], variables=["pupil"], apply_mask=True)
+        return d
+
+    def test_sub_slice(self):
+        d = self.make()
+        s = d.sub_slice(5000, 10000, inplace=False)
+        # masks are sliced with the data
+        np.testing.assert_array_equal(s.data.mask["left_pupil"], d.data.mask["left_pupil"][500:])
+        # blinks are shifted; the one across the start is cut
+        self.assertEqual(list(s.get_blinks("left", "pupil").intervals), [(0, 20), (100, 120)])
+        # original unchanged
+        self.assertEqual(list(d.get_blinks("left", "pupil").intervals), [(490, 520), (600, 620)])
+        # blinks outside the slice are dropped
+        s = d.sub_slice(0, 4000, inplace=False)
+        self.assertEqual(list(s.get_blinks("left", "pupil").intervals), [])
+        # the call is recorded in the history
+        self.assertEqual(s.history[-1]["funcname"], "sub_slice")
+
+    def test_downsample(self):
+        d = self.make()
+        d.data["left_pupil"][490:520] = 999.  # junk under the blink mask
+        d.data.mask["left_pupil"][701] = 1     # half of a window masked
+        d.data["left_pupil"][701] = 999.
+        x = d.downsample(10, inplace=False)    # factor 10
+        m = x.data.mask["left_pupil"]
+        # fully masked windows stay masked: NaN 400-410, blinks 490-520, 600-620
+        np.testing.assert_array_equal(np.where(m)[0], [40, 49, 50, 51, 60, 61])
+        # partly masked windows use the valid samples only
+        self.assertEqual(x.data["left_pupil"][70], 10.)
+        self.assertEqual(x.data["left_pupil"][48], 10.)
+        # blinks are rescaled and still cover the blink
+        self.assertEqual(list(x.get_blinks("left", "pupil").intervals), [(49, 52), (60, 62)])
+        self.assertEqual(x.get_blinks("left", "pupil").sampling_rate, 10.)
+
+    def test_fill_time_discontinuities(self):
+        from pypillometry.intervals import Intervals
+        # 100 Hz with samples 550-579 missing (a 300 ms gap)
+        keep = np.r_[0:550, 580:1000]
+        g = pp.PupilData(left_pupil=np.full(970, 10.), time=(np.arange(1000)*10.)[keep],
+                         sampling_rate=100, fill_time_discontinuities=False)
+        g.data.mask["left_pupil"][300] = 1
+        # blinks in the gapped data (570-590 = original samples 600-620)
+        g.set_blinks(Intervals([(490, 520), (570, 590)], units=None, sampling_rate=100),
+                     eyes=["left"], variables=["pupil"], apply_mask=True)
+        g.fill_time_discontinuities()
+        self.assertEqual(len(g.tx), 1000)
+        m = g.data.mask["left_pupil"]
+        self.assertEqual(m[300], 1)                # existing mask kept
+        self.assertTrue(np.all(m[550:580] == 1))   # filled samples masked
+        self.assertTrue(np.all(m[600:620] == 1))   # blink mask moved with the data
+        self.assertEqual(int(m.sum()), 1 + 30 + 30 + 20)
+        # blinks after the gap move by the 30 inserted samples
+        self.assertEqual(list(g.get_blinks("left", "pupil").intervals), [(490, 520), (600, 620)])
