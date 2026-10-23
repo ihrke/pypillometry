@@ -32,6 +32,8 @@
   windows with only masked samples now give NaN
 - `SegmentedEyeData.plot()`/`GroupLevelSegmentedData.plot()` warn if `meanfct`
   or `varfct` ignore masks (e.g., `np.median`)
+- `meanfct`/`varfct` without an `axis` argument raise a clear error in
+  `group_segments()` and the segment plots
 - `scale()` computed mean and SD including masked samples
 - `fit_foreshortening()` used masked samples for fitting
 - `GazeData.summary()` was missing the `eyes` entry

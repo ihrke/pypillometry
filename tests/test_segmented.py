@@ -682,6 +682,22 @@ class TestGroupLevelSegmentedData(unittest.TestCase):
         finally:
             logger.remove(hid)
 
+    def test_function_without_axis_raises_clear_error(self):
+        """meanfct/varfct without an `axis` argument raise an explanatory TypeError"""
+        segs = self.junk_segments()
+        no_axis = lambda x: np.mean(x)
+        with self.assertRaisesRegex(TypeError, "must accept an `axis`"):
+            GroupLevelSegmentedData.from_segments(segs, meanfct=no_axis)
+        group = GroupLevelSegmentedData.from_segments(segs)
+        for obj in (segs[0], group):
+            with self.assertRaisesRegex(TypeError, "meanfct.*must accept an `axis`"):
+                obj.plot(meanfct=no_axis)
+            with self.assertRaisesRegex(TypeError, "varfct.*must accept an `axis`"):
+                obj.plot(varfct=no_axis)
+            plt.close("all")
+        # functions taking **kwargs are accepted
+        GroupLevelSegmentedData.from_segments(segs, meanfct=lambda x, **kw: np.mean(x, **kw))
+
     def test_plot_warns_for_mask_ignoring_functions(self):
         """plot() warns if meanfct/varfct ignore masks, not for the defaults"""
         from loguru import logger

@@ -565,3 +565,19 @@ def _warn_if_ignores_mask(fct, name, axis=None):
         logger.warning(f"{name}={getattr(fct, '__name__', fct)} does not ignore masked "
                        "values; masked samples (blinks, padding) enter the result. "
                        "Use a mask-aware function such as np.mean or np.ma.median.")
+
+
+def _check_accepts_axis(fct, name):
+    """Raise a TypeError if `fct` cannot be called as ``fct(data, axis=...)``.
+
+    Functions without a readable signature (e.g., some builtins) are not checked.
+    """
+    import inspect
+    try:
+        params = inspect.signature(fct).parameters.values()
+    except (TypeError, ValueError):
+        return
+    if not any(p.name == "axis" or p.kind == p.VAR_KEYWORD for p in params):
+        raise TypeError(f"{name}={getattr(fct, '__name__', fct)} must accept an `axis` "
+                        f"argument; it is called as {name}(data, axis=1) "
+                        "(e.g., np.mean, np.ma.median, scipy.stats.sem)")

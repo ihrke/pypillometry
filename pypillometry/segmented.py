@@ -13,7 +13,7 @@ from loguru import logger
 import scipy.stats
 
 from .io import write_pickle, read_pickle
-from .convenience import _warn_if_ignores_mask
+from .convenience import _warn_if_ignores_mask, _check_accepts_axis
 
 
 class SegmentedEyeData:
@@ -466,8 +466,9 @@ class SegmentedEyeData:
         varfct : callable or None
             Function to compute error bands (e.g., np.std, scipy.stats.sem)
             If None, no error bands are plotted.
-            Both functions must ignore masked values (e.g., np.ma.median, not
-            np.median); a warning is logged otherwise.
+            Both functions are called as ``fct(data, axis=1)``, so they must
+            accept an `axis` argument, and they must ignore masked values
+            (e.g., np.ma.median, not np.median; a warning is logged otherwise).
         show_missing : bool or None
             Plot percentage of missing data per time point on secondary y-axis.
             If None, defaults to True in standalone mode, False in overlay mode.
@@ -518,9 +519,11 @@ class SegmentedEyeData:
         plot_label = label if label is not None else self.name
         
         # Compute mean and variance
+        _check_accepts_axis(meanfct, "meanfct")
         _warn_if_ignores_mask(meanfct, "meanfct", axis=1)
         mean_data = meanfct(self.data, axis=1)
         if callable(varfct):
+            _check_accepts_axis(varfct, "varfct")
             _warn_if_ignores_mask(varfct, "varfct", axis=1)
         sd_data = varfct(self.data, axis=1) if callable(varfct) else None
         
@@ -671,9 +674,10 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         segments : list of SegmentedEyeData
             List of SegmentedEyeData objects (one per subject)
         meanfct : callable or None
-            Function to aggregate within each subject; it must ignore masked
-            values (e.g., np.mean or np.ma.median, but not np.median; a warning
-            is logged otherwise).
+            Function to aggregate within each subject, called as
+            ``meanfct(data, axis=1)``; it must accept an `axis` argument and
+            ignore masked values (e.g., np.mean or np.ma.median, but not
+            np.median; a warning is logged otherwise).
             If None, all segments from all subjects are stacked (concatenated).
         name : str, optional
             Name for the group-level dataset. If None, uses ``"group_"`` + first
@@ -728,6 +732,7 @@ class GroupLevelSegmentedData(SegmentedEyeData):
             combined_data = ma.concatenate([seg.data for seg in segments], axis=1)
         else:
             # Aggregate mode: apply meanfct within each subject, then stack
+            _check_accepts_axis(meanfct, "meanfct")
             _warn_if_ignores_mask(meanfct, "meanfct", axis=1)
             subject_means = [ma.asarray(meanfct(seg.data, axis=1)) for seg in segments]
             # Stack as columns (n_timepoints, n_subjects); a timepoint where all
@@ -874,8 +879,9 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         varfct : callable or None
             Function to compute error bands (e.g., np.std, scipy.stats.sem;
             default: scipy.stats.sem). If None, no error bands are plotted.
-            Both functions must ignore masked values (e.g., np.ma.median, not
-            np.median); a warning is logged otherwise.
+            Both functions are called as ``fct(data, axis=1)``, so they must
+            accept an `axis` argument, and they must ignore masked values
+            (e.g., np.ma.median, not np.median; a warning is logged otherwise).
         show_missing : bool or None
             Plot `mask_percent` (average percentage of missing data per
             subject) on secondary y-axis. If None, defaults to True in
@@ -913,9 +919,11 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         plot_label = label if label is not None else self.name
         
         # Compute mean and variance
+        _check_accepts_axis(meanfct, "meanfct")
         _warn_if_ignores_mask(meanfct, "meanfct", axis=1)
         mean_data = meanfct(self.data, axis=1)
         if callable(varfct):
+            _check_accepts_axis(varfct, "varfct")
             _warn_if_ignores_mask(varfct, "varfct", axis=1)
         sd_data = varfct(self.data, axis=1) if callable(varfct) else None
         
@@ -971,9 +979,10 @@ def group_segments(segments, meanfct=np.mean, name: str = None) -> GroupLevelSeg
     segments : list or dict of SegmentedEyeData
         SegmentedEyeData objects to combine. If dict, values are used.
     meanfct : callable or None
-        Function to aggregate within each subject; it must ignore masked
-        values (e.g., np.mean or np.ma.median, but not np.median; a warning
-        is logged otherwise).
+        Function to aggregate within each subject, called as
+        ``meanfct(data, axis=1)``; it must accept an `axis` argument and
+        ignore masked values (e.g., np.mean or np.ma.median, but not
+        np.median; a warning is logged otherwise).
         If None, all segments from all subjects are stacked (concatenated).
     name : str, optional
         Name for the group-level dataset. If None, uses ``"group_"`` + first
