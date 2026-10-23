@@ -2376,8 +2376,9 @@ class GenericEyeData(ABC):
         Parameters
         ----------
         intervals : Intervals, optional
-            Intervals object to use (with intervals in ms). If provided,
-            interval and event_select are ignored.
+            Intervals object to use, in any time units or in sample indices
+            (`units=None`, the default of :meth:`get_intervals`). If
+            provided, interval and event_select are ignored.
         interval : tuple (min,max), optional
             time-window relative to event-onset (0 is event-onset), in
             units given by `units`.
@@ -2417,12 +2418,18 @@ class GenericEyeData(ABC):
                 raise ValueError("Must provide either 'intervals' or both 'event_select' and 'interval'")
             intervs = self.get_intervals(event_select, interval, units=units, **kwargs)
 
-        # Convert Intervals to list for stat_event_interval
-        intervals_list = intervs.intervals
-        
+        # stat_event_interval matches the bounds against the time vector it
+        # gets: use sample numbers for index-based Intervals, else tx in ms
+        if intervs.units is None:
+            tx = np.arange(len(self.tx))
+            intervals_list = intervs.intervals
+        else:
+            tx = self.tx
+            intervals_list = intervs.to_units("ms").intervals
+
         stat={}
         for eye,var in itertools.product(eyes, variables):
-            stat[eye+"_"+var]=stat_event_interval(self.tx, self.data[eye,var], intervals_list, statfct)
+            stat[eye+"_"+var]=stat_event_interval(tx, self.data[eye,var], intervals_list, statfct)
 
         return stat
 

@@ -789,6 +789,24 @@ class TestEyeData(unittest.TestCase):
         self.assertIn('left_pupil', stats)
         self.assertEqual(len(stats['left_pupil']), 3)  # One value per event
 
+    def test_stat_per_event_units(self):
+        """stat_per_event gives the same result for ms, sec and index-based intervals (H4)"""
+        # 100 Hz, time starts at 5000 ms, pupil = time, so the mean over
+        # [onset-200 ms, onset) is onset-105
+        t = 5000 + np.arange(2000)*10.
+        d = pp.PupilData(left_pupil=t.copy(), time=t, sampling_rate=100,
+                         event_onsets=np.array([7000., 12000.]), event_labels=np.array(["a", "a"]))
+        expected = [6895., 11895.]
+        calls = [
+            dict(interval=(-200, 0), event_select="a", units="ms"),
+            dict(interval=(-.2, 0), event_select="a", units="sec"),
+            dict(intervals=d.get_intervals("a", interval=(-20, 0))),  # sample indices
+            dict(intervals=d.get_intervals("a", interval=(-.2, 0), units="sec")),
+        ]
+        for kw in calls:
+            with self.subTest(**{k: str(v) for k, v in kw.items()}):
+                np.testing.assert_allclose(d.stat_per_event(**kw)["left_pupil"], expected)
+
     def test_get_duration(self):
         """Test getting duration in different units"""
         duration_min = self.eyedata.get_duration(units='min')

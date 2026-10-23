@@ -24,6 +24,7 @@
 - `fill_time_discontinuities()` run by constructor: samples between two gaps
   were dropped, so time and data had different lengths
 - `pupil_blinks_detect()`: the "zero" strategy never detected blinks
+- `stat_per_event()` gave wrong results for intervals not in ms 
 - `GazeData.summary()` was missing the `eyes` entry
 - `ExperimentalSetup`: viewing angles given as strings (e.g., `"30 deg"`) are
   parsed before plotting.
