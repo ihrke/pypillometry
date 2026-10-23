@@ -372,13 +372,13 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
 
 def detect_blinks_zero(sy, min_duration, blink_val=0):
     """
-    Detect blinks as consecutive sequence of `blink_val` (e.g., 0) of at least
+    Detect blinks as consecutive sequence of `blink_val` (e.g., 0 or NaN) of at least
     `min_duration` successive values in the signal `sy`.
     Detected blinks are put a matrix `blinks` (nblinks x 2) where start and end
     are stored as indexes.
 
-    Values are compared with `sy == blink_val`, so `blink_val=np.nan` does not
-    detect anything; NaN-coded data must be converted first.
+    `blink_val=np.nan` matches NaN values; any other value is compared with
+    `sy == blink_val`.
 
     Parameters
     ----------
@@ -389,7 +389,7 @@ def detect_blinks_zero(sy, min_duration, blink_val=0):
         treated as blink; a sequence is kept if `end-start >= min_duration`
         (i.e., it has at least `min_duration+1` samples)
     blink_val : float
-        "missing value" code (default 0)
+        "missing value" code, e.g. 0 or `np.nan` (default 0)
 
     Returns
     -------
@@ -397,7 +397,8 @@ def detect_blinks_zero(sy, min_duration, blink_val=0):
         array (nblinks x 2) containing the indices of the start/end of the
         blinks (both inclusive); empty array if no blinks were found
     """
-    x=np.r_[0, np.diff((sy==blink_val).astype(int))]
+    missing = np.isnan(sy) if np.isnan(blink_val) else (sy==blink_val)
+    x=np.r_[0, np.diff(missing.astype(int))]
     starts=np.where(x==1)[0]
     ends=np.where(x==-1)[0]-1
     
@@ -407,7 +408,7 @@ def detect_blinks_zero(sy, min_duration, blink_val=0):
         logger.debug("No valid blinks found - returning empty array")
         return np.array([])
         
-    if sy[0]==blink_val: ## first value missing?
+    if missing[0]: ## first value missing?
         starts=np.r_[0,starts]    
         logger.debug("First value is missing - adding 0 to starts")
         

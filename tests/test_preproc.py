@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pypillometry.signal.preproc import smooth_window, velocity_savgol, detect_blinks_velocity
+from pypillometry.signal.preproc import smooth_window, velocity_savgol, detect_blinks_velocity, detect_blinks_zero
 
 
 class TestSmoothWindow(unittest.TestCase):
@@ -250,6 +250,38 @@ class TestDetectBlinksVelocity(unittest.TestCase):
             self.assertLess(onset, offset)
             self.assertGreaterEqual(onset, 0)
             self.assertLess(offset, len(signal))
+
+
+
+class TestDetectBlinksZero(unittest.TestCase):
+    """Tests for detect_blinks_zero() with different missing-value codes"""
+
+    def setUp(self):
+        self.sy = np.ones(100)
+        self.sy[40:50] = 0
+
+    def test_zero_coded(self):
+        blinks = detect_blinks_zero(self.sy, 1, blink_val=0)
+        np.testing.assert_array_equal(blinks, [[40, 49]])
+
+    def test_nan_coded(self):
+        sy = self.sy.copy()
+        sy[40:50] = np.nan
+        blinks = detect_blinks_zero(sy, 1, blink_val=np.nan)
+        np.testing.assert_array_equal(blinks, [[40, 49]])
+
+    def test_nan_ignored_for_zero_code(self):
+        sy = self.sy.copy()
+        sy[10:20] = np.nan
+        blinks = detect_blinks_zero(sy, 1, blink_val=0)
+        np.testing.assert_array_equal(blinks, [[40, 49]])
+
+    def test_nan_coded_at_start(self):
+        sy = np.ones(100)
+        sy[0:5] = np.nan
+        sy[40:50] = np.nan
+        blinks = detect_blinks_zero(sy, 1, blink_val=np.nan)
+        np.testing.assert_array_equal(blinks, [[0, 4], [40, 49]])
 
 
 if __name__ == '__main__':
