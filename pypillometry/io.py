@@ -233,78 +233,41 @@ def _parse_ssh_url(url: str):
     return host, parts.port, path
 
 
-def _ssh_cache_path(url: str, cache_dir: str) -> str:
-    """Local path in `cache_dir` for an SSH URL: ``cache_dir/<host>/<path>``."""
-    host, port, path = _parse_ssh_url(url)
+def _cache_path(url: str, cache_dir: str) -> str:
+    """Local path in `cache_dir` for a URL: ``cache_dir/<host>/<path>``.
+
+    For SSH URLs with a path relative to the home directory, ``~`` is
+    inserted after the host.
+    """
+    from urllib.parse import urlsplit, unquote
+    if is_ssh_url(url):
+        host, port, path = _parse_ssh_url(url)
+        rel = path.strip("/").split("/")
+        if not path.startswith("/"):
+            rel = ["~"] + rel  # relative to home on the server
+    else:
+        parts = urlsplit(url)
+        host, port = parts.hostname, parts.port
+        rel = [p for p in unquote(parts.path).split("/") if p] or ["index"]
     host_dir = host if port is None else f"{host}_{port}"
-    rel = path.strip("/").split("/")
-    if not path.startswith("/"):
-        rel = ["~"] + rel  # relative to home on the server
     return os.path.join(cache_dir, host_dir, *rel)
 
 
-def ssh_download(url: str, cache_dir: Optional[str] = None, force_download: bool = False) -> str:
-    """Download a file or folder from an SSH URL with ``scp``.
-
-    The connection uses the system's ``scp`` and therefore
-    ``~/.ssh/config`` (host aliases, users, keys). Only key-based login is
-    supported: password prompts are disabled (``BatchMode=yes``).
-
-    URLs have the form ``ssh://[user@]host[:port]/path``. The path is
-    absolute on the server; use ``ssh://host/~/path`` for a path relative to
-    the home directory. A URL ending in ``/`` downloads the whole folder.
-
-    Parameters
-    ----------
-    url : str
-        SSH URL of the file or folder
-    cache_dir : str, optional
-        local directory to store the download in; the file is saved as
-        ``cache_dir/<host>/<path>``. If None, a new temporary directory is
-        created. The location is logged.
-    force_download : bool, optional
-        if False (default), a file that already exists in `cache_dir` is
-        reused; if True, it is downloaded again
-
-    Returns
-    -------
-    str
-        local path of the downloaded file or folder
-    """
+def _scp(url: str, target: str):
+    """Copy the file (or folder, if `url` ends with ``/``) at an SSH URL to `target`."""
     import subprocess
     import shutil
-    import tempfile
-
-    host, port, path = _parse_ssh_url(url)
-    if cache_dir is None:
-        cache_dir = tempfile.mkdtemp(prefix="pypillometry_ssh_")
-    local = _ssh_cache_path(url, cache_dir)
-    is_dir = path.endswith("/")
-
-    if os.path.exists(local) and not force_download:
-        logger.info(f"Using cached copy of '{url}': {local}")
-        return local
 
     if shutil.which("scp") is None:
         raise RuntimeError("Downloading from SSH URLs requires the 'scp' command")
-
-    os.makedirs(os.path.dirname(local), exist_ok=True)
-    # download to a temporary name, so that an interrupted download
-    # is not used as a cached copy later
-    part = local + ".part"
-    if os.path.isdir(part):
-        shutil.rmtree(part)
-    elif os.path.exists(part):
-        os.remove(part)
-
+    host, port, path = _parse_ssh_url(url)
+    is_dir = path.endswith("/")
     cmd = ["scp", "-q", "-o", "BatchMode=yes"]
     if port is not None:
         cmd += ["-P", str(port)]
     if is_dir:
         cmd.append("-r")
-    cmd += [f"{host}:{path.rstrip('/') if is_dir else path}", part]
-
-    logger.info(f"Downloading '{url}' via SSH to {local}")
+    cmd += [f"{host}:{path.rstrip('/') if is_dir else path}", target]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         msg = result.stderr.strip()
@@ -313,31 +276,107 @@ def ssh_download(url: str, cache_dir: Optional[str] = None, force_download: bool
             f"{result.returncode}): {msg}\n"
             "Note: only key-based SSH login is supported (no passwords)."
         )
-    if os.path.isdir(local):
-        shutil.rmtree(local)
-    os.replace(part, local)
-    return local
+
+
+def fetch_url(
+    url: str,
+    cache_file: Optional[str] = None,
+    cache_dir: Optional[str] = None,
+    force_download: bool = False,
+    session: Optional[requests.Session] = None) -> str:
+    """Download an HTTP(S) or SSH URL to a local file, with caching.
+
+    HTTP(S) URLs are downloaded with :func:`download` (OSF client URLs
+    such as ``https://osf.io/<id>`` are converted to download URLs).
+
+    SSH URLs have the form ``ssh://[user@]host[:port]/path`` and are
+    downloaded with the system's ``scp``, which uses ``~/.ssh/config``
+    (host aliases, users, keys). Only key-based login is supported: password
+    prompts are disabled (``BatchMode=yes``). The path is absolute on the
+    server; use ``ssh://host/~/path`` for a path relative to the home
+    directory. An SSH URL ending in ``/`` downloads the whole folder.
+
+    Parameters
+    ----------
+    url : str
+        HTTP(S) or SSH URL
+    cache_file : str, optional
+        local filename to store the download in
+    cache_dir : str, optional
+        directory to store the download in (used if `cache_file` is None);
+        the file is saved as ``cache_dir/<host>/<path>``. If both are None, a
+        new temporary directory is used. The location is logged.
+    force_download : bool, optional
+        if False (default), an existing local copy is reused; if True, the
+        file is downloaded again
+    session : requests.Session, optional
+        requests session for HTTP(S) downloads (e.g., from
+        :func:`osf_authenticate` for private OSF projects)
+
+    Returns
+    -------
+    str
+        local path of the downloaded file (or folder)
+    """
+    import shutil
+    import tempfile
+
+    if not is_url(url):  # also true for SSH URLs
+        raise ValueError(f"Not a URL: '{url}'")
+    if cache_file is None:
+        if cache_dir is None:
+            cache_dir = tempfile.mkdtemp(prefix="pypillometry_")
+        cache_file = _cache_path(url, cache_dir)
+
+    if os.path.exists(cache_file) and not force_download:
+        logger.info(f"Using cached copy of '{url}': {cache_file}")
+        return cache_file
+
+    parent = os.path.dirname(cache_file)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    # download to a temporary name, so that an interrupted download
+    # is not used as a cached copy later
+    part = cache_file + ".part"
+    if os.path.isdir(part):
+        shutil.rmtree(part)
+    elif os.path.exists(part):
+        os.remove(part)
+
+    logger.info(f"Downloading '{url}' to {cache_file}")
+    if is_ssh_url(url):
+        _scp(url, part)
+    else:
+        download(url, part, session=session)
+    if os.path.isdir(cache_file):
+        shutil.rmtree(cache_file)
+    os.replace(part, cache_file)
+    return cache_file
 
 
 @contextmanager
-def local_copy(source: str, cache_dir: Optional[str] = None, autodelete: bool = False, force_download: bool = False):
+def local_copy(
+    source: str,
+    cache_file: Optional[str] = None,
+    cache_dir: Optional[str] = None,
+    autodelete: bool = False,
+    force_download: bool = False,
+    session: Optional[requests.Session] = None):
     """Context manager that gives a local filename for `source`.
 
-    SSH URLs (see :func:`ssh_download`) are downloaded; other sources are
-    passed through unchanged (and never deleted).
+    HTTP(S) and SSH URLs are downloaded with :func:`fetch_url`; local
+    paths are passed through unchanged (and never deleted).
 
     Parameters
     ----------
     source : str
-        local path or SSH URL
-    cache_dir : str, optional
-        directory for SSH downloads; if None, a temporary directory is used
+        local path, HTTP(S) URL or SSH URL
+    cache_file, cache_dir, force_download, session
+        see :func:`fetch_url`
     autodelete : bool, optional
-        if True, the downloaded copy is deleted when the context is left
-        (i.e., after the file was read); a temporary directory is removed
-        completely. Default False.
-    force_download : bool, optional
-        download again even if the file is already in `cache_dir`
+        if True, the downloaded copy (also in `cache_file`/`cache_dir`) is
+        deleted when the context is left, i.e. after the file was read; a
+        temporary directory is removed completely. Default False.
 
     Yields
     ------
@@ -347,14 +386,16 @@ def local_copy(source: str, cache_dir: Optional[str] = None, autodelete: bool = 
     import shutil
     import tempfile
 
-    if not is_ssh_url(source):
+    if not is_url(source):  # also true for SSH URLs
         yield source
         return
 
     tmpdir = None
-    if cache_dir is None:
-        tmpdir = tempfile.mkdtemp(prefix="pypillometry_ssh_")
-    fname = ssh_download(source, cache_dir=tmpdir or cache_dir, force_download=force_download)
+    if cache_file is None and cache_dir is None:
+        tmpdir = tempfile.mkdtemp(prefix="pypillometry_")
+        cache_dir = tmpdir
+    fname = fetch_url(source, cache_file=cache_file, cache_dir=cache_dir,
+                      force_download=force_download, session=session)
     try:
         yield fname
     finally:
@@ -621,7 +662,7 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
     called with the working directory changed to `path`.
 
     If `path` is an SSH URL (``ssh://server/folder/``, see
-    :func:`ssh_download`), the configuration file and the data files of the
+    :func:`fetch_url`), the configuration file and the data files of the
     selected subjects are downloaded to `cache_dir` before they are read.
     
     Parameters
@@ -662,9 +703,9 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
     if is_ssh_url(path):
         remote = path.rstrip("/") + "/"
         if cache_dir is None:
-            tmpdir = tempfile.mkdtemp(prefix="pypillometry_ssh_")
+            tmpdir = tempfile.mkdtemp(prefix="pypillometry_")
             cache_dir = tmpdir
-        local_path = _ssh_cache_path(remote, cache_dir)
+        local_path = _cache_path(remote, cache_dir)
         os.makedirs(local_path, exist_ok=True)
         logger.info(f"Loading study from '{path}' (files are downloaded to {local_path})")
     else:
@@ -680,8 +721,8 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
             logger.info(f"Found config file in current directory: {config_file}")
             config_path = config_file
         elif remote is not None:
-            config_path = ssh_download(remote + config_file, cache_dir=cache_dir,
-                                       force_download=force_download)
+            config_path = fetch_url(remote + config_file, cache_dir=cache_dir,
+                                    force_download=force_download)
         else:
             # If not found, look in the specified path
             config_path = os.path.join(path, config_file)
@@ -718,8 +759,8 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
                     if not isinstance(value, str):
                         continue
                     try:
-                        downloaded.append(ssh_download(remote + value, cache_dir=cache_dir,
-                                                       force_download=force_download))
+                        downloaded.append(fetch_url(remote + value, cache_dir=cache_dir,
+                                                    force_download=force_download))
                     except RuntimeError as e:
                         # entries in raw_data need not be files
                         logger.warning(f"Could not download '{value}' for subject {subject_id}: {e}")

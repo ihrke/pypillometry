@@ -77,15 +77,15 @@ class TestParseSSHUrl(unittest.TestCase):
                 io._parse_ssh_url(url)
 
     def test_cache_path(self):
-        self.assertEqual(io._ssh_cache_path("ssh://srv/a/b.edf", "/c"),
+        self.assertEqual(io._cache_path("ssh://srv/a/b.edf", "/c"),
                          os.path.join("/c", "srv", "a", "b.edf"))
-        self.assertEqual(io._ssh_cache_path("ssh://srv:22/~/a/b.edf", "/c"),
+        self.assertEqual(io._cache_path("ssh://srv:22/~/a/b.edf", "/c"),
                          os.path.join("/c", "srv_22", "~", "a", "b.edf"))
 
 
 class TestSSHDownload(SSHTestCase):
     def test_download_file(self):
-        fname = io.ssh_download("ssh://server/data/f.txt", cache_dir=self.cache)
+        fname = io.fetch_url("ssh://server/data/f.txt", cache_dir=self.cache)
         self.assertEqual(fname, os.path.join(self.cache, "server", "data", "f.txt"))
         with open(fname) as f:
             self.assertEqual(f.read(), "hello")
@@ -95,45 +95,45 @@ class TestSSHDownload(SSHTestCase):
         self.assertEqual(cmd[-2], "server:/data/f.txt")
 
     def test_port_and_user(self):
-        io.ssh_download("ssh://me@server:2222/data/f.txt", cache_dir=self.cache)
+        io.fetch_url("ssh://me@server:2222/data/f.txt", cache_dir=self.cache)
         cmd = self.server.calls[0]
         self.assertEqual(cmd[cmd.index("-P") + 1], "2222")
         self.assertEqual(cmd[-2], "me@server:/data/f.txt")
 
     def test_temp_dir_when_no_cache_dir(self):
-        fname = io.ssh_download("ssh://server/data/f.txt")
+        fname = io.fetch_url("ssh://server/data/f.txt")
         try:
             self.assertTrue(os.path.exists(fname))
-            self.assertIn("pypillometry_ssh_", fname)
+            self.assertIn("pypillometry_", fname)
         finally:
             shutil.rmtree(fname.split(os.sep + "server" + os.sep)[0], ignore_errors=True)
 
     def test_cached_file_is_reused(self):
-        io.ssh_download("ssh://server/data/f.txt", cache_dir=self.cache)
-        io.ssh_download("ssh://server/data/f.txt", cache_dir=self.cache)
+        io.fetch_url("ssh://server/data/f.txt", cache_dir=self.cache)
+        io.fetch_url("ssh://server/data/f.txt", cache_dir=self.cache)
         self.assertEqual(len(self.server.calls), 1)
-        io.ssh_download("ssh://server/data/f.txt", cache_dir=self.cache, force_download=True)
+        io.fetch_url("ssh://server/data/f.txt", cache_dir=self.cache, force_download=True)
         self.assertEqual(len(self.server.calls), 2)
 
     def test_download_folder(self):
-        local = io.ssh_download("ssh://server/data/", cache_dir=self.cache)
+        local = io.fetch_url("ssh://server/data/", cache_dir=self.cache)
         self.assertIn("-r", self.server.calls[0])
         self.assertTrue(os.path.isfile(os.path.join(local, "sub", "g.txt")))
 
     def test_force_download_folder(self):
-        io.ssh_download("ssh://server/data/", cache_dir=self.cache)
-        local = io.ssh_download("ssh://server/data/", cache_dir=self.cache, force_download=True)
+        io.fetch_url("ssh://server/data/", cache_dir=self.cache)
+        local = io.fetch_url("ssh://server/data/", cache_dir=self.cache, force_download=True)
         self.assertTrue(os.path.isfile(os.path.join(local, "sub", "g.txt")))
         self.assertFalse(os.path.exists(os.path.join(local, "data")))
 
     def test_failed_download_leaves_no_file(self):
         with self.assertRaises(RuntimeError):
-            io.ssh_download("ssh://server/data/missing.txt", cache_dir=self.cache)
+            io.fetch_url("ssh://server/data/missing.txt", cache_dir=self.cache)
         self.assertFalse(os.path.exists(os.path.join(self.cache, "server", "data", "missing.txt")))
 
     def test_error(self):
         with self.assertRaisesRegex(RuntimeError, "No such file"):
-            io.ssh_download("ssh://server/data/missing.txt", cache_dir=self.cache)
+            io.fetch_url("ssh://server/data/missing.txt", cache_dir=self.cache)
 
 
 class TestLocalCopy(SSHTestCase):
