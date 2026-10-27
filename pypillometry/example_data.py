@@ -29,22 +29,22 @@ example_datasets = {
     "rlmw_002": {
         "samples_asc":"https://osf.io/download/67cec1a4fb24855200fd6db7/",
         "events_asc":"https://osf.io/download/67cec1a183c337a5effd6fb6/",
-        "description":"Binocular data from a 20-minute reinforcement learning task."
-        "Data from a single participant, features strong horizontal eye-movements"
+        "description":"Binocular data from a 20-minute reinforcement learning task. "
+        "Data from a single participant, features strong horizontal eye-movements "
         "between the two stimuli presented on the left and right.",
     },
     "rlmw_002_short": {
         "sample_asc":files('pypillometry.data').joinpath('002_rlmw_samples_short.asc'),
         "events_asc":files('pypillometry.data').joinpath('002_rlmw_events_short.asc'),
-        "description":"Short version (first 40 sec) of a 20-minute reinforcement learning task."
-        "Data from a single participant, features strong horizontal eye-movements"
+        "description":"Short version (first 40 sec) of a 20-minute reinforcement learning task. "
+        "Data from a single participant, features strong horizontal eye-movements "
         "between the two stimuli presented on the left and right.",
     },
     "rlmw_010_edf": {
         "edf":"https://osf.io/trsuq/download",
         "description":"Binocular data from a 20-minute reinforcement learning task "
-        "in EDF (Eyelink) format."
-        "Data from a single participant, features strong horizontal eye-movements"
+        "in EDF (Eyelink) format. "
+        "Data from a single participant, features strong horizontal eye-movements "
         "between the two stimuli presented on the left and right.",
     },
 }
@@ -212,7 +212,7 @@ def get_rlmw_002():
         physical_screen_size=("30 cm", "20 cm"),
         eye_to_screen_center="60 cm",
     )
-    d = EyeData(time=df.time, name="test short",
+    d = EyeData(time=df.time, name="rlmw_002",
                 experimental_setup=setup,
                 left_x=left_x, left_y=left_y, left_pupil=left_p,
                 right_x=right_x, right_y=right_y, right_pupil=right_p,

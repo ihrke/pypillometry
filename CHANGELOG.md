@@ -101,6 +101,8 @@
   left the temporary download directory behind
 - `load_study_osf()` printed to stdout instead of logging and showed the
   download size only with `force_download=True`
+- Example datasets: missing spaces in descriptions; "rlmw_002" was named
+  "test short"
 
 ### Documentation
 
