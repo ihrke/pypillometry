@@ -83,6 +83,8 @@
   instead of a clear `ValueError`
 - `ExperimentalSetup.from_dict()` warned about plain numbers for stored values
 - `detect_blinks_velocity()` raised a `ValueError` if no sample was valid
+- `detect_blinks_velocity()`: blinks without offset ended one past the last
+  sample (other offsets are inclusive)
 
 ### Documentation
 

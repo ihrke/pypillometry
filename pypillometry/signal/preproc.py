@@ -266,10 +266,10 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     Returns
     -------
     np.ndarray
-        array (nblinks x 2) of blink onset/offset sample indices; the offset
-        is the last sample of the matching offset run, or `len(sy)` if no
-        offset was found after the last onset; empty array if no blinks
-        were found
+        array (nblinks x 2) of blink onset/offset sample indices (both
+        inclusive); the offset is the last sample of the matching offset run,
+        or the last sample of `sy` if no offset was found after the last
+        onset; empty array if no blinks were found
     """
     n = len(sy)
     
@@ -358,7 +358,7 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
             first_valid_idx = np.where(valid_offset_mask)[0][0]
             off = offset_ends[first_valid_idx]
         else:
-            off = n
+            off = n - 1
         blinks.append([on, off])
         ons = onsets[onsets > off]
         on = ons[0] if ons.size > 0 else None

@@ -237,6 +237,20 @@ class TestDetectBlinksVelocity(unittest.TestCase):
                                             vel_onset=-10, vel_offset=10)
             self.assertEqual(len(blinks), 0)
 
+    def test_offset_inclusive_without_recovery(self):
+        """Blink without offset ends at the last sample (inclusive)"""
+        signal = np.ones(200) * 1000
+        signal[40:50] = np.linspace(1000, 100, 10)
+        signal[50:60] = 0
+        signal[60:70] = np.linspace(100, 1000, 10)
+        signal[140:150] = np.linspace(1000, 100, 10)
+        signal[150:] = 0
+        blinks = detect_blinks_velocity(signal, smooth_winsize=5,
+                                        vel_onset=-50, vel_offset=50,
+                                        min_onset_len=2, min_offset_len=2)
+        self.assertEqual(len(blinks), 2)
+        self.assertEqual(blinks[-1][1], len(signal) - 1)
+
     def test_returns_empty_for_flat_signal(self):
         """Flat signal should have no blinks"""
         signal = np.ones(200) * 100
