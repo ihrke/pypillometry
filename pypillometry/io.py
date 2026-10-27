@@ -602,19 +602,24 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         
     return study_data, config
 
-def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subjects: list[str] = None):
+def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subjects: list[str] = None,
+                     cache_dir: Optional[str] = None, autodelete: bool = False, force_download: bool = False):
     """
-    Read a study from a local directory using the configuration file.
+    Read a study from a local directory (or an SSH URL) using the configuration file.
 
     The configuration file must define a dict `raw_data` (subject ID ->
     dict of data files, relative to `path`) and a function
     `read_subject(info)` that returns the data for one subject; it is
     called with the working directory changed to `path`.
+
+    If `path` is an SSH URL (``ssh://server/folder/``, see
+    :func:`ssh_download`), the configuration file and the data files of the
+    selected subjects are downloaded to `cache_dir` before they are read.
     
     Parameters
     ----------
     path : str
-        Local path where the study data is stored
+        Local path or SSH URL where the study data is stored
     config_file : str, optional
         Name of the configuration file. Default is "pypillometry_conf.py".
         It is first looked up in the current working directory and, if
@@ -622,6 +627,16 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
     subjects : list[str], optional
         List of subject IDs to load. If None, all subjects will be loaded.
         If a subject ID is provided that doesn't exist in the data, it will be skipped.
+    cache_dir : str, optional
+        only for SSH URLs: directory to download the files to; if None, a
+        temporary directory is used
+    autodelete : bool, optional
+        only for SSH URLs: if True, the data files of each subject are
+        deleted after they were read (and a temporary directory is removed
+        at the end). Default False.
+    force_download : bool, optional
+        only for SSH URLs: download files again even if they are already
+        in `cache_dir`
         
     Returns
     -------
@@ -631,55 +646,91 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
     config : module
         Module containing the configuration (pypillometry_conf.py imported as a module)
     """
-    logger.info(f"Loading study from local directory '{path}'")
-    
-    # Check if path exists
-    if not os.path.exists(path):
-        raise ValueError(f"Path '{path}' does not exist")
-        
-    # First try to find config file in current directory
-    if os.path.exists(config_file):
-        logger.info(f"Found config file in current directory: {config_file}")
-        config_path = config_file
+    import shutil
+    import tempfile
+
+    remote = None
+    tmpdir = None
+    if is_ssh_url(path):
+        remote = path.rstrip("/") + "/"
+        if cache_dir is None:
+            tmpdir = tempfile.mkdtemp(prefix="pypillometry_ssh_")
+            cache_dir = tmpdir
+        local_path = _ssh_cache_path(remote, cache_dir)
+        os.makedirs(local_path, exist_ok=True)
+        logger.info(f"Loading study from '{path}' (files are downloaded to {local_path})")
     else:
-        # If not found, look in the specified path
-        config_path = os.path.join(path, config_file)
-        if not os.path.exists(config_path):
-            raise ValueError(f"Could not find {config_file} in current directory or in {path}")
-        logger.info(f"Found config file in study directory: {config_path}")
-        
-    # Load and parse config
-    logger.info("Loading configuration file")
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("pypillometry_conf", config_path)
-    config = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(config)
-    
-    # Filter subjects if specified
-    subject_ids = list(config.raw_data.keys())
-    if subjects is not None:
-        subject_ids = [sid for sid in subjects if sid in config.raw_data]
-        if not subject_ids:
-            raise ValueError("None of the specified subjects were found in the data")
-        logger.info(f"Loading {len(subject_ids)} specified subjects")
-    else:
-        logger.info(f"Loading all {len(subject_ids)} subjects")
-        
-    # Load the data using the read_subject function from the config module
-    study_data = {}
-    logger.info("Loading subject data")
-    with change_dir(path):
+        local_path = path
+        logger.info(f"Loading study from local directory '{path}'")
+        # Check if path exists
+        if not os.path.exists(path):
+            raise ValueError(f"Path '{path}' does not exist")
+
+    try:
+        # First try to find config file in current directory
+        if os.path.exists(config_file):
+            logger.info(f"Found config file in current directory: {config_file}")
+            config_path = config_file
+        elif remote is not None:
+            config_path = ssh_download(remote + config_file, cache_dir=cache_dir,
+                                       force_download=force_download)
+        else:
+            # If not found, look in the specified path
+            config_path = os.path.join(path, config_file)
+            if not os.path.exists(config_path):
+                raise ValueError(f"Could not find {config_file} in current directory or in {path}")
+            logger.info(f"Found config file in study directory: {config_path}")
+
+        # Load and parse config
+        logger.info("Loading configuration file")
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("pypillometry_conf", config_path)
+        config = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(config)
+
+        # Filter subjects if specified
+        subject_ids = list(config.raw_data.keys())
+        if subjects is not None:
+            subject_ids = [sid for sid in subjects if sid in config.raw_data]
+            if not subject_ids:
+                raise ValueError("None of the specified subjects were found in the data")
+            logger.info(f"Loading {len(subject_ids)} specified subjects")
+        else:
+            logger.info(f"Loading all {len(subject_ids)} subjects")
+
+        # Load the data using the read_subject function from the config module
+        study_data = {}
+        logger.info("Loading subject data")
         for subject_id in tqdm(subject_ids, desc="Loading subjects", unit="subject"):
             logger.debug(f"Loading subject {subject_id}")
-            # Use the read_subject function from the config module
             info = config.raw_data[subject_id]
-            # add local path to the paths in the info dict
-            for key, value in info.items():
-                if isinstance(value, str) and os.path.exists(value):
-                    info[key] = value
-            info["subject"] = subject_id
-            study_data[subject_id] = config.read_subject(info)
-        
+            downloaded = []
+            if remote is not None:
+                for value in info.values():
+                    if not isinstance(value, str):
+                        continue
+                    try:
+                        downloaded.append(ssh_download(remote + value, cache_dir=cache_dir,
+                                                       force_download=force_download))
+                    except RuntimeError as e:
+                        # entries in raw_data need not be files
+                        logger.warning(f"Could not download '{value}' for subject {subject_id}: {e}")
+            try:
+                with change_dir(local_path):
+                    # Use the read_subject function from the config module
+                    info["subject"] = subject_id
+                    study_data[subject_id] = config.read_subject(info)
+            finally:
+                if autodelete:
+                    for fname in downloaded:
+                        if os.path.exists(fname):
+                            logger.debug(f"Deleting downloaded copy: {fname}")
+                            os.remove(fname)
+    finally:
+        if autodelete and tmpdir is not None:
+            logger.info(f"Deleting temporary directory: {tmpdir}")
+            shutil.rmtree(tmpdir, ignore_errors=True)
+
     return study_data, config
 
 def write_pickle(obj, fname):
