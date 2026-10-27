@@ -625,11 +625,14 @@ class GenericPlotter:
         if show_events:
             # Get events in appropriate units
             events = obj.get_events(units=units if units is not None else "ms")
+            onsets = events.onsets
+            if units is None:
+                # x-axis is in sample indices
+                onsets = np.interp(onsets, obj.tx, np.arange(len(obj.tx)))
             
             # Plot vertical lines at event positions
-            if len(events) > 0:
-                for ev in events.onsets:
-                    ax.axvline(ev, color='grey', alpha=0.5, zorder=0)
+            for ev in onsets:
+                ax.axvline(ev, color='grey', alpha=0.5, zorder=0)
         
         # Set x-axis label based on units
         if units is not None:

@@ -75,6 +75,7 @@
   converted although the x-axis is in samples; the passed Intervals were
   modified
 - `plot_intervals(show_mask=True)` showed only the mask of the last eye/variable
+- `plot_masked(units=None, show_events=True)` drew events in ms on an index axis
 
 ### Documentation
 
