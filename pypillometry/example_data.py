@@ -291,3 +291,29 @@ def get_rlmw_002_short():
                 .reset_time()
     return d
         
+
+def get_rlmw_010_edf():
+    """Load the "rlmw_010_edf" example dataset (downloaded from OSF).
+
+    Binocular gaze and pupil data from a 20-minute reinforcement learning
+    task (single participant) in EDF (Eyelink) format, read with
+    :meth:`~pypillometry.EyeData.from_eyelink`. The EDF file is downloaded
+    into a temporary directory on every call. Usually called via
+    :func:`~pypillometry.get_example_data`.
+
+    Returns
+    -------
+    EyeData
+        the example dataset
+    """
+    from .eyedata.experimental_setup import ExperimentalSetup
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        fname = os.path.join(tmpdirname, "010_rlmw.edf")
+        download(example_datasets["rlmw_010_edf"]["edf"], fname)
+        d = EyeData.from_eyelink(fname)
+    d.name = "rlmw_010"
+    d.set_experimental_setup(
+        physical_screen_size=("30 cm", "20 cm"),
+        eye_to_screen_center="60 cm",
+    )
+    return d
