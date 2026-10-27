@@ -95,6 +95,8 @@
   `duration/(n-1)`)
 - `interpolate_intervals()` used masked samples (e.g., other blinks) as anchor
   points
+- `get_available_eyes()`/`get_available_variables()` returned eyes/variables
+  in random order; now in the order they were added
 
 ### Documentation
 
