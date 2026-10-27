@@ -15,6 +15,10 @@ import scipy.stats
 from .io import write_pickle, read_pickle
 from .convenience import _warn_if_ignores_mask, _check_accepts_axis
 
+__all__ = [
+    "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
+]
+
 
 class SegmentedEyeData:
     """

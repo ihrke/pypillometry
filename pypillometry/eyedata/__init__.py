@@ -34,10 +34,10 @@ Simulation classes:
 
 __all__ = ["EyeDataDict", "GenericEyeData","GazeData","PupilData", "EyeData", 
            "SpatialCalibration", "ForeshorteningCalibration", "FakeEyeData",
-           "ExperimentalSetup"]
+           "ExperimentalSetup", "keephistory"]
 
 from .eyedatadict import EyeDataDict
-from .generic import GenericEyeData
+from .generic import GenericEyeData, keephistory
 from .gazedata import GazeData
 from .pupildata import PupilData
 from .eyedata import EyeData

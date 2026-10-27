@@ -1,5 +1,9 @@
 """Package-level settings."""
 
+__all__ = [
+    "set_default_inplace", "get_default_inplace",
+]
+
 _default_inplace = True
 
 

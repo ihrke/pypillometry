@@ -25,6 +25,10 @@ import matplotlib.patches as patches
 
 from pypillometry.units import parse_angle
 
+__all__ = [
+    "ROI", "CircularROI", "RectangularROI",
+]
+
 if TYPE_CHECKING:
     from pypillometry.eyedata import ExperimentalSetup
 

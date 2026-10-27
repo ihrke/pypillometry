@@ -12,19 +12,15 @@ milliseconds; see the individual docstrings for units.
   response estimation and signal quality
 - :mod:`~pypillometry.signal.fake`: generation of synthetic data
 """
-__all__ = [
-    # from baseline.py
-    "butter_lowpass_filter", "downsample", "baseline_envelope_iter_bspline",
-    # from preproc.py
-    "smooth_window", "velocity_savgol", "detect_blinks_velocity", "detect_blinks_zero",
-    # from pupil.py
-    "pupil_eye_offset",
-    # from fake.py
-    "fake_pupil_baseline", "fake_gaze_fixations", "add_measurement_noise", 
-    "generate_foreshortening_data",
-    ]
-
+from . import baseline, preproc, pupil, fake
 from .baseline import *
 from .preproc import *
 from .pupil import *
 from .fake import *
+
+# Each submodule lists its public functions in its own __all__.
+__all__ = []
+__all__ += baseline.__all__
+__all__ += preproc.__all__
+__all__ += pupil.__all__
+__all__ += fake.__all__
