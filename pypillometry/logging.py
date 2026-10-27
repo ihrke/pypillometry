@@ -15,6 +15,11 @@ import logging
 from contextlib import contextmanager
 from typing import Optional
 
+__all__ = [
+    "logging_disable", "logging_enable", "logging_set_level",
+    "logging_get_level", "loglevel", "nologging", "initialize_logging",
+]
+
 # Configure cmdstanpy logging (disabled by default)
 cmdstanpy_logger = logging.getLogger("cmdstanpy")
 cmdstanpy_logger.disabled = True

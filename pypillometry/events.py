@@ -7,6 +7,10 @@ from typing import Optional, List, Tuple
 from loguru import logger
 from pypillometry.convenience import normalize_unit
 
+__all__ = [
+    "Events",
+]
+
 
 class Events:
     """

@@ -18,6 +18,11 @@ from loguru import logger
 from .convenience import is_url, suppress_all_output, requires_package
 from .logging import logging_get_level
 
+__all__ = [
+    "osf_authenticate", "download", "fetch_url", "local_copy", "write_pickle",
+    "read_pickle", "read_eyelink",
+]
+
 
 def osf_authenticate(
     access_token: str,

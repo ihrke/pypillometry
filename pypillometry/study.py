@@ -18,6 +18,10 @@ from loguru import logger
 from .convenience import change_dir
 from .io import fetch_url, is_ssh_url, _cache_path
 
+__all__ = [
+    "get_osf_project_files", "load_study_osf", "load_study_local",
+]
+
 
 def get_osf_project_files(osf_id: str, session: Optional[requests.Session] = None) -> Dict[str, Dict[str, str]]:
     """

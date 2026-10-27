@@ -20,6 +20,11 @@ import requests
 from tqdm import tqdm
 from .io import download
 
+__all__ = [
+    "get_available_datasets", "get_example_data", "get_rlmw_002",
+    "get_rlmw_002_short", "get_rlmw_010_edf",
+]
+
 example_datasets = {
     "rlmw_002": {
         "samples_asc":"https://osf.io/download/67cec1a4fb24855200fd6db7/",

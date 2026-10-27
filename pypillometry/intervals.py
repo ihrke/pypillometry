@@ -5,6 +5,10 @@ import numpy as np
 
 from pypillometry.convenience import requires_package, normalize_unit
 
+__all__ = [
+    "Intervals", "merge_intervals", "stat_event_interval",
+]
+
 def merge_intervals(*args, label: str = 'merged'):
     """Combine multiple Intervals objects into a single Intervals object.
     
