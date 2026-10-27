@@ -2399,7 +2399,7 @@ class GenericEyeData(ABC):
         variables: list = [],
         distance: float = 100,
         units: str = "ms",
-        apply_mask: bool = True,
+        apply_mask: bool = False,
         inplace: bool | None = None,
     ):
         """
@@ -2416,11 +2416,12 @@ class GenericEyeData(ABC):
             ``units``). Default 100.
         units : str, optional
             Units for ``distance``. Can be "ms", "sec", "min", or "h". Default "ms".
-        apply_mask : bool, default=True
+        apply_mask : bool, default=False
             If True, store the merged blinks, apply them as masks to the data
             and return the object.
             If False, return merged blinks as dict of Intervals objects without
-            storing them or applying masks.
+            storing them or applying masks (same default as
+            :meth:`~pypillometry.PupilData.pupil_blinks_detect`).
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;

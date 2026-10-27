@@ -12,6 +12,8 @@
 - Positive y is up in all mm coordinates
 - new module `pp.study` hosting all study-related io functions
 - Internal helpers no longer exported at the top level
+- `blinks_merge_close()` defaults to `apply_mask=False` (returns the merged
+  blinks), like `pupil_blinks_detect()`
 
 ### Added
 
