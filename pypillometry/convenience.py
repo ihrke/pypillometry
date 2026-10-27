@@ -14,8 +14,7 @@ import os, sys
 from tqdm import tqdm
 
 __all__ = [
-    "nprange", "zscale", "p_asym_laplac", "p_asym_laplac_kappa",
-    "trans_logistic_vec",
+    "zscale",
 ]
 
 @contextmanager

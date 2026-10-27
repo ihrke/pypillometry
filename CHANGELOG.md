@@ -14,6 +14,8 @@
 - Internal helpers no longer exported at the top level
 - `blinks_merge_close()` defaults to `apply_mask=False` (returns the merged
   blinks), like `pupil_blinks_detect()`
+- `nprange`, `p_asym_laplac`, `p_asym_laplac_kappa` and `trans_logistic_vec`
+  are no longer exported at the top level (still in `pp.convenience`)
 
 ### Added
 

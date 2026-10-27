@@ -64,9 +64,7 @@ from .signal import (
     fake_pupil_baseline, fake_gaze_fixations, add_measurement_noise,
     generate_foreshortening_data,
 )
-from .convenience import (
-    nprange, zscale, p_asym_laplac, p_asym_laplac_kappa, trans_logistic_vec,
-)
+from .convenience import zscale
 
 # ---------------------------------------------------------------------------
 # Viewer
@@ -110,8 +108,7 @@ __all__ = [
     "pupil_eye_offset",
     "fake_pupil_baseline", "fake_gaze_fixations", "add_measurement_noise",
     "generate_foreshortening_data",
-    "nprange", "zscale", "p_asym_laplac", "p_asym_laplac_kappa",
-    "trans_logistic_vec",
+    "zscale",
     # viewer
     "view", "tweak",
     # units, settings and logging
