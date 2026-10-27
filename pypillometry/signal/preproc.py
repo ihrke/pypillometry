@@ -3,7 +3,6 @@ preproc.py
 ==========
 
 preprocessing functions (blinks, smoothing, missing data...)
-21.10.2025 (Josephine) Added fix to detect_blinks_velocity() line 123
 """
 import numpy as np
 import scipy.optimize
