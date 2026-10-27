@@ -417,8 +417,13 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.interpolate</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span><span class="p">,</span> <span class="n">splrep</span><span class="p">,</span> <span class="n">splev</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.pupil</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.pupil</span><span class="w"> </span><span class="kn">import</span> <span class="n">pupil_kernel</span><span class="p">,</span> <span class="n">pupil_response</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"bspline"</span><span class="p">,</span> <span class="s2">"butter_lowpass"</span><span class="p">,</span> <span class="s2">"butter_lowpass_filter"</span><span class="p">,</span> <span class="s2">"downsample"</span><span class="p">,</span>
+    <span class="s2">"baseline_envelope_iter_bspline"</span><span class="p">,</span> <span class="s2">"baseline_envelope"</span><span class="p">,</span>
+    <span class="s2">"baseline_pupil_model"</span><span class="p">,</span>
+<span class="p">]</span>
 
 
 <div class="viewcode-block" id="bspline">

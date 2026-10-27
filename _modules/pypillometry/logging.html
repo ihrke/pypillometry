@@ -416,6 +416,11 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"logging_disable"</span><span class="p">,</span> <span class="s2">"logging_enable"</span><span class="p">,</span> <span class="s2">"logging_set_level"</span><span class="p">,</span>
+    <span class="s2">"logging_get_level"</span><span class="p">,</span> <span class="s2">"loglevel"</span><span class="p">,</span> <span class="s2">"nologging"</span><span class="p">,</span> <span class="s2">"initialize_logging"</span><span class="p">,</span>
+<span class="p">]</span>
+
 <span class="c1"># Configure cmdstanpy logging (disabled by default)</span>
 <span class="n">cmdstanpy_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"cmdstanpy"</span><span class="p">)</span>
 <span class="n">cmdstanpy_logger</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span>
