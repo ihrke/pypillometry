@@ -79,6 +79,8 @@
 - `plot_timeseries_segments(ylim=...)`/`pupil_plot_segments(ylim=...)` set
   the limits only for the last subplot
 - `scale()` rejected integers and `unscale()` rejected numbers for `mean`/`sd`
+- `ExperimentalSetup.mm_to_pixels()` without screen size raised a `TypeError`
+  instead of a clear `ValueError`
 
 ### Documentation
 

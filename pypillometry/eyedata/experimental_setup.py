@@ -533,6 +533,8 @@ class ExperimentalSetup:
         Requires `screen_resolution` and `physical_screen_size`.
         Inverse of :meth:`pixels_to_mm` (the y-axis is flipped).
         """
+        self._require_screen_resolution()
+        self._require_physical_screen_size()
         if centered:
             x_mm = x_mm + self._physical_screen_size[0] / 2
             y_mm = y_mm + self._physical_screen_size[1] / 2

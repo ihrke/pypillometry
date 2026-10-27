@@ -283,6 +283,15 @@ class TestExperimentalSetupCoordinateConversion:
         # point above the center (smaller pixel y) has positive mm y
         assert self.setup.pixels_to_mm(960, 0)[1] > 0
         assert self.setup.mm_to_pixels(0, 100)[1] < 540
+
+    def test_conversion_without_screen_size(self):
+        """Clear ValueError if the screen size is missing."""
+        setup = ExperimentalSetup(screen_resolution=(1920, 1080))
+        for centered in [True, False]:
+            with pytest.raises(ValueError, match="Physical screen size"):
+                setup.mm_to_pixels(0, 0, centered=centered)
+            with pytest.raises(ValueError, match="Physical screen size"):
+                setup.pixels_to_mm(0, 0, centered=centered)
     
     def test_pixels_to_mm_array(self):
         """Test conversion with arrays."""
