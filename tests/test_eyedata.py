@@ -1247,6 +1247,30 @@ class TestEyeData(unittest.TestCase):
         # The interval should still have NaN since left boundary margin was all NaN
         self.assertTrue(np.any(np.isnan(result.data['left_pupil'][100:150])))
         
+    def test_interpolate_intervals_ignores_masked_anchors(self):
+        """Masked samples (e.g., other blinks) are not used as anchor points"""
+        from pypillometry.intervals import Intervals
+        d = pp.PupilData(sampling_rate=100, left_pupil=np.full(300, 10.0))
+        d.data['left_pupil'][100:150] = np.nan
+        d.data['left_pupil'][150:152] = 1000.0   # artifact right after the gap
+        d.data.mask['left_pupil'][150:152] = 1
+        intervals = Intervals([(100, 150)], units=None, sampling_rate=100)
+        res = d.interpolate_intervals(intervals, margin=(-50, 50), inplace=False)
+        np.testing.assert_allclose(res.data['left_pupil'][100:150], 10.0)
+
+    def test_interpolate_intervals_margin_sign(self):
+        """margin is relative to start/end; wrong signs raise"""
+        from pypillometry.intervals import Intervals
+        d = pp.PupilData(sampling_rate=100, left_pupil=np.full(300, 10.0))
+        d.data['left_pupil'][100:150] = np.nan
+        intervals = Intervals([(100, 150)], units=None, sampling_rate=100)
+        for margin in [(20, 20), (-20, -20)]:
+            with self.assertRaises(ValueError):
+                d.interpolate_intervals(intervals, margin=margin, inplace=False)
+        # no points after the end -> not interpolated
+        res = d.interpolate_intervals(intervals, margin=(-50, 0), inplace=False)
+        self.assertTrue(np.all(np.isnan(res.data['left_pupil'][100:150])))
+
     def test_interpolate_intervals_empty_eyes(self):
         """Test interpolate_intervals with empty eyes applies to all eyes"""
         from pypillometry.intervals import Intervals

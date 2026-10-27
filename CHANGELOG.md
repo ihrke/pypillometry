@@ -27,6 +27,8 @@
 - Top-level imports are static, so IDEs can complete and resolve `pp.*`.
 - `detect_blinks_velocity()`: velocity runs with exactly `min_onset_len`/
   `min_offset_len` samples are accepted (was: must be longer)
+- `interpolate_intervals(margin=...)` uses the sign of `margin` (relative to
+  start/end of the interval); `margin[0] > 0` or `margin[1] < 0` raise an error
 
 ### Fixed
 
@@ -91,6 +93,8 @@
   were shorter than `duration`
 - `pupil_kernel()` was sampled slightly slower than `fs` (spacing
   `duration/(n-1)`)
+- `interpolate_intervals()` used masked samples (e.g., other blinks) as anchor
+  points
 
 ### Documentation
 

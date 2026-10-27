@@ -2784,11 +2784,13 @@ class GenericEyeData(ABC):
             Passed to scipy.interpolate.interp1d.
         margin : tuple, default (-20, 20)
             Time window (in ms) before and after the interval to collect boundary
-            points for interpolation. Boundary points are taken from
-            ``abs(margin[0])`` ms before the start and ``abs(margin[1])`` ms after
-            the end of each interval (the signs are ignored). For higher-order
-            methods like "cubic" or "quadratic", more boundary points from this
-            margin are used to fit the interpolation curve.
+            points for interpolation, relative to the start and end of each
+            interval: points are taken from ``start + margin[0]`` to the start
+            and from the end to ``end + margin[1]``, so `margin[0]` must be
+            <= 0 and `margin[1]` >= 0. Masked or NaN samples are not used.
+            For higher-order methods like "cubic" or "quadratic", more
+            boundary points from this margin are used to fit the
+            interpolation curve.
         store_as_suffix : str or None, default None
             If None, replace the original data.
             If a string, store interpolated data in a new variable with this suffix
@@ -2833,9 +2835,12 @@ class GenericEyeData(ABC):
         
         obj = self._get_inplace(inplace)
         
+        if margin[0] > 0 or margin[1] < 0:
+            raise ValueError(f"margin must be (<=0, >=0) in ms, got {margin}")
+
         # Convert margin from ms to samples
-        margin_left_ix = int(abs(margin[0]) / 1000.0 * obj.fs)
-        margin_right_ix = int(abs(margin[1]) / 1000.0 * obj.fs)
+        margin_left_ix = int(-margin[0] / 1000.0 * obj.fs)
+        margin_right_ix = int(margin[1] / 1000.0 * obj.fs)
         
         def interpolate_single_key(key, interval_obj):
             """Local helper to interpolate a single data key."""
@@ -2867,22 +2872,23 @@ class GenericEyeData(ABC):
                 right_margin_start = end_idx
                 right_margin_end = min(len(obj.tx), end_idx + margin_right_ix)
                 
-                # Get valid (non-NaN) points from left margin
+                # Get valid (non-NaN, non-masked) points from left margin;
+                # `mask` also covers intervals interpolated before
                 left_indices = []
                 left_times = []
                 left_values = []
                 for idx in range(left_margin_start, left_margin_end):
-                    if not np.isnan(data[idx]):
+                    if not np.isnan(data[idx]) and not mask[idx]:
                         left_indices.append(idx)
                         left_times.append(obj.tx[idx])
                         left_values.append(data[idx])
                 
-                # Get valid (non-NaN) points from right margin
+                # Get valid (non-NaN, non-masked) points from right margin
                 right_indices = []
                 right_times = []
                 right_values = []
                 for idx in range(right_margin_start, right_margin_end):
-                    if not np.isnan(data[idx]):
+                    if not np.isnan(data[idx]) and not mask[idx]:
                         right_indices.append(idx)
                         right_times.append(obj.tx[idx])
                         right_values.append(data[idx])
