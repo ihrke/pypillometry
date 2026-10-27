@@ -739,7 +739,9 @@ def read_eyelink(
     source: str, 
     cache_file: str = None, 
     force_download: bool = False, 
-    session: Optional[requests.Session] = None):
+    session: Optional[requests.Session] = None,
+    cache_dir: Optional[str] = None,
+    autodelete: bool = False):
     """
     Read an Eyelink file/URL and return the object returned by the "eyelinkio" package.
 
@@ -750,15 +752,24 @@ def read_eyelink(
     ----------
     source : str
         filename of the Eyelink EDF file or URL (OSF client URLs such as
-        ``https://osf.io/<id>`` are converted to download URLs)
+        ``https://osf.io/<id>`` are converted to download URLs; SSH URLs
+        such as ``ssh://server/folder/file.edf`` are downloaded with
+        :func:`~pypillometry.io.ssh_download`)
     cache_file : str, optional
-        filename to cache the file in case it is downloaded from a URL;
-        if None, the file is downloaded to a temporary file
+        filename to cache the file in case it is downloaded from an HTTP(S)
+        URL; if None, the file is downloaded to a temporary file
     force_download : bool, optional
-        if True, force re-download even if `cache_file` exists locally
+        if True, force re-download even if the file exists in the cache
     session : requests.Session, optional
         requests session to use for the download (e.g., from
         :func:`~pypillometry.io.osf_authenticate` for private projects)
+    cache_dir : str, optional
+        directory for files downloaded from SSH URLs; if None, a
+        temporary directory is used
+    autodelete : bool, optional
+        if True, a file downloaded from an SSH URL (or from an HTTP(S) URL
+        into a temporary file) is deleted after it was read. Local files
+        and `cache_file` are never deleted. Default False.
 
     Returns
     -------
@@ -771,23 +782,42 @@ def read_eyelink(
     """
     import eyelinkio
 
+    if is_ssh_url(source):
+        with local_copy(source, cache_dir=cache_dir, autodelete=autodelete,
+                        force_download=force_download) as fname:
+            return _read_edf(fname)
+
     # Handle if source is a URL or local file
+    is_temp_download = False
     if is_url(source):
         if cache_file is not None:
             # If cached file exists and no force_download, use it
             if os.path.exists(cache_file) and not force_download:
                 fname = cache_file
             else:
-                cache_dir = os.path.dirname(cache_file)
-                # If cache_dir is non-empty and does not exist, make it
-                if cache_dir and not os.path.exists(cache_dir):
-                    logger.info(f"Creating directory for cache file: {cache_dir}")
-                    os.makedirs(cache_dir, exist_ok=True)
+                cache_parent = os.path.dirname(cache_file)
+                # If the directory is non-empty and does not exist, make it
+                if cache_parent and not os.path.exists(cache_parent):
+                    logger.info(f"Creating directory for cache file: {cache_parent}")
+                    os.makedirs(cache_parent, exist_ok=True)
                 fname = download(source, cache_file, session=session)
         else:
             fname = download(source, session=session)
+            is_temp_download = True
     else:
         fname = source
+
+    try:
+        return _read_edf(fname)
+    finally:
+        if autodelete and is_temp_download and os.path.exists(fname):
+            logger.info(f"Deleting downloaded copy: {fname}")
+            os.remove(fname)
+
+
+def _read_edf(fname: str):
+    """Read a local EDF file with eyelinkio (its output only shown at DEBUG level)."""
+    import eyelinkio
 
     # Check if DEBUG logging is enabled
     current_level = logging_get_level()

@@ -6,7 +6,11 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+from importlib.resources import files
+
 from pypillometry import io
+
+DATA_DIR = str(files("pypillometry.data"))
 
 
 class FakeServer:
@@ -145,6 +149,27 @@ class TestLocalCopy(SSHTestCase):
             tmpdir = fname.split(os.sep + "server" + os.sep)[0]
             self.assertTrue(os.path.isdir(tmpdir))
         self.assertFalse(os.path.exists(tmpdir))
+
+
+class TestReadEyelinkSSH(SSHTestCase):
+    def setUp(self):
+        super().setUp()
+        shutil.copy(os.path.join(DATA_DIR, "test.edf"),
+                    os.path.join(self.server_root, "data", "test.edf"))
+
+    def test_read_eyelink(self):
+        edf = io.read_eyelink("ssh://server/data/test.edf", cache_dir=self.cache)
+        self.assertIn("samples", edf)
+        self.assertTrue(os.path.exists(os.path.join(self.cache, "server", "data", "test.edf")))
+
+    def test_read_eyelink_autodelete(self):
+        io.read_eyelink("ssh://server/data/test.edf", cache_dir=self.cache, autodelete=True)
+        self.assertFalse(os.path.exists(os.path.join(self.cache, "server", "data", "test.edf")))
+
+    def test_from_eyelink(self):
+        import pypillometry as pp
+        d = pp.EyeData.from_eyelink("ssh://server/data/test.edf", autodelete=True)
+        self.assertGreater(len(d.tx), 0)
 
 
 if __name__ == "__main__":
