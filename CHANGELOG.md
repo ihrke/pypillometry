@@ -99,6 +99,8 @@
   in random order; now in the order they were added
 - `read_pickle()`/`read_eyelink()` of URLs without `cache_file`/`cache_dir`
   left the temporary download directory behind
+- `load_study_osf()` printed to stdout instead of logging and showed the
+  download size only with `force_download=True`
 
 ### Documentation
 
