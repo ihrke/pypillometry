@@ -302,6 +302,17 @@ class TestSegmentPlotParameters(unittest.TestCase):
         """Test plot_timeseries_segments with ylim parameter"""
         figs = self.data.plot.plot_timeseries_segments(interv=1.0, ylim=(0, 10))
         self.assertIsNotNone(figs)
+
+    def test_segments_ylim_all_subplots(self):
+        """ylim is applied to all subplots, not only the last one"""
+        figs = self.data.plot.plot_timeseries_segments(
+            interv=1.0, ylim=(0, 10), variables=["pupil", "x"])
+        self.assertEqual(len(figs[0].axes), 2)
+        for ax in figs[0].axes:
+            self.assertEqual(ax.get_ylim(), (0, 10))
+        figs = self.data.plot.pupil_plot_segments(interv=1.0, ylim=(0, 10))
+        for ax in figs[0].axes:
+            self.assertEqual(ax.get_ylim(), (0, 10))
     
     def test_segments_different_figsize(self):
         """Test plot_timeseries_segments with different figure sizes"""

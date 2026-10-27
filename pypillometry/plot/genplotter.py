@@ -414,7 +414,7 @@ class GenericPlotter:
         figsize : Tuple[int,int]
             dimensions of the figures
         ylim : Tuple[float,float] or None
-            y-axis limits for the plots
+            y-axis limits for all subplots
         eyes : list
             list of eyes to plot; if empty, all available eyes are plotted
         variables : list
@@ -454,7 +454,8 @@ class GenericPlotter:
             self.plot_timeseries(plot_range=(start,end), units=units, 
                                eyes=eyes, variables=variables, **kwargs)
             if ylim is not None:
-                plt.ylim(*ylim)
+                for ax in fig.axes:
+                    ax.set_ylim(*ylim)
             figs.append(fig)
             
             # Close figure immediately after creation if saving to PDF to prevent display and memory issues

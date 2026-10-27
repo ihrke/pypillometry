@@ -248,7 +248,8 @@ class PupilPlotter(GenericPlotter):
             fig = plt.figure(figsize=figsize)
             self.pupil_plot(plot_range=(start, end), units=units, **kwargs)
             if ylim is not None:
-                plt.ylim(*ylim)
+                for ax in fig.axes:
+                    ax.set_ylim(*ylim)
             figs.append(fig)
             
             # Close figure immediately after creation if saving to PDF to prevent display and memory issues
