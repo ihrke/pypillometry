@@ -8,8 +8,17 @@ camera position, and screen orientation.
 
 import numpy as np
 from typing import Optional, Tuple, Union, Dict, Any
-from ..units import parse_distance, parse_angle
+from ..units import parse_distance, parse_angle, ureg
 from loguru import logger
+
+
+
+def _degrees_to_radians(value):
+    """Angle in radians; plain numbers/arrays are degrees, strings and pint
+    Quantities carry their units."""
+    if isinstance(value, (str, ureg.Quantity)):
+        return parse_angle(value)
+    return np.radians(value)
 
 
 class ExperimentalSetup:
@@ -578,13 +587,10 @@ class ExperimentalSetup:
         
         Parameters
         ----------
-        angle_x, angle_y : float, str or pint.Quantity
-            Visual angles. Plain numbers are interpreted as radians (not
-            degrees; with a one-time warning). Strings with units, e.g.,
+        angle_x, angle_y : float, array, str or pint.Quantity
+            Visual angles. Plain numbers and arrays are in degrees (like the
+            output of :meth:`mm_to_degrees`). Strings with units, e.g.,
             ``"5 deg"``, ``"0.087 rad"``, or pint Quantities are converted.
-            For arrays, use a pint Quantity, e.g.,
-            ``np.array([1, 2]) * pypillometry.units.ureg.deg``; plain numpy
-            arrays with more than one element are not supported.
             Positive x = right, positive y = up.
         
         Returns
@@ -601,16 +607,8 @@ class ExperimentalSetup:
             raise ValueError(
                 "Eye-to-screen distance not set. Provide eye_to_screen_center."
             )
-        # Parse angles if they're strings or pint quantities
-        if isinstance(angle_x, (str,)) or hasattr(angle_x, 'magnitude'):
-            angle_x = parse_angle(angle_x)  # returns radians
-        else:
-            angle_x = parse_angle(angle_x)  # handles float (assumes radians)
-        
-        if isinstance(angle_y, (str,)) or hasattr(angle_y, 'magnitude'):
-            angle_y = parse_angle(angle_y)  # returns radians
-        else:
-            angle_y = parse_angle(angle_y)  # handles float (assumes radians)
+        angle_x = _degrees_to_radians(angle_x)
+        angle_y = _degrees_to_radians(angle_y)
         
         x_mm = self._d * np.tan(angle_x)
         y_mm = self._d * np.tan(angle_y)
@@ -657,8 +655,8 @@ class ExperimentalSetup:
         ----------
         angle_x, angle_y : float, str or pint.Quantity
             Visual angles, in the same forms as for :meth:`degrees_to_mm`:
-            plain numbers are radians, strings and pint Quantities carry
-            their units; arrays only as pint Quantity.
+            plain numbers and arrays are degrees, strings and pint
+            Quantities carry their units.
             Positive x = right, positive y = up.
         
         Returns

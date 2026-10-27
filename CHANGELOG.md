@@ -13,6 +13,9 @@
 - `fill_time_discontinuities()` fills gaps with NaN (was 0), so filled-in
   samples are masked for all variables, not only pupil.
 - `apply_history()` was removed
+- `ExperimentalSetup.degrees_to_mm()`/`degrees_to_pixels()` and
+  `plot_experimental_setup(viewing_angle=...)` take plain numbers as degrees
+  (were radians); `degrees_to_*()` also accept plain arrays.
 - new module `pp.study` hosting all study-related io functions
 
 ### Added

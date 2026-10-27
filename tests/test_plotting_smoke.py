@@ -413,6 +413,16 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
         )
         self.assertIsNotNone(fig)
         self.assertIsNotNone(ax)
+        self.assertAlmostEqual(ax.elev, 60)
+        self.assertAlmostEqual(ax.azim, -45)
+
+    def test_plot_experimental_setup_viewing_angle_numbers_are_degrees(self):
+        """Plain numbers in viewing_angle are degrees"""
+        fig, ax = self.data.plot.plot_experimental_setup(
+            projection='3d', viewing_angle=(30, -60)
+        )
+        self.assertAlmostEqual(ax.elev, 30)
+        self.assertAlmostEqual(ax.azim, -60)
 
 
 if __name__ == '__main__':

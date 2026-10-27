@@ -294,9 +294,9 @@ class TestExperimentalSetupCoordinateConversion:
         assert np.isclose(x_mm, expected_x)
         assert np.isclose(y_mm, expected_y)
     
-    def test_degrees_to_mm_float_radians_input(self):
-        """Test degrees_to_mm with float (radians) input."""
-        x_mm, y_mm = self.setup.degrees_to_mm(np.radians(5), np.radians(2.5))
+    def test_degrees_to_mm_float_degrees_input(self):
+        """Test degrees_to_mm with float input (degrees)."""
+        x_mm, y_mm = self.setup.degrees_to_mm(5, 2.5)
         expected_x = 700 * np.tan(np.radians(5))
         expected_y = 700 * np.tan(np.radians(2.5))
         assert np.isclose(x_mm, expected_x)
@@ -311,6 +311,17 @@ class TestExperimentalSetupCoordinateConversion:
         assert np.isclose(x_mm, expected_x)
         assert np.isclose(y_mm, expected_y)
     
+    def test_degrees_to_mm_array_input(self):
+        """Plain arrays and array Quantities are accepted."""
+        from pypillometry.units import ureg
+        angles = np.array([0, 5, -10])
+        expected = 700 * np.tan(np.radians(angles))
+        x_mm, y_mm = self.setup.degrees_to_mm(angles, angles)
+        assert np.allclose(x_mm, expected)
+        assert np.allclose(y_mm, expected)
+        x_mm, _ = self.setup.degrees_to_mm(angles * ureg.degree, 0)
+        assert np.allclose(x_mm, expected)
+    
     def test_degrees_to_mm_consistency_with_mm_to_degrees(self):
         """Test that degrees_to_mm is inverse of mm_to_degrees."""
         # Start with mm, convert to degrees, convert back
@@ -318,6 +329,10 @@ class TestExperimentalSetupCoordinateConversion:
         x_deg, y_deg = self.setup.mm_to_degrees(x_mm_orig, y_mm_orig)
         # Convert degrees back to mm using string format
         x_mm_back, y_mm_back = self.setup.degrees_to_mm(f"{x_deg} deg", f"{y_deg} deg")
+        assert np.isclose(x_mm_back, x_mm_orig)
+        assert np.isclose(y_mm_back, y_mm_orig)
+        # plain output of mm_to_degrees can be passed back directly
+        x_mm_back, y_mm_back = self.setup.degrees_to_mm(x_deg, y_deg)
         assert np.isclose(x_mm_back, x_mm_orig)
         assert np.isclose(y_mm_back, y_mm_orig)
     
@@ -347,12 +362,13 @@ class TestExperimentalSetupCoordinateConversion:
         assert np.isclose(x_px, 960)
         assert np.isclose(y_px, 540)
     
-    def test_degrees_to_pixels_float_radians_input(self):
-        """Test degrees_to_pixels with float (radians) input."""
+    def test_degrees_to_pixels_float_degrees_input(self):
+        """Test degrees_to_pixels with float input (degrees)."""
         x_px, y_px = self.setup.degrees_to_pixels(0, 0)
-        # (0, 0) radians should map to screen center
         assert np.isclose(x_px, 960)
         assert np.isclose(y_px, 540)
+        x_px, y_px = self.setup.pixels_to_degrees(1200, 400)
+        assert np.allclose(self.setup.degrees_to_pixels(x_px, y_px), (1200, 400))
     
     def test_degrees_to_pixels_consistency_with_pixels_to_degrees(self):
         """Test that degrees_to_pixels is inverse of pixels_to_degrees."""
@@ -367,7 +383,7 @@ class TestExperimentalSetupCoordinateConversion:
     def test_degrees_to_mm_mixed_input_formats(self):
         """Test degrees_to_mm with mixed input formats."""
         # String for x, float for y
-        x_mm1, y_mm1 = self.setup.degrees_to_mm("5 deg", np.radians(2.5))
+        x_mm1, y_mm1 = self.setup.degrees_to_mm("5 deg", 2.5)
         # Both as strings
         x_mm2, y_mm2 = self.setup.degrees_to_mm("5 deg", "2.5 deg")
         assert np.isclose(x_mm1, x_mm2)

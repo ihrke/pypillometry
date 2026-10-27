@@ -379,9 +379,8 @@ class EyePlotter(GazePlotter,PupilPlotter):
             Existing axis to plot on (only for '3d' projection)
         viewing_angle : tuple, optional
             Viewing angle for 3D projection (elev, azim) or (elev, azim, roll).
-            Each element is parsed like `theta`, i.e. use strings with units
-            (e.g., ``("30 deg", "-60 deg")``); plain numbers are interpreted
-            as radians.
+            Plain numbers are in degrees (as in matplotlib's ``view_init``);
+            strings with units (e.g., ``("30 deg", "-60 deg")``) are parsed.
         projection : str, default '2d'
             '2d' for three orthogonal views, '3d' for interactive 3D view
 
@@ -427,10 +426,6 @@ class EyePlotter(GazePlotter,PupilPlotter):
             theta = parse_angle(theta)
         if phi is not None:
             phi = parse_angle(phi)
-        
-        # Parse viewing angle if provided
-        if viewing_angle is not None:
-            viewing_angle = tuple(np.degrees(parse_angle(va)) for va in viewing_angle)
         
         return setup.plot(
             theta=theta,
