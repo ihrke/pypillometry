@@ -11,6 +11,7 @@ except:
    import pickle
 import os
 import requests
+from contextlib import contextmanager
 from tqdm import tqdm
 from typing import Dict, Optional
 from loguru import logger
@@ -190,6 +191,173 @@ def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optio
             session.close()
 
     return fname
+
+def is_ssh_url(source) -> bool:
+    """Check if `source` is an SSH URL (``ssh://[user@]host[:port]/path``).
+
+    Parameters
+    ----------
+    source : str
+        string to check
+
+    Returns
+    -------
+    bool
+        True if `source` starts with ``ssh://``
+    """
+    return isinstance(source, str) and source.startswith("ssh://")
+
+
+def _parse_ssh_url(url: str):
+    """Split an SSH URL into (host, port, remote path).
+
+    `host` may contain a user (``user@host``). The path is absolute
+    (``ssh://host/data/f.edf`` -> ``/data/f.edf``) unless it starts with
+    ``~/``; then it is relative to the home directory on the server
+    (``ssh://host/~/data/f.edf`` -> ``data/f.edf``).
+    """
+    from urllib.parse import urlsplit, unquote
+    parts = urlsplit(url)
+    if parts.scheme != "ssh" or not parts.hostname:
+        raise ValueError(f"Not a valid SSH URL: '{url}' (expected ssh://host/path)")
+    host = parts.hostname
+    if parts.username:
+        host = f"{parts.username}@{host}"
+    path = unquote(parts.path)
+    if path in ("", "/"):
+        raise ValueError(f"SSH URL '{url}' has no path")
+    if path.startswith("/~/"):
+        path = path[3:]
+    elif path == "/~":
+        raise ValueError(f"SSH URL '{url}' has no path")
+    return host, parts.port, path
+
+
+def _ssh_cache_path(url: str, cache_dir: str) -> str:
+    """Local path in `cache_dir` for an SSH URL: ``cache_dir/<host>/<path>``."""
+    host, port, path = _parse_ssh_url(url)
+    host_dir = host if port is None else f"{host}_{port}"
+    rel = path.strip("/").split("/")
+    if not path.startswith("/"):
+        rel = ["~"] + rel  # relative to home on the server
+    return os.path.join(cache_dir, host_dir, *rel)
+
+
+def ssh_download(url: str, cache_dir: Optional[str] = None, force_download: bool = False) -> str:
+    """Download a file or folder from an SSH URL with ``scp``.
+
+    The connection uses the system's ``scp`` and therefore
+    ``~/.ssh/config`` (host aliases, users, keys). Only key-based login is
+    supported: password prompts are disabled (``BatchMode=yes``).
+
+    URLs have the form ``ssh://[user@]host[:port]/path``. The path is
+    absolute on the server; use ``ssh://host/~/path`` for a path relative to
+    the home directory. A URL ending in ``/`` downloads the whole folder.
+
+    Parameters
+    ----------
+    url : str
+        SSH URL of the file or folder
+    cache_dir : str, optional
+        local directory to store the download in; the file is saved as
+        ``cache_dir/<host>/<path>``. If None, a new temporary directory is
+        created. The location is logged.
+    force_download : bool, optional
+        if False (default), a file that already exists in `cache_dir` is
+        reused; if True, it is downloaded again
+
+    Returns
+    -------
+    str
+        local path of the downloaded file or folder
+    """
+    import subprocess
+    import shutil
+    import tempfile
+
+    host, port, path = _parse_ssh_url(url)
+    if cache_dir is None:
+        cache_dir = tempfile.mkdtemp(prefix="pypillometry_ssh_")
+    local = _ssh_cache_path(url, cache_dir)
+    is_dir = path.endswith("/")
+
+    if os.path.exists(local) and not force_download:
+        logger.info(f"Using cached copy of '{url}': {local}")
+        return local
+
+    if shutil.which("scp") is None:
+        raise RuntimeError("Downloading from SSH URLs requires the 'scp' command")
+
+    if is_dir and os.path.exists(local):
+        shutil.rmtree(local)
+    os.makedirs(os.path.dirname(local), exist_ok=True)
+
+    cmd = ["scp", "-q", "-o", "BatchMode=yes"]
+    if port is not None:
+        cmd += ["-P", str(port)]
+    if is_dir:
+        cmd.append("-r")
+    cmd += [f"{host}:{path.rstrip('/') if is_dir else path}", local]
+
+    logger.info(f"Downloading '{url}' via SSH to {local}")
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        msg = result.stderr.strip()
+        raise RuntimeError(
+            f"Could not download '{url}' via SSH (scp exit code "
+            f"{result.returncode}): {msg}\n"
+            "Note: only key-based SSH login is supported (no passwords)."
+        )
+    return local
+
+
+@contextmanager
+def local_copy(source: str, cache_dir: Optional[str] = None, autodelete: bool = False, force_download: bool = False):
+    """Context manager that gives a local filename for `source`.
+
+    SSH URLs (see :func:`ssh_download`) are downloaded; other sources are
+    passed through unchanged (and never deleted).
+
+    Parameters
+    ----------
+    source : str
+        local path or SSH URL
+    cache_dir : str, optional
+        directory for SSH downloads; if None, a temporary directory is used
+    autodelete : bool, optional
+        if True, the downloaded copy is deleted when the context is left
+        (i.e., after the file was read); a temporary directory is removed
+        completely. Default False.
+    force_download : bool, optional
+        download again even if the file is already in `cache_dir`
+
+    Yields
+    ------
+    str
+        local filename
+    """
+    import shutil
+    import tempfile
+
+    if not is_ssh_url(source):
+        yield source
+        return
+
+    tmpdir = None
+    if cache_dir is None:
+        tmpdir = tempfile.mkdtemp(prefix="pypillometry_ssh_")
+    fname = ssh_download(source, cache_dir=tmpdir or cache_dir, force_download=force_download)
+    try:
+        yield fname
+    finally:
+        if autodelete:
+            target = tmpdir or fname
+            logger.info(f"Deleting downloaded copy: {target}")
+            if os.path.isdir(target):
+                shutil.rmtree(target, ignore_errors=True)
+            elif os.path.exists(target):
+                os.remove(target)
+
 
 def get_osf_project_files(osf_id: str, session: Optional[requests.Session] = None) -> Dict[str, Dict[str, str]]:
     """
