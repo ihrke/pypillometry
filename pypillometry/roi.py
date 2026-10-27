@@ -1,6 +1,6 @@
 """
 roi.py
-=====
+======
 
 Implement region of interest (ROI) functionality for gaze-data (x/y).
 
