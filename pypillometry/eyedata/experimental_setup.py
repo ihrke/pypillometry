@@ -697,7 +697,8 @@ class ExperimentalSetup:
         Notes
         -----
         Uses the transformation from algorithm document Section 10.7.3:
-        T(x_s, y_s) = R(alpha, beta) @ [x_s, y_s, 0]^T + [delta_x, delta_y, d]^T
+        T(x_s, y_s) = R(alpha, beta) @ [x_s, y_s, 0]^T + [delta_x, delta_y, d]^T,
+        i.e., the screen center is at (delta_x, delta_y, d) for any tilt.
         """
         cos_a, sin_a = np.cos(self._alpha_tilt), np.sin(self._alpha_tilt)
         cos_b, sin_b = np.cos(self._beta_tilt), np.sin(self._beta_tilt)
@@ -705,7 +706,7 @@ class ExperimentalSetup:
         # Apply rotation and translation
         T_x = x_mm * cos_b + y_mm * sin_a * sin_b + self.delta_x
         T_y = y_mm * cos_a + self.delta_y
-        T_z = -x_mm * sin_b + y_mm * sin_a * cos_b + self.d * cos_a * cos_b
+        T_z = -x_mm * sin_b + y_mm * sin_a * cos_b + self.d
         
         return T_x, T_y, T_z
     

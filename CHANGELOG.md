@@ -114,6 +114,8 @@
   argument)
 - `tweak()`: "?" did not open the help
 - `nblinks()` was annotated as returning `int` (returns a dict)
+- `ExperimentalSetup.screen_point_to_eye_frame()`: tilting the screen moved
+  its center towards the eye (z was `d*cos(pitch)*cos(yaw)` instead of `d`)
 
 ### Documentation
 

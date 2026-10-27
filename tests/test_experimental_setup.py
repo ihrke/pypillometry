@@ -284,6 +284,17 @@ class TestExperimentalSetupCoordinateConversion:
         assert self.setup.pixels_to_mm(960, 0)[1] > 0
         assert self.setup.mm_to_pixels(0, 100)[1] < 540
 
+    def test_screen_point_to_eye_frame_tilted(self):
+        """The screen center stays at (delta_x, delta_y, d) when tilted."""
+        setup = ExperimentalSetup(eye_to_screen_center="600 mm",
+                                  screen_pitch="20 deg", screen_yaw="10 deg")
+        T = setup.screen_point_to_eye_frame(0, 0)
+        np.testing.assert_allclose(T, (0, 0, 600))
+        # a point above the center moves away from the eye with positive pitch
+        Tx, Ty, Tz = setup.screen_point_to_eye_frame(0, 100)
+        assert np.isclose(Ty, 100 * np.cos(np.radians(20)))
+        assert np.isclose(Tz, 600 + 100 * np.sin(np.radians(20)) * np.cos(np.radians(10)))
+
     def test_conversion_without_screen_size(self):
         """Clear ValueError if the screen size is missing."""
         setup = ExperimentalSetup(screen_resolution=(1920, 1080))
