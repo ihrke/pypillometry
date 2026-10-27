@@ -183,8 +183,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
                                    lam_sig=1, lam_min=1, lam_max=100,
                                    verbose=0, seed=None):
     """
-    Extract baseline based (re-)estimating the lower envelope using B-splines.
-    See notebook `baseline_interp.ipynb` for details.
+    Extract baseline based on (re-)estimating the lower envelope using B-splines.
     The signal is downsampled (to `fsd` Hz) for speed.
 
     The B-spline fits are done with a Stan model
