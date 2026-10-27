@@ -63,7 +63,19 @@ class TestPupilData(unittest.TestCase):
             np.testing.assert_array_equal(d.data["left_pupil"][ix], i+1.)
         self.assertEqual(np.isnan(d.data["left_pupil"]).sum(), 2000-len(t))
         self.assertEqual(d.data.mask["left_pupil"].sum(), 2000-len(t))
-        
+
+
+    def test_estimate_baseline_nan_raises_clear_error(self):
+        d = pp.get_example_data("rlmw_002_short").sub_slice(0, 10, units="sec")
+        with self.assertRaisesRegex(ValueError, "pupil_blinks_interpolate"):
+            d.pupil_estimate_baseline(eyes="left", inplace=False)
+
+    def test_estimate_baseline_after_interpolation(self):
+        d = pp.get_example_data("rlmw_002_short").sub_slice(0, 10, units="sec")
+        d = d.pupil_blinks_detect(eyes="left", apply_mask=True, inplace=False)
+        d = d.pupil_blinks_interpolate(eyes="left", inplace=False)
+        d = d.pupil_estimate_baseline(eyes="left", inplace=False)
+        self.assertFalse(np.any(np.isnan(d.data["left", "baseline"])))
 
 if __name__ == '__main__':
     unittest.main()

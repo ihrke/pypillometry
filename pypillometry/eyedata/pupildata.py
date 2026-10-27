@@ -803,7 +803,8 @@ class PupilData(GenericEyeData):
         Raises
         ------
         ValueError
-            if `method` is unknown
+            if `method` is unknown or the data contain NaN (interpolate
+            blinks first, see :meth:`pupil_blinks_interpolate`)
         """
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
@@ -813,6 +814,11 @@ class PupilData(GenericEyeData):
 
         for eye in eyes:
             logger.debug("Estimating baseline for eye %s"%eye)
+            if np.any(np.isnan(self.data[eye,variable])):
+                raise ValueError(
+                    f"'{eye}_{variable}' contains NaN (e.g., blinks that were "
+                    "not interpolated); the baseline cannot be estimated. "
+                    "Interpolate them first, e.g., with pupil_blinks_interpolate().")
 
             if method=="envelope_iter_bspline_2":
                 txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],
