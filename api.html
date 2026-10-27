@@ -453,7 +453,8 @@ as well as tools for plotting and analyzing these data.</p>
 <li><p><a class="reference internal" href="#module-pypillometry.io" id="id14">Modules</a></p>
 <ul>
 <li><p><a class="reference internal" href="#io-py" id="id15">io.py</a></p></li>
-<li><p><a class="reference internal" href="#example-data-py" id="id16">example_data.py</a></p></li>
+<li><p><a class="reference internal" href="#study-py" id="id16">study.py</a></p></li>
+<li><p><a class="reference internal" href="#example-data-py" id="id17">example_data.py</a></p></li>
 </ul>
 </li>
 </ul>
@@ -626,7 +627,7 @@ initially True). The method-level <cite>inplace</cite> argument overrides this.<
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads an eyedata object from an Eyelink file.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname, **kwargs)</p></td>
 <td><p>Reads a <a class="reference internal" href="#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a> object from a pickle-file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code>([eyes, variables, units])</p></td>
@@ -1051,7 +1052,7 @@ initially True). The method-level <cite>inplace</cite> argument overrides this.<
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads an eyedata object from an Eyelink file.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname, **kwargs)</p></td>
 <td><p>Reads a <a class="reference internal" href="#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a> object from a pickle-file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code>([eyes, variables, units])</p></td>
@@ -1597,7 +1598,7 @@ initially True). The method-level <cite>inplace</cite> argument overrides this.<
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads an eyedata object from an Eyelink file.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code>(fname, **kwargs)</p></td>
 <td><p>Reads a <a class="reference internal" href="#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a> object from a pickle-file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code>([eyes, variables, units])</p></td>
@@ -2407,7 +2408,7 @@ implements some basic functions.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.from_eyelink" title="pypillometry.GenericEyeData.from_eyelink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_eyelink</span></code></a>(fname[, return_edf_obj, ...])</p></td>
 <td><p>Reads an eyedata object from an Eyelink file.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.from_file" title="pypillometry.GenericEyeData.from_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code></a>(fname)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.from_file" title="pypillometry.GenericEyeData.from_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code></a>(fname, **kwargs)</p></td>
 <td><p>Reads a <a class="reference internal" href="#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a> object from a pickle-file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GenericEyeData.get_blinks" title="pypillometry.GenericEyeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code></a>([eyes, variables, units])</p></td>
@@ -2741,14 +2742,16 @@ create the object manually.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename of the EDF file (or URL)</p></li>
+<li><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename of the EDF file, HTTP(S) URL or SSH URL
+(<code class="docutils literal notranslate"><span class="pre">ssh://server/folder/file.edf</span></code>, see
+<a class="reference internal" href="#pypillometry.io.fetch_url" title="pypillometry.io.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.io.fetch_url()</span></code></a>)</p></li>
 <li><p><strong>return_edf_obj</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, return a tuple with the eyedata object and the object
 returned by the “eyelinkio” package;
 if False (default), return only the eyedata object</p></li>
 <li><p><strong>remove_eyelink_triggers</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True (default), remove all Eyelink triggers from the event_labels
 (related to eye-tracker settings, calibration, validation etc)</p></li>
 <li><p><strong>**kwargs</strong> – additional arguments passed to <a class="reference internal" href="#pypillometry.io.read_eyelink" title="pypillometry.io.read_eyelink"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.io.read_eyelink()</span></code></a>
-(e.g., <cite>cache_file</cite>)</p></li>
+(e.g., <cite>cache_file</cite>, <cite>cache_dir</cite>, <cite>autodelete</cite>, <cite>session</cite>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2772,14 +2775,18 @@ object returned by the “eyelinkio” package</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.from_file">
-<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.from_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.from_file" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.from_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.from_file" title="Link to this definition">¶</a></dt>
 <dd><p>Reads a <a class="reference internal" href="#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a> object from a pickle-file.
 Use as <code class="docutils literal notranslate"><span class="pre">pypillometry.PupilData.from_file(&quot;yourfile.pd&quot;)</span></code>.</p>
 <p>The file is read with <a class="reference internal" href="#pypillometry.io.read_pickle" title="pypillometry.io.read_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.io.read_pickle()</span></code></a>, so
-<cite>fname</cite> can also be a URL.</p>
+<cite>fname</cite> can also be an HTTP(S) or SSH URL.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename (or URL)</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename (or URL)</p></li>
+<li><p><strong>**kwargs</strong> – passed to <a class="reference internal" href="#pypillometry.io.read_pickle" title="pypillometry.io.read_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.io.read_pickle()</span></code></a> (e.g.,
+<cite>cache_file</cite>, <cite>cache_dir</cite>, <cite>autodelete</cite>, <cite>session</cite>)</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the object stored in the file (its class is the one that was
@@ -2945,8 +2952,12 @@ with two entries.</p>
 function returns True</p></li>
 <li><p>if tuple: use the intervals between the events selected by the
 first and the second entry (each a str or function); <cite>interval[0]</cite>
-is added to the first and <cite>interval[1]</cite> to the second event.
-Both selectors must result in identical number of events.</p></li>
+is added to the first and <cite>interval[1]</cite> to the second event
+(so <code class="docutils literal notranslate"><span class="pre">interval=(0,</span> <span class="pre">0)</span></code> gives exactly the span between them).
+Both selectors must result in identical number of events;
+events are paired by order (n-th first with n-th second event)
+and a ValueError is raised if a second event comes before
+its first event.</p></li>
 <li><p>if Events: use the events from the
 <code class="xref py py-class docutils literal notranslate"><span class="pre">Events</span></code> object directly</p></li>
 </ul>
@@ -4156,65 +4167,61 @@ You can also set the log-level to <cite>DEBUG</cite> or <cite>WARN</cite> by run
 <p>Read/Write data from/to disk.</p>
 </section>
 <dl class="py function">
-<dt class="sig sig-object py" id="pypillometry.io.load_study_local">
-<span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">load_study_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pypillometry_conf.py'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subjects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#load_study_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.load_study_local" title="Link to this definition">¶</a></dt>
-<dd><p>Read a study from a local directory using the configuration file.</p>
-<p>The configuration file must define a dict <cite>raw_data</cite> (subject ID -&gt;
-dict of data files, relative to <cite>path</cite>) and a function
-<cite>read_subject(info)</cite> that returns the data for one subject; it is
-called with the working directory changed to <cite>path</cite>.</p>
+<dt class="sig sig-object py" id="pypillometry.io.fetch_url">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">fetch_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#fetch_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.fetch_url" title="Link to this definition">¶</a></dt>
+<dd><p>Download an HTTP(S) or SSH URL to a local file, with caching.</p>
+<p>HTTP(S) URLs are downloaded with <code class="xref py py-func docutils literal notranslate"><span class="pre">download()</span></code> (OSF client URLs
+such as <code class="docutils literal notranslate"><span class="pre">https://osf.io/&lt;id&gt;</span></code> are converted to download URLs).</p>
+<p>SSH URLs have the form <code class="docutils literal notranslate"><span class="pre">ssh://[user&#64;]host[:port]/path</span></code> and are
+downloaded with the system’s <code class="docutils literal notranslate"><span class="pre">scp</span></code>, which uses <code class="docutils literal notranslate"><span class="pre">~/.ssh/config</span></code>
+(host aliases, users, keys). Only key-based login is supported: password
+prompts are disabled (<code class="docutils literal notranslate"><span class="pre">BatchMode=yes</span></code>). The path is absolute on the
+server; use <code class="docutils literal notranslate"><span class="pre">ssh://host/~/path</span></code> for a path relative to the home
+directory. An SSH URL ending in <code class="docutils literal notranslate"><span class="pre">/</span></code> downloads the whole folder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Local path where the study data is stored</p></li>
-<li><p><strong>config_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Name of the configuration file. Default is “pypillometry_conf.py”.
-It is first looked up in the current working directory and, if
-not found there, in <cite>path</cite>.</p></li>
-<li><p><strong>subjects</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of subject IDs to load. If None, all subjects will be loaded.
-If a subject ID is provided that doesn’t exist in the data, it will be skipped.</p></li>
+<li><p><strong>url</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – HTTP(S) or SSH URL</p></li>
+<li><p><strong>cache_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – local filename to store the download in</p></li>
+<li><p><strong>cache_dir</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – directory to store the download in (used if <cite>cache_file</cite> is None);
+the file is saved as <code class="docutils literal notranslate"><span class="pre">cache_dir/&lt;host&gt;/&lt;path&gt;</span></code>. If both are None, a
+new temporary directory is used. The location is logged.</p></li>
+<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if False (default), an existing local copy is reused; if True, the
+file is downloaded again</p></li>
+<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code>]</span>) – requests session for HTTP(S) downloads (e.g., from
+<a class="reference internal" href="#pypillometry.io.osf_authenticate" title="pypillometry.io.osf_authenticate"><code class="xref py py-func docutils literal notranslate"><span class="pre">osf_authenticate()</span></code></a> for private OSF projects)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>study_data</strong> (<em>dict</em>) – Dictionary containing the loaded study data (subject ID -&gt; result
-of <cite>read_subject</cite>)</p></li>
-<li><p><strong>config</strong> (<em>module</em>) – Module containing the configuration (pypillometry_conf.py imported as a module)</p></li>
-</ul>
-</p>
+<dd class="field-even"><p>local path of the downloaded file (or folder)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pypillometry.io.load_study_osf">
-<span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">load_study_osf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">osf_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subjects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pypillometry_conf.py'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#load_study_osf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.load_study_osf" title="Link to this definition">¶</a></dt>
-<dd><p>Read a study from OSF using the configuration file.
-Example: <a class="reference external" href="https://osf.io/p2u74/">https://osf.io/p2u74/</a></p>
-<p>The configuration file (downloaded from the project) must define a
-dict <cite>raw_data</cite> (subject ID -&gt; dict of data files) and a function
-<cite>read_subject(info)</cite> that returns the data for one subject. The
-listing of the project’s files is cached in <cite>path/info_osf.pkl</cite> and
-data files are only downloaded if they are not yet in <cite>path</cite>.</p>
+<dt class="sig sig-object py" id="pypillometry.io.local_copy">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">local_copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autodelete</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#local_copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.local_copy" title="Link to this definition">¶</a></dt>
+<dd><p>Context manager that gives a local filename for <cite>source</cite>.</p>
+<p>HTTP(S) and SSH URLs are downloaded with <a class="reference internal" href="#pypillometry.io.fetch_url" title="pypillometry.io.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_url()</span></code></a>; local
+paths are passed through unchanged (and never deleted).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>osf_id</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The OSF project ID</p></li>
-<li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Local path where files should be downloaded/stored</p></li>
-<li><p><strong>subjects</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of subject IDs to load. If None, all subjects will be loaded.
-If a subject ID is provided that doesn’t exist in the data, it will be skipped.</p></li>
-<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, force re-download (including the file listing) even if
-files exist locally. Default False.</p></li>
-<li><p><strong>config_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Name of the configuration file. Default is “pypillometry_conf.py”</p></li>
-<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code>]</span>) – Authenticated session for accessing private projects. If None, uses unauthenticated requests.</p></li>
+<li><p><strong>source</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – local path, HTTP(S) URL or SSH URL</p></li>
+<li><p><strong>cache_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – see <a class="reference internal" href="#pypillometry.io.fetch_url" title="pypillometry.io.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_url()</span></code></a></p></li>
+<li><p><strong>cache_dir</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – see <a class="reference internal" href="#pypillometry.io.fetch_url" title="pypillometry.io.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_url()</span></code></a></p></li>
+<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – see <a class="reference internal" href="#pypillometry.io.fetch_url" title="pypillometry.io.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_url()</span></code></a></p></li>
+<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code>]</span>) – see <a class="reference internal" href="#pypillometry.io.fetch_url" title="pypillometry.io.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_url()</span></code></a></p></li>
+<li><p><strong>autodelete</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, the downloaded copy (also in <cite>cache_file</cite>/<cite>cache_dir</cite>) is
+deleted when the context is left, i.e. after the file was read; a
+temporary directory is removed completely. Default False.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>study_data</strong> (<em>dict</em>) – Dictionary containing the loaded study data (subject ID -&gt; result
-of <cite>read_subject</cite>)</p></li>
-<li><p><strong>config</strong> (<em>module</em>) – Module containing the configuration (pypillometry_conf.py imported as a module)</p></li>
-</ul>
-</p>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>str</em> – local filename</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4246,20 +4253,28 @@ of <cite>read_subject</cite>)</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pypillometry.io.read_eyelink">
-<span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">read_eyelink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#read_eyelink"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.read_eyelink" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">read_eyelink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autodelete</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#read_eyelink"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.read_eyelink" title="Link to this definition">¶</a></dt>
 <dd><p>Read an Eyelink file/URL and return the object returned by the “eyelinkio” package.</p>
 <p>Requires the optional package <cite>eyelinkio</cite>. Its console output is only
-shown when the log level is “DEBUG”.</p>
+shown when the log level is “DEBUG”. URLs are downloaded with
+<a class="reference internal" href="#pypillometry.io.fetch_url" title="pypillometry.io.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_url()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>source</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename of the Eyelink EDF file or URL (OSF client URLs such as
-<code class="docutils literal notranslate"><span class="pre">https://osf.io/&lt;id&gt;</span></code> are converted to download URLs)</p></li>
-<li><p><strong>cache_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename to cache the file in case it is downloaded from a URL;
-if None, the file is downloaded to a temporary file</p></li>
-<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, force re-download even if <cite>cache_file</cite> exists locally</p></li>
-<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code>]</span>) – requests session to use for the download (e.g., from
+<li><p><strong>source</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename of the Eyelink EDF file, HTTP(S) URL (OSF client URLs such
+as <code class="docutils literal notranslate"><span class="pre">https://osf.io/&lt;id&gt;</span></code> are converted to download URLs) or SSH URL
+(<code class="docutils literal notranslate"><span class="pre">ssh://server/folder/file.edf</span></code>)</p></li>
+<li><p><strong>cache_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – local filename to store a downloaded file in</p></li>
+<li><p><strong>cache_dir</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – directory to store a downloaded file in (as
+<code class="docutils literal notranslate"><span class="pre">cache_dir/&lt;host&gt;/&lt;path&gt;</span></code>), used if <cite>cache_file</cite> is None. If both
+are None, a temporary directory is used.</p></li>
+<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, download again even if a local copy exists in
+<cite>cache_file</cite>/<cite>cache_dir</cite></p></li>
+<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code>]</span>) – requests session for HTTP(S) downloads (e.g., from
 <a class="reference internal" href="#pypillometry.io.osf_authenticate" title="pypillometry.io.osf_authenticate"><code class="xref py py-func docutils literal notranslate"><span class="pre">osf_authenticate()</span></code></a> for private projects)</p></li>
+<li><p><strong>autodelete</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, the downloaded copy is deleted after it was read (also in
+<cite>cache_file</cite>/<cite>cache_dir</cite>). Local files are never deleted.
+Default False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -4280,12 +4295,26 @@ if None, the file is downloaded to a temporary file</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pypillometry.io.read_pickle">
-<span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">read_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#read_pickle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.read_pickle" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">read_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autodelete</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#read_pickle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.read_pickle" title="Link to this definition">¶</a></dt>
 <dd><p>Read a Python object from a file using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>.</p>
+<p>URLs are downloaded with <a class="reference internal" href="#pypillometry.io.fetch_url" title="pypillometry.io.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_url()</span></code></a>, in the
+same way as in <a class="reference internal" href="#pypillometry.io.read_eyelink" title="pypillometry.io.read_eyelink"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_eyelink()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<em>str</em>) – filename or URL to load data from (URLs are downloaded into
-memory, without authentication)</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename, HTTP(S) URL or SSH URL (<code class="docutils literal notranslate"><span class="pre">ssh://server/folder/file.pd</span></code>)</p></li>
+<li><p><strong>cache_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – local filename to store a downloaded file in</p></li>
+<li><p><strong>cache_dir</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – directory to store a downloaded file in (as
+<code class="docutils literal notranslate"><span class="pre">cache_dir/&lt;host&gt;/&lt;path&gt;</span></code>), used if <cite>cache_file</cite> is None. If both
+are None, a temporary directory is used.</p></li>
+<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, download again even if a local copy exists in
+<cite>cache_file</cite>/<cite>cache_dir</cite></p></li>
+<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code>]</span>) – requests session for HTTP(S) downloads (e.g., from
+<a class="reference internal" href="#pypillometry.io.osf_authenticate" title="pypillometry.io.osf_authenticate"><code class="xref py py-func docutils literal notranslate"><span class="pre">osf_authenticate()</span></code></a> for private projects)</p></li>
+<li><p><strong>autodelete</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True, the downloaded copy is deleted after it was read (also in
+<cite>cache_file</cite>/<cite>cache_dir</cite>). Local files are never deleted.
+Default False.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>loaded object</p>
@@ -4310,8 +4339,89 @@ memory, without authentication)</p>
 </dl>
 </dd></dl>
 
+<section id="study-py">
+<span id="module-pypillometry.study"></span><h3><a class="toc-backref" href="#id16" role="doc-backlink">study.py</a><a class="headerlink" href="#study-py" title="Link to this heading">¶</a></h3>
+<p>Load a complete study (all subjects) from a local directory, an SSH URL or
+an OSF project, based on a user-provided configuration file
+(<code class="docutils literal notranslate"><span class="pre">pypillometry_conf.py</span></code>) that defines a dict <cite>raw_data</cite> and a function
+<cite>read_subject(info)</cite>.</p>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.study.load_study_local">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.study.</span></span><span class="sig-name descname"><span class="pre">load_study_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pypillometry_conf.py'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subjects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autodelete</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/study.html#load_study_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.study.load_study_local" title="Link to this definition">¶</a></dt>
+<dd><p>Read a study from a local directory (or an SSH URL) using the configuration file.</p>
+<p>The configuration file must define a dict <cite>raw_data</cite> (subject ID -&gt;
+dict of data files, relative to <cite>path</cite>) and a function
+<cite>read_subject(info)</cite> that returns the data for one subject; it is
+called with the working directory changed to <cite>path</cite>.</p>
+<p>If <cite>path</cite> is an SSH URL (<code class="docutils literal notranslate"><span class="pre">ssh://server/folder/</span></code>, see
+<a class="reference internal" href="#pypillometry.io.fetch_url" title="pypillometry.io.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_url()</span></code></a>), the configuration file and the data files of the
+selected subjects are downloaded to <cite>cache_dir</cite> before they are read.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Local path or SSH URL where the study data is stored</p></li>
+<li><p><strong>config_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Name of the configuration file. Default is “pypillometry_conf.py”.
+It is first looked up in the current working directory and, if
+not found there, in <cite>path</cite>.</p></li>
+<li><p><strong>subjects</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of subject IDs to load. If None, all subjects will be loaded.
+If a subject ID is provided that doesn’t exist in the data, it will be skipped.</p></li>
+<li><p><strong>cache_dir</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – only for SSH URLs: directory to download the files to; if None, a
+temporary directory is used</p></li>
+<li><p><strong>autodelete</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – only for SSH URLs: if True, the data files of each subject are
+deleted after they were read (and a temporary directory is removed
+at the end). Default False.</p></li>
+<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – only for SSH URLs: download files again even if they are already
+in <cite>cache_dir</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>study_data</strong> (<em>dict</em>) – Dictionary containing the loaded study data (subject ID -&gt; result
+of <cite>read_subject</cite>)</p></li>
+<li><p><strong>config</strong> (<em>module</em>) – Module containing the configuration (pypillometry_conf.py imported as a module)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.study.load_study_osf">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.study.</span></span><span class="sig-name descname"><span class="pre">load_study_osf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">osf_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subjects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pypillometry_conf.py'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/study.html#load_study_osf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.study.load_study_osf" title="Link to this definition">¶</a></dt>
+<dd><p>Read a study from OSF using the configuration file.
+Example: <a class="reference external" href="https://osf.io/p2u74/">https://osf.io/p2u74/</a></p>
+<p>The configuration file (downloaded from the project) must define a
+dict <cite>raw_data</cite> (subject ID -&gt; dict of data files) and a function
+<cite>read_subject(info)</cite> that returns the data for one subject. The
+listing of the project’s files is cached in <cite>path/info_osf.pkl</cite> and
+data files are only downloaded if they are not yet in <cite>path</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>osf_id</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The OSF project ID</p></li>
+<li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Local path where files should be downloaded/stored</p></li>
+<li><p><strong>subjects</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – List of subject IDs to load. If None, all subjects will be loaded.
+If a subject ID is provided that doesn’t exist in the data, it will be skipped.</p></li>
+<li><p><strong>force_download</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, force re-download (including the file listing) even if
+files exist locally. Default False.</p></li>
+<li><p><strong>config_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Name of the configuration file. Default is “pypillometry_conf.py”</p></li>
+<li><p><strong>session</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code>]</span>) – Authenticated session for accessing private projects. If None, uses unauthenticated requests.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>study_data</strong> (<em>dict</em>) – Dictionary containing the loaded study data (subject ID -&gt; result
+of <cite>read_subject</cite>)</p></li>
+<li><p><strong>config</strong> (<em>module</em>) – Module containing the configuration (pypillometry_conf.py imported as a module)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 <section id="example-data-py">
-<span id="module-pypillometry.example_data"></span><h3><a class="toc-backref" href="#id16" role="doc-backlink">example_data.py</a><a class="headerlink" href="#example-data-py" title="Link to this heading">¶</a></h3>
+<span id="module-pypillometry.example_data"></span><h3><a class="toc-backref" href="#id17" role="doc-backlink">example_data.py</a><a class="headerlink" href="#example-data-py" title="Link to this heading">¶</a></h3>
 <p>Example datasets for pypillometry.</p>
 <p>This module provides example datasets for pypillometry. The datasets are
 used in the documentation and for testing purposes. Most of them are stored on
@@ -4407,6 +4517,7 @@ with columns for Dataset name, Type, and Description.</p>
 <li><a class="reference internal" href="#logging">Logging</a></li>
 <li><a class="reference internal" href="#module-pypillometry.io">Modules</a><ul>
 <li><a class="reference internal" href="#io-py">io.py</a></li>
+<li><a class="reference internal" href="#study-py">study.py</a></li>
 <li><a class="reference internal" href="#example-data-py">example_data.py</a></li>
 </ul>
 </li>

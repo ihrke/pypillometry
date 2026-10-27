@@ -1574,18 +1574,21 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="GenericEyeData.from_file">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.from_file">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Reads a :class:`~pypillometry.GenericEyeData` object from a pickle-file.</span>
 <span class="sd">        Use as ``pypillometry.PupilData.from_file("yourfile.pd")``.</span>
 
 <span class="sd">        The file is read with :func:`pypillometry.io.read_pickle`, so</span>
-<span class="sd">        `fname` can also be a URL.</span>
+<span class="sd">        `fname` can also be an HTTP(S) or SSH URL.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        fname : str</span>
 <span class="sd">            filename (or URL)</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            passed to :func:`pypillometry.io.read_pickle` (e.g.,</span>
+<span class="sd">            `cache_file`, `cache_dir`, `autodelete`, `session`)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1593,7 +1596,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            the object stored in the file (its class is the one that was</span>
 <span class="sd">            stored, independent of the class this method is called on)</span>
 <span class="sd">        """</span>
-        <span class="n">r</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">r</span></div>
 
 
@@ -1622,7 +1625,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        fname : str</span>
-<span class="sd">            filename of the EDF file (or URL)</span>
+<span class="sd">            filename of the EDF file, HTTP(S) URL or SSH URL</span>
+<span class="sd">            (``ssh://server/folder/file.edf``, see</span>
+<span class="sd">            :func:`pypillometry.io.fetch_url`)</span>
 <span class="sd">        return_edf_obj : bool, optional</span>
 <span class="sd">            if True, return a tuple with the eyedata object and the object</span>
 <span class="sd">            returned by the "eyelinkio" package;</span>
@@ -1632,7 +1637,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            (related to eye-tracker settings, calibration, validation etc)</span>
 <span class="sd">        **kwargs</span>
 <span class="sd">            additional arguments passed to :func:`pypillometry.io.read_eyelink`</span>
-<span class="sd">            (e.g., `cache_file`)</span>
+<span class="sd">            (e.g., `cache_file`, `cache_dir`, `autodelete`, `session`)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -2300,8 +2305,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">              function returns True</span>
 <span class="sd">            - if tuple: use the intervals between the events selected by the</span>
 <span class="sd">              first and the second entry (each a str or function); `interval[0]`</span>
-<span class="sd">              is added to the first and `interval[1]` to the second event.</span>
-<span class="sd">              Both selectors must result in identical number of events.</span>
+<span class="sd">              is added to the first and `interval[1]` to the second event</span>
+<span class="sd">              (so ``interval=(0, 0)`` gives exactly the span between them).</span>
+<span class="sd">              Both selectors must result in identical number of events;</span>
+<span class="sd">              events are paired by order (n-th first with n-th second event)</span>
+<span class="sd">              and a ValueError is raised if a second event comes before</span>
+<span class="sd">              its first event.</span>
 <span class="sd">            - if Events: use the events from the</span>
 <span class="sd">              :class:`~pypillometry.Events` object directly</span>
 <span class="sd">        interval : tuple (min,max), optional</span>
@@ -2331,7 +2340,9 @@ window.runMermaid = runMermaid;</script>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"interval must be iterable"</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&lt;=</span><span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="c1"># between two events, interval[0] and interval[1] shift different</span>
+        <span class="c1"># events, so e.g. (0,0) is valid; the resulting intervals are checked below</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_select</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&lt;=</span><span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"interval must be (min,max) with min&lt;max, got </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interval</span><span class="p">))</span>
         
         <span class="c1"># Handle Events object as event_select</span>
@@ -2401,16 +2412,32 @@ window.runMermaid = runMermaid;</script>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">!=</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"event_select must result in same number of events for both "</span>
                 <span class="s2">"selectors, got </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
-            
+            <span class="c1"># pairs are matched by order: the n-th second event must not</span>
+            <span class="c1"># come before the n-th first event (catches missing/extra events)</span>
+            <span class="n">on1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">[</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">on2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">[</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="n">bad</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">on2</span><span class="o">&lt;</span><span class="n">on1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bad</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"second event before first event in pair(s) </span><span class="si">{}</span><span class="s2"> "</span>
+                    <span class="s2">"(onsets </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">); events are paired by order, check for "</span>
+                    <span class="s2">"missing or extra events"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bad</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">on1</span><span class="p">[</span><span class="n">bad</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                                                     <span class="n">on2</span><span class="p">[</span><span class="n">bad</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+
             <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">eix1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">[</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
-                <span class="n">eix2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">[</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">1</span><span class="p">]]))</span>
-                <span class="n">sti</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">eix1</span><span class="o">+</span><span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="n">ste</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="n">eix2</span><span class="o">+</span><span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
+                <span class="n">eix1</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">-</span><span class="n">ev</span><span class="p">))</span>
+                               <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">[</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]]])</span>
+                <span class="n">eix2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">-</span><span class="n">ev</span><span class="p">))</span>
+                               <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">[</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">1</span><span class="p">]]])</span>
+                <span class="n">sti</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">eix1</span><span class="o">+</span><span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">ste</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">eix2</span><span class="o">+</span><span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">sti</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">[</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">*</span><span class="n">fac</span><span class="p">)</span><span class="o">+</span><span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">ste</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_onsets</span><span class="p">[</span><span class="n">event_ix</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">*</span><span class="n">fac</span><span class="p">)</span><span class="o">+</span><span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            
+            <span class="n">bad</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ste</span><span class="o">&lt;=</span><span class="n">sti</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bad</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"interval </span><span class="si">{}</span><span class="s2"> gives empty intervals for pair(s) </span><span class="si">{}</span><span class="s2">"</span>
+                                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="n">bad</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+
             <span class="c1"># Create label for between-events intervals if not provided</span>
             <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_select</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_select</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>

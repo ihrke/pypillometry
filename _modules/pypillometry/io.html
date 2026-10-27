@@ -412,15 +412,12 @@ window.runMermaid = runMermaid;</script>
    <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">suppress_all_output</span><span class="p">,</span> <span class="n">requires_package</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_get_level</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">change_dir</span>
 
 
 <div class="viewcode-block" id="osf_authenticate">
@@ -595,333 +592,226 @@ window.runMermaid = runMermaid;</script>
 
     <span class="k">return</span> <span class="n">fname</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">get_osf_project_files</span><span class="p">(</span><span class="n">osf_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Get all file IDs from an OSF project.</span>
-<span class="sd">    </span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_ssh_url</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Check if `source` is an SSH URL (``ssh://[user@]host[:port]/path``).</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    osf_id : str</span>
-<span class="sd">        The OSF project ID</span>
-<span class="sd">    session : requests.Session, optional</span>
-<span class="sd">        Authenticated session for accessing private projects. If None, uses unauthenticated requests.</span>
-<span class="sd">        </span>
+<span class="sd">    source : str</span>
+<span class="sd">        string to check</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    Dict[str, Dict[str, str]]</span>
-<span class="sd">        Dictionary mapping file paths to their IDs, download URLs, and file sizes</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if `source` starts with ``ssh://``</span>
 <span class="sd">    """</span>
-    <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">estimated_files</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># Start with estimate of 100 files</span>
-    
-    <span class="k">def</span><span class="w"> </span><span class="nf">process_files</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">current_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span> <span class="n">pbar</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Recursively process files and folders from an OSF API URL.</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        url : str</span>
-<span class="sd">            The OSF API URL to process</span>
-<span class="sd">        current_path : str</span>
-<span class="sd">            Current path in the project structure</span>
-<span class="sd">        pbar : tqdm</span>
-<span class="sd">            Progress bar instance</span>
-<span class="sd">        """</span>
-        <span class="k">nonlocal</span> <span class="n">estimated_files</span>
-        
-        <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not access project files: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-            
-        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-        <span class="k">if</span> <span class="s1">'data'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unexpected API response structure: </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-            
-        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="s1">'attributes'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span> <span class="ow">or</span> <span class="s1">'links'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
-                <span class="k">continue</span>
-                
-            <span class="n">attrs</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">'attributes'</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s1">'name'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">attrs</span> <span class="ow">or</span> <span class="s1">'kind'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
-                <span class="k">continue</span>
-                
-            <span class="n">name</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span>
-            <span class="n">full_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_path</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-            
-            <span class="k">if</span> <span class="n">attrs</span><span class="p">[</span><span class="s1">'kind'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'file'</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s1">'download'</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="s1">'links'</span><span class="p">]:</span>
-                    <span class="c1"># Get file size from attributes</span>
-                    <span class="n">size</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'size'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-                    <span class="n">files</span><span class="p">[</span><span class="n">full_path</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                        <span class="s1">'id'</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'id'</span><span class="p">,</span> <span class="s1">''</span><span class="p">),</span>
-                        <span class="s1">'download_url'</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'links'</span><span class="p">][</span><span class="s1">'download'</span><span class="p">],</span>
-                        <span class="s1">'size'</span><span class="p">:</span> <span class="n">size</span>
-                    <span class="p">}</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                    <span class="c1"># If we're close to the estimate, increase it</span>
-                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">estimated_files</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">:</span>
-                        <span class="n">estimated_files</span> <span class="o">*=</span> <span class="mi">2</span>
-                        <span class="n">pbar</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="n">estimated_files</span>
-                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processing: </span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">attrs</span><span class="p">[</span><span class="s1">'kind'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'folder'</span><span class="p">:</span>
-                <span class="c1"># Use the 'upload' link and replace query params to list folder contents</span>
-                <span class="c1"># The 'new_folder' link requires write permissions (403 for public access)</span>
-                <span class="k">if</span> <span class="s1">'upload'</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="s1">'links'</span><span class="p">]:</span>
-                    <span class="c1"># upload link looks like: .../folder_id/?kind=file</span>
-                    <span class="c1"># we need: .../folder_id/ (without query params)</span>
-                    <span class="n">folder_url</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">'links'</span><span class="p">][</span><span class="s1">'upload'</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'?'</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="n">process_files</span><span class="p">(</span><span class="n">folder_url</span><span class="p">,</span> <span class="n">full_path</span><span class="p">,</span> <span class="n">pbar</span><span class="p">)</span>
-                
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'links'</span><span class="p">),</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">'links'</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'next'</span><span class="p">):</span>
-            <span class="n">process_files</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">'links'</span><span class="p">][</span><span class="s1">'next'</span><span class="p">],</span> <span class="n">current_path</span><span class="p">,</span> <span class="n">pbar</span><span class="p">)</span>
-    
-    <span class="c1"># Process files with progress bar starting at estimated count</span>
-    <span class="n">root_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://api.osf.io/v2/nodes/</span><span class="si">{</span><span class="n">osf_id</span><span class="si">}</span><span class="s2">/files/osfstorage/"</span>
-    <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">estimated_files</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Processing files"</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
-        <span class="n">process_files</span><span class="p">(</span><span class="n">root_url</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="n">pbar</span><span class="p">)</span>
-    
-    <span class="k">return</span> <span class="n">files</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">source</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"ssh://"</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_ssh_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Split an SSH URL into (host, port, remote path).</span>
+
+<span class="sd">    `host` may contain a user (``user@host``). The path is absolute</span>
+<span class="sd">    (``ssh://host/data/f.edf`` -&gt; ``/data/f.edf``) unless it starts with</span>
+<span class="sd">    ``~/``; then it is relative to the home directory on the server</span>
+<span class="sd">    (``ssh://host/~/data/f.edf`` -&gt; ``data/f.edf``).</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlsplit</span><span class="p">,</span> <span class="n">unquote</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">urlsplit</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">parts</span><span class="o">.</span><span class="n">scheme</span> <span class="o">!=</span> <span class="s2">"ssh"</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">parts</span><span class="o">.</span><span class="n">hostname</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Not a valid SSH URL: '</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">' (expected ssh://host/path)"</span><span class="p">)</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">hostname</span>
+    <span class="k">if</span> <span class="n">parts</span><span class="o">.</span><span class="n">username</span><span class="p">:</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">parts</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">parts</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"SSH URL '</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">' has no path"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"/~/"</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+    <span class="k">elif</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">"/~"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"SSH URL '</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">' has no path"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">host</span><span class="p">,</span> <span class="n">parts</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">path</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_cache_path</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Local path in `cache_dir` for a URL: ``cache_dir/&lt;host&gt;/&lt;path&gt;``.</span>
 
-<div class="viewcode-block" id="load_study_osf">
-<a class="viewcode-back" href="../../api.html#pypillometry.io.load_study_osf">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">load_study_osf</span><span class="p">(</span><span class="n">osf_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">subjects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pypillometry_conf.py"</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Read a study from OSF using the configuration file.</span>
-<span class="sd">    Example: https://osf.io/p2u74/</span>
+<span class="sd">    For SSH URLs with a path relative to the home directory, ``~`` is</span>
+<span class="sd">    inserted after the host.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlsplit</span><span class="p">,</span> <span class="n">unquote</span>
+    <span class="k">if</span> <span class="n">is_ssh_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+        <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">_parse_ssh_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">rel</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"/"</span><span class="p">):</span>
+            <span class="n">rel</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"~"</span><span class="p">]</span> <span class="o">+</span> <span class="n">rel</span>  <span class="c1"># relative to home on the server</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">urlsplit</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">parts</span><span class="o">.</span><span class="n">port</span>
+        <span class="n">rel</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">unquote</span><span class="p">(</span><span class="n">parts</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span> <span class="k">if</span> <span class="n">p</span><span class="p">]</span> <span class="ow">or</span> <span class="p">[</span><span class="s2">"index"</span><span class="p">]</span>
+    <span class="n">host_dir</span> <span class="o">=</span> <span class="n">host</span> <span class="k">if</span> <span class="n">port</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">host_dir</span><span class="p">,</span> <span class="o">*</span><span class="n">rel</span><span class="p">)</span>
 
-<span class="sd">    The configuration file (downloaded from the project) must define a</span>
-<span class="sd">    dict `raw_data` (subject ID -&gt; dict of data files) and a function</span>
-<span class="sd">    `read_subject(info)` that returns the data for one subject. The</span>
-<span class="sd">    listing of the project's files is cached in `path/info_osf.pkl` and</span>
-<span class="sd">    data files are only downloaded if they are not yet in `path`.</span>
-<span class="sd">    </span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_scp</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Copy the file (or folder, if `url` ends with ``/``) at an SSH URL to `target`."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+
+    <span class="k">if</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">"scp"</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Downloading from SSH URLs requires the 'scp' command"</span><span class="p">)</span>
+    <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">_parse_ssh_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">is_dir</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"scp"</span><span class="p">,</span> <span class="s2">"-q"</span><span class="p">,</span> <span class="s2">"-o"</span><span class="p">,</span> <span class="s2">"BatchMode=yes"</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">"-P"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">is_dir</span><span class="p">:</span>
+        <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"-r"</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">is_dir</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">target</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Could not download '</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">' via SSH (scp exit code "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="s2">"Note: only key-based SSH login is supported (no passwords)."</span>
+        <span class="p">)</span>
+
+
+<div class="viewcode-block" id="fetch_url">
+<a class="viewcode-back" href="../../api.html#pypillometry.io.fetch_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fetch_url</span><span class="p">(</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">cache_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Download an HTTP(S) or SSH URL to a local file, with caching.</span>
+
+<span class="sd">    HTTP(S) URLs are downloaded with :func:`download` (OSF client URLs</span>
+<span class="sd">    such as ``https://osf.io/&lt;id&gt;`` are converted to download URLs).</span>
+
+<span class="sd">    SSH URLs have the form ``ssh://[user@]host[:port]/path`` and are</span>
+<span class="sd">    downloaded with the system's ``scp``, which uses ``~/.ssh/config``</span>
+<span class="sd">    (host aliases, users, keys). Only key-based login is supported: password</span>
+<span class="sd">    prompts are disabled (``BatchMode=yes``). The path is absolute on the</span>
+<span class="sd">    server; use ``ssh://host/~/path`` for a path relative to the home</span>
+<span class="sd">    directory. An SSH URL ending in ``/`` downloads the whole folder.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    osf_id : str</span>
-<span class="sd">        The OSF project ID</span>
-<span class="sd">    path : str</span>
-<span class="sd">        Local path where files should be downloaded/stored</span>
-<span class="sd">    subjects : list[str], optional</span>
-<span class="sd">        List of subject IDs to load. If None, all subjects will be loaded.</span>
-<span class="sd">        If a subject ID is provided that doesn't exist in the data, it will be skipped.</span>
+<span class="sd">    url : str</span>
+<span class="sd">        HTTP(S) or SSH URL</span>
+<span class="sd">    cache_file : str, optional</span>
+<span class="sd">        local filename to store the download in</span>
+<span class="sd">    cache_dir : str, optional</span>
+<span class="sd">        directory to store the download in (used if `cache_file` is None);</span>
+<span class="sd">        the file is saved as ``cache_dir/&lt;host&gt;/&lt;path&gt;``. If both are None, a</span>
+<span class="sd">        new temporary directory is used. The location is logged.</span>
 <span class="sd">    force_download : bool, optional</span>
-<span class="sd">        If True, force re-download (including the file listing) even if</span>
-<span class="sd">        files exist locally. Default False.</span>
-<span class="sd">    config_file : str, optional</span>
-<span class="sd">        Name of the configuration file. Default is "pypillometry_conf.py"</span>
+<span class="sd">        if False (default), an existing local copy is reused; if True, the</span>
+<span class="sd">        file is downloaded again</span>
 <span class="sd">    session : requests.Session, optional</span>
-<span class="sd">        Authenticated session for accessing private projects. If None, uses unauthenticated requests.</span>
-<span class="sd">        </span>
+<span class="sd">        requests session for HTTP(S) downloads (e.g., from</span>
+<span class="sd">        :func:`osf_authenticate` for private OSF projects)</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    study_data : dict</span>
-<span class="sd">        Dictionary containing the loaded study data (subject ID -&gt; result</span>
-<span class="sd">        of `read_subject`)</span>
-<span class="sd">    config : module</span>
-<span class="sd">        Module containing the configuration (pypillometry_conf.py imported as a module)</span>
+<span class="sd">    str</span>
+<span class="sd">        local path of the downloaded file (or folder)</span>
 <span class="sd">    """</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading study from OSF project '</span><span class="si">{</span><span class="n">osf_id</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
-    <span class="c1"># Create cache directory if it doesn't exist</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">cache_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"info_osf.pkl"</span><span class="p">)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 
-    <span class="c1"># Try to load cached OSF file info</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>  <span class="c1"># also true for SSH URLs</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Not a URL: '</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cache_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"pypillometry_"</span><span class="p">)</span>
+        <span class="n">cache_file</span> <span class="o">=</span> <span class="n">_cache_path</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_download</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">files</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">"Using cached OSF file information"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using cached copy of '</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">': </span><span class="si">{</span><span class="n">cache_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cache_file</span>
+
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># download to a temporary name, so that an interrupted download</span>
+    <span class="c1"># is not used as a cached copy later</span>
+    <span class="n">part</span> <span class="o">=</span> <span class="n">cache_file</span> <span class="o">+</span> <span class="s2">".part"</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">part</span><span class="p">):</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">part</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Downloading '</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">' to </span><span class="si">{</span><span class="n">cache_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_ssh_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+        <span class="n">_scp</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># Get all files in the project and estimate total download size</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Getting info on all files in project '</span><span class="si">{</span><span class="n">osf_id</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
-        <span class="n">files</span> <span class="o">=</span> <span class="n">get_osf_project_files</span><span class="p">(</span><span class="n">osf_id</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-        
-        <span class="c1"># Cache the file information</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-    
-    <span class="c1"># Calculate total download size from file sizes in API response</span>
-    <span class="n">total_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">file_info</span><span class="p">[</span><span class="s1">'size'</span><span class="p">]</span> <span class="k">for</span> <span class="n">file_info</span> <span class="ow">in</span> <span class="n">files</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    
-    <span class="c1"># Show download size/time if force_download</span>
-    <span class="k">if</span> <span class="n">force_download</span><span class="p">:</span>
-        <span class="n">size_mb</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">total_size</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Convert bytes to MB</span>
-        <span class="n">est_minutes</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">total_size</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">60</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Convert bytes to minutes</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total size: </span><span class="si">{</span><span class="n">size_mb</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Estimated download time (assuming 1MB/s): </span><span class="si">{</span><span class="n">est_minutes</span><span class="si">}</span><span class="s2"> minutes"</span><span class="p">)</span>
-        
-    <span class="c1"># Find and download config file</span>
-    <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">config_file</span><span class="p">)</span>
-    <span class="n">config_file_osf</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">config_file</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
-    
-    <span class="k">if</span> <span class="n">config_file_osf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2"> in project"</span><span class="p">)</span>
-        
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">force_download</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">config_file_osf</span><span class="p">][</span><span class="s1">'download_url'</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">config_file_osf</span><span class="p">][</span><span class="s1">'download_url'</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not download config file"</span><span class="p">)</span>
-            
-    <span class="c1"># Load and parse config</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.util</span>
-    <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="s2">"pypillometry_conf"</span><span class="p">,</span> <span class="n">config_path</span><span class="p">)</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
-    <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-    
-    <span class="c1"># Filter subjects if specified</span>
-    <span class="n">subject_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-    <span class="k">if</span> <span class="n">subjects</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">subject_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">sid</span> <span class="k">for</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">subjects</span> <span class="k">if</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">subject_ids</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"None of the specified subjects were found in the data"</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> specified subjects"</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> subjects"</span><span class="p">)</span>
-    
-    <span class="c1"># Download and read raw data files</span>
-    <span class="k">for</span> <span class="n">subject_id</span> <span class="ow">in</span> <span class="n">subject_ids</span><span class="p">:</span>
-        <span class="n">subject_files</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">file_type</span><span class="p">,</span> <span class="n">data_file</span> <span class="ow">in</span> <span class="n">subject_files</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data_file</span><span class="p">)</span>
-            <span class="n">matching_file</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">data_file</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
-            
-            <span class="k">if</span> <span class="n">matching_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find </span><span class="si">{</span><span class="n">data_file</span><span class="si">}</span><span class="s2"> in project"</span><span class="p">)</span>
-                
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_download</span><span class="p">:</span>
-                <span class="k">continue</span>
-                
-            <span class="c1"># Create directory if it doesn't exist</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">file_path</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            
-            <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">response</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">matching_file</span><span class="p">][</span><span class="s1">'download_url'</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">matching_file</span><span class="p">][</span><span class="s1">'download_url'</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
-                <span class="n">total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'content-length'</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">,</span> <span class="n">tqdm</span><span class="p">(</span>
-                    <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Downloading </span><span class="si">{</span><span class="n">data_file</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-                    <span class="n">total</span><span class="o">=</span><span class="n">total</span><span class="p">,</span>
-                    <span class="n">unit</span><span class="o">=</span><span class="s1">'iB'</span><span class="p">,</span>
-                    <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="n">unit_divisor</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
-                <span class="p">)</span> <span class="k">as</span> <span class="n">bar</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
-                        <span class="n">size</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-                        <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not download </span><span class="si">{</span><span class="n">data_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-                
-    <span class="c1"># apply the read_subject function from the config module</span>
-    <span class="n">study_data</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">for</span> <span class="n">subject_id</span> <span class="ow">in</span> <span class="n">subject_ids</span><span class="p">:</span>
-        <span class="c1"># Use the read_subject function from the config module</span>
-        <span class="n">info</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span>
-        <span class="c1"># add local path to the pathes in the info dict</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)):</span>
-                <span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
-        <span class="n">info</span><span class="p">[</span><span class="s2">"subject"</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject_id</span>
-        <span class="n">study_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">read_subject</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
-        
-    <span class="k">return</span> <span class="n">study_data</span><span class="p">,</span> <span class="n">config</span></div>
+        <span class="n">download</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">part</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">cache_file</span><span class="p">):</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">cache_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cache_file</span></div>
 
 
-<div class="viewcode-block" id="load_study_local">
-<a class="viewcode-back" href="../../api.html#pypillometry.io.load_study_local">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">load_study_local</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pypillometry_conf.py"</span><span class="p">,</span> <span class="n">subjects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Read a study from a local directory using the configuration file.</span>
 
-<span class="sd">    The configuration file must define a dict `raw_data` (subject ID -&gt;</span>
-<span class="sd">    dict of data files, relative to `path`) and a function</span>
-<span class="sd">    `read_subject(info)` that returns the data for one subject; it is</span>
-<span class="sd">    called with the working directory changed to `path`.</span>
-<span class="sd">    </span>
+<div class="viewcode-block" id="local_copy">
+<a class="viewcode-back" href="../../api.html#pypillometry.io.local_copy">[docs]</a>
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">local_copy</span><span class="p">(</span>
+    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">cache_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">autodelete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Context manager that gives a local filename for `source`.</span>
+
+<span class="sd">    HTTP(S) and SSH URLs are downloaded with :func:`fetch_url`; local</span>
+<span class="sd">    paths are passed through unchanged (and never deleted).</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    path : str</span>
-<span class="sd">        Local path where the study data is stored</span>
-<span class="sd">    config_file : str, optional</span>
-<span class="sd">        Name of the configuration file. Default is "pypillometry_conf.py".</span>
-<span class="sd">        It is first looked up in the current working directory and, if</span>
-<span class="sd">        not found there, in `path`.</span>
-<span class="sd">    subjects : list[str], optional</span>
-<span class="sd">        List of subject IDs to load. If None, all subjects will be loaded.</span>
-<span class="sd">        If a subject ID is provided that doesn't exist in the data, it will be skipped.</span>
-<span class="sd">        </span>
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    study_data : dict</span>
-<span class="sd">        Dictionary containing the loaded study data (subject ID -&gt; result</span>
-<span class="sd">        of `read_subject`)</span>
-<span class="sd">    config : module</span>
-<span class="sd">        Module containing the configuration (pypillometry_conf.py imported as a module)</span>
+<span class="sd">    source : str</span>
+<span class="sd">        local path, HTTP(S) URL or SSH URL</span>
+<span class="sd">    cache_file, cache_dir, force_download, session</span>
+<span class="sd">        see :func:`fetch_url`</span>
+<span class="sd">    autodelete : bool, optional</span>
+<span class="sd">        if True, the downloaded copy (also in `cache_file`/`cache_dir`) is</span>
+<span class="sd">        deleted when the context is left, i.e. after the file was read; a</span>
+<span class="sd">        temporary directory is removed completely. Default False.</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    str</span>
+<span class="sd">        local filename</span>
 <span class="sd">    """</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading study from local directory '</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
-    
-    <span class="c1"># Check if path exists</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Path '</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">' does not exist"</span><span class="p">)</span>
-        
-    <span class="c1"># First try to find config file in current directory</span>
-    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_file</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found config file in current directory: </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="n">config_path</span> <span class="o">=</span> <span class="n">config_file</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># If not found, look in the specified path</span>
-        <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">config_file</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2"> in current directory or in </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found config file in study directory: </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        
-    <span class="c1"># Load and parse config</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Loading configuration file"</span><span class="p">)</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.util</span>
-    <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="s2">"pypillometry_conf"</span><span class="p">,</span> <span class="n">config_path</span><span class="p">)</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
-    <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-    
-    <span class="c1"># Filter subjects if specified</span>
-    <span class="n">subject_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-    <span class="k">if</span> <span class="n">subjects</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">subject_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">sid</span> <span class="k">for</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">subjects</span> <span class="k">if</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">subject_ids</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"None of the specified subjects were found in the data"</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> specified subjects"</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> subjects"</span><span class="p">)</span>
-        
-    <span class="c1"># Load the data using the read_subject function from the config module</span>
-    <span class="n">study_data</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Loading subject data"</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">change_dir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">subject_id</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Loading subjects"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"subject"</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading subject </span><span class="si">{</span><span class="n">subject_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-            <span class="c1"># Use the read_subject function from the config module</span>
-            <span class="n">info</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span>
-            <span class="c1"># add local path to the paths in the info dict</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
-                    <span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-            <span class="n">info</span><span class="p">[</span><span class="s2">"subject"</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject_id</span>
-            <span class="n">study_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">read_subject</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
-        
-    <span class="k">return</span> <span class="n">study_data</span><span class="p">,</span> <span class="n">config</span></div>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_url</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>  <span class="c1"># also true for SSH URLs</span>
+        <span class="k">yield</span> <span class="n">source</span>
+        <span class="k">return</span>
+
+    <span class="n">tmpdir</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">cache_file</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"pypillometry_"</span><span class="p">)</span>
+        <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">tmpdir</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="n">cache_file</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
+                      <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">fname</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">autodelete</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">tmpdir</span> <span class="ow">or</span> <span class="n">fname</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Deleting downloaded copy: </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">target</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="write_pickle">
@@ -944,42 +834,50 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="read_pickle">
 <a class="viewcode-back" href="../../api.html#pypillometry.io.read_pickle">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">read_pickle</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_pickle</span><span class="p">(</span>
+    <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">cache_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">autodelete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Read a Python object from a file using :mod:`pickle`.</span>
+
+<span class="sd">    URLs are downloaded with :func:`~pypillometry.io.fetch_url`, in the</span>
+<span class="sd">    same way as in :func:`~pypillometry.io.read_eyelink`.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    fname : str</span>
-<span class="sd">        filename or URL to load data from (URLs are downloaded into</span>
-<span class="sd">        memory, without authentication)</span>
-<span class="sd">        </span>
+<span class="sd">        filename, HTTP(S) URL or SSH URL (``ssh://server/folder/file.pd``)</span>
+<span class="sd">    cache_file : str, optional</span>
+<span class="sd">        local filename to store a downloaded file in</span>
+<span class="sd">    cache_dir : str, optional</span>
+<span class="sd">        directory to store a downloaded file in (as</span>
+<span class="sd">        ``cache_dir/&lt;host&gt;/&lt;path&gt;``), used if `cache_file` is None. If both</span>
+<span class="sd">        are None, a temporary directory is used.</span>
+<span class="sd">    force_download : bool, optional</span>
+<span class="sd">        if True, download again even if a local copy exists in</span>
+<span class="sd">        `cache_file`/`cache_dir`</span>
+<span class="sd">    session : requests.Session, optional</span>
+<span class="sd">        requests session for HTTP(S) downloads (e.g., from</span>
+<span class="sd">        :func:`~pypillometry.io.osf_authenticate` for private projects)</span>
+<span class="sd">    autodelete : bool, optional</span>
+<span class="sd">        if True, the downloaded copy is deleted after it was read (also in</span>
+<span class="sd">        `cache_file`/`cache_dir`). Local files are never deleted.</span>
+<span class="sd">        Default False.</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    object</span>
 <span class="sd">        loaded object</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="n">is_url</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
-        <span class="c1"># try loading from URL</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
-            <span class="n">total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'content-length'</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-            <span class="n">content</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">()</span>
-            <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span>
-                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Downloading </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-                <span class="n">total</span><span class="o">=</span><span class="n">total</span><span class="p">,</span>
-                <span class="n">unit</span><span class="o">=</span><span class="s1">'iB'</span><span class="p">,</span>
-                <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">unit_divisor</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
-            <span class="p">)</span> <span class="k">as</span> <span class="n">bar</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
-                    <span class="n">content</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-                    <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">obj</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">obj</span></div>
+    <span class="k">with</span> <span class="n">local_copy</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="n">cache_file</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
+                    <span class="n">autodelete</span><span class="o">=</span><span class="n">autodelete</span><span class="p">,</span> <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">,</span>
+                    <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span> <span class="k">as</span> <span class="n">local</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="s1">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="read_eyelink">
@@ -987,28 +885,40 @@ window.runMermaid = runMermaid;</script>
 <span class="nd">@requires_package</span><span class="p">(</span><span class="s2">"eyelinkio"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">read_eyelink</span><span class="p">(</span>
     <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
-    <span class="n">cache_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+    <span class="n">cache_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
     <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
-    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">autodelete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Read an Eyelink file/URL and return the object returned by the "eyelinkio" package.</span>
 
 <span class="sd">    Requires the optional package `eyelinkio`. Its console output is only</span>
-<span class="sd">    shown when the log level is "DEBUG".</span>
+<span class="sd">    shown when the log level is "DEBUG". URLs are downloaded with</span>
+<span class="sd">    :func:`~pypillometry.io.fetch_url`.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    source : str</span>
-<span class="sd">        filename of the Eyelink EDF file or URL (OSF client URLs such as</span>
-<span class="sd">        ``https://osf.io/&lt;id&gt;`` are converted to download URLs)</span>
+<span class="sd">        filename of the Eyelink EDF file, HTTP(S) URL (OSF client URLs such</span>
+<span class="sd">        as ``https://osf.io/&lt;id&gt;`` are converted to download URLs) or SSH URL</span>
+<span class="sd">        (``ssh://server/folder/file.edf``)</span>
 <span class="sd">    cache_file : str, optional</span>
-<span class="sd">        filename to cache the file in case it is downloaded from a URL;</span>
-<span class="sd">        if None, the file is downloaded to a temporary file</span>
+<span class="sd">        local filename to store a downloaded file in</span>
+<span class="sd">    cache_dir : str, optional</span>
+<span class="sd">        directory to store a downloaded file in (as</span>
+<span class="sd">        ``cache_dir/&lt;host&gt;/&lt;path&gt;``), used if `cache_file` is None. If both</span>
+<span class="sd">        are None, a temporary directory is used.</span>
 <span class="sd">    force_download : bool, optional</span>
-<span class="sd">        if True, force re-download even if `cache_file` exists locally</span>
+<span class="sd">        if True, download again even if a local copy exists in</span>
+<span class="sd">        `cache_file`/`cache_dir`</span>
 <span class="sd">    session : requests.Session, optional</span>
-<span class="sd">        requests session to use for the download (e.g., from</span>
+<span class="sd">        requests session for HTTP(S) downloads (e.g., from</span>
 <span class="sd">        :func:`~pypillometry.io.osf_authenticate` for private projects)</span>
+<span class="sd">    autodelete : bool, optional</span>
+<span class="sd">        if True, the downloaded copy is deleted after it was read (also in</span>
+<span class="sd">        `cache_file`/`cache_dir`). Local files are never deleted.</span>
+<span class="sd">        Default False.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1019,25 +929,16 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    --------</span>
 <span class="sd">    pypillometry.GenericEyeData.from_eyelink : create an eyedata object from an EDF file</span>
 <span class="sd">    """</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">eyelinkio</span>
+    <span class="k">with</span> <span class="n">local_copy</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="n">cache_file</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
+                    <span class="n">autodelete</span><span class="o">=</span><span class="n">autodelete</span><span class="p">,</span> <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">,</span>
+                    <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span> <span class="k">as</span> <span class="n">fname</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_read_edf</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span></div>
 
-    <span class="c1"># Handle if source is a URL or local file</span>
-    <span class="k">if</span> <span class="n">is_url</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">cache_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># If cached file exists and no force_download, use it</span>
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_download</span><span class="p">:</span>
-                <span class="n">fname</span> <span class="o">=</span> <span class="n">cache_file</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span>
-                <span class="c1"># If cache_dir is non-empty and does not exist, make it</span>
-                <span class="k">if</span> <span class="n">cache_dir</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">):</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Creating directory for cache file: </span><span class="si">{</span><span class="n">cache_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="n">fname</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">cache_file</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">fname</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">fname</span> <span class="o">=</span> <span class="n">source</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_edf</span><span class="p">(</span><span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Read a local EDF file with eyelinkio (its output only shown at DEBUG level)."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">eyelinkio</span>
 
     <span class="c1"># Check if DEBUG logging is enabled</span>
     <span class="n">current_level</span> <span class="o">=</span> <span class="n">logging_get_level</span><span class="p">()</span>
@@ -1052,8 +953,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">with</span> <span class="n">suppress_all_output</span><span class="p">():</span>
             <span class="n">edf</span> <span class="o">=</span> <span class="n">eyelinkio</span><span class="o">.</span><span class="n">read_edf</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">edf</span></div>
-
+    <span class="k">return</span> <span class="n">edf</span>
 </pre></div>
 
             <div class="clearer"></div>

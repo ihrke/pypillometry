@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.study &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.study</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pypillometry.study</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">study.py</span>
+<span class="sd">========</span>
+
+<span class="sd">Load a complete study (all subjects) from a local directory, an SSH URL or</span>
+<span class="sd">an OSF project, based on a user-provided configuration file</span>
+<span class="sd">(``pypillometry_conf.py``) that defines a dict `raw_data` and a function</span>
+<span class="sd">`read_subject(info)`.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">change_dir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_url</span><span class="p">,</span> <span class="n">is_ssh_url</span><span class="p">,</span> <span class="n">_cache_path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_osf_project_files</span><span class="p">(</span><span class="n">osf_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Get all file IDs from an OSF project.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    osf_id : str</span>
+<span class="sd">        The OSF project ID</span>
+<span class="sd">    session : requests.Session, optional</span>
+<span class="sd">        Authenticated session for accessing private projects. If None, uses unauthenticated requests.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict[str, Dict[str, str]]</span>
+<span class="sd">        Dictionary mapping file paths to their IDs, download URLs, and file sizes</span>
+<span class="sd">    """</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">estimated_files</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># Start with estimate of 100 files</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_files</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">current_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span> <span class="n">pbar</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Recursively process files and folders from an OSF API URL.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        url : str</span>
+<span class="sd">            The OSF API URL to process</span>
+<span class="sd">        current_path : str</span>
+<span class="sd">            Current path in the project structure</span>
+<span class="sd">        pbar : tqdm</span>
+<span class="sd">            Progress bar instance</span>
+<span class="sd">        """</span>
+        <span class="k">nonlocal</span> <span class="n">estimated_files</span>
+        
+        <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not access project files: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">'data'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unexpected API response structure: </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="s1">'attributes'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span> <span class="ow">or</span> <span class="s1">'links'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+                <span class="k">continue</span>
+                
+            <span class="n">attrs</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">'attributes'</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">'name'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">attrs</span> <span class="ow">or</span> <span class="s1">'kind'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">:</span>
+                <span class="k">continue</span>
+                
+            <span class="n">name</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span>
+            <span class="n">full_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_path</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">attrs</span><span class="p">[</span><span class="s1">'kind'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'file'</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">'download'</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="s1">'links'</span><span class="p">]:</span>
+                    <span class="c1"># Get file size from attributes</span>
+                    <span class="n">size</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'size'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="n">files</span><span class="p">[</span><span class="n">full_path</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">'id'</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'id'</span><span class="p">,</span> <span class="s1">''</span><span class="p">),</span>
+                        <span class="s1">'download_url'</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'links'</span><span class="p">][</span><span class="s1">'download'</span><span class="p">],</span>
+                        <span class="s1">'size'</span><span class="p">:</span> <span class="n">size</span>
+                    <span class="p">}</span>
+                    <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="c1"># If we're close to the estimate, increase it</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">estimated_files</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">:</span>
+                        <span class="n">estimated_files</span> <span class="o">*=</span> <span class="mi">2</span>
+                        <span class="n">pbar</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="n">estimated_files</span>
+                    <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processing: </span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">attrs</span><span class="p">[</span><span class="s1">'kind'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'folder'</span><span class="p">:</span>
+                <span class="c1"># Use the 'upload' link and replace query params to list folder contents</span>
+                <span class="c1"># The 'new_folder' link requires write permissions (403 for public access)</span>
+                <span class="k">if</span> <span class="s1">'upload'</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="s1">'links'</span><span class="p">]:</span>
+                    <span class="c1"># upload link looks like: .../folder_id/?kind=file</span>
+                    <span class="c1"># we need: .../folder_id/ (without query params)</span>
+                    <span class="n">folder_url</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">'links'</span><span class="p">][</span><span class="s1">'upload'</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'?'</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">process_files</span><span class="p">(</span><span class="n">folder_url</span><span class="p">,</span> <span class="n">full_path</span><span class="p">,</span> <span class="n">pbar</span><span class="p">)</span>
+                
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'links'</span><span class="p">),</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">'links'</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'next'</span><span class="p">):</span>
+            <span class="n">process_files</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">'links'</span><span class="p">][</span><span class="s1">'next'</span><span class="p">],</span> <span class="n">current_path</span><span class="p">,</span> <span class="n">pbar</span><span class="p">)</span>
+    
+    <span class="c1"># Process files with progress bar starting at estimated count</span>
+    <span class="n">root_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"https://api.osf.io/v2/nodes/</span><span class="si">{</span><span class="n">osf_id</span><span class="si">}</span><span class="s2">/files/osfstorage/"</span>
+    <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">estimated_files</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Processing files"</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
+        <span class="n">process_files</span><span class="p">(</span><span class="n">root_url</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="n">pbar</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">files</span>
+
+
+
+
+
+<div class="viewcode-block" id="load_study_osf">
+<a class="viewcode-back" href="../../api.html#pypillometry.study.load_study_osf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_study_osf</span><span class="p">(</span><span class="n">osf_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">subjects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pypillometry_conf.py"</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Read a study from OSF using the configuration file.</span>
+<span class="sd">    Example: https://osf.io/p2u74/</span>
+
+<span class="sd">    The configuration file (downloaded from the project) must define a</span>
+<span class="sd">    dict `raw_data` (subject ID -&gt; dict of data files) and a function</span>
+<span class="sd">    `read_subject(info)` that returns the data for one subject. The</span>
+<span class="sd">    listing of the project's files is cached in `path/info_osf.pkl` and</span>
+<span class="sd">    data files are only downloaded if they are not yet in `path`.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    osf_id : str</span>
+<span class="sd">        The OSF project ID</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Local path where files should be downloaded/stored</span>
+<span class="sd">    subjects : list[str], optional</span>
+<span class="sd">        List of subject IDs to load. If None, all subjects will be loaded.</span>
+<span class="sd">        If a subject ID is provided that doesn't exist in the data, it will be skipped.</span>
+<span class="sd">    force_download : bool, optional</span>
+<span class="sd">        If True, force re-download (including the file listing) even if</span>
+<span class="sd">        files exist locally. Default False.</span>
+<span class="sd">    config_file : str, optional</span>
+<span class="sd">        Name of the configuration file. Default is "pypillometry_conf.py"</span>
+<span class="sd">    session : requests.Session, optional</span>
+<span class="sd">        Authenticated session for accessing private projects. If None, uses unauthenticated requests.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    study_data : dict</span>
+<span class="sd">        Dictionary containing the loaded study data (subject ID -&gt; result</span>
+<span class="sd">        of `read_subject`)</span>
+<span class="sd">    config : module</span>
+<span class="sd">        Module containing the configuration (pypillometry_conf.py imported as a module)</span>
+<span class="sd">    """</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading study from OSF project '</span><span class="si">{</span><span class="n">osf_id</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+    <span class="c1"># Create cache directory if it doesn't exist</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">cache_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"info_osf.pkl"</span><span class="p">)</span>
+
+    <span class="c1"># Try to load cached OSF file info</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cache_file</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_download</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Using cached OSF file information"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Get all files in the project and estimate total download size</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Getting info on all files in project '</span><span class="si">{</span><span class="n">osf_id</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">get_osf_project_files</span><span class="p">(</span><span class="n">osf_id</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+        
+        <span class="c1"># Cache the file information</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">cache_file</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    
+    <span class="c1"># Calculate total download size from file sizes in API response</span>
+    <span class="n">total_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">file_info</span><span class="p">[</span><span class="s1">'size'</span><span class="p">]</span> <span class="k">for</span> <span class="n">file_info</span> <span class="ow">in</span> <span class="n">files</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    
+    <span class="c1"># Show download size/time if force_download</span>
+    <span class="k">if</span> <span class="n">force_download</span><span class="p">:</span>
+        <span class="n">size_mb</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">total_size</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Convert bytes to MB</span>
+        <span class="n">est_minutes</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">total_size</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">60</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Convert bytes to minutes</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total size: </span><span class="si">{</span><span class="n">size_mb</span><span class="si">}</span><span class="s2"> MB"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Estimated download time (assuming 1MB/s): </span><span class="si">{</span><span class="n">est_minutes</span><span class="si">}</span><span class="s2"> minutes"</span><span class="p">)</span>
+        
+    <span class="c1"># Find and download config file</span>
+    <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">config_file</span><span class="p">)</span>
+    <span class="n">config_file_osf</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">config_file</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">config_file_osf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2"> in project"</span><span class="p">)</span>
+        
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">force_download</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">config_file_osf</span><span class="p">][</span><span class="s1">'download_url'</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">config_file_osf</span><span class="p">][</span><span class="s1">'download_url'</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not download config file"</span><span class="p">)</span>
+            
+    <span class="c1"># Load and parse config</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.util</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="s2">"pypillometry_conf"</span><span class="p">,</span> <span class="n">config_path</span><span class="p">)</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    
+    <span class="c1"># Filter subjects if specified</span>
+    <span class="n">subject_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">subjects</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">subject_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">sid</span> <span class="k">for</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">subjects</span> <span class="k">if</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">subject_ids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"None of the specified subjects were found in the data"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> specified subjects"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> subjects"</span><span class="p">)</span>
+    
+    <span class="c1"># Download and read raw data files</span>
+    <span class="k">for</span> <span class="n">subject_id</span> <span class="ow">in</span> <span class="n">subject_ids</span><span class="p">:</span>
+        <span class="n">subject_files</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">file_type</span><span class="p">,</span> <span class="n">data_file</span> <span class="ow">in</span> <span class="n">subject_files</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data_file</span><span class="p">)</span>
+            <span class="n">matching_file</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">data_file</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">matching_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find </span><span class="si">{</span><span class="n">data_file</span><span class="si">}</span><span class="s2"> in project"</span><span class="p">)</span>
+                
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_download</span><span class="p">:</span>
+                <span class="k">continue</span>
+                
+            <span class="c1"># Create directory if it doesn't exist</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">file_path</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">matching_file</span><span class="p">][</span><span class="s1">'download_url'</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">matching_file</span><span class="p">][</span><span class="s1">'download_url'</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+                <span class="n">total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'content-length'</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">,</span> <span class="n">tqdm</span><span class="p">(</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Downloading </span><span class="si">{</span><span class="n">data_file</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="n">total</span><span class="o">=</span><span class="n">total</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="s1">'iB'</span><span class="p">,</span>
+                    <span class="n">unit_scale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">unit_divisor</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                <span class="p">)</span> <span class="k">as</span> <span class="n">bar</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
+                        <span class="n">size</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                        <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not download </span><span class="si">{</span><span class="n">data_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                
+    <span class="c1"># apply the read_subject function from the config module</span>
+    <span class="n">study_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">subject_id</span> <span class="ow">in</span> <span class="n">subject_ids</span><span class="p">:</span>
+        <span class="c1"># Use the read_subject function from the config module</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span>
+        <span class="c1"># add local path to the pathes in the info dict</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)):</span>
+                <span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">info</span><span class="p">[</span><span class="s2">"subject"</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject_id</span>
+        <span class="n">study_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">read_subject</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">study_data</span><span class="p">,</span> <span class="n">config</span></div>
+
+
+<div class="viewcode-block" id="load_study_local">
+<a class="viewcode-back" href="../../api.html#pypillometry.study.load_study_local">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_study_local</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pypillometry_conf.py"</span><span class="p">,</span> <span class="n">subjects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">autodelete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Read a study from a local directory (or an SSH URL) using the configuration file.</span>
+
+<span class="sd">    The configuration file must define a dict `raw_data` (subject ID -&gt;</span>
+<span class="sd">    dict of data files, relative to `path`) and a function</span>
+<span class="sd">    `read_subject(info)` that returns the data for one subject; it is</span>
+<span class="sd">    called with the working directory changed to `path`.</span>
+
+<span class="sd">    If `path` is an SSH URL (``ssh://server/folder/``, see</span>
+<span class="sd">    :func:`~pypillometry.io.fetch_url`), the configuration file and the data files of the</span>
+<span class="sd">    selected subjects are downloaded to `cache_dir` before they are read.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Local path or SSH URL where the study data is stored</span>
+<span class="sd">    config_file : str, optional</span>
+<span class="sd">        Name of the configuration file. Default is "pypillometry_conf.py".</span>
+<span class="sd">        It is first looked up in the current working directory and, if</span>
+<span class="sd">        not found there, in `path`.</span>
+<span class="sd">    subjects : list[str], optional</span>
+<span class="sd">        List of subject IDs to load. If None, all subjects will be loaded.</span>
+<span class="sd">        If a subject ID is provided that doesn't exist in the data, it will be skipped.</span>
+<span class="sd">    cache_dir : str, optional</span>
+<span class="sd">        only for SSH URLs: directory to download the files to; if None, a</span>
+<span class="sd">        temporary directory is used</span>
+<span class="sd">    autodelete : bool, optional</span>
+<span class="sd">        only for SSH URLs: if True, the data files of each subject are</span>
+<span class="sd">        deleted after they were read (and a temporary directory is removed</span>
+<span class="sd">        at the end). Default False.</span>
+<span class="sd">    force_download : bool, optional</span>
+<span class="sd">        only for SSH URLs: download files again even if they are already</span>
+<span class="sd">        in `cache_dir`</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    study_data : dict</span>
+<span class="sd">        Dictionary containing the loaded study data (subject ID -&gt; result</span>
+<span class="sd">        of `read_subject`)</span>
+<span class="sd">    config : module</span>
+<span class="sd">        Module containing the configuration (pypillometry_conf.py imported as a module)</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+    <span class="n">remote</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">tmpdir</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">is_ssh_url</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="n">remote</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"/"</span>
+        <span class="k">if</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"pypillometry_"</span><span class="p">)</span>
+            <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">tmpdir</span>
+        <span class="n">local_path</span> <span class="o">=</span> <span class="n">_cache_path</span><span class="p">(</span><span class="n">remote</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading study from '</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">' (files are downloaded to </span><span class="si">{</span><span class="n">local_path</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">local_path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading study from local directory '</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+        <span class="c1"># Check if path exists</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Path '</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">' does not exist"</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># First try to find config file in current directory</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_file</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found config file in current directory: </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">config_path</span> <span class="o">=</span> <span class="n">config_file</span>
+        <span class="k">elif</span> <span class="n">remote</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config_path</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">remote</span> <span class="o">+</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
+                                    <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If not found, look in the specified path</span>
+            <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">config_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_path</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2"> in current directory or in </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found config file in study directory: </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="c1"># Load and parse config</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Loading configuration file"</span><span class="p">)</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.util</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="s2">"pypillometry_conf"</span><span class="p">,</span> <span class="n">config_path</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="c1"># Filter subjects if specified</span>
+        <span class="n">subject_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">subjects</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">subject_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">sid</span> <span class="k">for</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">subjects</span> <span class="k">if</span> <span class="n">sid</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">subject_ids</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"None of the specified subjects were found in the data"</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> specified subjects"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading all </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> subjects"</span><span class="p">)</span>
+
+        <span class="c1"># Load the data using the read_subject function from the config module</span>
+        <span class="n">study_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Loading subject data"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">subject_id</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">"Loading subjects"</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">"subject"</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading subject </span><span class="si">{</span><span class="n">subject_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span>
+            <span class="n">downloaded</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">remote</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">info</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">downloaded</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fetch_url</span><span class="p">(</span><span class="n">remote</span> <span class="o">+</span> <span class="n">value</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
+                                                    <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="c1"># entries in raw_data need not be files</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not download '</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">' for subject </span><span class="si">{</span><span class="n">subject_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">change_dir</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
+                    <span class="c1"># Use the read_subject function from the config module</span>
+                    <span class="n">info</span><span class="p">[</span><span class="s2">"subject"</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject_id</span>
+                    <span class="n">study_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">read_subject</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">autodelete</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">downloaded</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Deleting downloaded copy: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">autodelete</span> <span class="ow">and</span> <span class="n">tmpdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Deleting temporary directory: </span><span class="si">{</span><span class="n">tmpdir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmpdir</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">study_data</span><span class="p">,</span> <span class="n">config</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.study</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+    </div>
+  </body>
+</html>

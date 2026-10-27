@@ -27,8 +27,8 @@ Once the data has been manually parsed into :mod:`numpy`-arrays, it can be conve
 
 .. autosummary:: 
     ~pypillometry.GenericEyeData.from_eyelink    
-    ~pypillometry.io.load_study_osf
-    ~pypillometry.io.load_study_local
+    ~pypillometry.study.load_study_osf
+    ~pypillometry.study.load_study_local
     ~pypillometry.io.osf_authenticate
     ~pypillometry.example_datasets.get_example_data
 
