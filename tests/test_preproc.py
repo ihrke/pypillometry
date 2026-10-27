@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pypillometry.signal.preproc import smooth_window, velocity_savgol, detect_blinks_velocity, detect_blinks_zero
+from pypillometry.signal.preproc import smooth_window, velocity_savgol, detect_blinks_velocity, detect_blinks_zero, blink_onsets_mahot
 
 
 class TestSmoothWindow(unittest.TestCase):
@@ -312,6 +312,23 @@ class TestDetectBlinksZero(unittest.TestCase):
         np.testing.assert_array_equal(detect_blinks_zero(sy, 1), [[10, 10], [40, 49]])
         np.testing.assert_array_equal(detect_blinks_zero(sy, 10), [[40, 49]])
         self.assertEqual(len(detect_blinks_zero(sy, 11)), 0)
+
+
+class TestBlinkOnsetsMahot(unittest.TestCase):
+    @staticmethod
+    def make(a, b, n=3000, r=30):
+        p = np.full(n, 5000.0)
+        p[a-r:a] = np.linspace(5000, 1000, r)
+        p[b:b+r] = np.linspace(1000, 5000, r)
+        p[a:b] = np.nan
+        return p
+
+    def test_blink_near_start(self):
+        """blink closer to the start than `blinkwindow` gets the same refinement"""
+        early = blink_onsets_mahot(self.make(100, 200), [(100, 200)], 11, -5, 5, (0, 0), 500)
+        late = blink_onsets_mahot(self.make(1500, 1600), [(1500, 1600)], 11, -5, 5, (0, 0), 500)
+        self.assertEqual(len(early), 1)
+        np.testing.assert_array_equal(early[0] - 100, late[0] - 1500)
 
 if __name__ == '__main__':
     unittest.main()

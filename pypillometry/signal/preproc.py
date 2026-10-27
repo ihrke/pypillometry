@@ -477,7 +477,7 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
             continue
 
         ## onsets are in "local" indices of the windows, start-end of blink global
-        startl,endl=blinkwindow_ix if winstart>0 else start,end-start+blinkwindow_ix
+        startl,endl=start-winstart,end-winstart
 
         # find vel-crossing next to start of blink (onset must be <= startl)
         # Filter to only onsets at or before the blink start
