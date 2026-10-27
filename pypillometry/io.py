@@ -360,7 +360,7 @@ def local_copy(
     source: str,
     cache_file: Optional[str] = None,
     cache_dir: Optional[str] = None,
-    autodelete: bool = False,
+    autodelete: Optional[bool] = None,
     force_download: bool = False,
     session: Optional[requests.Session] = None):
     """Context manager that gives a local filename for `source`.
@@ -374,10 +374,11 @@ def local_copy(
         local path, HTTP(S) URL or SSH URL
     cache_file, cache_dir, force_download, session
         see :func:`fetch_url`
-    autodelete : bool, optional
+    autodelete : bool or None, optional
         if True, the downloaded copy (also in `cache_file`/`cache_dir`) is
         deleted when the context is left, i.e. after the file was read; a
-        temporary directory is removed completely. Default False.
+        temporary directory is removed completely. If None (default), only
+        a temporary directory (no `cache_file`/`cache_dir`) is removed.
 
     Yields
     ------
@@ -395,6 +396,8 @@ def local_copy(
     if cache_file is None and cache_dir is None:
         tmpdir = tempfile.mkdtemp(prefix="pypillometry_")
         cache_dir = tmpdir
+    if autodelete is None:
+        autodelete = tmpdir is not None
     fname = fetch_url(source, cache_file=cache_file, cache_dir=cache_dir,
                       force_download=force_download, session=session)
     try:
@@ -430,7 +433,7 @@ def read_pickle(
     force_download: bool = False,
     session: Optional[requests.Session] = None,
     cache_dir: Optional[str] = None,
-    autodelete: bool = False):
+    autodelete: Optional[bool] = None):
     """
     Read a Python object from a file using :mod:`pickle`.
 
@@ -453,10 +456,11 @@ def read_pickle(
     session : requests.Session, optional
         requests session for HTTP(S) downloads (e.g., from
         :func:`~pypillometry.io.osf_authenticate` for private projects)
-    autodelete : bool, optional
+    autodelete : bool or None, optional
         if True, the downloaded copy is deleted after it was read (also in
-        `cache_file`/`cache_dir`). Local files are never deleted.
-        Default False.
+        `cache_file`/`cache_dir`). If None (default), only a temporary
+        download (no `cache_file`/`cache_dir`) is deleted. Local files are
+        never deleted.
 
     Returns
     -------
@@ -476,7 +480,7 @@ def read_eyelink(
     force_download: bool = False, 
     session: Optional[requests.Session] = None,
     cache_dir: Optional[str] = None,
-    autodelete: bool = False):
+    autodelete: Optional[bool] = None):
     """
     Read an Eyelink file/URL and return the object returned by the "eyelinkio" package.
 
@@ -502,10 +506,11 @@ def read_eyelink(
     session : requests.Session, optional
         requests session for HTTP(S) downloads (e.g., from
         :func:`~pypillometry.io.osf_authenticate` for private projects)
-    autodelete : bool, optional
+    autodelete : bool or None, optional
         if True, the downloaded copy is deleted after it was read (also in
-        `cache_file`/`cache_dir`). Local files are never deleted.
-        Default False.
+        `cache_file`/`cache_dir`). If None (default), only a temporary
+        download (no `cache_file`/`cache_dir`) is deleted. Local files are
+        never deleted.
 
     Returns
     -------

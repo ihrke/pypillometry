@@ -161,6 +161,25 @@ class TestLocalCopy(SSHTestCase):
             self.assertTrue(os.path.isdir(tmpdir))
         self.assertFalse(os.path.exists(tmpdir))
 
+    def test_temp_dir_removed_by_default(self):
+        with io.local_copy("ssh://server/data/f.txt") as fname:
+            tmpdir = fname.split(os.sep + "server" + os.sep)[0]
+            self.assertTrue(os.path.isdir(tmpdir))
+        self.assertFalse(os.path.exists(tmpdir))
+
+    def test_temp_dir_kept_without_autodelete(self):
+        with io.local_copy("ssh://server/data/f.txt", autodelete=False) as fname:
+            tmpdir = fname.split(os.sep + "server" + os.sep)[0]
+        self.assertTrue(os.path.exists(fname))
+        shutil.rmtree(tmpdir)
+
+    def test_read_pickle_removes_temp_dir(self):
+        io.write_pickle({"a": 1}, os.path.join(self.server_root, "data", "obj.pkl"))
+        before = set(os.listdir(tempfile.gettempdir()))
+        self.assertEqual(io.read_pickle("ssh://server/data/obj.pkl"), {"a": 1})
+        after = set(os.listdir(tempfile.gettempdir()))
+        self.assertEqual([d for d in after - before if d.startswith("pypillometry_")], [])
+
 
 class TestReadEyelinkSSH(SSHTestCase):
     def setUp(self):

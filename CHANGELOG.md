@@ -97,6 +97,8 @@
   points
 - `get_available_eyes()`/`get_available_variables()` returned eyes/variables
   in random order; now in the order they were added
+- `read_pickle()`/`read_eyelink()` of URLs without `cache_file`/`cache_dir`
+  left the temporary download directory behind
 
 ### Documentation
 
