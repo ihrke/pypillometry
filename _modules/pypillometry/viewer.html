@@ -597,9 +597,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        If regions were selected (``S`` key, then drag with the left mouse</span>
 <span class="sd">        button), returns a dict mapping plot key (same keys as for</span>
 <span class="sd">        `highlight`) to :class:`~pypillometry.Intervals` objects containing</span>
-<span class="sd">        the selected regions with ``units='sec'`` (for raw arrays the values</span>
-<span class="sd">        are in the units of `time`, i.e. sample indices if `time` is not</span>
-<span class="sd">        given). Returns None if no selections were made.</span>
+<span class="sd">        the selected regions with ``units='sec'``; for raw arrays without</span>
+<span class="sd">        `time` the values are sample indices (``units=None``). Returns None</span>
+<span class="sd">        if no selections were made.</span>
 <span class="sd">    </span>
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
@@ -824,15 +824,21 @@ window.runMermaid = runMermaid;</script>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">selections</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
     
+    <span class="k">return</span> <span class="n">_selections_to_intervals</span><span class="p">(</span><span class="n">selections</span><span class="p">,</span> <span class="n">sample_index</span><span class="o">=</span><span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">'arrays'</span> <span class="ow">and</span> <span class="n">time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">))</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_selections_to_intervals</span><span class="p">(</span><span class="n">selections</span><span class="p">,</span> <span class="n">sample_index</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Convert selections (dict of lists of (start, end)) to Intervals.</span>
+
+<span class="sd">    The selections are in seconds, or in sample indices if `sample_index`</span>
+<span class="sd">    is True (raw arrays without `time`); these get ``units=None``.</span>
+<span class="sd">    """</span>
     <span class="c1"># Import Intervals here to avoid circular imports</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
-    
-    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">var_type</span><span class="p">,</span> <span class="n">intervals_list</span> <span class="ow">in</span> <span class="n">selections</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">result</span><span class="p">[</span><span class="n">var_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">(</span><span class="n">intervals_list</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'sec'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">'selected_</span><span class="si">{</span><span class="n">var_type</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
-    
-    <span class="k">return</span> <span class="n">result</span></div>
-
+    <span class="n">units</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">sample_index</span> <span class="k">else</span> <span class="s1">'sec'</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">var_type</span><span class="p">:</span> <span class="n">Intervals</span><span class="p">(</span><span class="n">intervals_list</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">'selected_</span><span class="si">{</span><span class="n">var_type</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">var_type</span><span class="p">,</span> <span class="n">intervals_list</span> <span class="ow">in</span> <span class="n">selections</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
 
 <div class="viewcode-block" id="tweak">

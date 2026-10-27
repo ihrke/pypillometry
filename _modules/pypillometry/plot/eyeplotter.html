@@ -787,9 +787,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            Existing axis to plot on (only for '3d' projection)</span>
 <span class="sd">        viewing_angle : tuple, optional</span>
 <span class="sd">            Viewing angle for 3D projection (elev, azim) or (elev, azim, roll).</span>
-<span class="sd">            Each element is parsed like `theta`, i.e. use strings with units</span>
-<span class="sd">            (e.g., ``("30 deg", "-60 deg")``); plain numbers are interpreted</span>
-<span class="sd">            as radians.</span>
+<span class="sd">            Plain numbers are in degrees (as in matplotlib's ``view_init``);</span>
+<span class="sd">            strings with units (e.g., ``("30 deg", "-60 deg")``) are parsed.</span>
 <span class="sd">        projection : str, default '2d'</span>
 <span class="sd">            '2d' for three orthogonal views, '3d' for interactive 3D view</span>
 
@@ -835,10 +834,6 @@ window.runMermaid = runMermaid;</script>
             <span class="n">theta</span> <span class="o">=</span> <span class="n">parse_angle</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">phi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">phi</span> <span class="o">=</span> <span class="n">parse_angle</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
-        
-        <span class="c1"># Parse viewing angle if provided</span>
-        <span class="k">if</span> <span class="n">viewing_angle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">viewing_angle</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">parse_angle</span><span class="p">(</span><span class="n">va</span><span class="p">))</span> <span class="k">for</span> <span class="n">va</span> <span class="ow">in</span> <span class="n">viewing_angle</span><span class="p">)</span>
         
         <span class="k">return</span> <span class="n">setup</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
             <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>

@@ -698,6 +698,32 @@ window.runMermaid = runMermaid;</script>
                 <span class="o">.</span><span class="n">reset_time</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">d</span>
         
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_rlmw_010_edf</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Load the "rlmw_010_edf" example dataset (downloaded from OSF).</span>
+
+<span class="sd">    Binocular gaze and pupil data from a 20-minute reinforcement learning</span>
+<span class="sd">    task (single participant) in EDF (Eyelink) format, read with</span>
+<span class="sd">    :meth:`~pypillometry.EyeData.from_eyelink`. The EDF file is downloaded</span>
+<span class="sd">    into a temporary directory on every call. Usually called via</span>
+<span class="sd">    :func:`~pypillometry.get_example_data`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EyeData</span>
+<span class="sd">        the example dataset</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.experimental_setup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperimentalSetup</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdirname</span><span class="p">:</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdirname</span><span class="p">,</span> <span class="s2">"010_rlmw.edf"</span><span class="p">)</span>
+        <span class="n">download</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_010_edf"</span><span class="p">][</span><span class="s2">"edf"</span><span class="p">],</span> <span class="n">fname</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"rlmw_010"</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_experimental_setup</span><span class="p">(</span>
+        <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"30 cm"</span><span class="p">,</span> <span class="s2">"20 cm"</span><span class="p">),</span>
+        <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">"60 cm"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span>
 </pre></div>
 
             <div class="clearer"></div>

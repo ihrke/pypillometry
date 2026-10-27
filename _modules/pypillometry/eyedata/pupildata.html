@@ -425,6 +425,33 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">interpolate</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
 
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_merge_overlapping_blink_windows</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Merge blinks whose interpolation windows overlap.</span>
+
+<span class="sd">    Each blink `(t2, t3)` is interpolated from the anchor points</span>
+<span class="sd">    ``t1 = t2-(t3-t2)`` and ``t4 = t3+(t3-t2)``. Neighbouring blinks are</span>
+<span class="sd">    merged if the window ``[t1, t4]`` of one reaches into the other.</span>
+<span class="sd">    """</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">window</span><span class="p">(</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">on</span><span class="o">-</span><span class="n">off</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">off</span><span class="o">-</span><span class="n">on</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">merged</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">blinks</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+    <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">while</span> <span class="n">changed</span><span class="p">:</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">on</span><span class="p">,</span> <span class="n">off</span> <span class="ow">in</span> <span class="n">merged</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">out</span><span class="p">:</span>
+                <span class="n">pon</span><span class="p">,</span> <span class="n">poff</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">window</span><span class="p">(</span><span class="n">pon</span><span class="p">,</span> <span class="n">poff</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">on</span> <span class="ow">or</span> <span class="n">window</span><span class="p">(</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">poff</span><span class="p">:</span>
+                    <span class="n">out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">pon</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">poff</span><span class="p">,</span> <span class="n">off</span><span class="p">))</span>
+                    <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">continue</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span><span class="p">))</span>
+        <span class="n">merged</span> <span class="o">=</span> <span class="n">out</span>
+    <span class="k">return</span> <span class="n">merged</span>
+
 <div class="viewcode-block" id="PupilData">
 <a class="viewcode-back" href="../../../api.html#pypillometry.PupilData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PupilData</span><span class="p">(</span><span class="n">GenericEyeData</span><span class="p">):</span>
@@ -690,6 +717,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        The mask for the merged signal reflects which timepoints have valid data:</span>
 <span class="sd">        - For "local_offset" and "offset": masked only where BOTH eyes are masked</span>
 <span class="sd">        - For "both_available": masked where EITHER eye is masked</span>
+<span class="sd">        Masked samples still hold the merged stored values (e.g., interpolated</span>
+<span class="sd">        blinks), computed as for valid samples (NaN only if both eyes are NaN).</span>
 <span class="sd">        </span>
 <span class="sd">        The "local_offset" method is recommended for most use cases as it:</span>
 <span class="sd">        1. Uses all available data (doesn't discard single-eye timepoints)</span>
@@ -713,7 +742,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
-<span class="sd">        merge_eyes : Generic merge method in GenericEyeData (masks if either eye invalid)</span>
+<span class="sd">        merge_eyes : Generic merge method in GenericEyeData (masks if all eyes invalid)</span>
 <span class="sd">        pypillometry.signal.pupil.pupil_eye_offset : Compute local offset between eyes</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
@@ -790,6 +819,17 @@ window.runMermaid = runMermaid;</script>
             <span class="n">merged</span><span class="p">[</span><span class="n">only_left</span><span class="p">]</span> <span class="o">=</span> <span class="n">left_data</span><span class="p">[</span><span class="n">only_left</span><span class="p">]</span> <span class="o">-</span> <span class="n">offset</span><span class="p">[</span><span class="n">only_left</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># shift down to midpoint</span>
             <span class="n">merged</span><span class="p">[</span><span class="n">only_right</span><span class="p">]</span> <span class="o">=</span> <span class="n">right_data</span><span class="p">[</span><span class="n">only_right</span><span class="p">]</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="n">only_right</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># shift up to midpoint</span>
             <span class="n">merged_mask</span><span class="p">[</span><span class="o">~</span><span class="n">neither_valid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1"># Where the result is masked, keep the merged stored values (e.g.,</span>
+        <span class="c1"># interpolated blinks) instead of NaN</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"both_available"</span> <span class="k">else</span> <span class="n">offset</span>
+        <span class="n">left_shifted</span> <span class="o">=</span> <span class="n">left_data</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">left_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">right_shifted</span> <span class="o">=</span> <span class="n">right_data</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">right_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">lfin</span><span class="p">,</span> <span class="n">rfin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">left_data</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">right_data</span><span class="p">)</span>
+        <span class="n">fill</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">lfin</span> <span class="o">&amp;</span> <span class="n">rfin</span><span class="p">,</span> <span class="p">(</span><span class="n">left_data</span> <span class="o">+</span> <span class="n">right_data</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">lfin</span><span class="p">,</span> <span class="n">left_shifted</span><span class="p">,</span> <span class="n">right_shifted</span><span class="p">))</span>
+        <span class="n">masked</span> <span class="o">=</span> <span class="n">merged_mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">merged</span><span class="p">[</span><span class="n">masked</span><span class="p">]</span> <span class="o">=</span> <span class="n">fill</span><span class="p">[</span><span class="n">masked</span><span class="p">]</span>
         
         <span class="c1"># Store merged data</span>
         <span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"merged_pupil"</span><span class="p">]</span> <span class="o">=</span> <span class="n">merged</span>
@@ -1057,7 +1097,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        The blinks to interpolate are taken from the blinks stored in the object,</span>
 <span class="sd">        so blinks have to be detected first (e.g., using :meth:`pupil_blinks_detect`).</span>
 <span class="sd">        The on- and offsets of each blink are refined using the velocity profile</span>
-<span class="sd">        before interpolating. Interpolated samples remain masked; the</span>
+<span class="sd">        before interpolating. Blinks that are so close that the anchor points</span>
+<span class="sd">        of one fall into the other are merged and interpolated together.</span>
+<span class="sd">        Interpolated samples remain masked; the</span>
 <span class="sd">        interpolated blinks can be retrieved with</span>
 <span class="sd">        :meth:`~pypillometry.GenericEyeData.get_interpolated_blinks`.</span>
 
@@ -1135,6 +1177,9 @@ window.runMermaid = runMermaid;</script>
                                                     <span class="n">vel_onset_samples</span><span class="p">,</span> <span class="n">vel_offset_samples</span><span class="p">,</span>
                                                     <span class="n">margin_ix</span><span class="p">,</span> <span class="n">blinkwindow_ix</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Refined </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">blink_onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> blink boundaries"</span><span class="p">)</span>
+            <span class="c1"># the anchor points of a blink must not fall into a neighbouring</span>
+            <span class="c1"># blink (they would be NaN), so merge blinks with overlapping windows</span>
+            <span class="n">blink_onsets</span> <span class="o">=</span> <span class="n">_merge_overlapping_blink_windows</span><span class="p">(</span><span class="n">blink_onsets</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 
             <span class="c1"># Collect successfully interpolated blinks</span>
             <span class="n">interpolated_intervals</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1226,7 +1271,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            if `method` is unknown</span>
+<span class="sd">            if `method` is unknown or the data contain NaN (interpolate</span>
+<span class="sd">            blinks first, see :meth:`pupil_blinks_interpolate`)</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
@@ -1236,6 +1282,11 @@ window.runMermaid = runMermaid;</script>
 
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Estimating baseline for eye </span><span class="si">%s</span><span class="s2">"</span><span class="o">%</span><span class="n">eye</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">variable</span><span class="p">])):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">eye</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">' contains NaN (e.g., blinks that were "</span>
+                    <span class="s2">"not interpolated); the baseline cannot be estimated. "</span>
+                    <span class="s2">"Interpolate them first, e.g., with pupil_blinks_interpolate()."</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">method</span><span class="o">==</span><span class="s2">"envelope_iter_bspline_2"</span><span class="p">:</span>
                 <span class="n">txd</span><span class="p">,</span><span class="n">syd</span><span class="p">,</span><span class="n">base2</span><span class="p">,</span><span class="n">base1</span><span class="o">=</span><span class="n">baseline</span><span class="o">.</span><span class="n">baseline_envelope_iter_bspline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">variable</span><span class="p">],</span>

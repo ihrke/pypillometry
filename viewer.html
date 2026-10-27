@@ -221,9 +221,9 @@ sampling rate of <cite>data</cite> if the Intervals have none).</p>
 <dd class="field-even"><p>If regions were selected (<code class="docutils literal notranslate"><span class="pre">S</span></code> key, then drag with the left mouse
 button), returns a dict mapping plot key (same keys as for
 <cite>highlight</cite>) to <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> objects containing
-the selected regions with <code class="docutils literal notranslate"><span class="pre">units='sec'</span></code> (for raw arrays the values
-are in the units of <cite>time</cite>, i.e. sample indices if <cite>time</cite> is not
-given). Returns None if no selections were made.</p>
+the selected regions with <code class="docutils literal notranslate"><span class="pre">units='sec'</span></code>; for raw arrays without
+<cite>time</cite> the values are sample indices (<code class="docutils literal notranslate"><span class="pre">units=None</span></code>). Returns None
+if no selections were made.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code>]]</span></p>

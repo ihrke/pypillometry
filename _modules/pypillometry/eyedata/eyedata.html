@@ -731,8 +731,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            - Quantity: e.g., 700 * ureg.mm</span>
 <span class="sd">        intervals : Intervals, optional</span>
 <span class="sd">            Time intervals to use for fitting. If None, uses all available data.</span>
-<span class="sd">            Useful for fitting only on calibration periods. The start/end</span>
-<span class="sd">            values are compared to the time vector, so they must be in ms.</span>
+<span class="sd">            Useful for fitting only on calibration periods. Intervals in any</span>
+<span class="sd">            time units or in sample indices (`units=None`) are accepted; a</span>
+<span class="sd">            plain list of `(start, end)` tuples is taken as ms.</span>
 <span class="sd">        target_fs : float, default 50.0</span>
 <span class="sd">            Target sampling rate in Hz after downsampling for efficiency.</span>
 <span class="sd">            Pupil dynamics are typically well-preserved at 50 Hz.</span>
@@ -906,9 +907,21 @@ window.runMermaid = runMermaid;</script>
         
         <span class="c1"># Apply interval mask if provided</span>
         <span class="k">if</span> <span class="n">intervals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># index-based Intervals are matched against sample numbers,</span>
+            <span class="c1"># others are converted to ms</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">Intervals</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">ref</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
+                    <span class="n">bounds</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">intervals</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ref</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+                    <span class="n">bounds</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s2">"ms"</span><span class="p">)</span><span class="o">.</span><span class="n">intervals</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ref</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+                <span class="n">bounds</span> <span class="o">=</span> <span class="n">intervals</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">time</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">intervals</span><span class="p">:</span>
-                <span class="n">mask</span> <span class="o">|=</span> <span class="p">(</span><span class="n">time</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">time</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">bounds</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">|=</span> <span class="p">(</span><span class="n">ref</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ref</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">)</span>
             
             <span class="n">time</span> <span class="o">=</span> <span class="n">time</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
             <span class="n">x_gaze</span> <span class="o">=</span> <span class="n">x_gaze</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
@@ -918,12 +931,8 @@ window.runMermaid = runMermaid;</script>
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples from specified intervals"</span><span class="p">)</span>
         
-        <span class="c1"># Scale and center using experimental_setup</span>
-        <span class="n">scale_x</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">mm_per_pixel_x</span>
-        <span class="n">scale_y</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">mm_per_pixel_y</span>
-        
-        <span class="n">x_gaze_mm</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_gaze</span> <span class="o">-</span> <span class="n">setup</span><span class="o">.</span><span class="n">screen_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_x</span>
-        <span class="n">y_gaze_mm</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_gaze</span> <span class="o">-</span> <span class="n">setup</span><span class="o">.</span><span class="n">screen_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_y</span>
+        <span class="c1"># mm relative to screen center, positive y = up</span>
+        <span class="n">x_gaze_mm</span><span class="p">,</span> <span class="n">y_gaze_mm</span> <span class="o">=</span> <span class="n">setup</span><span class="o">.</span><span class="n">pixels_to_mm</span><span class="p">(</span><span class="n">x_gaze</span><span class="p">,</span> <span class="n">y_gaze</span><span class="p">,</span> <span class="n">centered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         
         <span class="c1"># Remove invalid samples (masked, NaN, pupil &lt;= 0); the masks must be</span>
         <span class="c1"># checked explicitly, comparisons on masked arrays keep masked samples</span>

@@ -2796,8 +2796,10 @@ window.runMermaid = runMermaid;</script>
 <span class="w">        </span><span class="sd">"""Merge data from both eyes into a single variable.</span>
 
 <span class="sd">        The merged data is stored under the eye name "mean" (e.g.,</span>
-<span class="sd">        ``obj["mean", "pupil"]``). A sample is masked in the merged</span>
-<span class="sd">        data if it is masked in any of the merged eyes.</span>
+<span class="sd">        ``obj["mean", "pupil"]``). Each sample is the mean over the eyes</span>
+<span class="sd">        in which it is not masked; it is masked in the merged data only if</span>
+<span class="sd">        it is masked in all merged eyes (it then holds the mean of the</span>
+<span class="sd">        stored values, e.g., of interpolated blinks).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2835,13 +2837,17 @@ window.runMermaid = runMermaid;</script>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"No data for eye </span><span class="si">%s</span><span class="s2"> available"</span> <span class="o">%</span> <span class="n">eye</span><span class="p">)</span>
                     <span class="n">eye_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">])</span>
                 
-                <span class="c1"># Stack and compute mean, preserving masks</span>
-                <span class="c1"># If any eye has a masked value, that timepoint is masked in the mean</span>
+                <span class="c1"># Mean over the unmasked eyes; masked only where all eyes</span>
+                <span class="c1"># are masked</span>
                 <span class="n">stacked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">eye_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
                 <span class="n">meanval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">stacked</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-                
-                <span class="c1"># Use masked array assignment to preserve the combined mask</span>
-                <span class="n">obj</span><span class="p">[</span><span class="s2">"mean"</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">meanval</span>
+                <span class="n">allmasked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">meanval</span><span class="p">)</span>
+                <span class="c1"># where all eyes are masked, keep the mean of the stored</span>
+                <span class="c1"># values (e.g., interpolated blinks), still masked</span>
+                <span class="n">raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_invalid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">obj</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">]))</span>
+                <span class="n">rawmean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">allmasked</span><span class="p">,</span> <span class="n">rawmean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">getdata</span><span class="p">(</span><span class="n">meanval</span><span class="p">))</span>
+                <span class="n">obj</span><span class="p">[</span><span class="s2">"mean"</span><span class="p">,</span> <span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">allmasked</span><span class="p">)</span>
                 
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_eyes</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>

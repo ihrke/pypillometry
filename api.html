@@ -816,8 +816,9 @@ preprocessed (filtered and downsampled) before fitting.</p>
 </ul>
 </p></li>
 <li><p><strong>intervals</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code>]</span>) – Time intervals to use for fitting. If None, uses all available data.
-Useful for fitting only on calibration periods. The start/end
-values are compared to the time vector, so they must be in ms.</p></li>
+Useful for fitting only on calibration periods. Intervals in any
+time units or in sample indices (<cite>units=None</cite>) are accepted; a
+plain list of <cite>(start, end)</cite> tuples is taken as ms.</p></li>
 <li><p><strong>target_fs</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Target sampling rate in Hz after downsampling for efficiency.
 Pupil dynamics are typically well-preserved at 50 Hz.</p></li>
 <li><p><strong>lowpass_freq</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Lowpass filter cutoff frequency in Hz. Removes high-frequency noise
@@ -1232,7 +1233,9 @@ If <cite>apply_mask=False</cite> and multiple eyes: returns dict of Intervals ob
 <p>The blinks to interpolate are taken from the blinks stored in the object,
 so blinks have to be detected first (e.g., using <a class="reference internal" href="#pypillometry.PupilData.pupil_blinks_detect" title="pypillometry.PupilData.pupil_blinks_detect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_blinks_detect()</span></code></a>).
 The on- and offsets of each blink are refined using the velocity profile
-before interpolating. Interpolated samples remain masked; the
+before interpolating. Blinks that are so close that the anchor points
+of one fall into the other are merged and interpolated together.
+Interpolated samples remain masked; the
 interpolated blinks can be retrieved with
 <a class="reference internal" href="#pypillometry.GenericEyeData.get_interpolated_blinks" title="pypillometry.GenericEyeData.get_interpolated_blinks"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_interpolated_blinks()</span></code></a>.</p>
 <p>This procedure relies heavily on eye-balling (reconstructing visually convincing signal),
@@ -1311,7 +1314,8 @@ if <cite>None</cite>, use the object-level setting</p></li>
 <dd class="field-odd"><p><a class="reference internal" href="#pypillometry.PupilData" title="pypillometry.PupilData">PupilData</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – if <cite>method</cite> is unknown</p>
+<dd class="field-even"><p><strong>ValueError</strong> – if <cite>method</cite> is unknown or the data contain NaN (interpolate
+blinks first, see <a class="reference internal" href="#pypillometry.PupilData.pupil_blinks_interpolate" title="pypillometry.PupilData.pupil_blinks_interpolate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_blinks_interpolate()</span></code></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1433,7 +1437,9 @@ If an unknown method is specified.</p>
 <cite>data[“merged”, “pupil”]</cite> or <cite>data[“merged_pupil”]</cite>.</p>
 <p>The mask for the merged signal reflects which timepoints have valid data:
 - For “local_offset” and “offset”: masked only where BOTH eyes are masked
-- For “both_available”: masked where EITHER eye is masked</p>
+- For “both_available”: masked where EITHER eye is masked
+Masked samples still hold the merged stored values (e.g., interpolated
+blinks), computed as for valid samples (NaN only if both eyes are NaN).</p>
 <p>The “local_offset” method is recommended for most use cases as it:
 1. Uses all available data (doesn’t discard single-eye timepoints)
 2. Handles session-long drift in the inter-ocular difference
@@ -1459,7 +1465,7 @@ If an unknown method is specified.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <dl class="simple">
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code></dt><dd><p>Generic merge method in GenericEyeData (masks if either eye invalid)</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_eyes</span></code></dt><dd><p>Generic merge method in GenericEyeData (masks if all eyes invalid)</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">pypillometry.signal.pupil.pupil_eye_offset</span></code></dt><dd><p>Compute local offset between eyes</p>
 </dd>
@@ -1933,9 +1939,8 @@ can carry units (e.g., “-90 deg”). If None, uses calibration’s phi
 <li><p><strong>n_gaze_samples</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Number of sample gaze positions</p></li>
 <li><p><strong>ax</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code>]</span>) – Existing axis to plot on (only for ‘3d’ projection)</p></li>
 <li><p><strong>viewing_angle</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – Viewing angle for 3D projection (elev, azim) or (elev, azim, roll).
-Each element is parsed like <cite>theta</cite>, i.e. use strings with units
-(e.g., <code class="docutils literal notranslate"><span class="pre">(&quot;30</span> <span class="pre">deg&quot;,</span> <span class="pre">&quot;-60</span> <span class="pre">deg&quot;)</span></code>); plain numbers are interpreted
-as radians.</p></li>
+Plain numbers are in degrees (as in matplotlib’s <code class="docutils literal notranslate"><span class="pre">view_init</span></code>);
+strings with units (e.g., <code class="docutils literal notranslate"><span class="pre">(&quot;30</span> <span class="pre">deg&quot;,</span> <span class="pre">&quot;-60</span> <span class="pre">deg&quot;)</span></code>) are parsed.</p></li>
 <li><p><strong>projection</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – ‘2d’ for three orthogonal views, ‘3d’ for interactive 3D view</p></li>
 </ul>
 </dd>
@@ -3216,8 +3221,10 @@ if <cite>None</cite>, use the object-level setting (specified in the constructor
 <span class="sig-name descname"><span class="pre">merge_eyes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_eyes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.merge_eyes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.merge_eyes" title="Link to this definition">¶</a></dt>
 <dd><p>Merge data from both eyes into a single variable.</p>
 <p>The merged data is stored under the eye name “mean” (e.g.,
-<code class="docutils literal notranslate"><span class="pre">obj[&quot;mean&quot;,</span> <span class="pre">&quot;pupil&quot;]</span></code>). A sample is masked in the merged
-data if it is masked in any of the merged eyes.</p>
+<code class="docutils literal notranslate"><span class="pre">obj[&quot;mean&quot;,</span> <span class="pre">&quot;pupil&quot;]</span></code>). Each sample is the mean over the eyes
+in which it is not masked; it is masked in the merged data only if
+it is masked in all merged eyes (it then holds the mean of the
+stored values, e.g., of interpolated blinks).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -3640,7 +3647,7 @@ converting missing-value codes to NaN is up to the code that reads the data.</p>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.copy" title="pypillometry.EyeDataDict.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
-<td><p>Create a deep copy of the dictionary.</p></td>
+<td><p>Create a deep copy of the dictionary (data and masks).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.EyeDataDict.count_masked" title="pypillometry.EyeDataDict.count_masked"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_masked</span></code></a>([per_key])</p></td>
 <td><p>Count the number of missing values based on masks.</p></td>
@@ -3698,7 +3705,7 @@ converting missing-value codes to NaN is up to the code that reads the data.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.EyeDataDict.copy">
 <span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/eyedatadict.html#EyeDataDict.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.EyeDataDict.copy" title="Link to this definition">¶</a></dt>
-<dd><p>Create a deep copy of the dictionary.</p>
+<dd><p>Create a deep copy of the dictionary (data and masks).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pypillometry.EyeDataDict" title="pypillometry.eyedata.eyedatadict.EyeDataDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">EyeDataDict</span></code></a></span></p>
