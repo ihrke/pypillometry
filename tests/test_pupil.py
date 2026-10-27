@@ -165,6 +165,20 @@ class TestPupilSignalQuality(unittest.TestCase):
         self.assertTrue(np.all(result >= 0))
         self.assertTrue(np.mean(result) < 1)
 
+class TestBaselinePupilModel(unittest.TestCase):
+    def test_removes_evoked_responses(self):
+        """the regressor uses a 4-sec PRF, so evoked responses are removed"""
+        from pypillometry.signal.baseline import baseline_pupil_model
+        from pypillometry.signal.pupil import pupil_kernel
+        fs = 100
+        tx = np.arange(0, 60000, 10.0)
+        ev = np.arange(2000, 55000, 5000.0)
+        x = np.zeros(tx.size)
+        x[(ev / 10).astype(int)] = 1
+        sy = 5 + 2 * np.convolve(x, pupil_kernel(4000, fs=fs))[:tx.size]
+        base = baseline_pupil_model(tx, sy, ev, fs=fs)
+        self.assertLess(np.std(base[1000:-1000]), 0.01)
+
 
 if __name__ == '__main__':
     unittest.main()
