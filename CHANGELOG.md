@@ -61,6 +61,29 @@
   did not move stored blinks
 - History: internal calls no longer recorded, setters are now recorded
 - `get_intervals()` between two events fixed 
+- `set_experimental_setup()` lost the eye-to-screen distance when updating
+  other parameters
+- `plot_heatmap()`/`plot_scanpath()` with a single eye as string (e.g.,
+  `eyes="left"`) plotted one panel per letter
+- `get_example_data("rlmw_010_edf")` failed (loader was missing)
+- `detect_blinks_zero()` missed runs at the start/end of the signal;
+  `min_duration` is now the minimum number of samples (was one more)
+- `pupil_estimate_baseline()` raises a clear error for data with NaN (was
+  an obscure `zero-size array` error)
+- `EyeDataDict.copy()` kept only masks for NaN values
+- `fit_foreshortening(intervals=...)` treated all intervals as ms (now
+  index-based or any time units)
+- `view()` of raw arrays without `time`: selections were labelled as
+  seconds although they are sample indices (now `units=None`)
+- `baseline_pupil_model()` used a 4 ms instead of a 4 s response kernel
+- `pupil_blinks_interpolate()` left blinks NaN when the anchor points fell
+  into a neighbouring blink; such blinks are now merged
+- `merge_eyes()`/`pupil_merge_eyes()`: samples masked in all eyes lost their
+  values (0 or NaN, e.g., interpolated blinks); they now hold the merged
+  values (still masked). `merge_eyes()` docstring: masked where *all* eyes
+  are masked
+- `blink_onsets_mahot()` (used by `pupil_blinks_interpolate()`) searched the
+  offset too late for blinks near the start of the data, so they were skipped
 
 ### Documentation
 
