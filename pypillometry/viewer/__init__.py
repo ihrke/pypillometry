@@ -183,8 +183,10 @@ def view(data, variables=None, eyes=None, time=None,
           objects; keys are 'pupil', 'x', 'y' and ``'extra_<label>'`` for
           `extra_plots` (EyeData), or the plot labels (arrays)
 
-        Intervals not in seconds are converted (for EyeData using the
-        sampling rate of `data` if the Intervals have none).
+        Intervals in time units are converted to seconds; Intervals in
+        sample indices (``units=None``) are placed using the time vector.
+        For raw arrays without `time`, the x-axis is in sample indices and
+        Intervals in time units need a sampling rate.
     highlight_color : str, optional
         Color for highlighted regions (default: 'lightblue')
     
@@ -341,7 +343,8 @@ def view(data, variables=None, eyes=None, time=None,
             overlays=overlays,
             extra_plots=normalized_extra_plots,
             highlight=highlight, 
-            highlight_color=highlight_color
+            highlight_color=highlight_color,
+            sample_index=False
         )
     else:
         # Array mode
@@ -352,7 +355,8 @@ def view(data, variables=None, eyes=None, time=None,
             variables=None,
             overlays=None, 
             highlight=highlight, 
-            highlight_color=highlight_color
+            highlight_color=highlight_color,
+            sample_index=(time is None)
         )
     
     # For array mode, set the view range before showing to avoid
@@ -422,6 +426,27 @@ def view(data, variables=None, eyes=None, time=None,
         return None
     
     return _selections_to_intervals(selections, sample_index=(mode == 'arrays' and time is None))
+
+
+def _intervals_to_axis(intervals, time_seconds, sample_index=False):
+    """Convert Intervals to a list of (start, end) in x-axis units.
+
+    The x-axis is in seconds, or in sample indices if `sample_index` is True
+    (raw arrays without `time`). Index Intervals (``units=None``) are placed
+    using `time_seconds` (end indices are exclusive). `intervals` is not
+    modified.
+    """
+    if sample_index:
+        # converting time units to indices needs the Intervals' sampling rate
+        return list(intervals.to_units(None).intervals)
+    if intervals.units is not None:
+        return list(intervals.to_units('sec').intervals)
+    # time of sample i, plus one sample past the end for exclusive end indices
+    t = np.asarray(time_seconds, dtype=float)
+    dt = t[-1] - t[-2] if len(t) > 1 else 0.0
+    t = np.append(t, t[-1] + dt)
+    idx = np.clip(np.asarray(intervals.intervals, dtype=int).reshape(-1, 2), 0, len(t) - 1)
+    return [(float(t[s]), float(t[e])) for s, e in idx]
 
 
 def _selections_to_intervals(selections, sample_index=False):
@@ -614,16 +639,14 @@ def tweak(data, func, params, variable=None, time=None):
     # Import Intervals for type checking
     from ..intervals import Intervals
     
+    sample_index = time is None and display_variable is None
+
     def _intervals_to_seconds(intervals, default_fs):
-        """Convert Intervals object to list of (start, end) tuples in seconds."""
-        if intervals.sampling_rate is None and default_fs is not None:
-            intervals.sampling_rate = default_fs
-        if intervals.units != 'sec':
-            try:
-                intervals = intervals.to_units('sec')
-            except ValueError:
-                pass  # Keep original if conversion fails
-        return list(intervals.intervals)
+        """Convert Intervals object to list of (start, end) tuples in x-axis units."""
+        try:
+            return _intervals_to_axis(intervals, time_vec, sample_index)
+        except ValueError:
+            return list(intervals.intervals)  # Keep original if conversion fails
     
     def extract_result(result):
         """Extract display arrays, mask, and intervals from function result.

@@ -71,6 +71,9 @@
 - `Intervals` repr showed "None" as unit for index intervals
 - `Intervals.from_mask(units=...)` labelled sample indices with time units
   without converting them
+- `view(highlight=...)`: index intervals failed for raw arrays and were
+  converted although the x-axis is in samples; the passed Intervals were
+  modified
 
 ### Documentation
 
