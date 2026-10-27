@@ -1133,7 +1133,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "d=d.reset_time().pupil_blinks_detect()"
+    "d=d.reset_time().pupil_blinks_detect(apply_mask=True)"
    ]
   },
   {

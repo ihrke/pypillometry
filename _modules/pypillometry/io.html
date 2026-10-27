@@ -769,7 +769,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">cache_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">autodelete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">autodelete</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Context manager that gives a local filename for `source`.</span>
@@ -783,10 +783,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        local path, HTTP(S) URL or SSH URL</span>
 <span class="sd">    cache_file, cache_dir, force_download, session</span>
 <span class="sd">        see :func:`fetch_url`</span>
-<span class="sd">    autodelete : bool, optional</span>
+<span class="sd">    autodelete : bool or None, optional</span>
 <span class="sd">        if True, the downloaded copy (also in `cache_file`/`cache_dir`) is</span>
 <span class="sd">        deleted when the context is left, i.e. after the file was read; a</span>
-<span class="sd">        temporary directory is removed completely. Default False.</span>
+<span class="sd">        temporary directory is removed completely. If None (default), only</span>
+<span class="sd">        a temporary directory (no `cache_file`/`cache_dir`) is removed.</span>
 
 <span class="sd">    Yields</span>
 <span class="sd">    ------</span>
@@ -804,6 +805,8 @@ window.runMermaid = runMermaid;</script>
     <span class="k">if</span> <span class="n">cache_file</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"pypillometry_"</span><span class="p">)</span>
         <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">tmpdir</span>
+    <span class="k">if</span> <span class="n">autodelete</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">autodelete</span> <span class="o">=</span> <span class="n">tmpdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     <span class="n">fname</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="n">cache_file</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
                       <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
@@ -845,7 +848,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">autodelete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="n">autodelete</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Read a Python object from a file using :mod:`pickle`.</span>
 
@@ -868,10 +871,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    session : requests.Session, optional</span>
 <span class="sd">        requests session for HTTP(S) downloads (e.g., from</span>
 <span class="sd">        :func:`~pypillometry.io.osf_authenticate` for private projects)</span>
-<span class="sd">    autodelete : bool, optional</span>
+<span class="sd">    autodelete : bool or None, optional</span>
 <span class="sd">        if True, the downloaded copy is deleted after it was read (also in</span>
-<span class="sd">        `cache_file`/`cache_dir`). Local files are never deleted.</span>
-<span class="sd">        Default False.</span>
+<span class="sd">        `cache_file`/`cache_dir`). If None (default), only a temporary</span>
+<span class="sd">        download (no `cache_file`/`cache_dir`) is deleted. Local files are</span>
+<span class="sd">        never deleted.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -894,7 +898,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
     <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">autodelete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="n">autodelete</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Read an Eyelink file/URL and return the object returned by the "eyelinkio" package.</span>
 
@@ -920,10 +924,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    session : requests.Session, optional</span>
 <span class="sd">        requests session for HTTP(S) downloads (e.g., from</span>
 <span class="sd">        :func:`~pypillometry.io.osf_authenticate` for private projects)</span>
-<span class="sd">    autodelete : bool, optional</span>
+<span class="sd">    autodelete : bool or None, optional</span>
 <span class="sd">        if True, the downloaded copy is deleted after it was read (also in</span>
-<span class="sd">        `cache_file`/`cache_dir`). Local files are never deleted.</span>
-<span class="sd">        Default False.</span>
+<span class="sd">        `cache_file`/`cache_dir`). If None (default), only a temporary</span>
+<span class="sd">        download (no `cache_file`/`cache_dir`) is deleted. Local files are</span>
+<span class="sd">        never deleted.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>

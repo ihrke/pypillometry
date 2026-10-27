@@ -44,8 +44,8 @@
    "source": [
     "# load a small example dataset\n",
     "d=pp.get_example_data(\"rlmw_002_short\")\n",
-    "d=d.pupil_blinks_detect()\\\n",
-    "    .blinks_merge_close()\\\n",
+    "d=d.pupil_blinks_detect(apply_mask=True)\\\n",
+    "    .blinks_merge_close(apply_mask=True)\\\n",
     "    .pupil_lowpass_filter(3)\\\n",
     "    .downsample(50)"
    ]

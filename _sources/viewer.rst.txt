@@ -65,7 +65,11 @@ For EyeData objects, you can filter which modalities to display using the ``vari
    :alt: Viewer showing only pupil data
    :width: 100%
 
-Valid values are ``'pupil'``, ``'x'``, and ``'y'``.
+Valid values are ``'pupil'``, ``'x'``, and ``'y'``. Similarly, ``eyes`` selects the eyes to display (default: all available eyes):
+
+.. code-block:: python
+
+    pp.view(eyedata, variables=['pupil'], eyes=['left'])
 
 
 Adding Overlays
@@ -117,6 +121,27 @@ You can add additional subplots below the main EyeData variables using ``extra_p
    :width: 100%
 
 
+Highlighting Intervals
+----------------------
+
+Use ``highlight`` to shade :class:`Intervals` (e.g., detected blinks) in the plots, and ``highlight_color`` to change their color (default ``'lightblue'``):
+
+.. code-block:: python
+
+    import pypillometry as pp
+
+    eyedata = pp.get_example_data("rlmw_002_short")
+    blinks = eyedata.pupil_blinks_detect(eyes='left')  # Intervals
+
+    # same intervals in all subplots
+    pp.view(eyedata, highlight=blinks, highlight_color='orange')
+
+    # or per subplot
+    pp.view(eyedata, highlight={'pupil': blinks})
+
+``highlight`` is either a single :class:`Intervals` object (shown in all subplots) or a dict mapping subplot keys to :class:`Intervals`. The keys are ``'pupil'``, ``'x'``, ``'y'`` and ``'extra_<label>'`` for ``extra_plots`` (EyeData), or the plot labels (arrays). Intervals in time units are converted to seconds, sample-index Intervals are placed using the time vector.
+
+
 Interactive Selection
 ---------------------
 
@@ -139,6 +164,8 @@ The viewer supports interactive region selection:
     # selections is a dict of Intervals if any regions were selected
     if selections:
         print(selections)
+
+The returned dict has the same keys as ``highlight`` (``'pupil'``, ``'x'``, ``'y'``, ``'extra_<label>'`` or the plot labels for arrays). The Intervals are in seconds (``units='sec'``); for raw arrays without ``time`` they are sample indices (``units=None``). If no region was selected, :func:`view` returns ``None``.
 
 
 API Reference

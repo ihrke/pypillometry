@@ -415,11 +415,13 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeData</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">importlib.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">files</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.request</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlretrieve</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">download</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_url</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">_user_cache_dir</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"get_available_datasets"</span><span class="p">,</span> <span class="s2">"get_example_data"</span><span class="p">,</span> <span class="s2">"get_rlmw_002"</span><span class="p">,</span>
@@ -430,22 +432,22 @@ window.runMermaid = runMermaid;</script>
     <span class="s2">"rlmw_002"</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">"samples_asc"</span><span class="p">:</span><span class="s2">"https://osf.io/download/67cec1a4fb24855200fd6db7/"</span><span class="p">,</span>
         <span class="s2">"events_asc"</span><span class="p">:</span><span class="s2">"https://osf.io/download/67cec1a183c337a5effd6fb6/"</span><span class="p">,</span>
-        <span class="s2">"description"</span><span class="p">:</span><span class="s2">"Binocular data from a 20-minute reinforcement learning task."</span>
-        <span class="s2">"Data from a single participant, features strong horizontal eye-movements"</span>
+        <span class="s2">"description"</span><span class="p">:</span><span class="s2">"Binocular data from a 20-minute reinforcement learning task. "</span>
+        <span class="s2">"Data from a single participant, features strong horizontal eye-movements "</span>
         <span class="s2">"between the two stimuli presented on the left and right."</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="s2">"rlmw_002_short"</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">"sample_asc"</span><span class="p">:</span><span class="n">files</span><span class="p">(</span><span class="s1">'pypillometry.data'</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">'002_rlmw_samples_short.asc'</span><span class="p">),</span>
         <span class="s2">"events_asc"</span><span class="p">:</span><span class="n">files</span><span class="p">(</span><span class="s1">'pypillometry.data'</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">'002_rlmw_events_short.asc'</span><span class="p">),</span>
-        <span class="s2">"description"</span><span class="p">:</span><span class="s2">"Short version (first 40 sec) of a 20-minute reinforcement learning task."</span>
-        <span class="s2">"Data from a single participant, features strong horizontal eye-movements"</span>
+        <span class="s2">"description"</span><span class="p">:</span><span class="s2">"Short version (first 40 sec) of a 20-minute reinforcement learning task. "</span>
+        <span class="s2">"Data from a single participant, features strong horizontal eye-movements "</span>
         <span class="s2">"between the two stimuli presented on the left and right."</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="s2">"rlmw_010_edf"</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">"edf"</span><span class="p">:</span><span class="s2">"https://osf.io/trsuq/download"</span><span class="p">,</span>
         <span class="s2">"description"</span><span class="p">:</span><span class="s2">"Binocular data from a 20-minute reinforcement learning task "</span>
-        <span class="s2">"in EDF (Eyelink) format."</span>
-        <span class="s2">"Data from a single participant, features strong horizontal eye-movements"</span>
+        <span class="s2">"in EDF (Eyelink) format. "</span>
+        <span class="s2">"Data from a single participant, features strong horizontal eye-movements "</span>
         <span class="s2">"between the two stimuli presented on the left and right."</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">}</span>
@@ -516,7 +518,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="get_example_data">
 <a class="viewcode-back" href="../../api.html#pypillometry.example_data.get_example_data">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_example_data</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_example_data</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load example data for a given example (see `example_datasets`).</span>
 
 <span class="sd">    Parameters</span>
@@ -524,6 +526,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    key : str</span>
 <span class="sd">        Key of the example dataset. Available keys are in the dictionary</span>
 <span class="sd">        `example_datasets`.</span>
+<span class="sd">    cache_dir : str, optional</span>
+<span class="sd">        directory to store downloaded files in (reused in later calls);</span>
+<span class="sd">        default ``$XDG_CACHE_HOME/pypillometry`` (``~/.cache/pypillometry``).</span>
+<span class="sd">        Ignored for datasets included in the package.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -539,47 +545,56 @@ window.runMermaid = runMermaid;</script>
     <span class="n">funcname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"get_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span>
     <span class="k">if</span> <span class="n">funcname</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
         <span class="n">func</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="n">funcname</span><span class="p">]</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">"cache_dir"</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"cache_dir"</span><span class="p">]</span> <span class="o">=</span> <span class="n">cache_dir</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
         <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">'ignore'</span><span class="p">)</span> 
-            <span class="n">r</span> <span class="o">=</span> <span class="n">func</span><span class="p">()</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">r</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Function '</span><span class="si">{</span><span class="n">funcname</span><span class="si">}</span><span class="s2">' not found in example datasets."</span><span class="p">)</span></div>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">get_rlmw_002</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_rlmw_002</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load the "rlmw_002" example dataset (downloaded from OSF).</span>
 
 <span class="sd">    Binocular gaze and pupil data from a 20-minute reinforcement learning</span>
-<span class="sd">    task (single participant). The ASC files are downloaded into a</span>
-<span class="sd">    temporary directory on every call. Events are the "MSG" lines after</span>
+<span class="sd">    task (single participant). The ASC files are downloaded into</span>
+<span class="sd">    `cache_dir` on the first call and reused later. Events are the "MSG" lines after</span>
 <span class="sd">    "experiment_start"; missing pupil samples (coded as 0 by Eyelink) are</span>
 <span class="sd">    set to NaN; time is reset to start at 0 and the original data</span>
 <span class="sd">    are kept (`keep_orig=True`). Usually called via</span>
 <span class="sd">    :func:`~pypillometry.get_example_data`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cache_dir : str, optional</span>
+<span class="sd">        directory for the downloaded files; default</span>
+<span class="sd">        ``$XDG_CACHE_HOME/pypillometry`` (``~/.cache/pypillometry``)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    EyeData</span>
 <span class="sd">        the example dataset</span>
 <span class="sd">    """</span>
-    <span class="c1"># download file from osf   </span>
-    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdirname</span><span class="p">:</span> 
-        <span class="n">fname_samples</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdirname</span><span class="p">,</span><span class="s2">"002_rlmw_samples.asc"</span><span class="p">)</span>
-        <span class="n">fname_events</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdirname</span><span class="p">,</span><span class="s2">"002_rlmw_events.asc"</span><span class="p">)</span>
-        <span class="n">download</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002"</span><span class="p">][</span><span class="s2">"samples_asc"</span><span class="p">],</span> <span class="n">fname_samples</span><span class="p">)</span>
-        <span class="n">download</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002"</span><span class="p">][</span><span class="s2">"events_asc"</span><span class="p">],</span> <span class="n">fname_events</span><span class="p">)</span>
+    <span class="c1"># download files from osf (or use the cached copies)</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">_user_cache_dir</span><span class="p">()</span>
+    <span class="n">fname_samples</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002"</span><span class="p">][</span><span class="s2">"samples_asc"</span><span class="p">],</span>
+                              <span class="n">cache_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="s2">"002_rlmw_samples.asc"</span><span class="p">))</span>
+    <span class="n">fname_events</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_002"</span><span class="p">][</span><span class="s2">"events_asc"</span><span class="p">],</span>
+                             <span class="n">cache_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="s2">"002_rlmw_events.asc"</span><span class="p">))</span>
 
-        <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                        <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"left_x"</span><span class="p">,</span> <span class="s2">"left_y"</span><span class="p">,</span> <span class="s2">"left_p"</span><span class="p">,</span>
-                                <span class="s2">"right_x"</span><span class="p">,</span> <span class="s2">"right_y"</span><span class="p">,</span> <span class="s2">"right_p"</span><span class="p">])</span>
+    <span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">fname_samples</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">"time"</span><span class="p">,</span> <span class="s2">"left_x"</span><span class="p">,</span> <span class="s2">"left_y"</span><span class="p">,</span> <span class="s2">"left_p"</span><span class="p">,</span>
+                            <span class="s2">"right_x"</span><span class="p">,</span> <span class="s2">"right_y"</span><span class="p">,</span> <span class="s2">"right_p"</span><span class="p">])</span>
 
-        <span class="c1">## Loading the events from the events file</span>
-        <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">events</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+    <span class="c1">## Loading the events from the events file</span>
+    <span class="c1"># read the whole file into variable `events` (list with one entry per line)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname_events</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">events</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
 
     <span class="c1">## Eyelink tracker puts "   ." when no data is available for x/y coordinates</span>
     <span class="n">left_x</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">left_x</span><span class="o">.</span><span class="n">values</span>
@@ -619,7 +634,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"30 cm"</span><span class="p">,</span> <span class="s2">"20 cm"</span><span class="p">),</span>
         <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">"60 cm"</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"test short"</span><span class="p">,</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">EyeData</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"rlmw_002"</span><span class="p">,</span>
                 <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span>
                 <span class="n">left_x</span><span class="o">=</span><span class="n">left_x</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="n">left_y</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="n">left_p</span><span class="p">,</span>
                 <span class="n">right_x</span><span class="o">=</span><span class="n">right_x</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="n">right_y</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="n">right_p</span><span class="p">,</span>
@@ -704,14 +719,20 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">d</span>
         
 
-<span class="k">def</span><span class="w"> </span><span class="nf">get_rlmw_010_edf</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_rlmw_010_edf</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Load the "rlmw_010_edf" example dataset (downloaded from OSF).</span>
 
 <span class="sd">    Binocular gaze and pupil data from a 20-minute reinforcement learning</span>
 <span class="sd">    task (single participant) in EDF (Eyelink) format, read with</span>
 <span class="sd">    :meth:`~pypillometry.EyeData.from_eyelink`. The EDF file is downloaded</span>
-<span class="sd">    into a temporary directory on every call. Usually called via</span>
+<span class="sd">    into `cache_dir` on the first call and reused later. Usually called via</span>
 <span class="sd">    :func:`~pypillometry.get_example_data`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cache_dir : str, optional</span>
+<span class="sd">        directory for the downloaded files; default</span>
+<span class="sd">        ``$XDG_CACHE_HOME/pypillometry`` (``~/.cache/pypillometry``)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -719,10 +740,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        the example dataset</span>
 <span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedata.experimental_setup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperimentalSetup</span>
-    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmpdirname</span><span class="p">:</span>
-        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmpdirname</span><span class="p">,</span> <span class="s2">"010_rlmw.edf"</span><span class="p">)</span>
-        <span class="n">download</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_010_edf"</span><span class="p">][</span><span class="s2">"edf"</span><span class="p">],</span> <span class="n">fname</span><span class="p">)</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">_user_cache_dir</span><span class="p">()</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">example_datasets</span><span class="p">[</span><span class="s2">"rlmw_010_edf"</span><span class="p">][</span><span class="s2">"edf"</span><span class="p">],</span>
+                      <span class="n">cache_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">,</span> <span class="s2">"010_rlmw.edf"</span><span class="p">))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
     <span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"rlmw_010"</span>
     <span class="n">d</span><span class="o">.</span><span class="n">set_experimental_setup</span><span class="p">(</span>
         <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"30 cm"</span><span class="p">,</span> <span class="s2">"20 cm"</span><span class="p">),</span>

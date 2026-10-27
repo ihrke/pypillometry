@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.segmented &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.segmented</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pypillometry.segmented</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">segmented.py</span>
+<span class="sd">============</span>
+
+<span class="sd">Segmented eye data for event-related analysis.</span>
+
+<span class="sd">"""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.ma</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ma</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">write_pickle</span><span class="p">,</span> <span class="n">read_pickle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">_warn_if_ignores_mask</span><span class="p">,</span> <span class="n">_check_accepts_axis</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"SegmentedEyeData"</span><span class="p">,</span> <span class="s2">"GroupLevelSegmentedData"</span><span class="p">,</span> <span class="s2">"group_segments"</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="SegmentedEyeData">
+<a class="viewcode-back" href="../../api.html#pypillometry.SegmentedEyeData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SegmentedEyeData</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Class representing segmented eye data (e.g., event-related pupil dilation).</span>
+<span class="sd">    </span>
+<span class="sd">    Holds equal-length segments of a single eye data variable (e.g., "left_pupil", </span>
+<span class="sd">    "right_x") extracted around events. Tracks masked/missing data.</span>
+
+<span class="sd">    Usually created with :meth:`~pypillometry.GenericEyeData.get_segments`</span>
+<span class="sd">    from the Intervals returned by</span>
+<span class="sd">    :meth:`~pypillometry.GenericEyeData.get_intervals`, e.g.</span>
+<span class="sd">    ``d.get_segments(d.get_intervals("F", interval=(-200, 800), units="ms"),</span>
+<span class="sd">    "left_pupil")``. Segments of several subjects can be combined with</span>
+<span class="sd">    :func:`~pypillometry.group_segments`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        Name of the dataset (e.g., "cue-locked", "conflict-trials")</span>
+<span class="sd">    variable : str</span>
+<span class="sd">        Variable name in "eye_variable" format (e.g., "left_pupil", "right_x")</span>
+<span class="sd">    tx : np.ndarray</span>
+<span class="sd">        Time axis relative to segment onset (in ms)</span>
+<span class="sd">    data : np.ma.MaskedArray</span>
+<span class="sd">        Masked array with shape (n_timepoints, n_segments)</span>
+<span class="sd">    intervals : Intervals, optional</span>
+<span class="sd">        Source Intervals object with event metadata</span>
+<span class="sd">    sampling_rate : float, optional</span>
+<span class="sd">        Original sampling rate in Hz</span>
+<span class="sd">    """</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+                 <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">tx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
+                 <span class="n">data</span><span class="p">:</span> <span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">,</span>
+                 <span class="n">intervals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable</span> <span class="o">=</span> <span class="n">variable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span>
+        
+        <span class="c1"># Ensure data is a masked array</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="o">=</span> <span class="n">intervals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">sampling_rate</span>
+        
+        <span class="c1"># Validate variable format</span>
+        <span class="k">if</span> <span class="s2">"_"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">variable</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Variable must be in 'eye_variable' format (e.g., 'left_pupil'), got '</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">eye</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Return the eye part of the variable (e.g., 'left' from 'left_pupil')."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Return the variable part (e.g., 'pupil' from 'left_pupil')."""</span>
+        <span class="k">return</span> <span class="s2">"_"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">n_timepoints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Number of time points per segment."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">n_segments</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Number of segments."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">window</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Time window in ms as (start, end)."""</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    
+<div class="viewcode-block" id="SegmentedEyeData.from_masked_array">
+<a class="viewcode-back" href="../../api.html#pypillometry.SegmentedEyeData.from_masked_array">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_masked_array</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                          <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">],</span>
+                          <span class="n">tx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                          <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                          <span class="n">intervals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"segments"</span><span class="p">,</span>
+                          <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'SegmentedEyeData'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Create SegmentedEyeData from a masked array.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : np.ndarray or np.ma.MaskedArray</span>
+<span class="sd">            Data array with shape (n_timepoints, n_segments)</span>
+<span class="sd">        tx : np.ndarray</span>
+<span class="sd">            Time axis relative to segment onset (in ms)</span>
+<span class="sd">        variable : str</span>
+<span class="sd">            Variable name in "eye_variable" format</span>
+<span class="sd">        intervals : Intervals, optional</span>
+<span class="sd">            Source Intervals object with event metadata</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            Name for the dataset (default "segments")</span>
+<span class="sd">        sampling_rate : float, optional</span>
+<span class="sd">            Original sampling rate in Hz</span>
+<span class="sd">        mask : np.ndarray, optional</span>
+<span class="sd">            Mask array (1=masked/missing, 0=valid). Only used if data is not already a MaskedArray.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SegmentedEyeData</span>
+<span class="sd">            New instance with the provided data</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+            <span class="n">masked_data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">masked_data</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">variable</span><span class="o">=</span><span class="n">variable</span><span class="p">,</span>
+            <span class="n">tx</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">masked_data</span><span class="p">,</span>
+            <span class="n">intervals</span><span class="o">=</span><span class="n">intervals</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span>
+        <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="SegmentedEyeData.from_eyedata">
+<a class="viewcode-back" href="../../api.html#pypillometry.SegmentedEyeData.from_eyedata">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_eyedata</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> 
+                     <span class="n">eyedata</span><span class="p">,</span> 
+                     <span class="n">intervals</span><span class="p">,</span> 
+                     <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'SegmentedEyeData'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Extract segments from a GenericEyeData object using intervals.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        eyedata : GenericEyeData</span>
+<span class="sd">            Source eye data object (PupilData, GazeData, etc.)</span>
+<span class="sd">        intervals : Intervals</span>
+<span class="sd">            Intervals object defining the segments to extract</span>
+<span class="sd">        variable : str</span>
+<span class="sd">            Variable to extract in "eye_variable" format (e.g., "left_pupil")</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            Name for the dataset. If None, uses intervals.label or "segments"</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SegmentedEyeData</span>
+<span class="sd">            New instance with extracted segments</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">Intervals</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"intervals must be an Intervals object. Use get_intervals() to create one."</span><span class="p">)</span>
+        
+        <span class="c1"># Validate variable format</span>
+        <span class="k">if</span> <span class="s2">"_"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">variable</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Variable must be in 'eye_variable' format (e.g., 'left_pupil'), got '</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+        
+        <span class="c1"># Check if variable exists in data</span>
+        <span class="k">if</span> <span class="n">variable</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">available</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">eyedata</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Variable '</span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">' not found in data. Available: </span><span class="si">{</span><span class="n">available</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        
+        <span class="c1"># Convert Intervals to indices for data extraction</span>
+        <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">intervals_idx</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">intervals</span>
+            <span class="n">first_start</span><span class="p">,</span> <span class="n">first_end</span> <span class="o">=</span> <span class="n">intervals_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">duration_ix</span> <span class="o">=</span> <span class="n">first_end</span> <span class="o">-</span> <span class="n">first_start</span>
+            <span class="n">interval_ms</span> <span class="o">=</span> <span class="p">(</span><span class="n">first_start</span> <span class="o">/</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">fs</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">first_end</span> <span class="o">/</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">fs</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fac_to_ms</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">intervals</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+            <span class="n">intervals_idx</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="n">first_start</span><span class="p">,</span> <span class="n">first_end</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">intervals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">start_ms</span> <span class="o">=</span> <span class="n">first_start</span> <span class="o">*</span> <span class="n">fac_to_ms</span>
+            <span class="n">end_ms</span> <span class="o">=</span> <span class="n">first_end</span> <span class="o">*</span> <span class="n">fac_to_ms</span>
+            <span class="n">interval_ms</span> <span class="o">=</span> <span class="p">(</span><span class="n">start_ms</span><span class="p">,</span> <span class="n">end_ms</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">intervals</span><span class="o">.</span><span class="n">intervals</span><span class="p">:</span>
+                <span class="n">start_ms</span> <span class="o">=</span> <span class="n">start</span> <span class="o">*</span> <span class="n">fac_to_ms</span>
+                <span class="n">end_ms</span> <span class="o">=</span> <span class="n">end</span> <span class="o">*</span> <span class="n">fac_to_ms</span>
+                <span class="n">start_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eyedata</span><span class="o">.</span><span class="n">tx</span> <span class="o">-</span> <span class="n">start_ms</span><span class="p">))</span>
+                <span class="n">end_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eyedata</span><span class="o">.</span><span class="n">tx</span> <span class="o">-</span> <span class="n">end_ms</span><span class="p">))</span>
+                <span class="n">intervals_idx</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">start_ix</span><span class="p">,</span> <span class="n">end_ix</span><span class="p">))</span>
+        
+        <span class="c1"># Calculate duration and time window</span>
+        <span class="n">duration_ix</span> <span class="o">=</span> <span class="n">intervals_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">intervals_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="c1"># Use interval_window for relative time axis if available (event-locked intervals)</span>
+        <span class="c1"># Otherwise fall back to absolute interval times</span>
+        <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">interval_window</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Convert interval_window to ms if needed</span>
+            <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># interval_window is in indices, convert to ms</span>
+                <span class="n">ms_per_sample</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">/</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">fs</span>
+                <span class="n">txw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                    <span class="n">intervals</span><span class="o">.</span><span class="n">interval_window</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">ms_per_sample</span><span class="p">,</span>
+                    <span class="n">intervals</span><span class="o">.</span><span class="n">interval_window</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">ms_per_sample</span><span class="p">,</span>
+                    <span class="n">num</span><span class="o">=</span><span class="n">duration_ix</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># interval_window is in the same units as intervals, convert to ms</span>
+                <span class="n">fac_to_ms</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">intervals</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+                <span class="n">txw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                    <span class="n">intervals</span><span class="o">.</span><span class="n">interval_window</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">fac_to_ms</span><span class="p">,</span>
+                    <span class="n">intervals</span><span class="o">.</span><span class="n">interval_window</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">fac_to_ms</span><span class="p">,</span>
+                    <span class="n">num</span><span class="o">=</span><span class="n">duration_ix</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># No interval_window, use absolute times (not event-locked)</span>
+            <span class="n">txw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">interval_ms</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">interval_ms</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">duration_ix</span><span class="p">)</span>
+        
+        <span class="n">n_segments</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">intervals_idx</span><span class="p">)</span>
+        
+        <span class="c1"># Extract segments</span>
+        <span class="n">data_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">duration_ix</span><span class="p">,</span> <span class="n">n_segments</span><span class="p">))</span>
+        <span class="n">mask_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">duration_ix</span><span class="p">,</span> <span class="n">n_segments</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">intervals_idx</span><span class="p">):</span>
+            <span class="n">onl</span><span class="p">,</span> <span class="n">offl</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">duration_ix</span>  <span class="c1"># "local" window indices</span>
+            
+            <span class="k">if</span> <span class="n">on</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># pad with zeros in case timewindow starts before data</span>
+                <span class="n">onl</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">on</span><span class="p">)</span>
+                <span class="n">on</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">off</span> <span class="o">&gt;</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                <span class="n">offl</span> <span class="o">=</span> <span class="n">duration_ix</span> <span class="o">-</span> <span class="p">(</span><span class="n">off</span> <span class="o">-</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+                <span class="n">off</span> <span class="o">=</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">size</span>
+            
+            <span class="c1"># Ensure we extract exactly the right number of samples</span>
+            <span class="n">segment_len</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">offl</span> <span class="o">-</span> <span class="n">onl</span><span class="p">,</span> <span class="n">off</span> <span class="o">-</span> <span class="n">on</span><span class="p">)</span>
+            <span class="n">data_arr</span><span class="p">[</span><span class="n">onl</span><span class="p">:</span><span class="n">onl</span><span class="o">+</span><span class="n">segment_len</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">variable</span><span class="p">][</span><span class="n">on</span><span class="p">:</span><span class="n">on</span><span class="o">+</span><span class="n">segment_len</span><span class="p">]</span>
+            <span class="n">mask_arr</span><span class="p">[</span><span class="n">onl</span><span class="p">:</span><span class="n">onl</span><span class="o">+</span><span class="n">segment_len</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="n">variable</span><span class="p">][</span><span class="n">on</span><span class="p">:</span><span class="n">on</span><span class="o">+</span><span class="n">segment_len</span><span class="p">]</span>
+        
+        <span class="n">masked_data</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">data_arr</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask_arr</span><span class="p">)</span>
+        
+        <span class="c1"># Determine name</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">label</span> <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"segments"</span>
+        
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">variable</span><span class="o">=</span><span class="n">variable</span><span class="p">,</span>
+            <span class="n">tx</span><span class="o">=</span><span class="n">txw</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">masked_data</span><span class="p">,</span>
+            <span class="n">intervals</span><span class="o">=</span><span class="n">intervals</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">eyedata</span><span class="o">.</span><span class="n">fs</span>
+        <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="SegmentedEyeData.summary">
+<a class="viewcode-back" href="../../api.html#pypillometry.SegmentedEyeData.summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return a summary of the SegmentedEyeData object.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary with name, variable, n_segments, n_timepoints, window, </span>
+<span class="sd">            percent_masked, and sampling_rate</span>
+<span class="sd">        """</span>
+        <span class="n">percent_masked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+        
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">variable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">variable</span><span class="p">,</span>
+            <span class="n">n_segments</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_segments</span><span class="p">,</span>
+            <span class="n">n_timepoints</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_timepoints</span><span class="p">,</span>
+            <span class="n">window</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">,</span>
+            <span class="n">percent_masked</span><span class="o">=</span><span class="n">percent_masked</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span>
+        <span class="p">)</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Return a string representation of the dataset."""</span>
+        <span class="n">pars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+        <span class="k">del</span> <span class="n">pars</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"SegmentedEyeData(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">):</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">flen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">k</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">flen</span><span class="si">}}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">k</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">flen</span><span class="si">}}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="k">return</span> <span class="n">s</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Rich HTML representation for Jupyter notebooks."""</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+        
+        <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+        
+        <span class="c1"># Build overview items</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s1">'window'</span><span class="p">]</span>
+        <span class="n">overview</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">"Variable"</span><span class="p">,</span> <span class="n">summary</span><span class="p">[</span><span class="s1">'variable'</span><span class="p">]),</span>
+            <span class="p">(</span><span class="s2">"Segments"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">'n_segments'</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"Time points"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">'n_timepoints'</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"Window"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">window</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">window</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"Missing"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">'percent_masked'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%"</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">summary</span><span class="p">[</span><span class="s1">'sampling_rate'</span><span class="p">]:</span>
+            <span class="n">overview</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"Sampling rate"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">'sampling_rate'</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> Hz"</span><span class="p">))</span>
+        
+        <span class="c1"># Add intervals info if available</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="o">.</span><span class="n">label</span><span class="p">:</span>
+            <span class="n">overview</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">"Intervals"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
+        
+        <span class="c1"># Generate sparkline of mean signal</span>
+        <span class="n">sparkline_html</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.figure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Figure</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.backends.backend_agg</span><span class="w"> </span><span class="kn">import</span> <span class="n">FigureCanvasAgg</span>
+            
+            <span class="n">mean_signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">mean_signal</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#1f77b4"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#d62728"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">"off"</span><span class="p">)</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            
+            <span class="n">canvas</span> <span class="o">=</span> <span class="n">FigureCanvasAgg</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+            <span class="n">buf</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">()</span>
+            <span class="n">canvas</span><span class="o">.</span><span class="n">print_png</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+            <span class="n">buf</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">img_b64</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">read</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"ascii"</span><span class="p">)</span>
+            
+            <span class="n">sparkline_html</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'''</span>
+<span class="s1">            &lt;div style="margin-top:10px;"&gt;</span>
+<span class="s1">              &lt;div style="font-size:0.85em; color:#666; margin-bottom:4px;"&gt;Mean signal (red line = event onset)&lt;/div&gt;</span>
+<span class="s1">              &lt;img src="data:image/png;base64,</span><span class="si">{</span><span class="n">img_b64</span><span class="si">}</span><span class="s1">" alt="Mean signal" style="width:100%; max-width:300px; border-radius:4px;"&gt;</span>
+<span class="s1">            &lt;/div&gt;</span>
+<span class="s1">            '''</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>  <span class="c1"># Silently skip sparkline if matplotlib not available</span>
+        
+        <span class="c1"># Build HTML</span>
+        <span class="n">overview_html</span> <span class="o">=</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">'''&lt;div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;"&gt;</span>
+<span class="s1">                  &lt;div style="font-size:0.85em; color:#666; text-transform:uppercase;"&gt;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">&lt;/div&gt;</span>
+<span class="s1">                  &lt;div style="font-weight:600;"&gt;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&lt;/div&gt;</span>
+<span class="s1">                &lt;/div&gt;'''</span>
+            <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">overview</span>
+        <span class="p">)</span>
+        
+        <span class="n">html</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'''</span>
+<span class="s1">        &lt;div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width:400px;"&gt;</span>
+<span class="s1">          &lt;h3 style="margin-top:0;"&gt;SegmentedEyeData — &lt;span style="color:#555;"&gt;</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/span&gt;&lt;/h3&gt;</span>
+<span class="s1">          &lt;div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px;"&gt;</span>
+<span class="s1">            </span><span class="si">{</span><span class="n">overview_html</span><span class="si">}</span>
+<span class="s1">          &lt;/div&gt;</span>
+<span class="s1">          </span><span class="si">{</span><span class="n">sparkline_html</span><span class="si">}</span>
+<span class="s1">        &lt;/div&gt;</span>
+<span class="s1">        '''</span>
+        <span class="k">return</span> <span class="n">html</span>
+    
+<div class="viewcode-block" id="SegmentedEyeData.baseline_correct">
+<a class="viewcode-back" href="../../api.html#pypillometry.SegmentedEyeData.baseline_correct">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">baseline_correct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+                         <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'SegmentedEyeData'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Apply baseline correction to the segments.</span>
+<span class="sd">        </span>
+<span class="sd">        The window is specified in milliseconds relative to the zero-point of the </span>
+<span class="sd">        intervals (typically the event onset). For example, `window=(-200, 0)` uses </span>
+<span class="sd">        the 200ms before the event as baseline.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        window : tuple (float, float), float, or None</span>
+<span class="sd">            Baseline window in ms relative to event onset (time 0):</span>
+
+<span class="sd">            - If None, no baseline correction is applied</span>
+<span class="sd">            - If tuple (start, end), the mean value in this time window is subtracted</span>
+<span class="sd">            - If float, the value at the time point closest to this value is used</span>
+
+<span class="sd">            Default is 0 (baseline at event onset).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SegmentedEyeData</span>
+<span class="sd">            New instance with baseline-corrected data (the object itself if</span>
+<span class="sd">            `window` is None)</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; # Use pre-event period as baseline</span>
+<span class="sd">        &gt;&gt;&gt; segments_bc = segments.baseline_correct(window=(-200, 0))</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Use single time point as baseline</span>
+<span class="sd">        &gt;&gt;&gt; segments_bc = segments.baseline_correct(window=-100)</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">window</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"No baseline correction applied"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        
+        <span class="c1"># Create copy of data</span>
+        <span class="n">corrected_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+            <span class="c1"># Single time point</span>
+            <span class="n">blwin_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span> <span class="o">-</span> <span class="n">window</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_segments</span><span class="p">):</span>
+                <span class="n">baseline</span> <span class="o">=</span> <span class="n">corrected_data</span><span class="p">[</span><span class="n">blwin_ix</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+                <span class="n">corrected_data</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">baseline</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Time window</span>
+            <span class="n">blwin_ix</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">bw</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">))</span> <span class="k">for</span> <span class="n">bw</span> <span class="ow">in</span> <span class="n">window</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_segments</span><span class="p">):</span>
+                <span class="n">baseline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">corrected_data</span><span class="p">[</span><span class="n">blwin_ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">blwin_ix</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i</span><span class="p">])</span>
+                <span class="n">corrected_data</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">baseline</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Baseline correction applied using window </span><span class="si">{</span><span class="n">window</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">SegmentedEyeData</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">variable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">variable</span><span class="p">,</span>
+            <span class="n">tx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">corrected_data</span><span class="p">,</span>
+            <span class="n">intervals</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span>
+        <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="SegmentedEyeData.plot">
+<a class="viewcode-back" href="../../api.html#pypillometry.SegmentedEyeData.plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">meanfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+             <span class="n">varfct</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sem</span><span class="p">,</span>
+             <span class="n">show_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">show_zero_line</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+             <span class="n">show_legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">ribbon_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
+             <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Plot mean and error ribbons.</span>
+<span class="sd">        </span>
+<span class="sd">        Can be used standalone for a quick look, or with `ax` parameter to </span>
+<span class="sd">        overlay multiple segments on the same plot or across subplots.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        meanfct : callable</span>
+<span class="sd">            Function to compute mean across segments (default: np.mean)</span>
+<span class="sd">        varfct : callable or None</span>
+<span class="sd">            Function to compute error bands (e.g., np.std, scipy.stats.sem)</span>
+<span class="sd">            If None, no error bands are plotted.</span>
+<span class="sd">            Both functions are called as ``fct(data, axis=1)``, so they must</span>
+<span class="sd">            accept an `axis` argument, and they must ignore masked values</span>
+<span class="sd">            (e.g., np.ma.median, not np.median; a warning is logged otherwise).</span>
+<span class="sd">        show_missing : bool or None</span>
+<span class="sd">            Plot percentage of missing data per time point on secondary y-axis.</span>
+<span class="sd">            If None, defaults to True in standalone mode, False in overlay mode.</span>
+<span class="sd">        show_zero_line : bool</span>
+<span class="sd">            Show vertical line at time 0 (default: True)</span>
+<span class="sd">        show_legend : bool or None</span>
+<span class="sd">            Show legend. If None, only shows legend in standalone mode (ax=None)</span>
+<span class="sd">        title : str, optional</span>
+<span class="sd">            Plot title. If None and ax is None, uses the dataset name.</span>
+<span class="sd">            Ignored when ax is provided (for overlay use).</span>
+<span class="sd">        label : str, optional</span>
+<span class="sd">            Label for legend. If None, uses self.name</span>
+<span class="sd">        ribbon_alpha : float</span>
+<span class="sd">            Alpha (transparency) for error ribbon (default: 0.3)</span>
+<span class="sd">        ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">            Axes to plot on. If None, uses current axes (standalone mode)</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional arguments passed to ax.plot() (e.g., color, linestyle, linewidth)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ax : matplotlib.axes.Axes</span>
+<span class="sd">            The axes object for further customization</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; # Quick standalone plot</span>
+<span class="sd">        &gt;&gt;&gt; segments.plot()</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Overlay multiple segments</span>
+<span class="sd">        &gt;&gt;&gt; fig, ax = plt.subplots()</span>
+<span class="sd">        &gt;&gt;&gt; seg1.plot(ax=ax, color='blue', label='Condition A')</span>
+<span class="sd">        &gt;&gt;&gt; seg2.plot(ax=ax, color='red', label='Condition B')</span>
+<span class="sd">        &gt;&gt;&gt; ax.legend()</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Customize appearance</span>
+<span class="sd">        &gt;&gt;&gt; segments.plot(varfct=np.std, color='green', linewidth=2, linestyle='--')</span>
+<span class="sd">        """</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+        
+        <span class="n">standalone</span> <span class="o">=</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">standalone</span><span class="p">:</span>
+            <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ax1</span> <span class="o">=</span> <span class="n">ax</span>
+        
+        <span class="c1"># Determine label for legend</span>
+        <span class="n">plot_label</span> <span class="o">=</span> <span class="n">label</span> <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        
+        <span class="c1"># Compute mean and variance</span>
+        <span class="n">_check_accepts_axis</span><span class="p">(</span><span class="n">meanfct</span><span class="p">,</span> <span class="s2">"meanfct"</span><span class="p">)</span>
+        <span class="n">_warn_if_ignores_mask</span><span class="p">(</span><span class="n">meanfct</span><span class="p">,</span> <span class="s2">"meanfct"</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">mean_data</span> <span class="o">=</span> <span class="n">meanfct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">varfct</span><span class="p">):</span>
+            <span class="n">_check_accepts_axis</span><span class="p">(</span><span class="n">varfct</span><span class="p">,</span> <span class="s2">"varfct"</span><span class="p">)</span>
+            <span class="n">_warn_if_ignores_mask</span><span class="p">(</span><span class="n">varfct</span><span class="p">,</span> <span class="s2">"varfct"</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sd_data</span> <span class="o">=</span> <span class="n">varfct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">varfct</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        
+        <span class="c1"># Get color from kwargs for consistent ribbon color, or use default</span>
+        <span class="n">line_color</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'color'</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'c'</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        
+        <span class="c1"># Plot error ribbon</span>
+        <span class="k">if</span> <span class="n">sd_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ribbon_color</span> <span class="o">=</span> <span class="n">line_color</span> <span class="k">if</span> <span class="n">line_color</span> <span class="k">else</span> <span class="s2">"grey"</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">mean_data</span> <span class="o">-</span> <span class="n">sd_data</span><span class="p">,</span> <span class="n">mean_data</span> <span class="o">+</span> <span class="n">sd_data</span><span class="p">,</span> 
+                           <span class="n">color</span><span class="o">=</span><span class="n">ribbon_color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">ribbon_alpha</span><span class="p">)</span>
+        
+        <span class="c1"># Plot mean line</span>
+        <span class="n">line</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">mean_data</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">plot_label</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># Show zero line</span>
+        <span class="k">if</span> <span class="n">show_zero_line</span><span class="p">:</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="c1"># Labels (always set for clarity)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"time (ms)"</span><span class="p">)</span>
+        
+        <span class="c1"># Only set title and ylabel in standalone mode</span>
+        <span class="k">if</span> <span class="n">standalone</span><span class="p">:</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mean </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span> <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        
+        <span class="c1"># Show missing data on secondary axis (default: only in standalone mode)</span>
+        <span class="k">if</span> <span class="n">show_missing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">show_missing</span> <span class="o">=</span> <span class="n">standalone</span>
+        <span class="k">if</span> <span class="n">show_missing</span><span class="p">:</span>
+            <span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">(</span><span class="kc">False</span><span class="p">):</span>
+                <span class="n">perc_missing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">perc_missing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_timepoints</span><span class="p">)</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">perc_missing</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"orange"</span><span class="p">)</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"% missing"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"orange"</span><span class="p">)</span>
+            <span class="c1"># Restore ax1 as current axes so plt.legend() works for user</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">ax1</span><span class="p">)</span>
+        
+        <span class="c1"># Legend handling (after all plotting is done)</span>
+        <span class="k">if</span> <span class="n">show_legend</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">show_legend</span> <span class="o">=</span> <span class="n">standalone</span>
+        <span class="k">if</span> <span class="n">show_legend</span><span class="p">:</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">ax1</span></div>
+
+    
+<div class="viewcode-block" id="SegmentedEyeData.write_file">
+<a class="viewcode-back" href="../../api.html#pypillometry.SegmentedEyeData.write_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Save to file using pickle.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fname : str</span>
+<span class="sd">            Filename to save to</span>
+<span class="sd">        """</span>
+        <span class="n">write_pickle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="SegmentedEyeData.from_file">
+<a class="viewcode-back" href="../../api.html#pypillometry.SegmentedEyeData.from_file">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'SegmentedEyeData'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Read a SegmentedEyeData object from a pickle file.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fname : str</span>
+<span class="sd">            Filename (or HTTP(S)/SSH URL) to read from</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            passed to :func:`~pypillometry.io.read_pickle` (e.g.,</span>
+<span class="sd">            `cache_file`, `cache_dir`, `autodelete`, `session`)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SegmentedEyeData</span>
+<span class="sd">            Loaded instance</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">read_pickle</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GroupLevelSegmentedData">
+<a class="viewcode-back" href="../../api.html#pypillometry.GroupLevelSegmentedData">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GroupLevelSegmentedData</span><span class="p">(</span><span class="n">SegmentedEyeData</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Group-level segmented eye data combining multiple subjects.</span>
+<span class="sd">    </span>
+<span class="sd">    This class inherits from SegmentedEyeData and adds group-level functionality.</span>
+<span class="sd">    It combines multiple SegmentedEyeData objects (one per subject) into a single</span>
+<span class="sd">    group-level object, either by stacking or aggregating.</span>
+
+<span class="sd">    Usually created with :func:`~pypillometry.group_segments` (or</span>
+<span class="sd">    :meth:`from_segments`) from a list or dict of</span>
+<span class="sd">    :class:`~pypillometry.SegmentedEyeData` objects, one per subject.</span>
+
+<span class="sd">    The data keep their mask: stacked segments keep their own mask, and in</span>
+<span class="sd">    aggregate mode a subject's mean is masked where all of their segments are</span>
+<span class="sd">    masked. In addition, `mask_percent` stores the average percentage of masked</span>
+<span class="sd">    trials per subject at each timepoint.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        Name of the dataset</span>
+<span class="sd">    variable : str</span>
+<span class="sd">        Variable name in "eye_variable" format</span>
+<span class="sd">    tx : np.ndarray</span>
+<span class="sd">        Time axis relative to segment onset (in ms)</span>
+<span class="sd">    data : np.ma.MaskedArray</span>
+<span class="sd">        Masked array with shape (n_timepoints, n_subjects) or (n_timepoints, n_segments)</span>
+<span class="sd">    mask_percent : np.ndarray</span>
+<span class="sd">        Percentage of masked data per subject at each timepoint (shape: n_timepoints)</span>
+<span class="sd">    n_subjects : int</span>
+<span class="sd">        Number of subjects combined</span>
+<span class="sd">    intervals : Intervals, optional</span>
+<span class="sd">        Source Intervals object</span>
+<span class="sd">    sampling_rate : float, optional</span>
+<span class="sd">        Original sampling rate in Hz</span>
+<span class="sd">    """</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">tx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                 <span class="n">data</span><span class="p">:</span> <span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">,</span>
+                 <span class="n">mask_percent</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                 <span class="n">n_subjects</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">intervals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">sampling_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Call parent constructor</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">variable</span><span class="o">=</span><span class="n">variable</span><span class="p">,</span>
+            <span class="n">tx</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">intervals</span><span class="o">=</span><span class="n">intervals</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_percent</span> <span class="o">=</span> <span class="n">mask_percent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_subjects</span> <span class="o">=</span> <span class="n">n_subjects</span>
+    
+<div class="viewcode-block" id="GroupLevelSegmentedData.from_segments">
+<a class="viewcode-back" href="../../api.html#pypillometry.GroupLevelSegmentedData.from_segments">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_segments</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                      <span class="n">segments</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+                      <span class="n">meanfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+                      <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'GroupLevelSegmentedData'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Create GroupLevelSegmentedData by combining multiple SegmentedEyeData objects.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        segments : list of SegmentedEyeData</span>
+<span class="sd">            List of SegmentedEyeData objects (one per subject)</span>
+<span class="sd">        meanfct : callable or None</span>
+<span class="sd">            Function to aggregate within each subject, called as</span>
+<span class="sd">            ``meanfct(data, axis=1)``; it must accept an `axis` argument and</span>
+<span class="sd">            ignore masked values (e.g., np.mean or np.ma.median, but not</span>
+<span class="sd">            np.median; a warning is logged otherwise).</span>
+<span class="sd">            If None, all segments from all subjects are stacked (concatenated).</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            Name for the group-level dataset. If None, uses ``"group_"`` + first</span>
+<span class="sd">            segment's name</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        GroupLevelSegmentedData</span>
+<span class="sd">            New instance with combined data</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; # Aggregate within subjects, then combine</span>
+<span class="sd">        &gt;&gt;&gt; group = GroupLevelSegmentedData.from_segments([subj1, subj2, subj3])</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; # Stack all trials from all subjects</span>
+<span class="sd">        &gt;&gt;&gt; group = GroupLevelSegmentedData.from_segments([subj1, subj2, subj3], meanfct=None)</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">segments</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"segments list cannot be empty"</span><span class="p">)</span>
+        
+        <span class="c1"># Validate all segments have compatible properties</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="n">segments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">segments</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">start</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">variable</span> <span class="o">!=</span> <span class="n">first</span><span class="o">.</span><span class="n">variable</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Variable mismatch: segment 1 has '</span><span class="si">{</span><span class="n">first</span><span class="o">.</span><span class="n">variable</span><span class="si">}</span><span class="s2">', "</span>
+                               <span class="sa">f</span><span class="s2">"segment </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> has '</span><span class="si">{</span><span class="n">seg</span><span class="o">.</span><span class="n">variable</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">n_timepoints</span> <span class="o">!=</span> <span class="n">first</span><span class="o">.</span><span class="n">n_timepoints</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Timepoint mismatch: segment 1 has </span><span class="si">{</span><span class="n">first</span><span class="o">.</span><span class="n">n_timepoints</span><span class="si">}</span><span class="s2">, "</span>
+                               <span class="sa">f</span><span class="s2">"segment </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> has </span><span class="si">{</span><span class="n">seg</span><span class="o">.</span><span class="n">n_timepoints</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">first</span><span class="o">.</span><span class="n">tx</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Time axis mismatch between segment 1 and segment </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        
+        <span class="n">n_subjects</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments</span><span class="p">)</span>
+        
+        <span class="c1"># Compute mask percentage for each subject at each timepoint</span>
+        <span class="c1"># (average percentage of masked trials per subject)</span>
+        <span class="n">mask_percents</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">(</span><span class="kc">False</span><span class="p">):</span>
+                <span class="c1"># Percentage of masked segments at each timepoint</span>
+                <span class="n">perc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">perc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">n_timepoints</span><span class="p">)</span>
+            <span class="n">mask_percents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">perc</span><span class="p">)</span>
+        
+        <span class="c1"># Average mask percentage across subjects</span>
+        <span class="n">mask_percent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mask_percents</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">meanfct</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Stack mode: concatenate all segments from all subjects (keeps masks)</span>
+            <span class="n">combined_data</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">seg</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Aggregate mode: apply meanfct within each subject, then stack</span>
+            <span class="n">_check_accepts_axis</span><span class="p">(</span><span class="n">meanfct</span><span class="p">,</span> <span class="s2">"meanfct"</span><span class="p">)</span>
+            <span class="n">_warn_if_ignores_mask</span><span class="p">(</span><span class="n">meanfct</span><span class="p">,</span> <span class="s2">"meanfct"</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">subject_means</span> <span class="o">=</span> <span class="p">[</span><span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">meanfct</span><span class="p">(</span><span class="n">seg</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">segments</span><span class="p">]</span>
+            <span class="c1"># Stack as columns (n_timepoints, n_subjects); a timepoint where all</span>
+            <span class="c1"># of a subject's segments are masked stays masked</span>
+            <span class="n">combined_data</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">subject_means</span><span class="p">)</span>
+        
+        <span class="c1"># Determine name</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"group_</span><span class="si">{</span><span class="n">first</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
+        
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">variable</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">variable</span><span class="p">,</span>
+            <span class="n">tx</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">combined_data</span><span class="p">,</span>
+            <span class="n">mask_percent</span><span class="o">=</span><span class="n">mask_percent</span><span class="p">,</span>
+            <span class="n">n_subjects</span><span class="o">=</span><span class="n">n_subjects</span><span class="p">,</span>
+            <span class="n">intervals</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">intervals</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">sampling_rate</span>
+        <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="GroupLevelSegmentedData.summary">
+<a class="viewcode-back" href="../../api.html#pypillometry.GroupLevelSegmentedData.summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Return a summary of the GroupLevelSegmentedData object.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary with group-level statistics</span>
+<span class="sd">        """</span>
+        <span class="n">base_summary</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+        <span class="n">base_summary</span><span class="p">[</span><span class="s1">'n_subjects'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_subjects</span>
+        <span class="n">base_summary</span><span class="p">[</span><span class="s1">'mean_mask_percent'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_percent</span><span class="p">)</span>
+        <span class="c1"># Replace percent_masked with more meaningful group-level stat</span>
+        <span class="n">base_summary</span><span class="p">[</span><span class="s1">'percent_masked'</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_summary</span><span class="p">[</span><span class="s1">'mean_mask_percent'</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">base_summary</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Return a string representation of the dataset."""</span>
+        <span class="n">pars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+        <span class="k">del</span> <span class="n">pars</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"GroupLevelSegmentedData(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">):</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">flen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">k</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">flen</span><span class="si">}}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">k</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">flen</span><span class="si">}}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="k">return</span> <span class="n">s</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Rich HTML representation for Jupyter notebooks."""</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
+        
+        <span class="n">summary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+        
+        <span class="c1"># Build overview items</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="n">summary</span><span class="p">[</span><span class="s1">'window'</span><span class="p">]</span>
+        <span class="n">overview</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">"Variable"</span><span class="p">,</span> <span class="n">summary</span><span class="p">[</span><span class="s1">'variable'</span><span class="p">]),</span>
+            <span class="p">(</span><span class="s2">"Subjects"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">'n_subjects'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"Columns"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">'n_segments'</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"Time points"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">'n_timepoints'</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">"</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"Window"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">window</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">window</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> ms"</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"Avg missing"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">'mean_mask_percent'</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%"</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">summary</span><span class="p">[</span><span class="s1">'sampling_rate'</span><span class="p">]:</span>
+            <span class="n">overview</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">"Sampling rate"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">'sampling_rate'</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> Hz"</span><span class="p">))</span>
+        
+        <span class="c1"># Generate sparkline of mean signal</span>
+        <span class="n">sparkline_html</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.figure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Figure</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.backends.backend_agg</span><span class="w"> </span><span class="kn">import</span> <span class="n">FigureCanvasAgg</span>
+            
+            <span class="n">mean_signal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">mean_signal</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#1f77b4"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#d62728"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">"off"</span><span class="p">)</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            
+            <span class="n">canvas</span> <span class="o">=</span> <span class="n">FigureCanvasAgg</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+            <span class="n">buf</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">()</span>
+            <span class="n">canvas</span><span class="o">.</span><span class="n">print_png</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+            <span class="n">buf</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">img_b64</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">read</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"ascii"</span><span class="p">)</span>
+            
+            <span class="n">sparkline_html</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'''</span>
+<span class="s1">            &lt;div style="margin-top:10px;"&gt;</span>
+<span class="s1">              &lt;div style="font-size:0.85em; color:#666; margin-bottom:4px;"&gt;Grand mean (red line = event onset)&lt;/div&gt;</span>
+<span class="s1">              &lt;img src="data:image/png;base64,</span><span class="si">{</span><span class="n">img_b64</span><span class="si">}</span><span class="s1">" alt="Grand mean" style="width:100%; max-width:300px; border-radius:4px;"&gt;</span>
+<span class="s1">            &lt;/div&gt;</span>
+<span class="s1">            '''</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        
+        <span class="c1"># Build HTML</span>
+        <span class="n">overview_html</span> <span class="o">=</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">'''&lt;div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;"&gt;</span>
+<span class="s1">                  &lt;div style="font-size:0.85em; color:#666; text-transform:uppercase;"&gt;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">&lt;/div&gt;</span>
+<span class="s1">                  &lt;div style="font-weight:600;"&gt;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&lt;/div&gt;</span>
+<span class="s1">                &lt;/div&gt;'''</span>
+            <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">overview</span>
+        <span class="p">)</span>
+        
+        <span class="n">html</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'''</span>
+<span class="s1">        &lt;div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width:400px;"&gt;</span>
+<span class="s1">          &lt;h3 style="margin-top:0;"&gt;GroupLevelSegmentedData — &lt;span style="color:#555;"&gt;</span><span class="si">{</span><span class="n">summary</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/span&gt;&lt;/h3&gt;</span>
+<span class="s1">          &lt;div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px;"&gt;</span>
+<span class="s1">            </span><span class="si">{</span><span class="n">overview_html</span><span class="si">}</span>
+<span class="s1">          &lt;/div&gt;</span>
+<span class="s1">          </span><span class="si">{</span><span class="n">sparkline_html</span><span class="si">}</span>
+<span class="s1">        &lt;/div&gt;</span>
+<span class="s1">        '''</span>
+        <span class="k">return</span> <span class="n">html</span>
+    
+<div class="viewcode-block" id="GroupLevelSegmentedData.plot">
+<a class="viewcode-back" href="../../api.html#pypillometry.GroupLevelSegmentedData.plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">meanfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+             <span class="n">varfct</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sem</span><span class="p">,</span>
+             <span class="n">show_missing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">show_zero_line</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+             <span class="n">show_legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">ribbon_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
+             <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Plot grand mean and error ribbons.</span>
+
+<span class="sd">        Overrides :meth:`SegmentedEyeData.plot` to use `mask_percent` for the</span>
+<span class="sd">        missing-data display. Mean and error are computed across the columns</span>
+<span class="sd">        of `data` (subjects when aggregated, all segments when stacked).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        meanfct : callable</span>
+<span class="sd">            Function to compute mean across columns (default: np.mean)</span>
+<span class="sd">        varfct : callable or None</span>
+<span class="sd">            Function to compute error bands (e.g., np.std, scipy.stats.sem;</span>
+<span class="sd">            default: scipy.stats.sem). If None, no error bands are plotted.</span>
+<span class="sd">            Both functions are called as ``fct(data, axis=1)``, so they must</span>
+<span class="sd">            accept an `axis` argument, and they must ignore masked values</span>
+<span class="sd">            (e.g., np.ma.median, not np.median; a warning is logged otherwise).</span>
+<span class="sd">        show_missing : bool or None</span>
+<span class="sd">            Plot `mask_percent` (average percentage of missing data per</span>
+<span class="sd">            subject) on secondary y-axis. If None, defaults to True in</span>
+<span class="sd">            standalone mode, False in overlay mode.</span>
+<span class="sd">        show_zero_line : bool</span>
+<span class="sd">            Show vertical line at time 0 (default: True)</span>
+<span class="sd">        show_legend : bool or None</span>
+<span class="sd">            Show legend. If None, only shows legend in standalone mode (ax=None)</span>
+<span class="sd">        title : str, optional</span>
+<span class="sd">            Plot title. If None and ax is None, uses the dataset name.</span>
+<span class="sd">            Ignored when ax is provided (for overlay use).</span>
+<span class="sd">        label : str, optional</span>
+<span class="sd">            Label for legend. If None, uses self.name</span>
+<span class="sd">        ribbon_alpha : float</span>
+<span class="sd">            Alpha (transparency) for error ribbon (default: 0.3)</span>
+<span class="sd">        ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">            Axes to plot on. If None, uses current axes (standalone mode)</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional arguments passed to ax.plot() (e.g., color, linestyle, linewidth)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ax : matplotlib.axes.Axes</span>
+<span class="sd">            The axes object for further customization</span>
+<span class="sd">        """</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+        
+        <span class="n">standalone</span> <span class="o">=</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">standalone</span><span class="p">:</span>
+            <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ax1</span> <span class="o">=</span> <span class="n">ax</span>
+        
+        <span class="c1"># Determine label for legend</span>
+        <span class="n">plot_label</span> <span class="o">=</span> <span class="n">label</span> <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        
+        <span class="c1"># Compute mean and variance</span>
+        <span class="n">_check_accepts_axis</span><span class="p">(</span><span class="n">meanfct</span><span class="p">,</span> <span class="s2">"meanfct"</span><span class="p">)</span>
+        <span class="n">_warn_if_ignores_mask</span><span class="p">(</span><span class="n">meanfct</span><span class="p">,</span> <span class="s2">"meanfct"</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">mean_data</span> <span class="o">=</span> <span class="n">meanfct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">varfct</span><span class="p">):</span>
+            <span class="n">_check_accepts_axis</span><span class="p">(</span><span class="n">varfct</span><span class="p">,</span> <span class="s2">"varfct"</span><span class="p">)</span>
+            <span class="n">_warn_if_ignores_mask</span><span class="p">(</span><span class="n">varfct</span><span class="p">,</span> <span class="s2">"varfct"</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sd_data</span> <span class="o">=</span> <span class="n">varfct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">varfct</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        
+        <span class="c1"># Get color from kwargs</span>
+        <span class="n">line_color</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'color'</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'c'</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        
+        <span class="c1"># Plot error ribbon</span>
+        <span class="k">if</span> <span class="n">sd_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ribbon_color</span> <span class="o">=</span> <span class="n">line_color</span> <span class="k">if</span> <span class="n">line_color</span> <span class="k">else</span> <span class="s2">"grey"</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">mean_data</span> <span class="o">-</span> <span class="n">sd_data</span><span class="p">,</span> <span class="n">mean_data</span> <span class="o">+</span> <span class="n">sd_data</span><span class="p">,</span> 
+                           <span class="n">color</span><span class="o">=</span><span class="n">ribbon_color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">ribbon_alpha</span><span class="p">)</span>
+        
+        <span class="c1"># Plot mean line</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="n">mean_data</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">plot_label</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># Show zero line</span>
+        <span class="k">if</span> <span class="n">show_zero_line</span><span class="p">:</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">"--"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"time (ms)"</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">standalone</span><span class="p">:</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mean </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span> <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        
+        <span class="c1"># Show missing data using mask_percent</span>
+        <span class="k">if</span> <span class="n">show_missing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">show_missing</span> <span class="o">=</span> <span class="n">standalone</span>
+        <span class="k">if</span> <span class="n">show_missing</span><span class="p">:</span>
+            <span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_percent</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"orange"</span><span class="p">)</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"avg % missing"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"orange"</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">ax1</span><span class="p">)</span>
+        
+        <span class="c1"># Legend handling</span>
+        <span class="k">if</span> <span class="n">show_legend</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">show_legend</span> <span class="o">=</span> <span class="n">standalone</span>
+        <span class="k">if</span> <span class="n">show_legend</span><span class="p">:</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">ax1</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="group_segments">
+<a class="viewcode-back" href="../../api.html#pypillometry.group_segments">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">group_segments</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">meanfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GroupLevelSegmentedData</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Combine multiple SegmentedEyeData objects into a GroupLevelSegmentedData.</span>
+<span class="sd">    </span>
+<span class="sd">    Convenience function that wraps GroupLevelSegmentedData.from_segments().</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    segments : list or dict of SegmentedEyeData</span>
+<span class="sd">        SegmentedEyeData objects to combine. If dict, values are used.</span>
+<span class="sd">    meanfct : callable or None</span>
+<span class="sd">        Function to aggregate within each subject, called as</span>
+<span class="sd">        ``meanfct(data, axis=1)``; it must accept an `axis` argument and</span>
+<span class="sd">        ignore masked values (e.g., np.mean or np.ma.median, but not</span>
+<span class="sd">        np.median; a warning is logged otherwise).</span>
+<span class="sd">        If None, all segments from all subjects are stacked (concatenated).</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        Name for the group-level dataset. If None, uses ``"group_"`` + first</span>
+<span class="sd">        segment's name</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    GroupLevelSegmentedData</span>
+<span class="sd">        Combined group-level data</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import pypillometry as pp</span>
+<span class="sd">    &gt;&gt;&gt; # From a list</span>
+<span class="sd">    &gt;&gt;&gt; group = pp.group_segments([subj1_seg, subj2_seg, subj3_seg])</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; # From a dict</span>
+<span class="sd">    &gt;&gt;&gt; segments = {"S01": subj1_seg, "S02": subj2_seg}</span>
+<span class="sd">    &gt;&gt;&gt; group = pp.group_segments(segments)</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; # Stack all trials instead of averaging</span>
+<span class="sd">    &gt;&gt;&gt; group = pp.group_segments(segments, meanfct=None)</span>
+<span class="sd">    """</span>
+    <span class="c1"># Handle dict input</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">segments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">segments</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    
+    <span class="k">return</span> <span class="n">GroupLevelSegmentedData</span><span class="o">.</span><span class="n">from_segments</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">meanfct</span><span class="o">=</span><span class="n">meanfct</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.segmented</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+    </div>
+  </body>
+</html>

@@ -418,6 +418,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span><span class="p">,</span> <span class="n">splrep</span><span class="p">,</span> <span class="n">splev</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.pupil</span><span class="w"> </span><span class="kn">import</span> <span class="n">pupil_kernel</span><span class="p">,</span> <span class="n">pupil_response</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">_user_cache_dir</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"bspline"</span><span class="p">,</span> <span class="s2">"butter_lowpass"</span><span class="p">,</span> <span class="s2">"butter_lowpass_filter"</span><span class="p">,</span> <span class="s2">"downsample"</span><span class="p">,</span>
@@ -425,6 +426,33 @@ window.runMermaid = runMermaid;</script>
     <span class="s2">"baseline_pupil_model"</span><span class="p">,</span>
 <span class="p">]</span>
 
+
+<span class="n">_stan_models</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_stan_model</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return the compiled Stan model `name` of the package (cached per session).</span>
+
+<span class="sd">    The model is compiled next to the .stan file. If that directory is not</span>
+<span class="sd">    writable (e.g., a read-only install) and there is no up-to-date</span>
+<span class="sd">    executable, the .stan file is copied to the user cache directory and</span>
+<span class="sd">    compiled there.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_stan_models</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">filecmp</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+        <span class="n">fpath</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">files</span><span class="p">(</span><span class="s1">'pypillometry.stan'</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">".stan"</span><span class="p">))</span>
+        <span class="n">exe</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fpath</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="s2">".exe"</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"nt"</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="n">exe_ok</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">exe</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">exe</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exe_ok</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">fpath</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">W_OK</span><span class="p">):</span>
+            <span class="n">cache</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_user_cache_dir</span><span class="p">(),</span> <span class="s2">"stan"</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">".stan"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">filecmp</span><span class="o">.</span><span class="n">cmp</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">shallow</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+            <span class="n">fpath</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Compiling/loading Stan model: </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="n">fpath</span><span class="p">)</span>
+        <span class="n">_stan_models</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">cmdstanpy</span><span class="o">.</span><span class="n">CmdStanModel</span><span class="p">(</span><span class="n">stan_file</span><span class="o">=</span><span class="n">fpath</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_stan_models</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
 
 <div class="viewcode-block" id="bspline">
 <a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.bspline">[docs]</a>
@@ -568,10 +596,9 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../api.html#pypillometry.signal.baseline.baseline_envelope_iter_bspline">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">baseline_envelope_iter_bspline</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">sy</span><span class="p">,</span><span class="n">event_onsets</span><span class="p">,</span><span class="n">fs</span><span class="p">,</span> <span class="n">fsd</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">lp</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
                                    <span class="n">lam_sig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-                                   <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+                                   <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Extract baseline based (re-)estimating the lower envelope using B-splines.</span>
-<span class="sd">    See notebook `baseline_interp.ipynb` for details.</span>
+<span class="sd">    Extract baseline based on (re-)estimating the lower envelope using B-splines.</span>
 <span class="sd">    The signal is downsampled (to `fsd` Hz) for speed.</span>
 
 <span class="sd">    The B-spline fits are done with a Stan model</span>
@@ -603,6 +630,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        weight given to the highest-prominence peaks</span>
 <span class="sd">    verbose : int</span>
 <span class="sd">        not used (progress is reported via the logger)</span>
+<span class="sd">    seed : int or None</span>
+<span class="sd">        random seed for the variational inference (for reproducible results)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -645,14 +674,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">w</span><span class="o">=</span><span class="n">prominence_to_lambda</span><span class="p">(</span><span class="n">prominences</span><span class="p">,</span> <span class="n">lam_min</span><span class="o">=</span><span class="n">lam_min</span><span class="p">,</span> <span class="n">lam_max</span><span class="o">=</span><span class="n">lam_max</span><span class="p">)</span>
     
     <span class="c1"># load or compile model</span>
-    <span class="n">fpath</span><span class="o">=</span><span class="n">files</span><span class="p">(</span><span class="s1">'pypillometry.stan'</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">'baseline_model_asym_laplac.stan'</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Compiling Stan model: </span><span class="si">%s</span><span class="s2">"</span><span class="o">%</span><span class="n">fpath</span><span class="p">)</span>
-
-    <span class="c1">#fname="stan/baseline_model_asym_laplac.stan"</span>
-    <span class="c1">#fpath=os.path.join(os.path.split(__file__)[0], fname)</span>
-    <span class="n">sm</span> <span class="o">=</span> <span class="n">cmdstanpy</span><span class="o">.</span><span class="n">CmdStanModel</span><span class="p">(</span><span class="n">stan_file</span><span class="o">=</span><span class="n">fpath</span><span class="p">)</span>
-    <span class="c1">#sm.compile()</span>
-    <span class="c1">#sm = StanModel_cache(stan_code_baseline_model_asym_laplac)</span>
+    <span class="n">sm</span> <span class="o">=</span> <span class="n">_get_stan_model</span><span class="p">(</span><span class="s1">'baseline_model_asym_laplac'</span><span class="p">)</span>
     
     <span class="c1">## put the data for the model together</span>
     <span class="n">data</span><span class="o">=</span><span class="p">{</span>
@@ -669,7 +691,7 @@ window.runMermaid = runMermaid;</script>
     
     <span class="c1">## variational optimization</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Optimizing Stan model"</span><span class="p">)</span>    
-    <span class="n">opt</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">variational</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">opt</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">variational</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
     <span class="n">vbc</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">stan_variable</span><span class="p">(</span><span class="s2">"coef"</span><span class="p">)</span><span class="c1">#, mean=True)</span>
     <span class="n">meansigvb</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">vbc</span><span class="p">)</span>
     
@@ -710,7 +732,7 @@ window.runMermaid = runMermaid;</script>
     
     <span class="c1">##  variational optimization</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Optimizing 2nd Stan model"</span><span class="p">)</span>
-    <span class="n">opt</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">variational</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data2</span><span class="p">)</span>
+    <span class="n">opt</span><span class="o">=</span><span class="n">sm</span><span class="o">.</span><span class="n">variational</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
     <span class="n">vbc2</span><span class="o">=</span><span class="n">opt</span><span class="o">.</span><span class="n">stan_variable</span><span class="p">(</span><span class="s2">"coef"</span><span class="p">)</span><span class="c1">#, mean=True)</span>
     <span class="n">meansigvb2</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">B2</span><span class="p">,</span> <span class="n">vbc2</span><span class="p">)</span>  
     

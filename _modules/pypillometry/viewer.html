@@ -586,8 +586,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">          objects; keys are 'pupil', 'x', 'y' and ``'extra_&lt;label&gt;'`` for</span>
 <span class="sd">          `extra_plots` (EyeData), or the plot labels (arrays)</span>
 
-<span class="sd">        Intervals not in seconds are converted (for EyeData using the</span>
-<span class="sd">        sampling rate of `data` if the Intervals have none).</span>
+<span class="sd">        Intervals in time units are converted to seconds; Intervals in</span>
+<span class="sd">        sample indices (``units=None``) are placed using the time vector.</span>
+<span class="sd">        For raw arrays without `time`, the x-axis is in sample indices and</span>
+<span class="sd">        Intervals in time units need a sampling rate.</span>
 <span class="sd">    highlight_color : str, optional</span>
 <span class="sd">        Color for highlighted regions (default: 'lightblue')</span>
 <span class="sd">    </span>
@@ -744,7 +746,8 @@ window.runMermaid = runMermaid;</script>
             <span class="n">overlays</span><span class="o">=</span><span class="n">overlays</span><span class="p">,</span>
             <span class="n">extra_plots</span><span class="o">=</span><span class="n">normalized_extra_plots</span><span class="p">,</span>
             <span class="n">highlight</span><span class="o">=</span><span class="n">highlight</span><span class="p">,</span> 
-            <span class="n">highlight_color</span><span class="o">=</span><span class="n">highlight_color</span>
+            <span class="n">highlight_color</span><span class="o">=</span><span class="n">highlight_color</span><span class="p">,</span>
+            <span class="n">sample_index</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Array mode</span>
@@ -755,7 +758,8 @@ window.runMermaid = runMermaid;</script>
             <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">overlays</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
             <span class="n">highlight</span><span class="o">=</span><span class="n">highlight</span><span class="p">,</span> 
-            <span class="n">highlight_color</span><span class="o">=</span><span class="n">highlight_color</span>
+            <span class="n">highlight_color</span><span class="o">=</span><span class="n">highlight_color</span><span class="p">,</span>
+            <span class="n">sample_index</span><span class="o">=</span><span class="p">(</span><span class="n">time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
         <span class="p">)</span>
     
     <span class="c1"># For array mode, set the view range before showing to avoid</span>
@@ -826,6 +830,27 @@ window.runMermaid = runMermaid;</script>
     
     <span class="k">return</span> <span class="n">_selections_to_intervals</span><span class="p">(</span><span class="n">selections</span><span class="p">,</span> <span class="n">sample_index</span><span class="o">=</span><span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">'arrays'</span> <span class="ow">and</span> <span class="n">time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">))</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_intervals_to_axis</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">time_seconds</span><span class="p">,</span> <span class="n">sample_index</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Convert Intervals to a list of (start, end) in x-axis units.</span>
+
+<span class="sd">    The x-axis is in seconds, or in sample indices if `sample_index` is True</span>
+<span class="sd">    (raw arrays without `time`). Index Intervals (``units=None``) are placed</span>
+<span class="sd">    using `time_seconds` (end indices are exclusive). `intervals` is not</span>
+<span class="sd">    modified.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">sample_index</span><span class="p">:</span>
+        <span class="c1"># converting time units to indices needs the Intervals' sampling rate</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">intervals</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s1">'sec'</span><span class="p">)</span><span class="o">.</span><span class="n">intervals</span><span class="p">)</span>
+    <span class="c1"># time of sample i, plus one sample past the end for exclusive end indices</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">time_seconds</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">dt</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">intervals</span><span class="o">.</span><span class="n">intervals</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[(</span><span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">s</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">e</span><span class="p">]))</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">idx</span><span class="p">]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_selections_to_intervals</span><span class="p">(</span><span class="n">selections</span><span class="p">,</span> <span class="n">sample_index</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -1020,16 +1045,14 @@ window.runMermaid = runMermaid;</script>
     <span class="c1"># Import Intervals for type checking</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
     
+    <span class="n">sample_index</span> <span class="o">=</span> <span class="n">time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">display_variable</span> <span class="ow">is</span> <span class="kc">None</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_intervals_to_seconds</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">default_fs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Convert Intervals object to list of (start, end) tuples in seconds."""</span>
-        <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">default_fs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">intervals</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="n">default_fs</span>
-        <span class="k">if</span> <span class="n">intervals</span><span class="o">.</span><span class="n">units</span> <span class="o">!=</span> <span class="s1">'sec'</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">intervals</span> <span class="o">=</span> <span class="n">intervals</span><span class="o">.</span><span class="n">to_units</span><span class="p">(</span><span class="s1">'sec'</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="k">pass</span>  <span class="c1"># Keep original if conversion fails</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">intervals</span><span class="o">.</span><span class="n">intervals</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Convert Intervals object to list of (start, end) tuples in x-axis units."""</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_intervals_to_axis</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">time_vec</span><span class="p">,</span> <span class="n">sample_index</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">intervals</span><span class="o">.</span><span class="n">intervals</span><span class="p">)</span>  <span class="c1"># Keep original if conversion fails</span>
     
     <span class="k">def</span><span class="w"> </span><span class="nf">extract_result</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Extract display arrays, mask, and intervals from function result.</span>

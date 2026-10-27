@@ -94,7 +94,10 @@
 </div>
 <a class="reference internal image-reference" href="_images/viewer_pupil_only.png"><img alt="Viewer showing only pupil data" src="_images/viewer_pupil_only.png" style="width: 100%;" />
 </a>
-<p>Valid values are <code class="docutils literal notranslate"><span class="pre">'pupil'</span></code>, <code class="docutils literal notranslate"><span class="pre">'x'</span></code>, and <code class="docutils literal notranslate"><span class="pre">'y'</span></code>.</p>
+<p>Valid values are <code class="docutils literal notranslate"><span class="pre">'pupil'</span></code>, <code class="docutils literal notranslate"><span class="pre">'x'</span></code>, and <code class="docutils literal notranslate"><span class="pre">'y'</span></code>. Similarly, <code class="docutils literal notranslate"><span class="pre">eyes</span></code> selects the eyes to display (default: all available eyes):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">eyedata</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">'pupil'</span><span class="p">],</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[</span><span class="s1">'left'</span><span class="p">])</span>
+</pre></div>
+</div>
 </section>
 <section id="adding-overlays">
 <h2>Adding Overlays<a class="headerlink" href="#adding-overlays" title="Link to this heading">¶</a></h2>
@@ -134,6 +137,23 @@
 <a class="reference internal image-reference" href="_images/viewer_extra_plots.png"><img alt="Viewer showing pupil data with velocity subplot" src="_images/viewer_extra_plots.png" style="width: 100%;" />
 </a>
 </section>
+<section id="highlighting-intervals">
+<h2>Highlighting Intervals<a class="headerlink" href="#highlighting-intervals" title="Link to this heading">¶</a></h2>
+<p>Use <code class="docutils literal notranslate"><span class="pre">highlight</span></code> to shade <a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> (e.g., detected blinks) in the plots, and <code class="docutils literal notranslate"><span class="pre">highlight_color</span></code> to change their color (default <code class="docutils literal notranslate"><span class="pre">'lightblue'</span></code>):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+
+<span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="n">blinks</span> <span class="o">=</span> <span class="n">eyedata</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">eyes</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span>  <span class="c1"># Intervals</span>
+
+<span class="c1"># same intervals in all subplots</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">eyedata</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="n">blinks</span><span class="p">,</span> <span class="n">highlight_color</span><span class="o">=</span><span class="s1">'orange'</span><span class="p">)</span>
+
+<span class="c1"># or per subplot</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">eyedata</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="p">{</span><span class="s1">'pupil'</span><span class="p">:</span> <span class="n">blinks</span><span class="p">})</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">highlight</span></code> is either a single <a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> object (shown in all subplots) or a dict mapping subplot keys to <a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>. The keys are <code class="docutils literal notranslate"><span class="pre">'pupil'</span></code>, <code class="docutils literal notranslate"><span class="pre">'x'</span></code>, <code class="docutils literal notranslate"><span class="pre">'y'</span></code> and <code class="docutils literal notranslate"><span class="pre">'extra_&lt;label&gt;'</span></code> for <code class="docutils literal notranslate"><span class="pre">extra_plots</span></code> (EyeData), or the plot labels (arrays). Intervals in time units are converted to seconds, sample-index Intervals are placed using the time vector.</p>
+</section>
 <section id="interactive-selection">
 <h2>Interactive Selection<a class="headerlink" href="#interactive-selection" title="Link to this heading">¶</a></h2>
 <p>The viewer supports interactive region selection:</p>
@@ -141,7 +161,7 @@
 <li><p>Press <code class="docutils literal notranslate"><span class="pre">S</span></code> to enter selection mode</p></li>
 <li><p>Click and drag to select a region</p></li>
 <li><p>Press <code class="docutils literal notranslate"><span class="pre">D</span></code> or <code class="docutils literal notranslate"><span class="pre">Backspace</span></code> to remove the last selection</p></li>
-<li><p>When you close the viewer, selected regions are returned as <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> objects</p></li>
+<li><p>When you close the viewer, selected regions are returned as <a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> objects</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 
@@ -155,6 +175,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="n">selections</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The returned dict has the same keys as <code class="docutils literal notranslate"><span class="pre">highlight</span></code> (<code class="docutils literal notranslate"><span class="pre">'pupil'</span></code>, <code class="docutils literal notranslate"><span class="pre">'x'</span></code>, <code class="docutils literal notranslate"><span class="pre">'y'</span></code>, <code class="docutils literal notranslate"><span class="pre">'extra_&lt;label&gt;'</span></code> or the plot labels for arrays). The Intervals are in seconds (<code class="docutils literal notranslate"><span class="pre">units='sec'</span></code>); for raw arrays without <code class="docutils literal notranslate"><span class="pre">time</span></code> they are sample indices (<code class="docutils literal notranslate"><span class="pre">units=None</span></code>). If no region was selected, <a class="reference internal" href="#pypillometry.view" title="pypillometry.view"><code class="xref py py-func docutils literal notranslate"><span class="pre">view()</span></code></a> returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </section>
 <section id="api-reference">
 <h2>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h2>
@@ -204,15 +225,17 @@ warning.</p>
 below the EyeData variables. Keys become subplot labels (y-axis),
 values are arrays or lists of arrays. Arrays must have the same length
 as the EyeData. Example: <code class="docutils literal notranslate"><span class="pre">extra_plots={&quot;velocity&quot;:</span> <span class="pre">vel,</span> <span class="pre">&quot;custom&quot;:</span> <span class="pre">[a,</span> <span class="pre">b]}</span></code></p></li>
-<li><p><strong>highlight</strong> (<em>Intervals</em><em> or </em><em>dict</em><em>, </em><em>optional</em>) – <p>Intervals to highlight in the plots. Can be:</p>
+<li><p><strong>highlight</strong> (<a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.Intervals"><em>Intervals</em></a><em> or </em><em>dict</em><em>, </em><em>optional</em>) – <p>Intervals to highlight in the plots. Can be:</p>
 <ul>
-<li><p>An <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> object (applied to all plots)</p></li>
-<li><p>A dict mapping plot key to <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code>
+<li><p>An <a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> object (applied to all plots)</p></li>
+<li><p>A dict mapping plot key to <a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>
 objects; keys are ‘pupil’, ‘x’, ‘y’ and <code class="docutils literal notranslate"><span class="pre">'extra_&lt;label&gt;'</span></code> for
 <cite>extra_plots</cite> (EyeData), or the plot labels (arrays)</p></li>
 </ul>
-<p>Intervals not in seconds are converted (for EyeData using the
-sampling rate of <cite>data</cite> if the Intervals have none).</p>
+<p>Intervals in time units are converted to seconds; Intervals in
+sample indices (<code class="docutils literal notranslate"><span class="pre">units=None</span></code>) are placed using the time vector.
+For raw arrays without <cite>time</cite>, the x-axis is in sample indices and
+Intervals in time units need a sampling rate.</p>
 </p></li>
 <li><p><strong>highlight_color</strong> (<em>str</em><em>, </em><em>optional</em>) – Color for highlighted regions (default: ‘lightblue’)</p></li>
 </ul>
@@ -220,13 +243,13 @@ sampling rate of <cite>data</cite> if the Intervals have none).</p>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>If regions were selected (<code class="docutils literal notranslate"><span class="pre">S</span></code> key, then drag with the left mouse
 button), returns a dict mapping plot key (same keys as for
-<cite>highlight</cite>) to <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> objects containing
+<cite>highlight</cite>) to <a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> objects containing
 the selected regions with <code class="docutils literal notranslate"><span class="pre">units='sec'</span></code>; for raw arrays without
 <cite>time</cite> the values are sample indices (<code class="docutils literal notranslate"><span class="pre">units=None</span></code>). Returns None
 if no selections were made.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code>]]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.intervals.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>]]</span></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
@@ -308,6 +331,7 @@ the mouse</p></li>
 <li><a class="reference internal" href="#filtering-variables">Filtering Variables</a></li>
 <li><a class="reference internal" href="#adding-overlays">Adding Overlays</a></li>
 <li><a class="reference internal" href="#extra-subplots">Extra Subplots</a></li>
+<li><a class="reference internal" href="#highlighting-intervals">Highlighting Intervals</a></li>
 <li><a class="reference internal" href="#interactive-selection">Interactive Selection</a></li>
 <li><a class="reference internal" href="#api-reference">API Reference</a></li>
 </ul>

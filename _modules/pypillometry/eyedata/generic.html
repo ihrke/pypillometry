@@ -420,6 +420,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numbers</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="c1">#from pytypes import typechecked</span>
@@ -1282,7 +1283,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="GenericEyeData.nblinks">
 <a class="viewcode-back" href="../../../api.html#pypillometry.GenericEyeData.nblinks">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">nblinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nblinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="p">[],</span> <span class="n">variables</span><span class="o">=</span><span class="p">[])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return number of detected blinks. Should be run after `pupil_blinks_detect()`.</span>
 
@@ -1722,9 +1723,12 @@ window.runMermaid = runMermaid;</script>
         <span class="n">screen_coords</span> <span class="o">=</span> <span class="n">edf</span><span class="p">[</span><span class="s2">"info"</span><span class="p">][</span><span class="s2">"screen_coords"</span><span class="p">]</span>
         <span class="n">setup</span> <span class="o">=</span> <span class="n">ExperimentalSetup</span><span class="p">(</span><span class="n">screen_resolution</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">screen_coords</span><span class="p">))</span> <span class="k">if</span> <span class="n">screen_coords</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
         
-        <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span> <span class="o">**</span><span class="n">d</span><span class="p">,</span> <span class="n">event_onsets</span><span class="o">=</span><span class="n">evon</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">evlab</span><span class="p">,</span> 
-            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="n">calibration</span><span class="o">=</span><span class="n">calibration</span><span class="p">,</span>
-            <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">edf</span><span class="p">[</span><span class="s2">"info"</span><span class="p">][</span><span class="s2">"filename"</span><span class="p">])</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="o">**</span><span class="n">d</span><span class="p">,</span> <span class="n">calibration</span><span class="o">=</span><span class="n">calibration</span><span class="p">,</span> <span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">)</span>
+        <span class="c1"># only pass what the constructor accepts (e.g., PupilData has no gaze)</span>
+        <span class="n">accepted</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">accepted</span><span class="p">}</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">event_onsets</span><span class="o">=</span><span class="n">evon</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="n">evlab</span><span class="p">,</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sfreq</span><span class="p">,</span> <span class="n">info</span><span class="o">=</span><span class="n">info</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">edf</span><span class="p">[</span><span class="s2">"info"</span><span class="p">][</span><span class="s2">"filename"</span><span class="p">])</span>
 
         <span class="c1"># filter out irrelevant triggers</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">eyelink_filter_func</span><span class="p">(</span><span class="n">lab</span><span class="p">):</span>
@@ -2156,15 +2160,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        ----------</span>
 <span class="sd">        events : Events</span>
 <span class="sd">            Events object containing the new events to set</span>
-<span class="sd">        inplace : bool, optional</span>
-<span class="sd">            if `True`, make change in-place and return the object</span>
-<span class="sd">            if `False`, make and return copy before making changes</span>
-<span class="sd">            if `None`, use the setting of the object (specified in constructor)</span>
-<span class="sd">            </span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor)</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        GenericEyeData</span>
-<span class="sd">            The object with updated events (may be self or a copy depending on inplace)</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the object with updated events (`self` or a copy, depending on `inplace`)</span>
 <span class="sd">            </span>
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -2626,17 +2630,17 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="n">mean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># use only non-masked samples</span>
             <span class="n">mean</span><span class="o">=</span><span class="p">{</span><span class="n">eye</span><span class="p">:{</span><span class="n">var</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">compressed</span><span class="p">())</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">}</span> <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">}</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Real</span><span class="p">):</span>
             <span class="n">mean</span><span class="o">=</span><span class="p">{</span><span class="n">eye</span><span class="p">:{</span><span class="n">var</span><span class="p">:</span><span class="n">mean</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">}</span> <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">}</span>            
         <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"mean must be None, float or dict"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"mean must be None, a number or dict"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">sd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">sd</span><span class="o">=</span><span class="p">{</span><span class="n">eye</span><span class="p">:{</span><span class="n">var</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">nanstd</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">eye</span><span class="p">,</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">compressed</span><span class="p">())</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">}</span> <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">}</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sd</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sd</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Real</span><span class="p">):</span>
             <span class="n">sd</span><span class="o">=</span><span class="p">{</span><span class="n">eye</span><span class="p">:{</span><span class="n">var</span><span class="p">:</span><span class="n">sd</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">}</span> <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">}</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sd</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"sd must be None, float or dict"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"sd must be None, a number or dict"</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Mean: </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="n">mean</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"SD: </span><span class="si">%s</span><span class="s2">"</span> <span class="o">%</span> <span class="n">sd</span><span class="p">)</span>
 
@@ -2681,11 +2685,13 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            variables to unscale; can be "pupil", "x","y", "baseline", "response" or any other variable</span>
 <span class="sd">            that is available in the dataset; either a string or a list of strings;</span>
 <span class="sd">            available variables can be checked with `obj.variables`; empty list means all variables</span>
-<span class="sd">        mean : None or dict, optional</span>
-<span class="sd">            mean to add to the signal as ``{eye: {variable: value}}``;</span>
+<span class="sd">        mean : None, float or dict, optional</span>
+<span class="sd">            mean to add to the signal; a number (same for all eyes and</span>
+<span class="sd">            variables) or ``{eye: {variable: value}}``;</span>
 <span class="sd">            if `None`, use the mean stored by :meth:`scale`</span>
-<span class="sd">        sd : None or dict, optional</span>
-<span class="sd">            sd to multiply the signal with as ``{eye: {variable: value}}``;</span>
+<span class="sd">        sd : None, float or dict, optional</span>
+<span class="sd">            sd to multiply the signal with; a number (same for all eyes and</span>
+<span class="sd">            variables) or ``{eye: {variable: value}}``;</span>
 <span class="sd">            if `None`, use the sd stored by :meth:`scale`</span>
 <span class="sd">        eyes : str or list of str, optional</span>
 <span class="sd">            eye(s) to consider; if empty, all available eyes</span>
@@ -2705,8 +2711,16 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># if no parameters are provided, use the stored ones (normal)</span>
         <span class="k">if</span> <span class="n">mean</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mean</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"scale"</span><span class="p">][</span><span class="s2">"mean"</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Real</span><span class="p">):</span>
+            <span class="n">mean</span><span class="o">=</span><span class="p">{</span><span class="n">eye</span><span class="p">:{</span><span class="n">var</span><span class="p">:</span><span class="n">mean</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">}</span> <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"mean must be None, a number or dict"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">sd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">sd</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"scale"</span><span class="p">][</span><span class="s2">"sd"</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sd</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Real</span><span class="p">):</span>
+            <span class="n">sd</span><span class="o">=</span><span class="p">{</span><span class="n">eye</span><span class="p">:{</span><span class="n">var</span><span class="p">:</span><span class="n">sd</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">}</span> <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sd</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"sd must be None, a number or dict"</span><span class="p">)</span>
         
         <span class="c1"># check whether unscaling parameters are provided</span>
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
@@ -2877,7 +2891,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">variables</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[],</span>
         <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
         <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ms"</span><span class="p">,</span>
-        <span class="n">apply_mask</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">apply_mask</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
@@ -2894,11 +2908,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            ``units``). Default 100.</span>
 <span class="sd">        units : str, optional</span>
 <span class="sd">            Units for ``distance``. Can be "ms", "sec", "min", or "h". Default "ms".</span>
-<span class="sd">        apply_mask : bool, default=True</span>
+<span class="sd">        apply_mask : bool, default=False</span>
 <span class="sd">            If True, store the merged blinks, apply them as masks to the data</span>
 <span class="sd">            and return the object.</span>
 <span class="sd">            If False, return merged blinks as dict of Intervals objects without</span>
-<span class="sd">            storing them or applying masks.</span>
+<span class="sd">            storing them or applying masks (same default as</span>
+<span class="sd">            :meth:`~pypillometry.PupilData.pupil_blinks_detect`).</span>
 <span class="sd">        inplace : bool or None, optional</span>
 <span class="sd">            if `True`, make change in-place and return the object;</span>
 <span class="sd">            if `False`, make and return copy before making changes;</span>
@@ -3110,15 +3125,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        inplace : bool, optional</span>
-<span class="sd">            If True, make change in-place and return the object.</span>
-<span class="sd">            If False, make and return copy before making changes.</span>
-<span class="sd">            If None, use the object's default setting.</span>
-<span class="sd">            </span>
+<span class="sd">        inplace : bool or None, optional</span>
+<span class="sd">            if `True`, make change in-place and return the object;</span>
+<span class="sd">            if `False`, make and return copy before making changes;</span>
+<span class="sd">            if `None`, use the object-level setting (specified in the constructor)</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        GenericEyeData</span>
-<span class="sd">            The object with merged masks.</span>
+<span class="sd">        :class:`~pypillometry.GenericEyeData`</span>
+<span class="sd">            the object with merged masks (`self` or a copy, depending on `inplace`)</span>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         
@@ -3277,11 +3292,13 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            Passed to scipy.interpolate.interp1d.</span>
 <span class="sd">        margin : tuple, default (-20, 20)</span>
 <span class="sd">            Time window (in ms) before and after the interval to collect boundary</span>
-<span class="sd">            points for interpolation. Boundary points are taken from</span>
-<span class="sd">            ``abs(margin[0])`` ms before the start and ``abs(margin[1])`` ms after</span>
-<span class="sd">            the end of each interval (the signs are ignored). For higher-order</span>
-<span class="sd">            methods like "cubic" or "quadratic", more boundary points from this</span>
-<span class="sd">            margin are used to fit the interpolation curve.</span>
+<span class="sd">            points for interpolation, relative to the start and end of each</span>
+<span class="sd">            interval: points are taken from ``start + margin[0]`` to the start</span>
+<span class="sd">            and from the end to ``end + margin[1]``, so `margin[0]` must be</span>
+<span class="sd">            &lt;= 0 and `margin[1]` &gt;= 0. Masked or NaN samples are not used.</span>
+<span class="sd">            For higher-order methods like "cubic" or "quadratic", more</span>
+<span class="sd">            boundary points from this margin are used to fit the</span>
+<span class="sd">            interpolation curve.</span>
 <span class="sd">        store_as_suffix : str or None, default None</span>
 <span class="sd">            If None, replace the original data.</span>
 <span class="sd">            If a string, store interpolated data in a new variable with this suffix</span>
@@ -3326,9 +3343,12 @@ window.runMermaid = runMermaid;</script>
         
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         
+        <span class="k">if</span> <span class="n">margin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">margin</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"margin must be (&lt;=0, &gt;=0) in ms, got </span><span class="si">{</span><span class="n">margin</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
         <span class="c1"># Convert margin from ms to samples</span>
-        <span class="n">margin_left_ix</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">margin</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-        <span class="n">margin_right_ix</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">margin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">margin_left_ix</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="o">-</span><span class="n">margin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">margin_right_ix</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">margin</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
         
         <span class="k">def</span><span class="w"> </span><span class="nf">interpolate_single_key</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">interval_obj</span><span class="p">):</span>
 <span class="w">            </span><span class="sd">"""Local helper to interpolate a single data key."""</span>
@@ -3360,22 +3380,23 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">right_margin_start</span> <span class="o">=</span> <span class="n">end_idx</span>
                 <span class="n">right_margin_end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">),</span> <span class="n">end_idx</span> <span class="o">+</span> <span class="n">margin_right_ix</span><span class="p">)</span>
                 
-                <span class="c1"># Get valid (non-NaN) points from left margin</span>
+                <span class="c1"># Get valid (non-NaN, non-masked) points from left margin;</span>
+                <span class="c1"># `mask` also covers intervals interpolated before</span>
                 <span class="n">left_indices</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">left_times</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">left_values</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">left_margin_start</span><span class="p">,</span> <span class="n">left_margin_end</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span>
                         <span class="n">left_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
                         <span class="n">left_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
                         <span class="n">left_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
                 
-                <span class="c1"># Get valid (non-NaN) points from right margin</span>
+                <span class="c1"># Get valid (non-NaN, non-masked) points from right margin</span>
                 <span class="n">right_indices</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">right_times</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">right_values</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">right_margin_start</span><span class="p">,</span> <span class="n">right_margin_end</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">mask</span><span class="p">[</span><span class="n">idx</span><span class="p">]:</span>
                         <span class="n">right_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
                         <span class="n">right_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
                         <span class="n">right_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>

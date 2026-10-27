@@ -76,7 +76,7 @@
 </div>
 <a class="reference internal image-reference" href="_images/tweak_basic.png"><img alt="Tweak viewer with smoothing function and parameter panel" src="_images/tweak_basic.png" style="width: 100%;" />
 </a>
-<p>The white line shows the original data, and the green line shows the result of the function with the current parameters. Adjust parameters in the panel on the right.</p>
+<p>The blue line shows the original data, and the green line shows the result of the function with the current parameters. Adjust parameters in the panel on the right.</p>
 </section>
 <section id="tweaking-eyedata-processing">
 <h2>Tweaking EyeData Processing<a class="headerlink" href="#tweaking-eyedata-processing" title="Link to this heading">¶</a></h2>
@@ -106,7 +106,7 @@
 </section>
 <section id="tweaking-blink-detection">
 <h2>Tweaking Blink Detection<a class="headerlink" href="#tweaking-blink-detection" title="Link to this heading">¶</a></h2>
-<p>Another common use case is tuning blink detection parameters. Functions can return <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> objects, which are displayed as highlighted regions:</p>
+<p>Another common use case is tuning blink detection parameters. Functions can return <a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> objects, which are displayed as highlighted regions:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
 
 <span class="n">eyedata</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
@@ -139,10 +139,11 @@
 <ul class="simple">
 <li><p><strong>Spinboxes</strong> for each parameter - adjust values by typing or using the arrows</p></li>
 <li><p><strong>Auto Update</strong> checkbox - when enabled, the plot updates immediately when you change a parameter</p></li>
-<li><p><strong>Update</strong> button - when auto-update is disabled, click to apply changes</p></li>
-<li><p><strong>Reset</strong> button - restore all parameters to their initial values</p></li>
+<li><p><strong>Update</strong> button - when auto-update is disabled, click to apply changes
+(or press <code class="docutils literal notranslate"><span class="pre">Enter</span></code> in a parameter field)</p></li>
+<li><p><strong>Reset to Initial</strong> button - restore all parameters to their initial values</p></li>
 </ul>
-<p>For computationally expensive functions, disable auto-update and use the Update button to avoid lag.</p>
+<p>For computationally expensive functions, disable auto-update and use the Update button (or <code class="docutils literal notranslate"><span class="pre">Enter</span></code>) to avoid lag.</p>
 </section>
 <section id="return-values">
 <h2>Return Values<a class="headerlink" href="#return-values" title="Link to this heading">¶</a></h2>
@@ -202,9 +203,9 @@ unchanged (for EyeData input the full EyeData object) and may return:</p>
 <ul>
 <li><p>an EyeData object: channel <cite>variable</cite> (and its mask) is overlaid</p></li>
 <li><p>an array of the same length as the displayed data: overlaid as a line</p></li>
-<li><p>an <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> object: shown as highlighted
+<li><p>an <a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> object: shown as highlighted
 regions</p></li>
-<li><p>a dict of arrays and/or <code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code> objects:
+<li><p>a dict of arrays and/or <a class="reference internal" href="api.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a> objects:
 one overlay line or highlight per entry</p></li>
 </ul>
 </p></li>

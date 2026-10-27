@@ -36,7 +36,7 @@ The simplest use case is tweaking a function applied to numpy arrays:
    :alt: Tweak viewer with smoothing function and parameter panel
    :width: 100%
 
-The white line shows the original data, and the green line shows the result of the function with the current parameters. Adjust parameters in the panel on the right.
+The blue line shows the original data, and the green line shows the result of the function with the current parameters. Adjust parameters in the panel on the right.
 
 
 Tweaking EyeData Processing
@@ -114,9 +114,10 @@ The parameter panel on the right side of the window provides:
 - **Spinboxes** for each parameter - adjust values by typing or using the arrows
 - **Auto Update** checkbox - when enabled, the plot updates immediately when you change a parameter
 - **Update** button - when auto-update is disabled, click to apply changes
-- **Reset** button - restore all parameters to their initial values
+  (or press ``Enter`` in a parameter field)
+- **Reset to Initial** button - restore all parameters to their initial values
 
-For computationally expensive functions, disable auto-update and use the Update button to avoid lag.
+For computationally expensive functions, disable auto-update and use the Update button (or ``Enter``) to avoid lag.
 
 
 Return Values
