@@ -53,8 +53,7 @@
 <p>Installing <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> and its dependencies is automated and can be done by running the following lines (on Mac OS X or Linux).</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ihrke/pypillometry.git
 $<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>pypillometry
-$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-$<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> </span>install
+$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
 <p><a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> is on <a class="reference external" href="https://pypi.org/">PyPI</a> and released versions can be installed with <cite>pip</cite> (this will also install the dependencies automatically):</p>
@@ -68,14 +67,15 @@ $<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> 
 </div>
 <section id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading">¶</a></h2>
-<p><a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> requires Python3 and a range of standard numerical computing packages (all of which listed in the file <cite>requirements.txt</cite>)</p>
+<p><a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> requires Python 3.10 or newer and a range of standard numerical computing packages (all of which are listed in <cite>pyproject.toml</cite> and installed automatically)</p>
 <ul class="simple">
 <li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="xref py py-mod docutils literal notranslate"><span class="pre">scipy</span></code> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">matplotlib</span></code></p></li>
 <li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmdstanpy</span></code></p></li>
 </ul>
-<p>If you want to ready Eyelink’s .edf files directly, you can install the [<cite>eyelinkio</cite>](<a class="reference external" href="https://github.com/scott-huberty/eyelinkio">https://github.com/scott-huberty/eyelinkio</a>) package.</p>
+<p>Eyelink’s .edf files are read with the <a class="reference external" href="https://github.com/scott-huberty/eyelinkio">eyelinkio</a> package, which is installed as well.</p>
+<p>The interactive viewer uses <code class="xref py py-mod docutils literal notranslate"><span class="pre">PyQt5</span></code> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">vispy</span></code>, which are installed by default.</p>
+<p>For development, <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">&quot;.[test]&quot;</span></code> installs the test dependencies as well.</p>
 <p>It can be useful to access <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> through Jupyter or Jupyter Notebook, so installing those packages is also useful but not necessary.</p>
-<p>All requirements can be installed by running <cite>pip install -r requirements.txt</cite>.</p>
 </section>
 <section id="virtual-environments">
 <h2>Virtual environments<a class="headerlink" href="#virtual-environments" title="Link to this heading">¶</a></h2>
@@ -83,7 +83,7 @@ $<span class="w"> </span>python<span class="w"> </span>setup.py<span class="w"> 
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>pypil<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>
 $<span class="w"> </span>conda<span class="w"> </span>activate<span class="w"> </span>pypil
 $<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>anaconda
-$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pypillometry
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">anaconda</span></code> package contains all the requirements except <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmdstanpy</span></code> which can be installed from <a class="reference external" href="https://anaconda.org/conda-forge/pystan">conda-forge</a></p>
