@@ -560,6 +560,27 @@ class TestExperimentalSetupSerialization:
         assert np.isclose(restored.r, original.r)
         assert restored.ipd == original.ipd
 
+    def test_round_trip_no_unit_warnings(self):
+        """from_dict(to_dict()) does not warn about plain numbers."""
+        import warnings
+        from pypillometry.units import _unit_warnings_issued
+        original = ExperimentalSetup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("520 mm", "290 mm"),
+            eye_to_screen_center="700 mm",
+            screen_offset=("30 mm", "20 mm"),
+            screen_pitch="-5 deg",
+            screen_yaw="3 deg",
+            camera_offset=("0 mm", "-300 mm", "600 mm"),
+            ipd="63 mm"
+        )
+        _unit_warnings_issued.clear()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            restored = ExperimentalSetup.from_dict(original.to_dict())
+        assert np.isclose(restored.beta_tilt, original.beta_tilt)
+        assert np.allclose(restored.camera_position, original.camera_position)
+
 
 class TestExperimentalSetupSummary:
     """Tests for summary method."""

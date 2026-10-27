@@ -881,6 +881,15 @@ class ExperimentalSetup:
         -------
         ExperimentalSetup
         """
+        # values are stored in canonical units (mm, radians); attach the
+        # units so that they are not parsed as plain numbers (with warnings)
+        def mm(x):
+            return None if x is None else ureg.Quantity(x, ureg.mm)
+        def rad(x):
+            return None if x is None else ureg.Quantity(x, ureg.radian)
+        def mm_tuple(x):
+            return None if x is None else tuple(mm(v) for v in x)
+
         # Compute eye_to_screen_center from d and screen_offset
         d_val = d.get('d')
         screen_offset = d.get('screen_offset')
@@ -892,16 +901,21 @@ class ExperimentalSetup:
             else:
                 eye_to_screen_center = d_val
         
+        camera_spherical = d.get('camera_spherical')
+        if camera_spherical is not None:
+            theta, phi, r = camera_spherical
+            camera_spherical = (rad(theta), rad(phi), mm(r))
+
         return cls(
             screen_resolution=d['screen_resolution'],
-            physical_screen_size=d['physical_screen_size'],
-            screen_offset=screen_offset,
-            eye_to_screen_center=eye_to_screen_center,
-            screen_pitch=d.get('alpha_tilt', 0.0),
-            screen_yaw=d.get('beta_tilt', 0.0),
-            camera_offset=d.get('camera_offset'),
-            camera_spherical=d.get('camera_spherical'),
-            ipd=d.get('ipd'),
+            physical_screen_size=mm_tuple(d['physical_screen_size']),
+            screen_offset=mm_tuple(screen_offset),
+            eye_to_screen_center=mm(eye_to_screen_center),
+            screen_pitch=rad(d.get('alpha_tilt', 0.0)),
+            screen_yaw=rad(d.get('beta_tilt', 0.0)),
+            camera_offset=mm_tuple(d.get('camera_offset')),
+            camera_spherical=camera_spherical,
+            ipd=mm(d.get('ipd')),
         )
     
     # =========================================================================

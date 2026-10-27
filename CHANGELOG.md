@@ -81,6 +81,7 @@
 - `scale()` rejected integers and `unscale()` rejected numbers for `mean`/`sd`
 - `ExperimentalSetup.mm_to_pixels()` without screen size raised a `TypeError`
   instead of a clear `ValueError`
+- `ExperimentalSetup.from_dict()` warned about plain numbers for stored values
 
 ### Documentation
 
