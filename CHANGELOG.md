@@ -68,6 +68,7 @@
 - `PupilData.from_eyelink()`/`GazeData.from_eyelink()` raised a `TypeError`
 - `Intervals.plot_highlight(zorder=...)` raised a `TypeError`
 - `Intervals.stats()` raised a `ValueError` for empty intervals
+- `Intervals` repr showed "None" as unit for index intervals
 
 ### Documentation
 

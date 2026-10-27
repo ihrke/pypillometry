@@ -1438,7 +1438,9 @@ def _format_interval_stats(stats: dict) -> str:
     minv = stats.get("min", np.nan)
     maxv = stats.get("max", np.nan)
     total_duration = stats.get("total_duration", np.nan)
-    units = stats.get("units", "indices")
+    units = stats.get("units")
+    if units is None:
+        units = "indices"
     return "%i intervals (total duration: %.2f %s), %.2f %s +/- %.2f %s, [%.2f %s, %.2f %s]" % (
         n, total_duration, units, mean, units, sd, units, minv, units, maxv, units
     )

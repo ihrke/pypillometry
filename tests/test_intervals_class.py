@@ -396,6 +396,12 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertIn("test_intervals", repr_str)
         self.assertIn("3 intervals", repr_str)
         self.assertIn("ms", repr_str)  # units shown inline with values
+
+    def test_intervals_repr_indices(self):
+        """Index intervals show 'indices' as unit, not 'None'"""
+        repr_str = repr(Intervals([(0, 10), (20, 30)], units=None))
+        self.assertIn("indices", repr_str)
+        self.assertNotIn("None", repr_str)
     
     def test_intervals_repr_empty(self):
         """Test string representation of empty Intervals"""
