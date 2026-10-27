@@ -18,88 +18,49 @@ The unit registry is available as `pypillometry.ureg` for advanced users.
 """
 
 import os.path
-import importlib
-import inspect
-from typing import List, Set, Dict, Any
 
-def _collect_and_import_submodules() -> Dict[str, Any]:
-    """Collect all public names and import everything from submodules."""
-    public_names = set()
-    imported_objects = {}
-    
-    # List of submodules to import from
-    submodules = [
-        '.eyedata.eyedatadict',
-        '.eyedata.generic',
-        '.eyedata.eyedata',
-        '.eyedata.gazedata',
-        '.eyedata.pupildata',
-        '.convenience',
-        '.example_data',
-        '.events',
-        '.intervals',
-        '.segmented',
-        '.io',
-        '.study',
-        '.logging',
-        '.plot',
-        '.roi',
-        '.signal',
-        '.viewer'
-    ]
-    
-    for module_name in submodules:
-        try:
-            # Import the module
-            module = importlib.import_module(module_name, package='pypillometry')
-            
-            # Get all public names (not starting with _)
-            names = [name for name in dir(module) if not name.startswith('_')]
-            public_names.update(names)
-            
-            # Import all public objects
-            for name in names:
-                try:
-                    imported_objects[name] = getattr(module, name)
-                except AttributeError:
-                    print(f"Warning: Could not import {name} from {module_name}")
-                    
-        except ImportError as e:
-            print(f"Warning: Could not import {module_name}: {e}")
-    
-    return public_names, imported_objects
-
-# Collect all public names and import everything
-__all__, _imported_objects = _collect_and_import_submodules()
-
-# Add imported objects to the global namespace
-globals().update(_imported_objects)
-
-
-## ------------------------------------- 
-# --------- units ----------------------
-# Import unit registry for advanced users
-from .units import ureg
-__all__.add('ureg')
-
-## -------------------------------------
-# --------- settings -------------------
-from .config import set_default_inplace, get_default_inplace
-__all__.update(['set_default_inplace', 'get_default_inplace'])
-__all__ = sorted(list(__all__))
-
-## ------------------------------------- 
-# --------- logging --------------------
-# Import logging functionality from submodule
-from .logging import (
-    logging_disable, logging_enable, logging_set_level, logging_get_level,
-    loglevel, nologging, initialize_logging
+# Each submodule defines its public API in its own ``__all__``. The star
+# imports below are static, so IDEs and type checkers can follow them.
+from . import (
+    config, units, logging, convenience, eyedata, plot, signal, events,
+    intervals, segmented, io, study, roi, example_data, viewer,
 )
+from .config import *
+from .units import *
+from .logging import *
+from .convenience import *
+from .eyedata import *
+from .plot import *
+from .signal import *
+from .events import *
+from .intervals import *
+from .segmented import *
+from .io import *
+from .study import *
+from .roi import *
+from .example_data import *
+from .viewer import *
 
-# Import logger for use throughout the package
+__all__ = []
+__all__ += config.__all__
+__all__ += units.__all__
+__all__ += logging.__all__
+__all__ += convenience.__all__
+__all__ += eyedata.__all__
+__all__ += plot.__all__
+__all__ += signal.__all__
+__all__ += events.__all__
+__all__ += intervals.__all__
+__all__ += segmented.__all__
+__all__ += io.__all__
+__all__ += study.__all__
+__all__ += roi.__all__
+__all__ += example_data.__all__
+__all__ += viewer.__all__
+
+# loguru logger, available as ``pypillometry.logger`` (not part of __all__)
 from loguru import logger
 
-# Initialize logging with default settings
 initialize_logging()
 
 __package_path__ = os.path.abspath(os.path.dirname(__file__))
