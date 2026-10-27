@@ -21,9 +21,17 @@
 - `detect_blinks_zero()` accepts `blink_val=np.nan` to detect runs of NaN.
 - Reading from SSH URLs (`ssh://[user@]host[:port]/path`, key-based login
   only) in `from_eyelink()`/`read_eyelink()`, `from_file()`/`read_pickle()`
-  and `load_study_local()`. Files are downloaded with `scp` to `cache_dir`
-  (default: a temporary directory); `autodelete=True` deletes them after
-  reading. See `pp.io.ssh_download()`.
+  and `load_study_local()`. Files are downloaded with `scp`.
+- `read_eyelink()` and `read_pickle()` treat HTTP(S) and SSH URLs the same:
+  both accept `cache_file`, `cache_dir`, `force_download`, `session` and
+  `autodelete` (delete the downloaded copy after reading). Without
+  `cache_file`/`cache_dir`, a temporary directory is used. See
+  `pp.io.fetch_url()`.
+
+### Changed
+
+- `read_pickle()` saves HTTP(S) downloads to a file (temporary by default)
+  instead of reading them into memory.
 
 ### Fixed
 

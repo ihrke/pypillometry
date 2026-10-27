@@ -141,7 +141,7 @@ Modules
 
 
 .. automodule:: pypillometry.io
-    :members: load_study_osf, load_study_local, osf_authenticate, read_eyelink, read_pickle, write_pickle, ssh_download, local_copy
+    :members: load_study_osf, load_study_local, osf_authenticate, read_eyelink, read_pickle, write_pickle, fetch_url, local_copy
 
 
 .. automodule:: pypillometry.example_data
