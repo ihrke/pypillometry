@@ -15,6 +15,15 @@ class TestPupil(unittest.TestCase):
     def test_pupil_kernel_t(self):
         pupil_kernel_t([1,2], 10, 900)
 
+    def test_pupil_kernel_sampling(self):
+        """kernel is sampled every 1000/fs ms, starting at 0"""
+        from pypillometry.signal.pupil import pupil_kernel
+        for fs in [100, 1000]:
+            h = pupil_kernel(4000, fs=fs, npar=10.1, tmax=930)
+            self.assertEqual(h.size, 4 * fs)
+            t = np.arange(h.size) * 1000. / fs
+            np.testing.assert_allclose(h, pupil_kernel_t(t, 10.1, 930))
+
 
 class TestLowpassFilterIterative(unittest.TestCase):
     """Tests for lowpass_filter_iterative()"""

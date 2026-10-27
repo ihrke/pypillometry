@@ -89,6 +89,8 @@
   sample (other offsets are inclusive)
 - `fake_gaze_fixations()` left trailing samples at (0, 0) when the fixations
   were shorter than `duration`
+- `pupil_kernel()` was sampled slightly slower than `fs` (spacing
+  `duration/(n-1)`)
 
 ### Documentation
 
