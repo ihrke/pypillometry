@@ -57,7 +57,7 @@ class TestExampleData(unittest.TestCase):
 
     def test_default_cache_dir(self):
         with mock.patch.dict("os.environ", {"XDG_CACHE_HOME": "/some/cache"}):
-            self.assertEqual(example_data._default_cache_dir(),
+            self.assertEqual(example_data._user_cache_dir(),
                              os.path.join("/some/cache", "pypillometry"))
 
 

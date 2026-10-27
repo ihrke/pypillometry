@@ -85,6 +85,44 @@ class TestPupilData(unittest.TestCase):
         d = d.pupil_estimate_baseline(eyes="left", inplace=False)
         self.assertFalse(np.any(np.isnan(d.data["left", "baseline"])))
 
+    def test_estimate_baseline_seed(self):
+        """same seed gives the same baseline"""
+        d = pp.get_example_data("rlmw_002_short").sub_slice(0, 10, units="sec")
+        d = d.pupil_blinks_detect(eyes="left", apply_mask=True, inplace=False)
+        d = d.pupil_blinks_interpolate(eyes="left", inplace=False)
+        b1 = d.pupil_estimate_baseline(eyes="left", inplace=False, seed=1)
+        b2 = d.pupil_estimate_baseline(eyes="left", inplace=False, seed=1)
+        np.testing.assert_array_equal(b1.data["left", "baseline"], b2.data["left", "baseline"])
+
+    def test_stan_model_cached(self):
+        from unittest import mock
+        from pypillometry.signal import baseline
+        with mock.patch.dict(baseline._stan_models, clear=True), \
+             mock.patch.object(baseline.cmdstanpy, "CmdStanModel") as model:
+            m1 = baseline._get_stan_model("baseline_model_asym_laplac")
+            m2 = baseline._get_stan_model("baseline_model_asym_laplac")
+        self.assertIs(m1, m2)
+        self.assertEqual(model.call_count, 1)
+
+    def test_stan_model_read_only_install(self):
+        """without writable package dir and executable, compile in the cache"""
+        import os, shutil, tempfile, pathlib
+        from unittest import mock
+        from pypillometry.signal import baseline
+        name = "baseline_model_asym_laplac"
+        with tempfile.TemporaryDirectory() as cache, tempfile.TemporaryDirectory() as pkg:
+            # package dir with the .stan file but without executable
+            shutil.copy(baseline.files("pypillometry.stan").joinpath(name + ".stan"), pkg)
+            with mock.patch.dict(baseline._stan_models, clear=True), \
+                 mock.patch.dict(os.environ, {"XDG_CACHE_HOME": cache}), \
+                 mock.patch.object(baseline, "files", return_value=pathlib.Path(pkg)), \
+                 mock.patch.object(baseline.os, "access", return_value=False), \
+                 mock.patch.object(baseline.cmdstanpy, "CmdStanModel") as model:
+                baseline._get_stan_model(name)
+            stan_file = model.call_args.kwargs["stan_file"]
+            self.assertTrue(stan_file.startswith(cache))
+            self.assertTrue(os.path.isfile(stan_file))
+
     def test_blinks_interpolate_close_blinks(self):
         """close blinks are merged, so no NaN anchor points are used"""
         t = np.arange(6000)

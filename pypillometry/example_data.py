@@ -20,6 +20,7 @@ import os.path
 import requests
 from tqdm import tqdm
 from .io import fetch_url
+from .convenience import _user_cache_dir
 
 __all__ = [
     "get_available_datasets", "get_example_data", "get_rlmw_002",
@@ -111,11 +112,6 @@ def get_available_datasets():
     """
     return DatasetDict(example_datasets)
 
-def _default_cache_dir():
-    """Directory for downloaded example data (``$XDG_CACHE_HOME/pypillometry``)."""
-    base = os.environ.get("XDG_CACHE_HOME") or os.path.join(os.path.expanduser("~"), ".cache")
-    return os.path.join(base, "pypillometry")
-
 def get_example_data(key, cache_dir=None):
     """Load example data for a given example (see `example_datasets`).
 
@@ -178,7 +174,7 @@ def get_rlmw_002(cache_dir=None):
         the example dataset
     """
     # download files from osf (or use the cached copies)
-    cache_dir = cache_dir or _default_cache_dir()
+    cache_dir = cache_dir or _user_cache_dir()
     fname_samples = fetch_url(example_datasets["rlmw_002"]["samples_asc"],
                               cache_file=os.path.join(cache_dir, "002_rlmw_samples.asc"))
     fname_events = fetch_url(example_datasets["rlmw_002"]["events_asc"],
@@ -337,7 +333,7 @@ def get_rlmw_010_edf(cache_dir=None):
         the example dataset
     """
     from .eyedata.experimental_setup import ExperimentalSetup
-    cache_dir = cache_dir or _default_cache_dir()
+    cache_dir = cache_dir or _user_cache_dir()
     fname = fetch_url(example_datasets["rlmw_010_edf"]["edf"],
                       cache_file=os.path.join(cache_dir, "010_rlmw.edf"))
     d = EyeData.from_eyelink(fname)

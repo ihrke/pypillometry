@@ -107,6 +107,9 @@
   "test short"
 - `pupil_response()` with free `npar` and `tmax` passed the unsupported `disp`
   option to scipy (`OptimizeWarning`); progress is now logged
+- Stan baseline: the model was set up on every call and could not be
+  compiled in a read-only install; results were not reproducible (new `seed`
+  argument)
 
 ### Documentation
 
