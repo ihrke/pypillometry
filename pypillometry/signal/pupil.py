@@ -8,8 +8,14 @@ import numpy as np
 import scipy.optimize
 import pylab as plt
 from loguru import logger
-from ..convenience import *
 from scipy.ndimage import uniform_filter1d
+
+__all__ = [
+    "lowpass_filter_iterative", "pupil_signal_quality", "pupil_kernel_t",
+    "pupil_get_max_duration", "pupil_kernel", "plot_prf",
+    "pupil_build_design_matrix", "pupil_response", "pupilresponse_nnls",
+    "pupil_eye_offset",
+]
 
 
 def lowpass_filter_iterative(signal, cutoff, fs, order=2, max_iter=5):

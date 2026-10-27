@@ -16,8 +16,13 @@ from loguru import logger
 import scipy.interpolate
 from scipy.interpolate import interp1d, splrep, splev
 
-from .pupil import *
-from ..convenience import *
+from .pupil import pupil_kernel, pupil_response
+
+__all__ = [
+    "bspline", "butter_lowpass", "butter_lowpass_filter", "downsample",
+    "baseline_envelope_iter_bspline", "baseline_envelope",
+    "baseline_pupil_model",
+]
 
 
 def bspline(txd, knots, spline_degree=3):

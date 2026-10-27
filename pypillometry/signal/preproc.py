@@ -12,7 +12,10 @@ from loguru import logger
 from scipy.signal import savgol_coeffs
 from scipy.ndimage import convolve1d
 
-from ..convenience import *
+__all__ = [
+    "smooth_window", "velocity_savgol", "detect_blinks_velocity",
+    "detect_blinks_zero", "blink_onsets_mahot",
+]
 
 
 def smooth_window(x, window_len=11, window='hanning', direction='center'):

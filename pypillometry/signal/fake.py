@@ -11,6 +11,11 @@ import numpy as np
 from scipy import signal as sp_signal
 from ..eyedata.experimental_setup import ExperimentalSetup
 
+__all__ = [
+    "fake_pupil_baseline", "add_measurement_noise",
+    "generate_foreshortening_data", "fake_gaze_fixations",
+]
+
 
 def fake_pupil_baseline(duration, fs, mean=750, amplitude=100, 
                        freq=0.5, filter_order=4, seed=None):
