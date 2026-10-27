@@ -29,6 +29,8 @@
   `min_offset_len` samples are accepted (was: must be longer)
 - `interpolate_intervals(margin=...)` uses the sign of `margin` (relative to
   start/end of the interval); `margin[0] > 0` or `margin[1] < 0` raise an error
+- `get_example_data()` caches downloaded datasets in `~/.cache/pypillometry`
+  (or `cache_dir`) instead of downloading them on every call
 
 ### Fixed
 
