@@ -78,6 +78,7 @@
 - `plot_masked(units=None, show_events=True)` drew events in ms on an index axis
 - `plot_timeseries_segments(ylim=...)`/`pupil_plot_segments(ylim=...)` set
   the limits only for the last subplot
+- `scale()` rejected integers and `unscale()` rejected numbers for `mean`/`sd`
 
 ### Documentation
 

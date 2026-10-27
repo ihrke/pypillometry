@@ -45,6 +45,14 @@ class TestPupilData(unittest.TestCase):
         d=d.unscale("pupil")
         self.assertEqual(d.data["left","pupil"].mean(), 1.5)
         self.assertEqual(d.data["right","pupil"].mean(), 3.5)
+    def test_scale_unscale_numbers(self):
+        # scale() and unscale() accept ints and floats
+        d = pp.PupilData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
+        for mean, sd in [(1, 2), (1.0, 2.0), (np.float32(1), np.int64(2))]:
+            s = d.scale("pupil", mean=mean, sd=sd, inplace=False)
+            self.assertEqual(s.data["left","pupil"].mean(), 0.25)
+            u = s.unscale("pupil", mean=mean, sd=sd, inplace=False)
+            np.testing.assert_allclose(u.data["left","pupil"], [1,2,1,2])
 
     def test_fill_time_discontinuities(self):
         # three segments sampled at 2 ms, separated by gaps of 500 ms

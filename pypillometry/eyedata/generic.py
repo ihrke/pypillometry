@@ -19,6 +19,7 @@ from .. import config
 
 import numpy as np
 import itertools
+import numbers
 import warnings
 from loguru import logger
 #from pytypes import typechecked
@@ -2149,17 +2150,17 @@ class GenericEyeData(ABC):
         if mean is None:
             # use only non-masked samples
             mean={eye:{var:np.nanmean(obj[eye,var].compressed()) for var in variables} for eye in eyes}
-        elif isinstance(mean, float):
+        elif isinstance(mean, numbers.Real):
             mean={eye:{var:mean for var in variables} for eye in eyes}            
         elif not isinstance(mean, dict):
-            raise ValueError("mean must be None, float or dict")
+            raise ValueError("mean must be None, a number or dict")
 
         if sd is None:
             sd={eye:{var:np.nanstd(obj[eye,var].compressed()) for var in variables} for eye in eyes}
-        elif isinstance(sd, float):
+        elif isinstance(sd, numbers.Real):
             sd={eye:{var:sd for var in variables} for eye in eyes}
         elif not isinstance(sd, dict):
-            raise ValueError("sd must be None, float or dict")
+            raise ValueError("sd must be None, a number or dict")
         logger.debug("Mean: %s" % mean)
         logger.debug("SD: %s" % sd)
 
@@ -2201,11 +2202,13 @@ class GenericEyeData(ABC):
             variables to unscale; can be "pupil", "x","y", "baseline", "response" or any other variable
             that is available in the dataset; either a string or a list of strings;
             available variables can be checked with `obj.variables`; empty list means all variables
-        mean : None or dict, optional
-            mean to add to the signal as ``{eye: {variable: value}}``;
+        mean : None, float or dict, optional
+            mean to add to the signal; a number (same for all eyes and
+            variables) or ``{eye: {variable: value}}``;
             if `None`, use the mean stored by :meth:`scale`
-        sd : None or dict, optional
-            sd to multiply the signal with as ``{eye: {variable: value}}``;
+        sd : None, float or dict, optional
+            sd to multiply the signal with; a number (same for all eyes and
+            variables) or ``{eye: {variable: value}}``;
             if `None`, use the sd stored by :meth:`scale`
         eyes : str or list of str, optional
             eye(s) to consider; if empty, all available eyes
@@ -2225,8 +2228,16 @@ class GenericEyeData(ABC):
         # if no parameters are provided, use the stored ones (normal)
         if mean is None:
             mean=obj.params["scale"]["mean"]
+        elif isinstance(mean, numbers.Real):
+            mean={eye:{var:mean for var in variables} for eye in eyes}
+        elif not isinstance(mean, dict):
+            raise ValueError("mean must be None, a number or dict")
         if sd is None:
             sd=obj.params["scale"]["sd"]
+        elif isinstance(sd, numbers.Real):
+            sd={eye:{var:sd for var in variables} for eye in eyes}
+        elif not isinstance(sd, dict):
+            raise ValueError("sd must be None, a number or dict")
         
         # check whether unscaling parameters are provided
         for eye in eyes:
