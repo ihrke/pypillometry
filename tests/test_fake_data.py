@@ -312,6 +312,15 @@ class TestFakeGazeFixations:
         # Mean should be close to requested mean
         assert np.abs(mean_duration - fixation_duration_mean) < 100
     
+    def test_fixations_fill_duration(self):
+        """All samples belong to a fixation (none left at (0, 0))."""
+        for kw in [dict(n_fixations=3), dict(n_fixations=50), dict()]:
+            t, x, y, info, _ = fake_gaze_fixations(
+                duration=10, fs=100, screen_bounds=((10, 20), (10, 20)),
+                seed=1, **kw)
+            assert np.all(x >= 10) and np.all(y >= 10)
+            assert np.isclose(info['fixation_times'][-1][1], 10000)
+    
     def test_reproducibility(self):
         """Test that same seed produces same output."""
         seed = 42

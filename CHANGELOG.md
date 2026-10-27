@@ -87,6 +87,8 @@
 - `detect_blinks_velocity()` raised a `ValueError` if no sample was valid
 - `detect_blinks_velocity()`: blinks without offset ended one past the last
   sample (other offsets are inclusive)
+- `fake_gaze_fixations()` left trailing samples at (0, 0) when the fixations
+  were shorter than `duration`
 
 ### Documentation
 
