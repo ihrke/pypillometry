@@ -113,6 +113,7 @@
   compiled in a read-only install; results were not reproducible (new `seed`
   argument)
 - `tweak()`: "?" did not open the help
+- `nblinks()` was annotated as returning `int` (returns a dict)
 
 ### Documentation
 

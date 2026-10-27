@@ -566,6 +566,16 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(corrected.data.mask['left_pupil_corrected'][10], 1)
         self.assertEqual(corrected.data.mask['left_pupil_corrected'][0], 0)
 
+    def test_nblinks_returns_dict(self):
+        """nblinks returns (and is annotated as) a dict"""
+        import typing
+        from pypillometry.intervals import Intervals
+        self.eyedata.set_blinks(Intervals([(100, 200)], units=None, sampling_rate=self.eyedata.fs),
+                                eyes=['left'], variables=['pupil'])
+        self.assertEqual(self.eyedata.nblinks(eyes='left', variables='pupil'), {'left_pupil': 1})
+        hint = typing.get_type_hints(pp.EyeData.nblinks)["return"]
+        self.assertIs(typing.get_origin(hint), dict)
+
     def test_apply_mask_defaults_consistent(self):
         """pupil_blinks_detect and blinks_merge_close default to apply_mask=False"""
         import inspect

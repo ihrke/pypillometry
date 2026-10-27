@@ -863,7 +863,7 @@ class GenericEyeData(ABC):
             self._blinks[f"{eye}_{variable}"] = None
             self._interpolated_blinks[f"{eye}_{variable}"] = None        
 
-    def nblinks(self, eyes=[], variables=[]) -> int:
+    def nblinks(self, eyes=[], variables=[]) -> Dict[str, int]:
         """
         Return number of detected blinks. Should be run after `pupil_blinks_detect()`.
 
