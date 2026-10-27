@@ -303,6 +303,8 @@ class PupilData(GenericEyeData):
         The mask for the merged signal reflects which timepoints have valid data:
         - For "local_offset" and "offset": masked only where BOTH eyes are masked
         - For "both_available": masked where EITHER eye is masked
+        Masked samples still hold the merged stored values (e.g., interpolated
+        blinks), computed as for valid samples (NaN only if both eyes are NaN).
         
         The "local_offset" method is recommended for most use cases as it:
         1. Uses all available data (doesn't discard single-eye timepoints)
@@ -326,7 +328,7 @@ class PupilData(GenericEyeData):
         
         See Also
         --------
-        merge_eyes : Generic merge method in GenericEyeData (masks if either eye invalid)
+        merge_eyes : Generic merge method in GenericEyeData (masks if all eyes invalid)
         pypillometry.signal.pupil.pupil_eye_offset : Compute local offset between eyes
         """
         obj = self._get_inplace(inplace)
@@ -403,6 +405,17 @@ class PupilData(GenericEyeData):
             merged[only_left] = left_data[only_left] - offset[only_left] / 2  # shift down to midpoint
             merged[only_right] = right_data[only_right] + offset[only_right] / 2  # shift up to midpoint
             merged_mask[~neither_valid] = 0
+        
+        # Where the result is masked, keep the merged stored values (e.g.,
+        # interpolated blinks) instead of NaN
+        offset = 0.0 if method == "both_available" else offset
+        left_shifted = left_data - np.broadcast_to(offset, left_data.shape) / 2
+        right_shifted = right_data + np.broadcast_to(offset, right_data.shape) / 2
+        lfin, rfin = np.isfinite(left_data), np.isfinite(right_data)
+        fill = np.where(lfin & rfin, (left_data + right_data) / 2,
+                        np.where(lfin, left_shifted, right_shifted))
+        masked = merged_mask.astype(bool)
+        merged[masked] = fill[masked]
         
         # Store merged data
         obj.data.data["merged_pupil"] = merged
