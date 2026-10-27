@@ -1,5 +1,9 @@
 ## TODOs
 
+- tweaker should start with "auto update" unticked
+- tweaker/viewer should live in their own thread (?) - what about returning things from them (intervals?)
+
+
 - [ ] https://github.com/psychoinformatics-de/remodnav 
 - [ ] `FakePupilData` (and `FakeGazeData`?)
 
