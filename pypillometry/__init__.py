@@ -19,47 +19,107 @@ The unit registry is available as `pypillometry.ureg` for advanced users.
 
 import os.path
 
-# Each submodule defines its public API in its own ``__all__``. The star
-# imports below are static, so IDEs and type checkers can follow them.
-from . import (
-    config, units, logging, convenience, eyedata, plot, signal, events,
-    intervals, segmented, io, study, roi, example_data, viewer,
+# ---------------------------------------------------------------------------
+# Data classes
+from .eyedata import (
+    GenericEyeData, EyeData, PupilData, GazeData, FakeEyeData,
+    EyeDataDict, ExperimentalSetup, SpatialCalibration,
+    ForeshorteningCalibration, keephistory,
 )
-from .config import *
-from .units import *
-from .logging import *
-from .convenience import *
-from .eyedata import *
-from .plot import *
-from .signal import *
-from .events import *
-from .intervals import *
-from .segmented import *
-from .io import *
-from .study import *
-from .roi import *
-from .example_data import *
-from .viewer import *
+from .plot import EyePlotter, PupilPlotter, GazePlotter
+from .segmented import (
+    SegmentedEyeData, GroupLevelSegmentedData, group_segments,
+)
+from .events import Events
+from .intervals import Intervals, merge_intervals, stat_event_interval
+from .roi import ROI, CircularROI, RectangularROI
 
-__all__ = []
-__all__ += config.__all__
-__all__ += units.__all__
-__all__ += logging.__all__
-__all__ += convenience.__all__
-__all__ += eyedata.__all__
-__all__ += plot.__all__
-__all__ += signal.__all__
-__all__ += events.__all__
-__all__ += intervals.__all__
-__all__ += segmented.__all__
-__all__ += io.__all__
-__all__ += study.__all__
-__all__ += roi.__all__
-__all__ += example_data.__all__
-__all__ += viewer.__all__
+# ---------------------------------------------------------------------------
+# Reading and writing data
+from .io import (
+    read_eyelink, read_pickle, write_pickle, download, fetch_url, local_copy,
+    osf_authenticate,
+)
+from .study import load_study_local, load_study_osf, get_osf_project_files
+from .example_data import (
+    get_available_datasets, get_example_data, get_rlmw_002,
+    get_rlmw_002_short, get_rlmw_010_edf,
+)
 
-# loguru logger, available as ``pypillometry.logger`` (not part of __all__)
-from loguru import logger
+# ---------------------------------------------------------------------------
+# Signal processing
+from .signal import (
+    # baseline
+    bspline, butter_lowpass, butter_lowpass_filter, downsample,
+    baseline_envelope, baseline_envelope_iter_bspline, baseline_pupil_model,
+    # preprocessing
+    smooth_window, velocity_savgol, detect_blinks_velocity,
+    detect_blinks_zero, blink_onsets_mahot,
+    # pupil response
+    lowpass_filter_iterative, pupil_signal_quality, pupil_kernel,
+    pupil_kernel_t, pupil_get_max_duration, plot_prf,
+    pupil_build_design_matrix, pupil_response, pupilresponse_nnls,
+    pupil_eye_offset,
+    # synthetic data
+    fake_pupil_baseline, fake_gaze_fixations, add_measurement_noise,
+    generate_foreshortening_data,
+)
+from .convenience import (
+    nprange, zscale, p_asym_laplac, p_asym_laplac_kappa, trans_logistic_vec,
+)
+
+# ---------------------------------------------------------------------------
+# Viewer
+from .viewer import view, tweak
+
+# ---------------------------------------------------------------------------
+# Units, settings and logging
+from .units import ureg, parse_distance, parse_angle
+from .config import set_default_inplace, get_default_inplace
+from .logging import (
+    logging_disable, logging_enable, logging_set_level, logging_get_level,
+    loglevel, nologging, initialize_logging,
+)
+from loguru import logger  # available as pp.logger, not part of __all__
+
+__all__ = [
+    # data classes
+    "GenericEyeData", "EyeData", "PupilData", "GazeData", "FakeEyeData",
+    "EyeDataDict", "ExperimentalSetup", "SpatialCalibration",
+    "ForeshorteningCalibration", "keephistory",
+    "EyePlotter", "PupilPlotter", "GazePlotter",
+    "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
+    "Events",
+    "Intervals", "merge_intervals", "stat_event_interval",
+    "ROI", "CircularROI", "RectangularROI",
+    # reading and writing data
+    "read_eyelink", "read_pickle", "write_pickle", "download", "fetch_url",
+    "local_copy", "osf_authenticate",
+    "load_study_local", "load_study_osf", "get_osf_project_files",
+    "get_available_datasets", "get_example_data", "get_rlmw_002",
+    "get_rlmw_002_short", "get_rlmw_010_edf",
+    # signal processing
+    "bspline", "butter_lowpass", "butter_lowpass_filter", "downsample",
+    "baseline_envelope", "baseline_envelope_iter_bspline",
+    "baseline_pupil_model",
+    "smooth_window", "velocity_savgol", "detect_blinks_velocity",
+    "detect_blinks_zero", "blink_onsets_mahot",
+    "lowpass_filter_iterative", "pupil_signal_quality", "pupil_kernel",
+    "pupil_kernel_t", "pupil_get_max_duration", "plot_prf",
+    "pupil_build_design_matrix", "pupil_response", "pupilresponse_nnls",
+    "pupil_eye_offset",
+    "fake_pupil_baseline", "fake_gaze_fixations", "add_measurement_noise",
+    "generate_foreshortening_data",
+    "nprange", "zscale", "p_asym_laplac", "p_asym_laplac_kappa",
+    "trans_logistic_vec",
+    # viewer
+    "view", "tweak",
+    # units, settings and logging
+    "ureg", "parse_distance", "parse_angle",
+    "set_default_inplace", "get_default_inplace",
+    "logging_disable", "logging_enable", "logging_set_level",
+    "logging_get_level", "loglevel", "nologging", "initialize_logging",
+]
 
 initialize_logging()
 

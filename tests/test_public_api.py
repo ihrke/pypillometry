@@ -1,8 +1,9 @@
 """Guard tests for the package's public API.
 
-Each submodule lists its public names in ``__all__``; the top-level
-``pypillometry.__all__`` is built from those lists. These tests fail when a
-new public function or class is neither exported nor marked as internal.
+Each submodule lists its public names in ``__all__``, and
+``pypillometry/__init__.py`` imports and lists them explicitly. These tests
+fail when the two get out of sync, or when a new public function or class is
+neither exported nor marked as internal.
 """
 import importlib
 import inspect
@@ -62,11 +63,19 @@ class TestPublicAPI(unittest.TestCase):
                 with self.subTest(module=module.__name__, name=name):
                     self.assertTrue(hasattr(module, name))
 
+    def test_submodule_all_is_exported(self):
+        for module in _package_modules():
+            for name in getattr(module, "__all__", []):
+                with self.subTest(module=module.__name__, name=name):
+                    self.assertIn(name, pp.__all__,
+                                  "add it to pypillometry/__init__.py")
+
     def test_top_level_all_is_clean(self):
         self.assertEqual(len(pp.__all__), len(set(pp.__all__)),
                          "duplicate names in pypillometry.__all__")
         for name in pp.__all__:
             with self.subTest(name=name):
+                self.assertTrue(hasattr(pp, name))
                 obj = getattr(pp, name)
                 self.assertNotIsInstance(obj, types.ModuleType)
 
