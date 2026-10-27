@@ -220,10 +220,10 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
         labels for the overlays to be displayed in the legend
     blinks : list of tuple or Intervals
         blinks as `(start, end)` index pairs, shaded in red (e.g.,
-        ``d.get_blinks("left", "pupil")``); must be given (use `[]` for none)
+        ``d.get_blinks("left", "pupil")``); None (default) for none
     interpolated : list of tuple or Intervals
         interpolated periods as `(start, end)` index pairs, shaded in
-        green; must be given (use `[]` for none)
+        green; None (default) for none
     figsize : tuple of int
         dimensions for the plot
     xlab : str
@@ -249,12 +249,13 @@ def plot_pupil_ipy(tx, sy, event_onsets=None, overlays=None, overlay_labels=None
                 for i,overlay in enumerate(overlays):
                     lab=overlay_labels[i] if overlay_labels is not None else None
                     plt.plot(tx[ixmin:ixmax],overlay[ixmin:ixmax], label=lab)
-        for istart,iend in interpolated:
+        for istart,iend in (interpolated if interpolated is not None else []):
             plt.gca().axvspan(tx[istart],tx[iend],color="green", alpha=0.1)
-        for istart,iend in blinks:
+        for istart,iend in (blinks if blinks is not None else []):
             plt.gca().axvspan(tx[istart],tx[iend],color="red", alpha=0.1)
 
-        plt.vlines(event_onsets, *plt.ylim(), color="grey", alpha=0.5)
+        if event_onsets is not None:
+            plt.vlines(event_onsets, *plt.ylim(), color="grey", alpha=0.5)
         plt.xlim(xmin,xmax)
         plt.xlabel(xlab)
         if overlay_labels is not None:
