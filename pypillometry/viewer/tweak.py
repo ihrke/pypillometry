@@ -779,8 +779,8 @@ class TweakCanvas(SceneCanvas):
 <h3>Parameter Panel</h3>
 <table>
 <tr><td><b>Auto Update</b></td><td>Update plot on every parameter change</td></tr>
-<tr><td><b>Update</b></td><td>Manually trigger update (when Auto off)</td></tr>
-<tr><td><b>Reset</b></td><td>Reset parameters to initial values</td></tr>
+<tr><td><b>Update  or  Enter</b></td><td>Manually trigger update (when Auto off)</td></tr>
+<tr><td><b>Reset to Initial</b></td><td>Reset parameters to initial values</td></tr>
 </table>
 """
         
