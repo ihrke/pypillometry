@@ -1692,15 +1692,15 @@ class GenericEyeData(ABC):
         ----------
         events : Events
             Events object containing the new events to set
-        inplace : bool, optional
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes
-            if `None`, use the setting of the object (specified in constructor)
-            
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
         Returns
         -------
-        GenericEyeData
-            The object with updated events (may be self or a copy depending on inplace)
+        :class:`~pypillometry.GenericEyeData`
+            the object with updated events (`self` or a copy, depending on `inplace`)
             
         Examples
         --------
@@ -2624,15 +2624,15 @@ class GenericEyeData(ABC):
         
         Parameters
         ----------
-        inplace : bool, optional
-            If True, make change in-place and return the object.
-            If False, make and return copy before making changes.
-            If None, use the object's default setting.
-            
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
         Returns
         -------
-        GenericEyeData
-            The object with merged masks.
+        :class:`~pypillometry.GenericEyeData`
+            the object with merged masks (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
         
