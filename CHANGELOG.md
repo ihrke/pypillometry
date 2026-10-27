@@ -19,6 +19,11 @@
 - `pp.set_default_inplace()` and `pp.get_default_inplace()`: package-level
   default for `inplace` (initially `True`).
 - `detect_blinks_zero()` accepts `blink_val=np.nan` to detect runs of NaN.
+- Reading from SSH URLs (`ssh://[user@]host[:port]/path`, key-based login
+  only) in `from_eyelink()`/`read_eyelink()`, `from_file()`/`read_pickle()`
+  and `load_study_local()`. Files are downloaded with `scp` to `cache_dir`
+  (default: a temporary directory); `autodelete=True` deletes them after
+  reading. See `pp.io.ssh_download()`.
 
 ### Fixed
 
