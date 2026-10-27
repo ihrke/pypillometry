@@ -24,6 +24,33 @@ from scipy.interpolate import interp1d
 from scipy import interpolate
 import scipy
 
+
+def _merge_overlapping_blink_windows(blinks, n):
+    """Merge blinks whose interpolation windows overlap.
+
+    Each blink `(t2, t3)` is interpolated from the anchor points
+    ``t1 = t2-(t3-t2)`` and ``t4 = t3+(t3-t2)``. Neighbouring blinks are
+    merged if the window ``[t1, t4]`` of one reaches into the other.
+    """
+    def window(on, off):
+        return max(0, 2*on-off), min(2*off-on, n-1)
+
+    merged = [tuple(int(v) for v in b) for b in sorted(blinks, key=lambda b: b[0])]
+    changed = True
+    while changed:
+        changed = False
+        out = []
+        for on, off in merged:
+            if out:
+                pon, poff = out[-1]
+                if window(pon, poff)[1] >= on or window(on, off)[0] <= poff:
+                    out[-1] = (pon, max(poff, off))
+                    changed = True
+                    continue
+            out.append((on, off))
+        merged = out
+    return merged
+
 class PupilData(GenericEyeData):
     """
     Class representing pupillometric data. 
@@ -637,7 +664,9 @@ class PupilData(GenericEyeData):
         The blinks to interpolate are taken from the blinks stored in the object,
         so blinks have to be detected first (e.g., using :meth:`pupil_blinks_detect`).
         The on- and offsets of each blink are refined using the velocity profile
-        before interpolating. Interpolated samples remain masked; the
+        before interpolating. Blinks that are so close that the anchor points
+        of one fall into the other are merged and interpolated together.
+        Interpolated samples remain masked; the
         interpolated blinks can be retrieved with
         :meth:`~pypillometry.GenericEyeData.get_interpolated_blinks`.
 
@@ -715,6 +744,9 @@ class PupilData(GenericEyeData):
                                                     vel_onset_samples, vel_offset_samples,
                                                     margin_ix, blinkwindow_ix)
             logger.debug(f"Refined {len(blink_onsets)} blink boundaries")
+            # the anchor points of a blink must not fall into a neighbouring
+            # blink (they would be NaN), so merge blinks with overlapping windows
+            blink_onsets = _merge_overlapping_blink_windows(blink_onsets, len(self))
 
             # Collect successfully interpolated blinks
             interpolated_intervals = []

@@ -77,5 +77,20 @@ class TestPupilData(unittest.TestCase):
         d = d.pupil_estimate_baseline(eyes="left", inplace=False)
         self.assertFalse(np.any(np.isnan(d.data["left", "baseline"])))
 
+    def test_blinks_interpolate_close_blinks(self):
+        """close blinks are merged, so no NaN anchor points are used"""
+        t = np.arange(6000)
+        p = 5000 + 200*np.sin(t/800)
+        for a, b in [(2000, 2200), (2300, 2400)]:
+            p[a-30:a] = np.linspace(p[a-30], 1000, 30)
+            p[b:b+30] = np.linspace(1000, p[b+30], 30)
+            p[a:b] = np.nan
+        d = pp.PupilData(left_pupil=p, sampling_rate=1000)
+        d = d.pupil_blinks_detect(apply_mask=True, inplace=False)
+        self.assertEqual(len(d.get_blinks("left", "pupil")), 2)
+        d = d.pupil_blinks_interpolate(inplace=False)
+        self.assertEqual(np.isnan(d.data["left", "pupil"]).sum(), 0)
+        self.assertEqual(len(d.get_interpolated_blinks("left", "pupil")), 1)
+
 if __name__ == '__main__':
     unittest.main()
