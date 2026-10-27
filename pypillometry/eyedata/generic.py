@@ -1375,8 +1375,16 @@ class GenericEyeData(ABC):
                 data = self[key]  # Use accessor to get masked array
                 if data is None or len(data) == 0:
                     continue
-                step = max(1, len(data) // 200)
-                sample = data[::step]
+                # Average over ~200 bins, ignoring NaN/masked samples, so
+                # sparse data still shows up (bins without data stay NaN)
+                values = np.ma.filled(np.ma.asarray(data, dtype=float), np.nan)
+                valid = ~np.isnan(values)
+                nbins = min(200, len(values))
+                starts = np.linspace(0, len(values), nbins + 1).astype(int)[:-1]
+                sums = np.add.reduceat(np.where(valid, values, 0.0), starts)
+                counts = np.add.reduceat(valid.astype(int), starts)
+                with np.errstate(invalid="ignore", divide="ignore"):
+                    sample = np.where(counts > 0, sums / counts, np.nan)
                 fig = Figure(figsize=(1.8, 0.6), dpi=100)
                 ax = fig.subplots()
                 ax.plot(sample, color="#1f77b4", linewidth=1)
