@@ -16,6 +16,8 @@
   blinks), like `pupil_blinks_detect()`
 - `nprange`, `p_asym_laplac`, `p_asym_laplac_kappa` and `trans_logistic_vec`
   are no longer exported at the top level (still in `pp.convenience`)
+- `stat_event_interval` is no longer exported at the top level (use
+  `stat_per_event()`)
 
 ### Added
 

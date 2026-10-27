@@ -6,7 +6,7 @@ import numpy as np
 from pypillometry.convenience import requires_package, normalize_unit
 
 __all__ = [
-    "Intervals", "merge_intervals", "stat_event_interval",
+    "Intervals", "merge_intervals",
 ]
 
 def merge_intervals(*args, label: str = 'merged'):

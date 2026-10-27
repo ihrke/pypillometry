@@ -31,7 +31,7 @@ from .segmented import (
     SegmentedEyeData, GroupLevelSegmentedData, group_segments,
 )
 from .events import Events
-from .intervals import Intervals, merge_intervals, stat_event_interval
+from .intervals import Intervals, merge_intervals
 from .roi import ROI, CircularROI, RectangularROI
 
 # ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ __all__ = [
     "EyePlotter", "PupilPlotter", "GazePlotter",
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
     "Events",
-    "Intervals", "merge_intervals", "stat_event_interval",
+    "Intervals", "merge_intervals",
     "ROI", "CircularROI", "RectangularROI",
     # reading and writing data
     "read_eyelink", "read_pickle", "write_pickle", "download", "fetch_url",

@@ -23,6 +23,7 @@ INTERNAL = {
         "nprange", "p_asym_laplac", "p_asym_laplac_kappa", "trans_logistic_vec",
     },
     "pypillometry.example_data": {"DatasetDict"},
+    "pypillometry.intervals": {"stat_event_interval"},
     "pypillometry.io": {"is_ssh_url"},
     "pypillometry.plot.genplotter": {"GenericPlotter"},
     "pypillometry.signal.preproc": {"helper_merge_blinks"},
