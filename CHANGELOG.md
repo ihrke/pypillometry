@@ -13,6 +13,9 @@
 - `fill_time_discontinuities()` fills gaps with NaN (was 0), so filled-in
   samples are masked for all variables, not only pupil.
 - `apply_history()` was removed
+- `load_study_local()`, `load_study_osf()` and `get_osf_project_files()` moved
+  from `pp.io` to the new module `pp.study` (`pp.load_study_local()` etc.
+  still work).
 
 ### Added
 
@@ -22,11 +25,7 @@
 - Reading from SSH URLs (`ssh://[user@]host[:port]/path`, key-based login
   only) in `from_eyelink()`/`read_eyelink()`, `from_file()`/`read_pickle()`
   and `load_study_local()`. Files are downloaded with `scp`.
-- `read_eyelink()` and `read_pickle()` treat HTTP(S) and SSH URLs the same:
-  both accept `cache_file`, `cache_dir`, `force_download`, `session` and
-  `autodelete` (delete the downloaded copy after reading). Without
-  `cache_file`/`cache_dir`, a temporary directory is used. See
-  `pp.io.fetch_url()`.
+- `read_eyelink()` and `read_pickle()` implement SSH URLs
 
 ### Changed
 

@@ -78,7 +78,7 @@ The configuration file will be imported as a module and returned as the second a
     conf.read_subject # access function to read data
 
 
-The functions :func:`~pypillometry.io.load_study_local()` and :func:`~pypillometry.io.load_study_osf()` a;so allow to specify a list of subject codes that are to be loaded (default is to load all subjects).
+The functions :func:`~pypillometry.study.load_study_local()` and :func:`~pypillometry.study.load_study_osf()` a;so allow to specify a list of subject codes that are to be loaded (default is to load all subjects).
 
 
 Sharing Your Study on OSF
@@ -92,7 +92,7 @@ To share your study on OSF:
     - NOTE: It is completely fine to upload the data files to an already existing OSF project (simply add a subfolder for the data/configuration file)
 3. Note down your project's OSF ID (found in the project URL)
 
-To load a shared study from OSF, use :func:`~pypillometry.io.load_study_osf()`:
+To load a shared study from OSF, use :func:`~pypillometry.study.load_study_osf()`:
 
 .. code-block:: python
 
