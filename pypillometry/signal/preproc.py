@@ -255,10 +255,10 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
         velocity-threshold to detect the offset of the blink; in units per sample (positive value)
     min_onset_len : int
         number of consecutive samples that must cross the threshold to detect an onset
-        (runs must be longer than `min_onset_len` samples)
+        (runs must have at least `min_onset_len` samples)
     min_offset_len : int
         number of consecutive samples that must cross the threshold to detect an offset
-        (runs must be longer than `min_offset_len` samples)
+        (runs must have at least `min_offset_len` samples)
     min_blink_samples : int
         minimum duration of a blink in samples; offsets that would create shorter intervals
         are skipped during matching (to avoid spurious short offsets stealing real onsets)
@@ -315,7 +315,7 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     onsets_ixx = np.r_[10, np.diff(onsets)] > 1
     onsets_len = np.diff(np.r_[np.where(onsets_ixx)[0], onsets.size])
     onsets = onsets[onsets_ixx]
-    onsets = onsets[onsets_len > min_onset_len]
+    onsets = onsets[onsets_len >= min_onset_len]
     logger.debug(f"After filtering, {len(onsets)} onsets remain")
 
     # Find offset candidates using forward velocity (fast rise after blink)
@@ -336,7 +336,7 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     offset_ends = offsets[offsets_end_ixx]
     
     # Filter by minimum length (apply same mask to both starts and ends)
-    valid_len_mask = offsets_len > min_offset_len
+    valid_len_mask = offsets_len >= min_offset_len
     offset_starts = offset_starts[valid_len_mask]
     offset_ends = offset_ends[valid_len_mask]
     logger.debug(f"After filtering, {len(offset_starts)} offsets remain")

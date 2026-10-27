@@ -25,7 +25,9 @@
 - `read_pickle()` saves HTTP(S) downloads to a file (temporary by default)
 - Packaging moved from `setup.py`/`requirements.txt` to `pyproject.toml`.
 - Top-level imports are static, so IDEs can complete and resolve `pp.*`.
-  
+- `detect_blinks_velocity()`: velocity runs with exactly `min_onset_len`/
+  `min_offset_len` samples are accepted (was: must be longer)
+
 ### Fixed
 
 - `pp.signal` and `pp.logging` were `scipy.signal` and the standard-library
