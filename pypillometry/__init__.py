@@ -40,6 +40,7 @@ def _collect_and_import_submodules() -> Dict[str, Any]:
         '.intervals',
         '.segmented',
         '.io',
+        '.study',
         '.logging',
         '.plot',
         '.roi',
