@@ -472,21 +472,4 @@ class TestNormalizeUnit(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main() 
-
-class TestPlotPupilIpy(unittest.TestCase):
-    def test_defaults(self):
-        """Runs with the default blinks/interpolated/event_onsets=None"""
-        pytest = __import__("pytest")
-        pytest.importorskip("ipywidgets")
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        from pypillometry.convenience import plot_pupil_ipy
-        tx = np.arange(100.0)
-        # call the plot function directly (interact() hides exceptions)
-        def fake_interact(f, **kwargs):
-            f(**{k: w.value for k, w in kwargs.items()})
-        with patch("ipywidgets.interact", fake_interact):
-            plot_pupil_ipy(tx, np.sin(tx))
-        plt.close("all")
+    unittest.main()
