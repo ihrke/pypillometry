@@ -284,5 +284,34 @@ class TestDetectBlinksZero(unittest.TestCase):
         np.testing.assert_array_equal(blinks, [[0, 4], [40, 49]])
 
 
+    def test_single_run_at_end(self):
+        sy = np.ones(100)
+        sy[90:] = 0
+        np.testing.assert_array_equal(detect_blinks_zero(sy, 1), [[90, 99]])
+
+    def test_single_run_at_start(self):
+        sy = np.ones(100)
+        sy[:5] = 0
+        np.testing.assert_array_equal(detect_blinks_zero(sy, 1), [[0, 4]])
+
+    def test_runs_at_start_and_end(self):
+        sy = np.ones(100)
+        sy[:5] = 0
+        sy[40:50] = 0
+        sy[95:] = 0
+        np.testing.assert_array_equal(detect_blinks_zero(sy, 1),
+                                      [[0, 4], [40, 49], [95, 99]])
+
+    def test_all_missing(self):
+        np.testing.assert_array_equal(detect_blinks_zero(np.zeros(10), 1), [[0, 9]])
+
+    def test_min_duration_counts_samples(self):
+        sy = np.ones(100)
+        sy[10] = 0          # 1 sample
+        sy[40:50] = 0       # 10 samples
+        np.testing.assert_array_equal(detect_blinks_zero(sy, 1), [[10, 10], [40, 49]])
+        np.testing.assert_array_equal(detect_blinks_zero(sy, 10), [[40, 49]])
+        self.assertEqual(len(detect_blinks_zero(sy, 11)), 0)
+
 if __name__ == '__main__':
     unittest.main()
