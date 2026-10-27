@@ -105,6 +105,8 @@
   download size only with `force_download=True`
 - Example datasets: missing spaces in descriptions; "rlmw_002" was named
   "test short"
+- `pupil_response()` with free `npar` and `tmax` passed the unsupported `disp`
+  option to scipy (`OptimizeWarning`); progress is now logged
 
 ### Documentation
 

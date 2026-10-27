@@ -458,7 +458,9 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         and upper bounds for the parameters (keys "npar" and "tmax", `tmax`
         in ms)
     display_progress : bool
-        passed as `disp` option to the :mod:`scipy.optimize` routine
+        show the progress of the optimization (if both parameters are free,
+        each iteration is logged; otherwise passed as `disp` option to
+        :func:`scipy.optimize.minimize_scalar`)
 
     Returns
     -------
@@ -494,9 +496,12 @@ def pupil_response(tx, sy, event_onsets, fs, npar="free", tmax="free", verbose=1
         #r=scipy.optimize.minimize(objective, (npar_start_trans, tmax_start_trans), 
         #                          args=(event_onsets,tx,sy,fs), 
         #                          method="Nelder-Mead")    
+        # L-BFGS-B has no `disp` option (in recent scipy): log iterations instead
+        def log_progress(xk):
+            logger.info("npar=%.2f, tmax=%.2f" % (xk[0], xk[1]))
         r=scipy.optimize.minimize(objective, (10,900), #(npar_start_trans, tmax_start_trans), 
                                   args=(event_onsets,tx,sy,fs), bounds=[bounds["npar"],bounds["tmax"]],
-                                 options={"disp":display_progress})
+                                  callback=log_progress if display_progress else None)
                                   #method="Nelder-Mead")    
         
         #npar=trans_logistic_vec(r.x[0], a=bounds["npar"][0], b=bounds["npar"][1], inverse=False)

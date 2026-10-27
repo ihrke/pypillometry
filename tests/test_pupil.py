@@ -15,6 +15,23 @@ class TestPupil(unittest.TestCase):
     def test_pupil_kernel_t(self):
         pupil_kernel_t([1,2], 10, 900)
 
+    def test_pupil_response_no_optimizer_warning(self):
+        """Fitting npar and tmax does not pass unknown options to scipy"""
+        import warnings
+        from pypillometry.signal.pupil import pupil_kernel, pupil_response
+        fs = 50
+        tx = np.arange(0, 20000, 1000 / fs)
+        x = np.zeros(tx.size)
+        x[[100, 400, 700]] = 1
+        sy = np.convolve(x, pupil_kernel(4000, fs=fs))[:tx.size]
+        for display_progress in [True, False]:
+            with warnings.catch_warnings():
+                warnings.simplefilter("error")
+                pred, coef, npar, tmax, _ = pupil_response(
+                    tx, sy, tx[[100, 400, 700]], fs,
+                    display_progress=display_progress)
+            self.assertEqual(pred.shape, sy.shape)
+
     def test_pupil_kernel_sampling(self):
         """kernel is sampled every 1000/fs ms, starting at 0"""
         from pypillometry.signal.pupil import pupil_kernel
