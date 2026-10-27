@@ -2121,6 +2121,63 @@ class TestEventsWithGetIntervals(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main() 
 
+class TestGetIntervalsBetweenEvents(unittest.TestCase):
+    """get_intervals() with a tuple of two event selectors"""
+
+    def make(self, onsets, labels):
+        tx = np.arange(0, 10000, 10.)  # 100 Hz, sample i at 10*i ms
+        o = np.ones(len(tx))
+        return pp.EyeData(time=tx, left_pupil=o, left_x=o, left_y=o,
+                          sampling_rate=100, event_onsets=np.array(onsets, float),
+                          event_labels=labels)
+
+    def test_indices_one_pair(self):
+        d = self.make([1000, 2000], ["start", "resp"])
+        iv = d.get_intervals(("start", "resp"), interval=(-5, 5))
+        self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(95, 205)])
+
+    def test_indices_several_pairs(self):
+        d = self.make([1000, 2000, 5000, 6000, 7000, 8000],
+                      ["start", "resp"] * 3)
+        iv = d.get_intervals(("start", "resp"), interval=(-5, 5))
+        self.assertEqual([tuple(map(int, i)) for i in iv.intervals],
+                         [(95, 205), (495, 605), (695, 805)])
+        self.assertEqual(iv.event_onsets, [100, 500, 700])
+
+    def test_indices_match_ms(self):
+        d = self.make([1000, 2000, 5000, 6000], ["start", "resp"] * 2)
+        ix = d.get_intervals(("start", "resp"), interval=(-5, 5))
+        ms = d.get_intervals(("start", "resp"), interval=(-50, 50), units="ms")
+        for (a, b), (c, e) in zip(ix.intervals, ms.intervals):
+            self.assertEqual((a * 10, b * 10), (c, e))
+
+    def test_indices_clipped(self):
+        d = self.make([20, 9980], ["start", "resp"])
+        iv = d.get_intervals(("start", "resp"), interval=(-10, 10))
+        self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(0, 1000)])
+
+    def test_zero_window(self):
+        d = self.make([1000, 2000], ["start", "resp"])
+        iv = d.get_intervals(("start", "resp"), interval=(0, 0))
+        self.assertEqual([tuple(map(int, i)) for i in iv.intervals], [(100, 200)])
+
+    def test_reversed_pair_raises(self):
+        # second "resp" missing, an extra one at the start -> pairs shifted
+        d = self.make([500, 1000, 2000, 5000], ["resp", "start", "resp", "start"])
+        with self.assertRaisesRegex(ValueError, "paired by order"):
+            d.get_intervals(("start", "resp"), interval=(0, 0))
+
+    def test_empty_interval_raises(self):
+        d = self.make([1000, 2000], ["start", "resp"])
+        with self.assertRaisesRegex(ValueError, "empty intervals"):
+            d.get_intervals(("start", "resp"), interval=(0, -2000), units="ms")
+
+    def test_single_event_window_still_checked(self):
+        d = self.make([1000, 2000], ["start", "resp"])
+        with self.assertRaises(ValueError):
+            d.get_intervals("start", interval=(0, 0))
+
+
 class TestPupilBlinksDetectZero(unittest.TestCase):
     """The "zero" strategy must find missing samples (H3): pupil 0 is stored as NaN."""
 

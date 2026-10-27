@@ -47,6 +47,7 @@
 - `fill_time_discontinuities()` called after creation dropped all masks and
   did not move stored blinks
 - History: internal calls no longer recorded, setters are now recorded
+- `get_intervals()` between two events fixed 
 
 ### Documentation
 

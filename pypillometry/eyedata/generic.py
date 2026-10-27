@@ -1826,8 +1826,12 @@ class GenericEyeData(ABC):
               function returns True
             - if tuple: use the intervals between the events selected by the
               first and the second entry (each a str or function); `interval[0]`
-              is added to the first and `interval[1]` to the second event.
-              Both selectors must result in identical number of events.
+              is added to the first and `interval[1]` to the second event
+              (so ``interval=(0, 0)`` gives exactly the span between them).
+              Both selectors must result in identical number of events;
+              events are paired by order (n-th first with n-th second event)
+              and a ValueError is raised if a second event comes before
+              its first event.
             - if Events: use the events from the
               :class:`~pypillometry.Events` object directly
         interval : tuple (min,max), optional
@@ -1857,7 +1861,9 @@ class GenericEyeData(ABC):
 
         if not isinstance(interval, Iterable):
             raise ValueError("interval must be iterable")
-        if interval[1]<=interval[0]:
+        # between two events, interval[0] and interval[1] shift different
+        # events, so e.g. (0,0) is valid; the resulting intervals are checked below
+        if not isinstance(event_select, tuple) and interval[1]<=interval[0]:
             raise ValueError("interval must be (min,max) with min<max, got {}".format(interval))
         
         # Handle Events object as event_select
@@ -1927,16 +1933,32 @@ class GenericEyeData(ABC):
             if np.sum(event_ix[0])!=np.sum(event_ix[1]):
                 raise ValueError("event_select must result in same number of events for both "
                 "selectors, got {} and {}".format(np.sum(event_ix[0]), np.sum(event_ix[1])))
-            
+            # pairs are matched by order: the n-th second event must not
+            # come before the n-th first event (catches missing/extra events)
+            on1=self.event_onsets[event_ix[0]]
+            on2=self.event_onsets[event_ix[1]]
+            bad=np.where(on2<on1)[0]
+            if len(bad)>0:
+                raise ValueError("second event before first event in pair(s) {} "
+                    "(onsets {} and {}); events are paired by order, check for "
+                    "missing or extra events".format(bad.tolist(), on1[bad].tolist(),
+                                                     on2[bad].tolist()))
+
             if units is None:
-                eix1=np.argmin(np.abs(self.tx-self.event_onsets[event_ix[0]]))
-                eix2=np.argmin(np.abs(self.tx-self.event_onsets[event_ix[1]]))
-                sti=min(eix1+interval[0], 0)
-                ste=max(eix2+interval[1], len(self.tx))
+                eix1=np.array([np.argmin(np.abs(self.tx-ev))
+                               for ev in self.event_onsets[event_ix[0]]])
+                eix2=np.array([np.argmin(np.abs(self.tx-ev))
+                               for ev in self.event_onsets[event_ix[1]]])
+                sti=np.maximum(eix1+interval[0], 0)
+                ste=np.minimum(eix2+interval[1], len(self.tx))
             else:
                 sti=(self.event_onsets[event_ix[0]]*fac)+interval[0]
                 ste=(self.event_onsets[event_ix[1]]*fac)+interval[1]
-            
+            bad=np.where(ste<=sti)[0]
+            if len(bad)>0:
+                raise ValueError("interval {} gives empty intervals for pair(s) {}"
+                                 .format(interval, bad.tolist()))
+
             # Create label for between-events intervals if not provided
             if label is None:
                 if isinstance(event_select[0], str) and isinstance(event_select[1], str):
