@@ -74,6 +74,7 @@
 - `view(highlight=...)`: index intervals failed for raw arrays and were
   converted although the x-axis is in samples; the passed Intervals were
   modified
+- `plot_intervals(show_mask=True)` showed only the mask of the last eye/variable
 
 ### Documentation
 

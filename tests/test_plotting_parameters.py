@@ -249,6 +249,19 @@ class TestPlotIntervalsParameters(unittest.TestCase):
         intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
         figs = self.data.plot.plot_intervals(intervals, show_mask=True)
         self.assertIsNotNone(figs)
+
+    def test_plot_intervals_show_mask_all_variables(self):
+        """show_mask shades masks of all plotted variables, not only the last"""
+        d = self.data.copy()
+        for key in d.data:
+            d.data.mask[key][:] = 0
+        intervals = d.get_intervals("F", interval=(-200, 200), units="ms")
+        start, end = intervals.to_units(None).intervals[0]
+        d.data.mask["left_pupil"][int(start) + 10:int(start) + 50] = 1
+        figs = d.plot.plot_intervals(intervals, eyes=["left"],
+                                     variables=["pupil", "x"], show_mask=True)
+        self.assertEqual(len(figs[0].axes[0].patches), 1)
+        self.assertEqual(len(figs[0].axes[1].patches), 0)
     
     def test_plot_intervals_show_index(self):
         """Test plot_intervals with show_index option"""

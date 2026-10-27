@@ -106,7 +106,7 @@ class GenericPlotter:
         figsize : Tuple[int,int]
             size (width, height) of each figure in inches
         show_mask : bool
-            plot the "mask" array of the underlying data object
+            shade samples masked in any of the plotted eyes/variables
         show_index : bool
             plot a number with the interval's index (e.g., for identifying abnormal blinks)
 
@@ -164,7 +164,10 @@ class GenericPlotter:
                               linewidth=1, alpha=0.7, zorder=1)
 
                 if show_mask:
-                    mask = obj.data.mask[eye + "_" + var][slic]
+                    # union of the masks of all plotted eyes/variables
+                    mask = np.zeros(slic.stop - slic.start, dtype=bool)
+                    for eye, var in itertools.product(eyes, variables):
+                        mask |= obj.data.mask[eye + "_" + var][slic].astype(bool)
                     txm = obj.tx[slic]
                     mint = obj._mask_to_intervals_list(mask)
                     for sm, em in mint:
