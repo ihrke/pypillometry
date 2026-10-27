@@ -1030,9 +1030,20 @@ class Intervals:
         Returns
         -------
         dict
-            Dictionary with summary statistics (n, mean, sd, min, max, total_duration, units)
+            Dictionary with summary statistics (n, mean, sd, min, max, total_duration, units);
+            for empty Intervals, mean/sd/min/max are NaN and total_duration is 0
         """
         durations = [i[1] - i[0] for i in self.intervals]
+        if len(durations) == 0:
+            return {
+                "n": 0,
+                "mean": np.nan,
+                "sd": np.nan,
+                "min": np.nan,
+                "max": np.nan,
+                "total_duration": 0.0,
+                "units": self.units
+            }
         return {
             "n": len(self.intervals),
             "mean": np.mean(durations),

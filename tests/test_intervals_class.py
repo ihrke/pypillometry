@@ -378,6 +378,14 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertEqual(stats["mean"], 200.0)  # (100+200+300)/3
         self.assertEqual(stats["min"], 100.0)
         self.assertEqual(stats["max"], 300.0)
+
+    def test_intervals_stats_empty(self):
+        """stats() of empty Intervals gives n=0 and NaN"""
+        stats = Intervals([], units="ms").stats()
+        self.assertEqual(stats["n"], 0)
+        self.assertEqual(stats["total_duration"], 0)
+        for key in ("mean", "sd", "min", "max"):
+            self.assertTrue(np.isnan(stats[key]))
     
     def test_intervals_repr(self):
         """Test string representation of Intervals"""

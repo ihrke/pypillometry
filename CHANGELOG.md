@@ -67,6 +67,7 @@
   offset too late for blinks near the start of the data
 - `PupilData.from_eyelink()`/`GazeData.from_eyelink()` raised a `TypeError`
 - `Intervals.plot_highlight(zorder=...)` raised a `TypeError`
+- `Intervals.stats()` raised a `ValueError` for empty intervals
 
 ### Documentation
 
