@@ -606,7 +606,7 @@ class ForeshorteningCalibration:
         from_pixels : bool, default True
             If True (default), x and y are in pixels and are converted to mm
             with :meth:`~pypillometry.ExperimentalSetup.pixels_to_mm`
-            (centered, no y-flip; as in
+            (centered, positive y = up; as in
             :meth:`~pypillometry.EyeData.fit_foreshortening`).
             If False, x and y are already in mm relative to screen center.
             Requires experimental_setup to have screen info when True.

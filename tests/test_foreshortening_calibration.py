@@ -188,6 +188,23 @@ class TestHelperFunctions:
         assert gradient.shape == (n_basis + 2,)
 
 
+def test_camera_below_means_less_correction_at_bottom():
+    """y-axis convention: phi=-90 deg puts the camera below the eye, so gaze
+    at the bottom of the screen (large pixel y) is less foreshortened."""
+    setup = ExperimentalSetup(
+        screen_resolution=(1920, 1080),
+        physical_screen_size=("520 mm", "290 mm"),
+        eye_to_screen_center="700 mm",
+        camera_spherical=("20 deg", "-90 deg", "600 mm"),
+    )
+    cal = ForeshorteningCalibration(
+        eye='left', theta=setup.theta, phi=setup.phi, experimental_setup=setup,
+        spline_coeffs=np.ones(4), spline_knots=np.array([0.]*4 + [1.]*4))
+    top = cal.get_correction_factor(960, 0)
+    bottom = cal.get_correction_factor(960, 1080)
+    assert bottom < top
+
+
 class TestForeshorteningCalibration:
     """Tests for ForeshorteningCalibration class."""
     

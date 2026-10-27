@@ -16,6 +16,11 @@
 - `ExperimentalSetup.degrees_to_mm()`/`degrees_to_pixels()` and
   `plot_experimental_setup(viewing_angle=...)` take plain numbers as degrees
   (were radians); `degrees_to_*()` also accept plain arrays.
+- Positive y is up in all mm coordinates: `ExperimentalSetup.pixels_to_mm()`
+  and `mm_to_pixels()` flip the y-axis (`centered=False` is relative to the
+  lower-left corner), and `fit_foreshortening()` uses them. Camera angle
+  `phi=-90 deg` now means "camera below the eye" for fitting as well;
+  calibrations fitted before have `phi` mirrored.
 - new module `pp.study` hosting all study-related io functions
 
 ### Added

@@ -517,12 +517,8 @@ class EyeData(GazeData,PupilData):
             if verbose:
                 logger.info(f"Using {np.sum(mask)} samples from specified intervals")
         
-        # Scale and center using experimental_setup
-        scale_x = setup.mm_per_pixel_x
-        scale_y = setup.mm_per_pixel_y
-        
-        x_gaze_mm = (x_gaze - setup.screen_width / 2) * scale_x
-        y_gaze_mm = (y_gaze - setup.screen_height / 2) * scale_y
+        # mm relative to screen center, positive y = up
+        x_gaze_mm, y_gaze_mm = setup.pixels_to_mm(x_gaze, y_gaze, centered=True)
         
         # Remove invalid samples (masked, NaN, pupil <= 0); the masks must be
         # checked explicitly, comparisons on masked arrays keep masked samples

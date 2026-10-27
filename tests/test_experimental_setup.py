@@ -263,11 +263,26 @@ class TestExperimentalSetupCoordinateConversion:
     
     def test_pixels_to_mm_corner(self):
         """Test conversion at screen corner."""
-        # Top-left corner (0, 0) maps to (-W/2, -H/2) in mm coordinate system
-        # (screen center is origin, y increases downward in this convention)
+        # Top-left corner (0, 0) maps to (-W/2, +H/2) in mm (screen center
+        # is origin, positive y = up)
         x_mm, y_mm = self.setup.pixels_to_mm(0, 0)
         assert np.isclose(x_mm, -260.0)  # -520/2
-        assert np.isclose(y_mm, -145.0)  # -290/2
+        assert np.isclose(y_mm, 145.0)   # +290/2
+        # not centered: origin at the lower-left corner
+        x_mm, y_mm = self.setup.pixels_to_mm(0, 0, centered=False)
+        assert np.isclose(x_mm, 0.0)
+        assert np.isclose(y_mm, 290.0)
+
+    def test_mm_to_pixels_inverse(self):
+        """mm_to_pixels is the inverse of pixels_to_mm."""
+        x_px, y_px = np.array([0, 300, 1920]), np.array([0, 800, 1080])
+        for centered in [True, False]:
+            x_mm, y_mm = self.setup.pixels_to_mm(x_px, y_px, centered=centered)
+            np.testing.assert_allclose(
+                self.setup.mm_to_pixels(x_mm, y_mm, centered=centered), (x_px, y_px))
+        # point above the center (smaller pixel y) has positive mm y
+        assert self.setup.pixels_to_mm(960, 0)[1] > 0
+        assert self.setup.mm_to_pixels(0, 100)[1] < 540
     
     def test_pixels_to_mm_array(self):
         """Test conversion with arrays."""
