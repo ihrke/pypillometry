@@ -53,5 +53,23 @@ class TestViewerHighlight(unittest.TestCase):
         self.assertEqual(iv.intervals, [(10, 20)])
 
 
+class TestTweakKeys(unittest.TestCase):
+    def press(self, key, text):
+        from types import SimpleNamespace
+        from unittest import mock
+        from vispy.util import keys
+        from pypillometry.viewer.tweak import TweakCanvas
+        canvas = mock.Mock()
+        canvas.navigation.handle_key_press.return_value = None
+        event = SimpleNamespace(key=keys.Key(key), text=text, modifiers=[])
+        TweakCanvas.on_key_press(canvas, event)
+        return canvas._show_help.called
+
+    def test_help_keys(self):
+        self.assertTrue(self.press('H', 'h'))
+        self.assertTrue(self.press('?', '?'))
+        self.assertFalse(self.press('/', '/'))
+
+
 if __name__ == '__main__':
     unittest.main()

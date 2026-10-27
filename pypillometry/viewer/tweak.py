@@ -804,8 +804,8 @@ class TweakCanvas(SceneCanvas):
         modifiers = event.modifiers if hasattr(event, 'modifiers') else []
         shift_held = 'Shift' in modifiers if modifiers else False
         
-        # Help with 'H' or '?'
-        if key in ('H', 'Slash') or (key == '/' and '?' in str(event.key)):
+        # Help with 'H' or '?' (not with a plain '/')
+        if key in ('H', '?') or getattr(event, 'text', None) == '?':
             self._show_help()
             return
         
