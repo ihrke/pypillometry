@@ -26,6 +26,9 @@
 
 - `read_pickle()` saves HTTP(S) downloads to a file (temporary by default)
   instead of reading them into memory.
+- Packaging moved from `setup.py`/`requirements.txt` to `pyproject.toml`.
+  The obsolete `typing` backport and the test tools are no longer installed
+  as dependencies.
 
 ### Fixed
 

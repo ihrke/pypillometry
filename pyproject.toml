@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pypillometry"
+dynamic = ["version"]
+description = "Pupillometry and Eye-tracking in Python."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Matthias Mittner", email = "matthias.mittner@uit.no" }]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "cmdstanpy",
+    "matplotlib",
+    "pandas",
+    "jinja2",
+    "pint>=0.20",
+    "requests",
+    "loguru",
+    "tqdm",
+    "h5py",
+    "eyelinkio",
+    "PyQt5",
+    "vispy>=0.14",
+]
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
+
+[project.urls]
+Homepage = "https://github.com/ihrke/pypillometry"
+
+[tool.setuptools.dynamic]
+version = { file = "VERSION" }
+
+[tool.setuptools.packages.find]
+include = ["pypillometry*"]
+
+[tool.setuptools.package-data]
+pypillometry = ["templates/*.html"]
+"pypillometry.data" = ["*.asc"]
+"pypillometry.stan" = ["*.stan"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

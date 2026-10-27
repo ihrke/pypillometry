@@ -7,8 +7,7 @@ Installing :mod:`pypillometry` and its dependencies is automated and can be done
 
     $ git clone https://github.com/ihrke/pypillometry.git
     $ cd pypillometry
-    $ pip install -r requirements.txt
-    $ python setup.py install
+    $ pip install .
 
 :mod:`pypillometry` is on `PyPI <https://pypi.org/>`_ and released versions can be installed with `pip` (this will also install the dependencies automatically):
 
@@ -28,16 +27,18 @@ It is also possible to install the developer's version directly from github usin
 Requirements
 ------------
 
-:mod:`pypillometry` requires Python3 and a range of standard numerical computing packages (all of which listed in the file `requirements.txt`)
+:mod:`pypillometry` requires Python 3.10 or newer and a range of standard numerical computing packages (all of which are listed in `pyproject.toml` and installed automatically)
 
 - :mod:`numpy`, :mod:`scipy` and :mod:`matplotlib`
 - :mod:`cmdstanpy` 
 
-If you want to ready Eyelink's .edf files directly, you can install the [`eyelinkio`](https://github.com/scott-huberty/eyelinkio) package.
+Eyelink's .edf files are read with the `eyelinkio <https://github.com/scott-huberty/eyelinkio>`_ package, which is installed as well.
+
+The interactive viewer uses :mod:`PyQt5` and :mod:`vispy`, which are installed by default.
+
+For development, ``pip install -e ".[test]"`` installs the test dependencies as well.
 
 It can be useful to access :mod:`pypillometry` through Jupyter or Jupyter Notebook, so installing those packages is also useful but not necessary.
-
-All requirements can be installed by running `pip install -r requirements.txt`.
 
 Virtual environments
 --------------------
@@ -50,7 +51,7 @@ It can sometimes be useful to install a new package in a new virtual environment
     $ conda create -n pypil python=3
     $ conda activate pypil
     $ conda install anaconda 
-    $ pip install -r requirements.txt
+    $ pip install pypillometry
 
 The ``anaconda`` package contains all the requirements except :mod:`cmdstanpy` which can be installed from `conda-forge <https://anaconda.org/conda-forge/pystan>`_
 
