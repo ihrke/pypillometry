@@ -11,6 +11,10 @@
 - `ExperimentalSetup.degrees_to_mm()` take plain numbers as degrees
 - Positive y is up in all mm coordinates
 - new module `pp.study` hosting all study-related io functions
+- Internal helpers are no longer exported at the top level (still importable
+  from their submodule): `ByteSize`, `DatasetDict`, `change_dir`,
+  `helper_merge_blinks`, `is_ssh_url`, `is_url`, `normalize_unit`,
+  `requires_package`, `sizeof_fmt`, `suppress_all_output`, `test_selector`
 
 ### Added
 
@@ -23,9 +27,13 @@
 
 - `read_pickle()` saves HTTP(S) downloads to a file (temporary by default)
 - Packaging moved from `setup.py`/`requirements.txt` to `pyproject.toml`.
+- Top-level imports are static, so IDEs can complete and resolve `pp.*`.
+  Third-party names (`np`, `plt`, ...) are no longer exported.
   
 ### Fixed
 
+- `pp.signal` and `pp.logging` were `scipy.signal` and the standard-library
+  `logging` instead of the package's own submodules.
 - `fill_time_discontinuities()`: samples between two gaps
   were dropped, so time and data had different lengths
 - `pupil_blinks_detect()`: the "zero" strategy never detected blinks
