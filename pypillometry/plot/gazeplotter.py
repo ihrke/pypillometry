@@ -61,7 +61,7 @@ class GazePlotter(GenericPlotter):
         ----------
         plot_range : tuple
             The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.
-        eyes : list
+        eyes : str or list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
         show_screen : bool
@@ -128,10 +128,10 @@ class GazePlotter(GenericPlotter):
             endix=np.argmin(np.abs(tx-end))    
         
         # which eyes to plot
+        if isinstance(eyes, str):
+            eyes=[eyes]
         if len(eyes)==0:
             eyes=obj.eyes
-        if not isinstance(eyes, list):
-            plot_eyes=[eyes]
 
         # choose gridsize
         if gridsize=="auto":
@@ -308,7 +308,7 @@ class GazePlotter(GenericPlotter):
         ----------
         plot_range : tuple
             The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.
-        eyes : list
+        eyes : str or list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
         show_screen : bool
@@ -375,6 +375,8 @@ class GazePlotter(GenericPlotter):
         evontix=np.argmin(np.abs(tx-evon[:,np.newaxis]), axis=1).astype(int)
 
         # which eyes to plot
+        if isinstance(eyes, str):
+            eyes=[eyes]
         if len(eyes)==0:
             eyes=obj.eyes
 

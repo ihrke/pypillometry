@@ -385,9 +385,8 @@ def detect_blinks_zero(sy, min_duration, blink_val=0):
     sy : np.ndarray
         signal
     min_duration : int
-        minimum duration in samples for a sequence of missing numbers to be
-        treated as blink; a sequence is kept if `end-start >= min_duration`
-        (i.e., it has at least `min_duration+1` samples)
+        minimum number of samples for a sequence of missing numbers to be
+        treated as blink
     blink_val : float
         "missing value" code, e.g. 0 or `np.nan` (default 0)
 
@@ -398,34 +397,14 @@ def detect_blinks_zero(sy, min_duration, blink_val=0):
         blinks (both inclusive); empty array if no blinks were found
     """
     missing = np.isnan(sy) if np.isnan(blink_val) else (sy==blink_val)
-    x=np.r_[0, np.diff(missing.astype(int))]
+    # pad with False so that runs at the start/end also have a start and end
+    x=np.diff(np.r_[0, missing.astype(int), 0])
     starts=np.where(x==1)[0]
     ends=np.where(x==-1)[0]-1
     
-    logger.debug(f"Found {len(starts)} potential blink starts and {len(ends)} potential blink ends")
+    logger.debug(f"Found {len(starts)} potential blinks")
     
-    if len(starts) == 0 or len(ends) == 0:
-        logger.debug("No valid blinks found - returning empty array")
-        return np.array([])
-        
-    if missing[0]: ## first value missing?
-        starts=np.r_[0,starts]    
-        logger.debug("First value is missing - adding 0 to starts")
-        
-    if ends.size!=starts.size: 
-        ## is the first start earlier than the first end?
-        if starts[0]>ends[0]:
-            ends=ends[1:] # drop first end
-            logger.debug("First start after first end - dropping first end")
-        else:
-            starts=starts[:-1] # drop last start
-            logger.debug("Last start without end - dropping last start")
-            
-    if len(ends) > 0 and ends[-1]==x.size:
-        ends[-1]-=1
-        logger.debug("Last end at signal boundary - adjusting index")
-        
-    blinks=[ [start,end] for start,end in zip(starts,ends) if end-start>=min_duration]
+    blinks=[ [start,end] for start,end in zip(starts,ends) if end-start+1>=min_duration]
     logger.debug(f"Found {len(blinks)} blinks after duration filtering")
     
     return np.array(blinks)
@@ -498,7 +477,7 @@ def blink_onsets_mahot(sy, blinks, smooth_winsize, vel_onset, vel_offset, margin
             continue
 
         ## onsets are in "local" indices of the windows, start-end of blink global
-        startl,endl=blinkwindow_ix if winstart>0 else start,end-start+blinkwindow_ix
+        startl,endl=start-winstart,end-winstart
 
         # find vel-crossing next to start of blink (onset must be <= startl)
         # Filter to only onsets at or before the blink start

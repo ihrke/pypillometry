@@ -317,8 +317,9 @@ class EyeData(GazeData,PupilData):
             - Quantity: e.g., 700 * ureg.mm
         intervals : Intervals, optional
             Time intervals to use for fitting. If None, uses all available data.
-            Useful for fitting only on calibration periods. The start/end
-            values are compared to the time vector, so they must be in ms.
+            Useful for fitting only on calibration periods. Intervals in any
+            time units or in sample indices (`units=None`) are accepted; a
+            plain list of `(start, end)` tuples is taken as ms.
         target_fs : float, default 50.0
             Target sampling rate in Hz after downsampling for efficiency.
             Pupil dynamics are typically well-preserved at 50 Hz.
@@ -492,9 +493,21 @@ class EyeData(GazeData,PupilData):
         
         # Apply interval mask if provided
         if intervals is not None:
+            # index-based Intervals are matched against sample numbers,
+            # others are converted to ms
+            if isinstance(intervals, Intervals):
+                if intervals.units is None:
+                    ref = np.arange(len(time))
+                    bounds = intervals.intervals
+                else:
+                    ref = np.asarray(time)
+                    bounds = intervals.to_units("ms").intervals
+            else:
+                ref = np.asarray(time)
+                bounds = intervals
             mask = np.zeros(len(time), dtype=bool)
-            for start, end in intervals:
-                mask |= (time >= start) & (time <= end)
+            for start, end in bounds:
+                mask |= (ref >= start) & (ref <= end)
             
             time = time[mask]
             x_gaze = x_gaze[mask]
@@ -504,12 +517,8 @@ class EyeData(GazeData,PupilData):
             if verbose:
                 logger.info(f"Using {np.sum(mask)} samples from specified intervals")
         
-        # Scale and center using experimental_setup
-        scale_x = setup.mm_per_pixel_x
-        scale_y = setup.mm_per_pixel_y
-        
-        x_gaze_mm = (x_gaze - setup.screen_width / 2) * scale_x
-        y_gaze_mm = (y_gaze - setup.screen_height / 2) * scale_y
+        # mm relative to screen center, positive y = up
+        x_gaze_mm, y_gaze_mm = setup.pixels_to_mm(x_gaze, y_gaze, centered=True)
         
         # Remove invalid samples (masked, NaN, pupil <= 0); the masks must be
         # checked explicitly, comparisons on masked arrays keep masked samples

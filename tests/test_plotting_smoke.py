@@ -248,6 +248,36 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         self.assertIsNotNone(plt.gcf())
 
 
+class TestPlottingGaze(unittest.TestCase):
+    """Smoke tests for GazePlotter methods"""
+
+    def setUp(self):
+        rng = np.random.default_rng(1)
+        n = 500
+        self.data = pp.GazeData(
+            sampling_rate=100,
+            left_x=rng.uniform(0, 100, n), left_y=rng.uniform(0, 100, n),
+            right_x=rng.uniform(0, 100, n), right_y=rng.uniform(0, 100, n),
+        )
+        plt.close('all')
+
+    def tearDown(self):
+        plt.close('all')
+
+    def test_plot_heatmap_single_eye_string(self):
+        """eyes="left" gives one subplot, not one per letter"""
+        plt.figure()
+        self.data.plot.plot_heatmap(eyes="left")
+        titles = [ax.get_title() for ax in plt.gcf().axes if ax.get_title()]
+        self.assertEqual(titles, ["left"])
+
+    def test_plot_scanpath_single_eye_string(self):
+        """eyes="left" plots the left eye only"""
+        self.data.plot.plot_scanpath(eyes="left")
+        labels = [l.get_label() for l in plt.gca().get_lines()]
+        self.assertEqual(labels, ["left"])
+
+
 class TestPlottingExperimentalSetup(unittest.TestCase):
     """Smoke tests for plot_experimental_setup"""
     
@@ -413,6 +443,16 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
         )
         self.assertIsNotNone(fig)
         self.assertIsNotNone(ax)
+        self.assertAlmostEqual(ax.elev, 60)
+        self.assertAlmostEqual(ax.azim, -45)
+
+    def test_plot_experimental_setup_viewing_angle_numbers_are_degrees(self):
+        """Plain numbers in viewing_angle are degrees"""
+        fig, ax = self.data.plot.plot_experimental_setup(
+            projection='3d', viewing_angle=(30, -60)
+        )
+        self.assertAlmostEqual(ax.elev, 30)
+        self.assertAlmostEqual(ax.azim, -60)
 
 
 if __name__ == '__main__':

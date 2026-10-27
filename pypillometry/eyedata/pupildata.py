@@ -24,6 +24,33 @@ from scipy.interpolate import interp1d
 from scipy import interpolate
 import scipy
 
+
+def _merge_overlapping_blink_windows(blinks, n):
+    """Merge blinks whose interpolation windows overlap.
+
+    Each blink `(t2, t3)` is interpolated from the anchor points
+    ``t1 = t2-(t3-t2)`` and ``t4 = t3+(t3-t2)``. Neighbouring blinks are
+    merged if the window ``[t1, t4]`` of one reaches into the other.
+    """
+    def window(on, off):
+        return max(0, 2*on-off), min(2*off-on, n-1)
+
+    merged = [tuple(int(v) for v in b) for b in sorted(blinks, key=lambda b: b[0])]
+    changed = True
+    while changed:
+        changed = False
+        out = []
+        for on, off in merged:
+            if out:
+                pon, poff = out[-1]
+                if window(pon, poff)[1] >= on or window(on, off)[0] <= poff:
+                    out[-1] = (pon, max(poff, off))
+                    changed = True
+                    continue
+            out.append((on, off))
+        merged = out
+    return merged
+
 class PupilData(GenericEyeData):
     """
     Class representing pupillometric data. 
@@ -276,6 +303,8 @@ class PupilData(GenericEyeData):
         The mask for the merged signal reflects which timepoints have valid data:
         - For "local_offset" and "offset": masked only where BOTH eyes are masked
         - For "both_available": masked where EITHER eye is masked
+        Masked samples still hold the merged stored values (e.g., interpolated
+        blinks), computed as for valid samples (NaN only if both eyes are NaN).
         
         The "local_offset" method is recommended for most use cases as it:
         1. Uses all available data (doesn't discard single-eye timepoints)
@@ -299,7 +328,7 @@ class PupilData(GenericEyeData):
         
         See Also
         --------
-        merge_eyes : Generic merge method in GenericEyeData (masks if either eye invalid)
+        merge_eyes : Generic merge method in GenericEyeData (masks if all eyes invalid)
         pypillometry.signal.pupil.pupil_eye_offset : Compute local offset between eyes
         """
         obj = self._get_inplace(inplace)
@@ -376,6 +405,17 @@ class PupilData(GenericEyeData):
             merged[only_left] = left_data[only_left] - offset[only_left] / 2  # shift down to midpoint
             merged[only_right] = right_data[only_right] + offset[only_right] / 2  # shift up to midpoint
             merged_mask[~neither_valid] = 0
+        
+        # Where the result is masked, keep the merged stored values (e.g.,
+        # interpolated blinks) instead of NaN
+        offset = 0.0 if method == "both_available" else offset
+        left_shifted = left_data - np.broadcast_to(offset, left_data.shape) / 2
+        right_shifted = right_data + np.broadcast_to(offset, right_data.shape) / 2
+        lfin, rfin = np.isfinite(left_data), np.isfinite(right_data)
+        fill = np.where(lfin & rfin, (left_data + right_data) / 2,
+                        np.where(lfin, left_shifted, right_shifted))
+        masked = merged_mask.astype(bool)
+        merged[masked] = fill[masked]
         
         # Store merged data
         obj.data.data["merged_pupil"] = merged
@@ -637,7 +677,9 @@ class PupilData(GenericEyeData):
         The blinks to interpolate are taken from the blinks stored in the object,
         so blinks have to be detected first (e.g., using :meth:`pupil_blinks_detect`).
         The on- and offsets of each blink are refined using the velocity profile
-        before interpolating. Interpolated samples remain masked; the
+        before interpolating. Blinks that are so close that the anchor points
+        of one fall into the other are merged and interpolated together.
+        Interpolated samples remain masked; the
         interpolated blinks can be retrieved with
         :meth:`~pypillometry.GenericEyeData.get_interpolated_blinks`.
 
@@ -715,6 +757,9 @@ class PupilData(GenericEyeData):
                                                     vel_onset_samples, vel_offset_samples,
                                                     margin_ix, blinkwindow_ix)
             logger.debug(f"Refined {len(blink_onsets)} blink boundaries")
+            # the anchor points of a blink must not fall into a neighbouring
+            # blink (they would be NaN), so merge blinks with overlapping windows
+            blink_onsets = _merge_overlapping_blink_windows(blink_onsets, len(self))
 
             # Collect successfully interpolated blinks
             interpolated_intervals = []
@@ -803,7 +848,8 @@ class PupilData(GenericEyeData):
         Raises
         ------
         ValueError
-            if `method` is unknown
+            if `method` is unknown or the data contain NaN (interpolate
+            blinks first, see :meth:`pupil_blinks_interpolate`)
         """
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
@@ -813,6 +859,11 @@ class PupilData(GenericEyeData):
 
         for eye in eyes:
             logger.debug("Estimating baseline for eye %s"%eye)
+            if np.any(np.isnan(self.data[eye,variable])):
+                raise ValueError(
+                    f"'{eye}_{variable}' contains NaN (e.g., blinks that were "
+                    "not interpolated); the baseline cannot be estimated. "
+                    "Interpolate them first, e.g., with pupil_blinks_interpolate().")
 
             if method=="envelope_iter_bspline_2":
                 txd,syd,base2,base1=baseline.baseline_envelope_iter_bspline(self.tx, self.data[eye,variable],

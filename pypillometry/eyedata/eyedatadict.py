@@ -244,10 +244,11 @@ class EyeDataDict(MutableMapping):
         return key
 
     def copy(self) -> 'EyeDataDict':
-        """Create a deep copy of the dictionary."""
+        """Create a deep copy of the dictionary (data and masks)."""
         new_dict = EyeDataDict()
         for key, value in self.data.items():
             new_dict[key] = value.copy()
+            new_dict.mask[key] = self.mask[key].copy()
         return new_dict
 
     def set_mask(self, key: str, mask: NDArray) -> None:

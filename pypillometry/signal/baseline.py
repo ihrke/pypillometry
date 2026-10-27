@@ -407,7 +407,7 @@ def baseline_pupil_model(tx,sy,event_onsets, fs=1000, lp1=2, lp2=0.2):
     # set up a single regressor
     x1=np.zeros(sy.size, dtype=float)
     x1[event_onsets_ix]=1
-    kernel=pupil_kernel(4, fs=fs)
+    kernel=pupil_kernel(4000, fs=fs)  # duration in ms
     x1=np.convolve(x1, kernel, mode="full")[0:x1.size]
 
     # solve with non-negative least-squares

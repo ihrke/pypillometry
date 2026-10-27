@@ -88,6 +88,26 @@ class TestEyeData(unittest.TestCase):
         summary = d.summary()
         self.assertAlmostEqual(summary['experimental_setup']['camera_distance_mm'], 550.0, places=5)
     
+    def test_set_experimental_setup_keeps_distance(self):
+        """Updating one parameter keeps the eye-to-screen distance"""
+        d = pp.EyeData(left_x=[1,2,3], left_y=[3,4,5], sampling_rate=1000)
+        d.set_experimental_setup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("52 cm", "29 cm"),
+            screen_offset=("0 mm", "-100 mm"),
+            eye_to_screen_center="650 mm",
+            camera_offset=("0 mm", "-300 mm", "500 mm"),
+        )
+        d.set_experimental_setup(ipd="63 mm")
+        setup = d.experimental_setup
+        self.assertAlmostEqual(setup.eye_to_screen_center, 650.0, places=5)
+        self.assertEqual(setup.screen_offset, (0.0, -100.0))
+        self.assertEqual(setup.camera_position, (0.0, -300.0, 500.0))
+        self.assertEqual(setup.ipd, 63.0)
+        # a new camera position replaces the old one
+        d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "550 mm"))
+        self.assertAlmostEqual(d.experimental_setup.r, 550.0, places=5)
+
     def test_ipd_initialization(self):
         """Test initialization with inter-pupillary distance via ExperimentalSetup"""
         # Test with ipd during initialization
@@ -415,9 +435,11 @@ class TestEyeData(unittest.TestCase):
         right_ma = self.eyedata['right', 'pupil']
         stacked = np.ma.stack([left_ma, right_ma], axis=0)
         expected_mean = np.ma.mean(stacked, axis=0)
+        valid = ~np.ma.getmaskarray(expected_mean)
+        np.testing.assert_array_equal(merged.data.mask['mean_pupil'], ~valid)
         np.testing.assert_array_equal(
-            merged.data['mean_pupil'],
-            expected_mean.data
+            merged.data['mean_pupil'][valid],
+            expected_mean.data[valid]
         )
         
         # Test merging without keeping original eyes
@@ -470,6 +492,36 @@ class TestEyeData(unittest.TestCase):
             data.data['left_pupil'][15]
         )
     
+    def test_merge_eyes_all_masked_keeps_values(self):
+        """Samples masked in all eyes stay masked but keep the mean value"""
+        data = self.eyedata.copy()
+        data.data.mask['left_pupil'][20] = 1
+        data.data.mask['right_pupil'][20] = 1
+        merged = data.merge_eyes(eyes=['left', 'right'], variables=['pupil'], inplace=False)
+        self.assertEqual(merged.data.mask['mean_pupil'][20], 1)
+        np.testing.assert_almost_equal(
+            merged.data['mean_pupil'][20],
+            (data.data['left_pupil'][20] + data.data['right_pupil'][20]) / 2)
+
+    def test_pupil_merge_eyes_masked_keeps_values(self):
+        """pupil_merge_eyes: masked samples hold merged values, not NaN"""
+        n = 2000
+        t = np.arange(n)
+        left = 1000 + 50*np.sin(t/100)
+        right = left - 20
+        d = pp.PupilData(left_pupil=left, right_pupil=right, sampling_rate=100)
+        d.data.mask['left_pupil'][100:150] = 1
+        d.data.mask['right_pupil'][100:150] = 1   # e.g., interpolated in both
+        d.data.mask['right_pupil'][300:350] = 1   # masked in one eye
+        d.data['right_pupil'][300:350] = np.nan
+        for method in ["local_offset", "offset", "both_available"]:
+            m = d.pupil_merge_eyes(method=method, inplace=False)
+            merged = m.data['merged_pupil']
+            mask = m.data.mask['merged_pupil']
+            self.assertTrue(np.all(mask[100:150] == 1), method)
+            np.testing.assert_allclose(merged[100:150], left[100:150] - 10, err_msg=method)
+            self.assertFalse(np.any(np.isnan(merged)), method)
+
     def test_correct_pupil_foreshortening_preserves_masks(self):
         """Test that correct_pupil_foreshortening preserves masks from blinks/artifacts"""
         # Make a copy to avoid modifying the shared test data

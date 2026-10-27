@@ -34,6 +34,17 @@ class TestEyeDataDict(unittest.TestCase):
             self.assertEqual(d[key].dtype, np.float64)
             self.assertEqual(d[key].shape, (3,))
 
+    def test_copy_keeps_masks(self):
+        """copy() keeps all masks, not only NaN-derived ones"""
+        d = EyeDataDict(self.test_data)
+        d.set_mask('left_pupil', [0, 1, 0])
+        c = d.copy()
+        np.testing.assert_array_equal(c.mask['left_pupil'], [0, 1, 0])
+        np.testing.assert_array_equal(c.data['left_pupil'], d.data['left_pupil'])
+        # independent copy
+        c.mask['left_pupil'][0] = 1
+        self.assertEqual(d.mask['left_pupil'][0], 0)
+
     def test_set_item(self):
         """Test setting items in the dictionary"""
         d = EyeDataDict()

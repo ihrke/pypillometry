@@ -194,9 +194,9 @@ def view(data, variables=None, eyes=None, time=None,
         If regions were selected (``S`` key, then drag with the left mouse
         button), returns a dict mapping plot key (same keys as for
         `highlight`) to :class:`~pypillometry.Intervals` objects containing
-        the selected regions with ``units='sec'`` (for raw arrays the values
-        are in the units of `time`, i.e. sample indices if `time` is not
-        given). Returns None if no selections were made.
+        the selected regions with ``units='sec'``; for raw arrays without
+        `time` the values are sample indices (``units=None``). Returns None
+        if no selections were made.
     
     Raises
     ------
@@ -421,14 +421,20 @@ def view(data, variables=None, eyes=None, time=None,
     if not selections:
         return None
     
+    return _selections_to_intervals(selections, sample_index=(mode == 'arrays' and time is None))
+
+
+def _selections_to_intervals(selections, sample_index=False):
+    """Convert selections (dict of lists of (start, end)) to Intervals.
+
+    The selections are in seconds, or in sample indices if `sample_index`
+    is True (raw arrays without `time`); these get ``units=None``.
+    """
     # Import Intervals here to avoid circular imports
     from ..intervals import Intervals
-    
-    result = {}
-    for var_type, intervals_list in selections.items():
-        result[var_type] = Intervals(intervals_list, units='sec', label=f'selected_{var_type}')
-    
-    return result
+    units = None if sample_index else 'sec'
+    return {var_type: Intervals(intervals_list, units=units, label=f'selected_{var_type}')
+            for var_type, intervals_list in selections.items()}
 
 
 def tweak(data, func, params, variable=None, time=None):

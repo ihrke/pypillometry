@@ -188,6 +188,23 @@ class TestHelperFunctions:
         assert gradient.shape == (n_basis + 2,)
 
 
+def test_camera_below_means_less_correction_at_bottom():
+    """y-axis convention: phi=-90 deg puts the camera below the eye, so gaze
+    at the bottom of the screen (large pixel y) is less foreshortened."""
+    setup = ExperimentalSetup(
+        screen_resolution=(1920, 1080),
+        physical_screen_size=("520 mm", "290 mm"),
+        eye_to_screen_center="700 mm",
+        camera_spherical=("20 deg", "-90 deg", "600 mm"),
+    )
+    cal = ForeshorteningCalibration(
+        eye='left', theta=setup.theta, phi=setup.phi, experimental_setup=setup,
+        spline_coeffs=np.ones(4), spline_knots=np.array([0.]*4 + [1.]*4))
+    top = cal.get_correction_factor(960, 0)
+    bottom = cal.get_correction_factor(960, 1080)
+    assert bottom < top
+
+
 class TestForeshorteningCalibration:
     """Tests for ForeshorteningCalibration class."""
     
@@ -416,6 +433,27 @@ class TestFitForeshorteningMethod:
         assert isinstance(calib, ForeshorteningCalibration)
         assert calib.fit_intervals is not None
     
+    def test_fit_intervals_units(self):
+        """Intervals in sec or sample indices select the same samples as ms."""
+        from loguru import logger
+        from pypillometry.intervals import Intervals
+        data, *_ = self.create_synthetic_data(n_samples=1000, fs=100.0)
+        n_used = []
+        for iv in [Intervals([(0, 5000)], units='ms'),
+                   Intervals([(0, 5)], units='sec'),
+                   Intervals([(0, 500)], units=None)]:
+            messages = []
+            hid = logger.add(lambda m: messages.append(m.record["message"]), level="INFO")
+            try:
+                data.fit_foreshortening(eye='left', intervals=iv, verbose=True)
+            finally:
+                logger.remove(hid)
+            n_used.append([m for m in messages if "from specified intervals" in m])
+        assert len(n_used[0]) == 1
+        assert n_used[0][0] == "Using 501 samples from specified intervals"
+        assert n_used[1] == n_used[0]
+        assert n_used[2] == n_used[0]
+
     def test_fit_invalid_eye(self):
         """Test that invalid eye raises error."""
         data, theta_true, phi_true, r_true, d_true = self.create_synthetic_data(n_samples=100, fs=100.0)

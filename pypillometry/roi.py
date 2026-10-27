@@ -219,7 +219,7 @@ class CircularROI(ROI):
         
         # Convert center from mm (centered, +y up) to pixels (+y down)
         # mm_to_pixels expects centered coordinates and returns pixel coordinates
-        cx_px, cy_px = setup.mm_to_pixels(center_mm[0], -center_mm[1], centered=True)
+        cx_px, cy_px = setup.mm_to_pixels(center_mm[0], center_mm[1], centered=True)
         
         # Convert radius (use average of x/y scale factors for non-square pixels)
         avg_mm_per_pixel = (setup.mm_per_pixel_x + setup.mm_per_pixel_y) / 2
@@ -462,8 +462,8 @@ class RectangularROI(ROI):
             )
         
         # Convert corners from mm (centered, +y up) to pixels (+y down)
-        c1x_px, c1y_px = setup.mm_to_pixels(corner1_mm[0], -corner1_mm[1], centered=True)
-        c2x_px, c2y_px = setup.mm_to_pixels(corner2_mm[0], -corner2_mm[1], centered=True)
+        c1x_px, c1y_px = setup.mm_to_pixels(corner1_mm[0], corner1_mm[1], centered=True)
+        c2x_px, c2y_px = setup.mm_to_pixels(corner2_mm[0], corner2_mm[1], centered=True)
         
         return cls((c1x_px, c1y_px), (c2x_px, c2y_px), name=name, setup=setup)
     

@@ -2307,8 +2307,10 @@ class GenericEyeData(ABC):
         """Merge data from both eyes into a single variable.
 
         The merged data is stored under the eye name "mean" (e.g.,
-        ``obj["mean", "pupil"]``). A sample is masked in the merged
-        data if it is masked in any of the merged eyes.
+        ``obj["mean", "pupil"]``). Each sample is the mean over the eyes
+        in which it is not masked; it is masked in the merged data only if
+        it is masked in all merged eyes (it then holds the mean of the
+        stored values, e.g., of interpolated blinks).
 
         Parameters
         ----------
@@ -2346,13 +2348,17 @@ class GenericEyeData(ABC):
                         raise ValueError("No data for eye %s available" % eye)
                     eye_data.append(obj[eye, var])
                 
-                # Stack and compute mean, preserving masks
-                # If any eye has a masked value, that timepoint is masked in the mean
+                # Mean over the unmasked eyes; masked only where all eyes
+                # are masked
                 stacked = np.ma.stack(eye_data, axis=0)
                 meanval = np.ma.mean(stacked, axis=0)
-                
-                # Use masked array assignment to preserve the combined mask
-                obj["mean", var] = meanval
+                allmasked = np.ma.getmaskarray(meanval)
+                # where all eyes are masked, keep the mean of the stored
+                # values (e.g., interpolated blinks), still masked
+                raw = np.ma.masked_invalid(np.stack([obj.data[eye, var] for eye in eyes]))
+                rawmean = np.ma.mean(raw, axis=0).filled(np.nan)
+                values = np.where(allmasked, rawmean, np.ma.getdata(meanval))
+                obj["mean", var] = np.ma.array(values, mask=allmasked)
                 
                 if not keep_eyes:
                     for eye in eyes:

@@ -8,8 +8,17 @@ camera position, and screen orientation.
 
 import numpy as np
 from typing import Optional, Tuple, Union, Dict, Any
-from ..units import parse_distance, parse_angle
+from ..units import parse_distance, parse_angle, ureg
 from loguru import logger
+
+
+
+def _degrees_to_radians(value):
+    """Angle in radians; plain numbers/arrays are degrees, strings and pint
+    Quantities carry their units."""
+    if isinstance(value, (str, ureg.Quantity)):
+        return parse_angle(value)
+    return np.radians(value)
 
 
 class ExperimentalSetup:
@@ -472,24 +481,24 @@ class ExperimentalSetup:
         Parameters
         ----------
         x_px, y_px : float or array
-            Coordinates in pixels
+            Coordinates in pixels (origin at upper-left, y increases downward)
         centered : bool, default True
             If True, output is relative to screen center.
-            If False, output is relative to screen origin (0,0).
+            If False, output is relative to the lower-left screen corner.
         
         Returns
         -------
         x_mm, y_mm : float or array
-            Coordinates in mm
+            Coordinates in mm; positive x = right, positive y = up
         
         Notes
         -----
         Requires `screen_resolution` and `physical_screen_size`.
-        No axis is flipped: `y_mm` increases in the same direction as `y_px`
-        (unlike :meth:`pixels_to_degrees`, which makes positive y point up).
+        The y-axis is flipped: pixel y increases downward, but mm y increases
+        upward (as everywhere in the eye/screen geometry).
         """
         x_mm = x_px * self.mm_per_pixel_x
-        y_mm = y_px * self.mm_per_pixel_y
+        y_mm = self._physical_screen_size[1] - y_px * self.mm_per_pixel_y
         
         if centered:
             x_mm = x_mm - self._physical_screen_size[0] / 2
@@ -509,27 +518,27 @@ class ExperimentalSetup:
         Parameters
         ----------
         x_mm, y_mm : float or array
-            Coordinates in mm
+            Coordinates in mm; positive x = right, positive y = up
         centered : bool, default True
             If True, input is relative to screen center.
-            If False, input is relative to screen origin (0,0).
+            If False, input is relative to the lower-left screen corner.
         
         Returns
         -------
         x_px, y_px : float or array
-            Coordinates in pixels
+            Coordinates in pixels (origin at upper-left, y increases downward)
         
         Notes
         -----
         Requires `screen_resolution` and `physical_screen_size`.
-        Inverse of :meth:`pixels_to_mm`; no axis is flipped.
+        Inverse of :meth:`pixels_to_mm` (the y-axis is flipped).
         """
         if centered:
             x_mm = x_mm + self._physical_screen_size[0] / 2
             y_mm = y_mm + self._physical_screen_size[1] / 2
         
         x_px = x_mm / self.mm_per_pixel_x
-        y_px = y_mm / self.mm_per_pixel_y
+        y_px = (self._physical_screen_size[1] - y_mm) / self.mm_per_pixel_y
         
         return x_px, y_px
     
@@ -578,13 +587,10 @@ class ExperimentalSetup:
         
         Parameters
         ----------
-        angle_x, angle_y : float, str or pint.Quantity
-            Visual angles. Plain numbers are interpreted as radians (not
-            degrees; with a one-time warning). Strings with units, e.g.,
+        angle_x, angle_y : float, array, str or pint.Quantity
+            Visual angles. Plain numbers and arrays are in degrees (like the
+            output of :meth:`mm_to_degrees`). Strings with units, e.g.,
             ``"5 deg"``, ``"0.087 rad"``, or pint Quantities are converted.
-            For arrays, use a pint Quantity, e.g.,
-            ``np.array([1, 2]) * pypillometry.units.ureg.deg``; plain numpy
-            arrays with more than one element are not supported.
             Positive x = right, positive y = up.
         
         Returns
@@ -601,16 +607,8 @@ class ExperimentalSetup:
             raise ValueError(
                 "Eye-to-screen distance not set. Provide eye_to_screen_center."
             )
-        # Parse angles if they're strings or pint quantities
-        if isinstance(angle_x, (str,)) or hasattr(angle_x, 'magnitude'):
-            angle_x = parse_angle(angle_x)  # returns radians
-        else:
-            angle_x = parse_angle(angle_x)  # handles float (assumes radians)
-        
-        if isinstance(angle_y, (str,)) or hasattr(angle_y, 'magnitude'):
-            angle_y = parse_angle(angle_y)  # returns radians
-        else:
-            angle_y = parse_angle(angle_y)  # handles float (assumes radians)
+        angle_x = _degrees_to_radians(angle_x)
+        angle_y = _degrees_to_radians(angle_y)
         
         x_mm = self._d * np.tan(angle_x)
         y_mm = self._d * np.tan(angle_y)
@@ -638,12 +636,11 @@ class ExperimentalSetup:
         Notes
         -----
         Combines pixels_to_mm (centered) and mm_to_degrees.
-        The y-axis is flipped: pixel y increases downward, but visual angle
-        y increases upward.
+        The y-axis is flipped (in pixels_to_mm): pixel y increases downward,
+        but visual angle y increases upward.
         """
         x_mm, y_mm = self.pixels_to_mm(x_px, y_px, centered=True)
-        # Flip y because pixels have +y down, but degrees have +y up
-        return self.mm_to_degrees(x_mm, -y_mm)
+        return self.mm_to_degrees(x_mm, y_mm)
     
     def degrees_to_pixels(
         self,
@@ -657,8 +654,8 @@ class ExperimentalSetup:
         ----------
         angle_x, angle_y : float, str or pint.Quantity
             Visual angles, in the same forms as for :meth:`degrees_to_mm`:
-            plain numbers are radians, strings and pint Quantities carry
-            their units; arrays only as pint Quantity.
+            plain numbers and arrays are degrees, strings and pint
+            Quantities carry their units.
             Positive x = right, positive y = up.
         
         Returns
@@ -669,12 +666,11 @@ class ExperimentalSetup:
         Notes
         -----
         Combines degrees_to_mm and mm_to_pixels (centered).
-        The y-axis is flipped: visual angle y increases upward, but pixel
-        y increases downward.
+        The y-axis is flipped (in mm_to_pixels): visual angle y increases
+        upward, but pixel y increases downward.
         """
         x_mm, y_mm = self.degrees_to_mm(angle_x, angle_y)
-        # Flip y because degrees have +y up, but pixels have +y down
-        return self.mm_to_pixels(x_mm, -y_mm, centered=True)
+        return self.mm_to_pixels(x_mm, y_mm, centered=True)
     
     def screen_point_to_eye_frame(
         self,

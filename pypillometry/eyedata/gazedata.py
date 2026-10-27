@@ -185,19 +185,26 @@ class GazeData(GenericEyeData):
         else:
             # Merge with existing setup
             old = self.experimental_setup.to_dict()
-            
-            # Map old dict keys to ExperimentalSetup constructor params
+            # stored is the perpendicular distance d; the constructor wants
+            # the direct distance to the screen center
+            old_distance = None
+            if old['d'] is not None:
+                dx, dy = old['screen_offset']
+                old_distance = np.sqrt(old['d']**2 + dx**2 + dy**2)
+            if 'camera_offset' in kwargs or 'camera_spherical' in kwargs:
+                # a new camera position replaces the old one completely
+                old['camera_offset'], old['camera_spherical'] = None, None
+
             merged = {
-                'screen_resolution': kwargs.get('screen_resolution', old.get('screen_resolution')),
-                'physical_screen_size': kwargs.get('physical_screen_size', old.get('physical_screen_size')),
-                'eye_to_screen_center': kwargs.get('eye_to_screen_center', old.get('d')),
-                'screen_offset': kwargs.get('screen_offset', old.get('screen_offset')),
-                'eye_to_screen_center': kwargs.get('eye_to_screen_center'),
-                'screen_pitch': kwargs.get('screen_pitch', old.get('alpha_tilt')),
-                'screen_yaw': kwargs.get('screen_yaw', old.get('beta_tilt')),
-                'camera_offset': kwargs.get('camera_offset', old.get('camera_offset')),
-                'camera_spherical': kwargs.get('camera_spherical', old.get('camera_spherical')),
-                'ipd': kwargs.get('ipd', old.get('ipd')),
+                'screen_resolution': kwargs.get('screen_resolution', old['screen_resolution']),
+                'physical_screen_size': kwargs.get('physical_screen_size', old['physical_screen_size']),
+                'eye_to_screen_center': kwargs.get('eye_to_screen_center', old_distance),
+                'screen_offset': kwargs.get('screen_offset', old['screen_offset']),
+                'screen_pitch': kwargs.get('screen_pitch', old['alpha_tilt']),
+                'screen_yaw': kwargs.get('screen_yaw', old['beta_tilt']),
+                'camera_offset': kwargs.get('camera_offset', old['camera_offset']),
+                'camera_spherical': kwargs.get('camera_spherical', old['camera_spherical']),
+                'ipd': kwargs.get('ipd', old['ipd']),
             }
             
             self.experimental_setup = ExperimentalSetup(**merged)
