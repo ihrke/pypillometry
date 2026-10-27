@@ -230,6 +230,13 @@ class TestDetectBlinksVelocity(unittest.TestCase):
         # Should detect at least one blink based on velocity changes
         self.assertGreaterEqual(len(blinks), 1)
     
+    def test_all_invalid(self):
+        """All samples NaN or zero: no blinks, no error"""
+        for signal in [np.full(200, np.nan), np.zeros(200)]:
+            blinks = detect_blinks_velocity(signal, smooth_winsize=5,
+                                            vel_onset=-10, vel_offset=10)
+            self.assertEqual(len(blinks), 0)
+
     def test_returns_empty_for_flat_signal(self):
         """Flat signal should have no blinks"""
         signal = np.ones(200) * 100

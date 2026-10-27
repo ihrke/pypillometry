@@ -82,6 +82,7 @@
 - `ExperimentalSetup.mm_to_pixels()` without screen size raised a `TypeError`
   instead of a clear `ValueError`
 - `ExperimentalSetup.from_dict()` warned about plain numbers for stored values
+- `detect_blinks_velocity()` raised a `ValueError` if no sample was valid
 
 ### Documentation
 

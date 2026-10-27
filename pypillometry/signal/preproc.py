@@ -280,6 +280,9 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     # (the asymmetric Savitzky-Golay will prevent NaN from affecting edges)
     sy_filled = sy.copy()
     valid_indices = np.where(~invalid_mask)[0]
+    if len(valid_indices) == 0:
+        logger.debug("No valid samples - returning empty array")
+        return np.array([])
         
     # Simple linear interpolation for NaN regions
     invalid_indices = np.where(invalid_mask)[0]
