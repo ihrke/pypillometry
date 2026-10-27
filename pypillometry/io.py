@@ -797,59 +797,55 @@ def write_pickle(obj, fname):
         pickle.dump(obj, f)
     
 
-def read_pickle(fname, cache_dir: Optional[str] = None, autodelete: bool = False):
+def read_pickle(
+    fname: str,
+    cache_file: Optional[str] = None,
+    force_download: bool = False,
+    session: Optional[requests.Session] = None,
+    cache_dir: Optional[str] = None,
+    autodelete: bool = False):
     """
     Read a Python object from a file using :mod:`pickle`.
+
+    URLs are downloaded with :func:`~pypillometry.io.fetch_url`, in the
+    same way as in :func:`~pypillometry.io.read_eyelink`.
     
     Parameters
     ----------
     fname : str
-        filename or URL to load data from (HTTP(S) URLs are downloaded into
-        memory, without authentication; SSH URLs such as
-        ``ssh://server/folder/file.pd`` are downloaded with
-        :func:`~pypillometry.io.ssh_download`)
+        filename, HTTP(S) URL or SSH URL (``ssh://server/folder/file.pd``)
+    cache_file : str, optional
+        local filename to store a downloaded file in
     cache_dir : str, optional
-        directory for files downloaded from SSH URLs; if None, a
-        temporary directory is used
+        directory to store a downloaded file in (as
+        ``cache_dir/<host>/<path>``), used if `cache_file` is None. If both
+        are None, a temporary directory is used.
+    force_download : bool, optional
+        if True, download again even if a local copy exists in
+        `cache_file`/`cache_dir`
+    session : requests.Session, optional
+        requests session for HTTP(S) downloads (e.g., from
+        :func:`~pypillometry.io.osf_authenticate` for private projects)
     autodelete : bool, optional
-        if True, a file downloaded from an SSH URL is deleted after it was
-        read. Default False.
-        
+        if True, the downloaded copy is deleted after it was read (also in
+        `cache_file`/`cache_dir`). Local files are never deleted.
+        Default False.
+
     Returns
     -------
     object
         loaded object
     """
-    if is_ssh_url(fname):
-        with local_copy(fname, cache_dir=cache_dir, autodelete=autodelete) as local:
-            with open(local, 'rb') as f:
-                obj = pickle.load(f)
-    elif is_url(fname):
-        # try loading from URL
-        response = requests.get(fname, stream=True)
-        if response.status_code == 200:
-            total = int(response.headers.get('content-length', 0))
-            content = bytearray()
-            with tqdm(
-                desc=f"Downloading {fname}",
-                total=total,
-                unit='iB',
-                unit_scale=True,
-                unit_divisor=1024,
-            ) as bar:
-                for data in response.iter_content(chunk_size=1024):
-                    content.extend(data)
-                    bar.update(len(data))
-            obj = pickle.loads(content)
-    else:
-        with open(fname, 'rb') as f:
-            obj=pickle.load(f)
-    return obj
+    with local_copy(fname, cache_file=cache_file, cache_dir=cache_dir,
+                    autodelete=autodelete, force_download=force_download,
+                    session=session) as local:
+        with open(local, 'rb') as f:
+            return pickle.load(f)
 
 @requires_package("eyelinkio")
 def read_eyelink(
     source: str, 
-    cache_file: str = None, 
+    cache_file: Optional[str] = None, 
     force_download: bool = False, 
     session: Optional[requests.Session] = None,
     cache_dir: Optional[str] = None,
@@ -858,30 +854,31 @@ def read_eyelink(
     Read an Eyelink file/URL and return the object returned by the "eyelinkio" package.
 
     Requires the optional package `eyelinkio`. Its console output is only
-    shown when the log level is "DEBUG".
+    shown when the log level is "DEBUG". URLs are downloaded with
+    :func:`~pypillometry.io.fetch_url`.
     
     Parameters
     ----------
     source : str
-        filename of the Eyelink EDF file or URL (OSF client URLs such as
-        ``https://osf.io/<id>`` are converted to download URLs; SSH URLs
-        such as ``ssh://server/folder/file.edf`` are downloaded with
-        :func:`~pypillometry.io.ssh_download`)
+        filename of the Eyelink EDF file, HTTP(S) URL (OSF client URLs such
+        as ``https://osf.io/<id>`` are converted to download URLs) or SSH URL
+        (``ssh://server/folder/file.edf``)
     cache_file : str, optional
-        filename to cache the file in case it is downloaded from an HTTP(S)
-        URL; if None, the file is downloaded to a temporary file
-    force_download : bool, optional
-        if True, force re-download even if the file exists in the cache
-    session : requests.Session, optional
-        requests session to use for the download (e.g., from
-        :func:`~pypillometry.io.osf_authenticate` for private projects)
+        local filename to store a downloaded file in
     cache_dir : str, optional
-        directory for files downloaded from SSH URLs; if None, a
-        temporary directory is used
+        directory to store a downloaded file in (as
+        ``cache_dir/<host>/<path>``), used if `cache_file` is None. If both
+        are None, a temporary directory is used.
+    force_download : bool, optional
+        if True, download again even if a local copy exists in
+        `cache_file`/`cache_dir`
+    session : requests.Session, optional
+        requests session for HTTP(S) downloads (e.g., from
+        :func:`~pypillometry.io.osf_authenticate` for private projects)
     autodelete : bool, optional
-        if True, a file downloaded from an SSH URL (or from an HTTP(S) URL
-        into a temporary file) is deleted after it was read. Local files
-        and `cache_file` are never deleted. Default False.
+        if True, the downloaded copy is deleted after it was read (also in
+        `cache_file`/`cache_dir`). Local files are never deleted.
+        Default False.
 
     Returns
     -------
@@ -892,39 +889,10 @@ def read_eyelink(
     --------
     pypillometry.GenericEyeData.from_eyelink : create an eyedata object from an EDF file
     """
-    import eyelinkio
-
-    if is_ssh_url(source):
-        with local_copy(source, cache_dir=cache_dir, autodelete=autodelete,
-                        force_download=force_download) as fname:
-            return _read_edf(fname)
-
-    # Handle if source is a URL or local file
-    is_temp_download = False
-    if is_url(source):
-        if cache_file is not None:
-            # If cached file exists and no force_download, use it
-            if os.path.exists(cache_file) and not force_download:
-                fname = cache_file
-            else:
-                cache_parent = os.path.dirname(cache_file)
-                # If the directory is non-empty and does not exist, make it
-                if cache_parent and not os.path.exists(cache_parent):
-                    logger.info(f"Creating directory for cache file: {cache_parent}")
-                    os.makedirs(cache_parent, exist_ok=True)
-                fname = download(source, cache_file, session=session)
-        else:
-            fname = download(source, session=session)
-            is_temp_download = True
-    else:
-        fname = source
-
-    try:
+    with local_copy(source, cache_file=cache_file, cache_dir=cache_dir,
+                    autodelete=autodelete, force_download=force_download,
+                    session=session) as fname:
         return _read_edf(fname)
-    finally:
-        if autodelete and is_temp_download and os.path.exists(fname):
-            logger.info(f"Deleting downloaded copy: {fname}")
-            os.remove(fname)
 
 
 def _read_edf(fname: str):

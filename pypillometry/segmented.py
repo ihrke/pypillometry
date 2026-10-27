@@ -595,8 +595,8 @@ class SegmentedEyeData:
         fname : str
             Filename (or HTTP(S)/SSH URL) to read from
         **kwargs
-            passed to :func:`~pypillometry.io.read_pickle` (`cache_dir`,
-            `autodelete`)
+            passed to :func:`~pypillometry.io.read_pickle` (e.g.,
+            `cache_file`, `cache_dir`, `autodelete`, `session`)
             
         Returns
         -------

@@ -1140,8 +1140,8 @@ class GenericEyeData(ABC):
         fname : str
             filename (or URL)
         **kwargs
-            passed to :func:`pypillometry.io.read_pickle` (`cache_dir`,
-            `autodelete`)
+            passed to :func:`pypillometry.io.read_pickle` (e.g.,
+            `cache_file`, `cache_dir`, `autodelete`, `session`)
 
         Returns
         -------
@@ -1177,7 +1177,7 @@ class GenericEyeData(ABC):
         fname : str
             filename of the EDF file, HTTP(S) URL or SSH URL
             (``ssh://server/folder/file.edf``, see
-            :func:`pypillometry.io.ssh_download`)
+            :func:`pypillometry.io.fetch_url`)
         return_edf_obj : bool, optional
             if True, return a tuple with the eyedata object and the object
             returned by the "eyelinkio" package;
@@ -1187,7 +1187,7 @@ class GenericEyeData(ABC):
             (related to eye-tracker settings, calibration, validation etc)
         **kwargs
             additional arguments passed to :func:`pypillometry.io.read_eyelink`
-            (e.g., `cache_file`, `cache_dir`, `autodelete`)
+            (e.g., `cache_file`, `cache_dir`, `autodelete`, `session`)
 
         Returns
         -------

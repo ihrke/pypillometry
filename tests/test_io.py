@@ -144,41 +144,31 @@ class TestIO(unittest.TestCase):
             else:
                 self.assertEqual(value, loaded)
                 
-    @patch('requests.get')
-    def test_read_pickle_url(self, mock_get):
+    def _fake_download(self, content):
+        def fake(url, fname, session=None):
+            with open(fname, "wb") as f:
+                f.write(content)
+            return fname
+        return fake
+
+    def test_read_pickle_url(self):
         """Test reading objects from URL."""
-        # Create mock response
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.headers = {'content-length': '100'}
-        mock_response.iter_content.return_value = [pickle.dumps(self.test_data)]
-        mock_get.return_value = mock_response
-        
-        # Test reading from URL
-        loaded = read_pickle('http://example.com/test.pkl')
-        
-        # Verify mock was called
-        mock_get.assert_called_once()
-        
-        # Compare loaded data
+        with patch("pypillometry.io.download",
+                   side_effect=self._fake_download(pickle.dumps(self.test_data))) as mock_dl:
+            loaded = read_pickle('http://example.com/test.pkl', autodelete=True)
+        mock_dl.assert_called_once()
         for key, value in self.test_data.items():
             if isinstance(value, np.ndarray):
                 np.testing.assert_array_equal(value, loaded[key])
             else:
                 self.assertEqual(value, loaded[key])
-                
-    @patch('requests.get')
-    def test_read_pickle_invalid_url(self, mock_get):
-        """Test reading from invalid URL."""
-        # Create mock response with invalid pickle data
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.headers = {'content-length': '100'}
-        mock_response.iter_content.return_value = [b'invalid pickle data']
-        mock_get.return_value = mock_response
-        
-        with self.assertRaises(pickle.UnpicklingError):
-            read_pickle('http://invalid-url.com/nonexistent.pkl')
+
+    def test_read_pickle_invalid_url(self):
+        """Test reading invalid pickle data from a URL."""
+        with patch("pypillometry.io.download",
+                   side_effect=self._fake_download(b'invalid pickle data')):
+            with self.assertRaises(pickle.UnpicklingError):
+                read_pickle('http://invalid-url.com/nonexistent.pkl', autodelete=True)
             
     def test_read_pickle_invalid_file(self):
         """Test reading from invalid local file."""
@@ -219,37 +209,22 @@ class TestIO(unittest.TestCase):
             # Just check that it's not a basic type
             self.assertNotIsInstance(edf_data, (str, int, float, list, dict))
 
-    @patch('pypillometry.io.is_url')
-    @patch('pypillometry.io.download')
-    def test_read_eyelink_url(self, mock_download, mock_is_url):
+    def test_read_eyelink_url(self):
         """Test reading EDF file from URL using read_eyelink function."""
-        # Skip test if eyelinkio is not available
         try:
             import eyelinkio
         except ImportError:
             self.skipTest("eyelinkio package not available")
-        
-        # Get path to test EDF file for mocking
-        test_edf_path = files('pypillometry.data').joinpath('test.edf')        
-        test_edf_path = os.path.abspath(test_edf_path)
-        
-        # Skip test if test file doesn't exist
-        if not os.path.exists(test_edf_path):
-            self.skipTest(f"Test EDF file not found at {test_edf_path}")
-        
-        # Mock URL detection and download
-        mock_is_url.return_value = True
-        mock_download.return_value = test_edf_path
-        
-        # Test reading from URL
+        test_edf_path = os.path.abspath(files('pypillometry.data').joinpath('test.edf'))
+        with open(test_edf_path, "rb") as f:
+            content = f.read()
+
         test_url = "https://example.com/test.edf"
-        edf_data = read_eyelink(test_url)
-        
-        # Verify mocks were called
-        mock_is_url.assert_called_once_with(test_url)
-        mock_download.assert_called_once_with(test_url, session=None)
-        
-        # Basic assertions about the returned object
+        with patch("pypillometry.io.download",
+                   side_effect=self._fake_download(content)) as mock_dl:
+            edf_data = read_eyelink(test_url, autodelete=True)
+        self.assertEqual(mock_dl.call_args.args[0], test_url)
+        self.assertIsNone(mock_dl.call_args.kwargs["session"])
         self.assertIsNotNone(edf_data, "read_eyelink should return a non-None object")
 
     def test_read_eyelink_nonexistent_file(self):

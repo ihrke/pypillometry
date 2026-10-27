@@ -260,5 +260,63 @@ class TestLoadStudySSH(SSHTestCase):
         self.assertFalse(os.path.exists(os.path.join(self.cache, "tmp")))
 
 
+class TestHTTPLikeSSH(SSHTestCase):
+    """HTTP(S) URLs use the same caching/autodelete as SSH URLs."""
+
+    def setUp(self):
+        super().setUp()
+        shutil.copy(os.path.join(DATA_DIR, "test.edf"),
+                    os.path.join(self.server_root, "data", "test.edf"))
+        io.write_pickle({"a": 1}, os.path.join(self.server_root, "data", "obj.pkl"))
+        self.downloads = []
+
+        def fake_download(url, fname, session=None):
+            self.downloads.append((url, fname, session))
+            path = url.split("example.com/", 1)[1]
+            shutil.copy(os.path.join(self.server_root, path), fname)
+            return fname
+
+        p = patch("pypillometry.io.download", side_effect=fake_download)
+        p.start()
+        self.addCleanup(p.stop)
+
+    def test_cache_path(self):
+        self.assertEqual(io._cache_path("https://example.com/data/f.edf", "/c"),
+                         os.path.join("/c", "example.com", "data", "f.edf"))
+        self.assertEqual(io._cache_path("https://osf.io:8080/abc12/", "/c"),
+                         os.path.join("/c", "osf.io_8080", "abc12"))
+
+    def test_read_eyelink_cache_dir(self):
+        edf = io.read_eyelink("https://example.com/data/test.edf", cache_dir=self.cache)
+        self.assertIn("samples", edf)
+        self.assertTrue(os.path.exists(os.path.join(self.cache, "example.com", "data", "test.edf")))
+        io.read_eyelink("https://example.com/data/test.edf", cache_dir=self.cache)
+        self.assertEqual(len(self.downloads), 1)
+
+    def test_read_eyelink_cache_file_autodelete(self):
+        cache_file = os.path.join(self.cache, "sub", "x.edf")
+        io.read_eyelink("https://example.com/data/test.edf", cache_file=cache_file, autodelete=True)
+        self.assertFalse(os.path.exists(cache_file))
+
+    def test_read_pickle_temp_autodelete(self):
+        obj = io.read_pickle("https://example.com/data/obj.pkl", autodelete=True)
+        self.assertEqual(obj, {"a": 1})
+        tmpfile = self.downloads[0][1][:-len(".part")]
+        self.assertFalse(os.path.exists(os.path.dirname(os.path.dirname(os.path.dirname(tmpfile)))))
+
+    def test_read_pickle_session_and_force(self):
+        session = object()
+        io.read_pickle("https://example.com/data/obj.pkl", cache_dir=self.cache, session=session)
+        io.read_pickle("https://example.com/data/obj.pkl", cache_dir=self.cache, force_download=True)
+        self.assertEqual(len(self.downloads), 2)
+        self.assertIs(self.downloads[0][2], session)
+
+    def test_ssh_cache_file(self):
+        cache_file = os.path.join(self.cache, "mine.pkl")
+        obj = io.read_pickle("ssh://server/data/obj.pkl", cache_file=cache_file)
+        self.assertEqual(obj, {"a": 1})
+        self.assertTrue(os.path.exists(cache_file))
+
+
 if __name__ == "__main__":
     unittest.main()
