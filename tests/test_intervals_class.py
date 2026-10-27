@@ -832,6 +832,14 @@ class TestIntervalsPlotHighlight(unittest.TestCase):
         
         # Should create 6 patches (3 intervals x 2 axes)
         self.assertEqual(len(patches), 6)
+
+    def test_plot_highlight_zorder(self):
+        """zorder defaults to 0 and can be overridden"""
+        fig, ax = plt.subplots()
+        patches = self.intervals.plot_highlight()
+        self.assertTrue(all(p.get_zorder() == 0 for p in patches))
+        patches = self.intervals.plot_highlight(zorder=3)
+        self.assertTrue(all(p.get_zorder() == 3 for p in patches))
     
     def test_plot_highlight_empty_intervals(self):
         """Test plot_highlight with empty intervals"""

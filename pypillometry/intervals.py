@@ -1319,8 +1319,8 @@ class Intervals:
             Transparency level, 0-1 (default 0.3)
         **kwargs : dict
             Additional keyword arguments passed to ax.axvspan()
-            (e.g., label, linestyle, edgecolor); `zorder` is fixed to 0 and
-            cannot be passed
+            (e.g., label, linestyle, edgecolor, zorder); `zorder` defaults
+            to 0 (behind the data)
             
         Returns
         -------
@@ -1367,10 +1367,11 @@ class Intervals:
         if not axes_list:
             return []
         
+        kwargs.setdefault("zorder", 0)
         patches = []
         for axes in axes_list:
             for start, end in self.intervals:
-                patch = axes.axvspan(start, end, color=color, alpha=alpha, zorder=0, **kwargs)
+                patch = axes.axvspan(start, end, color=color, alpha=alpha, **kwargs)
                 patches.append(patch)
         
         return patches
