@@ -71,6 +71,61 @@ class TestLoadStudySSH(SSHTestCase):
         self.assertFalse(os.path.exists(os.path.join(self.cache, "tmp")))
 
 
+CONFIG_OSF = """
+raw_data = {"s1": {"data": "s1/data.txt"}, "s2": {"data": "s2/data.txt"}}
+
+def read_subject(info):
+    with open(info["data"]) as f:
+        return f.read()
+"""
+
+
+class TestLoadStudyOSF(unittest.TestCase):
+    def setUp(self):
+        self.path = tempfile.mkdtemp()
+        content = {"pypillometry_conf.py": CONFIG_OSF.encode(),
+                   "s1/data.txt": b"data s1", "s2/data.txt": b"data s2"}
+        self.files = {"/" + k: {"size": 2 * 1024 * 1024, "download_url": k}
+                      for k in content}
+
+        class Response:
+            status_code = 200
+            headers = {}
+            def __init__(self, data):
+                self.content = data
+            def iter_content(self, chunk_size):
+                yield self.content
+
+        self.get = lambda url, **kw: Response(content[url])
+
+    def tearDown(self):
+        shutil.rmtree(self.path, ignore_errors=True)
+
+    def load(self, **kwargs):
+        import io
+        from contextlib import redirect_stdout
+        from loguru import logger
+        messages = []
+        hid = logger.add(lambda m: messages.append(m.record["message"]), level="INFO")
+        stdout = io.StringIO()
+        try:
+            with patch.object(ppstudy, "get_osf_project_files", return_value=self.files), \
+                 patch.object(ppstudy.requests, "get", side_effect=self.get), \
+                 redirect_stdout(stdout):
+                data, _ = ppstudy.load_study_osf("abcde", self.path, **kwargs)
+        finally:
+            logger.remove(hid)
+        return data, messages, stdout.getvalue()
+
+    def test_logs_instead_of_print(self):
+        data, messages, stdout = self.load()
+        self.assertEqual(data["s2"], "data s2")
+        self.assertEqual(stdout, "")
+        self.assertTrue(any("total size: 4.0 MB" in m for m in messages))
+        # nothing left to download: no size estimate
+        _, messages, _ = self.load()
+        self.assertFalse(any("total size" in m for m in messages))
+
 
 if __name__ == "__main__":
     unittest.main()

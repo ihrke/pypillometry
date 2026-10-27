@@ -283,6 +283,26 @@ class TestExperimentalSetupCoordinateConversion:
         # point above the center (smaller pixel y) has positive mm y
         assert self.setup.pixels_to_mm(960, 0)[1] > 0
         assert self.setup.mm_to_pixels(0, 100)[1] < 540
+
+    def test_screen_point_to_eye_frame_tilted(self):
+        """The screen center stays at (delta_x, delta_y, d) when tilted."""
+        setup = ExperimentalSetup(eye_to_screen_center="600 mm",
+                                  screen_pitch="20 deg", screen_yaw="10 deg")
+        T = setup.screen_point_to_eye_frame(0, 0)
+        np.testing.assert_allclose(T, (0, 0, 600))
+        # a point above the center moves away from the eye with positive pitch
+        Tx, Ty, Tz = setup.screen_point_to_eye_frame(0, 100)
+        assert np.isclose(Ty, 100 * np.cos(np.radians(20)))
+        assert np.isclose(Tz, 600 + 100 * np.sin(np.radians(20)) * np.cos(np.radians(10)))
+
+    def test_conversion_without_screen_size(self):
+        """Clear ValueError if the screen size is missing."""
+        setup = ExperimentalSetup(screen_resolution=(1920, 1080))
+        for centered in [True, False]:
+            with pytest.raises(ValueError, match="Physical screen size"):
+                setup.mm_to_pixels(0, 0, centered=centered)
+            with pytest.raises(ValueError, match="Physical screen size"):
+                setup.pixels_to_mm(0, 0, centered=centered)
     
     def test_pixels_to_mm_array(self):
         """Test conversion with arrays."""
@@ -550,6 +570,27 @@ class TestExperimentalSetupSerialization:
         assert np.isclose(restored.alpha_tilt, original.alpha_tilt)
         assert np.isclose(restored.r, original.r)
         assert restored.ipd == original.ipd
+
+    def test_round_trip_no_unit_warnings(self):
+        """from_dict(to_dict()) does not warn about plain numbers."""
+        import warnings
+        from pypillometry.units import _unit_warnings_issued
+        original = ExperimentalSetup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("520 mm", "290 mm"),
+            eye_to_screen_center="700 mm",
+            screen_offset=("30 mm", "20 mm"),
+            screen_pitch="-5 deg",
+            screen_yaw="3 deg",
+            camera_offset=("0 mm", "-300 mm", "600 mm"),
+            ipd="63 mm"
+        )
+        _unit_warnings_issued.clear()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            restored = ExperimentalSetup.from_dict(original.to_dict())
+        assert np.isclose(restored.beta_tilt, original.beta_tilt)
+        assert np.allclose(restored.camera_position, original.camera_position)
 
 
 class TestExperimentalSetupSummary:

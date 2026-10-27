@@ -19,6 +19,7 @@ from .. import config
 
 import numpy as np
 import itertools
+import numbers
 import warnings
 from loguru import logger
 #from pytypes import typechecked
@@ -862,7 +863,7 @@ class GenericEyeData(ABC):
             self._blinks[f"{eye}_{variable}"] = None
             self._interpolated_blinks[f"{eye}_{variable}"] = None        
 
-    def nblinks(self, eyes=[], variables=[]) -> int:
+    def nblinks(self, eyes=[], variables=[]) -> Dict[str, int]:
         """
         Return number of detected blinks. Should be run after `pupil_blinks_detect()`.
 
@@ -1272,9 +1273,12 @@ class GenericEyeData(ABC):
         screen_coords = edf["info"]["screen_coords"]
         setup = ExperimentalSetup(screen_resolution=tuple(screen_coords)) if screen_coords is not None else None
         
-        obj = cls(time=tx, **d, event_onsets=evon, event_labels=evlab, 
-            sampling_rate=sfreq, info=info, calibration=calibration,
-            experimental_setup=setup, name=edf["info"]["filename"])
+        kwargs = dict(**d, calibration=calibration, experimental_setup=setup)
+        # only pass what the constructor accepts (e.g., PupilData has no gaze)
+        accepted = inspect.signature(cls.__init__).parameters
+        kwargs = {k: v for k, v in kwargs.items() if k in accepted}
+        obj = cls(time=tx, **kwargs, event_onsets=evon, event_labels=evlab,
+            sampling_rate=sfreq, info=info, name=edf["info"]["filename"])
 
         # filter out irrelevant triggers
         def eyelink_filter_func(lab):
@@ -1688,15 +1692,15 @@ class GenericEyeData(ABC):
         ----------
         events : Events
             Events object containing the new events to set
-        inplace : bool, optional
-            if `True`, make change in-place and return the object
-            if `False`, make and return copy before making changes
-            if `None`, use the setting of the object (specified in constructor)
-            
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
         Returns
         -------
-        GenericEyeData
-            The object with updated events (may be self or a copy depending on inplace)
+        :class:`~pypillometry.GenericEyeData`
+            the object with updated events (`self` or a copy, depending on `inplace`)
             
         Examples
         --------
@@ -2146,17 +2150,17 @@ class GenericEyeData(ABC):
         if mean is None:
             # use only non-masked samples
             mean={eye:{var:np.nanmean(obj[eye,var].compressed()) for var in variables} for eye in eyes}
-        elif isinstance(mean, float):
+        elif isinstance(mean, numbers.Real):
             mean={eye:{var:mean for var in variables} for eye in eyes}            
         elif not isinstance(mean, dict):
-            raise ValueError("mean must be None, float or dict")
+            raise ValueError("mean must be None, a number or dict")
 
         if sd is None:
             sd={eye:{var:np.nanstd(obj[eye,var].compressed()) for var in variables} for eye in eyes}
-        elif isinstance(sd, float):
+        elif isinstance(sd, numbers.Real):
             sd={eye:{var:sd for var in variables} for eye in eyes}
         elif not isinstance(sd, dict):
-            raise ValueError("sd must be None, float or dict")
+            raise ValueError("sd must be None, a number or dict")
         logger.debug("Mean: %s" % mean)
         logger.debug("SD: %s" % sd)
 
@@ -2198,11 +2202,13 @@ class GenericEyeData(ABC):
             variables to unscale; can be "pupil", "x","y", "baseline", "response" or any other variable
             that is available in the dataset; either a string or a list of strings;
             available variables can be checked with `obj.variables`; empty list means all variables
-        mean : None or dict, optional
-            mean to add to the signal as ``{eye: {variable: value}}``;
+        mean : None, float or dict, optional
+            mean to add to the signal; a number (same for all eyes and
+            variables) or ``{eye: {variable: value}}``;
             if `None`, use the mean stored by :meth:`scale`
-        sd : None or dict, optional
-            sd to multiply the signal with as ``{eye: {variable: value}}``;
+        sd : None, float or dict, optional
+            sd to multiply the signal with; a number (same for all eyes and
+            variables) or ``{eye: {variable: value}}``;
             if `None`, use the sd stored by :meth:`scale`
         eyes : str or list of str, optional
             eye(s) to consider; if empty, all available eyes
@@ -2222,8 +2228,16 @@ class GenericEyeData(ABC):
         # if no parameters are provided, use the stored ones (normal)
         if mean is None:
             mean=obj.params["scale"]["mean"]
+        elif isinstance(mean, numbers.Real):
+            mean={eye:{var:mean for var in variables} for eye in eyes}
+        elif not isinstance(mean, dict):
+            raise ValueError("mean must be None, a number or dict")
         if sd is None:
             sd=obj.params["scale"]["sd"]
+        elif isinstance(sd, numbers.Real):
+            sd={eye:{var:sd for var in variables} for eye in eyes}
+        elif not isinstance(sd, dict):
+            raise ValueError("sd must be None, a number or dict")
         
         # check whether unscaling parameters are provided
         for eye in eyes:
@@ -2385,7 +2399,7 @@ class GenericEyeData(ABC):
         variables: list = [],
         distance: float = 100,
         units: str = "ms",
-        apply_mask: bool = True,
+        apply_mask: bool = False,
         inplace: bool | None = None,
     ):
         """
@@ -2402,11 +2416,12 @@ class GenericEyeData(ABC):
             ``units``). Default 100.
         units : str, optional
             Units for ``distance``. Can be "ms", "sec", "min", or "h". Default "ms".
-        apply_mask : bool, default=True
+        apply_mask : bool, default=False
             If True, store the merged blinks, apply them as masks to the data
             and return the object.
             If False, return merged blinks as dict of Intervals objects without
-            storing them or applying masks.
+            storing them or applying masks (same default as
+            :meth:`~pypillometry.PupilData.pupil_blinks_detect`).
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -2609,15 +2624,15 @@ class GenericEyeData(ABC):
         
         Parameters
         ----------
-        inplace : bool, optional
-            If True, make change in-place and return the object.
-            If False, make and return copy before making changes.
-            If None, use the object's default setting.
-            
+        inplace : bool or None, optional
+            if `True`, make change in-place and return the object;
+            if `False`, make and return copy before making changes;
+            if `None`, use the object-level setting (specified in the constructor)
+
         Returns
         -------
-        GenericEyeData
-            The object with merged masks.
+        :class:`~pypillometry.GenericEyeData`
+            the object with merged masks (`self` or a copy, depending on `inplace`)
         """
         obj = self._get_inplace(inplace)
         
@@ -2770,11 +2785,13 @@ class GenericEyeData(ABC):
             Passed to scipy.interpolate.interp1d.
         margin : tuple, default (-20, 20)
             Time window (in ms) before and after the interval to collect boundary
-            points for interpolation. Boundary points are taken from
-            ``abs(margin[0])`` ms before the start and ``abs(margin[1])`` ms after
-            the end of each interval (the signs are ignored). For higher-order
-            methods like "cubic" or "quadratic", more boundary points from this
-            margin are used to fit the interpolation curve.
+            points for interpolation, relative to the start and end of each
+            interval: points are taken from ``start + margin[0]`` to the start
+            and from the end to ``end + margin[1]``, so `margin[0]` must be
+            <= 0 and `margin[1]` >= 0. Masked or NaN samples are not used.
+            For higher-order methods like "cubic" or "quadratic", more
+            boundary points from this margin are used to fit the
+            interpolation curve.
         store_as_suffix : str or None, default None
             If None, replace the original data.
             If a string, store interpolated data in a new variable with this suffix
@@ -2819,9 +2836,12 @@ class GenericEyeData(ABC):
         
         obj = self._get_inplace(inplace)
         
+        if margin[0] > 0 or margin[1] < 0:
+            raise ValueError(f"margin must be (<=0, >=0) in ms, got {margin}")
+
         # Convert margin from ms to samples
-        margin_left_ix = int(abs(margin[0]) / 1000.0 * obj.fs)
-        margin_right_ix = int(abs(margin[1]) / 1000.0 * obj.fs)
+        margin_left_ix = int(-margin[0] / 1000.0 * obj.fs)
+        margin_right_ix = int(margin[1] / 1000.0 * obj.fs)
         
         def interpolate_single_key(key, interval_obj):
             """Local helper to interpolate a single data key."""
@@ -2853,22 +2873,23 @@ class GenericEyeData(ABC):
                 right_margin_start = end_idx
                 right_margin_end = min(len(obj.tx), end_idx + margin_right_ix)
                 
-                # Get valid (non-NaN) points from left margin
+                # Get valid (non-NaN, non-masked) points from left margin;
+                # `mask` also covers intervals interpolated before
                 left_indices = []
                 left_times = []
                 left_values = []
                 for idx in range(left_margin_start, left_margin_end):
-                    if not np.isnan(data[idx]):
+                    if not np.isnan(data[idx]) and not mask[idx]:
                         left_indices.append(idx)
                         left_times.append(obj.tx[idx])
                         left_values.append(data[idx])
                 
-                # Get valid (non-NaN) points from right margin
+                # Get valid (non-NaN, non-masked) points from right margin
                 right_indices = []
                 right_times = []
                 right_values = []
                 for idx in range(right_margin_start, right_margin_end):
-                    if not np.isnan(data[idx]):
+                    if not np.isnan(data[idx]) and not mask[idx]:
                         right_indices.append(idx)
                         right_times.append(obj.tx[idx])
                         right_values.append(data[idx])

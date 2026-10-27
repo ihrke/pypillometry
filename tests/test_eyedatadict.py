@@ -131,6 +131,13 @@ class TestEyeDataDict(unittest.TestCase):
         variables = d.get_available_variables()
         self.assertEqual(set(variables), {'x', 'y', 'pupil'})
 
+    def test_available_order_deterministic(self):
+        """Eyes/variables are returned in insertion order"""
+        x = np.ones(10)
+        d = EyeDataDict(right_y=x, left_y=x, right_pupil=x, left_pupil=x)
+        self.assertEqual(d.get_available_eyes(), ['right', 'left'])
+        self.assertEqual(d.get_available_variables(), ['y', 'pupil'])
+
     def test_get_eye(self):
         """Test getting data for a specific eye"""
         d = EyeDataDict(**self.test_data)

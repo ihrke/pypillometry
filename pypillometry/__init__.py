@@ -31,7 +31,7 @@ from .segmented import (
     SegmentedEyeData, GroupLevelSegmentedData, group_segments,
 )
 from .events import Events
-from .intervals import Intervals, merge_intervals, stat_event_interval
+from .intervals import Intervals, merge_intervals
 from .roi import ROI, CircularROI, RectangularROI
 
 # ---------------------------------------------------------------------------
@@ -64,9 +64,7 @@ from .signal import (
     fake_pupil_baseline, fake_gaze_fixations, add_measurement_noise,
     generate_foreshortening_data,
 )
-from .convenience import (
-    nprange, zscale, p_asym_laplac, p_asym_laplac_kappa, trans_logistic_vec,
-)
+from .convenience import zscale
 
 # ---------------------------------------------------------------------------
 # Viewer
@@ -90,7 +88,7 @@ __all__ = [
     "EyePlotter", "PupilPlotter", "GazePlotter",
     "SegmentedEyeData", "GroupLevelSegmentedData", "group_segments",
     "Events",
-    "Intervals", "merge_intervals", "stat_event_interval",
+    "Intervals", "merge_intervals",
     "ROI", "CircularROI", "RectangularROI",
     # reading and writing data
     "read_eyelink", "read_pickle", "write_pickle", "download", "fetch_url",
@@ -110,8 +108,7 @@ __all__ = [
     "pupil_eye_offset",
     "fake_pupil_baseline", "fake_gaze_fixations", "add_measurement_noise",
     "generate_foreshortening_data",
-    "nprange", "zscale", "p_asym_laplac", "p_asym_laplac_kappa",
-    "trans_logistic_vec",
+    "zscale",
     # viewer
     "view", "tweak",
     # units, settings and logging

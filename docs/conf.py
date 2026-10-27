@@ -70,9 +70,10 @@ nbsphinx_epilog = """
 # do not create TOC entries for each function/class
 toc_object_entries = False
 
-# numpydoc's "Methods" tables link to the autodoc entries on the same page;
-# do not try to link them to (non-existing) autosummary stub files
-numpydoc_class_members_toctree = False
+# members are documented by autodoc (:members:); numpydoc's additional
+# "Methods"/"Attributes" tables duplicate them and cause "more than one
+# target found" warnings
+numpydoc_show_class_members = False
 
 nbsphinx_prolog=nbsphinx_epilog
 

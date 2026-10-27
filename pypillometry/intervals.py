@@ -6,7 +6,7 @@ import numpy as np
 from pypillometry.convenience import requires_package, normalize_unit
 
 __all__ = [
-    "Intervals", "merge_intervals", "stat_event_interval",
+    "Intervals", "merge_intervals",
 ]
 
 def merge_intervals(*args, label: str = 'merged'):
@@ -382,13 +382,16 @@ class Intervals:
         mask : np.ndarray
             Binary array where non-zero values indicate interval membership.
         units : str or None, optional
-            Units for the intervals. Default is None (indices).
+            Units for the intervals. Default is None (indices). Time units
+            ("ms", "sec", ...) require `sampling_rate`; the sample indices
+            are converted with :meth:`to_units`.
         label : str, optional
             Label for the intervals.
         sampling_rate : float, optional
             Sampling rate in Hz.
         time_offset : float, optional
-            Time offset in milliseconds for index-to-time conversion.
+            Time offset in milliseconds for index-to-time conversion
+            (time of the first sample).
             
         Returns
         -------
@@ -403,7 +406,7 @@ class Intervals:
         [(2, 5), (7, 9)]
         """
         # Find transitions in the mask
-        mask_bool = mask.astype(bool).astype(int)
+        mask_bool = np.asarray(mask).astype(bool).astype(int)
         # Pad with zeros to detect edges
         padded = np.concatenate([[0], mask_bool, [0]])
         diff = np.diff(padded)
@@ -414,14 +417,15 @@ class Intervals:
         
         intervals_list = list(zip(starts.tolist(), ends.tolist()))
         
-        return cls(
+        intervals = cls(
             intervals_list,
-            units=units,
+            units=None,
             label=label,
             data_time_range=(0, len(mask)),
             sampling_rate=sampling_rate,
             time_offset=time_offset
         )
+        return intervals.to_units(units)
     
     def __sub__(self, other: 'Intervals') -> 'Intervals':
         """
@@ -1030,9 +1034,20 @@ class Intervals:
         Returns
         -------
         dict
-            Dictionary with summary statistics (n, mean, sd, min, max, total_duration, units)
+            Dictionary with summary statistics (n, mean, sd, min, max, total_duration, units);
+            for empty Intervals, mean/sd/min/max are NaN and total_duration is 0
         """
         durations = [i[1] - i[0] for i in self.intervals]
+        if len(durations) == 0:
+            return {
+                "n": 0,
+                "mean": np.nan,
+                "sd": np.nan,
+                "min": np.nan,
+                "max": np.nan,
+                "total_duration": 0.0,
+                "units": self.units
+            }
         return {
             "n": len(self.intervals),
             "mean": np.mean(durations),
@@ -1319,8 +1334,8 @@ class Intervals:
             Transparency level, 0-1 (default 0.3)
         **kwargs : dict
             Additional keyword arguments passed to ax.axvspan()
-            (e.g., label, linestyle, edgecolor); `zorder` is fixed to 0 and
-            cannot be passed
+            (e.g., label, linestyle, edgecolor, zorder); `zorder` defaults
+            to 0 (behind the data)
             
         Returns
         -------
@@ -1367,10 +1382,11 @@ class Intervals:
         if not axes_list:
             return []
         
+        kwargs.setdefault("zorder", 0)
         patches = []
         for axes in axes_list:
             for start, end in self.intervals:
-                patch = axes.axvspan(start, end, color=color, alpha=alpha, zorder=0, **kwargs)
+                patch = axes.axvspan(start, end, color=color, alpha=alpha, **kwargs)
                 patches.append(patch)
         
         return patches
@@ -1426,7 +1442,9 @@ def _format_interval_stats(stats: dict) -> str:
     minv = stats.get("min", np.nan)
     maxv = stats.get("max", np.nan)
     total_duration = stats.get("total_duration", np.nan)
-    units = stats.get("units", "indices")
+    units = stats.get("units")
+    if units is None:
+        units = "indices"
     return "%i intervals (total duration: %.2f %s), %.2f %s +/- %.2f %s, [%.2f %s, %.2f %s]" % (
         n, total_duration, units, mean, units, sd, units, minv, units, maxv, units
     )

@@ -27,7 +27,8 @@ class ViewerCanvas(SceneCanvas):
     """GPU-accelerated viewer canvas with Level of Detail support."""
     
     def __init__(self, data, mode='eyedata', time_seconds=None, variables=None,
-                 eyes=None, overlays=None, extra_plots=None, highlight=None, highlight_color='lightblue'):
+                 eyes=None, overlays=None, extra_plots=None, highlight=None, highlight_color='lightblue',
+                 sample_index=False):
         """Initialize the viewer canvas.
         
         Parameters
@@ -53,6 +54,8 @@ class ViewerCanvas(SceneCanvas):
             Intervals to highlight.
         highlight_color : str
             Color for highlighted regions.
+        sample_index : bool
+            True if the x-axis is in sample indices (arrays without time).
         """
         self.mode = mode
         
@@ -82,6 +85,7 @@ class ViewerCanvas(SceneCanvas):
         self.extra_plots = extra_plots or {}  # {label: [arrays]} for extra subplots
         self.highlight = highlight
         self.highlight_color = highlight_color
+        self.sample_index = sample_index
         self.variables_filter = variables  # Store the filter for later use
         
         self.time_seconds = time_seconds
@@ -854,16 +858,11 @@ class ViewerCanvas(SceneCanvas):
             if intervals is None:
                 continue
             
-            # Get the intervals list and convert to seconds if needed
+            # Get the intervals list and convert to x-axis units if needed
             if hasattr(intervals, 'intervals') and hasattr(intervals, 'to_units'):
-                # Use Intervals.to_units() for proper conversion
-                units = getattr(intervals, 'units', None)
-                if units != 'sec':
-                    # Set sampling_rate if not already set (needed for index conversion)
-                    if intervals.sampling_rate is None and self.mode == 'eyedata':
-                        intervals.sampling_rate = self.eyedata.fs
-                    intervals = intervals.to_units('sec')
-                interval_list = intervals.intervals
+                from . import _intervals_to_axis
+                interval_list = _intervals_to_axis(
+                    intervals, self.time_seconds, self.sample_index)
             elif hasattr(intervals, 'intervals'):
                 interval_list = intervals.intervals
             else:

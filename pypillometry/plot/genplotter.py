@@ -106,7 +106,7 @@ class GenericPlotter:
         figsize : Tuple[int,int]
             size (width, height) of each figure in inches
         show_mask : bool
-            plot the "mask" array of the underlying data object
+            shade samples masked in any of the plotted eyes/variables
         show_index : bool
             plot a number with the interval's index (e.g., for identifying abnormal blinks)
 
@@ -164,7 +164,10 @@ class GenericPlotter:
                               linewidth=1, alpha=0.7, zorder=1)
 
                 if show_mask:
-                    mask = obj.data.mask[eye + "_" + var][slic]
+                    # union of the masks of all plotted eyes/variables
+                    mask = np.zeros(slic.stop - slic.start, dtype=bool)
+                    for eye, var in itertools.product(eyes, variables):
+                        mask |= obj.data.mask[eye + "_" + var][slic].astype(bool)
                     txm = obj.tx[slic]
                     mint = obj._mask_to_intervals_list(mask)
                     for sm, em in mint:
@@ -411,7 +414,7 @@ class GenericPlotter:
         figsize : Tuple[int,int]
             dimensions of the figures
         ylim : Tuple[float,float] or None
-            y-axis limits for the plots
+            y-axis limits for all subplots
         eyes : list
             list of eyes to plot; if empty, all available eyes are plotted
         variables : list
@@ -451,7 +454,8 @@ class GenericPlotter:
             self.plot_timeseries(plot_range=(start,end), units=units, 
                                eyes=eyes, variables=variables, **kwargs)
             if ylim is not None:
-                plt.ylim(*ylim)
+                for ax in fig.axes:
+                    ax.set_ylim(*ylim)
             figs.append(fig)
             
             # Close figure immediately after creation if saving to PDF to prevent display and memory issues
@@ -622,11 +626,14 @@ class GenericPlotter:
         if show_events:
             # Get events in appropriate units
             events = obj.get_events(units=units if units is not None else "ms")
+            onsets = events.onsets
+            if units is None:
+                # x-axis is in sample indices
+                onsets = np.interp(onsets, obj.tx, np.arange(len(obj.tx)))
             
             # Plot vertical lines at event positions
-            if len(events) > 0:
-                for ev in events.onsets:
-                    ax.axvline(ev, color='grey', alpha=0.5, zorder=0)
+            for ev in onsets:
+                ax.axvline(ev, color='grey', alpha=0.5, zorder=0)
         
         # Set x-axis label based on units
         if units is not None:

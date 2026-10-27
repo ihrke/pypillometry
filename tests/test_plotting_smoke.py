@@ -247,6 +247,18 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         self.data.plot.plot_masked('left', 'pupil', linewidth=5, alpha=0.5)
         self.assertIsNotNone(plt.gcf())
 
+    def test_plot_masked_events_in_indices(self):
+        """with units=None, events are drawn at sample indices"""
+        pupil = np.ones(1000)
+        pupil[100:150] = np.nan
+        d = pp.PupilData(time=5000 + np.arange(1000) * 10.0, left_pupil=pupil,
+                         event_onsets=[6000, 9000], event_labels=["a", "b"])
+        fig = plt.figure()
+        d.plot.plot_masked('left', 'pupil', units=None, show_events=True)
+        xs = [line.get_xdata()[0] for line in plt.gca().lines
+              if line.get_color() == 'grey']
+        np.testing.assert_allclose(xs, [100, 400])
+
 
 class TestPlottingGaze(unittest.TestCase):
     """Smoke tests for GazePlotter methods"""

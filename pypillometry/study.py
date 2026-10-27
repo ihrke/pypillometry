@@ -162,26 +162,16 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     if os.path.exists(cache_file) and not force_download:
         with open(cache_file, 'rb') as f:
             files = pickle.load(f)
-        print("Using cached OSF file information")
+        logger.info("Using cached OSF file information")
     else:
         # Get all files in the project and estimate total download size
-        print(f"Getting info on all files in project '{osf_id}'")
+        logger.info(f"Getting info on all files in project '{osf_id}'")
         files = get_osf_project_files(osf_id, session=session)
         
         # Cache the file information
         with open(cache_file, 'wb') as f:
             pickle.dump(files, f)
     
-    # Calculate total download size from file sizes in API response
-    total_size = sum(file_info['size'] for file_info in files.values())
-    
-    # Show download size/time if force_download
-    if force_download:
-        size_mb = round(total_size / (1024 * 1024), 1)  # Convert bytes to MB
-        est_minutes = round(total_size / (1024 * 1024 * 60), 1)  # Convert bytes to minutes
-        print(f"Total size: {size_mb} MB")
-        print(f"Estimated download time (assuming 1MB/s): {est_minutes} minutes")
-        
     # Find and download config file
     config_path = os.path.join(path, config_file)
     config_file_osf = next((f for f in files if f.endswith(config_file)), None)
@@ -212,11 +202,12 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
         subject_ids = [sid for sid in subjects if sid in config.raw_data]
         if not subject_ids:
             raise ValueError("None of the specified subjects were found in the data")
-        print(f"Loading {len(subject_ids)} specified subjects")
+        logger.info(f"Loading {len(subject_ids)} specified subjects")
     else:
-        print(f"Loading all {len(subject_ids)} subjects")
+        logger.info(f"Loading all {len(subject_ids)} subjects")
     
-    # Download and read raw data files
+    # Find raw data files that need to be downloaded
+    to_download = []
     for subject_id in subject_ids:
         subject_files = config.raw_data[subject_id]
         for file_type, data_file in subject_files.items():
@@ -228,29 +219,40 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
                 
             if os.path.exists(file_path) and not force_download:
                 continue
-                
-            # Create directory if it doesn't exist
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            to_download.append((data_file, file_path, matching_file))
+
+    # Show download size/time (from file sizes in API response)
+    if to_download:
+        total_size = sum(files[m]['size'] for _, _, m in to_download)
+        size_mb = round(total_size / (1024 * 1024), 1)  # Convert bytes to MB
+        est_minutes = round(total_size / (1024 * 1024 * 60), 1)  # at 1 MB/s
+        logger.info(f"Downloading {len(to_download)} files, total size: {size_mb} MB "
+                    f"(estimated download time at 1 MB/s: {est_minutes} minutes)")
+
+    # Download raw data files
+    for data_file, file_path, matching_file in to_download:
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        if session is not None:
+            response = session.get(files[matching_file]['download_url'], stream=True)
+        else:
+            response = requests.get(files[matching_file]['download_url'], stream=True)
+        if response.status_code == 200:
+            total = int(response.headers.get('content-length', 0))
+            with open(file_path, 'wb') as f, tqdm(
+                desc=f"Downloading {data_file}",
+                total=total,
+                unit='iB',
+                unit_scale=True,
+                unit_divisor=1024,
+            ) as bar:
+                for data in response.iter_content(chunk_size=1024):
+                    size = f.write(data)
+                    bar.update(size)
+        else:
+            raise ValueError(f"Could not download {data_file}")
             
-            if session is not None:
-                response = session.get(files[matching_file]['download_url'], stream=True)
-            else:
-                response = requests.get(files[matching_file]['download_url'], stream=True)
-            if response.status_code == 200:
-                total = int(response.headers.get('content-length', 0))
-                with open(file_path, 'wb') as f, tqdm(
-                    desc=f"Downloading {data_file}",
-                    total=total,
-                    unit='iB',
-                    unit_scale=True,
-                    unit_divisor=1024,
-                ) as bar:
-                    for data in response.iter_content(chunk_size=1024):
-                        size = f.write(data)
-                        bar.update(size)
-            else:
-                raise ValueError(f"Could not download {data_file}")
-                
     # apply the read_subject function from the config module
     study_data = {}
 

@@ -17,6 +17,7 @@ import scipy.interpolate
 from scipy.interpolate import interp1d, splrep, splev
 
 from .pupil import pupil_kernel, pupil_response
+from ..convenience import _user_cache_dir
 
 __all__ = [
     "bspline", "butter_lowpass", "butter_lowpass_filter", "downsample",
@@ -24,6 +25,33 @@ __all__ = [
     "baseline_pupil_model",
 ]
 
+
+_stan_models = {}
+
+def _get_stan_model(name):
+    """Return the compiled Stan model `name` of the package (cached per session).
+
+    The model is compiled next to the .stan file. If that directory is not
+    writable (e.g., a read-only install) and there is no up-to-date
+    executable, the .stan file is copied to the user cache directory and
+    compiled there.
+    """
+    if name not in _stan_models:
+        import filecmp
+        import shutil
+        fpath = str(files('pypillometry.stan').joinpath(name + ".stan"))
+        exe = os.path.splitext(fpath)[0] + (".exe" if os.name == "nt" else "")
+        exe_ok = os.path.exists(exe) and os.path.getmtime(exe) >= os.path.getmtime(fpath)
+        if not exe_ok and not os.access(os.path.dirname(fpath), os.W_OK):
+            cache = os.path.join(_user_cache_dir(), "stan")
+            os.makedirs(cache, exist_ok=True)
+            target = os.path.join(cache, name + ".stan")
+            if not os.path.exists(target) or not filecmp.cmp(fpath, target, shallow=False):
+                shutil.copy(fpath, target)
+            fpath = target
+        logger.debug("Compiling/loading Stan model: %s" % fpath)
+        _stan_models[name] = cmdstanpy.CmdStanModel(stan_file=fpath)
+    return _stan_models[name]
 
 def bspline(txd, knots, spline_degree=3):
     """
@@ -153,10 +181,9 @@ def downsample(y,R):
     
 def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2, 
                                    lam_sig=1, lam_min=1, lam_max=100,
-                                   verbose=0):
+                                   verbose=0, seed=None):
     """
-    Extract baseline based (re-)estimating the lower envelope using B-splines.
-    See notebook `baseline_interp.ipynb` for details.
+    Extract baseline based on (re-)estimating the lower envelope using B-splines.
     The signal is downsampled (to `fsd` Hz) for speed.
 
     The B-spline fits are done with a Stan model
@@ -188,6 +215,8 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
         weight given to the highest-prominence peaks
     verbose : int
         not used (progress is reported via the logger)
+    seed : int or None
+        random seed for the variational inference (for reproducible results)
 
     Returns
     -------
@@ -230,14 +259,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     w=prominence_to_lambda(prominences, lam_min=lam_min, lam_max=lam_max)
     
     # load or compile model
-    fpath=files('pypillometry.stan').joinpath('baseline_model_asym_laplac.stan')
-    logger.debug("Compiling Stan model: %s"%fpath)
-
-    #fname="stan/baseline_model_asym_laplac.stan"
-    #fpath=os.path.join(os.path.split(__file__)[0], fname)
-    sm = cmdstanpy.CmdStanModel(stan_file=fpath)
-    #sm.compile()
-    #sm = StanModel_cache(stan_code_baseline_model_asym_laplac)
+    sm = _get_stan_model('baseline_model_asym_laplac')
     
     ## put the data for the model together
     data={
@@ -254,7 +276,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     
     ## variational optimization
     logger.debug("Optimizing Stan model")    
-    opt=sm.variational(data=data)
+    opt=sm.variational(data=data, seed=seed)
     vbc=opt.stan_variable("coef")#, mean=True)
     meansigvb=np.dot(B, vbc)
     
@@ -295,7 +317,7 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
     
     ##  variational optimization
     logger.debug("Optimizing 2nd Stan model")
-    opt=sm.variational(data=data2)
+    opt=sm.variational(data=data2, seed=seed)
     vbc2=opt.stan_variable("coef")#, mean=True)
     meansigvb2=np.dot(B2, vbc2)  
     

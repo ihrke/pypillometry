@@ -85,11 +85,60 @@ Plotting
 
 .. autoclass:: pypillometry.EyePlotter
     :members:
+    :inherited-members:
 
 .. autoclass:: pypillometry.PupilPlotter
     :members:
+    :inherited-members:
 
 .. autoclass:: pypillometry.GazePlotter
+    :members:
+    :inherited-members:
+
+
+Intervals and events
+--------------------
+
+:class:`Intervals` hold time intervals (e.g., blinks or windows around
+events, see :meth:`~pypillometry.GenericEyeData.get_intervals`);
+:class:`Events` hold event onsets and labels
+(see :meth:`~pypillometry.GenericEyeData.get_events`).
+
+.. autoclass:: pypillometry.Intervals
+    :members:
+
+.. autofunction:: pypillometry.merge_intervals
+
+.. autoclass:: pypillometry.Events
+    :members:
+
+
+Segmented data
+--------------
+
+Data cut into segments around events
+(see :meth:`~pypillometry.GenericEyeData.get_segments`), for single
+subjects and on the group level.
+
+.. autoclass:: pypillometry.SegmentedEyeData
+    :members:
+
+.. autoclass:: pypillometry.GroupLevelSegmentedData
+    :members:
+
+.. autofunction:: pypillometry.group_segments
+
+
+Regions of interest
+-------------------
+
+.. autoclass:: pypillometry.ROI
+    :members:
+
+.. autoclass:: pypillometry.CircularROI
+    :members:
+
+.. autoclass:: pypillometry.RectangularROI
     :members:
 
 
@@ -118,6 +167,15 @@ Stateless signal-processing functions
 These functions are used by the main classes to process the data. They are stateless, meaning that they do not store any state between calls.
 
 .. automodule:: pypillometry.signal.baseline
+    :members:
+
+.. automodule:: pypillometry.signal.preproc
+    :members:
+
+.. automodule:: pypillometry.signal.pupil
+    :members:
+
+.. automodule:: pypillometry.signal.fake
     :members:
 
 

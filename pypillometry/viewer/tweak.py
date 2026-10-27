@@ -779,8 +779,8 @@ class TweakCanvas(SceneCanvas):
 <h3>Parameter Panel</h3>
 <table>
 <tr><td><b>Auto Update</b></td><td>Update plot on every parameter change</td></tr>
-<tr><td><b>Update</b></td><td>Manually trigger update (when Auto off)</td></tr>
-<tr><td><b>Reset</b></td><td>Reset parameters to initial values</td></tr>
+<tr><td><b>Update  or  Enter</b></td><td>Manually trigger update (when Auto off)</td></tr>
+<tr><td><b>Reset to Initial</b></td><td>Reset parameters to initial values</td></tr>
 </table>
 """
         
@@ -804,8 +804,8 @@ class TweakCanvas(SceneCanvas):
         modifiers = event.modifiers if hasattr(event, 'modifiers') else []
         shift_held = 'Shift' in modifiers if modifiers else False
         
-        # Help with 'H' or '?'
-        if key in ('H', 'Slash') or (key == '/' and '?' in str(event.key)):
+        # Help with 'H' or '?' (not with a plain '/')
+        if key in ('H', '?') or getattr(event, 'text', None) == '?':
             self._show_help()
             return
         

@@ -14,11 +14,13 @@ import pandas as pd
 from .eyedata import EyeData
 from importlib.resources import files
 from urllib.request import urlretrieve
-import tempfile
+import inspect
+import os
 import os.path
 import requests
 from tqdm import tqdm
-from .io import download
+from .io import fetch_url
+from .convenience import _user_cache_dir
 
 __all__ = [
     "get_available_datasets", "get_example_data", "get_rlmw_002",
@@ -29,22 +31,22 @@ example_datasets = {
     "rlmw_002": {
         "samples_asc":"https://osf.io/download/67cec1a4fb24855200fd6db7/",
         "events_asc":"https://osf.io/download/67cec1a183c337a5effd6fb6/",
-        "description":"Binocular data from a 20-minute reinforcement learning task."
-        "Data from a single participant, features strong horizontal eye-movements"
+        "description":"Binocular data from a 20-minute reinforcement learning task. "
+        "Data from a single participant, features strong horizontal eye-movements "
         "between the two stimuli presented on the left and right.",
     },
     "rlmw_002_short": {
         "sample_asc":files('pypillometry.data').joinpath('002_rlmw_samples_short.asc'),
         "events_asc":files('pypillometry.data').joinpath('002_rlmw_events_short.asc'),
-        "description":"Short version (first 40 sec) of a 20-minute reinforcement learning task."
-        "Data from a single participant, features strong horizontal eye-movements"
+        "description":"Short version (first 40 sec) of a 20-minute reinforcement learning task. "
+        "Data from a single participant, features strong horizontal eye-movements "
         "between the two stimuli presented on the left and right.",
     },
     "rlmw_010_edf": {
         "edf":"https://osf.io/trsuq/download",
         "description":"Binocular data from a 20-minute reinforcement learning task "
-        "in EDF (Eyelink) format."
-        "Data from a single participant, features strong horizontal eye-movements"
+        "in EDF (Eyelink) format. "
+        "Data from a single participant, features strong horizontal eye-movements "
         "between the two stimuli presented on the left and right.",
     },
 }
@@ -110,7 +112,7 @@ def get_available_datasets():
     """
     return DatasetDict(example_datasets)
 
-def get_example_data(key):
+def get_example_data(key, cache_dir=None):
     """Load example data for a given example (see `example_datasets`).
 
     Parameters
@@ -118,6 +120,10 @@ def get_example_data(key):
     key : str
         Key of the example dataset. Available keys are in the dictionary
         `example_datasets`.
+    cache_dir : str, optional
+        directory to store downloaded files in (reused in later calls);
+        default ``$XDG_CACHE_HOME/pypillometry`` (``~/.cache/pypillometry``).
+        Ignored for datasets included in the package.
 
     Returns
     -------
@@ -133,46 +139,55 @@ def get_example_data(key):
     funcname = f"get_{key}"
     if funcname in globals():
         func = globals()[funcname]
+        kwargs = {}
+        if "cache_dir" in inspect.signature(func).parameters:
+            kwargs["cache_dir"] = cache_dir
         import warnings
         with warnings.catch_warnings():
             warnings.simplefilter(action='ignore') 
-            r = func()
+            r = func(**kwargs)
         return r
     else:
         raise ValueError(f"Function '{funcname}' not found in example datasets.")
 
 
-def get_rlmw_002():
+def get_rlmw_002(cache_dir=None):
     """Load the "rlmw_002" example dataset (downloaded from OSF).
 
     Binocular gaze and pupil data from a 20-minute reinforcement learning
-    task (single participant). The ASC files are downloaded into a
-    temporary directory on every call. Events are the "MSG" lines after
+    task (single participant). The ASC files are downloaded into
+    `cache_dir` on the first call and reused later. Events are the "MSG" lines after
     "experiment_start"; missing pupil samples (coded as 0 by Eyelink) are
     set to NaN; time is reset to start at 0 and the original data
     are kept (`keep_orig=True`). Usually called via
     :func:`~pypillometry.get_example_data`.
+
+    Parameters
+    ----------
+    cache_dir : str, optional
+        directory for the downloaded files; default
+        ``$XDG_CACHE_HOME/pypillometry`` (``~/.cache/pypillometry``)
 
     Returns
     -------
     EyeData
         the example dataset
     """
-    # download file from osf   
-    with tempfile.TemporaryDirectory() as tmpdirname: 
-        fname_samples = os.path.join(tmpdirname,"002_rlmw_samples.asc")
-        fname_events = os.path.join(tmpdirname,"002_rlmw_events.asc")
-        download(example_datasets["rlmw_002"]["samples_asc"], fname_samples)
-        download(example_datasets["rlmw_002"]["events_asc"], fname_events)
+    # download files from osf (or use the cached copies)
+    cache_dir = cache_dir or _user_cache_dir()
+    fname_samples = fetch_url(example_datasets["rlmw_002"]["samples_asc"],
+                              cache_file=os.path.join(cache_dir, "002_rlmw_samples.asc"))
+    fname_events = fetch_url(example_datasets["rlmw_002"]["events_asc"],
+                             cache_file=os.path.join(cache_dir, "002_rlmw_events.asc"))
 
-        df=pd.read_table(fname_samples, index_col=False,
-                        names=["time", "left_x", "left_y", "left_p",
-                                "right_x", "right_y", "right_p"])
+    df=pd.read_table(fname_samples, index_col=False,
+                    names=["time", "left_x", "left_y", "left_p",
+                            "right_x", "right_y", "right_p"])
 
-        ## Loading the events from the events file
-        # read the whole file into variable `events` (list with one entry per line)
-        with open(fname_events) as f:
-            events=f.readlines()
+    ## Loading the events from the events file
+    # read the whole file into variable `events` (list with one entry per line)
+    with open(fname_events) as f:
+        events=f.readlines()
 
     ## Eyelink tracker puts "   ." when no data is available for x/y coordinates
     left_x=df.left_x.values
@@ -212,7 +227,7 @@ def get_rlmw_002():
         physical_screen_size=("30 cm", "20 cm"),
         eye_to_screen_center="60 cm",
     )
-    d = EyeData(time=df.time, name="test short",
+    d = EyeData(time=df.time, name="rlmw_002",
                 experimental_setup=setup,
                 left_x=left_x, left_y=left_y, left_pupil=left_p,
                 right_x=right_x, right_y=right_y, right_pupil=right_p,
@@ -297,14 +312,20 @@ def get_rlmw_002_short():
     return d
         
 
-def get_rlmw_010_edf():
+def get_rlmw_010_edf(cache_dir=None):
     """Load the "rlmw_010_edf" example dataset (downloaded from OSF).
 
     Binocular gaze and pupil data from a 20-minute reinforcement learning
     task (single participant) in EDF (Eyelink) format, read with
     :meth:`~pypillometry.EyeData.from_eyelink`. The EDF file is downloaded
-    into a temporary directory on every call. Usually called via
+    into `cache_dir` on the first call and reused later. Usually called via
     :func:`~pypillometry.get_example_data`.
+
+    Parameters
+    ----------
+    cache_dir : str, optional
+        directory for the downloaded files; default
+        ``$XDG_CACHE_HOME/pypillometry`` (``~/.cache/pypillometry``)
 
     Returns
     -------
@@ -312,10 +333,10 @@ def get_rlmw_010_edf():
         the example dataset
     """
     from .eyedata.experimental_setup import ExperimentalSetup
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        fname = os.path.join(tmpdirname, "010_rlmw.edf")
-        download(example_datasets["rlmw_010_edf"]["edf"], fname)
-        d = EyeData.from_eyelink(fname)
+    cache_dir = cache_dir or _user_cache_dir()
+    fname = fetch_url(example_datasets["rlmw_010_edf"]["edf"],
+                      cache_file=os.path.join(cache_dir, "010_rlmw.edf"))
+    d = EyeData.from_eyelink(fname)
     d.name = "rlmw_010"
     d.set_experimental_setup(
         physical_screen_size=("30 cm", "20 cm"),

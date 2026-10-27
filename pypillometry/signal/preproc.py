@@ -3,7 +3,6 @@ preproc.py
 ==========
 
 preprocessing functions (blinks, smoothing, missing data...)
-21.10.2025 (Josephine) Added fix to detect_blinks_velocity() line 123
 """
 import numpy as np
 import scipy.optimize
@@ -255,10 +254,10 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
         velocity-threshold to detect the offset of the blink; in units per sample (positive value)
     min_onset_len : int
         number of consecutive samples that must cross the threshold to detect an onset
-        (runs must be longer than `min_onset_len` samples)
+        (runs must have at least `min_onset_len` samples)
     min_offset_len : int
         number of consecutive samples that must cross the threshold to detect an offset
-        (runs must be longer than `min_offset_len` samples)
+        (runs must have at least `min_offset_len` samples)
     min_blink_samples : int
         minimum duration of a blink in samples; offsets that would create shorter intervals
         are skipped during matching (to avoid spurious short offsets stealing real onsets)
@@ -266,10 +265,10 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     Returns
     -------
     np.ndarray
-        array (nblinks x 2) of blink onset/offset sample indices; the offset
-        is the last sample of the matching offset run, or `len(sy)` if no
-        offset was found after the last onset; empty array if no blinks
-        were found
+        array (nblinks x 2) of blink onset/offset sample indices (both
+        inclusive); the offset is the last sample of the matching offset run,
+        or the last sample of `sy` if no offset was found after the last
+        onset; empty array if no blinks were found
     """
     n = len(sy)
     
@@ -280,6 +279,9 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     # (the asymmetric Savitzky-Golay will prevent NaN from affecting edges)
     sy_filled = sy.copy()
     valid_indices = np.where(~invalid_mask)[0]
+    if len(valid_indices) == 0:
+        logger.debug("No valid samples - returning empty array")
+        return np.array([])
         
     # Simple linear interpolation for NaN regions
     invalid_indices = np.where(invalid_mask)[0]
@@ -312,7 +314,7 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     onsets_ixx = np.r_[10, np.diff(onsets)] > 1
     onsets_len = np.diff(np.r_[np.where(onsets_ixx)[0], onsets.size])
     onsets = onsets[onsets_ixx]
-    onsets = onsets[onsets_len > min_onset_len]
+    onsets = onsets[onsets_len >= min_onset_len]
     logger.debug(f"After filtering, {len(onsets)} onsets remain")
 
     # Find offset candidates using forward velocity (fast rise after blink)
@@ -333,7 +335,7 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     offset_ends = offsets[offsets_end_ixx]
     
     # Filter by minimum length (apply same mask to both starts and ends)
-    valid_len_mask = offsets_len > min_offset_len
+    valid_len_mask = offsets_len >= min_offset_len
     offset_starts = offset_starts[valid_len_mask]
     offset_ends = offset_ends[valid_len_mask]
     logger.debug(f"After filtering, {len(offset_starts)} offsets remain")
@@ -355,7 +357,7 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
             first_valid_idx = np.where(valid_offset_mask)[0][0]
             off = offset_ends[first_valid_idx]
         else:
-            off = n
+            off = n - 1
         blinks.append([on, off])
         ons = onsets[onsets > off]
         on = ons[0] if ons.size > 0 else None

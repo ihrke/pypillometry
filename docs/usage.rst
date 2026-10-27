@@ -51,7 +51,7 @@ Pipeline-based processing
 
 .. code-block:: python
 
-    d=pp.get_example_data("rlmw_002_short").pupil_blinks_detect().blinks_merge_close().pupil_lowpass_filter(3).downsample(50)
+    d=pp.get_example_data("rlmw_002_short").pupil_blinks_detect(apply_mask=True).blinks_merge_close(apply_mask=True).pupil_lowpass_filter(3).downsample(50)
 
 This command loads an example data-file, applies a 3Hz low-pass filter to it, downsamples the signal to 50 Hz, detects blinks in the signal and merges short, successive blinks together. The final result of this processing-pipeline is stored in object `d`. This object also stores a log of the operations applied to the dataset (shown when printing it or with :meth:`~pypillometry.GenericEyeData.print_history`).
 
@@ -61,7 +61,7 @@ This will return a new object with the results of the operations.
 .. code-block:: python
 
     d=pp.get_example_data("rlmw_002_short")
-    d_new=d.pupil_blinks_detect(inplace=False).blinks_merge_close().pupil_lowpass_filter(3).downsample(50)
+    d_new=d.pupil_blinks_detect(apply_mask=True, inplace=False).blinks_merge_close(apply_mask=True).pupil_lowpass_filter(3).downsample(50)
 
 This will return a new object `d_new` with the results of the operations. The original object `d` is not modified.
 

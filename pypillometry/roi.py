@@ -1,6 +1,6 @@
 """
 roi.py
-=====
+======
 
 Implement region of interest (ROI) functionality for gaze-data (x/y).
 
@@ -54,15 +54,6 @@ class ROI:
     """
     
     def __init__(self, name: str = None, setup: Optional["ExperimentalSetup"] = None):
-        """Initialize ROI with optional name and setup.
-        
-        Parameters
-        ----------
-        name : str, optional
-            Name of the ROI, by default None
-        setup : ExperimentalSetup, optional
-            Experimental setup for coordinate conversions
-        """
         self.name = name
         self.setup = setup
     
@@ -136,6 +127,11 @@ class CircularROI(ROI):
     setup : ExperimentalSetup, optional
         Experimental setup for coordinate conversions
 
+    Raises
+    ------
+    ValueError
+        If radius is negative
+
     Examples
     --------
     >>> import numpy as np
@@ -154,25 +150,6 @@ class CircularROI(ROI):
         name: str = None,
         setup: Optional["ExperimentalSetup"] = None
     ):
-        """Initialize circular ROI.
-        
-        Parameters
-        ----------
-        center : Tuple[float, float]
-            (x, y) coordinates of the center point in pixels.
-            Origin at upper-left corner, y increases downward.
-        radius : float
-            Radius of the circle in pixels
-        name : str, optional
-            Name of the ROI, by default None
-        setup : ExperimentalSetup, optional
-            Experimental setup for coordinate conversions
-            
-        Raises
-        ------
-        ValueError
-            If radius is negative
-        """
         super().__init__(name, setup)
         self.center = np.array(center)
         if radius < 0:
@@ -397,21 +374,6 @@ class RectangularROI(ROI):
         name: str = None,
         setup: Optional["ExperimentalSetup"] = None
     ):
-        """Initialize rectangular ROI.
-        
-        Parameters
-        ----------
-        corner1 : Tuple[float, float]
-            (x, y) coordinates of first corner in pixels.
-            Origin at upper-left corner, y increases downward.
-        corner2 : Tuple[float, float]
-            (x, y) coordinates of second corner in pixels.
-            Origin at upper-left corner, y increases downward.
-        name : str, optional
-            Name of the ROI, by default None
-        setup : ExperimentalSetup, optional
-            Experimental setup for coordinate conversions
-        """
         super().__init__(name, setup)
         self.corner1 = np.array(corner1)
         self.corner2 = np.array(corner2)

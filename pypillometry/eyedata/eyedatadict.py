@@ -48,14 +48,14 @@ class EyeDataDict(MutableMapping):
         Returns
         -------
         list of str
-            names of the available eyes (e.g., ``["left", "right"]``), in no
-            particular order
+            names of the available eyes (e.g., ``["left", "right"]``), in the
+            order in which they were added
         """
         if variable is not None:
             eyes=[k.split("_")[0] for k in self.data.keys() if k.endswith("_"+variable)]
         else:
             eyes=[k.split("_")[0] for k in self.data.keys()]
-        return list(set(eyes))
+        return list(dict.fromkeys(eyes))
 
     def get_available_variables(self):
         """
@@ -65,14 +65,14 @@ class EyeDataDict(MutableMapping):
         -------
         list of str
             names of the available variables (e.g., ``["x", "y", "pupil"]``),
-            in no particular order
+            in the order in which they were added
         """
         variables = []
         for k in self.data.keys():
             parts = k.split("_", 1)  # Split only on first underscore
             if len(parts) > 1:
                 variables.append(parts[1])
-        return list(set(variables))
+        return list(dict.fromkeys(variables))
 
     def get_eye(self, eye: str) -> 'EyeDataDict':
         """

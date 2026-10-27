@@ -230,6 +230,45 @@ class TestDetectBlinksVelocity(unittest.TestCase):
         # Should detect at least one blink based on velocity changes
         self.assertGreaterEqual(len(blinks), 1)
     
+    def test_all_invalid(self):
+        """All samples NaN or zero: no blinks, no error"""
+        for signal in [np.full(200, np.nan), np.zeros(200)]:
+            blinks = detect_blinks_velocity(signal, smooth_winsize=5,
+                                            vel_onset=-10, vel_offset=10)
+            self.assertEqual(len(blinks), 0)
+
+    def test_offset_inclusive_without_recovery(self):
+        """Blink without offset ends at the last sample (inclusive)"""
+        signal = np.ones(200) * 1000
+        signal[40:50] = np.linspace(1000, 100, 10)
+        signal[50:60] = 0
+        signal[60:70] = np.linspace(100, 1000, 10)
+        signal[140:150] = np.linspace(1000, 100, 10)
+        signal[150:] = 0
+        blinks = detect_blinks_velocity(signal, smooth_winsize=5,
+                                        vel_onset=-50, vel_offset=50,
+                                        min_onset_len=2, min_offset_len=2)
+        self.assertEqual(len(blinks), 2)
+        self.assertEqual(blinks[-1][1], len(signal) - 1)
+
+    def test_min_len_counts_samples(self):
+        """Runs with exactly min_onset_len/min_offset_len samples count"""
+        signal = np.ones(200) * 1000
+        signal[45:55] = np.linspace(1000, 100, 10)
+        signal[55:80] = 100
+        signal[80:90] = np.linspace(100, 1000, 10)
+        kw = dict(smooth_winsize=5, vel_onset=-50, vel_offset=50)
+        n_on = np.sum(velocity_savgol(signal, 5, polyorder=2, direction="backward") <= -50)
+        n_off = np.sum(velocity_savgol(signal, 5, polyorder=2, direction="forward") >= 50)
+        self.assertGreater(n_on, 1)
+        self.assertGreater(n_off, 1)
+        self.assertEqual(len(detect_blinks_velocity(
+            signal, min_onset_len=n_on, min_offset_len=n_off, **kw)), 1)
+        self.assertEqual(len(detect_blinks_velocity(
+            signal, min_onset_len=n_on + 1, min_offset_len=n_off, **kw)), 0)
+        self.assertEqual(len(detect_blinks_velocity(
+            signal, min_onset_len=n_on, min_offset_len=n_off + 1, **kw)), 0)
+
     def test_returns_empty_for_flat_signal(self):
         """Flat signal should have no blinks"""
         signal = np.ones(200) * 100

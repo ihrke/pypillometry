@@ -378,6 +378,14 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertEqual(stats["mean"], 200.0)  # (100+200+300)/3
         self.assertEqual(stats["min"], 100.0)
         self.assertEqual(stats["max"], 300.0)
+
+    def test_intervals_stats_empty(self):
+        """stats() of empty Intervals gives n=0 and NaN"""
+        stats = Intervals([], units="ms").stats()
+        self.assertEqual(stats["n"], 0)
+        self.assertEqual(stats["total_duration"], 0)
+        for key in ("mean", "sd", "min", "max"):
+            self.assertTrue(np.isnan(stats[key]))
     
     def test_intervals_repr(self):
         """Test string representation of Intervals"""
@@ -388,6 +396,12 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertIn("test_intervals", repr_str)
         self.assertIn("3 intervals", repr_str)
         self.assertIn("ms", repr_str)  # units shown inline with values
+
+    def test_intervals_repr_indices(self):
+        """Index intervals show 'indices' as unit, not 'None'"""
+        repr_str = repr(Intervals([(0, 10), (20, 30)], units=None))
+        self.assertIn("indices", repr_str)
+        self.assertNotIn("None", repr_str)
     
     def test_intervals_repr_empty(self):
         """Test string representation of empty Intervals"""
@@ -832,6 +846,14 @@ class TestIntervalsPlotHighlight(unittest.TestCase):
         
         # Should create 6 patches (3 intervals x 2 axes)
         self.assertEqual(len(patches), 6)
+
+    def test_plot_highlight_zorder(self):
+        """zorder defaults to 0 and can be overridden"""
+        fig, ax = plt.subplots()
+        patches = self.intervals.plot_highlight()
+        self.assertTrue(all(p.get_zorder() == 0 for p in patches))
+        patches = self.intervals.plot_highlight(zorder=3)
+        self.assertTrue(all(p.get_zorder() == 3 for p in patches))
     
     def test_plot_highlight_empty_intervals(self):
         """Test plot_highlight with empty intervals"""
@@ -1394,6 +1416,22 @@ class TestIntervalsMaskConversion(unittest.TestCase):
         intervals = Intervals.from_mask(mask, sampling_rate=1000)
         
         self.assertEqual(intervals.sampling_rate, 1000)
+
+    def test_from_mask_time_units(self):
+        """from_mask with time units converts the sample indices"""
+        mask = np.array([0, 1, 1, 0])
+        intervals = Intervals.from_mask(mask, units="ms", sampling_rate=500)
+        self.assertEqual(intervals.units, "ms")
+        self.assertEqual(intervals.intervals, [(2.0, 6.0)])
+        self.assertEqual(intervals.data_time_range, (0.0, 8.0))
+        intervals = Intervals.from_mask(mask, units="ms", sampling_rate=500,
+                                        time_offset=100)
+        self.assertEqual(intervals.intervals, [(102.0, 106.0)])
+
+    def test_from_mask_time_units_without_sampling_rate(self):
+        """from_mask with time units but no sampling rate raises"""
+        with self.assertRaises(ValueError):
+            Intervals.from_mask(np.array([0, 1, 1, 0]), units="ms")
     
     def test_from_mask_boolean_input(self):
         """Test from_mask with boolean array"""

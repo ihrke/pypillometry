@@ -533,6 +533,8 @@ class ExperimentalSetup:
         Requires `screen_resolution` and `physical_screen_size`.
         Inverse of :meth:`pixels_to_mm` (the y-axis is flipped).
         """
+        self._require_screen_resolution()
+        self._require_physical_screen_size()
         if centered:
             x_mm = x_mm + self._physical_screen_size[0] / 2
             y_mm = y_mm + self._physical_screen_size[1] / 2
@@ -695,7 +697,8 @@ class ExperimentalSetup:
         Notes
         -----
         Uses the transformation from algorithm document Section 10.7.3:
-        T(x_s, y_s) = R(alpha, beta) @ [x_s, y_s, 0]^T + [delta_x, delta_y, d]^T
+        T(x_s, y_s) = R(alpha, beta) @ [x_s, y_s, 0]^T + [delta_x, delta_y, d]^T,
+        i.e., the screen center is at (delta_x, delta_y, d) for any tilt.
         """
         cos_a, sin_a = np.cos(self._alpha_tilt), np.sin(self._alpha_tilt)
         cos_b, sin_b = np.cos(self._beta_tilt), np.sin(self._beta_tilt)
@@ -703,7 +706,7 @@ class ExperimentalSetup:
         # Apply rotation and translation
         T_x = x_mm * cos_b + y_mm * sin_a * sin_b + self.delta_x
         T_y = y_mm * cos_a + self.delta_y
-        T_z = -x_mm * sin_b + y_mm * sin_a * cos_b + self.d * cos_a * cos_b
+        T_z = -x_mm * sin_b + y_mm * sin_a * cos_b + self.d
         
         return T_x, T_y, T_z
     
@@ -879,6 +882,15 @@ class ExperimentalSetup:
         -------
         ExperimentalSetup
         """
+        # values are stored in canonical units (mm, radians); attach the
+        # units so that they are not parsed as plain numbers (with warnings)
+        def mm(x):
+            return None if x is None else ureg.Quantity(x, ureg.mm)
+        def rad(x):
+            return None if x is None else ureg.Quantity(x, ureg.radian)
+        def mm_tuple(x):
+            return None if x is None else tuple(mm(v) for v in x)
+
         # Compute eye_to_screen_center from d and screen_offset
         d_val = d.get('d')
         screen_offset = d.get('screen_offset')
@@ -890,16 +902,21 @@ class ExperimentalSetup:
             else:
                 eye_to_screen_center = d_val
         
+        camera_spherical = d.get('camera_spherical')
+        if camera_spherical is not None:
+            theta, phi, r = camera_spherical
+            camera_spherical = (rad(theta), rad(phi), mm(r))
+
         return cls(
             screen_resolution=d['screen_resolution'],
-            physical_screen_size=d['physical_screen_size'],
-            screen_offset=screen_offset,
-            eye_to_screen_center=eye_to_screen_center,
-            screen_pitch=d.get('alpha_tilt', 0.0),
-            screen_yaw=d.get('beta_tilt', 0.0),
-            camera_offset=d.get('camera_offset'),
-            camera_spherical=d.get('camera_spherical'),
-            ipd=d.get('ipd'),
+            physical_screen_size=mm_tuple(d['physical_screen_size']),
+            screen_offset=mm_tuple(screen_offset),
+            eye_to_screen_center=mm(eye_to_screen_center),
+            screen_pitch=rad(d.get('alpha_tilt', 0.0)),
+            screen_yaw=rad(d.get('beta_tilt', 0.0)),
+            camera_offset=mm_tuple(d.get('camera_offset')),
+            camera_spherical=camera_spherical,
+            ipd=mm(d.get('ipd')),
         )
     
     # =========================================================================

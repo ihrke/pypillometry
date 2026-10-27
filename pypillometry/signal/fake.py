@@ -339,7 +339,8 @@ def fake_gaze_fixations(duration, fs, fixation_duration_mean=300,
     screen_bounds : tuple of tuples
         ((xmin, xmax), (ymin, ymax)) screen boundaries in pixels
     n_fixations : int, optional
-        Number of fixations (if None, determined by duration and mean fixation time)
+        Number of fixations (if None, determined by duration and mean fixation time);
+        the fixation durations are scaled so that the fixations fill `duration`
     seed : int, optional
         Random seed for reproducibility
     
@@ -373,10 +374,8 @@ def fake_gaze_fixations(duration, fs, fixation_duration_mean=300,
     durations = rng.normal(fixation_duration_mean, fixation_duration_std, size=n_fixations)
     durations = np.clip(durations, 50, None)  # Minimum 50ms fixation
     
-    # Adjust to fit duration
-    total_duration = durations.sum()
-    if total_duration > duration_ms:
-        durations = durations * (duration_ms / total_duration)
+    # Scale to fill the whole duration
+    durations = durations * (duration_ms / durations.sum())
     
     # Generate fixation positions
     x_bounds, y_bounds = screen_bounds
@@ -395,6 +394,8 @@ def fake_gaze_fixations(duration, fs, fixation_duration_mean=300,
         start_idx = int(current_time * fs / 1000)
         end_time = current_time + durations[i]
         end_idx = min(int(end_time * fs / 1000), n_samples)
+        if i == n_fixations - 1:
+            end_idx = n_samples  # avoid unfilled samples from rounding
         
         if start_idx >= n_samples:
             break

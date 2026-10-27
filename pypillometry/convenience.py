@@ -14,8 +14,7 @@ import os, sys
 from tqdm import tqdm
 
 __all__ = [
-    "nprange", "zscale", "p_asym_laplac", "p_asym_laplac_kappa",
-    "trans_logistic_vec",
+    "zscale",
 ]
 
 @contextmanager
@@ -309,6 +308,11 @@ def test_selector(obj, selfun, **kwargs):
     if not callable(selfun):
         raise ValueError("selfun must be a function")
     return obj.event_labels[np.array([selfun(evlab, **kwargs) for evlab in obj.event_labels])]
+
+def _user_cache_dir():
+    """User cache directory of the package (``$XDG_CACHE_HOME/pypillometry``)."""
+    base = os.environ.get("XDG_CACHE_HOME") or os.path.join(os.path.expanduser("~"), ".cache")
+    return os.path.join(base, "pypillometry")
 
 def is_url(url):
     """Check if a string is a URL.

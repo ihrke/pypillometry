@@ -566,6 +566,22 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(corrected.data.mask['left_pupil_corrected'][10], 1)
         self.assertEqual(corrected.data.mask['left_pupil_corrected'][0], 0)
 
+    def test_nblinks_returns_dict(self):
+        """nblinks returns (and is annotated as) a dict"""
+        import typing
+        from pypillometry.intervals import Intervals
+        self.eyedata.set_blinks(Intervals([(100, 200)], units=None, sampling_rate=self.eyedata.fs),
+                                eyes=['left'], variables=['pupil'])
+        self.assertEqual(self.eyedata.nblinks(eyes='left', variables='pupil'), {'left_pupil': 1})
+        hint = typing.get_type_hints(pp.EyeData.nblinks)["return"]
+        self.assertIs(typing.get_origin(hint), dict)
+
+    def test_apply_mask_defaults_consistent(self):
+        """pupil_blinks_detect and blinks_merge_close default to apply_mask=False"""
+        import inspect
+        for f in (pp.EyeData.pupil_blinks_detect, pp.EyeData.blinks_merge_close):
+            self.assertIs(inspect.signature(f).parameters["apply_mask"].default, False)
+
     def test_blinks_merge_close(self):
         """Test merging of close blinks"""
         from pypillometry.intervals import Intervals
@@ -577,7 +593,7 @@ class TestEyeData(unittest.TestCase):
         self.eyedata.set_blinks(intervals, eyes=['left'], variables=['pupil'])
         
         # Merge blinks that are within 100ms of each other
-        merged = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=100, units="ms")
+        merged = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=100, units="ms", apply_mask=True)
         blinks = merged.get_blinks('left', 'pupil')
         
         # blinks is now an Intervals object
@@ -594,7 +610,7 @@ class TestEyeData(unittest.TestCase):
                               data_time_range=(0, len(self.eyedata.tx)),
                               sampling_rate=self.eyedata.fs)
         self.eyedata.set_blinks(intervals2, eyes=['left'], variables=['pupil'])
-        merged_sec = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=0.1, units="sec")
+        merged_sec = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=0.1, units="sec", apply_mask=True)
         blinks_sec = merged_sec.get_blinks('left', 'pupil')
         blinks_ix_sec = np.array(blinks_sec.to_units("indices")).astype(int)
         self.assertEqual(blinks_ix_sec[0, 0], 100)
@@ -605,7 +621,7 @@ class TestEyeData(unittest.TestCase):
                               data_time_range=(0, len(self.eyedata.tx)),
                               sampling_rate=self.eyedata.fs)
         self.eyedata.set_blinks(intervals3, eyes=['left'], variables=['pupil'])
-        separated = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=10, units="ms")
+        separated = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=10, units="ms", apply_mask=True)
         blinks_sep = separated.get_blinks('left', 'pupil')
         blinks_ix_sep = np.array(blinks_sep.to_units("indices")).astype(int)
         self.assertEqual(len(blinks_ix_sep), 2)
@@ -637,7 +653,7 @@ class TestEyeData(unittest.TestCase):
         # Verify no masks are applied initially (except any pre-existing ones)
         initial_mask_count = np.sum(data.data.mask['left_pupil'])
         
-        # Merge blinks with apply_mask=True (default)
+        # Merge blinks with apply_mask=True
         merged = data.blinks_merge_close(eyes=['left'], variables=['pupil'], 
                                          distance=100, units="ms", apply_mask=True)
         
@@ -1247,6 +1263,30 @@ class TestEyeData(unittest.TestCase):
         # The interval should still have NaN since left boundary margin was all NaN
         self.assertTrue(np.any(np.isnan(result.data['left_pupil'][100:150])))
         
+    def test_interpolate_intervals_ignores_masked_anchors(self):
+        """Masked samples (e.g., other blinks) are not used as anchor points"""
+        from pypillometry.intervals import Intervals
+        d = pp.PupilData(sampling_rate=100, left_pupil=np.full(300, 10.0))
+        d.data['left_pupil'][100:150] = np.nan
+        d.data['left_pupil'][150:152] = 1000.0   # artifact right after the gap
+        d.data.mask['left_pupil'][150:152] = 1
+        intervals = Intervals([(100, 150)], units=None, sampling_rate=100)
+        res = d.interpolate_intervals(intervals, margin=(-50, 50), inplace=False)
+        np.testing.assert_allclose(res.data['left_pupil'][100:150], 10.0)
+
+    def test_interpolate_intervals_margin_sign(self):
+        """margin is relative to start/end; wrong signs raise"""
+        from pypillometry.intervals import Intervals
+        d = pp.PupilData(sampling_rate=100, left_pupil=np.full(300, 10.0))
+        d.data['left_pupil'][100:150] = np.nan
+        intervals = Intervals([(100, 150)], units=None, sampling_rate=100)
+        for margin in [(20, 20), (-20, -20)]:
+            with self.assertRaises(ValueError):
+                d.interpolate_intervals(intervals, margin=margin, inplace=False)
+        # no points after the end -> not interpolated
+        res = d.interpolate_intervals(intervals, margin=(-50, 0), inplace=False)
+        self.assertTrue(np.all(np.isnan(res.data['left_pupil'][100:150])))
+
     def test_interpolate_intervals_empty_eyes(self):
         """Test interpolate_intervals with empty eyes applies to all eyes"""
         from pypillometry.intervals import Intervals
