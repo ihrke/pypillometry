@@ -65,6 +65,7 @@
   values (0 or NaN, e.g., interpolated blinks)
 - `blink_onsets_mahot()` (used by `pupil_blinks_interpolate()`) searched the
   offset too late for blinks near the start of the data
+- `PupilData.from_eyelink()`/`GazeData.from_eyelink()` raised a `TypeError`
 
 ### Documentation
 
