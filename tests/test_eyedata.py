@@ -88,6 +88,26 @@ class TestEyeData(unittest.TestCase):
         summary = d.summary()
         self.assertAlmostEqual(summary['experimental_setup']['camera_distance_mm'], 550.0, places=5)
     
+    def test_set_experimental_setup_keeps_distance(self):
+        """Updating one parameter keeps the eye-to-screen distance"""
+        d = pp.EyeData(left_x=[1,2,3], left_y=[3,4,5], sampling_rate=1000)
+        d.set_experimental_setup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("52 cm", "29 cm"),
+            screen_offset=("0 mm", "-100 mm"),
+            eye_to_screen_center="650 mm",
+            camera_offset=("0 mm", "-300 mm", "500 mm"),
+        )
+        d.set_experimental_setup(ipd="63 mm")
+        setup = d.experimental_setup
+        self.assertAlmostEqual(setup.eye_to_screen_center, 650.0, places=5)
+        self.assertEqual(setup.screen_offset, (0.0, -100.0))
+        self.assertEqual(setup.camera_position, (0.0, -300.0, 500.0))
+        self.assertEqual(setup.ipd, 63.0)
+        # a new camera position replaces the old one
+        d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "550 mm"))
+        self.assertAlmostEqual(d.experimental_setup.r, 550.0, places=5)
+
     def test_ipd_initialization(self):
         """Test initialization with inter-pupillary distance via ExperimentalSetup"""
         # Test with ipd during initialization
