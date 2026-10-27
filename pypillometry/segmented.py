@@ -586,21 +586,24 @@ class SegmentedEyeData:
         write_pickle(self, fname)
     
     @classmethod
-    def from_file(cls, fname: str) -> 'SegmentedEyeData':
+    def from_file(cls, fname: str, **kwargs) -> 'SegmentedEyeData':
         """
         Read a SegmentedEyeData object from a pickle file.
         
         Parameters
         ----------
         fname : str
-            Filename to read from
+            Filename (or HTTP(S)/SSH URL) to read from
+        **kwargs
+            passed to :func:`~pypillometry.io.read_pickle` (`cache_dir`,
+            `autodelete`)
             
         Returns
         -------
         SegmentedEyeData
             Loaded instance
         """
-        return read_pickle(fname)
+        return read_pickle(fname, **kwargs)
 
 
 class GroupLevelSegmentedData(SegmentedEyeData):

@@ -1127,18 +1127,21 @@ class GenericEyeData(ABC):
 
 
     @classmethod
-    def from_file(cls, fname:str):
+    def from_file(cls, fname:str, **kwargs):
         """
         Reads a :class:`~pypillometry.GenericEyeData` object from a pickle-file.
         Use as ``pypillometry.PupilData.from_file("yourfile.pd")``.
 
         The file is read with :func:`pypillometry.io.read_pickle`, so
-        `fname` can also be a URL.
+        `fname` can also be an HTTP(S) or SSH URL.
 
         Parameters
         ----------
         fname : str
             filename (or URL)
+        **kwargs
+            passed to :func:`pypillometry.io.read_pickle` (`cache_dir`,
+            `autodelete`)
 
         Returns
         -------
@@ -1146,7 +1149,7 @@ class GenericEyeData(ABC):
             the object stored in the file (its class is the one that was
             stored, independent of the class this method is called on)
         """
-        r=io.read_pickle(fname)
+        r=io.read_pickle(fname, **kwargs)
         return r
 
     @classmethod

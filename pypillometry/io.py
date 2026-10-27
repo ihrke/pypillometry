@@ -697,22 +697,34 @@ def write_pickle(obj, fname):
         pickle.dump(obj, f)
     
 
-def read_pickle(fname):
+def read_pickle(fname, cache_dir: Optional[str] = None, autodelete: bool = False):
     """
     Read a Python object from a file using :mod:`pickle`.
     
     Parameters
     ----------
     fname : str
-        filename or URL to load data from (URLs are downloaded into
-        memory, without authentication)
+        filename or URL to load data from (HTTP(S) URLs are downloaded into
+        memory, without authentication; SSH URLs such as
+        ``ssh://server/folder/file.pd`` are downloaded with
+        :func:`~pypillometry.io.ssh_download`)
+    cache_dir : str, optional
+        directory for files downloaded from SSH URLs; if None, a
+        temporary directory is used
+    autodelete : bool, optional
+        if True, a file downloaded from an SSH URL is deleted after it was
+        read. Default False.
         
     Returns
     -------
     object
         loaded object
     """
-    if is_url(fname):
+    if is_ssh_url(fname):
+        with local_copy(fname, cache_dir=cache_dir, autodelete=autodelete) as local:
+            with open(local, 'rb') as f:
+                obj = pickle.load(f)
+    elif is_url(fname):
         # try loading from URL
         response = requests.get(fname, stream=True)
         if response.status_code == 200:

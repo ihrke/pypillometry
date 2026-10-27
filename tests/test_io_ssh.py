@@ -172,5 +172,20 @@ class TestReadEyelinkSSH(SSHTestCase):
         self.assertGreater(len(d.tx), 0)
 
 
+class TestReadPickleSSH(SSHTestCase):
+    def test_read_pickle(self):
+        io.write_pickle({"a": 1}, os.path.join(self.server_root, "data", "obj.pkl"))
+        obj = io.read_pickle("ssh://server/data/obj.pkl", cache_dir=self.cache, autodelete=True)
+        self.assertEqual(obj, {"a": 1})
+        self.assertFalse(os.path.exists(os.path.join(self.cache, "server", "data", "obj.pkl")))
+
+    def test_from_file(self):
+        import pypillometry as pp
+        d = pp.get_example_data("rlmw_002_short")
+        d.write_file(os.path.join(self.server_root, "data", "d.pd"))
+        d2 = pp.EyeData.from_file("ssh://server/data/d.pd", cache_dir=self.cache)
+        self.assertEqual(len(d2.tx), len(d.tx))
+
+
 if __name__ == "__main__":
     unittest.main()
