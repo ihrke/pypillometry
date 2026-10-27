@@ -1416,6 +1416,22 @@ class TestIntervalsMaskConversion(unittest.TestCase):
         intervals = Intervals.from_mask(mask, sampling_rate=1000)
         
         self.assertEqual(intervals.sampling_rate, 1000)
+
+    def test_from_mask_time_units(self):
+        """from_mask with time units converts the sample indices"""
+        mask = np.array([0, 1, 1, 0])
+        intervals = Intervals.from_mask(mask, units="ms", sampling_rate=500)
+        self.assertEqual(intervals.units, "ms")
+        self.assertEqual(intervals.intervals, [(2.0, 6.0)])
+        self.assertEqual(intervals.data_time_range, (0.0, 8.0))
+        intervals = Intervals.from_mask(mask, units="ms", sampling_rate=500,
+                                        time_offset=100)
+        self.assertEqual(intervals.intervals, [(102.0, 106.0)])
+
+    def test_from_mask_time_units_without_sampling_rate(self):
+        """from_mask with time units but no sampling rate raises"""
+        with self.assertRaises(ValueError):
+            Intervals.from_mask(np.array([0, 1, 1, 0]), units="ms")
     
     def test_from_mask_boolean_input(self):
         """Test from_mask with boolean array"""

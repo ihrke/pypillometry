@@ -69,6 +69,8 @@
 - `Intervals.plot_highlight(zorder=...)` raised a `TypeError`
 - `Intervals.stats()` raised a `ValueError` for empty intervals
 - `Intervals` repr showed "None" as unit for index intervals
+- `Intervals.from_mask(units=...)` labelled sample indices with time units
+  without converting them
 
 ### Documentation
 

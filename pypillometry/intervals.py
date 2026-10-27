@@ -382,13 +382,16 @@ class Intervals:
         mask : np.ndarray
             Binary array where non-zero values indicate interval membership.
         units : str or None, optional
-            Units for the intervals. Default is None (indices).
+            Units for the intervals. Default is None (indices). Time units
+            ("ms", "sec", ...) require `sampling_rate`; the sample indices
+            are converted with :meth:`to_units`.
         label : str, optional
             Label for the intervals.
         sampling_rate : float, optional
             Sampling rate in Hz.
         time_offset : float, optional
-            Time offset in milliseconds for index-to-time conversion.
+            Time offset in milliseconds for index-to-time conversion
+            (time of the first sample).
             
         Returns
         -------
@@ -403,7 +406,7 @@ class Intervals:
         [(2, 5), (7, 9)]
         """
         # Find transitions in the mask
-        mask_bool = mask.astype(bool).astype(int)
+        mask_bool = np.asarray(mask).astype(bool).astype(int)
         # Pad with zeros to detect edges
         padded = np.concatenate([[0], mask_bool, [0]])
         diff = np.diff(padded)
@@ -414,14 +417,15 @@ class Intervals:
         
         intervals_list = list(zip(starts.tolist(), ends.tolist()))
         
-        return cls(
+        intervals = cls(
             intervals_list,
-            units=units,
+            units=None,
             label=label,
             data_time_range=(0, len(mask)),
             sampling_rate=sampling_rate,
             time_offset=time_offset
         )
+        return intervals.to_units(units)
     
     def __sub__(self, other: 'Intervals') -> 'Intervals':
         """
