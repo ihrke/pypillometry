@@ -120,6 +120,17 @@ class TestSSHDownload(SSHTestCase):
         self.assertIn("-r", self.server.calls[0])
         self.assertTrue(os.path.isfile(os.path.join(local, "sub", "g.txt")))
 
+    def test_force_download_folder(self):
+        io.ssh_download("ssh://server/data/", cache_dir=self.cache)
+        local = io.ssh_download("ssh://server/data/", cache_dir=self.cache, force_download=True)
+        self.assertTrue(os.path.isfile(os.path.join(local, "sub", "g.txt")))
+        self.assertFalse(os.path.exists(os.path.join(local, "data")))
+
+    def test_failed_download_leaves_no_file(self):
+        with self.assertRaises(RuntimeError):
+            io.ssh_download("ssh://server/data/missing.txt", cache_dir=self.cache)
+        self.assertFalse(os.path.exists(os.path.join(self.cache, "server", "data", "missing.txt")))
+
     def test_error(self):
         with self.assertRaisesRegex(RuntimeError, "No such file"):
             io.ssh_download("ssh://server/data/missing.txt", cache_dir=self.cache)

@@ -288,16 +288,21 @@ def ssh_download(url: str, cache_dir: Optional[str] = None, force_download: bool
     if shutil.which("scp") is None:
         raise RuntimeError("Downloading from SSH URLs requires the 'scp' command")
 
-    if is_dir and os.path.exists(local):
-        shutil.rmtree(local)
     os.makedirs(os.path.dirname(local), exist_ok=True)
+    # download to a temporary name, so that an interrupted download
+    # is not used as a cached copy later
+    part = local + ".part"
+    if os.path.isdir(part):
+        shutil.rmtree(part)
+    elif os.path.exists(part):
+        os.remove(part)
 
     cmd = ["scp", "-q", "-o", "BatchMode=yes"]
     if port is not None:
         cmd += ["-P", str(port)]
     if is_dir:
         cmd.append("-r")
-    cmd += [f"{host}:{path.rstrip('/') if is_dir else path}", local]
+    cmd += [f"{host}:{path.rstrip('/') if is_dir else path}", part]
 
     logger.info(f"Downloading '{url}' via SSH to {local}")
     result = subprocess.run(cmd, capture_output=True, text=True)
@@ -308,6 +313,9 @@ def ssh_download(url: str, cache_dir: Optional[str] = None, force_download: bool
             f"{result.returncode}): {msg}\n"
             "Note: only key-based SSH login is supported (no passwords)."
         )
+    if os.path.isdir(local):
+        shutil.rmtree(local)
+    os.replace(part, local)
     return local
 
 
