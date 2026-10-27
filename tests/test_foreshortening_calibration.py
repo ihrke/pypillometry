@@ -416,6 +416,27 @@ class TestFitForeshorteningMethod:
         assert isinstance(calib, ForeshorteningCalibration)
         assert calib.fit_intervals is not None
     
+    def test_fit_intervals_units(self):
+        """Intervals in sec or sample indices select the same samples as ms."""
+        from loguru import logger
+        from pypillometry.intervals import Intervals
+        data, *_ = self.create_synthetic_data(n_samples=1000, fs=100.0)
+        n_used = []
+        for iv in [Intervals([(0, 5000)], units='ms'),
+                   Intervals([(0, 5)], units='sec'),
+                   Intervals([(0, 500)], units=None)]:
+            messages = []
+            hid = logger.add(lambda m: messages.append(m.record["message"]), level="INFO")
+            try:
+                data.fit_foreshortening(eye='left', intervals=iv, verbose=True)
+            finally:
+                logger.remove(hid)
+            n_used.append([m for m in messages if "from specified intervals" in m])
+        assert len(n_used[0]) == 1
+        assert n_used[0][0] == "Using 501 samples from specified intervals"
+        assert n_used[1] == n_used[0]
+        assert n_used[2] == n_used[0]
+
     def test_fit_invalid_eye(self):
         """Test that invalid eye raises error."""
         data, theta_true, phi_true, r_true, d_true = self.create_synthetic_data(n_samples=100, fs=100.0)
