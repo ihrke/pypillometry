@@ -613,7 +613,7 @@ class EyeData(GazeData,PupilData):
             method='L-BFGS-B',
             bounds=bounds,
             jac=_objective_gradient,
-            options={'disp': verbose, 'maxiter': 500}
+            options={'maxiter': 500}
         )
         
         if not result.success:

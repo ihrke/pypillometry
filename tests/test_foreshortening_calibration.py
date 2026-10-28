@@ -377,6 +377,16 @@ class TestFitForeshorteningMethod:
         
         return data, theta_true, phi_true, r_true, d_true
     
+    def test_fit_no_optimize_warning(self):
+        """the optimizer is called without unknown options (bug 1.5)"""
+        import warnings
+        from scipy.optimize import OptimizeWarning
+        data, *_ = self.create_synthetic_data(n_samples=500, fs=100.0)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", OptimizeWarning)
+            data.fit_foreshortening(eye='left', target_fs=50.0, lowpass_freq=3.0,
+                                    verbose=True)
+
     def test_fit_basic(self):
         """Test basic fitting on synthetic data."""
         data, theta_true, phi_true, r_true, d_true = self.create_synthetic_data(n_samples=500, fs=100.0)
