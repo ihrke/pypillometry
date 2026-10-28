@@ -1581,9 +1581,11 @@ class TestEyeDataDelitem(unittest.TestCase):
     
     def test_pupil_blinks_interpolate_preserves_mask(self):
         """Test that blink interpolation preserves original mask and marks interpolated regions"""
-        # Create pupil data with some manually masked regions
+        # Create pupil data with some manually masked regions (seeded noise:
+        # with some noise, velocity detection marks the masked region)
+        rng = np.random.default_rng(1)
         pd = pp.PupilData(
-            left_pupil=np.random.rand(1000) * 100 + 3000,
+            left_pupil=rng.random(1000) * 100 + 3000,
             sampling_rate=100
         )
         
