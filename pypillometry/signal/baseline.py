@@ -228,6 +228,12 @@ def baseline_envelope_iter_bspline(tx,sy,event_onsets,fs, fsd=10, lp=2,
         final baseline estimate (after the second round), sampled at `txd`
     base1 : np.ndarray
         baseline estimate after the first round, sampled at `txd`
+
+    References
+    ----------
+    Mittner, M., & Groot, J. M. (2025). A novel method for modeling tonic and
+    phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
+    https://doi.org/10.3758/s13428-025-02755-7
     """
     dsfac=int(fs/fsd) # calculate downsampling factor
     logger.debug("Downsampling factor is %i"%dsfac)

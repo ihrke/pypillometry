@@ -864,6 +864,12 @@ class PupilData(GenericEyeData):
         ValueError
             if `method` is unknown or the data contain NaN (interpolate
             blinks first, see :meth:`pupil_blinks_interpolate`)
+
+        References
+        ----------
+        Mittner, M., & Groot, J. M. (2025). A novel method for modeling tonic and
+        phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
+        https://doi.org/10.3758/s13428-025-02755-7
         """
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])
@@ -940,6 +946,12 @@ class PupilData(GenericEyeData):
         The predicted response is stored in ``data[eye, "response"]``; the
         estimated parameters (`npar`, `tmax`, the coefficients `coef` and the
         `bounds`) are stored in ``params["response"][eye]``.
+
+        References
+        ----------
+        Mittner, M., & Groot, J. M. (2025). A novel method for modeling tonic and
+        phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
+        https://doi.org/10.3758/s13428-025-02755-7
         """
         obj = self._get_inplace(inplace)
         eyes,_=self._get_eye_var(eyes,[])

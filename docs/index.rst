@@ -110,6 +110,7 @@ Features
       - **Units** everywhere: ``3 * u.min``, ``"200 ms"``, ``60 * u.cm``
       - **Interactive viewer** for long recordings and command-line tools
       - **Modeling** of tonic baseline and phasic pupil responses
+        (Mittner & Groot, 2025)
 
 
 Citing pypillometry
@@ -120,6 +121,13 @@ If you use **pypillometry** in your research, please cite
    Mittner, M. (2020). pypillometry: A Python package for pupillometric
    analyses. *Journal of Open Source Software*, 5(51), 2348.
    https://doi.org/10.21105/joss.02348
+
+If you use the estimation of tonic and phasic pupil components
+(:doc:`/user_guide/modeling`), please also cite
+
+   Mittner, M., & Groot, J. M. (2025). A novel method for modeling tonic and
+   phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
+   https://doi.org/10.3758/s13428-025-02755-7
 
 
 .. toctree::
