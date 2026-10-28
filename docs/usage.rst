@@ -289,12 +289,11 @@ More details are availabel in this notebook: :ref:`Modeling the pupillometric si
 Artificial Data
 ---------------
 
-For validation and testing purposes, it can be useful to generate artificial datasets. The package implements a :class:`FakePupilData` as inheriting from regular :class:`PupilData` and therefore shares all its functionality. In addition to that, :class:`FakePupilData` stores "ground-truth" data and parameters that was used while creating the artificial data.
-
-The function :func:`create_fake_pupildata` allows to quickly create datasets generating according to a provided experimental structure (see the functions documentation for an overview over the many available options).
+For validation and testing purposes, it can be useful to generate artificial datasets. The module :mod:`pypillometry.signal.fake` provides functions for the individual components (slow baseline fluctuations, gaze fixations, measurement noise); event-related responses can be added with :func:`~pypillometry.pupil_build_design_matrix` (see the modeling notebook for an example).
 
 .. autosummary::
-    FakePupilData
-    create_fake_pupildata
+    ~pypillometry.fake_pupil_baseline
+    ~pypillometry.fake_gaze_fixations
+    ~pypillometry.add_measurement_noise
 
 
