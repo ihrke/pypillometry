@@ -263,6 +263,7 @@ class GenericPlotter:
         eyes,variables=obj._get_eye_var(eyes, variables)
         
         # Validate plot_range
+        plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
         
         if units is not None: 
