@@ -631,8 +631,10 @@ class PupilData(GenericEyeData):
             blinks=preproc.helper_merge_blinks(blinks_vel, blinks_zero)
             logger.debug(f"Merged {len(blinks)} blinks")
             
+            # Detected offsets are inclusive, Intervals are end-exclusive.
             # Filter by minimum duration and create Intervals object
-            filtered_blinks = [(int(on), int(off)) for (on,off) in blinks if off-on>=min_duration_ix]
+            filtered_blinks = [(int(on), int(off)+1) for (on,off) in blinks
+                               if off+1-on>=min_duration_ix]
             logger.debug(f"Filtered {len(filtered_blinks)} blinks by minimum duration")
             intervals_obj = Intervals(
                 intervals=filtered_blinks,

@@ -123,7 +123,8 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     Example: https://osf.io/p2u74/
 
     The configuration file (downloaded from the project) must define a
-    dict `raw_data` (subject ID -> dict of data files) and a function
+    dict `raw_data` (subject ID -> dict of data files; entries that are not
+    files in the project are passed on unchanged) and a function
     `read_subject(info)` that returns the data for one subject. The
     listing of the project's files is cached in `path/info_osf.pkl` and
     data files are only downloaded if they are not yet in `path`.
@@ -211,12 +212,17 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     for subject_id in subject_ids:
         subject_files = config.raw_data[subject_id]
         for file_type, data_file in subject_files.items():
+            if not isinstance(data_file, str):
+                continue
             file_path = os.path.join(path, data_file)
             matching_file = next((f for f in files if f.endswith(data_file)), None)
-            
+
             if matching_file is None:
-                raise ValueError(f"Could not find {data_file} in project")
-                
+                # entries in raw_data need not be files
+                logger.warning(f"Could not find '{data_file}' for subject "
+                               f"{subject_id} in project")
+                continue
+
             if os.path.exists(file_path) and not force_download:
                 continue
             to_download.append((data_file, file_path, matching_file))
@@ -269,7 +275,8 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     return study_data, config
 
 def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subjects: list[str] = None,
-                     cache_dir: Optional[str] = None, autodelete: bool = False, force_download: bool = False):
+                     cache_dir: Optional[str] = None, autodelete: Optional[bool] = None,
+                     force_download: bool = False):
     """
     Read a study from a local directory (or an SSH URL) using the configuration file.
 
@@ -296,10 +303,11 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
     cache_dir : str, optional
         only for SSH URLs: directory to download the files to; if None, a
         temporary directory is used
-    autodelete : bool, optional
+    autodelete : bool or None, optional
         only for SSH URLs: if True, the data files of each subject are
         deleted after they were read (and a temporary directory is removed
-        at the end). Default False.
+        at the end). If None (default), this is done only when a temporary
+        directory is used (no `cache_dir`).
     force_download : bool, optional
         only for SSH URLs: download files again even if they are already
         in `cache_dir`
@@ -322,6 +330,8 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
         if cache_dir is None:
             tmpdir = tempfile.mkdtemp(prefix="pypillometry_")
             cache_dir = tmpdir
+        if autodelete is None:
+            autodelete = tmpdir is not None
         local_path = _cache_path(remote, cache_dir)
         os.makedirs(local_path, exist_ok=True)
         logger.info(f"Loading study from '{path}' (files are downloaded to {local_path})")

@@ -266,8 +266,22 @@ class TestDetectBlinksVelocity(unittest.TestCase):
             signal, min_onset_len=n_on, min_offset_len=n_off, **kw)), 1)
         self.assertEqual(len(detect_blinks_velocity(
             signal, min_onset_len=n_on + 1, min_offset_len=n_off, **kw)), 0)
-        self.assertEqual(len(detect_blinks_velocity(
-            signal, min_onset_len=n_on, min_offset_len=n_off + 1, **kw)), 0)
+        # without a valid offset, the blink lasts until the end
+        blinks = detect_blinks_velocity(
+            signal, min_onset_len=n_on, min_offset_len=n_off + 1, **kw)
+        self.assertEqual(len(blinks), 1)
+        self.assertEqual(blinks[0][1], len(signal) - 1)
+
+    def test_blink_at_end_without_offsets(self):
+        """A blink without recovery is found even if there are no offsets"""
+        signal = np.ones(200) * 1000
+        signal[150:160] = np.linspace(1000, 100, 10)
+        signal[160:] = 100
+        blinks = detect_blinks_velocity(signal, smooth_winsize=5,
+                                        vel_onset=-50, vel_offset=50)
+        self.assertEqual(len(blinks), 1)
+        self.assertLess(blinks[0][0], 160)
+        self.assertEqual(blinks[0][1], len(signal) - 1)
 
     def test_returns_empty_for_flat_signal(self):
         """Flat signal should have no blinks"""

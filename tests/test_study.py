@@ -70,6 +70,25 @@ class TestLoadStudySSH(SSHTestCase):
         self.assertEqual(len(data), 2)
         self.assertFalse(os.path.exists(os.path.join(self.cache, "tmp")))
 
+    def test_ssh_temp_dir_removed_by_default(self):
+        tmp = os.path.join(self.cache, "tmp")
+        with patch("tempfile.mkdtemp", return_value=tmp):
+            os.makedirs(tmp)
+            data, _ = ppstudy.load_study_local("ssh://server/study/")
+        self.assertEqual(len(data), 2)
+        self.assertFalse(os.path.exists(tmp))
+
+    def test_ssh_temp_dir_kept_without_autodelete(self):
+        tmp = os.path.join(self.cache, "tmp")
+        with patch("tempfile.mkdtemp", return_value=tmp):
+            os.makedirs(tmp)
+            ppstudy.load_study_local("ssh://server/study/", autodelete=False)
+        self.assertTrue(os.path.exists(os.path.join(tmp, "server", "study", "s1", "data.txt")))
+
+    def test_ssh_cache_dir_kept_by_default(self):
+        ppstudy.load_study_local("ssh://server/study/", cache_dir=self.cache)
+        self.assertTrue(os.path.exists(os.path.join(self.cache, "server", "study", "s1", "data.txt")))
+
 
 CONFIG_OSF = """
 raw_data = {"s1": {"data": "s1/data.txt"}, "s2": {"data": "s2/data.txt"}}
@@ -85,6 +104,7 @@ class TestLoadStudyOSF(unittest.TestCase):
         self.path = tempfile.mkdtemp()
         content = {"pypillometry_conf.py": CONFIG_OSF.encode(),
                    "s1/data.txt": b"data s1", "s2/data.txt": b"data s2"}
+        self.content = content
         self.files = {"/" + k: {"size": 2 * 1024 * 1024, "download_url": k}
                       for k in content}
 
@@ -125,6 +145,13 @@ class TestLoadStudyOSF(unittest.TestCase):
         # nothing left to download: no size estimate
         _, messages, _ = self.load()
         self.assertFalse(any("total size" in m for m in messages))
+
+    def test_non_file_entries(self):
+        # entries in raw_data need not be files (as in load_study_local)
+        self.content["pypillometry_conf.py"] = CONFIG.encode()
+        data, _, _ = self.load()
+        self.assertEqual(data["s1"], ("data s1", "control"))
+        self.assertEqual(data["s2"], ("data s2", "patient"))
 
 
 if __name__ == "__main__":
