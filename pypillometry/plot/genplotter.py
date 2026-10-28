@@ -6,7 +6,7 @@ import numpy as np
 from loguru import logger
 from pathlib import Path
 
-import pylab as plt
+import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib import cm
 import matplotlib as mpl

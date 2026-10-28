@@ -6,7 +6,6 @@ functions related to pupillary responses.
 """
 import numpy as np
 import scipy.optimize
-import pylab as plt
 from loguru import logger
 from scipy.ndimage import uniform_filter1d
 
@@ -356,6 +355,7 @@ def plot_prf(npar=10.1,tmax=930,max_duration="estimate",fs=500,**kwargs):
     n=int(fs*(max_duration/1000.))
     tx=np.linspace(0,max_duration,n)
     prf=pupil_kernel_t(tx,npar,tmax)
+    import matplotlib.pyplot as plt
     plt.plot(tx,prf,**kwargs)
     plt.xlabel("time [ms]")
     plt.ylabel("AU")

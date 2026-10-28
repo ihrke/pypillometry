@@ -2,7 +2,7 @@ from ..plot.gazeplotter import GazePlotter
 from ..plot.pupilplotter import PupilPlotter
 from ..units import parse_angle
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.patches as patches

@@ -4,7 +4,7 @@ import numpy as np
 from collections.abc import Iterable
 from typing import List, Union, Optional, Tuple
 
-import pylab as plt
+import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib import cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable

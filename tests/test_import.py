@@ -19,6 +19,10 @@ class TestImport(unittest.TestCase):
         # cmdstanpy is only needed for the Stan baseline model
         self.assertEqual(loaded_after_import(["cmdstanpy", "readline"]), [])
 
+    def test_no_pylab(self):
+        # pylab is pyplot plus the numpy namespace; use matplotlib.pyplot
+        self.assertEqual(loaded_after_import(["pylab"]), [])
+
 
 if __name__ == "__main__":
     unittest.main()

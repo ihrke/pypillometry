@@ -9,7 +9,7 @@ from pathlib import Path
 
 from loguru import logger
 
-import pylab as plt
+import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib import cm
 import matplotlib as mpl
