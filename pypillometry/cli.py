@@ -18,7 +18,8 @@ def _detect_format(fname):
         head = f.read(16)
     if head.startswith(b"SR_RESEARCH"):
         return "edf"
-    if head.startswith(b"\x80"):  # pickle protocol 2 and higher
+    # pickle protocol 2 and higher, zstd- or gzip-compressed pickle
+    if head.startswith((b"\x80", b"\x28\xb5\x2f\xfd", b"\x1f\x8b")):
         return "pickle"
     return None
 
