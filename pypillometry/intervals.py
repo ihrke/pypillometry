@@ -4,6 +4,7 @@
 import numpy as np
 
 from pypillometry.convenience import requires_package, normalize_unit
+from pypillometry.units import UNSET, _has_units, _time_values_and_units, parse_time
 
 __all__ = [
     "Intervals", "merge_intervals",
@@ -236,10 +237,14 @@ class Intervals:
 
     Parameters
     ----------
-    intervals : list of tuples or np.ndarray
-        Intervals as list of (start, end) tuples or 2D array
-    units : str or None
-        Units of the intervals ("ms", "sec", "min", "h", or None for indices)
+    intervals : list of tuples, np.ndarray or Quantity
+        Intervals as list of (start, end) tuples or 2D array; can carry
+        units, e.g. ``[(0, 100), (200, 300)] * u.ms`` or
+        ``[("1 min", "2 min")]``
+    units : str, Unit or None
+        Units of the intervals ("ms", "sec", "min", "h", or None for indices).
+        Can be omitted if `intervals` carry units; otherwise, intervals with
+        units are converted to `units`.
     label : str, optional
         Descriptive label for the interval collection
     event_labels : list, optional
@@ -266,23 +271,25 @@ class Intervals:
     Examples
     --------
     >>> intervals = Intervals([(0, 100), (200, 300)], units="ms", label="stimulus")
+    >>> intervals = Intervals([(0, 100), (200, 300)] * u.ms, label="stimulus")
     >>> len(intervals)
     2
     >>> for start, end in intervals:
     ...     print(f"{start}-{end}")
     """
     
-    def __init__(self, intervals, units, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None, sampling_rate=None, time_offset=None, interval_window=None):
+    def __init__(self, intervals, units=UNSET, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None, sampling_rate=None, time_offset=None, interval_window=None):
         """
         Initialize an Intervals object (see class docstring for parameters).
         """
+        intervals, self.units = _time_values_and_units(intervals, units, sampling_rate)
+        if self.units is None and isinstance(intervals, np.ndarray) \
+                and intervals.dtype.kind == "f":
+            intervals = np.round(intervals).astype(int).tolist()  # converted to indices
         if isinstance(intervals, np.ndarray):
             self.intervals = [tuple(row) for row in intervals]
         else:
             self.intervals = [tuple(i) for i in intervals]
-        
-        # Normalize units to canonical form (handles aliases)
-        self.units = normalize_unit(units)
         
         self.label = label
         self.event_labels = event_labels
@@ -293,6 +300,16 @@ class Intervals:
         self.time_offset = time_offset if time_offset is not None else 0.0
         self.interval_window = interval_window
     
+    def _in_own_units(self, value):
+        """`value` in the units of this object; plain numbers are unchanged."""
+        if value is None or not _has_units(value):
+            return value
+        if self.units is not None:
+            return parse_time(value, to=self.units, default=None)
+        value = np.round(parse_time(value, to="samples", default=None,
+                                    fs=self.sampling_rate))
+        return value.astype(int) if np.ndim(value) else int(value)
+
     def __len__(self):
         """Return number of intervals."""
         return len(self.intervals)
@@ -863,8 +880,9 @@ class Intervals:
         merge_sep : str, optional
             Separator to use when joining event labels of merged intervals. 
             Default is '_'.
-        distance : float, optional
-            Maximum gap (in milliseconds) between intervals to still merge them.
+        distance : float, str or Quantity, optional
+            Maximum gap (in milliseconds, or with units such as
+            ``50 * u.ms``) between intervals to still merge them.
             If two intervals are separated by less than or equal to this distance,
             they will be merged. Default is 0 (only merge overlapping intervals).
             
@@ -883,6 +901,7 @@ class Intervals:
         """
         if not self.intervals:
             return self
+        distance = parse_time(distance)
         
         # If distance > 0 and units are not ms, convert to ms, merge, convert back
         if distance > 0 and self.units != 'ms':
@@ -944,7 +963,8 @@ class Intervals:
         """
         Add padding to the left (start) and right (end) of each interval.
         
-        The padding is in the current units of the Intervals object.
+        The padding is in the current units of the Intervals object, unless
+        it carries units (e.g., ``left=50 * u.ms``).
         Padding is applied independently to each interval without merging.
         Use `.merge()` after padding if you want to merge overlapping intervals.
         
@@ -988,6 +1008,7 @@ class Intervals:
         """
         if not self.intervals:
             return self
+        left, right = self._in_own_units(left), self._in_own_units(right)
         
         # Determine bounds for clipping
         if self.data_time_range is not None:
@@ -1078,12 +1099,14 @@ class Intervals:
         selector : callable, optional
             Function called as ``selector(start, end)`` for each interval that
             returns bool: True to keep the interval, False to discard it.
-        min_duration : float, optional
-            Minimum duration of intervals to keep (in current units)
-        max_duration : float, optional
-            Maximum duration of intervals to keep (in current units)
+        min_duration : float, str or Quantity, optional
+            Minimum duration of intervals to keep (in current units, unless
+            it carries units, e.g. ``"50 ms"``)
+        max_duration : float, str or Quantity, optional
+            Maximum duration of intervals to keep (as `min_duration`)
         time_range : tuple, optional
-            (start, end) time range. Only keeps intervals that overlap with this range.
+            (start, end) time range (in current units, unless it carries
+            units, e.g. ``(1, 2) * u.min``). Only keeps intervals that overlap with this range.
             An interval overlaps if its end > range_start AND its start < range_end.
             
         Returns
@@ -1134,6 +1157,9 @@ class Intervals:
                 interval_window=self.interval_window
             )
         
+        min_duration = self._in_own_units(min_duration)
+        max_duration = self._in_own_units(max_duration)
+        time_range = self._in_own_units(time_range)
         mask = np.ones(len(self.intervals), dtype=bool)
         
         # Apply duration filters

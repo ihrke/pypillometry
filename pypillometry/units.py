@@ -333,6 +333,41 @@ def _has_units(value):
         hasattr(value, "magnitude") and hasattr(value, "units"))
 
 
+def _first_unit(value, dimension):
+    """Unit of the first element of `value` that carries one (or None)."""
+    if _is_sequence(value):
+        for v in value:
+            unit = _first_unit(v, dimension)
+            if unit is not None:
+                return unit
+        return None
+    return _split(value, dimension)[1] if _has_units(value) else None
+
+
+UNSET = object()
+"""Default for `units=` arguments of containers: take the unit from the values."""
+
+
+def _time_values_and_units(value, units=UNSET, fs=None):
+    """Values and canonical unit name for containers such as Intervals.
+
+    If `value` carries units, it is converted to `units` (a time unit, or
+    None for samples) or, if `units` is UNSET, to the unit of its first
+    element. Plain values are returned unchanged, together with `units`.
+    """
+    if not _has_units(value):
+        if units is UNSET:
+            raise ValueError("plain numbers need units (e.g., units='ms'); "
+                             "or give values with units, e.g., (0, 100) * u.ms")
+        return value, normalize_unit(units)
+    if units is UNSET:
+        unit = _first_unit(value, "time")
+    else:
+        unit = _get_unit("samples" if units is None else units, "time")
+    values = _parse(value, "time", unit, None, fs)
+    return values, normalize_unit(unit)
+
+
 def parse_time(value, to="ms", default="ms", fs=None):
     """Convert a time (or tuple/array of times) to unit `to`.
 

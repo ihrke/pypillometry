@@ -358,3 +358,50 @@ def test_normalize_unit_accepts_units():
     assert normalize_unit(u.samples) is None
     with pytest.raises(ValueError):
         normalize_unit(u.cm)
+
+
+# --- Intervals and Events with units ------------------------------------------
+
+from pypillometry import Intervals, Events
+
+
+def test_intervals_from_quantity():
+    iv = Intervals([(0, 100), (200, 300)] * u.ms)
+    assert iv.units == "ms"
+    assert iv.intervals == [(0, 100), (200, 300)]
+    iv = Intervals([("1 min", "2 min")])
+    assert iv.units == "min"
+    assert iv.intervals == [(1, 2)]
+
+
+def test_intervals_quantity_converted_to_units():
+    iv = Intervals([(0, 1)] * u.sec, units="ms")
+    assert iv.units == "ms" and iv.intervals == [(0, 1000)]
+    iv = Intervals([(0, 1)] * u.sec, units=None, sampling_rate=500)
+    assert iv.units is None and iv.intervals == [(0, 500)]
+    assert isinstance(iv.intervals[0][1], int)
+
+
+def test_intervals_plain_numbers_need_units():
+    with pytest.raises(ValueError, match="need units"):
+        Intervals([(0, 1)])
+
+
+def test_intervals_methods_accept_units():
+    iv = Intervals([(100, 200), (300, 400)], "ms")
+    assert iv.pad(left=10 * u.ms, right="0.02 sec").intervals == [(90, 220), (290, 420)]
+    assert iv.merge(distance="100 ms").intervals == [(100, 400)]
+    assert len(iv.filter(min_duration=0.2 * u.sec)) == 0
+    assert iv.filter(time_range=(0.25, 1) * u.sec).intervals == [(300, 400)]
+    idx = Intervals([(100, 200)], None, sampling_rate=500)
+    assert idx.pad(left=10 * u.ms).intervals == [(95, 200)]
+
+
+def test_events_from_quantity():
+    ev = Events([1, 2] * u.sec, ["a", "b"])
+    assert ev.units == "sec"
+    np.testing.assert_array_equal(ev.onsets, [1, 2])
+    ev = Events([1, 2] * u.sec, ["a", "b"], units="ms")
+    np.testing.assert_array_equal(ev.onsets, [1000, 2000])
+    assert Events([1, 2], ["a", "b"]).units == "ms"
+    assert Events([1, 2], ["a", "b"], units=None).units is None
