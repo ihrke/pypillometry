@@ -2283,25 +2283,25 @@ class TestPupilBlinksDetectZero(unittest.TestCase):
     def test_zero_coded_blink(self):
         p = self.signal(); p[1000:1100] = 0
         iv = self.make(p).pupil_blinks_detect(eyes=["left"], strategies=["zero"])
-        self.assertEqual(list(iv.intervals), [(1000, 1099)])
+        self.assertEqual(list(iv.intervals), [(1000, 1100)])
 
     def test_nan_coded_blink(self):
         p = self.signal(); p[3000:3080] = np.nan
         for bv in (0, np.nan):
             iv = self.make(p).pupil_blinks_detect(eyes=["left"], strategies=["zero"], blink_val=bv)
-            self.assertEqual(list(iv.intervals), [(3000, 3079)])
+            self.assertEqual(list(iv.intervals), [(3000, 3080)])
 
     def test_custom_blink_val(self):
         p = self.signal(); p[1000:1100] = -1; p[3000:3080] = np.nan
         iv = self.make(p).pupil_blinks_detect(eyes=["left"], strategies=["zero"], blink_val=-1)
-        self.assertEqual(list(iv.intervals), [(1000, 1099), (3000, 3079)])
+        self.assertEqual(list(iv.intervals), [(1000, 1100), (3000, 3080)])
 
     def test_same_with_ignore_existing_mask(self):
         p = self.signal(); p[1000:1100] = 0
         for ign in (False, True):
             iv = self.make(p).pupil_blinks_detect(eyes=["left"], strategies=["zero"],
                                                   ignore_existing_mask=ign)
-            self.assertEqual(list(iv.intervals), [(1000, 1099)])
+            self.assertEqual(list(iv.intervals), [(1000, 1100)])
 
     def test_other_masks_are_not_blinks(self):
         # a masked region with valid data must not be detected by "zero"
