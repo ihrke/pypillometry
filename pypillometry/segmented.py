@@ -209,8 +209,17 @@ class SegmentedEyeData:
                 end_ix = np.argmin(np.abs(eyedata.tx - end_ms))
                 intervals_idx.append((start_ix, end_ix))
         
-        # Calculate duration and time window
-        duration_ix = intervals_idx[0][1] - intervals_idx[0][0]
+        # Calculate duration and time window; for event-locked intervals, use
+        # the window, so that the length does not depend on the event timing
+        if intervals.interval_window is not None:
+            w0, w1 = intervals.interval_window
+            if intervals.units is None:
+                duration_ix = int(round(w1 - w0))
+            else:
+                fac_to_ms = 1.0 / eyedata._unit_fac(intervals.units)
+                duration_ix = int(round((w1 - w0) * fac_to_ms * eyedata.fs / 1000.))
+        else:
+            duration_ix = intervals_idx[0][1] - intervals_idx[0][0]
         
         # Use interval_window for relative time axis if available (event-locked intervals)
         # Otherwise fall back to absolute interval times
@@ -242,7 +251,8 @@ class SegmentedEyeData:
         data_arr = np.zeros((duration_ix, n_segments))
         mask_arr = np.ones((duration_ix, n_segments), dtype=bool)
         
-        for i, (on, off) in enumerate(intervals_idx):
+        for i, (on, _) in enumerate(intervals_idx):
+            off = on + duration_ix
             onl, offl = 0, duration_ix  # "local" window indices
             
             if on < 0:  # pad with zeros in case timewindow starts before data
