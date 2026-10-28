@@ -47,7 +47,15 @@ edf2pypil recording.edf              # writes recording.pkl
 edf2pypil recording.edf -o rec.pypil
 ```
 
-Both programs accept `-q` (only warnings and errors, no progress bars) and
+`pypilinfo` prints a summary of one or more EDF or pickle files (variables,
+sampling rate, duration, events, blinks, processing history):
+
+```bash
+pypilinfo recording.pkl
+pypilinfo data/*.pkl
+```
+
+All three programs accept `-q` (only warnings and errors, no progress bars) and
 `-v` (debug messages, including the output of `eyelinkio`).
 
 
