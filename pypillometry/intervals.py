@@ -1285,13 +1285,18 @@ class Intervals:
         -------
         None
             Modifies the current axes in place
-            
+
         Examples
         --------
-        >>> intervals = data.get_intervals("F", interval=(-200, 200), units="ms")
-        >>> plt.figure()
-        >>> intervals.plot()
-        >>> plt.show()
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms, units="sec")
+           >>> plt.figure(figsize=(8, 3))
+           >>> intervals.plot()
         """
         import matplotlib.pyplot as plt
         
@@ -1378,26 +1383,30 @@ class Intervals:
         list
             List of matplotlib patches created
             
-        Examples
-        --------
-        >>> # Highlight on a single pupil plot
-        >>> data.plot.pupil_plot(units="sec")
-        >>> intervals = data.get_intervals("stim", units="sec")
-        >>> intervals.plot_highlight(color='green', alpha=0.2)
-        
-        >>> # Highlight on all subplots from plot_timeseries
-        >>> data.plot.plot_timeseries(units="ms")
-        >>> intervals = data.get_intervals("stim", units="ms")
-        >>> intervals.plot_highlight()  # Applies to all subplots
-        
-        >>> # Highlight only specific subplot
-        >>> fig = plt.gcf()
-        >>> intervals.plot_highlight(ax=fig.axes[0])  # Only first subplot
-        
         Notes
         -----
         Make sure the intervals are in the same units as the plot's x-axis.
         Use `intervals.to_units("sec")` to convert if needed.
+
+        Examples
+        --------
+        Highlight the first second after each stimulus on a pupil plot:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> intervals = d.get_intervals("S_", (0, 1000) * u.ms, units="sec")
+           >>> plt.figure(figsize=(10, 3))
+           >>> d.plot.pupil_plot(eyes="left", plot_range=(0, 20) * u.sec,
+           ...                   show_events=False)
+           >>> intervals.plot_highlight(color="green", alpha=0.2)
+           >>> plt.xlim(0, 20)
+
+        After :meth:`~pypillometry.GenericPlotter.plot_timeseries`, the intervals
+        are highlighted in all subplots; use ``ax=`` to highlight only one of them.
         """
         import matplotlib.pyplot as plt
         

@@ -88,32 +88,21 @@ class EyePlotter(GazePlotter,PupilPlotter):
         -------
         None
             Creates a matplotlib figure with the heatmap(s)
-            
+
         Examples
         --------
-        Plot foreshortening effect for left eye:
-        
-        >>> data.plot.plot_pupil_foreshortening_error_surface('left')
-        
-        Plot for multiple eyes:
-        
-        >>> data.plot.plot_pupil_foreshortening_error_surface(['left', 'right'])
-        
-        Plot all available eyes with custom color range:
-        
-        >>> data.plot.plot_pupil_foreshortening_error_surface(vmin=3, vmax=5)
-        
-        Plot with a specific minimum sample threshold:
-        
-        >>> data.plot.plot_pupil_foreshortening_error_surface(min_samples=50)
-        
-        Plot with Gaussian smoothing:
-        
-        >>> data.plot.plot_pupil_foreshortening_error_surface(smooth=1.5)
-        
-        Plot with custom limits:
-        
-        >>> data.plot.plot_pupil_foreshortening_error_surface(limits=(0, 1920, 0, 1080))
+        Average pupil size at each gaze position of the left eye:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d.plot.plot_pupil_foreshortening_error_surface(eyes="left")
+
+        ``vmin``/``vmax`` set the color range, ``min_samples`` hides bins with
+        few samples and ``smooth`` applies Gaussian smoothing.
         """
         obj = self.obj
         
@@ -398,15 +387,20 @@ class EyePlotter(GazePlotter,PupilPlotter):
 
         Examples
         --------
-        >>> # Use camera geometry from setup
-        >>> data.plot.plot_experimental_setup()
-        >>> 
-        >>> # Use fitted angles from calibration
-        >>> calib = data.fit_foreshortening(eye='left')
-        >>> data.plot.plot_experimental_setup(calibration=calib)
-        >>> 
-        >>> # Override angles
-        >>> data.plot.plot_experimental_setup(theta=np.radians(20), phi=np.radians(-90))
+        Camera geometry from the experimental setup:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "70 cm"))
+           >>> d.plot.plot_experimental_setup()
+
+        To show fitted angles, pass the result of
+        :meth:`~pypillometry.EyeData.fit_foreshortening` as ``calibration=``, or
+        set ``theta``/``phi`` directly.
         """
         obj = self.obj
         setup = obj.experimental_setup

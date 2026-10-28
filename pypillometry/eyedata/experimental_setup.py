@@ -976,17 +976,21 @@ class ExperimentalSetup:
             If screen info or eye-to-screen distance is not set, if `theta`
             or `phi` is None and no camera position is set, or if
             `projection` is not '2d' or '3d'.
-        
+
         Examples
         --------
-        >>> setup = ExperimentalSetup(
-        ...     screen_resolution=(1920, 1080),
-        ...     physical_screen_size=("52 cm", "29 cm"),
-        ...     eye_to_screen_center="60 cm",
-        ...     camera_spherical=("20 deg", "-90 deg", "70 cm"),
-        ... )
-        >>> fig, ax = setup.plot()  # 2D views
-        >>> fig, ax = setup.plot(projection='3d')  # 3D view
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> import matplotlib.pyplot as plt
+           >>> setup = pp.ExperimentalSetup(
+           ...     screen_resolution=(1920, 1080),
+           ...     physical_screen_size=("52 cm", "29 cm"),
+           ...     eye_to_screen_center="60 cm",
+           ...     camera_spherical=("20 deg", "-90 deg", "70 cm"),
+           ... )
+           >>> fig, ax = setup.plot()  # 2D views
+           >>> fig, ax = setup.plot(projection='3d')  # 3D view
         """
         import matplotlib.pyplot as plt
         import matplotlib.patches as mpatches

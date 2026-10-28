@@ -79,6 +79,20 @@ class PupilPlotter(GenericPlotter):
         ------
         ValueError
             if `plot_range` does not overlap with the data
+
+        Examples
+        --------
+        Detected blinks are shaded in red, events are shown as vertical lines:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d.pupil_blinks_detect(apply_mask=True)
+           >>> plt.figure(figsize=(10, 3))
+           >>> d.plot.pupil_plot(plot_range=(0, 20) * u.sec)
         """
         if not isinstance(eyes, list):
             eyes=[eyes]
@@ -231,6 +245,26 @@ class PupilPlotter(GenericPlotter):
         -------
         list of matplotlib.figure.Figure or None
             one figure per segment; None if `pdf_file` is given
+
+        Examples
+        --------
+        Split the 40-second recording into 10-second pieces (one figure each, here
+        only the first is shown):
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d.pupil_blinks_detect(apply_mask=True)
+           >>> figs = d.plot.pupil_plot_segments(interv=10 * u.sec, units="sec",
+           ...                                   figsize=(10, 3))
+           >>> for f in figs[1:]:
+           ...     plt.close(f)
+
+        With ``pdf_file="segments.pdf"``, the figures are written to a PDF file
+        instead.
         """
 
         obj = self.obj
@@ -310,6 +344,21 @@ class PupilPlotter(GenericPlotter):
         -------
         list
             List of matplotlib Figure objects
+
+        Examples
+        --------
+        Check the detected blinks of the left eye (the numbers are the blink
+        indices):
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d.pupil_blinks_detect(apply_mask=True)
+           >>> d.plot.plot_blinks(eyes="left", nrow=3, ncol=5, figsize=(12, 6),
+           ...                    units="sec")
         """
         # Get blinks for specified eyes and variables (in ms for consistent padding)
         blinks_result = self.obj.get_blinks(eyes=eyes, variables=variables, units="ms")

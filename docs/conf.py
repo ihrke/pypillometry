@@ -32,6 +32,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
     "sphinx.ext.githubpages",  # writes .nojekyll (needed for _static)
+    "matplotlib.sphinxext.plot_directive",  # plots in docstrings and pages
     "sphinx_autodoc_typehints",
     "sphinx_math_dollar",
     "sphinxcontrib.mermaid",
@@ -75,6 +76,21 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
 }
+
+# -- Plots -------------------------------------------------------------------
+
+# `.. plot::` blocks (e.g., in the Examples of the plotting functions) are
+# run during the build; they use the example data shipped with the package
+plot_include_source = True
+plot_html_show_source_link = False
+plot_html_show_formats = False
+plot_formats = [("png", 100)]
+plot_pre_code = """
+import numpy as np
+import matplotlib.pyplot as plt
+import pypillometry as pp
+pp.logging_set_level("WARNING")
+"""
 
 # -- Notebooks ---------------------------------------------------------------
 

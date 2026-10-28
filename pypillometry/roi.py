@@ -327,6 +327,27 @@ class CircularROI(ROI):
         -------
         matplotlib.patches.Circle
             The circle patch object.
+
+        Examples
+        --------
+        Draw two regions on a gaze heatmap:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> left = pp.CircularROI((280, 512), radius=150, name="left stimulus")
+           >>> right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")
+           >>> d.plot.plot_heatmap(eyes="left")
+           >>> ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)
+           >>> left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+
+        :meth:`~pypillometry.GazePlotter.plot_heatmap` and
+        :meth:`~pypillometry.GazePlotter.plot_scanpath` can also draw them
+        (``rois=[left, right]``).
         """
         if ax is None:
             ax = plt.gca()
@@ -556,6 +577,27 @@ class RectangularROI(ROI):
         -------
         matplotlib.patches.Rectangle
             The rectangle patch object.
+
+        Examples
+        --------
+        Draw two regions on a gaze heatmap:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> left = pp.CircularROI((280, 512), radius=150, name="left stimulus")
+           >>> right = pp.RectangularROI((850, 350), (1150, 650), name="right stimulus")
+           >>> d.plot.plot_heatmap(eyes="left")
+           >>> ax = plt.gcf().axes[0]  # the heatmap (axes[1] is the colorbar)
+           >>> left.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+           >>> right.plot(ax=ax, edgecolor="white", linewidth=2, alpha=1)
+
+        :meth:`~pypillometry.GazePlotter.plot_heatmap` and
+        :meth:`~pypillometry.GazePlotter.plot_scanpath` can also draw them
+        (``rois=[left, right]``).
         """
         if ax is None:
             ax = plt.gca()
