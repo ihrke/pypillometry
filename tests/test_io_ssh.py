@@ -1,5 +1,6 @@
 """Tests for reading from ssh:// URLs (scp is replaced by a local copy)."""
 import os
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -7,6 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from importlib.resources import files
+from io import StringIO
 
 from pypillometry import io
 
@@ -14,13 +16,32 @@ DATA_DIR = str(files("pypillometry.data"))
 
 
 class FakeServer:
-    """Replaces `subprocess.run` for scp: `host:/path` is read from `root/path`."""
+    """Replaces `subprocess.run` for scp: `host:/path` is read from `root/path`.
+
+    ``ssh host 'wc -c < path'`` and ``ssh host 'du -sk path'`` (size of the
+    download for the progress bar) are answered from `root` as well.
+    """
 
     def __init__(self, root):
         self.root = root
-        self.calls = []
+        self.calls = []      # scp calls
+        self.ssh_calls = []  # size queries
+
+    def size(self, cmd):
+        self.ssh_calls.append(cmd)
+        remote = shlex.split(cmd[-1])
+        local = os.path.join(self.root, remote[-1].lstrip("/"))
+        if not os.path.exists(local):
+            return subprocess.CompletedProcess(cmd, 1, "", "No such file or directory")
+        if remote[0] == "du":
+            nbytes = sum(os.path.getsize(os.path.join(r, f))
+                         for r, _, fs in os.walk(local) for f in fs)
+            return subprocess.CompletedProcess(cmd, 0, f"{-(-nbytes // 1024)}\t{remote[-1]}\n", "")
+        return subprocess.CompletedProcess(cmd, 0, f"{os.path.getsize(local)}\n", "")
 
     def run(self, cmd, **kwargs):
+        if cmd[0] == "ssh":
+            return self.size(cmd)
         self.calls.append(cmd)
         src, dst = cmd[-2], cmd[-1]
         _, rpath = src.split(":", 1)
@@ -134,6 +155,55 @@ class TestSSHDownload(SSHTestCase):
     def test_error(self):
         with self.assertRaisesRegex(RuntimeError, "No such file"):
             io.fetch_url("ssh://server/data/missing.txt", cache_dir=self.cache)
+
+
+class TestSSHProgress(SSHTestCase):
+    """The progress bar gets the remote size as total and ends at the local size."""
+
+    def setUp(self):
+        super().setUp()
+        self.bars = []
+        real_tqdm = io.tqdm
+        def tqdm(*args, **kwargs):
+            bar = real_tqdm(*args, file=StringIO(), **kwargs)
+            self.bars.append(bar)
+            return bar
+        p = patch.object(io, "tqdm", side_effect=tqdm)
+        p.start()
+        self.addCleanup(p.stop)
+
+    def test_file(self):
+        io.fetch_url("ssh://me@server:2222/data/f.txt", cache_dir=self.cache)
+        cmd = self.server.ssh_calls[0]
+        self.assertEqual(cmd[cmd.index("-p") + 1], "2222")
+        self.assertEqual(cmd[-2:], ["me@server", "wc -c < /data/f.txt"])
+        bar, = self.bars
+        self.assertEqual(bar.total, 5)
+        self.assertEqual(bar.n, 5)
+        self.assertEqual(bar.desc, "f.txt")
+
+    def test_folder(self):
+        io.fetch_url("ssh://server/data/", cache_dir=self.cache)
+        self.assertEqual(self.server.ssh_calls[0][-1], "du -sk /data")
+        bar, = self.bars
+        self.assertEqual(bar.total, 1024)  # du counts kB
+        self.assertEqual(bar.n, 10)
+
+    def test_unknown_size(self):
+        with patch.object(self.server, "size",
+                          return_value=subprocess.CompletedProcess([], 255, "", "")):
+            fname = io.fetch_url("ssh://server/data/f.txt", cache_dir=self.cache)
+        with open(fname) as f:
+            self.assertEqual(f.read(), "hello")
+        bar, = self.bars
+        self.assertIsNone(bar.total)
+        self.assertEqual(bar.n, 5)
+
+    def test_no_ssh_command(self):
+        with patch("shutil.which", side_effect=lambda c: None if c == "ssh" else "/usr/bin/scp"):
+            io.fetch_url("ssh://server/data/f.txt", cache_dir=self.cache)
+        self.assertEqual(self.server.ssh_calls, [])
+        self.assertIsNone(self.bars[0].total)
 
 
 class TestLocalCopy(SSHTestCase):

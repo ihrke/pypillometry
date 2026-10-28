@@ -254,10 +254,59 @@ def _cache_path(url: str, cache_dir: str) -> str:
     return os.path.join(cache_dir, host_dir, *rel)
 
 
+def _ssh_remote_size(host: str, port, path: str) -> Optional[int]:
+    """Size in bytes of a file (or folder, if `path` ends with ``/``) on an SSH server.
+
+    Uses ``wc -c`` for files and ``du -sk`` for folders (approximate).
+    Returns None if the size cannot be determined.
+    """
+    import shlex
+    import shutil
+    import subprocess
+
+    if shutil.which("ssh") is None:
+        return None
+    is_dir = path.endswith("/")
+    qpath = shlex.quote(path.rstrip("/") if is_dir else path)
+    remote = f"du -sk {qpath}" if is_dir else f"wc -c < {qpath}"
+    cmd = ["ssh", "-o", "BatchMode=yes"]
+    if port is not None:
+        cmd += ["-p", str(port)]
+    cmd += [host, remote]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        size = int(result.stdout.split()[0]) if result.returncode == 0 else None
+    except (OSError, subprocess.TimeoutExpired, ValueError, IndexError):
+        size = None
+    if size is None:
+        logger.debug(f"Could not get the size of '{host}:{path}'")
+        return None
+    return size * 1024 if is_dir else size
+
+
+def _local_size(path: str) -> int:
+    """Size in bytes of a local file or folder (0 if it does not exist)."""
+    if os.path.isfile(path):
+        return os.path.getsize(path)
+    total = 0
+    for root, _, fnames in os.walk(path):
+        for fname in fnames:
+            try:
+                total += os.path.getsize(os.path.join(root, fname))
+            except OSError:  # file removed while walking
+                pass
+    return total
+
+
 def _scp(url: str, target: str):
-    """Copy the file (or folder, if `url` ends with ``/``) at an SSH URL to `target`."""
+    """Copy the file (or folder, if `url` ends with ``/``) at an SSH URL to `target`.
+
+    Shows a progress bar that follows the size of `target` while ``scp``
+    is running.
+    """
     import subprocess
     import shutil
+    import threading
 
     if shutil.which("scp") is None:
         raise RuntimeError("Downloading from SSH URLs requires the 'scp' command")
@@ -269,7 +318,25 @@ def _scp(url: str, target: str):
     if is_dir:
         cmd.append("-r")
     cmd += [f"{host}:{path.rstrip('/') if is_dir else path}", target]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    total = _ssh_remote_size(host, port, path)
+    # run scp in a thread and follow the size of the local copy
+    out = {}
+    def run():
+        try:
+            out["result"] = subprocess.run(cmd, capture_output=True, text=True)
+        except BaseException as e:
+            out["error"] = e
+    worker = threading.Thread(target=run, daemon=True)
+    worker.start()
+    with tqdm(desc=os.path.basename(path.rstrip("/")), total=total,
+              unit="iB", unit_scale=True, unit_divisor=1024) as bar:
+        while worker.is_alive():
+            worker.join(0.2)
+            bar.update(_local_size(target) - bar.n)
+    if "error" in out:
+        raise out["error"]
+    result = out["result"]
     if result.returncode != 0:
         msg = result.stderr.strip()
         raise RuntimeError(
