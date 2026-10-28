@@ -508,6 +508,7 @@ class PupilData(GenericEyeData):
     def pupil_blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
                       winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
                       vel_onset_min_duration: float=5.0, vel_offset_min_duration: float=5.0,
+                      max_duration: float=1000,
                       strategies: list=["zero","velocity"],
                       apply_mask=False, ignore_existing_mask=False, inplace=None):
         """
@@ -554,6 +555,11 @@ class PupilData(GenericEyeData):
         vel_offset_min_duration : float, str or Quantity
             minimum duration (in ms, or with units) that velocity must exceed threshold to detect as offset
             (to avoid noise-induced false detections)
+        max_duration : float, str, Quantity or None
+            maximum duration (in ms, or with units) of a blink detected by the
+            "velocity" strategy; an onset without an offset within this time
+            is dropped. `None` means no limit. Does not apply to the "zero"
+            strategy.
         strategies : list
             list of strategies to use;
             so far, use a list containing any combination of "zero" and "velocity"
@@ -586,6 +592,8 @@ class PupilData(GenericEyeData):
         min_duration_ix=int(parse_time(min_duration)/1000.*self.fs)
         vel_onset_min_samples = max(1, int(parse_time(vel_onset_min_duration)/1000.*self.fs))
         vel_offset_min_samples = max(1, int(parse_time(vel_offset_min_duration)/1000.*self.fs))
+        max_duration_ix = (None if max_duration is None
+                           else int(parse_time(max_duration)/1000.*self.fs))
 
         
         # check for unknown strategies
@@ -610,7 +618,8 @@ class PupilData(GenericEyeData):
                 vel_onset_samples, vel_offset_samples = self._convert_velocity_thresholds(
                     pupil_data, winsize_ix, vel_onset, vel_offset
                 )
-                blinks_vel=preproc.detect_blinks_velocity(pupil_data, winsize_ix, vel_onset_samples, vel_offset_samples, vel_onset_min_samples, vel_offset_min_samples, min_duration_ix)
+                blinks_vel=preproc.detect_blinks_velocity(pupil_data, winsize_ix, vel_onset_samples, vel_offset_samples, vel_onset_min_samples, vel_offset_min_samples, min_duration_ix,
+                    max_duration_ix)
                 logger.debug(f"Detected {len(blinks_vel)} blinks with velocity strategy")
             else: 
                 blinks_vel=np.array([])

@@ -231,7 +231,8 @@ def helper_merge_blinks(b1,b2):
     newb.append([on,off])
     return np.array(newb)
 
-def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_len=5, min_offset_len=5, min_blink_samples=1):
+def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_len=5, min_offset_len=5, min_blink_samples=1,
+                           max_blink_samples=None):
     """
     Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.
     
@@ -260,6 +261,11 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     min_blink_samples : int
         minimum duration of a blink in samples; offsets that would create shorter intervals
         are skipped during matching (to avoid spurious short offsets stealing real onsets)
+    max_blink_samples : int or None
+        maximum duration of a blink in samples; an onset without an offset
+        within this many samples is not a blink and is dropped (otherwise it
+        would be paired with an arbitrarily distant offset); `None` means no
+        limit
 
     Returns
     -------
@@ -267,7 +273,8 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
         array (nblinks x 2) of blink onset/offset sample indices (both
         inclusive); the offset is the last sample of the matching offset run,
         or the last sample of `sy` if no offset was found after the last
-        onset; empty array if no blinks were found
+        onset (and `max_blink_samples` allows it); empty array if no blinks
+        were found
     """
     n = len(sy)
     
@@ -352,6 +359,11 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
             off = offset_ends[first_valid_idx]
         else:
             off = n - 1
+        if max_blink_samples is not None and off - on + 1 > max_blink_samples:
+            # no offset close enough: drop this onset, try the next one
+            ons = onsets[onsets > on]
+            on = ons[0] if ons.size > 0 else None
+            continue
         blinks.append([on, off])
         ons = onsets[onsets > off]
         on = ons[0] if ons.size > 0 else None
