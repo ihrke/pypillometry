@@ -76,6 +76,14 @@ pypilview<span class="w"> </span>recording.edf<span class="w"> </span>--eyes<spa
 pypilview<span class="w"> </span>preprocessed.pypil
 </pre></div>
 </div>
+<p>Reading large EDF files takes a while. <code class="docutils literal notranslate"><span class="pre">edf2pypil</span></code> reads an EDF file once
+and saves it as a pickle file that loads much faster (see <code class="docutils literal notranslate"><span class="pre">edf2pypil</span> <span class="pre">--help</span></code>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>edf2pypil<span class="w"> </span>recording.edf<span class="w">              </span><span class="c1"># writes recording.pkl</span>
+edf2pypil<span class="w"> </span>recording.edf<span class="w"> </span>-o<span class="w"> </span>rec.pypil
+</pre></div>
+</div>
+<p>Both programs accept <code class="docutils literal notranslate"><span class="pre">-q</span></code> (only warnings and errors, no progress bars) and
+<code class="docutils literal notranslate"><span class="pre">-v</span></code> (debug messages, including the output of <code class="docutils literal notranslate"><span class="pre">eyelinkio</span></code>).</p>
 <hr class="docutils" />
 <p>The project is maintained by Matthias Mittner <a class="reference external" href="mailto:matthias&#46;mittner&#37;&#52;&#48;uit&#46;no">matthias<span>&#46;</span>mittner<span>&#64;</span>uit<span>&#46;</span>no</a></p>
 <p>To report a bug or recommend a new feature, please use <a class="reference external" href="https://github.com/ihrke/pypillometry/issues">github’s issue tracker</a>.</p>
