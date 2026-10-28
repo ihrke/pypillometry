@@ -9,6 +9,7 @@ All other eyedata classes should inherit from this class.
 from collections.abc import Iterable
 from .. import io
 from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
+from ..units import UNSET, _has_units, _time_values_and_units, parse_time
 from ..io import download
 from .eyedatadict import EyeDataDict
 from .experimental_setup import ExperimentalSetup
@@ -1052,21 +1053,22 @@ class GenericEyeData(ABC):
         Return a shortened version of the current object.
 
         The result contains all data (and events) between `start` and `end`
-        (inclusive), in units given by `units` (one of "ms", "sec", "min", "h").
+        (inclusive), e.g. ``d.sub_slice(3*u.min, 5*u.min)`` or
+        ``d.sub_slice("3 min", "5 min")``.
         `start` and `end` refer to the values of the time-vector (not to
         the time since the start of the recording). Masks are kept; stored
         blinks (in sample indices) are shifted and cut to the new range.
 
         Parameters
         ----------
-        start : float, optional
+        start : float, str or Quantity, optional
             start for new dataset; default: beginning of the data
-        end : float, optional
+        end : float, str or Quantity, optional
             end of new dataset; default: end of the data
         units : str or None, optional
-            time units in which `start` and `end` are provided
-            (one of "ms", "sec", "min", "h").
-            If units is `None`, use the units in the time vector (ms).
+            time units of `start` and `end` if they are plain numbers
+            (one of "ms", "sec", "min", "h"). If units is `None`, plain
+            numbers are ms (the units of the time vector).
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -1079,13 +1081,11 @@ class GenericEyeData(ABC):
         """
         obj = self._get_inplace(inplace)
 
-        if units is not None: 
-            fac=self._unit_fac(units)
-            tx = self.tx*fac
-            evon=obj.event_onsets*fac
-        else: 
-            tx = self.tx.copy()
-            evon=obj.event_onsets.copy()
+        default = normalize_unit(units) or "ms"
+        start = parse_time(start, default=default)
+        end = parse_time(end, default=default)
+        tx = self.tx.copy()
+        evon=obj.event_onsets.copy()
         keepix=np.where(np.logical_and(tx>=start, tx<=end))
 
         keepix=keepix[0]
@@ -1823,7 +1823,7 @@ class GenericEyeData(ABC):
     def get_intervals(self, 
                     event_select,
                     interval: tuple=(-200,200),
-                    units: str|None=None, label: str|None=None, **kwargs):
+                    units: str|None=UNSET, label: str|None=None, **kwargs):
         """
         Return an Intervals object containing intervals relative to event-onsets.
         For example, extract the interval before and after a stimulus has been presented.
@@ -1851,14 +1851,17 @@ class GenericEyeData(ABC):
               its first event.
             - if Events: use the events from the
               :class:`~pypillometry.Events` object directly
-        interval : tuple (min,max), optional
+        interval : tuple (min,max) or Quantity, optional
             time-window relative to event-onset (0 is event-onset); i.e., negative
-            numbers are before the event, positive numbers after. Units are defined
-            by the `units` parameter. Default ``(-200, 200)``.
+            numbers are before the event, positive numbers after, e.g.
+            ``(-200, 800) * u.ms`` or ``("-0.2 sec", "0.8 sec")``. Plain numbers
+            are in units given by the `units` parameter. Default ``(-200, 200)``.
         units : str or None, optional
-            units of the interval (one of "ms", "sec", "min", "h"); units=None
-            (default) means that the interval is in sampling units (i.e.,
-            indices into the time-array)
+            units of the returned intervals (one of "ms", "sec", "min", "h", or
+            None for sampling units, i.e., indices into the time-array); plain
+            numbers in `interval` are in these units, an `interval` with units
+            is converted to them. If not given, the units of `interval` are used
+            (sampling units if `interval` has no units).
         label : str or None, optional
             optional label for the Intervals object. If None, a label is automatically
             generated from the event_select parameter
@@ -1874,10 +1877,17 @@ class GenericEyeData(ABC):
         from ..intervals import Intervals
         from ..events import Events
         
+        if not isinstance(interval, Iterable) or isinstance(interval, str):
+            raise ValueError("interval must be iterable")
+        if _has_units(interval):
+            interval, units = _time_values_and_units(interval, units, self.fs)
+            if units is None:
+                interval = np.round(interval).astype(int)
+            interval = tuple(interval.tolist())
+        elif units is UNSET:
+            units = None
         fac=self._unit_fac(units)
 
-        if not isinstance(interval, Iterable):
-            raise ValueError("interval must be iterable")
         # between two events, interval[0] and interval[1] shift different
         # events, so e.g. (0,0) is valid; the resulting intervals are checked below
         if not isinstance(event_select, tuple) and interval[1]<=interval[0]:
@@ -2411,11 +2421,13 @@ class GenericEyeData(ABC):
             eye(s) to process; if empty, all available eyes
         variables : str or list of str, optional
             variable(s) to process; if empty, all available variables
-        distance : float, optional
-            Merge blinks closer than this distance (in units specified by
-            ``units``). Default 100.
+        distance : float, str or Quantity, optional
+            Merge blinks closer than this distance, e.g. ``100 * u.ms`` or
+            ``"0.1 sec"``; plain numbers are in units given by ``units``.
+            Default 100.
         units : str, optional
-            Units for ``distance``. Can be "ms", "sec", "min", or "h". Default "ms".
+            Units for ``distance`` if it is a plain number. Can be "ms",
+            "sec", "min", or "h". Default "ms".
         apply_mask : bool, default=False
             If True, store the merged blinks, apply them as masks to the data
             and return the object.
@@ -2437,10 +2449,10 @@ class GenericEyeData(ABC):
         obj = self._get_inplace(inplace)
         eyes, variables = obj._get_eye_var(eyes, variables)
 
-        fac = obj._unit_fac(units)
-        distance_ix = (distance / fac) * (obj.fs / 1000.0)        
+        distance_ix = parse_time(distance, to="samples", default=normalize_unit(units) or "ms",
+                                 fs=obj.fs)
 
-        logger.debug(f"Distance '{distance} {units}' in index units: {distance_ix}")
+        logger.debug(f"Distance '{distance}' in index units: {distance_ix}")
 
         # Dictionary to store merged intervals
         merged_dict = {}
@@ -2504,9 +2516,9 @@ class GenericEyeData(ABC):
             Intervals object to use, in any time units or in sample indices
             (`units=None`, the default of :meth:`get_intervals`). If
             provided, interval and event_select are ignored.
-        interval : tuple (min,max), optional
-            time-window relative to event-onset (0 is event-onset), in
-            units given by `units`.
+        interval : tuple (min,max) or Quantity, optional
+            time-window relative to event-onset (0 is event-onset), e.g.
+            ``(-200, 0) * u.ms``; plain numbers are in units given by `units`.
             Required if intervals is not provided.
         event_select : str or function, optional
             variable describing which events to select and align to
@@ -2522,7 +2534,7 @@ class GenericEyeData(ABC):
             `np.ma.median`, but not `np.median`; a warning is logged
             otherwise). Intervals where all samples are masked give NaN.
         units : str, optional
-            units for interval parameter (if used); default "ms"
+            units for plain numbers in `interval` (if used); default "ms"
         **kwargs
             passed onto the event_select function
 

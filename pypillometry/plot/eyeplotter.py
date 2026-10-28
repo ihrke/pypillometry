@@ -55,7 +55,8 @@ class EyePlotter(GazePlotter,PupilPlotter):
             Which eye(s) to plot: "left", "right", "average", or a list of these.
             Default is [] which plots all available eyes.
         plot_range : tuple, optional
-            The time range to include in the analysis. Default is (-np.inf, +np.inf),
+            The time range to include in the analysis (in `units`, or with
+            units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf),
             i.e. all data.
         units : str, optional
             Time units for plot_range. Default is "sec".
@@ -123,6 +124,7 @@ class EyePlotter(GazePlotter,PupilPlotter):
             eyes = [eyes]
         
         # Validate plot_range
+        plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
         
         # Handle time range

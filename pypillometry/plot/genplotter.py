@@ -2,6 +2,7 @@ import itertools
 from typing import Iterable, Optional, Tuple, Union
 from ..eyedata import GenericEyeData
 from ..intervals import Intervals
+from ..units import parse_time
 import numpy as np
 from loguru import logger
 from pathlib import Path
@@ -18,6 +19,13 @@ class GenericPlotter:
     Abstract Class for plotting eye data. This class is not meant to be used directly.
     """
     obj: GenericEyeData # link to the data object
+
+    @staticmethod
+    def _plot_range_in(plot_range, units: str = None) -> tuple:
+        """`plot_range` in `units` (None: ms); plain numbers are already in `units`."""
+        units = units or "ms"
+        start, end = parse_time(plot_range, to=units, default=units)
+        return float(start), float(end)
 
     def _validate_plot_range(self, plot_range: tuple, units: str = None) -> None:
         """

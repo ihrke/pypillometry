@@ -405,3 +405,64 @@ def test_events_from_quantity():
     np.testing.assert_array_equal(ev.onsets, [1000, 2000])
     assert Events([1, 2], ["a", "b"]).units == "ms"
     assert Events([1, 2], ["a", "b"], units=None).units is None
+
+
+# --- EyeData methods with units ------------------------------------------------
+
+@pytest.fixture(scope="module")
+def eyedata():
+    from pypillometry import get_rlmw_002_short
+    return get_rlmw_002_short()
+
+
+def test_sub_slice_with_units(eyedata):
+    ref = eyedata.sub_slice(10, 20, units="sec", inplace=False)
+    for start, end in [(10 * u.sec, 20 * u.sec), ("10 sec", "20 sec"), (10000, 20000)]:
+        d = eyedata.sub_slice(start, end, inplace=False)
+        np.testing.assert_array_equal(d.tx, ref.tx)
+
+
+def test_get_intervals_with_units(eyedata):
+    ref = eyedata.get_intervals("F", (-200, 800), units="ms")
+    iv = eyedata.get_intervals("F", (-200, 800) * u.ms)
+    assert iv.units == "ms"
+    assert iv.intervals == ref.intervals
+    assert iv.interval_window == (-200, 800)
+    # converted to the requested units
+    iv = eyedata.get_intervals("F", (-0.2, 0.8) * u.sec, units="ms")
+    np.testing.assert_allclose(iv.intervals, ref.intervals)
+    # ... including sampling units
+    ix = eyedata.get_intervals("F", (-200, 800) * u.ms, units=None)
+    n = int(eyedata.fs * 0.2)
+    assert ix.intervals == eyedata.get_intervals("F", (-n, 4 * n)).intervals
+
+
+def test_stat_per_event_with_units(eyedata):
+    ref = eyedata.stat_per_event(interval=(-200, 0), event_select="F")
+    res = eyedata.stat_per_event(interval=(-200, 0) * u.ms, event_select="F")
+    for k in ref:
+        np.testing.assert_allclose(res[k], ref[k])
+
+
+def test_blink_parameters_with_units(eyedata):
+    ref = eyedata.pupil_blinks_detect(min_duration=20, winsize=11, inplace=False)
+    res = eyedata.pupil_blinks_detect(min_duration=20 * u.ms, winsize="11 ms",
+                                      inplace=False)
+    assert {k: v.intervals for k, v in ref.items()} == \
+        {k: v.intervals for k, v in res.items()}
+    d = eyedata.pupil_blinks_detect(apply_mask=True, inplace=False)
+    ref = d.blinks_merge_close(distance=100)
+    res = d.blinks_merge_close(distance=0.1 * u.sec)
+    assert {k: v.intervals for k, v in ref.items()} == \
+        {k: v.intervals for k, v in res.items()}
+
+
+def test_plot_range_with_units(eyedata):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    eyedata.plot.pupil_plot(plot_range=(10, 20) * u.sec, units="min")
+    eyedata.plot.plot_heatmap(plot_range=("10 sec", "20 sec"))
+    plt.close("all")
+    with pytest.raises(ValueError, match="does not overlap"):
+        eyedata.plot.pupil_plot(plot_range=(10, 20) * u.min)

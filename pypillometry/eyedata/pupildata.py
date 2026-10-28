@@ -16,6 +16,7 @@ from ..signal import pupil
 #from .. import io
 from ..plot import PupilPlotter
 from ..intervals import Intervals
+from ..units import parse_time
 
 import json
 from loguru import logger
@@ -215,8 +216,8 @@ class PupilData(GenericEyeData):
         window : str
             (the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'); 
             flat window will produce a moving average smoothing.
-        winsize : float
-            the length of the window in ms 
+        winsize : float, str or Quantity
+            the length of the window in ms (or with units, e.g. ``"20 ms"``)
         inplace : bool or None
             if `True`, make change in-place and return the object
             if `False`, make and return copy before making changes                            
@@ -231,7 +232,7 @@ class PupilData(GenericEyeData):
         eyes,_=self._get_eye_var(eyes,[])
 
         # convert winsize to index based on sampling rate
-        winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
+        winsize_ix=int(np.ceil(parse_time(winsize)/1000.*self.fs))
 
         # process requested eyes
         for eye in eyes:
@@ -526,8 +527,8 @@ class PupilData(GenericEyeData):
         ----------
         eyes : list
             list of eyes to process; if empty, all available eyes are processed
-        min_duration : float
-            minimum duration in ms for a sequence of missing numbers to be treated as blink
+        min_duration : float, str or Quantity
+            minimum duration (in ms, or with units) for a sequence of missing numbers to be treated as blink
         blink_val : float
             "missing value" code for the "zero" strategy. Missing samples
             (NaN) are always detected; samples equal to `blink_val` (default
@@ -535,8 +536,8 @@ class PupilData(GenericEyeData):
             (e.g., for baseline-corrected data where 0 is a valid value).
             The "zero" strategy always uses the raw data, so regions masked
             for other reasons are not detected as blinks.
-        winsize : float
-            window-size for Savitzky-Golay velocity estimation in ms
+        winsize : float, str or Quantity
+            window-size for Savitzky-Golay velocity estimation (in ms, or with units)
         vel_onset : float or str
             velocity threshold to detect blink onset (negative value).
 
@@ -547,11 +548,11 @@ class PupilData(GenericEyeData):
 
             - If float: threshold in pupil-units per millisecond (e.g., 5.0)
             - If str: percentile of velocity distribution (e.g., "95%" for top 5%)
-        vel_onset_min_duration : float
-            minimum duration in ms that velocity must exceed threshold to detect as onset
+        vel_onset_min_duration : float, str or Quantity
+            minimum duration (in ms, or with units) that velocity must exceed threshold to detect as onset
             (to avoid noise-induced false detections)
-        vel_offset_min_duration : float
-            minimum duration in ms that velocity must exceed threshold to detect as offset
+        vel_offset_min_duration : float, str or Quantity
+            minimum duration (in ms, or with units) that velocity must exceed threshold to detect as offset
             (to avoid noise-induced false detections)
         strategies : list
             list of strategies to use;
@@ -579,12 +580,12 @@ class PupilData(GenericEyeData):
         eyes,_=self._get_eye_var(eyes,[])
 
         # Convert ms to samples
-        winsize_ix=int(winsize/1000.*self.fs)
+        winsize_ix=int(parse_time(winsize)/1000.*self.fs)
         if winsize_ix % 2==0:
             winsize_ix += 1
-        min_duration_ix=int(min_duration/1000.*self.fs)
-        vel_onset_min_samples = max(1, int(vel_onset_min_duration/1000.*self.fs))
-        vel_offset_min_samples = max(1, int(vel_offset_min_duration/1000.*self.fs))
+        min_duration_ix=int(parse_time(min_duration)/1000.*self.fs)
+        vel_onset_min_samples = max(1, int(parse_time(vel_onset_min_duration)/1000.*self.fs))
+        vel_offset_min_samples = max(1, int(parse_time(vel_offset_min_duration)/1000.*self.fs))
 
         
         # check for unknown strategies
@@ -701,8 +702,8 @@ class PupilData(GenericEyeData):
             name in the data (e.g., "pupilinterp")
         method : str
             method to use; so far, only "mahot" is implemented
-        winsize : float
-            size of the Savitzky-Golay window in ms
+        winsize : float, str or Quantity
+            size of the Savitzky-Golay window (in ms, or with units)
         vel_onset : float or str
             velocity threshold to detect blink onset (negative value).
 
@@ -713,10 +714,12 @@ class PupilData(GenericEyeData):
 
             - If float: threshold in pupil-units per millisecond (e.g., 5.0)
             - If str: percentile of velocity distribution (e.g., "95%" for top 5%)
-        margin : Tuple[float,float]
-            margin that is subtracted/added to onset and offset (in ms)
-        blinkwindow : float
-            how much time before and after each blink to include (in ms)
+        margin : Tuple[float,float] or Quantity
+            margin that is subtracted/added to onset and offset (in ms, or
+            with units, e.g. ``(10, 30) * u.ms``)
+        blinkwindow : float, str or Quantity
+            how much time before and after each blink to include (in ms, or
+            with units)
         interp_type : str
             type of interpolation accepted by :func:`scipy.interpolate.interp1d()`
         inplace : bool or None
@@ -733,9 +736,9 @@ class PupilData(GenericEyeData):
         eyes,_=self._get_eye_var(eyes,[])
 
         # parameters in sampling units (from ms)
-        winsize_ix=int(np.ceil(winsize/1000.*self.fs)) 
-        margin_ix=tuple(int(np.ceil(m/1000.*self.fs)) for m in margin)
-        blinkwindow_ix=int(blinkwindow/1000.*self.fs)
+        winsize_ix=int(np.ceil(parse_time(winsize)/1000.*self.fs))
+        margin_ix=tuple(int(np.ceil(m/1000.*self.fs)) for m in parse_time(margin))
+        blinkwindow_ix=int(parse_time(blinkwindow)/1000.*self.fs)
         if winsize_ix % 2==0: ## ensure smoothing window is odd
             winsize_ix+=1 
 
