@@ -98,7 +98,7 @@ class TestPupilData(unittest.TestCase):
         from unittest import mock
         from pypillometry.signal import baseline
         with mock.patch.dict(baseline._stan_models, clear=True), \
-             mock.patch.object(baseline.cmdstanpy, "CmdStanModel") as model:
+             mock.patch("cmdstanpy.CmdStanModel") as model:
             m1 = baseline._get_stan_model("baseline_model_asym_laplac")
             m2 = baseline._get_stan_model("baseline_model_asym_laplac")
         self.assertIs(m1, m2)
@@ -117,7 +117,7 @@ class TestPupilData(unittest.TestCase):
                  mock.patch.dict(os.environ, {"XDG_CACHE_HOME": cache}), \
                  mock.patch.object(baseline, "files", return_value=pathlib.Path(pkg)), \
                  mock.patch.object(baseline.os, "access", return_value=False), \
-                 mock.patch.object(baseline.cmdstanpy, "CmdStanModel") as model:
+                 mock.patch("cmdstanpy.CmdStanModel") as model:
                 baseline._get_stan_model(name)
             stan_file = model.call_args.kwargs["stan_file"]
             self.assertTrue(stan_file.startswith(cache))

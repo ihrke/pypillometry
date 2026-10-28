@@ -9,7 +9,6 @@ import scipy.signal as signal
 import scipy
 import math
 import os
-import cmdstanpy
 from importlib.resources import files
 from loguru import logger
 
@@ -39,6 +38,7 @@ def _get_stan_model(name):
     if name not in _stan_models:
         import filecmp
         import shutil
+        import cmdstanpy  # imported only when needed (slow, imports readline)
         fpath = str(files('pypillometry.stan').joinpath(name + ".stan"))
         exe = os.path.splitext(fpath)[0] + (".exe" if os.name == "nt" else "")
         exe_ok = os.path.exists(exe) and os.path.getmtime(exe) >= os.path.getmtime(fpath)
