@@ -1,69 +1,138 @@
-# Welcome to pypillometry (v2)!
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png" alt="pypillometry logo" width="160">
+</p>
 
-[![GitHub issues](https://img.shields.io/github/issues/ihrke/pypillometry)](https://github.com/ihrke/pypillometry/issues)
-[![status](https://joss.theoj.org/papers/3b06f4f3d5b703fd99c7e622b7edebe4/status.svg)](https://joss.theoj.org/papers/3b06f4f3d5b703fd99c7e622b7edebe4)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3925528.svg)](https://doi.org/10.5281/zenodo.3925528)
-[![codecov](https://codecov.io/gh/ihrke/pypillometry/graph/badge.svg?token=BFSKNGT772)](https://codecov.io/gh/ihrke/pypillometry)
-[![tests](https://github.com/ihrke/pypillometry/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ihrke/pypillometry/actions/workflows/run-tests.yml)
+<h1 align="center">pypillometry</h1>
 
+<p align="center">
+  <b>Preprocessing, analysis and visualization of pupillometric and eye-tracking data in Python.</b>
+</p>
 
+<p align="center">
+  <a href="https://pypi.org/project/pypillometry/"><img src="https://img.shields.io/pypi/v/pypillometry.svg" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/pypillometry/"><img src="https://img.shields.io/pypi/pyversions/pypillometry.svg" alt="Python versions"></a>
+  <a href="https://github.com/ihrke/pypillometry/actions/workflows/run-tests.yml"><img src="https://github.com/ihrke/pypillometry/actions/workflows/run-tests.yml/badge.svg" alt="tests"></a>
+  <a href="https://codecov.io/gh/ihrke/pypillometry"><img src="https://codecov.io/gh/ihrke/pypillometry/graph/badge.svg?token=BFSKNGT772" alt="coverage"></a>
+  <a href="https://ihrke.github.io/pypillometry/"><img src="https://img.shields.io/badge/docs-online-blue.svg" alt="documentation"></a>
+  <br>
+  <a href="https://doi.org/10.21105/joss.02348"><img src="https://joss.theoj.org/papers/3b06f4f3d5b703fd99c7e622b7edebe4/status.svg" alt="JOSS paper"></a>
+  <a href="https://doi.org/10.5281/zenodo.3925528"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.3925528.svg" alt="DOI"></a>
+  <a href="https://github.com/ihrke/pypillometry/blob/master/LICENSE"><img src="https://img.shields.io/github/license/ihrke/pypillometry.svg" alt="license"></a>
+</p>
 
-[![GitHub release](https://img.shields.io/github/release/ihrke/pypillometry.svg)](https://gitHub.com/ihrke/pypillometry/releases/)
-[![PyPI version](https://badge.fury.io/py/pypillometry.svg)](https://badge.fury.io/py/pypillometry)
-
-
-![](https://raw.githubusercontent.com/ihrke/pypillometry/master/logo/pypillometry_logo_200x200.png?token=AAIWMEINEM6MUOAPT2NV4I252K5QW)
-
-> [!NOTE]
-> This is `pypillometry` version 2 that contains a major restructuring of the code. Scripts written for version 1 will not continue to work. The reason for the update is that the new version will be able to handle eyetracking-data in addition to pupillometry data (and it will be able to handle more than one eye and other data sources at the same time).
-> 
-> The documentation for v2, including a quickstart and tutorials, is at <https://ihrke.github.io/pypillometry/>.
->
-> - Version 1 is here: [pypillometry version 1](https://github.com/ihrke/pypillometry/tree/v1)
-> - Documentation for Version 1 is here: [pypillometry docs v1](https://ihrke.github.io/pypillometry/v1/html/index.html)
-> 
-
-This package implements functions for the analysis of pupillometric and eyetracking data. Features include preprocessing, blink handling, event-related pupil-dilation, plotting and signal modeling.
-
-- Github-repository: <https://github.com/ihrke/pypillometry>
-
-- Homepage/Documentation: <https://ihrke.github.io/pypillometry/>
-
-To take a quick look at a recording, open an Eyelink EDF file or a saved
-eyedata object (`pp.write_pickle()`, e.g. `.pkl` or `.pypil`) in the
-interactive viewer from the command line (see `pypilview --help`):
-
-```bash
-pypilview recording.edf
-pypilview recording.edf --eyes left --variables pupil
-pypilview preprocessed.pypil
-```
-
-Reading large EDF files takes a while. `edf2pypil` reads an EDF file once
-and saves it as a pickle file that loads much faster (see `edf2pypil --help`):
-
-```bash
-edf2pypil recording.edf              # writes recording.pkl
-edf2pypil recording.edf -o rec.pypil
-```
-
-`pypilinfo` prints a summary of one or more EDF or pickle files (variables,
-sampling rate, duration, events, blinks, processing history):
-
-```bash
-pypilinfo recording.pkl
-pypilinfo data/*.pkl
-```
-
-All three programs accept `-q` (only warnings and errors, no progress bars) and
-`-v` (debug messages, including the output of `eyelinkio`).
-
-
+<p align="center">
+  <a href="https://ihrke.github.io/pypillometry/">Documentation</a> ·
+  <a href="https://ihrke.github.io/pypillometry/getting_started/quickstart.html">Quickstart</a> ·
+  <a href="https://ihrke.github.io/pypillometry/tutorials/index.html">Tutorials</a> ·
+  <a href="https://ihrke.github.io/pypillometry/api/index.html">API reference</a>
+</p>
 
 ---
 
-The project is maintained by Matthias Mittner <matthias.mittner@uit.no>
+**pypillometry** reads recordings from eye trackers (e.g., Eyelink EDF files),
+cleans them (blinks, artifacts, filtering), cuts them into event-related
+segments and plots the results. Pupil size and gaze position of one or both
+eyes are kept together in a single object, and every processing step is
+recorded in the object's history.
 
-To report a bug or recommend a new feature, please use [github's issue tracker](https://github.com/ihrke/pypillometry/issues).
+![Raw and cleaned pupil data, and the average pupil response to 300 stimuli](https://raw.githubusercontent.com/ihrke/pypillometry/master/docs/images/readme_overview.png)
 
-For more details about how to contribute, please see the [contribution-section](https://ihrke.github.io/pypillometry/docs/dev.html) in the documentation.
+## Installation
+
+```bash
+pip install pypillometry
+```
+
+pypillometry requires Python 3.11 or newer. See the
+[installation guide](https://ihrke.github.io/pypillometry/getting_started/installation.html)
+for the development version and conda environments.
+
+## Quick example
+
+From raw data to an event-related pupil response, using one of the bundled
+example datasets:
+
+```python
+import pypillometry as pp
+from pypillometry import u
+
+d = pp.get_example_data("rlmw_002")     # or: pp.EyeData.from_eyelink("recording.edf")
+d.pupil_blinks_detect(apply_mask=True)  # detect and mask blinks
+d.pupil_blinks_interpolate()            # interpolate them
+d.pupil_lowpass_filter(cutoff=4)        # 4 Hz low-pass filter
+
+# pupil response from 500 ms before to 2.5 s after each stimulus
+intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
+erpd.plot()
+```
+
+The [quickstart](https://ihrke.github.io/pypillometry/getting_started/quickstart.html)
+walks through this example step by step.
+
+## Features
+
+- **Reading data** from Eyelink EDF and ASC files, saved pickle files, and
+  whole studies from a local folder or [OSF](https://osf.io)
+- **Binocular data**: pupil size and gaze of both eyes in one object
+- **Blinks**: detection, merging and interpolation (Mathôt, 2013)
+- **Filtering**: low-pass filtering, smoothing, downsampling, scaling
+- **Events and intervals** with flexible selection by label, function or time
+- **Event-related pupil dilation** for single subjects and groups
+- **Units** everywhere: `3 * u.min`, `"200 ms"`, `60 * u.cm`
+- **Interactive viewer** for long recordings, and command-line tools
+- **Modeling** of tonic baseline and phasic pupil responses (Mittner & Groot, 2025)
+
+## Interactive viewer and command-line tools
+
+`pp.view(d)` opens a fast, zoomable viewer for long recordings; `pp.tweak()`
+lets you adjust preprocessing parameters while watching the result. The same
+viewer is available from the command line:
+
+```bash
+pypilview recording.edf            # view an Eyelink file or a saved object
+edf2pypil recording.edf            # convert EDF once, load much faster later
+pypilinfo data/*.pkl               # print a summary of one or more files
+```
+
+![The pypilview viewer showing pupil size and gaze of both eyes](https://raw.githubusercontent.com/ihrke/pypillometry/master/docs/images/viewer_eyedata.png)
+
+See [interactive tools](https://ihrke.github.io/pypillometry/user_guide/viewer.html)
+and [command-line programs](https://ihrke.github.io/pypillometry/getting_started/cli.html)
+in the documentation.
+
+## Coming from version 1?
+
+Version 2 is a major restructuring: it handles eye-tracking data in addition
+to pupillometry, and more than one eye at a time. Scripts written for
+version 1 need to be updated (see the
+[changelog](https://ihrke.github.io/pypillometry/development/changelog.html)).
+Version 1 is still available on the
+[v1 branch](https://github.com/ihrke/pypillometry/tree/v1), with its
+[documentation](https://ihrke.github.io/pypillometry/v1/html/index.html), and
+can be installed with `pip install "pypillometry<2"`.
+
+## Citing pypillometry
+
+If you use pypillometry in your research, please cite
+
+> Mittner, M. (2020). pypillometry: A Python package for pupillometric
+> analyses. *Journal of Open Source Software*, 5(51), 2348.
+> <https://doi.org/10.21105/joss.02348>
+
+If you use the estimation of tonic and phasic pupil components, please also
+cite
+
+> Mittner, M., & Groot, J. M. (2025). A novel method for modeling tonic and
+> phasic pupil dynamics in humans. *Behavior Research Methods*, 57(9), 233.
+> <https://doi.org/10.3758/s13428-025-02755-7>
+
+## Contributing
+
+Bug reports and feature requests are welcome on the
+[issue tracker](https://github.com/ihrke/pypillometry/issues). See the
+[development guide](https://ihrke.github.io/pypillometry/development/index.html)
+for how to contribute code.
+
+pypillometry is maintained by Matthias Mittner (<matthias.mittner@uit.no>)
+and released under the [MIT license](https://github.com/ihrke/pypillometry/blob/master/LICENSE).
