@@ -108,6 +108,29 @@ class TestEyeData(unittest.TestCase):
         d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "550 mm"))
         self.assertAlmostEqual(d.experimental_setup.r, 550.0, places=5)
 
+    def test_set_experimental_setup_update_no_unit_warning(self):
+        """updating an existing setup does not warn about plain numbers (bug 1.9)"""
+        import warnings
+        from pypillometry.units import _unit_warnings_issued
+        d = pp.EyeData(left_x=[1,2,3], left_y=[3,4,5], sampling_rate=1000)
+        d.set_experimental_setup(
+            screen_resolution=(1920, 1080),
+            physical_screen_size=("52 cm", "29 cm"),
+            screen_offset=("10 mm", "-100 mm"),
+            eye_to_screen_center="650 mm",
+            screen_pitch="5 deg",
+            ipd="63 mm",
+        )
+        _unit_warnings_issued.clear()
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            d.set_experimental_setup(camera_spherical=("20 deg", "-90 deg", "70 cm"))
+        setup = d.experimental_setup
+        self.assertEqual(setup.physical_screen_size, (520.0, 290.0))
+        self.assertAlmostEqual(setup.eye_to_screen_center, 650.0, places=5)
+        self.assertAlmostEqual(setup.alpha_tilt, np.radians(5))
+        self.assertEqual(setup.ipd, 63.0)
+
     def test_ipd_initialization(self):
         """Test initialization with inter-pupillary distance via ExperimentalSetup"""
         # Test with ipd during initialization

@@ -882,6 +882,11 @@ class ExperimentalSetup:
         -------
         ExperimentalSetup
         """
+        return cls(**cls._constructor_kwargs(d))
+
+    @staticmethod
+    def _constructor_kwargs(d: Dict[str, Any]) -> Dict[str, Any]:
+        """Constructor arguments (with units) from a dict from :meth:`to_dict`."""
         # values are stored in canonical units (mm, radians); attach the
         # units so that they are not parsed as plain numbers (with warnings)
         def mm(x):
@@ -907,7 +912,7 @@ class ExperimentalSetup:
             theta, phi, r = camera_spherical
             camera_spherical = (rad(theta), rad(phi), mm(r))
 
-        return cls(
+        return dict(
             screen_resolution=d['screen_resolution'],
             physical_screen_size=mm_tuple(d['physical_screen_size']),
             screen_offset=mm_tuple(screen_offset),
