@@ -317,33 +317,28 @@ def detect_blinks_velocity(sy, smooth_winsize, vel_onset, vel_offset, min_onset_
     onsets = onsets[onsets_len >= min_onset_len]
     logger.debug(f"After filtering, {len(onsets)} onsets remain")
 
+    if len(onsets) == 0:
+        logger.debug("No valid onsets - returning empty array")
+        return np.array([])
+
     # Find offset candidates using forward velocity (fast rise after blink)
     offsets = np.where(vel_forward >= vel_offset)[0]
     logger.debug(f"Found {len(offsets)} potential offset points")
-    
-    if len(offsets) == 0:
-        logger.debug("No offsets found - returning empty array")
-        return np.array([])
-        
-    # Mark starts and ends of runs
-    offsets_start_ixx = np.r_[10, np.diff(offsets)] > 1
-    offsets_end_ixx = np.r_[np.diff(offsets), 10] > 1
-    offsets_len = np.diff(np.r_[np.where(offsets_start_ixx)[0], offsets.size])
-    
-    # Get both start and end positions for each run
-    offset_starts = offsets[offsets_start_ixx]
-    offset_ends = offsets[offsets_end_ixx]
-    
-    # Filter by minimum length (apply same mask to both starts and ends)
-    valid_len_mask = offsets_len >= min_offset_len
-    offset_starts = offset_starts[valid_len_mask]
-    offset_ends = offset_ends[valid_len_mask]
+
+    # Without offsets, all blinks end at the last sample (see below)
+    offset_starts = offset_ends = np.array([], dtype=int)
+    if offsets.size > 0:
+        # Mark starts and ends of runs
+        offsets_start_ixx = np.r_[10, np.diff(offsets)] > 1
+        offsets_end_ixx = np.r_[np.diff(offsets), 10] > 1
+        offsets_len = np.diff(np.r_[np.where(offsets_start_ixx)[0], offsets.size])
+
+        # Filter by minimum length (applied to both starts and ends of runs)
+        valid_len_mask = offsets_len >= min_offset_len
+        offset_starts = offsets[offsets_start_ixx][valid_len_mask]
+        offset_ends = offsets[offsets_end_ixx][valid_len_mask]
     logger.debug(f"After filtering, {len(offset_starts)} offsets remain")
-    
-    if len(onsets) == 0 or len(offset_starts) == 0:
-        logger.debug("No valid onset/offset pairs - returning empty array")
-        return np.array([])
-    
+
     # Find corresponding on- and off-sets
     # Use offset STARTS for comparison, but offset ENDS as actual values
     # Skip offsets that would create intervals shorter than min_blink_samples
