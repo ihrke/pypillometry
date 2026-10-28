@@ -1,42 +1,62 @@
-# This workflows will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+# Build the package and upload it to PyPI when a GitHub release is published.
+#
+# Before creating the release, set VERSION to the tag name (e.g. v2.0.0) on
+# master; the workflow fails if tag and VERSION differ. Releases marked as
+# pre-release need a pre-release version (e.g. v2.1a1), otherwise pip
+# installs them by default.
+#
+# Running the workflow manually (workflow_dispatch) builds and checks the
+# package without uploading it.
 
 name: Upload Python Package
 
 on:
   release:
-    types: [created]
+    types: [published]
+  workflow_dispatch:
 
 jobs:
   deploy:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
-    - name: Install dependencies
+        python-version: '3.13'
+
+    - name: Check that the release tag matches VERSION
+      if: github.event_name == 'release'
+      run: |
+        version=$(tr -d '[:space:]' < VERSION)
+        if [ "$version" != "$GITHUB_REF_NAME" ]; then
+          echo "::error::VERSION ($version) does not match the release tag ($GITHUB_REF_NAME)"
+          exit 1
+        fi
+
+    - name: Install build tools
       run: |
         python -m pip install --upgrade pip
         pip install build twine
-    - name: Update version with latest tag
-      run: git describe --tags > VERSION
-    - name: Commit new VERSION file
-      uses: EndBug/add-and-commit@v4.2.0
-      with:
-        message: "update version"
-        ref: "master"
-        author_name: "release-manager"
-        add: "VERSION"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Build and publish
+
+    - name: Build
+      run: python -m build
+
+    - name: Check package metadata
+      run: twine check --strict dist/*
+
+    - name: Install and import the wheel
+      run: |
+        pip install dist/*.whl
+        cd /tmp
+        python -c "import pypillometry as pp; print(pp.__name__, 'imported')"
+        pypilinfo --help > /dev/null
+
+    - name: Upload to PyPI
+      if: github.event_name == 'release'
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        python -m build
-        twine upload dist/*
+      run: twine upload dist/*
