@@ -1,2 +1,2 @@
-# files the tests need in the source distribution (not installed)
-include tests/data/*.edf
+# the tests and their data in the source distribution (not installed)
+recursive-include tests *.py *.edf
