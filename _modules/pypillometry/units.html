@@ -1157,7 +1157,16 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">_split</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">_has_units</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
 
 
-<span class="n">UNSET</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_Unset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Type of :data:`UNSET`; its repr keeps API signatures readable."""</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">"UNSET"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">"UNSET"</span>  <span class="c1"># copies and pickles stay the same object</span>
+
+
+<span class="n">UNSET</span> <span class="o">=</span> <span class="n">_Unset</span><span class="p">()</span>
 <span class="sd">"""Default for `units=` arguments of containers: take the unit from the values."""</span>
 
 

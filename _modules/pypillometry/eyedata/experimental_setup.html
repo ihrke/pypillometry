@@ -1732,6 +1732,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        -------</span>
 <span class="sd">        ExperimentalSetup</span>
 <span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="bp">cls</span><span class="o">.</span><span class="n">_constructor_kwargs</span><span class="p">(</span><span class="n">d</span><span class="p">))</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_constructor_kwargs</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Constructor arguments (with units) from a dict from :meth:`to_dict`."""</span>
         <span class="c1"># values are stored in canonical units (mm, radians); attach the</span>
         <span class="c1"># units so that they are not parsed as plain numbers (with warnings)</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">mm</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -1757,7 +1763,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">theta</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">camera_spherical</span>
             <span class="n">camera_spherical</span> <span class="o">=</span> <span class="p">(</span><span class="n">rad</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">rad</span><span class="p">(</span><span class="n">phi</span><span class="p">),</span> <span class="n">mm</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="n">screen_resolution</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s1">'screen_resolution'</span><span class="p">],</span>
             <span class="n">physical_screen_size</span><span class="o">=</span><span class="n">mm_tuple</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">'physical_screen_size'</span><span class="p">]),</span>
             <span class="n">screen_offset</span><span class="o">=</span><span class="n">mm_tuple</span><span class="p">(</span><span class="n">screen_offset</span><span class="p">),</span>
@@ -1767,8 +1773,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">camera_offset</span><span class="o">=</span><span class="n">mm_tuple</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'camera_offset'</span><span class="p">)),</span>
             <span class="n">camera_spherical</span><span class="o">=</span><span class="n">camera_spherical</span><span class="p">,</span>
             <span class="n">ipd</span><span class="o">=</span><span class="n">mm</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'ipd'</span><span class="p">)),</span>
-        <span class="p">)</span></div>
-
+        <span class="p">)</span>
     
     <span class="c1"># =========================================================================</span>
     <span class="c1"># Visualization</span>

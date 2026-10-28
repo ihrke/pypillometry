@@ -492,7 +492,7 @@
 \[A(t) = A_0(t) \cdot \cos\alpha(x(t), y(t)),\]</div>
 <p>where <span class="math notranslate nohighlight">\(x, y\)</span> is the gaze position on the screen. <span class="math notranslate nohighlight">\(\alpha\)</span> depends on the geometry of the setup: the distance between eye and screen, and the position of the camera. The details of the model and the fitting procedure are described in <a class="reference internal" href="foreshortening_correction_algorithm.html"><span class="doc">the algorithm description</span></a>.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
@@ -508,7 +508,7 @@
 <h2>The experimental setup<a class="headerlink" href="#The-experimental-setup" title="Link to this heading">#</a></h2>
 <p>The geometry is described by an <code class="docutils literal notranslate"><span class="pre">ExperimentalSetup</span></code>: screen resolution and physical size, the distance from the eye to the screen, and the position of the camera relative to the eye, in spherical coordinates (<span class="math notranslate nohighlight">\(\theta\)</span>: angle from the line of sight to the screen center, <span class="math notranslate nohighlight">\(\phi\)</span>: direction around it, <span class="math notranslate nohighlight">\(r\)</span>: distance). Here, the camera sits below the screen (<span class="math notranslate nohighlight">\(\phi = -90°\)</span>), 20° below the line of sight:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">setup</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">ExperimentalSetup</span><span class="p">(</span>
@@ -522,7 +522,7 @@
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -541,7 +541,7 @@ ExperimentalSetup(
 <h2>Simulated data<a class="headerlink" href="#Simulated-data" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">generate_foreshortening_data()</span></code> simulates two minutes of recording: a slowly changing true pupil size <span class="math notranslate nohighlight">\(A_0\)</span>, fixations at random places on the screen, the resulting foreshortening and some measurement noise. The true values are kept in <code class="docutils literal notranslate"><span class="pre">sim_data</span></code>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fd</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">generate_foreshortening_data</span><span class="p">(</span><span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>
@@ -552,12 +552,12 @@ ExperimentalSetup(
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
 <div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
-  <h3 style="margin-top:0;">FakeEyeData — <span style="color:#555;">supuleku</span></h3>
+  <h3 style="margin-top:0;">FakeEyeData — <span style="color:#555;">kovohihu</span></h3>
 
   <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
 
@@ -633,9 +633,9 @@ ExperimentalSetup(
   <details style="margin-top:8px;">
     <summary style="cursor:pointer; font-weight:600;">Data glimpse</summary>
     <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">EyeDataDict(vars=3,n=60000,shape=(60000,)):
-  left_x (float64): 179.3079109382324, 179.3079109382324, 179.3079109382324, 179.3079109382324, 179.3079109382324...
-  left_y (float64): 830.902834943248, 830.902834943248, 830.902834943248, 830.902834943248, 830.902834943248...
-  left_pupil (float64): 671.0408184163064, 681.3718232549013, 681.0167318094741, 666.7572984335031, 667.4368546882736...
+  left_x (float64): 179.3079, 179.3079, 179.3079, 179.3079, 179.3079...
+  left_y (float64): 830.9028, 830.9028, 830.9028, 830.9028, 830.9028...
+  left_pupil (float64): 671.0408, 681.3718, 681.0167, 666.7573, 667.4369...
 </pre>
   </details>
 
@@ -645,7 +645,7 @@ ExperimentalSetup(
 </div>
 <p>The measured pupil size depends on where the eye looks. Points far away from the camera (at the top of the screen) give the smallest values:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">measured</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fd</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">])</span>
@@ -662,7 +662,7 @@ ExperimentalSetup(
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/experimental_foreshortening_8_0.png" src="../_images/experimental_foreshortening_8_0.png" />
+<img alt="../_images/experimental_foreshortening_7_0.png" src="../_images/experimental_foreshortening_7_0.png" />
 </div>
 </div>
 </section>
@@ -670,7 +670,7 @@ ExperimentalSetup(
 <h2>A simple correction<a class="headerlink" href="#A-simple-correction" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">correct_pupil_foreshortening()</span></code> uses a simple geometric correction that only needs the eye-to-screen distance. It assumes that the pupil appears undistorted when the eye looks at the screen center, i.e. that the camera is right behind the screen center:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simple</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">correct_pupil_foreshortening</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -683,7 +683,7 @@ ExperimentalSetup(
 <h2>Fitting the camera position<a class="headerlink" href="#Fitting-the-camera-position" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">fit_foreshortening()</span></code> estimates the camera angles <span class="math notranslate nohighlight">\(\theta\)</span> and <span class="math notranslate nohighlight">\(\phi\)</span> together with the time course of the true pupil size, which is modeled as a smooth B-spline. The idea is that the same true pupil size seen from different angles has to produce the measured values. The data are low-pass filtered and downsampled before fitting.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cal</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">fit_foreshortening</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -692,7 +692,7 @@ ExperimentalSetup(
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -702,7 +702,7 @@ ForeshorteningCalibration(eye=&#39;left&#39;, theta=16.4°, phi=-89.5°, n_coeff
 </div>
 <p>The estimated angles are close to the true values (<span class="math notranslate nohighlight">\(\theta = 20°\)</span>, <span class="math notranslate nohighlight">\(\phi = -90°\)</span>):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"theta = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">cal</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> deg, phi = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">cal</span><span class="o">.</span><span class="n">phi</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> deg"</span><span class="p">)</span>
@@ -718,7 +718,7 @@ theta = 16.4 deg, phi = -89.5 deg
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fd</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_experimental_setup</span><span class="p">(</span><span class="n">calibration</span><span class="o">=</span><span class="n">cal</span><span class="p">);</span>
@@ -729,12 +729,12 @@ theta = 16.4 deg, phi = -89.5 deg
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/experimental_foreshortening_15_0.png" src="../_images/experimental_foreshortening_15_0.png" />
+<img alt="../_images/experimental_foreshortening_14_0.png" src="../_images/experimental_foreshortening_14_0.png" />
 </div>
 </div>
 <p>The fitted model gives a correction factor <span class="math notranslate nohighlight">\(1/\cos\alpha\)</span> for every gaze position. Multiplying the measured pupil size by it gives the corrected signal:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">factor</span> <span class="o">=</span> <span class="n">cal</span><span class="o">.</span><span class="n">get_correction_factor</span><span class="p">(</span><span class="n">fd</span><span class="p">[</span><span class="s2">"left_x"</span><span class="p">],</span> <span class="n">fd</span><span class="p">[</span><span class="s2">"left_y"</span><span class="p">])</span>
@@ -747,7 +747,7 @@ theta = 16.4 deg, phi = -89.5 deg
 <h2>Comparison<a class="headerlink" href="#Comparison" title="Link to this heading">#</a></h2>
 <p>Since the data are simulated, we can compare each version with the true pupil size:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">rmse</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -770,7 +770,7 @@ fitted model       RMSE =  17.8
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">tx</span> <span class="o">/</span> <span class="mi">1000</span>
@@ -790,7 +790,7 @@ fitted model       RMSE =  17.8
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/experimental_foreshortening_20_0.png" src="../_images/experimental_foreshortening_20_0.png" />
+<img alt="../_images/experimental_foreshortening_19_0.png" src="../_images/experimental_foreshortening_19_0.png" />
 </div>
 </div>
 <p>The simple correction helps only partly, because the camera is not behind the screen center. The fitted model removes most of the error.</p>

@@ -812,11 +812,11 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy.ma</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ma</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">write_pickle</span><span class="p">,</span> <span class="n">read_pickle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">_warn_if_ignores_mask</span><span class="p">,</span> <span class="n">_check_accepts_axis</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -1219,8 +1219,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        window : tuple (float, float), float, or None</span>
-<span class="sd">            Baseline window in ms relative to event onset (time 0):</span>
+<span class="sd">        window : tuple (float, float), float, str, Quantity or None</span>
+<span class="sd">            Baseline window relative to event onset (time 0), in ms or with</span>
+<span class="sd">            units (e.g., ``(-200, 0) * u.ms``):</span>
 
 <span class="sd">            - If None, no baseline correction is applied</span>
 <span class="sd">            - If tuple (start, end), the mean value in this time window is subtracted</span>
@@ -1238,6 +1239,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; # Use pre-event period as baseline</span>
 <span class="sd">        &gt;&gt;&gt; segments_bc = segments.baseline_correct(window=(-200, 0))</span>
+<span class="sd">        &gt;&gt;&gt; segments_bc = segments.baseline_correct(window=(-200, 0) * u.ms)</span>
 <span class="sd">        </span>
 <span class="sd">        &gt;&gt;&gt; # Use single time point as baseline</span>
 <span class="sd">        &gt;&gt;&gt; segments_bc = segments.baseline_correct(window=-100)</span>
@@ -1248,8 +1250,9 @@ window.runMermaid = runMermaid;</script>
         
         <span class="c1"># Create copy of data</span>
         <span class="n">corrected_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">window</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">window</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># Single time point</span>
             <span class="n">blwin_ix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tx</span> <span class="o">-</span> <span class="n">window</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_segments</span><span class="p">):</span>

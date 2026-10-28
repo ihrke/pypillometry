@@ -810,7 +810,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">normalize_unit</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSET</span><span class="p">,</span> <span class="n">_has_units</span><span class="p">,</span> <span class="n">_time_values_and_units</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.units</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">UNSET</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">_has_units</span><span class="p">,</span> <span class="n">_time_values_and_units</span><span class="p">,</span>
+                                <span class="n">parse_time</span><span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"Events"</span><span class="p">,</span>
@@ -1253,7 +1254,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            - str: substring to search for in labels</span>
 <span class="sd">            - callable: function that takes a label and returns bool</span>
 <span class="sd">            - tuple: (min_time, max_time) to filter by onset time range</span>
-<span class="sd">              (inclusive, in the units of the Events object)</span>
+<span class="sd">              (inclusive, in the units of the Events object unless it</span>
+<span class="sd">              carries units, e.g. ``(10, 30) * u.sec``)</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1285,11 +1287,16 @@ window.runMermaid = runMermaid;</script>
             <span class="c1"># Function selector: apply to each label</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">bool</span><span class="p">(</span><span class="n">selector</span><span class="p">(</span><span class="n">label</span><span class="p">))</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">)):</span>
             <span class="c1"># Time range selector</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Time range selector must be a tuple of (min_time, max_time)"</span><span class="p">)</span>
-            
+            <span class="k">if</span> <span class="n">_has_units</span><span class="p">(</span><span class="n">selector</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"cannot filter Events in index units by a time "</span>
+                                     <span class="s2">"range with units; give the range in indices"</span><span class="p">)</span>
+                <span class="n">selector</span> <span class="o">=</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
             <span class="n">min_time</span><span class="p">,</span> <span class="n">max_time</span> <span class="o">=</span> <span class="n">selector</span>
             <span class="k">if</span> <span class="n">min_time</span> <span class="o">&gt;=</span> <span class="n">max_time</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"min_time must be &lt; max_time, got </span><span class="si">{</span><span class="n">min_time</span><span class="si">}</span><span class="s2"> &gt;= </span><span class="si">{</span><span class="n">max_time</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>

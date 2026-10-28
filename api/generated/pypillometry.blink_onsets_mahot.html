@@ -612,9 +612,9 @@ on-/offset (in samples)</p></li>
 <dd class="field-even"><p>np.ndarray</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>array (n x 2) of refined onset/offset sample indices; blinks for
-which no valid velocity-threshold crossing was found are dropped,
-so <cite>n</cite> can be smaller than the number of input blinks</p>
+<dd class="field-odd"><p>array (n x 2) of refined onset/offset sample indices, one row per
+input blink; if no valid velocity-threshold crossing is found
+before (after) a blink, its detected start (end) is used</p>
 </dd>
 </dl>
 </dd></dl>
