@@ -2194,8 +2194,11 @@ class GenericEyeData(ABC):
                     raise ValueError("No data for eye %s available" % eye)
                 if var not in obj.variables:
                     raise ValueError("No data for variable %s available" % var)
-                # Use masked array access to preserve masks
-                obj[eye, var] = (obj[eye, var] - mean[eye][var]) / sd[eye][var]
+                # scale the masked samples too (masked-array arithmetic
+                # would leave them unchanged), keep the mask
+                x = obj[eye, var]
+                obj[eye, var] = np.ma.array((x.data - mean[eye][var]) / sd[eye][var],
+                                            mask=np.ma.getmaskarray(x))
         return obj
         
     @keephistory    
@@ -2261,8 +2264,10 @@ class GenericEyeData(ABC):
             for var in variables:                
                 if var not in obj.variables:
                     raise ValueError("No data for variable %s available" % var)
-                # Use masked array access to preserve masks
-                obj[eye, var] = (obj[eye, var] * sd[eye][var]) + mean[eye][var]
+                # unscale the masked samples too, keep the mask
+                x = obj[eye, var]
+                obj[eye, var] = np.ma.array(x.data * sd[eye][var] + mean[eye][var],
+                                            mask=np.ma.getmaskarray(x))
         return obj    
 
     

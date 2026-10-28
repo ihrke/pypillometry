@@ -26,6 +26,16 @@ class TestPupilData(unittest.TestCase):
         d = d.scale("pupil", inplace=False)
         self.assertEqual(d.params["scale"]["mean"]["left"]["pupil"], 2.)
         self.assertEqual(d.params["scale"]["sd"]["left"]["pupil"], 1.)
+    def test_scale_masked_samples(self):
+        # masked samples are scaled as well and stay masked
+        d = pp.PupilData(sampling_rate=10, left_pupil=[1., 3., 1., 3., 5.])
+        d.data.mask["left_pupil"][4] = 1
+        s = d.scale("pupil", inplace=False)
+        np.testing.assert_allclose(s.data["left", "pupil"], [-1, 1, -1, 1, 3])
+        self.assertEqual(s.data.mask["left_pupil"][4], 1)
+        u = s.unscale("pupil", inplace=False)
+        np.testing.assert_allclose(u.data["left", "pupil"], [1, 3, 1, 3, 5])
+        self.assertEqual(u.data.mask["left_pupil"][4], 1)
     def test_scale_fixed(self):
         d = pp.PupilData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         scalepars = {
