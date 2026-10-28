@@ -1145,7 +1145,8 @@ class GenericEyeData(ABC):
             filename (or URL)
         **kwargs
             passed to :func:`pypillometry.io.read_pickle` (e.g.,
-            `cache_file`, `cache_dir`, `autodelete`, `session`)
+            `cache_file`, `cache_dir`, `cache_layout`, `autodelete`,
+            `session`)
 
         Returns
         -------
@@ -1191,7 +1192,8 @@ class GenericEyeData(ABC):
             (related to eye-tracker settings, calibration, validation etc)
         **kwargs
             additional arguments passed to :func:`pypillometry.io.read_eyelink`
-            (e.g., `cache_file`, `cache_dir`, `autodelete`, `session`)
+            (e.g., `cache_file`, `cache_dir`, `cache_layout`, `autodelete`,
+            `session`)
 
         Returns
         -------

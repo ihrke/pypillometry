@@ -260,13 +260,17 @@ def _parse_ssh_url(url: str):
     return host, parts.port, path
 
 
-def _cache_path(url: str, cache_dir: str) -> str:
-    """Local path in `cache_dir` for a URL: ``cache_dir/<host>/<path>``.
+def _cache_path(url: str, cache_dir: str, layout: str = "flat") -> str:
+    """Local path in `cache_dir` for a URL.
 
-    For SSH URLs with a path relative to the home directory, ``~`` is
-    inserted after the host.
+    With ``layout="flat"``, the file (or folder) name only:
+    ``cache_dir/<name>``. With ``layout="mirror"``, the full remote path:
+    ``cache_dir/<host>/<path>``; for SSH URLs with a path relative to the
+    home directory, ``~`` is inserted after the host.
     """
     from urllib.parse import urlsplit, unquote
+    if layout not in ("flat", "mirror"):
+        raise ValueError(f"cache_layout must be 'flat' or 'mirror', not '{layout}'")
     if is_ssh_url(url):
         host, port, path = _parse_ssh_url(url)
         rel = path.strip("/").split("/")
@@ -276,6 +280,8 @@ def _cache_path(url: str, cache_dir: str) -> str:
         parts = urlsplit(url)
         host, port = parts.hostname, parts.port
         rel = [p for p in unquote(parts.path).split("/") if p] or ["index"]
+    if layout == "flat":
+        return os.path.join(cache_dir, rel[-1])
     host_dir = host if port is None else f"{host}_{port}"
     return os.path.join(cache_dir, host_dir, *rel)
 
@@ -379,7 +385,8 @@ def fetch_url(
     cache_file: Optional[str] = None,
     cache_dir: Optional[str] = None,
     force_download: bool = False,
-    session: Optional[requests.Session] = None) -> str:
+    session: Optional[requests.Session] = None,
+    cache_layout: str = "flat") -> str:
     """Download an HTTP(S) or SSH URL to a local file, with caching.
 
     HTTP(S) URLs are downloaded with :func:`download` (OSF client URLs
@@ -400,14 +407,21 @@ def fetch_url(
         local filename to store the download in
     cache_dir : str, optional
         directory to store the download in (used if `cache_file` is None);
-        the file is saved as ``cache_dir/<host>/<path>``. If both are None, a
-        new temporary directory is used. The location is logged.
+        see `cache_layout`. If both are None, a new temporary directory is
+        used. The location is logged.
     force_download : bool, optional
         if False (default), an existing local copy is reused; if True, the
         file is downloaded again
     session : requests.Session, optional
         requests session for HTTP(S) downloads (e.g., from
         :func:`osf_authenticate` for private OSF projects)
+    cache_layout : str, optional
+        where in `cache_dir` the download is stored: ``"flat"`` (default)
+        uses the file name only (``cache_dir/<file>``), ``"mirror"`` the
+        full remote path (``cache_dir/<host>/<path>``). With ``"flat"``,
+        files with the same name from different URLs share one local copy,
+        so the first one would be reused; use ``"mirror"`` (or
+        `force_download`) in that case.
 
     Returns
     -------
@@ -422,7 +436,7 @@ def fetch_url(
     if cache_file is None:
         if cache_dir is None:
             cache_dir = tempfile.mkdtemp(prefix="pypillometry_")
-        cache_file = _cache_path(url, cache_dir)
+        cache_file = _cache_path(url, cache_dir, cache_layout)
 
     if os.path.exists(cache_file) and not force_download:
         logger.info(f"Using cached copy of '{url}': {cache_file}")
@@ -457,7 +471,8 @@ def local_copy(
     cache_dir: Optional[str] = None,
     autodelete: Optional[bool] = None,
     force_download: bool = False,
-    session: Optional[requests.Session] = None):
+    session: Optional[requests.Session] = None,
+    cache_layout: str = "flat"):
     """Context manager that gives a local filename for `source`.
 
     HTTP(S) and SSH URLs are downloaded with :func:`fetch_url`; local
@@ -467,7 +482,7 @@ def local_copy(
     ----------
     source : str
         local path, HTTP(S) URL or SSH URL
-    cache_file, cache_dir, force_download, session
+    cache_file, cache_dir, force_download, session, cache_layout
         see :func:`fetch_url`
     autodelete : bool or None, optional
         if True, the downloaded copy (also in `cache_file`/`cache_dir`) is
@@ -494,7 +509,8 @@ def local_copy(
     if autodelete is None:
         autodelete = tmpdir is not None
     fname = fetch_url(source, cache_file=cache_file, cache_dir=cache_dir,
-                      force_download=force_download, session=session)
+                      force_download=force_download, session=session,
+                      cache_layout=cache_layout)
     try:
         yield fname
     finally:
@@ -551,7 +567,8 @@ def read_pickle(
     force_download: bool = False,
     session: Optional[requests.Session] = None,
     cache_dir: Optional[str] = None,
-    autodelete: Optional[bool] = None):
+    autodelete: Optional[bool] = None,
+    cache_layout: str = "flat"):
     """
     Read a Python object from a file using :mod:`pickle`.
 
@@ -568,9 +585,9 @@ def read_pickle(
     cache_file : str, optional
         local filename to store a downloaded file in
     cache_dir : str, optional
-        directory to store a downloaded file in (as
-        ``cache_dir/<host>/<path>``), used if `cache_file` is None. If both
-        are None, a temporary directory is used.
+        directory to store a downloaded file in (as ``cache_dir/<file>``,
+        see `cache_layout`), used if `cache_file` is None. If both are
+        None, a temporary directory is used.
     force_download : bool, optional
         if True, download again even if a local copy exists in
         `cache_file`/`cache_dir`
@@ -582,6 +599,9 @@ def read_pickle(
         `cache_file`/`cache_dir`). If None (default), only a temporary
         download (no `cache_file`/`cache_dir`) is deleted. Local files are
         never deleted.
+    cache_layout : str, optional
+        ``"flat"`` (default) or ``"mirror"`` (``cache_dir/<host>/<path>``),
+        see :func:`~pypillometry.io.fetch_url`
 
     Returns
     -------
@@ -590,7 +610,7 @@ def read_pickle(
     """
     with local_copy(fname, cache_file=cache_file, cache_dir=cache_dir,
                     autodelete=autodelete, force_download=force_download,
-                    session=session) as local:
+                    session=session, cache_layout=cache_layout) as local:
         with _open_maybe_compressed(local) as f:
             return pickle.load(f)
 
@@ -601,7 +621,8 @@ def read_eyelink(
     force_download: bool = False, 
     session: Optional[requests.Session] = None,
     cache_dir: Optional[str] = None,
-    autodelete: Optional[bool] = None):
+    autodelete: Optional[bool] = None,
+    cache_layout: str = "flat"):
     """
     Read an Eyelink file/URL and return the object returned by the "eyelinkio" package.
 
@@ -618,9 +639,9 @@ def read_eyelink(
     cache_file : str, optional
         local filename to store a downloaded file in
     cache_dir : str, optional
-        directory to store a downloaded file in (as
-        ``cache_dir/<host>/<path>``), used if `cache_file` is None. If both
-        are None, a temporary directory is used.
+        directory to store a downloaded file in (as ``cache_dir/<file>``,
+        see `cache_layout`), used if `cache_file` is None. If both are
+        None, a temporary directory is used.
     force_download : bool, optional
         if True, download again even if a local copy exists in
         `cache_file`/`cache_dir`
@@ -632,6 +653,9 @@ def read_eyelink(
         `cache_file`/`cache_dir`). If None (default), only a temporary
         download (no `cache_file`/`cache_dir`) is deleted. Local files are
         never deleted.
+    cache_layout : str, optional
+        ``"flat"`` (default) or ``"mirror"`` (``cache_dir/<host>/<path>``),
+        see :func:`~pypillometry.io.fetch_url`
 
     Returns
     -------
@@ -644,7 +668,7 @@ def read_eyelink(
     """
     with local_copy(source, cache_file=cache_file, cache_dir=cache_dir,
                     autodelete=autodelete, force_download=force_download,
-                    session=session) as fname:
+                    session=session, cache_layout=cache_layout) as fname:
         return _read_edf(fname)
 
 

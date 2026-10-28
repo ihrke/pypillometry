@@ -332,7 +332,7 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
             cache_dir = tmpdir
         if autodelete is None:
             autodelete = tmpdir is not None
-        local_path = _cache_path(remote, cache_dir)
+        local_path = _cache_path(remote, cache_dir, layout="mirror")
         os.makedirs(local_path, exist_ok=True)
         logger.info(f"Loading study from '{path}' (files are downloaded to {local_path})")
     else:
@@ -349,7 +349,8 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
             config_path = config_file
         elif remote is not None:
             config_path = fetch_url(remote + config_file, cache_dir=cache_dir,
-                                    force_download=force_download)
+                                    force_download=force_download,
+                                    cache_layout="mirror")
         else:
             # If not found, look in the specified path
             config_path = os.path.join(path, config_file)
@@ -387,7 +388,8 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
                         continue
                     try:
                         downloaded.append(fetch_url(remote + value, cache_dir=cache_dir,
-                                                    force_download=force_download))
+                                                    force_download=force_download,
+                                                    cache_layout="mirror"))
                     except RuntimeError as e:
                         # entries in raw_data need not be files
                         logger.warning(f"Could not download '{value}' for subject {subject_id}: {e}")

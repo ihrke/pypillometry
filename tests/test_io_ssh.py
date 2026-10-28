@@ -99,15 +99,19 @@ class TestParseSSHUrl(unittest.TestCase):
 
     def test_cache_path(self):
         self.assertEqual(io._cache_path("ssh://srv/a/b.edf", "/c"),
+                         os.path.join("/c", "b.edf"))
+        self.assertEqual(io._cache_path("ssh://srv/a/folder/", "/c"),
+                         os.path.join("/c", "folder"))
+        self.assertEqual(io._cache_path("ssh://srv/a/b.edf", "/c", "mirror"),
                          os.path.join("/c", "srv", "a", "b.edf"))
-        self.assertEqual(io._cache_path("ssh://srv:22/~/a/b.edf", "/c"),
+        self.assertEqual(io._cache_path("ssh://srv:22/~/a/b.edf", "/c", "mirror"),
                          os.path.join("/c", "srv_22", "~", "a", "b.edf"))
 
 
 class TestSSHDownload(SSHTestCase):
     def test_download_file(self):
         fname = io.fetch_url("ssh://server/data/f.txt", cache_dir=self.cache)
-        self.assertEqual(fname, os.path.join(self.cache, "server", "data", "f.txt"))
+        self.assertEqual(fname, os.path.join(self.cache, "f.txt"))
         with open(fname) as f:
             self.assertEqual(f.read(), "hello")
         cmd = self.server.calls[0]
@@ -127,7 +131,20 @@ class TestSSHDownload(SSHTestCase):
             self.assertTrue(os.path.exists(fname))
             self.assertIn("pypillometry_", fname)
         finally:
-            shutil.rmtree(fname.split(os.sep + "server" + os.sep)[0], ignore_errors=True)
+            shutil.rmtree(os.path.dirname(fname), ignore_errors=True)
+
+    def test_mirror_layout(self):
+        fname = io.fetch_url("ssh://server/data/f.txt", cache_dir=self.cache,
+                             cache_layout="mirror")
+        self.assertEqual(fname, os.path.join(self.cache, "server", "data", "f.txt"))
+        with io.local_copy("ssh://server/data/sub/g.txt", cache_dir=self.cache,
+                           cache_layout="mirror") as fname:
+            self.assertEqual(fname, os.path.join(self.cache, "server", "data", "sub", "g.txt"))
+
+    def test_invalid_layout(self):
+        with self.assertRaises(ValueError):
+            io.fetch_url("ssh://server/data/f.txt", cache_dir=self.cache, cache_layout="tree")
+        self.assertEqual(self.server.calls, [])
 
     def test_cached_file_is_reused(self):
         io.fetch_url("ssh://server/data/f.txt", cache_dir=self.cache)
@@ -150,7 +167,7 @@ class TestSSHDownload(SSHTestCase):
     def test_failed_download_leaves_no_file(self):
         with self.assertRaises(RuntimeError):
             io.fetch_url("ssh://server/data/missing.txt", cache_dir=self.cache)
-        self.assertFalse(os.path.exists(os.path.join(self.cache, "server", "data", "missing.txt")))
+        self.assertFalse(os.path.exists(os.path.join(self.cache, "missing.txt")))
 
     def test_error(self):
         with self.assertRaisesRegex(RuntimeError, "No such file"):
@@ -227,19 +244,19 @@ class TestLocalCopy(SSHTestCase):
 
     def test_autodelete_removes_temp_dir(self):
         with io.local_copy("ssh://server/data/f.txt", autodelete=True) as fname:
-            tmpdir = fname.split(os.sep + "server" + os.sep)[0]
+            tmpdir = os.path.dirname(fname)
             self.assertTrue(os.path.isdir(tmpdir))
         self.assertFalse(os.path.exists(tmpdir))
 
     def test_temp_dir_removed_by_default(self):
         with io.local_copy("ssh://server/data/f.txt") as fname:
-            tmpdir = fname.split(os.sep + "server" + os.sep)[0]
+            tmpdir = os.path.dirname(fname)
             self.assertTrue(os.path.isdir(tmpdir))
         self.assertFalse(os.path.exists(tmpdir))
 
     def test_temp_dir_kept_without_autodelete(self):
         with io.local_copy("ssh://server/data/f.txt", autodelete=False) as fname:
-            tmpdir = fname.split(os.sep + "server" + os.sep)[0]
+            tmpdir = os.path.dirname(fname)
         self.assertTrue(os.path.exists(fname))
         shutil.rmtree(tmpdir)
 
@@ -260,11 +277,11 @@ class TestReadEyelinkSSH(SSHTestCase):
     def test_read_eyelink(self):
         edf = io.read_eyelink("ssh://server/data/test.edf", cache_dir=self.cache)
         self.assertIn("samples", edf)
-        self.assertTrue(os.path.exists(os.path.join(self.cache, "server", "data", "test.edf")))
+        self.assertTrue(os.path.exists(os.path.join(self.cache, "test.edf")))
 
     def test_read_eyelink_autodelete(self):
         io.read_eyelink("ssh://server/data/test.edf", cache_dir=self.cache, autodelete=True)
-        self.assertFalse(os.path.exists(os.path.join(self.cache, "server", "data", "test.edf")))
+        self.assertFalse(os.path.exists(os.path.join(self.cache, "test.edf")))
 
     def test_from_eyelink(self):
         import pypillometry as pp
@@ -277,7 +294,7 @@ class TestReadPickleSSH(SSHTestCase):
         io.write_pickle({"a": 1}, os.path.join(self.server_root, "data", "obj.pkl"))
         obj = io.read_pickle("ssh://server/data/obj.pkl", cache_dir=self.cache, autodelete=True)
         self.assertEqual(obj, {"a": 1})
-        self.assertFalse(os.path.exists(os.path.join(self.cache, "server", "data", "obj.pkl")))
+        self.assertFalse(os.path.exists(os.path.join(self.cache, "obj.pkl")))
 
     def test_from_file(self):
         import pypillometry as pp
@@ -309,14 +326,20 @@ class TestHTTPLikeSSH(SSHTestCase):
 
     def test_cache_path(self):
         self.assertEqual(io._cache_path("https://example.com/data/f.edf", "/c"),
+                         os.path.join("/c", "f.edf"))
+        self.assertEqual(io._cache_path("https://osf.io/abc12/", "/c"),
+                         os.path.join("/c", "abc12"))
+        self.assertEqual(io._cache_path("https://example.com", "/c"),
+                         os.path.join("/c", "index"))
+        self.assertEqual(io._cache_path("https://example.com/data/f.edf", "/c", "mirror"),
                          os.path.join("/c", "example.com", "data", "f.edf"))
-        self.assertEqual(io._cache_path("https://osf.io:8080/abc12/", "/c"),
+        self.assertEqual(io._cache_path("https://osf.io:8080/abc12/", "/c", "mirror"),
                          os.path.join("/c", "osf.io_8080", "abc12"))
 
     def test_read_eyelink_cache_dir(self):
         edf = io.read_eyelink("https://example.com/data/test.edf", cache_dir=self.cache)
         self.assertIn("samples", edf)
-        self.assertTrue(os.path.exists(os.path.join(self.cache, "example.com", "data", "test.edf")))
+        self.assertTrue(os.path.exists(os.path.join(self.cache, "test.edf")))
         io.read_eyelink("https://example.com/data/test.edf", cache_dir=self.cache)
         self.assertEqual(len(self.downloads), 1)
 
@@ -329,7 +352,7 @@ class TestHTTPLikeSSH(SSHTestCase):
         obj = io.read_pickle("https://example.com/data/obj.pkl", autodelete=True)
         self.assertEqual(obj, {"a": 1})
         tmpfile = self.downloads[0][1][:-len(".part")]
-        self.assertFalse(os.path.exists(os.path.dirname(os.path.dirname(os.path.dirname(tmpfile)))))
+        self.assertFalse(os.path.exists(os.path.dirname(tmpfile)))
 
     def test_read_pickle_session_and_force(self):
         session = object()
