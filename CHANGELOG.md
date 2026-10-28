@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
+## 2.0.0 (2026-10-28)
 
 ### Breaking changes
 
+- Python 3.11 or newer is required.
 - `inplace=None` now follows the object setting. 
 - `fill_time_discontinuities()` fills gaps with NaN (was 0), so filled-in
   samples are masked for all variables, not only pupil.
@@ -128,6 +129,17 @@
   of the first event, so `group_segments()` could fail
 - `ExperimentalSetup.screen_point_to_eye_frame()`: tilting the screen moved
   its center towards the eye (z was `d*cos(pitch)*cos(yaw)` instead of `d`)
+- `pupil_blinks_interpolate()` skipped blinks without a velocity drop
+  before them, leaving NaNs in the data
+- `SegmentedEyeData.baseline_correct()`, `Events.filter()` and
+  `plot_timeseries_segments(interv=...)` failed with units
+- `plot_experimental_setup(calibration=...)`, `set_experimental_setup()`
+  (updating an existing setup) and `fit_foreshortening()` gave spurious
+  warnings
+- `tweak()` showed a wrong time axis until the view was zoomed
+- `repr()` of `FakeEyeData` was garbled; summaries and `pypilinfo` print
+  rounded numbers
+- API signatures showed `units=<object object>`
 
 ### Documentation
 
