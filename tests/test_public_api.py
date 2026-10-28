@@ -27,6 +27,7 @@ INTERNAL = {
     "pypillometry.intervals": {"stat_event_interval"},
     "pypillometry.io": {"is_ssh_url"},
     "pypillometry.plot.genplotter": {"GenericPlotter"},
+    "pypillometry.units": {"normalize_unit"},
     "pypillometry.signal.preproc": {"helper_merge_blinks"},
     "pypillometry.viewer.canvas": {"ViewerCanvas"},
     "pypillometry.viewer.navigation": {"NavigationHandler"},

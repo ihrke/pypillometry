@@ -2178,15 +2178,15 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         self.assertEqual(data.experimental_setup.physical_screen_width, 520.0)
         self.assertEqual(data.experimental_setup.physical_screen_height, 290.0)
     
-    def test_set_experimental_setup_with_pint_quantities(self):
+    def test_set_experimental_setup_with_unit_quantities(self):
         """Test set_experimental_setup with Pint Quantities"""
         data = pp.EyeData(left_x=[1,2], left_y=[3,4], left_pupil=[5,6], sampling_rate=1000)
         
         # Set with Pint Quantities - eye frame for direct r value
         data.set_experimental_setup(
-            camera_spherical=(20 * pp.ureg.deg, -90 * pp.ureg.deg, 60 * pp.ureg.cm),
-            ipd=65 * pp.ureg.mm,
-            eye_to_screen_center=70 * pp.ureg.cm
+            camera_spherical=(20 * pp.u.deg, -90 * pp.u.deg, 60 * pp.u.cm),
+            ipd=65 * pp.u.mm,
+            eye_to_screen_center=70 * pp.u.cm
         )
         
         # All should be stored in mm
@@ -2202,7 +2202,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         data.set_experimental_setup(
             camera_spherical=("20 deg", "-90 deg", "600 mm"),
             eye_to_screen_center="0.7 m",
-            physical_screen_size=(52 * pp.ureg.cm, "290 mm")
+            physical_screen_size=(52 * pp.u.cm, "290 mm")
         )
         
         # All should be stored in mm

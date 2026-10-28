@@ -301,20 +301,20 @@ class EyeData(GazeData,PupilData):
         ----------
         eye : str
             Which eye to fit ('left' or 'right')
-        r : float, str, or pint.Quantity, optional
+        r : float, str, or Quantity, optional
             Eye-to-camera distance. If not provided, uses the 
             `r` from experimental_setup.
 
             - Plain number: assumed to be mm (with warning)
             - String: e.g., "600 mm", "60 cm"
-            - Quantity: e.g., 600 * ureg.mm
-        d : float, str, or pint.Quantity, optional
+            - Quantity: e.g., 600 * u.mm
+        d : float, str, or Quantity, optional
             Eye-to-screen distance. If not provided, uses the 
             `d` from experimental_setup.
 
             - Plain number: assumed to be mm (with warning)
             - String: e.g., "700 mm", "70 cm"
-            - Quantity: e.g., 700 * ureg.mm
+            - Quantity: e.g., 700 * u.mm
         intervals : Intervals, optional
             Time intervals to use for fitting. If None, uses all available data.
             Useful for fitting only on calibration periods. Intervals in any
@@ -332,20 +332,20 @@ class EyeData(GazeData,PupilData):
         knots_per_second : float, default 1.0
             Number of B-spline knots per second. Controls temporal resolution
             of A0(t) model. Typical values: 0.5-2.0.
-        initial_theta : float, str, or pint.Quantity, optional
+        initial_theta : float, str, or Quantity, optional
             Initial guess for camera polar angle. If None, uses
             pi/2 (horizontal) as starting point.
 
             - Plain number: assumed to be radians (with warning)
             - String: e.g., "20 degrees", "0.349 radians"
-            - Quantity: e.g., 20 * ureg.degree
-        initial_phi : float, str, or pint.Quantity, optional
+            - Quantity: e.g., 20 * u.deg
+        initial_phi : float, str, or Quantity, optional
             Initial guess for camera azimuthal angle. If None,
             uses 0 (camera on x-axis) as starting point.
 
             - Plain number: assumed to be radians (with warning)
             - String: e.g., "-90 degrees", "-1.57 radians"
-            - Quantity: e.g., -90 * ureg.degree
+            - Quantity: e.g., -90 * u.deg
         verbose : bool, default True
             Print optimization progress and fit statistics.
         

@@ -60,7 +60,8 @@ class GazePlotter(GenericPlotter):
         Parameters
         ----------
         plot_range : tuple
-            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.
+            The time range to plot (in `units`, or with units, e.g.
+            ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
         eyes : str or list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
@@ -110,6 +111,7 @@ class GazePlotter(GenericPlotter):
         obj = self.obj
         
         # Validate plot_range
+        plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
         
         fac=obj._unit_fac(units)
@@ -307,7 +309,8 @@ class GazePlotter(GenericPlotter):
         Parameters
         ----------
         plot_range : tuple
-            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.
+            The time range to plot (in `units`, or with units, e.g.
+            ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.
         eyes : str or list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             average, regression, ...)
@@ -346,6 +349,7 @@ class GazePlotter(GenericPlotter):
         obj = self.obj
 
         # Validate plot_range
+        plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
 
         if units is not None: 

@@ -346,11 +346,11 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)  # Should return 3 axes
     
-    def test_plot_experimental_setup_with_pint_quantities(self):
+    def test_plot_experimental_setup_with_unit_quantities(self):
         """Test with Pint quantities for angles"""
         fig, axes = self.data.plot.plot_experimental_setup(
-            theta=20 * pp.ureg.degree,
-            phi=-90 * pp.ureg.degree,
+            theta=20 * pp.u.degree,
+            phi=-90 * pp.u.degree,
             projection='2d'
         )
         self.assertIsNotNone(fig)

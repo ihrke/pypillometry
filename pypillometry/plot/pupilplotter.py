@@ -2,6 +2,7 @@ import itertools
 from ..eyedata import GenericEyeData
 from .genplotter import GenericPlotter
 from ..intervals import Intervals
+from ..units import parse_time
 import numpy as np
 from collections.abc import Iterable
 from typing import Sequence, Union, List, TypeVar, Optional, Tuple, Callable
@@ -54,7 +55,8 @@ class PupilPlotter(GenericPlotter):
         eyes : str or list
             eye(s) to plot; if empty, all eyes with pupil data are plotted
         plot_range : tuple (start,end)
-            plot from start to end (in units of `units`)
+            plot from start to end (in units of `units`, or with units, e.g.
+            ``(3, 5) * u.min``)
         show_events : bool
             plot events as vertical lines with labels
         show_blinks : bool
@@ -85,6 +87,7 @@ class PupilPlotter(GenericPlotter):
         logger.debug("Plotting eyes %s"%eyes)
 
         # Validate plot_range
+        plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
 
         fac=self.obj._unit_fac(units)
@@ -212,8 +215,9 @@ class PupilPlotter(GenericPlotter):
         ----------
         pdf_file : str or None
             file name to store the PDF; if None, no PDF is written
-        interv : float
-            duration of each of the segments to be plotted (in units specified by ``units``)
+        interv : float, str or Quantity
+            duration of each of the segments to be plotted (in units specified
+            by ``units``, or with units, e.g. ``"2 min"``)
         figsize : Tuple[int,int]
             dimensions of the figures
         ylim : Tuple[float,float] or None
@@ -231,6 +235,7 @@ class PupilPlotter(GenericPlotter):
 
         obj = self.obj
         unit_factor = obj._unit_fac(units) if units is not None else 1.0
+        interv = parse_time(interv, to=units or "ms", default=units or "ms")
         start_unit = float(np.min(obj.tx) * unit_factor)
         end_unit = float(np.max(obj.tx) * unit_factor)
 

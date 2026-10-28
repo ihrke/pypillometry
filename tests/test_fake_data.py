@@ -537,15 +537,15 @@ def test_generate_foreshortening_data_with_string_units():
     assert data.experimental_setup.physical_screen_height == 290.0
 
 
-def test_generate_foreshortening_data_with_pint_quantities():
+def test_generate_foreshortening_data_with_unit_quantities():
     """Test generate_foreshortening_data with ExperimentalSetup using Pint Quantities."""
     import pypillometry as pp
     
     setup = ExperimentalSetup(
         screen_resolution=(1920, 1080),
-        physical_screen_size=(52 * pp.ureg.cm, 29 * pp.ureg.cm),
-        eye_to_screen_center=0.7 * pp.ureg.m,
-        camera_spherical=(20 * pp.ureg.degree, -90 * pp.ureg.degree, 60 * pp.ureg.cm),
+        physical_screen_size=(52 * pp.u.cm, 29 * pp.u.cm),
+        eye_to_screen_center=0.7 * pp.u.m,
+        camera_spherical=(20 * pp.u.degree, -90 * pp.u.degree, 60 * pp.u.cm),
         
     )
     
@@ -575,7 +575,7 @@ def test_generate_foreshortening_data_mixed_units():
         screen_resolution=(1920, 1080),
         physical_screen_size=(520.0, "29 cm"),  # Mixed plain (mm assumed) and string
         eye_to_screen_center="700 mm",
-        camera_spherical=("20 degrees", np.radians(-90), 60 * pp.ureg.cm),  # Mixed formats
+        camera_spherical=("20 degrees", np.radians(-90), 60 * pp.u.cm),  # Mixed formats
         
     )
     

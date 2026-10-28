@@ -22,7 +22,6 @@ dependencies = [
     "matplotlib",
     "pandas",
     "jinja2",
-    "pint>=0.20",
     "requests",
     "loguru",
     "tqdm",

@@ -18,9 +18,12 @@
   are no longer exported at the top level (still in `pp.convenience`)
 - `stat_event_interval` is no longer exported at the top level (use
   `stat_per_event()`)
+- `pint` is no longer used, replaced by `units.py`
 
 ### Added
 
+- Times with units (`units=` can be omitted)
+- `pp.parse_time()` converts times with units
 - `pp.set_default_inplace()` and `pp.get_default_inplace()`: package-level
   default for `inplace` (initially `True`).
 - `detect_blinks_zero()` accepts `blink_val=np.nan` to detect runs of NaN.

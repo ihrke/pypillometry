@@ -6,6 +6,7 @@ from typing import Optional, List, Tuple
 
 from loguru import logger
 from pypillometry.convenience import normalize_unit
+from pypillometry.units import UNSET, _has_units, _time_values_and_units
 
 __all__ = [
     "Events",
@@ -27,13 +28,15 @@ class Events:
 
     Parameters
     ----------
-    onsets : np.ndarray or list
-        Event onset times (stored as float array)
+    onsets : np.ndarray, list or Quantity
+        Event onset times (stored as float array); can carry units, e.g.
+        ``[100, 500] * u.ms``
     labels : np.ndarray or list
         Event labels (stored as array of strings), same length as `onsets`
-    units : str or None, optional
+    units : str, Unit or None, optional
         Units of the onsets ("ms", "sec", "min", "h", or None for indices).
-        Default is "ms".
+        Default is "ms", or the units of `onsets` if they carry units
+        (otherwise, onsets with units are converted to `units`).
     data_time_range : tuple or None, optional
         Time range (min, max) of the original dataset (in same units as onsets)
 
@@ -54,16 +57,16 @@ class Events:
     def __init__(self, 
                  onsets: np.ndarray | List,
                  labels: np.ndarray | List,
-                 units: Optional[str] = "ms",
+                 units: Optional[str] = UNSET,
                  data_time_range: Optional[Tuple[float, float]] = None):
         """
         Initialize an Events object (see class docstring for parameters).
         """
+        if units is UNSET and not _has_units(onsets):
+            units = "ms"
+        onsets, self.units = _time_values_and_units(onsets, units)
         self.onsets = np.array(onsets, dtype=float)
         self.labels = np.array(labels, dtype=str)
-        
-        # Normalize units to canonical form (handles aliases)
-        self.units = normalize_unit(units)
         
         self.data_time_range = data_time_range
         
