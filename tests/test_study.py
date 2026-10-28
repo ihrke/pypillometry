@@ -70,6 +70,25 @@ class TestLoadStudySSH(SSHTestCase):
         self.assertEqual(len(data), 2)
         self.assertFalse(os.path.exists(os.path.join(self.cache, "tmp")))
 
+    def test_ssh_temp_dir_removed_by_default(self):
+        tmp = os.path.join(self.cache, "tmp")
+        with patch("tempfile.mkdtemp", return_value=tmp):
+            os.makedirs(tmp)
+            data, _ = ppstudy.load_study_local("ssh://server/study/")
+        self.assertEqual(len(data), 2)
+        self.assertFalse(os.path.exists(tmp))
+
+    def test_ssh_temp_dir_kept_without_autodelete(self):
+        tmp = os.path.join(self.cache, "tmp")
+        with patch("tempfile.mkdtemp", return_value=tmp):
+            os.makedirs(tmp)
+            ppstudy.load_study_local("ssh://server/study/", autodelete=False)
+        self.assertTrue(os.path.exists(os.path.join(tmp, "server", "study", "s1", "data.txt")))
+
+    def test_ssh_cache_dir_kept_by_default(self):
+        ppstudy.load_study_local("ssh://server/study/", cache_dir=self.cache)
+        self.assertTrue(os.path.exists(os.path.join(self.cache, "server", "study", "s1", "data.txt")))
+
 
 CONFIG_OSF = """
 raw_data = {"s1": {"data": "s1/data.txt"}, "s2": {"data": "s2/data.txt"}}

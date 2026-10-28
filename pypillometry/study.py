@@ -269,7 +269,8 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     return study_data, config
 
 def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subjects: list[str] = None,
-                     cache_dir: Optional[str] = None, autodelete: bool = False, force_download: bool = False):
+                     cache_dir: Optional[str] = None, autodelete: Optional[bool] = None,
+                     force_download: bool = False):
     """
     Read a study from a local directory (or an SSH URL) using the configuration file.
 
@@ -296,10 +297,11 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
     cache_dir : str, optional
         only for SSH URLs: directory to download the files to; if None, a
         temporary directory is used
-    autodelete : bool, optional
+    autodelete : bool or None, optional
         only for SSH URLs: if True, the data files of each subject are
         deleted after they were read (and a temporary directory is removed
-        at the end). Default False.
+        at the end). If None (default), this is done only when a temporary
+        directory is used (no `cache_dir`).
     force_download : bool, optional
         only for SSH URLs: download files again even if they are already
         in `cache_dir`
@@ -322,6 +324,8 @@ def load_study_local(path: str, config_file: str = "pypillometry_conf.py", subje
         if cache_dir is None:
             tmpdir = tempfile.mkdtemp(prefix="pypillometry_")
             cache_dir = tmpdir
+        if autodelete is None:
+            autodelete = tmpdir is not None
         local_path = _cache_path(remote, cache_dir)
         os.makedirs(local_path, exist_ok=True)
         logger.info(f"Loading study from '{path}' (files are downloaded to {local_path})")
