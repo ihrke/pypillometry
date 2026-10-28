@@ -160,5 +160,58 @@ class TestEdf2pypil(unittest.TestCase):
         self.assertEqual(_default_output("https://example.com/a/rec%201.edf"), "rec 1.pkl")
 
 
+class TestVerbosity(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.edf = os.path.join(self.tmp, "rec.edf")
+        shutil.copy(EDF, self.edf)
+        level = pp.logging_get_level()
+        self.addCleanup(pp.logging_set_level, level)
+        p = patch.dict(os.environ)
+        p.start()
+        self.addCleanup(p.stop)
+        os.environ.pop("TQDM_DISABLE", None)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def run_both(self, opts):
+        """Run both programs with `opts`; return (log level, TQDM_DISABLE, stdout) of each."""
+        from io import StringIO
+        out = []
+        for main, argv in [(pypilview_main, [self.edf]), (edf2pypil_main, [self.edf, "-f"])]:
+            stdout = StringIO()
+            with patch.object(pp.EyeData, "from_eyelink", return_value={}), \
+                 patch.object(pp, "view"), patch("sys.stdout", stdout):
+                main(argv + opts)
+            out.append((pp.logging_get_level(), os.environ.get("TQDM_DISABLE"), stdout.getvalue()))
+            os.environ.pop("TQDM_DISABLE", None)
+        return out
+
+    def test_default(self):
+        for level, bars, _ in self.run_both([]):
+            self.assertEqual(level, "INFO")
+            self.assertIsNone(bars)
+        self.assertIn("Saved", self.run_both([])[1][2])
+
+    def test_quiet(self):
+        for opt in ("-q", "--quiet"):
+            for level, bars, stdout in self.run_both([opt]):
+                self.assertEqual(level, "WARNING")
+                self.assertEqual(bars, "1")
+                self.assertEqual(stdout, "")
+
+    def test_verbose(self):
+        for opt in ("-v", "--verbose"):
+            for level, bars, _ in self.run_both([opt]):
+                self.assertEqual(level, "DEBUG")
+                self.assertIsNone(bars)
+
+    def test_quiet_and_verbose_exclusive(self):
+        for main in (pypilview_main, edf2pypil_main):
+            with self.assertRaises(SystemExit), patch("sys.stderr"):
+                main([self.edf, "-q", "-v"])
+
+
 if __name__ == "__main__":
     unittest.main()

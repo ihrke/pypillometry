@@ -23,6 +23,27 @@ def _detect_format(fname):
     return None
 
 
+def _add_verbosity(parser):
+    """Add the -q/--quiet and -v/--verbose options to `parser`."""
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-q", "--quiet", action="store_true",
+                       help="show only warnings and errors (no progress bars)")
+    group.add_argument("-v", "--verbose", action="store_true",
+                       help="show debug messages (including the output of eyelinkio)")
+
+
+def _set_verbosity(args):
+    """Set the log level (and progress bars) from the -q/-v options."""
+    from .logging import logging_set_level
+    if args.quiet:
+        logging_set_level("WARNING")
+        os.environ["TQDM_DISABLE"] = "1"  # read by tqdm when a bar is created
+    elif args.verbose:
+        logging_set_level("DEBUG")
+    else:
+        logging_set_level("INFO")
+
+
 def _pypilview_parser():
     parser = argparse.ArgumentParser(
         prog="pypilview",
@@ -41,6 +62,7 @@ def _pypilview_parser():
     parser.add_argument("--keep-triggers", action="store_true",
                         help="EDF only: keep Eyelink triggers (calibration, "
                              "validation etc.) in the events")
+    _add_verbosity(parser)
     return parser
 
 
@@ -68,6 +90,7 @@ def pypilview_main(argv=None):
     """
     parser = _pypilview_parser()
     args = parser.parse_args(argv)
+    _set_verbosity(args)
 
     is_url = "://" in args.file
     if not is_url and not os.path.isfile(args.file):
@@ -118,6 +141,7 @@ def _edf2pypil_parser():
     parser.add_argument("--keep-triggers", action="store_true",
                         help="keep Eyelink triggers (calibration, validation "
                              "etc.) in the events")
+    _add_verbosity(parser)
     return parser
 
 
@@ -141,6 +165,7 @@ def edf2pypil_main(argv=None):
     """
     parser = _edf2pypil_parser()
     args = parser.parse_args(argv)
+    _set_verbosity(args)
 
     is_url = "://" in args.file
     if not is_url and not os.path.isfile(args.file):
@@ -158,5 +183,6 @@ def edf2pypil_main(argv=None):
         d = pp.EyeData.from_eyelink(
             local, remove_eyelink_triggers=not args.keep_triggers)
     pp.write_pickle(d, output)
-    print(f"Saved {output}")
+    if not args.quiet:
+        print(f"Saved {output}")
     return 0
