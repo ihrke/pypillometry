@@ -41,7 +41,7 @@ class TestEyeData(unittest.TestCase):
             pp.EyeData(left_x=[1,2])
             
         # Test with complete data
-        self.assertEqual(self.eyedata.name, "test short")
+        self.assertEqual(self.eyedata.name, "rlmw_002_short")
         self.assertEqual(self.eyedata.fs, 500.0)  # Updated to match actual sampling rate
         self.assertEqual(self.eyedata.experimental_setup.screen_width, 1280)  # Updated to match actual screen resolution
         self.assertEqual(self.eyedata.experimental_setup.screen_height, 1024)
