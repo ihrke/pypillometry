@@ -121,5 +121,7 @@ class FakeEyeData(EyeData):
         """Enhanced repr showing simulation info."""
         base_repr = super().__repr__()
         sim_keys = list(self.sim_data.keys()) if self.sim_data else []
-        return f"Fake{base_repr[:-1]}, sim_fct={self.sim_fct_name}, sim_data={sim_keys})"
+        sim = f" Simulation: sim_fct={self.sim_fct_name}, sim_data={sim_keys}\n"
+        head, sep, history = base_repr.partition(" History:")
+        return head + sim + sep + history
 

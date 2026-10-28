@@ -44,6 +44,21 @@ class TestFakeEyeData:
         assert 'left_A0' in data.sim_data
         assert len(data.sim_data['left_A0']) == 1000
     
+    def test_repr(self):
+        """repr names the class once and keeps the history intact (bug 1.6)"""
+        n = 100
+        data = FakeEyeData(
+            time=np.arange(n) * 10.0,
+            left_x=np.zeros(n), left_y=np.zeros(n), left_pupil=np.ones(n),
+            sim_fct=None, sim_fct_name='test_function',
+            sim_params={}, sim_data=EyeDataDict(left_A0=np.ones(n)),
+        )
+        r = repr(data)
+        assert r.startswith("FakeEyeData(")
+        assert "FakeFake" not in r
+        assert " Simulation: sim_fct=test_function, sim_data=['left_A0']\n" in r
+        assert r.endswith("\n") and " History:\n *\n" in r
+
     def test_sim_fct_name_auto_detect(self):
         """Test that sim_fct_name is auto-detected from sim_fct."""
         def my_generator():
