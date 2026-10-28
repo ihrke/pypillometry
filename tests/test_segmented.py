@@ -858,3 +858,19 @@ class TestGroupSegmentsFunction(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
+
+
+class TestSegmentedEyeDataLength(unittest.TestCase):
+    """Segments with the same window have the same length"""
+
+    def test_length_independent_of_event_timing(self):
+        fs = 500
+        onsets = 2000 + np.arange(10) * 1000.7  # not on the sample grid
+        labels = [f"ev{i}" for i in range(10)]
+        data = pp.PupilData(sampling_rate=fs, left_pupil=np.random.randn(10000) + 500,
+                            event_onsets=onsets, event_labels=labels)
+        lengths = set()
+        for lab in labels:
+            iv = data.get_intervals(lab, interval=(-500, 2000), units="ms")
+            lengths.add(data.get_segments(iv, "left_pupil").n_timepoints)
+        self.assertEqual(lengths, {1250})
