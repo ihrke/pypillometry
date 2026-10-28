@@ -68,6 +68,14 @@ This is <code class="docutils literal notranslate"><span class="pre">pypillometr
 <li><p>Github-repository: <a class="reference external" href="https://github.com/ihrke/pypillometry">https://github.com/ihrke/pypillometry</a></p></li>
 <li><p>Homepage/Documentation: <a class="reference external" href="https://ihrke.github.io/pypillometry/">https://ihrke.github.io/pypillometry/</a></p></li>
 </ul>
+<p>To take a quick look at a recording, open an Eyelink EDF file or a saved
+eyedata object (<code class="docutils literal notranslate"><span class="pre">pp.write_pickle()</span></code>, e.g. <code class="docutils literal notranslate"><span class="pre">.pkl</span></code> or <code class="docutils literal notranslate"><span class="pre">.pypil</span></code>) in the
+interactive viewer from the command line (see <code class="docutils literal notranslate"><span class="pre">pypilview</span> <span class="pre">--help</span></code>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pypilview<span class="w"> </span>recording.edf
+pypilview<span class="w"> </span>recording.edf<span class="w"> </span>--eyes<span class="w"> </span>left<span class="w"> </span>--variables<span class="w"> </span>pupil
+pypilview<span class="w"> </span>preprocessed.pypil
+</pre></div>
+</div>
 <hr class="docutils" />
 <p>The project is maintained by Matthias Mittner <a class="reference external" href="mailto:matthias&#46;mittner&#37;&#52;&#48;uit&#46;no">matthias<span>&#46;</span>mittner<span>&#64;</span>uit<span>&#46;</span>no</a></p>
 <p>To report a bug or recommend a new feature, please use <a class="reference external" href="https://github.com/ihrke/pypillometry/issues">github’s issue tracker</a>.</p>
