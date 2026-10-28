@@ -37,6 +37,7 @@ test = ["pytest", "pytest-cov"]
 
 [project.scripts]
 pypilview = "pypillometry.cli:pypilview_main"
+edf2pypil = "pypillometry.cli:edf2pypil_main"
 
 [project.urls]
 Homepage = "https://github.com/ihrke/pypillometry"
