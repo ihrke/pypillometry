@@ -186,6 +186,7 @@ class CircularROI(ROI):
             
         Examples
         --------
+        >>> from pypillometry import ExperimentalSetup, CircularROI
         >>> setup = ExperimentalSetup(
         ...     screen_resolution=(1920, 1080),
         ...     physical_screen_size=("52 cm", "29 cm")
@@ -246,6 +247,7 @@ class CircularROI(ROI):
             
         Examples
         --------
+        >>> from pypillometry import ExperimentalSetup, CircularROI
         >>> setup = ExperimentalSetup(
         ...     screen_resolution=(1920, 1080),
         ...     physical_screen_size=("52 cm", "29 cm"),
@@ -412,6 +414,7 @@ class RectangularROI(ROI):
             
         Examples
         --------
+        >>> from pypillometry import ExperimentalSetup, RectangularROI
         >>> setup = ExperimentalSetup(
         ...     screen_resolution=(1920, 1080),
         ...     physical_screen_size=("52 cm", "29 cm")
@@ -473,6 +476,7 @@ class RectangularROI(ROI):
             
         Examples
         --------
+        >>> from pypillometry import ExperimentalSetup, RectangularROI
         >>> setup = ExperimentalSetup(
         ...     screen_resolution=(1920, 1080),
         ...     physical_screen_size=("52 cm", "29 cm"),
