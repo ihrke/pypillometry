@@ -238,6 +238,30 @@ def sizeof_fmt(num, suffix='B'):
         num /= 1024.0
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
+
+def _round_values(value, decimals=4):
+    """Round floats (also in nested dicts, lists and tuples) for printing.
+
+    Floats are rounded to `decimals` decimals, but keep at least 4
+    significant digits; numpy scalars become Python numbers (so that they
+    print as ``1920``, not ``np.int64(1920)``).
+    """
+    if isinstance(value, dict):
+        return {k: _round_values(v, decimals) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return type(value)(_round_values(v, decimals) for v in value)
+    if isinstance(value, (bool, np.bool_)):
+        return bool(value)
+    if isinstance(value, (int, np.integer)):
+        return int(value)
+    if isinstance(value, (float, np.floating)):
+        value = float(value)
+        if value == 0 or not np.isfinite(value):
+            return value
+        digits = max(decimals, 3 - int(np.floor(np.log10(abs(value)))))
+        return round(value, digits)
+    return value
+
 class ByteSize(int):
     """Class to represent size in bytes with human-readable formatting.
 

@@ -473,3 +473,17 @@ class TestNormalizeUnit(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+def test_round_values():
+    """values in the summary are rounded for printing (bug 1.11)"""
+    import numpy as np
+    from pypillometry.convenience import _round_values
+    assert _round_values(817.2999877929688) == 817.3
+    assert _round_values(41.512100000000004) == 41.5121
+    assert _round_values(1245363.0) == 1245363.0
+    assert _round_values(1.23456e-5) == 1.235e-5   # keeps significant digits
+    assert repr(_round_values(np.int64(1920))) == "1920"
+    assert _round_values({"a": (np.int64(1), np.float64(0.98333333)), "b": "x", "c": None}) \
+        == {"a": (1, 0.9833), "b": "x", "c": None}
+    assert np.isnan(_round_values(float("nan")))

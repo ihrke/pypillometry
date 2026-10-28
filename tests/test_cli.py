@@ -174,6 +174,16 @@ class TestPypilinfo(CLITestCase):
             status = pypilinfo_main(argv)
         return status, out.getvalue(), err.getvalue()
 
+    def test_rounded_values(self):
+        """numbers are rounded, no numpy scalars (bug 1.11)"""
+        import re
+        status, out, _ = self.run_main([EDF])
+        self.assertEqual(status, 0)
+        self.assertIn("calibration", out)
+        self.assertNotIn("np.int64", out)
+        self.assertNotIn("np.float64", out)
+        self.assertIsNone(re.search(r"\d\.\d{5,}", out))
+
     def test_pickle(self):
         d = pp.get_example_data("rlmw_002_short")
         fname = os.path.join(self.tmp, "rec.pkl")
@@ -256,3 +266,4 @@ class TestVerbosity(CLITestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -8,7 +8,7 @@ All other eyedata classes should inherit from this class.
 
 from collections.abc import Iterable
 from .. import io
-from ..convenience import sizeof_fmt, ByteSize, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
+from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
 from ..units import UNSET, _has_units, _time_values_and_units, parse_time
 from ..io import download
 from .eyedatadict import EyeDataDict
@@ -1319,7 +1319,7 @@ class GenericEyeData(ABC):
                                               size=str(size))
         flen=max(len(k) for k in list(pars.keys())+["glimpse"])
         for k,v in pars.items():
-            s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
+            s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=_round_values(v))
         s+=(" {k:<"+str(flen)+"}: {v}\n").format(k="glimpse", v=repr(self.data))
         if self.info:
             s+=f" Info: {len(self.info)} keys: {', '.join(list(self.info.keys())[:5])}" + ("..." if len(self.info) > 5 else "") + "\n"

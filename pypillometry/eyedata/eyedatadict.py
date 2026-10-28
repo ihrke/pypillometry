@@ -7,7 +7,7 @@ import tempfile
 import h5py
 from typing import Any
 from loguru import logger
-from ..convenience import ByteSize
+from ..convenience import ByteSize, _round_values
 
 class EyeDataDict(MutableMapping):
     """
@@ -225,7 +225,7 @@ class EyeDataDict(MutableMapping):
         r="EyeDataDict(vars=%i,n=%i,shape=%s): \n"%(len(self.data), self.length, str(self.shape))
         for k,v in self.data.items():
             r+="  %s (%s): "%(k,v.dtype)
-            r+=", ".join(v.flat[0:(min(5,self.length))].astype(str).tolist())
+            r+=", ".join(str(_round_values(x)) for x in v.flat[0:(min(5,self.length))])
             if self.length>5:
                 r+="..."
             r+="\n"
