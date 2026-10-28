@@ -47,6 +47,9 @@ edf2pypil recording.edf              # writes recording.pkl
 edf2pypil recording.edf -o rec.pypil
 ```
 
+Both programs accept `-q` (only warnings and errors, no progress bars) and
+`-v` (debug messages, including the output of `eyelinkio`).
+
 
 
 ---
