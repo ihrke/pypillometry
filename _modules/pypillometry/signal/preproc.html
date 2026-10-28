@@ -726,33 +726,28 @@ window.runMermaid = runMermaid;</script>
     <span class="n">onsets</span> <span class="o">=</span> <span class="n">onsets</span><span class="p">[</span><span class="n">onsets_len</span> <span class="o">&gt;=</span> <span class="n">min_onset_len</span><span class="p">]</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"After filtering, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> onsets remain"</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"No valid onsets - returning empty array"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
     <span class="c1"># Find offset candidates using forward velocity (fast rise after blink)</span>
     <span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">vel_forward</span> <span class="o">&gt;=</span> <span class="n">vel_offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">offsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> potential offset points"</span><span class="p">)</span>
-    
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">offsets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"No offsets found - returning empty array"</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-        
-    <span class="c1"># Mark starts and ends of runs</span>
-    <span class="n">offsets_start_ixx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">offsets</span><span class="p">)]</span> <span class="o">&gt;</span> <span class="mi">1</span>
-    <span class="n">offsets_end_ixx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">offsets</span><span class="p">),</span> <span class="mi">10</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span>
-    <span class="n">offsets_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">offsets_start_ixx</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">offsets</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
-    
-    <span class="c1"># Get both start and end positions for each run</span>
-    <span class="n">offset_starts</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">offsets_start_ixx</span><span class="p">]</span>
-    <span class="n">offset_ends</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">offsets_end_ixx</span><span class="p">]</span>
-    
-    <span class="c1"># Filter by minimum length (apply same mask to both starts and ends)</span>
-    <span class="n">valid_len_mask</span> <span class="o">=</span> <span class="n">offsets_len</span> <span class="o">&gt;=</span> <span class="n">min_offset_len</span>
-    <span class="n">offset_starts</span> <span class="o">=</span> <span class="n">offset_starts</span><span class="p">[</span><span class="n">valid_len_mask</span><span class="p">]</span>
-    <span class="n">offset_ends</span> <span class="o">=</span> <span class="n">offset_ends</span><span class="p">[</span><span class="n">valid_len_mask</span><span class="p">]</span>
+
+    <span class="c1"># Without offsets, all blinks end at the last sample (see below)</span>
+    <span class="n">offset_starts</span> <span class="o">=</span> <span class="n">offset_ends</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">offsets</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Mark starts and ends of runs</span>
+        <span class="n">offsets_start_ixx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">offsets</span><span class="p">)]</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="n">offsets_end_ixx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">offsets</span><span class="p">),</span> <span class="mi">10</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span>
+        <span class="n">offsets_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">offsets_start_ixx</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">offsets</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
+
+        <span class="c1"># Filter by minimum length (applied to both starts and ends of runs)</span>
+        <span class="n">valid_len_mask</span> <span class="o">=</span> <span class="n">offsets_len</span> <span class="o">&gt;=</span> <span class="n">min_offset_len</span>
+        <span class="n">offset_starts</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">offsets_start_ixx</span><span class="p">][</span><span class="n">valid_len_mask</span><span class="p">]</span>
+        <span class="n">offset_ends</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">offsets_end_ixx</span><span class="p">][</span><span class="n">valid_len_mask</span><span class="p">]</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"After filtering, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">offset_starts</span><span class="p">)</span><span class="si">}</span><span class="s2"> offsets remain"</span><span class="p">)</span>
-    
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">offset_starts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"No valid onset/offset pairs - returning empty array"</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-    
+
     <span class="c1"># Find corresponding on- and off-sets</span>
     <span class="c1"># Use offset STARTS for comparison, but offset ENDS as actual values</span>
     <span class="c1"># Skip offsets that would create intervals shorter than min_blink_samples</span>

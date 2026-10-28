@@ -526,7 +526,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Example: https://osf.io/p2u74/</span>
 
 <span class="sd">    The configuration file (downloaded from the project) must define a</span>
-<span class="sd">    dict `raw_data` (subject ID -&gt; dict of data files) and a function</span>
+<span class="sd">    dict `raw_data` (subject ID -&gt; dict of data files; entries that are not</span>
+<span class="sd">    files in the project are passed on unchanged) and a function</span>
 <span class="sd">    `read_subject(info)` that returns the data for one subject. The</span>
 <span class="sd">    listing of the project's files is cached in `path/info_osf.pkl` and</span>
 <span class="sd">    data files are only downloaded if they are not yet in `path`.</span>
@@ -614,12 +615,17 @@ window.runMermaid = runMermaid;</script>
     <span class="k">for</span> <span class="n">subject_id</span> <span class="ow">in</span> <span class="n">subject_ids</span><span class="p">:</span>
         <span class="n">subject_files</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">raw_data</span><span class="p">[</span><span class="n">subject_id</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">file_type</span><span class="p">,</span> <span class="n">data_file</span> <span class="ow">in</span> <span class="n">subject_files</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_file</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">continue</span>
             <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">data_file</span><span class="p">)</span>
             <span class="n">matching_file</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">data_file</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
-            
+
             <span class="k">if</span> <span class="n">matching_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find </span><span class="si">{</span><span class="n">data_file</span><span class="si">}</span><span class="s2"> in project"</span><span class="p">)</span>
-                
+                <span class="c1"># entries in raw_data need not be files</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not find '</span><span class="si">{</span><span class="n">data_file</span><span class="si">}</span><span class="s2">' for subject "</span>
+                               <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">subject_id</span><span class="si">}</span><span class="s2"> in project"</span><span class="p">)</span>
+                <span class="k">continue</span>
+
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force_download</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">to_download</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">data_file</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">matching_file</span><span class="p">))</span>
@@ -675,7 +681,8 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="load_study_local">
 <a class="viewcode-back" href="../../api.html#pypillometry.study.load_study_local">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_study_local</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pypillometry_conf.py"</span><span class="p">,</span> <span class="n">subjects</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                     <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">autodelete</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+                     <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">autodelete</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">force_download</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Read a study from a local directory (or an SSH URL) using the configuration file.</span>
 
@@ -702,10 +709,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    cache_dir : str, optional</span>
 <span class="sd">        only for SSH URLs: directory to download the files to; if None, a</span>
 <span class="sd">        temporary directory is used</span>
-<span class="sd">    autodelete : bool, optional</span>
+<span class="sd">    autodelete : bool or None, optional</span>
 <span class="sd">        only for SSH URLs: if True, the data files of each subject are</span>
 <span class="sd">        deleted after they were read (and a temporary directory is removed</span>
-<span class="sd">        at the end). Default False.</span>
+<span class="sd">        at the end). If None (default), this is done only when a temporary</span>
+<span class="sd">        directory is used (no `cache_dir`).</span>
 <span class="sd">    force_download : bool, optional</span>
 <span class="sd">        only for SSH URLs: download files again even if they are already</span>
 <span class="sd">        in `cache_dir`</span>
@@ -728,6 +736,8 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">tmpdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"pypillometry_"</span><span class="p">)</span>
             <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">tmpdir</span>
+        <span class="k">if</span> <span class="n">autodelete</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">autodelete</span> <span class="o">=</span> <span class="n">tmpdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="n">local_path</span> <span class="o">=</span> <span class="n">_cache_path</span><span class="p">(</span><span class="n">remote</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading study from '</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">' (files are downloaded to </span><span class="si">{</span><span class="n">local_path</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
