@@ -29,6 +29,14 @@ This package implements functions for the analysis of pupillometric and eyetrack
 
 - Homepage/Documentation: <https://ihrke.github.io/pypillometry/>
 
+To take a quick look at a recording, open an Eyelink EDF file in the
+interactive viewer from the command line (see `pypilview --help`):
+
+```bash
+pypilview recording.edf
+pypilview recording.edf --eyes left --variables pupil
+```
+
 
 
 ---
