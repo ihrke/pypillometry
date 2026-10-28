@@ -3,6 +3,17 @@ io.py
 =====
 
 Read/Write data from/to disk.
+
+Reading EDF files is slow: :func:`read_eyelink` (and
+:meth:`~pypillometry.GenericEyeData.from_eyelink`) takes about a minute
+for a 90 MB EDF file (64 min of binocular data at 1000 Hz), mostly in the
+`eyelinkio` package. It is therefore recommended to convert EDF files once
+and to work with the converted files, e.g., with the command-line program
+``edf2pypil`` (``edf2pypil recording.edf`` writes ``recording.pkl``) or
+with :func:`write_pickle`. Reading the pickle file with :func:`read_pickle`
+took 0.1-0.25 s for the same recordings (more than 200 times faster; from
+a slow disk it can take a few seconds). Pickle files are larger (about
+400 MB for a 90 MB EDF file) and should only be read from trusted sources.
 """
 
 try:
