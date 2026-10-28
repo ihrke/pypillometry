@@ -412,15 +412,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">and to work with the converted files, e.g., with the command-line program</span>
 <span class="sd">``edf2pypil`` (``edf2pypil recording.edf`` writes ``recording.pkl``) or</span>
 <span class="sd">with :func:`write_pickle`. Reading the pickle file with :func:`read_pickle`</span>
-<span class="sd">took 0.1-0.25 s for the same recordings (more than 200 times faster; from</span>
-<span class="sd">a slow disk it can take a few seconds). Pickle files are larger (about</span>
-<span class="sd">400 MB for a 90 MB EDF file) and should only be read from trusted sources.</span>
+<span class="sd">is more than 100 times faster. :func:`write_pickle` compresses the file</span>
+<span class="sd">with zstd by default: a 400 MB pickle (90 MB EDF file) shrinks to about</span>
+<span class="sd">31 MB, takes 0.5 s to write and 0.35 s to read (uncompressed: 0.2 s from</span>
+<span class="sd">a warm cache, more from a slow disk or network). Pickle files should only</span>
+<span class="sd">be read from trusted sources.</span>
 <span class="sd">"""</span>
 
-<span class="k">try</span><span class="p">:</span>
-   <span class="kn">import</span><span class="w"> </span><span class="nn">cPickle</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pickle</span>
-<span class="k">except</span><span class="p">:</span>
-   <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
@@ -429,6 +429,16 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">suppress_all_output</span><span class="p">,</span> <span class="n">requires_package</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_get_level</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">compression</span><span class="w"> </span><span class="kn">import</span> <span class="n">zstd</span>  <span class="c1"># Python &gt;= 3.14</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">backports</span><span class="w"> </span><span class="kn">import</span> <span class="n">zstd</span>
+
+<span class="c1">#: zstd compression level used by :func:`write_pickle`</span>
+<span class="n">ZSTD_LEVEL</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">_ZSTD_MAGIC</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x28\xb5\x2f\xfd</span><span class="s2">"</span>
+<span class="n">_GZIP_MAGIC</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x1f\x8b</span><span class="s2">"</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"osf_authenticate"</span><span class="p">,</span> <span class="s2">"download"</span><span class="p">,</span> <span class="s2">"fetch_url"</span><span class="p">,</span> <span class="s2">"local_copy"</span><span class="p">,</span> <span class="s2">"write_pickle"</span><span class="p">,</span>
@@ -909,21 +919,44 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="write_pickle">
 <a class="viewcode-back" href="../../api.html#pypillometry.io.write_pickle">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">write_pickle</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_pickle</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">compress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Store any Python object in a file using :mod:`pickle`.</span>
-<span class="sd">    </span>
+
+<span class="sd">    By default, the file is compressed with zstd (about 13 times smaller</span>
+<span class="sd">    for eyedata objects). :func:`read_pickle` detects the compression</span>
+<span class="sd">    automatically.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    obj : object</span>
 <span class="sd">        object to save</span>
 <span class="sd">    fname : str</span>
 <span class="sd">        filename to save to</span>
+<span class="sd">    compress : bool, optional</span>
+<span class="sd">        if True (default), compress the file with zstd; if False, write a</span>
+<span class="sd">        plain pickle file</span>
 <span class="sd">    """</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">compress</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">zstd</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">ZSTD_LEVEL</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span></div>
 
-    
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_open_maybe_compressed</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Open `fname` for reading, decompressing zstd or gzip files."""</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">magic</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">magic</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">_ZSTD_MAGIC</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">zstd</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">magic</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">_GZIP_MAGIC</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span>
+
+
 
 <div class="viewcode-block" id="read_pickle">
 <a class="viewcode-back" href="../../api.html#pypillometry.io.read_pickle">[docs]</a>
@@ -936,6 +969,9 @@ window.runMermaid = runMermaid;</script>
     <span class="n">autodelete</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Read a Python object from a file using :mod:`pickle`.</span>
+
+<span class="sd">    Plain, zstd- and gzip-compressed pickle files are supported (the</span>
+<span class="sd">    format is detected from the file content).</span>
 
 <span class="sd">    URLs are downloaded with :func:`~pypillometry.io.fetch_url`, in the</span>
 <span class="sd">    same way as in :func:`~pypillometry.io.read_eyelink`.</span>
@@ -970,7 +1006,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">with</span> <span class="n">local_copy</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="n">cache_file</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
                     <span class="n">autodelete</span><span class="o">=</span><span class="n">autodelete</span><span class="p">,</span> <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">,</span>
                     <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span> <span class="k">as</span> <span class="n">local</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="s1">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">_open_maybe_compressed</span><span class="p">(</span><span class="n">local</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
 
 

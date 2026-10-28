@@ -34,6 +34,8 @@ Requirements
 
 Eyelink's .edf files are read with the `eyelinkio <https://github.com/scott-huberty/eyelinkio>`_ package, which is installed as well.
 
+Saved eyedata files are compressed with zstd, which is part of Python's standard library from Python 3.14 (on older versions, the `backports.zstd <https://pypi.org/project/backports.zstd/>`_ package is installed).
+
 The interactive viewer uses :mod:`PyQt5` and :mod:`vispy`, which are installed by default.
 
 For development, ``pip install -e ".[test]"`` installs the test dependencies as well.

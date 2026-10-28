@@ -3424,11 +3424,14 @@ percent_masked, and sampling_rate</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.write_file">
-<span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/segmented.html#SegmentedEyeData.write_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.write_file" title="Link to this definition">¶</a></dt>
-<dd><p>Save to file using pickle.</p>
+<span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/segmented.html#SegmentedEyeData.write_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.write_file" title="Link to this definition">¶</a></dt>
+<dd><p>Save to file using pickle (see <a class="reference internal" href="#pypillometry.io.write_pickle" title="pypillometry.io.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Filename to save to</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Filename to save to</p></li>
+<li><p><strong>compress</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – compress the file with zstd (default True)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -5089,11 +5092,14 @@ if <cite>None</cite>, use the object-level setting (specified in the constructor
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.write_file">
-<span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.write_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.write_file" title="Link to this definition">¶</a></dt>
-<dd><p>Save to file (using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>).</p>
+<span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.write_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.write_file" title="Link to this definition">¶</a></dt>
+<dd><p>Save to file (using <a class="reference internal" href="#pypillometry.io.write_pickle" title="pypillometry.io.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – filename</p></li>
+<li><p><strong>compress</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – compress the file with zstd (default True)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -6516,9 +6522,11 @@ for a 90 MB EDF file (64 min of binocular data at 1000 Hz), mostly in the
 and to work with the converted files, e.g., with the command-line program
 <code class="docutils literal notranslate"><span class="pre">edf2pypil</span></code> (<code class="docutils literal notranslate"><span class="pre">edf2pypil</span> <span class="pre">recording.edf</span></code> writes <code class="docutils literal notranslate"><span class="pre">recording.pkl</span></code>) or
 with <a class="reference internal" href="#pypillometry.io.write_pickle" title="pypillometry.io.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>. Reading the pickle file with <a class="reference internal" href="#pypillometry.io.read_pickle" title="pypillometry.io.read_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_pickle()</span></code></a>
-took 0.1-0.25 s for the same recordings (more than 200 times faster; from
-a slow disk it can take a few seconds). Pickle files are larger (about
-400 MB for a 90 MB EDF file) and should only be read from trusted sources.</p>
+is more than 100 times faster. <a class="reference internal" href="#pypillometry.io.write_pickle" title="pypillometry.io.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a> compresses the file
+with zstd by default: a 400 MB pickle (90 MB EDF file) shrinks to about
+31 MB, takes 0.5 s to write and 0.35 s to read (uncompressed: 0.2 s from
+a warm cache, more from a slow disk or network). Pickle files should only
+be read from trusted sources.</p>
 </section>
 <dl class="py function">
 <dt class="sig sig-object py" id="pypillometry.io.fetch_url">
@@ -6653,6 +6661,8 @@ never deleted.</p></li>
 <dt class="sig sig-object py" id="pypillometry.io.read_pickle">
 <span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">read_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_download</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autodelete</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#read_pickle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.read_pickle" title="Link to this definition">¶</a></dt>
 <dd><p>Read a Python object from a file using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>.</p>
+<p>Plain, zstd- and gzip-compressed pickle files are supported (the
+format is detected from the file content).</p>
 <p>URLs are downloaded with <a class="reference internal" href="#pypillometry.io.fetch_url" title="pypillometry.io.fetch_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">fetch_url()</span></code></a>, in the
 same way as in <a class="reference internal" href="#pypillometry.io.read_eyelink" title="pypillometry.io.read_eyelink"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_eyelink()</span></code></a>.</p>
 <dl class="field-list simple">
@@ -6684,13 +6694,18 @@ never deleted.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pypillometry.io.write_pickle">
-<span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">write_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#write_pickle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.write_pickle" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pypillometry.io.</span></span><span class="sig-name descname"><span class="pre">write_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/io.html#write_pickle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.io.write_pickle" title="Link to this definition">¶</a></dt>
 <dd><p>Store any Python object in a file using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code>.</p>
+<p>By default, the file is compressed with zstd (about 13 times smaller
+for eyedata objects). <a class="reference internal" href="#pypillometry.io.read_pickle" title="pypillometry.io.read_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_pickle()</span></code></a> detects the compression
+automatically.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>obj</strong> (<em>object</em>) – object to save</p></li>
 <li><p><strong>fname</strong> (<em>str</em>) – filename to save to</p></li>
+<li><p><strong>compress</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – if True (default), compress the file with zstd; if False, write a
+plain pickle file</p></li>
 </ul>
 </dd>
 </dl>

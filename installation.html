@@ -73,6 +73,7 @@ $<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </sp
 <li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmdstanpy</span></code></p></li>
 </ul>
 <p>Eyelink’s .edf files are read with the <a class="reference external" href="https://github.com/scott-huberty/eyelinkio">eyelinkio</a> package, which is installed as well.</p>
+<p>Saved eyedata files are compressed with zstd, which is part of Python’s standard library from Python 3.14 (on older versions, the <a class="reference external" href="https://pypi.org/project/backports.zstd/">backports.zstd</a> package is installed).</p>
 <p>The interactive viewer uses <code class="xref py py-mod docutils literal notranslate"><span class="pre">PyQt5</span></code> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">vispy</span></code>, which are installed by default.</p>
 <p>For development, <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">&quot;.[test]&quot;</span></code> installs the test dependencies as well.</p>
 <p>It can be useful to access <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> through Jupyter or Jupyter Notebook, so installing those packages is also useful but not necessary.</p>
