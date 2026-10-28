@@ -17,7 +17,7 @@ import pypillometry as pp
 # Public-looking definitions that are intentionally not exported at the top
 # level. They stay importable from their submodule.
 INTERNAL = {
-    "pypillometry.cli": {"pypilview_main", "edf2pypil_main"},
+    "pypillometry.cli": {"pypilview_main", "edf2pypil_main", "pypilinfo_main"},
     "pypillometry.convenience": {
         "change_dir", "suppress_all_output", "sizeof_fmt", "ByteSize",
         "test_selector", "is_url", "requires_package", "normalize_unit",
