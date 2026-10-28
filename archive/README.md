@@ -9,3 +9,5 @@ pypillometry.
   `data/stuff/`.
 - `notebooks/eyedata.ipynb`: scratch notebook from the development of the
   `EyeData` class (contains a TODO list and cells that no longer run).
+- `docs/pupil_correction_carole.rst`: notes on a pupil-size correction
+  algorithm (was not linked from the documentation).
