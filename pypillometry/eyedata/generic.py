@@ -1313,9 +1313,10 @@ class GenericEyeData(ABC):
         s="{cname}({name}, {size}):\n".format(cname=self.__class__.__name__,
                                               name=self.name, 
                                               size=str(size))
-        flen=max([len(k) for k in pars.keys()])
+        flen=max(len(k) for k in list(pars.keys())+["glimpse"])
         for k,v in pars.items():
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
+        s+=(" {k:<"+str(flen)+"}: {v}\n").format(k="glimpse", v=repr(self.data))
         if self.info:
             s+=f" Info: {len(self.info)} keys: {', '.join(list(self.info.keys())[:5])}" + ("..." if len(self.info) > 5 else "") + "\n"
         s+=" History:\n *\n"
@@ -1413,7 +1414,7 @@ class GenericEyeData(ABC):
             "class_name": self.__class__.__name__,
             "name": summary["name"],
             "overview": overview,
-            "glimpse": summary.get("glimpse"),
+            "glimpse": repr(self.data),
             "blink_stats": blink_stats,
             "history": history_items,
             "sparklines": sparklines,

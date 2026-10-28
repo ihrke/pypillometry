@@ -2466,3 +2466,15 @@ class TestHistoryLog(unittest.TestCase):
                           "set_event_onsets(array(2,),array(2,))",
                           "set_experimental_setup(screen_resolution=(1280, 1024))"])
         self.assertEqual([h["funcname"] for h in d2.history][-2:], ["drop_data", "__delitem__"])
+
+
+def test_summary_keys():
+    d = pp.EyeData(left_x=np.ones(100), left_y=np.ones(100),
+                   left_pupil=np.ones(100), sampling_rate=100)
+    g = pp.GazeData(left_x=np.ones(100), left_y=np.ones(100), sampling_rate=100)
+    for obj in [d, d.get_pupildata(), g]:
+        s = obj.summary()
+        assert "params" in s
+        assert "parameters" not in s
+        assert "glimpse" not in s
+        assert "glimpse" in repr(obj)
