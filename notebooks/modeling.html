@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Modeling the pupillometric signal &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Example: Preprocessing of a full dataset with multiple subjects" href="preproc_example_pavlov.html" />
+    <link rel="prev" title="Event-related pupil dilations" href="erpds.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="preproc_example_pavlov.html" title="Example: Preprocessing of a full dataset with multiple subjects"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="erpds.html" title="Event-related pupil dilations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Modeling the pupillometric signal</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/modeling.ipynb">notebooks/modeling.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/modeling.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Modeling-the-pupillometric-signal">
+<h1>Modeling the pupillometric signal<a class="headerlink" href="#Modeling-the-pupillometric-signal" title="Link to this heading">¶</a></h1>
+<p><strong>WARNING</strong>: This functionality is <strong>experimental</strong>. Some of the provided algorithms are unpublished (or in the process of being published) and may not work well.</p>
+<p>The idea behind the algorithms, together with results from a simulation study showing their advantage over more traditional approaches, is described in <a class="reference external" href="https://osf.io/preprints/psyarxiv/7ju4a_v2/">this preprint</a>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span>
+</pre></div>
+</div>
+</div>
+<p>It can be useful to think about the pupillometric signal as being composed of different components. One common assumption, based on the finding that the pupil reflects activity in the norepinephrinergic system, is that it consists of slow, tonic (baseline) and faster, phasic (response) fluctuations.</p>
+<p>To illustrate this, we simulate data according to such a model: event-induced responses are superimposed on a slow, baseline-like component. The response to each event is a scaled version of a “response kernel” (Hoeks &amp; Levelt, 1993), which can be plotted with <code class="docutils literal notranslate"><span class="pre">pp.plot_prf()</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">plot_prf</span><span class="p">(</span><span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_modeling_3_0.png" src="../_images/notebooks_modeling_3_0.png" />
+</div>
+</div>
+<p>We create 100 events with random inter-stimulus intervals between 0.6 and 1.4 seconds (a “fast” paradigm in which the responses to successive events overlap), a slowly fluctuating baseline (<code class="docutils literal notranslate"><span class="pre">pp.fake_pupil_baseline()</span></code>), a response of random amplitude to each event (using the design matrix from <code class="docutils literal notranslate"><span class="pre">pp.pupil_build_design_matrix()</span></code>) and some measurement noise:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">fs</span> <span class="o">=</span> <span class="mi">50</span>       <span class="c1"># sampling rate (Hz)</span>
+<span class="n">ntrials</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="n">event_onsets</span> <span class="o">=</span> <span class="mi">2000</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">1400</span><span class="p">,</span> <span class="n">ntrials</span><span class="p">))</span>  <span class="c1"># in ms</span>
+<span class="n">duration</span> <span class="o">=</span> <span class="n">event_onsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">5000</span>                                   <span class="c1"># in ms</span>
+
+<span class="c1"># time (ms) and baseline</span>
+<span class="n">tx</span><span class="p">,</span> <span class="n">real_baseline</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">fake_pupil_baseline</span><span class="p">(</span><span class="n">duration</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">amplitude</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                                              <span class="n">freq</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">pupil_build_design_matrix</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">event_onsets</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="mf">10.1</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mi">930</span><span class="p">)</span>
+<span class="n">real_response_coef</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="n">ntrials</span><span class="p">)</span>
+<span class="n">real_response</span> <span class="o">=</span> <span class="n">real_response_coef</span> <span class="o">@</span> <span class="n">X</span>
+<span class="n">noise</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">))</span>
+
+<span class="n">faked</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="p">(</span><span class="n">left_pupil</span><span class="o">=</span><span class="n">real_baseline</span> <span class="o">+</span> <span class="n">real_response</span> <span class="o">+</span> <span class="n">noise</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">tx</span><span class="p">,</span>
+                     <span class="n">event_onsets</span><span class="o">=</span><span class="n">event_onsets</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="p">[</span><span class="s2">"event"</span><span class="p">]</span><span class="o">*</span><span class="n">ntrials</span><span class="p">,</span>
+                     <span class="n">name</span><span class="o">=</span><span class="s2">"simulated"</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">faked</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tx</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">real_baseline</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"baseline"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">event_onsets</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="o">*</span><span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_modeling_5_0.png" src="../_images/notebooks_modeling_5_0.png" />
+</div>
+</div>
+<p>The orange line is the tonic, baseline component. At each event (grey lines), a scaled response kernel is added. The challenge is to extract both the size of the response and the baseline value at each event when only using the measured pupil data (the blue line).</p>
+<section id="Traditional-approaches-for-disentangling-tonic-and-phasic-components">
+<h2>Traditional approaches for disentangling tonic and phasic components<a class="headerlink" href="#Traditional-approaches-for-disentangling-tonic-and-phasic-components" title="Link to this heading">¶</a></h2>
+<p>One common way to analyse pupillometric data on the trial-by-trial level is to extract the average signal just before an event (as a measure of the baseline) and some time after the event (as a measure of the pupil’s response). In <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>, this is implemented by <code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code>, which summarizes the signal in a time window around each event.</p>
+<p>For example, the following code extracts</p>
+<ul class="simple">
+<li><p>the average signal from 200 ms before each event until the event (<code class="docutils literal notranslate"><span class="pre">0</span></code>) as baseline</p></li>
+<li><p>the average signal from 800 ms until 1200 ms after each event as a measure of the response</p></li>
+</ul>
+<p>The baseline is then subtracted from the response:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">baseline</span> <span class="o">=</span> <span class="n">faked</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">event_select</span><span class="o">=</span><span class="s2">"event"</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">faked</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">event_select</span><span class="o">=</span><span class="s2">"event"</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span> <span class="mi">1200</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">baseline</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;left_pupil&#39;: array([ 753.24707085,  910.5008777 ,  926.75913869, 1032.40897831,
+        1064.03141911, 1056.86661384, 1091.24004593, 1052.80095661,
+        1072.74267959, 1142.61257249, 1113.25888123, 1196.89682553,
+        1199.65930305, 1300.49149841, 1316.62737324, 1282.12409623,
+        1245.92237413, 1140.45326192, 1059.99835976, 1041.76429984,
+         959.40567363,  861.55922371,  903.51045264,  873.95828385,
+         876.18155969,  935.02438032,  967.33155388,  969.79272217,
+        1039.22704424,  996.92880107,  958.35198931,  923.32412997,
+         993.99151361,  951.96188817,  994.59993086, 1000.29652794,
+         936.31119407,  980.10612966, 1015.14867091, 1082.86824474,
+        1093.98033793, 1120.97212302, 1108.26405136, 1077.83957373,
+        1018.94383666,  949.14281559,  968.54194546,  871.16863109,
+         938.66220767, 1069.35636145, 1099.76956724, 1177.17278248,
+        1180.59678379, 1114.84777511, 1067.43894777, 1005.06834067,
+         984.78364951, 1018.75859379, 1028.69482005, 1048.560598  ,
+        1144.33186444, 1167.24040497, 1234.14851528, 1202.93942607,
+        1166.78906597, 1153.9282239 , 1115.88298056, 1142.17262978,
+        1219.56578743, 1148.34374671, 1237.80212123, 1177.00180163,
+        1044.6882333 ,  960.82282214,  935.12733253,  969.56222201,
+        1020.5417764 , 1010.45149153, 1091.89257587, 1111.72988004,
+        1152.08224285, 1189.72445557, 1150.25984019, 1144.32535071,
+        1075.07311075, 1110.182412  , 1058.94757395, 1008.17674542,
+        1026.40772019, 1005.60095871,  989.65797247,  995.79509036,
+         951.00503493, 1040.14332618,  977.77872015, 1004.7527711 ,
+        1038.7322798 , 1019.84286338, 1097.69076972, 1020.27321193])}
+</pre></div></div>
+</div>
+<p>The result contains one array per eye and variable, with one value per event. We subtract the baseline from the response:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">baseline</span> <span class="o">=</span> <span class="n">baseline</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span> <span class="o">-</span> <span class="n">baseline</span>
+</pre></div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code> supports selecting specific events (<code class="docutils literal notranslate"><span class="pre">event_select=</span></code>) and any summary function (<code class="docutils literal notranslate"><span class="pre">statfct=</span></code>, default is <code class="docutils literal notranslate"><span class="pre">numpy.mean</span></code>). Masked data (e.g., blinks) is ignored when computing the statistic, so the function has to handle masked arrays (e.g., <code class="docutils literal notranslate"><span class="pre">np.ma.median</span></code> instead of <code class="docutils literal notranslate"><span class="pre">np.median</span></code>):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">faked</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">event_select</span><span class="o">=</span><span class="s2">"event"</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">statfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">median</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;left_pupil&#39;: array([ 754.89276983,  907.89529851,  928.05911264, 1031.65582806,
+        1063.32439519, 1056.42293438, 1090.89687451, 1050.88269661,
+        1071.33891676, 1144.14810423, 1111.96922201, 1197.29221125,
+        1200.58884988, 1304.19762758, 1318.58902327, 1281.16290544,
+        1245.66657616, 1140.32669132, 1059.81610238, 1043.93769775,
+         960.44723968,  861.7926799 ,  903.91447365,  875.93067268,
+         875.11773972,  936.7419889 ,  966.75632829,  970.58040737,
+        1041.13879091,  996.38305171,  957.60786568,  924.78396773,
+         993.87298494,  951.78999637,  992.8116932 , 1000.43454084,
+         934.2154059 ,  980.00590317, 1015.85983763, 1082.34606604,
+        1097.19348532, 1121.00646091, 1109.40938278, 1077.89786971,
+        1020.16660628,  949.9561078 ,  970.5497937 ,  871.34764237,
+         938.98842965, 1070.03175398, 1099.55558725, 1179.25007842,
+        1180.88396895, 1116.67619587, 1064.36569655, 1006.53086871,
+         983.66947725, 1019.58879392, 1028.05812556, 1047.72639559,
+        1143.55853165, 1168.0061164 , 1235.29960898, 1203.72369645,
+        1169.35804263, 1154.16128504, 1116.1233608 , 1143.03210058,
+        1216.94732524, 1146.40525942, 1237.81622373, 1179.40856231,
+        1047.62349375,  963.64277425,  934.87009215,  973.40229597,
+        1020.55093121, 1007.54240168, 1087.92048071, 1110.58953299,
+        1152.01497087, 1193.25887528, 1152.06600418, 1144.41650203,
+        1071.66171413, 1111.50299268, 1061.46855166, 1008.17282054,
+        1025.8831275 , 1007.96107893,  990.96435721,  994.60692221,
+         949.595824  , 1040.70773824,  977.13194747, 1006.10751207,
+        1042.4995676 , 1019.50811067, 1097.11168414, 1022.60628766])}
+</pre></div></div>
+</div>
+</section>
+<section id="Advanced-methods-for-tonic/phasic-component-estimation">
+<h2>Advanced methods for tonic/phasic component estimation<a class="headerlink" href="#Advanced-methods-for-tonic/phasic-component-estimation" title="Link to this heading">¶</a></h2>
+<p>The simple method above is appealing for its simplicity but has severe limitations. Most importantly, multiple overlapping pupillary responses can “look like” baseline fluctuations when added together, thereby artificially inflating baseline estimates, particularly when events are spaced closely in time (“fast paradigms”). For that reason, we developed specialized algorithms to disentangle tonic and phasic components of the pupillometric signal.</p>
+<p>The algorithm uses an iterative procedure to remove an initial estimate of the responses from the signal to continue to estimate the underlying baseline. Details about how this algorithm works and which parameters it supports are available in <a class="reference external" href="https://osf.io/preprints/psyarxiv/7ju4a_v2/">this preprint</a>.</p>
+<p>The functionality is implemented in <code class="docutils literal notranslate"><span class="pre">pupil_estimate_baseline()</span></code> and <code class="docutils literal notranslate"><span class="pre">pupil_estimate_response()</span></code>. The response estimation depends on the estimated baseline, hence <code class="docutils literal notranslate"><span class="pre">pupil_estimate_baseline()</span></code> should be called first. Both functions are slow for high sampling rates, so it is a good idea to low-pass filter and downsample the data first (here, the simulated data already has a sampling rate of 50 Hz):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">faked</span><span class="o">.</span><span class="n">pupil_estimate_baseline</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>\
+         <span class="o">.</span><span class="n">pupil_estimate_response</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 12:40:45</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">pupil_response</span>:<span class="ansi-cyan-fg">480</span> | <span class="ansi-bold">optimizing both npar and tmax, might take a while...</span>
+<span class="ansi-green-fg">pp: 12:40:46</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=9.33, tmax=981.93</span>
+<span class="ansi-green-fg">pp: 12:40:47</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=8.25, tmax=971.97</span>
+<span class="ansi-green-fg">pp: 12:40:47</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.15, tmax=957.53</span>
+<span class="ansi-green-fg">pp: 12:40:48</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.37, tmax=955.65</span>
+<span class="ansi-green-fg">pp: 12:40:48</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.37, tmax=954.02</span>
+<span class="ansi-green-fg">pp: 12:40:48</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.37, tmax=953.65</span>
+<span class="ansi-green-fg">pp: 12:40:49</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.37, tmax=953.65</span>
+<span class="ansi-green-fg">pp: 12:40:49</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">log_progress</span>:<span class="ansi-cyan-fg">501</span> | <span class="ansi-bold">npar=7.37, tmax=953.65</span>
+</pre></div></div>
+</div>
+<p>Here, we allowed the two shape parameters of the response kernel, <code class="docutils literal notranslate"><span class="pre">npar</span></code> and <code class="docutils literal notranslate"><span class="pre">tmax</span></code>, to vary freely together with the amplitudes of the responses. This allows an individualized shape of the pupillary response for each subject (which appears reasonable given the results in Hoeks &amp; Levelt, 1993) but may take a long time to optimize and can result in pathological solutions. In that case, one or both of the parameters can be fixed, for example to reasonable group-level values (e.g.,
+<code class="docutils literal notranslate"><span class="pre">pupil_estimate_response(npar=10.1,</span> <span class="pre">tmax=930)</span></code>).</p>
+<p>After running these methods, the baseline is stored as a new variable <code class="docutils literal notranslate"><span class="pre">baseline</span></code> and the predicted response as variable <code class="docutils literal notranslate"><span class="pre">response</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">variables</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;pupil&#39;, &#39;baseline&#39;, &#39;response&#39;]
+</pre></div></div>
+</div>
+<p>The estimated parameters of the response are stored in <code class="docutils literal notranslate"><span class="pre">d.params[&quot;response&quot;]</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"response"</span><span class="p">][</span><span class="s2">"left"</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;npar&#39;: np.float64(7.3685470620233104),
+ &#39;npar_free&#39;: True,
+ &#39;tmax&#39;: np.float64(953.6454035404223),
+ &#39;tmax_free&#39;: True,
+ &#39;coef&#39;: array([163.70558098,  59.82668412,  59.44208734,  35.93939061,
+         70.61177914, 113.49721296,  97.7192078 , 103.42663827,
+        177.48505811, 176.83179863,  38.31277677,  96.94181356,
+         73.70363263,  71.53669473,  84.90323405, 104.64058644,
+        124.04716012,  80.2841598 , 121.49970223,  73.48218003,
+         92.98662969, 153.80079823,  97.35578564, 101.49746502,
+         82.99794876,  91.71345939, 108.85808044, 158.5480895 ,
+         91.1330389 ,  95.03157591,  87.96645934, 171.834779  ,
+         71.60768561,  74.44841751,  70.46347522,  90.27553751,
+         90.42293282, 116.53593727,  72.77153483,  97.403178  ,
+         85.1361289 ,  67.86789003,  98.28771639, 159.53520492,
+         84.71315748, 127.66409553,  50.20917194,  71.52995751,
+        120.70151847,  81.29308825, 123.20776444,  84.12244029,
+        101.38502605, 160.20905726,  91.86829975,  96.48525465,
+        107.53262961,  74.74357489,  77.81021977,  91.54880569,
+         83.89276232, 123.69030085, 115.35259556, 115.56017971,
+        104.58077261,  56.78429817, 104.30614893, 165.53184966,
+         46.93312072,  89.53325303, 104.84958164, 100.04632405,
+        138.26446296, 114.7175219 , 120.29029554, 110.73402215,
+         83.41558149,  79.31611069,  58.0620172 , 118.68330667,
+         84.09548615, 104.61082621, 122.86242146, 164.87455134,
+        188.67325209, 133.55152761, 104.09376869, 101.15143442,
+         87.78710714,  74.34441431, 102.74358426,  82.24411808,
+        129.10909799, 145.65423302,  38.91219147, 134.11747665,
+        154.11540088, 147.01973172,  80.80542977, 195.29230974]),
+ &#39;bounds&#39;: {&#39;npar&#39;: (1, 20), &#39;tmax&#39;: (100, 2000)}}
+</pre></div></div>
+</div>
+<p>We can plot the estimated baseline and the full model (baseline+response) together with the data and the real baseline:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"pupil"</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"data"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">real_baseline</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"real baseline"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"baseline"</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"estimated baseline"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">tx</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">d</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"baseline"</span><span class="p">]</span> <span class="o">+</span> <span class="n">d</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"model (baseline+response)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"seconds"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_modeling_19_0.png" src="../_images/notebooks_modeling_19_0.png" />
+</div>
+</div>
+<p>The estimated baseline is more wiggly than the real one but gives a considerably better estimate than the traditional method. The overall fit of the model is excellent (which is to be expected for simulated data).</p>
+<p>We can quantify how well the baseline estimation works relative to the traditional method by comparing both to the “ground truth” which is available for simulated data. We get the real and estimated baseline at each event onset with <code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code>:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># store the real baseline as a variable so that we can use stat_per_event()</span>
+<span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"left_realbaseline"</span><span class="p">]</span> <span class="o">=</span> <span class="n">real_baseline</span>
+
+<span class="n">at_onset</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="o">/</span><span class="n">fs</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span>   <span class="c1"># one sample at the event onset</span>
+<span class="n">real_baseline_ev</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">event_select</span><span class="o">=</span><span class="s2">"event"</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">at_onset</span><span class="p">)[</span><span class="s2">"left_realbaseline"</span><span class="p">]</span>
+<span class="n">novel_baseline</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">event_select</span><span class="o">=</span><span class="s2">"event"</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">at_onset</span><span class="p">)[</span><span class="s2">"left_baseline"</span><span class="p">]</span>
+<span class="n">novel_response</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">"response"</span><span class="p">][</span><span class="s2">"left"</span><span class="p">][</span><span class="s2">"coef"</span><span class="p">]</span>
+
+<span class="n">traditional_baseline</span> <span class="o">=</span> <span class="n">baseline</span>
+<span class="n">traditional_response</span> <span class="o">=</span> <span class="n">response</span>
+</pre></div>
+</div>
+</div>
+<p>and compare them by means of the correlation between the estimated and the real values:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Traditional method:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Baseline: Corr(trad, real) ="</span><span class="p">,</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">traditional_baseline</span><span class="p">,</span> <span class="n">real_baseline_ev</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Response: Corr(trad, real) ="</span><span class="p">,</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">traditional_response</span><span class="p">,</span> <span class="n">real_response_coef</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Novel method:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Baseline: Corr(nov, real) ="</span><span class="p">,</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">novel_baseline</span><span class="p">,</span> <span class="n">real_baseline_ev</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Response: Corr(nov, real) ="</span><span class="p">,</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">pearsonr</span><span class="p">(</span><span class="n">novel_response</span><span class="p">,</span> <span class="n">real_response_coef</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Traditional method:
+Baseline: Corr(trad, real) = 0.9552617927538912
+Response: Corr(trad, real) = 0.43811540405889726
+
+Novel method:
+Baseline: Corr(nov, real) = 0.9754659627521309
+Response: Corr(nov, real) = 0.6281775206841139
+</pre></div></div>
+</div>
+<p>The correlations are higher for the novel method than for the traditional method. More detailed simulation studies are reported in <a class="reference external" href="https://osf.io/preprints/psyarxiv/7ju4a_v2/">the preprint</a>.</p>
+<p>The parameters of the baseline estimation are described in the API documentation of <code class="docutils literal notranslate"><span class="pre">pp.baseline_envelope_iter_bspline()</span></code> and, in more detail, in <a class="reference external" href="https://osf.io/preprints/psyarxiv/7ju4a_v2/">the preprint</a>.</p>
+<p>The parameters of the response estimation are described in the API documentation of <code class="docutils literal notranslate"><span class="pre">pp.pupil_response()</span></code>.</p>
+</section>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/modeling.ipynb">notebooks/modeling.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/modeling.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Modeling the pupillometric signal</a><ul>
+<li><a class="reference internal" href="#Traditional-approaches-for-disentangling-tonic-and-phasic-components">Traditional approaches for disentangling tonic and phasic components</a></li>
+<li><a class="reference internal" href="#Advanced-methods-for-tonic/phasic-component-estimation">Advanced methods for tonic/phasic component estimation</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="erpds.html"
+                          title="previous chapter">Event-related pupil dilations</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="preproc_example_pavlov.html"
+                          title="next chapter">Example: Preprocessing of a full dataset with multiple subjects</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/notebooks/modeling.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="preproc_example_pavlov.html" title="Example: Preprocessing of a full dataset with multiple subjects"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="erpds.html" title="Event-related pupil dilations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Modeling the pupillometric signal</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+    </div>
+  </body>
+</html>

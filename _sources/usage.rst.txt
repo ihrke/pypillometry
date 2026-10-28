@@ -34,13 +34,13 @@ Once the data has been manually parsed into :mod:`numpy`-arrays, it can be conve
 
 :mod:`pypillometry` provides functions to load data from local data directories (:func:`load_study_local`) and from OSF-projects (:func:`load_study_osf`) based on a user-provided configuration file (:ref:`/examples/pypillometry_conf.py`).
 
-The package comes with a few example datasets for convenience (see :ref:`this notebook </example_datasets.ipynb>`). These can be loaded using the :func:`get_example_data()` function.
+The package comes with a few example datasets for convenience (see :ref:`this notebook </notebooks/example_datasets.ipynb>`). These can be loaded using the :func:`get_example_data()` function.
 
 Please refer to the following notebooks for more information:
 
-- :ref:`An example for importing data from Eyelink EDF-files </importdata_edf.ipynb>`
-- :ref:`An example for importing data from Eyelink ASC-files </importdata_asc.ipynb>`
-- :ref:`Example datasets included in the package </example_datasets.ipynb>` 
+- :ref:`An example for importing data from Eyelink EDF-files </notebooks/importdata_edf.ipynb>`
+- :ref:`An example for importing data from Eyelink ASC-files </notebooks/importdata_asc.ipynb>`
+- :ref:`Example datasets included in the package </notebooks/example_datasets.ipynb>` 
 - :ref:`Providing a configuration file for loading/sharing data from a local directory or OSF </examples/share_study.rst>`
 
 
@@ -67,7 +67,7 @@ This will return a new object `d_new` with the results of the operations. The or
 
 See the following notebook for more on these issues: 
 
-- :ref:`Pipeline-based processing in pypillometry </pipes.ipynb>`
+- :ref:`Pipeline-based processing in pypillometry </notebooks/pipes.ipynb>`
 
 Data modalities/variables and monocular vs. binocular data
 ----------------------------------------------------------
@@ -80,7 +80,7 @@ Finally, new variables (or even "eyes") can be created and added to the object. 
 
 Please see the following example for more details: 
 
-- :ref:`Processing monocular and binocular data </eyes_and_variables.ipynb>`
+- :ref:`Processing monocular and binocular data </notebooks/eyes_and_variables.ipynb>`
 
 Plotting data
 -------------
@@ -168,9 +168,9 @@ Handling Blinks
 Pupillometric data usually contain blinks which show up as missing data in the signal where the eyetracker is unable to record the size of the pupil.
 A range of functions are available for detecting and interpolating blinks. 
 
-More details and an example can be found in the notebook: :ref:`An example for how to handle blinks </blinks.ipynb>`
+More details and an example can be found in the notebook: :ref:`An example for how to handle blinks </notebooks/blinks.ipynb>`
 
-A fully worked-out example of a real study can be found in this notebook: :ref:`Preprocessing of a full dataset with multiple subjects </preproc_example_pavlov.ipynb>`
+A fully worked-out example of a real study can be found in this notebook: :ref:`Preprocessing of a full dataset with multiple subjects </notebooks/preproc_example_pavlov.ipynb>`
 
 The following is a list of functions for that purpose. Note that the functions take multiple arguments that control the algorithms behaviour. It is often crucial to adjust the parameters on an individual level since the artifacts tend to be quite dissimilar between subjects (but usually stable within-subject). All arguments are documented in the :ref:`API-docs </api.rst>`.
 
@@ -219,7 +219,7 @@ Plotting
 
 It is crucial to validate preprocessing steps by visually inspecting the results using plots. Therefore, :mod:`pypillometry` implements several plotting facilities that encourage active exploration of the dataset. 
 
-Please see the tutorial :ref:`Plotting of pupillometric data </plotting.ipynb>` for more details.
+Please see the tutorial :ref:`Plotting of pupillometric data </notebooks/plotting.ipynb>` for more details.
 
 
 .. autosummary::
@@ -238,7 +238,7 @@ Inspecting/Summarizing
 
 The package also provides several functions for summarizing datasets. Simply `print()`ing a :class:`PupilData` object gives a readable summary of the main properties of the dataset and also prints the complete history of the results. By calling :func:`PupilData.summary`, summary data can be arranged and summarized in tabular form. 
 
-See the notebook :ref:`Summarizing pupillometric data </summary.ipynb>` for more details.
+See the notebook :ref:`Summarizing pupillometric data </notebooks/summary.ipynb>` for more details.
 
 .. autosummary::
 
@@ -253,7 +253,7 @@ The average pupillometric signal, timelocked to repeating events during the expe
 
 Running :func:`PupilData.get_erpd` returns an Object of class :class:`ERPDSingleSubject`. This object has functions for plotting and summarising the event-related pupillary dilation. 
 
-:ref:`Here is an example notebook for for how to work with ERPDs </erpds.ipynb>`.
+:ref:`Here is an example notebook for for how to work with ERPDs </notebooks/erpds.ipynb>`.
 
 
 .. autosummary::
@@ -276,7 +276,7 @@ Modeling the pupillometric signal
 For some applications, it is interesting to model the full pupillometric signal as consisting of a (tonic) baseline and a (phasic) response component. 
 The package implements novel algorithms developed in our lab and documentation will become available here.
 
-More details are availabel in this notebook: :ref:`Modeling the pupillometric signal </modeling.ipynb>`.
+More details are availabel in this notebook: :ref:`Modeling the pupillometric signal </notebooks/modeling.ipynb>`.
 
 .. currentmodule:: pypillometry.pupildata
 

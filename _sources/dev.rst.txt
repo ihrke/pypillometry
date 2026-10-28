@@ -46,7 +46,7 @@ Coding style/package architecture
 ---------------------------------
 
 We chose to put most functionality directly below :mod:`pypillometry`'s main class :class:`PupilData`. This is mostly for convenience,
-as users can easily find and chain commands together (see the following page more on this: :ref:`Pipeline-based processing in pypillometry </pipes.ipynb>`).
+as users can easily find and chain commands together (see the following page more on this: :ref:`Pipeline-based processing in pypillometry </notebooks/pipes.ipynb>`).
 
 The implementation of the functionality, however, is coded in submodules using "stateless" functions that take :mod:`numpy`-arrays as arguments. So, in order to create a new function that changes a :class:`PupilData`-object, you will first want to implement a function working purely on :mod:`numpy`-arrays and then create a thin wrapper function below :class:`PupilData` that calls this low-level function with the correct arguments.
 

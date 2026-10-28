@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Example: Preprocessing of a full dataset with multiple subjects &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Sharing/Importing study data" href="../examples/share_study.html" />
+    <link rel="prev" title="Modeling the pupillometric signal" href="modeling.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../examples/share_study.html" title="Sharing/Importing study data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modeling.html" title="Modeling the pupillometric signal"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Example: Preprocessing of a full dataset with multiple subjects</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/preproc_example_pavlov.ipynb">notebooks/preproc_example_pavlov.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/preproc_example_pavlov.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Example:-Preprocessing-of-a-full-dataset-with-multiple-subjects">
+<h1>Example: Preprocessing of a full dataset with multiple subjects<a class="headerlink" href="#Example:-Preprocessing-of-a-full-dataset-with-multiple-subjects" title="Link to this heading">¶</a></h1>
+<p>This is an example of a real dataset of a study from our cognitive neuroscience lab at the University of Tromsø.</p>
+<p>The notebook cannot be run without the underlying data (which can be found at <a class="reference external" href="https://osf.io/7wcej/">https://osf.io/7wcej/</a>) but it can be used as an example to adapt for your own studies. To load and share the data of a study more easily, consider using a <a class="reference internal" href="../examples/share_study.html"><span class="doc">configuration file</span></a>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"figure.max_open_warning"</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>  <span class="c1"># suppress a warning</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># load all raw datasets</span>
+<span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"20_pav"</span><span class="p">,</span> <span class="s2">"8_pav"</span><span class="p">,</span> <span class="s2">"1_pav_pilot"</span><span class="p">]</span>  <span class="c1"># these subjects did not have usable data</span>
+
+<span class="c1"># here, data is already stored in pypillometry's own format as .pd files</span>
+<span class="n">pdfiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"data/eyedata/*.pd"</span><span class="p">)</span>
+<span class="n">datasets</span> <span class="o">=</span> <span class="p">[</span><span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">pdfiles</span><span class="p">]</span>
+
+<span class="c1"># datasets are stored in a dict with the subject number as key</span>
+<span class="n">datasets</span> <span class="o">=</span> <span class="p">{</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># preprocessing parameters (durations in ms)</span>
+<span class="n">default_param</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"min_duration"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>        <span class="c1"># min duration of a blink</span>
+                 <span class="s2">"vel_onset_min_duration"</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>   <span class="c1"># duration of onset/offset for blink detection</span>
+                 <span class="s2">"vel_offset_min_duration"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                 <span class="s2">"vel_onset"</span><span class="p">:</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span>           <span class="c1"># velocity thresholds for onset and offset</span>
+                 <span class="s2">"vel_offset"</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+                 <span class="s2">"strategies"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"zero"</span><span class="p">,</span> <span class="s2">"velocity"</span><span class="p">],</span>  <span class="c1"># strategies for blink detection</span>
+                 <span class="s2">"distance"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>           <span class="c1"># minimum distance between two blinks</span>
+                 <span class="s2">"margin"</span><span class="p">:</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">),</span>       <span class="c1"># margins for Mahot algorithm</span>
+                 <span class="s2">"cutoff"</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>               <span class="c1"># lowpass-filter cutoff (Hz)</span>
+
+<span class="c1"># all subjects get the same set of default parameters initially</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">subj</span><span class="p">:</span> <span class="n">default_param</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">subj</span> <span class="ow">in</span> <span class="n">datasets</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># fine-tuning of the parameters per subject (this is done iteratively by</span>
+<span class="c1"># inspecting the per-subject PDF files generated below and changing parameters)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"4"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"6"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">strategies</span><span class="o">=</span><span class="p">[</span><span class="s2">"zero"</span><span class="p">])</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"7"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"9"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"10"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"12"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"13"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"14"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">220</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"15"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">350</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"16"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"17"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"21"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">vel_offset</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                    <span class="n">vel_onset_min_duration</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">vel_offset_min_duration</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"23"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">vel_onset_min_duration</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"24"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">320</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"25"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">350</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"29"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"30"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"31"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"32"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"34"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">350</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"35"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">250</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"36"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"37"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">250</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"39"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"40"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"41"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">230</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">20</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"42"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"43"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"46"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">220</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">20</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"47"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"49"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"50"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"51"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">220</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"53"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"54"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">220</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"55"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">250</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"56"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">params</span><span class="p">[</span><span class="s2">"57"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">150</span><span class="p">),</span> <span class="n">vel_onset</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_duration</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># run the preprocessing pipeline on all subjects and produce PDFs for inspection</span>
+<span class="n">preprocs</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">subj</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">pars</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">subj</span><span class="p">]</span>
+    <span class="n">dp</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"min_duration"</span><span class="p">],</span>
+                               <span class="n">strategies</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"strategies"</span><span class="p">],</span>
+                               <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">],</span>
+                               <span class="n">vel_onset_min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset_min_duration"</span><span class="p">],</span>
+                               <span class="n">vel_offset_min_duration</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset_min_duration"</span><span class="p">],</span>
+                               <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>\
+          <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"distance"</span><span class="p">],</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
+          <span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"margin"</span><span class="p">],</span>
+                                    <span class="n">vel_onset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_onset"</span><span class="p">],</span> <span class="n">vel_offset</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"vel_offset"</span><span class="p">])</span>\
+          <span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="n">pars</span><span class="p">[</span><span class="s2">"cutoff"</span><span class="p">])</span>
+    <span class="n">dp</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot_segments</span><span class="p">(</span><span class="n">pdf_file</span><span class="o">=</span><span class="s2">"pics/</span><span class="si">%s</span><span class="s2">.pdf"</span> <span class="o">%</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">interv</span><span class="o">=</span><span class="mi">1</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">)</span>
+    <span class="n">preprocs</span><span class="p">[</span><span class="n">subj</span><span class="p">]</span> <span class="o">=</span> <span class="n">dp</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># write down notes about each subject when going through the PDFs</span>
+<span class="n">notes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"1"</span><span class="p">:</span> <span class="s2">"last 5 mins missing; else quite ok, a few semi-blinks not properly detected"</span><span class="p">,</span>
+    <span class="s2">"2"</span><span class="p">:</span> <span class="s2">"many blinks after min 17; but reconstruction works very well"</span><span class="p">,</span>
+    <span class="s2">"3"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"4"</span><span class="p">:</span> <span class="s2">"fine (after tuning); a couple of short blinks that do not go all the way down to zero"</span><span class="p">,</span>
+    <span class="s2">"5"</span><span class="p">:</span> <span class="s2">"an awful lot of blinks; reconstruction seems to work but subj should probably be excluded"</span><span class="p">,</span>
+    <span class="s2">"6"</span><span class="p">:</span> <span class="s2">"fine (after tuning); very nice data with few blinks"</span><span class="p">,</span>
+    <span class="s2">"7"</span><span class="p">:</span> <span class="s2">"ok after tuning; weird stuff min 32-33"</span><span class="p">,</span>
+    <span class="s2">"8"</span><span class="p">:</span> <span class="s2">"missing data"</span><span class="p">,</span>
+    <span class="s2">"9"</span><span class="p">:</span> <span class="s2">"fine (after tuning); worse data in second half but ok"</span><span class="p">,</span>
+    <span class="s2">"10"</span><span class="p">:</span> <span class="s2">"many blinks, probably exclude"</span><span class="p">,</span>
+    <span class="s2">"11"</span><span class="p">:</span> <span class="s2">"usable but quite a few blinks (especially in the last part from min 33)"</span><span class="p">,</span>
+    <span class="s2">"12"</span><span class="p">:</span> <span class="s2">"fine after tuning but many blinks in second half"</span><span class="p">,</span>
+    <span class="s2">"13"</span><span class="p">:</span> <span class="s2">"usable but quite a few blinks; some segments are bad but should be ok due to exclusion crit"</span><span class="p">,</span>
+    <span class="s2">"14"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"15"</span><span class="p">:</span> <span class="s2">"exclude, many blinks and long opening-period after blinks"</span><span class="p">,</span>
+    <span class="s2">"16"</span><span class="p">:</span> <span class="s2">"fine; very nice data with few blinks"</span><span class="p">,</span>
+    <span class="s2">"17"</span><span class="p">:</span> <span class="s2">"usable but quite a few blinks"</span><span class="p">,</span>
+    <span class="s2">"18"</span><span class="p">:</span> <span class="s2">"missing"</span><span class="p">,</span>
+    <span class="s2">"19"</span><span class="p">:</span> <span class="s2">"usable (borderline), many blinks but nice reconstruction"</span><span class="p">,</span>
+    <span class="s2">"20"</span><span class="p">:</span> <span class="s2">"missing"</span><span class="p">,</span>
+    <span class="s2">"21"</span><span class="p">:</span> <span class="s2">"fine; except from min 37; incredibly fast transients!"</span><span class="p">,</span>
+    <span class="s2">"22"</span><span class="p">:</span> <span class="s2">"exclude; way to many blinks to do anything with this"</span><span class="p">,</span>
+    <span class="s2">"23"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"24"</span><span class="p">:</span> <span class="s2">"fine; very slow opening-transient"</span><span class="p">,</span>
+    <span class="s2">"25"</span><span class="p">:</span> <span class="s2">"borderline; a lot of blinks (more towards end) and a few weird artifacts in the second half"</span><span class="p">,</span>
+    <span class="s2">"26"</span><span class="p">:</span> <span class="s2">"fine; great, clean data!"</span><span class="p">,</span>
+    <span class="s2">"27"</span><span class="p">:</span> <span class="s2">"exclude"</span><span class="p">,</span>
+    <span class="s2">"28"</span><span class="p">:</span> <span class="s2">"missing"</span><span class="p">,</span>
+    <span class="s2">"29"</span><span class="p">:</span> <span class="s2">"usable; slow opening-transient"</span><span class="p">,</span>
+    <span class="s2">"30"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"31"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"32"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"33"</span><span class="p">:</span> <span class="s2">"usable; many blinks in second half"</span><span class="p">,</span>
+    <span class="s2">"34"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"35"</span><span class="p">:</span> <span class="s2">"borderline; lots of blinks during later segments"</span><span class="p">,</span>
+    <span class="s2">"36"</span><span class="p">:</span> <span class="s2">"borderline; esp near the end"</span><span class="p">,</span>
+    <span class="s2">"37"</span><span class="p">:</span> <span class="s2">"borderline; blinks consist of many consecutive, short-blinks"</span><span class="p">,</span>
+    <span class="s2">"38"</span><span class="p">:</span> <span class="s2">"missing"</span><span class="p">,</span>
+    <span class="s2">"39"</span><span class="p">:</span> <span class="s2">"fine (after tuning)"</span><span class="p">,</span>
+    <span class="s2">"40"</span><span class="p">:</span> <span class="s2">"borderline; many blinks throughout"</span><span class="p">,</span>
+    <span class="s2">"41"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"42"</span><span class="p">:</span> <span class="s2">"fine; has some of the weird triple-blinks"</span><span class="p">,</span>
+    <span class="s2">"43"</span><span class="p">:</span> <span class="s2">"fine; missing from min 34 (last block?)"</span><span class="p">,</span>
+    <span class="s2">"44"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"45"</span><span class="p">:</span> <span class="s2">"exclude; many blinks throughout"</span><span class="p">,</span>
+    <span class="s2">"46"</span><span class="p">:</span> <span class="s2">"usable"</span><span class="p">,</span>
+    <span class="s2">"47"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"48"</span><span class="p">:</span> <span class="s2">"missing"</span><span class="p">,</span>
+    <span class="s2">"49"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"50"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"51"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"52"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"53"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"54"</span><span class="p">:</span> <span class="s2">"fine"</span><span class="p">,</span>
+    <span class="s2">"55"</span><span class="p">:</span> <span class="s2">"usable; borderline towards the end"</span><span class="p">,</span>
+    <span class="s2">"56"</span><span class="p">:</span> <span class="s2">"usable, worse towards end"</span><span class="p">,</span>
+    <span class="s2">"57"</span><span class="p">:</span> <span class="s2">"exclude"</span>
+<span class="p">}</span>
+<span class="n">exclude_preproc</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"5"</span><span class="p">,</span> <span class="s2">"10"</span><span class="p">,</span> <span class="s2">"15"</span><span class="p">,</span> <span class="s2">"22"</span><span class="p">,</span> <span class="s2">"27"</span><span class="p">,</span> <span class="s2">"45"</span><span class="p">,</span> <span class="s2">"57"</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># save table with preprocessing parameters per subject</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">params</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"subj"</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"subj"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">subj</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"subj"</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"preproc_params.csv"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># save table with notes</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">notes</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"subj"</span><span class="p">,</span> <span class="s2">"notes"</span><span class="p">])</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"preproc_notes.csv"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># write final preprocessed files for further analysis</span>
+<span class="n">preprocs</span> <span class="o">=</span> <span class="p">{</span><span class="n">subj</span><span class="p">:</span> <span class="n">d</span> <span class="k">for</span> <span class="n">subj</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">preprocs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">subj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_preproc</span><span class="p">}</span>
+<span class="n">pp</span><span class="o">.</span><span class="n">write_pickle</span><span class="p">(</span><span class="n">preprocs</span><span class="p">,</span> <span class="s2">"data/export/eye_preproc.pd"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># save table with a final summary of the preprocessed data</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">count_events</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">lab</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">event_labels</span><span class="p">)</span>
+
+<span class="n">tab</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s2">"subj"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">subj</span><span class="p">),</span>
+                     <span class="s2">"duration_minutes"</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">),</span>
+                     <span class="s2">"nevents"</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">nevents</span><span class="p">(),</span>
+                     <span class="s2">"ncues"</span><span class="p">:</span> <span class="n">count_events</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s2">"C_"</span><span class="p">),</span>
+                     <span class="s2">"nfb"</span><span class="p">:</span> <span class="n">count_events</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s2">"F_"</span><span class="p">),</span>
+                     <span class="s2">"nresp"</span><span class="p">:</span> <span class="n">count_events</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s2">"R_"</span><span class="p">),</span>
+                     <span class="s2">"perc_interpolated"</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">d</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+                     <span class="s2">"blinks_per_min"</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">nblinks</span><span class="p">()[</span><span class="s2">"left_pupil"</span><span class="p">]</span> <span class="o">/</span> <span class="n">d</span><span class="o">.</span><span class="n">get_duration</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">),</span>
+                     <span class="s2">"note"</span><span class="p">:</span> <span class="n">notes</span><span class="p">[</span><span class="n">subj</span><span class="p">]}</span>
+                    <span class="k">for</span> <span class="n">subj</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">preprocs</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+<span class="n">tab</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">"subj"</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"preproc_summary.csv"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/preproc_example_pavlov.ipynb">notebooks/preproc_example_pavlov.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/preproc_example_pavlov.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="modeling.html"
+                          title="previous chapter">Modeling the pupillometric signal</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../examples/share_study.html"
+                          title="next chapter">Sharing/Importing study data</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/notebooks/preproc_example_pavlov.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../examples/share_study.html" title="Sharing/Importing study data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modeling.html" title="Modeling the pupillometric signal"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Example: Preprocessing of a full dataset with multiple subjects</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+    </div>
+  </body>
+</html>

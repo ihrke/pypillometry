@@ -20,7 +20,7 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Importing Data from Eyelink EDF files Example" href="importdata_edf.html" />
+    <link rel="next" title="Importing data from Eyelink EDF files" href="notebooks/importdata_edf.html" />
     <link rel="prev" title="Interactive Parameter Tweaking (pp.tweak)" href="tweak.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="Related">
@@ -33,7 +33,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="importdata_edf.html" title="Importing Data from Eyelink EDF files Example"
+          <a href="notebooks/importdata_edf.html" title="Importing data from Eyelink EDF files"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="tweak.html" title="Interactive Parameter Tweaking (pp.tweak)"
@@ -50,42 +50,55 @@
             
   <section id="tutorials-example-notebooks">
 <h1>Tutorials/Example Notebooks<a class="headerlink" href="#tutorials-example-notebooks" title="Link to this heading">¶</a></h1>
-<p>These examples are available as executable Jupyter Notebooks from the <a class="reference external" href="https://github.com/ihrke/pypillometry/tree/master/docs">Github repository</a> (the files ending in <cite>.ipynb</cite>). The link to the notebook files is given at the end of each page.</p>
+<p>These examples are available as executable Jupyter Notebooks from the <a class="reference external" href="https://github.com/ihrke/pypillometry/tree/master/docs/notebooks">Github repository</a> (the files ending in <cite>.ipynb</cite>). The link to the notebook files is given at the end of each page.</p>
 <p>Each Notebook comes with a link that looks like this:</p>
 <img alt="https://mybinder.org/badge_logo.svg" src="https://mybinder.org/badge_logo.svg" />
 <p>When clicking on this link, the notebook will open in an interactive session in your browser without the need to install <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> at all.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">List of Notebooks:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="importdata_edf.html">Importing Data from Eyelink EDF files Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="importdata_asc.html">Importing Data from Eyelink ASC files Example</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="importdata_asc.html#Generalize-to-multiple-similar-datasets">Generalize to multiple similar datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/importdata_edf.html">Importing data from Eyelink EDF files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/importdata_asc.html">Importing data from Eyelink ASC files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/importdata_asc.html#Generalize-to-multiple-similar-datasets">Generalize to multiple similar datasets</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="example_datasets.html">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipeline-based processing in pypillometry</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pipes.html#In-place-vs.-copying-data">In-place vs. copying data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/example_datasets.html">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/pipes.html">Pipeline-based processing in pypillometry</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/pipes.html#In-place-vs.-copying-data">In-place vs. copying data</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="blinks.html#Blink-detection">Blink detection</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blinks.html#Merging-blinks">Merging blinks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="blinks.html#Interpolating-blinks">Interpolating blinks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/eyes_and_variables.html">Processing monocular and binocular data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/eyes_and_variables.html#Which-functions-work-on-which-data?">Which functions work on which data?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/eyes_and_variables.html#Creating-new-variables-or-eyes">Creating new variables or eyes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/eyes_and_variables.html#Debugging">Debugging</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="plotting.html#plot_segments()"><code class="docutils literal notranslate"><span class="pre">plot_segments()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="plotting.html#blinks_plot()"><code class="docutils literal notranslate"><span class="pre">blinks_plot()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/blinks.html">Blink preprocessing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/blinks.html#Blink-detection">Blink detection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/blinks.html#Merging-blinks">Merging blinks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/blinks.html#Interpolating-blinks">Interpolating blinks</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="summary.html">Summarizing pupillometric data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="erpds.html">Event-Related Pupil Dilations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupillometric signal</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modeling.html#Traditional-approaches-for-disentangling-tonic-and-phasic-components">Traditional approaches for disentangling tonic and phasic components</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modeling.html#Advanced-methods-for-tonic/phasic-component-estimation">Advanced methods for tonic/phasic component estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/plotting.html">Plotting pupillometric data for exploration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/plotting.html#Plotting-pupil-data">Plotting pupil data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/plotting.html#Comparing-datasets">Comparing datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/plotting.html#Plotting-all-variables">Plotting all variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/plotting.html#pupil_plot_segments()"><code class="docutils literal notranslate"><span class="pre">pupil_plot_segments()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/plotting.html#Inspecting-blinks-and-other-intervals">Inspecting blinks and other intervals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/plotting.html#Interactive-plotting">Interactive plotting</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="preproc_example_pavlov.html">Example: Preprocessing of a full dataset with multiple subjects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/summary.html">Summarizing pupillometric data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/erpds.html">Event-related pupil dilations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/erpds.html#Group-level-ERPDs">Group-level ERPDs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/modeling.html">Modeling the pupillometric signal</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/modeling.html#Traditional-approaches-for-disentangling-tonic-and-phasic-components">Traditional approaches for disentangling tonic and phasic components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/modeling.html#Advanced-methods-for-tonic/phasic-component-estimation">Advanced methods for tonic/phasic component estimation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/preproc_example_pavlov.html">Example: Preprocessing of a full dataset with multiple subjects</a></li>
 </ul>
 </div>
 </section>
@@ -107,8 +120,8 @@
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="importdata_edf.html"
-                          title="next chapter">Importing Data from Eyelink EDF files Example</a></p>
+    <p class="topless"><a href="notebooks/importdata_edf.html"
+                          title="next chapter">Importing data from Eyelink EDF files</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -141,7 +154,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="importdata_edf.html" title="Importing Data from Eyelink EDF files Example"
+          <a href="notebooks/importdata_edf.html" title="Importing data from Eyelink EDF files"
              >next</a> |</li>
         <li class="right" >
           <a href="tweak.html" title="Interactive Parameter Tweaking (pp.tweak)"

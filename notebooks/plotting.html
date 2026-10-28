@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Plotting pupillometric data for exploration &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Summarizing pupillometric data" href="summary.html" />
+    <link rel="prev" title="Blink preprocessing" href="blinks.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="summary.html" title="Summarizing pupillometric data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="blinks.html" title="Blink preprocessing"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Plotting pupillometric data for exploration</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/plotting.ipynb">notebooks/plotting.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/plotting.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Plotting-pupillometric-data-for-exploration">
+<h1>Plotting pupillometric data for exploration<a class="headerlink" href="#Plotting-pupillometric-data-for-exploration" title="Link to this heading">¶</a></h1>
+<p>It is crucial to validate preprocessing steps by visually inspecting the results. Therefore, <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> implements several plotting functions that encourage active exploration of the dataset. Most of them are <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>-based and are available through the <code class="docutils literal notranslate"><span class="pre">.plot</span></code> attribute of each data object. For interactive exploration, there is also a separate viewer (see <a class="reference internal" href="../graphical_tools.html"><span class="doc">Graphical tools</span></a>).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">PupilData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"../../data/test.pd"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="Plotting-pupil-data">
+<h2>Plotting pupil data<a class="headerlink" href="#Plotting-pupil-data" title="Link to this heading">¶</a></h2>
+<p>Each <code class="docutils literal notranslate"><span class="pre">PupilData</span></code> object has a <code class="docutils literal notranslate"><span class="pre">.plot</span></code> attribute that gives access to the plotting functions. <code class="docutils literal notranslate"><span class="pre">pupil_plot()</span></code> plots the complete pupil signal into the current figure, together with the events (grey lines):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_3_0.png" src="../_images/notebooks_plotting_3_0.png" />
+</div>
+</div>
+<p>Often, the signal is too long to fit comfortably into one plot. Therefore, you can specify the range to plot with <code class="docutils literal notranslate"><span class="pre">plot_range=</span></code>. The range can be given with units, e.g., <code class="docutils literal notranslate"><span class="pre">(4.5,</span> <span class="pre">4.7)</span> <span class="pre">*</span> <span class="pre">u.min</span></code> or <code class="docutils literal notranslate"><span class="pre">(&quot;260</span> <span class="pre">sec&quot;,</span> <span class="pre">&quot;280</span> <span class="pre">sec&quot;)</span></code>. The units of the x-axis are set with <code class="docutils literal notranslate"><span class="pre">units=</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;ms&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;sec&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;min&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;h&quot;</span></code>):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mf">4.5</span><span class="p">,</span> <span class="mf">4.7</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_5_0.png" src="../_images/notebooks_plotting_5_0.png" />
+</div>
+</div>
+<p>Note that the y-axis goes all the way to zero because missing data is coded as <code class="docutils literal notranslate"><span class="pre">0</span></code> in this dataset.</p>
+<p>When we detect blinks (see the <a class="reference internal" href="blinks.html"><span class="doc">blinks notebook</span></a>) with <code class="docutils literal notranslate"><span class="pre">apply_mask=True</span></code>, the blinks are masked and highlighted in red:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">15</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_7_0.png" src="../_images/notebooks_plotting_7_0.png" />
+</div>
+</div>
+</section>
+<section id="Comparing-datasets">
+<h2>Comparing datasets<a class="headerlink" href="#Comparing-datasets" title="Link to this heading">¶</a></h2>
+<p>To compare two versions of a dataset, for example before and after preprocessing, we can plot both into the same figure. The argument <code class="docutils literal notranslate"><span class="pre">label_prefix</span></code> distinguishes them in the legend and <code class="docutils literal notranslate"><span class="pre">style</span></code> sets the line style:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d2</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">label_prefix</span><span class="o">=</span><span class="s2">"raw"</span><span class="p">,</span> <span class="n">show_blinks</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">d2</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">260</span><span class="p">,</span> <span class="mi">280</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">label_prefix</span><span class="o">=</span><span class="s2">"lowpass"</span><span class="p">,</span>
+                   <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s2">"color"</span><span class="p">:</span> <span class="s2">"red"</span><span class="p">},</span> <span class="n">show_events</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_blinks</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_9_0.png" src="../_images/notebooks_plotting_9_0.png" />
+</div>
+</div>
+<p>The low-pass filter smears the blinks into the neighbouring signal. This is why blinks should be interpolated before filtering (see the <a class="reference internal" href="blinks.html"><span class="doc">blinks notebook</span></a>).</p>
+</section>
+<section id="Plotting-all-variables">
+<h2>Plotting all variables<a class="headerlink" href="#Plotting-all-variables" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">pupil_plot()</span></code> is specific to pupil data. <code class="docutils literal notranslate"><span class="pre">plot_timeseries()</span></code> plots all variables (pupil, gaze coordinates, and any variable created during processing), one subplot per variable. Here we use an <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object which contains both pupil and gaze data:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">de</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="n">de</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">de</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_timeseries</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_11_0.png" src="../_images/notebooks_plotting_11_0.png" />
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">GazeData</span></code> and <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> objects also have gaze-specific plots, e.g., a heatmap or a scanpath:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">de</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_heatmap</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_13_0.png" src="../_images/notebooks_plotting_13_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">de</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_scanpath</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">eyes</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_14_0.png" src="../_images/notebooks_plotting_14_0.png" />
+</div>
+</div>
+</section>
+<section id="pupil_plot_segments()">
+<h2><code class="docutils literal notranslate"><span class="pre">pupil_plot_segments()</span></code><a class="headerlink" href="#pupil_plot_segments()" title="Link to this heading">¶</a></h2>
+<p>It is usually a good idea to browse through the whole recording before and after preprocessing. This can be useful for tweaking preprocessing parameters or for detecting gross artifacts. <code class="docutils literal notranslate"><span class="pre">pupil_plot_segments()</span></code> produces as many plots as necessary, each displaying a part of the data (argument <code class="docutils literal notranslate"><span class="pre">interv</span></code>, e.g., 30 seconds).</p>
+<p>By default, it returns a list of <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> figures that can be inspected:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot_segments</span><span class="p">(</span><span class="n">interv</span><span class="o">=</span><span class="mi">30</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_16_0.png" src="../_images/notebooks_plotting_16_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_16_1.png" src="../_images/notebooks_plotting_16_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_16_2.png" src="../_images/notebooks_plotting_16_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_16_3.png" src="../_images/notebooks_plotting_16_3.png" />
+</div>
+</div>
+<p>Instead, the plots can be saved to a (multi-page) PDF file for later inspection:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot_segments</span><span class="p">(</span><span class="n">pdf_file</span><span class="o">=</span><span class="s2">"segments.pdf"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot_timeseries_segments()</span></code> does the same for all variables.</p>
+</section>
+<section id="Inspecting-blinks-and-other-intervals">
+<h2>Inspecting blinks and other intervals<a class="headerlink" href="#Inspecting-blinks-and-other-intervals" title="Link to this heading">¶</a></h2>
+<p>Blinks can be tricky to interpolate. To make this easier, <code class="docutils literal notranslate"><span class="pre">plot_blinks()</span></code> plots all detected blinks, each in its own panel. It works similar to <code class="docutils literal notranslate"><span class="pre">pupil_plot_segments()</span></code>, i.e., it returns a list of figures or saves them to a PDF file. Each panel shows the index of the blink which allows you to locate individual blinks in the full dataset.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_blinks</span><span class="p">(</span><span class="n">nrow</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_18_0.png" src="../_images/notebooks_plotting_18_0.png" />
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">plot_intervals()</span></code> does the same for any <code class="docutils literal notranslate"><span class="pre">Intervals</span></code> object, for example the intervals around events returned by <code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cues</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"C_"</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_intervals</span><span class="p">(</span><span class="n">cues</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">8</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_20_0.png" src="../_images/notebooks_plotting_20_0.png" />
+</div>
+</div>
+<p>Finally, <code class="docutils literal notranslate"><span class="pre">plot_masked()</span></code> gives an overview of which parts of the data are masked for each eye and variable:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">de</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_masked</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_plotting_22_0.png" src="../_images/notebooks_plotting_22_0.png" />
+</div>
+</div>
+</section>
+<section id="Interactive-plotting">
+<h2>Interactive plotting<a class="headerlink" href="#Interactive-plotting" title="Link to this heading">¶</a></h2>
+<p>For interactive exploration, <code class="docutils literal notranslate"><span class="pre">pp.view(d)</span></code> opens the data in a separate window in which you can zoom and scroll through the recording, and <code class="docutils literal notranslate"><span class="pre">pp.tweak(d)</span></code> lets you adjust the parameters of preprocessing steps while seeing the results. See <a class="reference internal" href="../graphical_tools.html"><span class="doc">Graphical tools</span></a> for details. Alternatively, you can switch <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> to a non-inline backend (e.g., with <code class="docutils literal notranslate"><span class="pre">%matplotlib</span> <span class="pre">qt</span></code>) to zoom and pan in any of the plots above.</p>
+</section>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/plotting.ipynb">notebooks/plotting.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/plotting.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Plotting pupillometric data for exploration</a><ul>
+<li><a class="reference internal" href="#Plotting-pupil-data">Plotting pupil data</a></li>
+<li><a class="reference internal" href="#Comparing-datasets">Comparing datasets</a></li>
+<li><a class="reference internal" href="#Plotting-all-variables">Plotting all variables</a></li>
+<li><a class="reference internal" href="#pupil_plot_segments()"><code class="docutils literal notranslate"><span class="pre">pupil_plot_segments()</span></code></a></li>
+<li><a class="reference internal" href="#Inspecting-blinks-and-other-intervals">Inspecting blinks and other intervals</a></li>
+<li><a class="reference internal" href="#Interactive-plotting">Interactive plotting</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="blinks.html"
+                          title="previous chapter">Blink preprocessing</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="summary.html"
+                          title="next chapter">Summarizing pupillometric data</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/notebooks/plotting.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="summary.html" title="Summarizing pupillometric data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="blinks.html" title="Blink preprocessing"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Plotting pupillometric data for exploration</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+    </div>
+  </body>
+</html>

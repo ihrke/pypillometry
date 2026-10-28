@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Importing data from Eyelink EDF files &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Importing data from Eyelink ASC files" href="importdata_asc.html" />
+    <link rel="prev" title="Tutorials/Example Notebooks" href="../notebooks.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="importdata_asc.html" title="Importing data from Eyelink ASC files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../notebooks.html" title="Tutorials/Example Notebooks"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Importing data from Eyelink EDF files</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/importdata_edf.ipynb">notebooks/importdata_edf.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/importdata_edf.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Importing-data-from-Eyelink-EDF-files">
+<h1>Importing data from Eyelink EDF files<a class="headerlink" href="#Importing-data-from-Eyelink-EDF-files" title="Link to this heading">¶</a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</pre></div>
+</div>
+</div>
+<p>The easiest way is to use a local filename or a URL where the EDF file is stored:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s2">"https://osf.io/trsuq/download"</span>  <span class="c1"># will download the file from OSF</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 12:29:23</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">432</span> | <span class="ansi-bold">Downloading &#39;https://osf.io/trsuq/download&#39; to /tmp/pypillometry_bgfrketm/osf.io/trsuq/download</span>
+download: 100%|██████████| 14.2M/14.2M [00:03&lt;00:00, 4.17MiB/s]
+<span class="ansi-green-fg">pp: 12:29:30</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">628</span> | <span class="ansi-bold">Loading EDF file: /tmp/pypillometry_bgfrketm/osf.io/trsuq/download (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 12:29:40</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">local_copy</span>:<span class="ansi-cyan-fg">493</span> | <span class="ansi-bold">Deleting downloaded copy: /tmp/pypillometry_bgfrketm</span>
+<span class="ansi-green-fg">pp: 12:29:40</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1292</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">download</span></h3>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Samples</div>
+      <div style="font-weight:600;">598,885</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+      <div style="font-weight:600;">500.0 Hz</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Duration</div>
+      <div style="font-weight:600;">19.96 min (start 0.00, end 19.96)</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Eyes</div>
+      <div style="font-weight:600;">left, right</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Variables</div>
+      <div style="font-weight:600;">left_x, left_y, left_pupil, right_x, right_y, right_pupil</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Events</div>
+      <div style="font-weight:600;">1322</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Blinks</div>
+      <div style="font-weight:600;"></div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
+      <div style="font-weight:600;">60.7MiB</div>
+    </div>
+
+  </div>
+
+
+  <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil</div>
+        <img src="data:image/png;base64,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" alt="left_pupil sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_x</div>
+        <img src="data:image/png;base64,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" alt="left_x sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_y</div>
+        <img src="data:image/png;base64,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" alt="left_y sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_pupil</div>
+        <img src="data:image/png;base64,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" alt="right_pupil sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_x</div>
+        <img src="data:image/png;base64,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" alt="right_x sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_y</div>
+        <img src="data:image/png;base64,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" alt="right_y sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+    </div>
+  </details>
+
+
+
+
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Data glimpse</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">EyeDataDict(vars=6,n=598885,shape=(598885,)):
+  left_x (float64): 668.2000122070312, 660.5999755859375, 650.0, 639.0999755859375, 628.4000244140625...
+  left_y (float64): 491.1000061035156, 490.1000061035156, 489.3999938964844, 488.5, 488.0...
+  left_pupil (float64): 724.0, 724.0, 725.0, 727.0, 727.0...
+  right_x (float64): 682.7999877929688, 679.5, 674.5, 662.7000122070312, 644.2999877929688...
+  right_y (float64): 505.20001220703125, 502.8999938964844, 501.29998779296875, 499.0, 496.3999938964844...
+  right_pupil (float64): 637.0, 642.0, 644.0, 639.0, 636.0...
+</pre>
+  </details>
+
+
+
+  <details>
+    <summary style="cursor:pointer; font-weight:600;">Recent history</summary>
+    <ol style="margin-top:8px;">
+
+      <li>fill_time_discontinuities()</li>
+
+      <li>set_events(Events(1322))</li>
+
+    </ol>
+  </details>
+
+</div></div>
+</div>
+<p>You can also keep a local copy of the file to avoid repeated downloads. The following command downloads the file only the first time and reads the local file afterwards:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="s2">"example_data/test.edf"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 12:29:41</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">418</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/trsuq/download&#39;: example_data/test.edf</span>
+<span class="ansi-green-fg">pp: 12:29:41</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">628</span> | <span class="ansi-bold">Loading EDF file: example_data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 12:29:54</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1292</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+</pre></div></div>
+</div>
+<p>Reading EDF files is relatively slow. If you work with the same file repeatedly, save the <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object with <code class="docutils literal notranslate"><span class="pre">d.write_file(&quot;file.pd&quot;)</span></code> and load it with <code class="docutils literal notranslate"><span class="pre">pp.EyeData.from_file(&quot;file.pd&quot;)</span></code> (see the end of the <a class="reference internal" href="importdata_asc.html"><span class="doc">ASC notebook</span></a>), or convert it on the command line with <code class="docutils literal notranslate"><span class="pre">edf2pypil</span></code>.</p>
+<p>This works for publicly shared EDF files such as the one under <a class="reference external" href="https://osf.io/trsuq/download">https://osf.io/trsuq/download</a> (this file is also available as the example dataset <code class="docutils literal notranslate"><span class="pre">&quot;rlmw_010_edf&quot;</span></code>, see <a class="reference internal" href="example_datasets.html"><span class="doc">example datasets</span></a>). If you want to load data from a private OSF repository, you need to authenticate first. To do that, create a “Personal access token” on your OSF page under <a class="reference external" href="https://osf.io/settings/tokens">https://osf.io/settings/tokens</a>.</p>
+<p>Copy that token and store it in a variable or a protected file (CAUTION: anybody who has that token can access your private OSF data). Here, the token is stored in a file “my_osf_token.secret” so that it does not appear in the documentation:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">private_url</span> <span class="o">=</span> <span class="s2">"https://osf.io/5vkj3/download"</span>
+
+<span class="c1"># read the token from the file</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"my_osf_token.secret"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+<span class="c1"># use the token to authenticate to OSF</span>
+<span class="n">session</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">osf_authenticate</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">private_url</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="s2">"example_data/private.edf"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 12:29:56</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">osf_authenticate</span>:<span class="ansi-cyan-fg">94</span> | <span class="ansi-bold">OSF token validation succeeded.</span>
+<span class="ansi-green-fg">pp: 12:29:56</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">432</span> | <span class="ansi-bold">Downloading &#39;https://osf.io/5vkj3/download&#39; to example_data/private.edf</span>
+private.edf: 100%|██████████| 43.9M/43.9M [00:09&lt;00:00, 4.63MiB/s]
+<span class="ansi-green-fg">pp: 12:30:09</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">628</span> | <span class="ansi-bold">Loading EDF file: example_data/private.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 12:30:39</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1292</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+</pre></div></div>
+</div>
+<p>The result is an <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object containing all the samples and events. Here we plot the pupil data for minutes 10-11. Plot ranges (and most other times in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>) can be given with units, either by multiplying with a unit from <code class="docutils literal notranslate"><span class="pre">pp.u</span></code> or as a string such as <code class="docutils literal notranslate"><span class="pre">(&quot;10</span> <span class="pre">min&quot;,</span> <span class="pre">&quot;11</span> <span class="pre">min&quot;)</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_importdata_edf_9_0.png" src="../_images/notebooks_importdata_edf_9_0.png" />
+</div>
+</div>
+<p>Note: <code class="docutils literal notranslate"><span class="pre">EyeData.from_eyelink()</span></code> removes Eyelink’s triggers related to calibration and validation. If you want those, you can use the keyword arguments</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">remove_eyelink_triggers=False</span></code> to keep those</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">return_edf_obj=True</span></code> to return the original <code class="docutils literal notranslate"><span class="pre">eyelinkio</span></code> object that contains all information (including saccade detection etc.)</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="p">,</span> <span class="n">edfobj</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="n">private_url</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span>
+                                    <span class="n">cache_file</span><span class="o">=</span><span class="s2">"example_data/private.edf"</span><span class="p">,</span>
+                                    <span class="n">return_edf_obj</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">edfobj</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 12:30:44</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">fetch_url</span>:<span class="ansi-cyan-fg">418</span> | <span class="ansi-bold">Using cached copy of &#39;https://osf.io/5vkj3/download&#39;: example_data/private.edf</span>
+<span class="ansi-green-fg">pp: 12:30:44</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">628</span> | <span class="ansi-bold">Loading EDF file: example_data/private.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 12:31:12</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1292</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;EDF | private.edf&gt;
+  Version: EYELINK II 1
+  Eye: BINOCULAR
+  Pupil unit: PUPIL_AREA
+  Sampling frequency: 1000.0 Hz
+  Calibrations: 4
+  Length: 1905.643 seconds
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">edfobj</span><span class="p">[</span><span class="s2">"discrete"</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;messages&#39;: array([(   0.   , b&#39;!CAL \n&gt;&gt;&gt;&gt;&gt;&gt;&gt; CALIBRATION (HV9,P-CR) FOR LEFT: &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&#39;),
+        (   0.   , b&#39;!CAL Calibration points:  &#39;),
+        (   0.   , b&#39;!CAL -15.8, -58.2         0,    264   &#39;), ...,
+        (1875.54 , b&#39;TRIG_TASK_END_253&#39;),
+        (1905.633, b&#39;TRIG_SESSION_END_249&#39;), (1905.642, b&#39;RECORDING_STOP&#39;)],
+       shape=(1561,), dtype=[(&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;msg&#39;, &#39;S260&#39;)]),
+ &#39;buttons&#39;: array([(0., 0.), (0., 0.), (0., 0.), (0., 0.)],
+       dtype=[(&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;buttons&#39;, &#39;&lt;f8&#39;)]),
+ &#39;inputs&#39;: array([(0., 0.), (0., 0.), (0., 0.), (0., 0.)],
+       dtype=[(&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;input&#39;, &#39;&lt;f8&#39;)]),
+ &#39;fixations&#39;: array([(0., 7.000000e-03, 2.590000e-01,  971.09997559, 628.5       ),
+        (1., 1.000000e-02, 2.590000e-01,  986.29998779, 627.59997559),
+        (1., 3.190000e-01, 4.480000e-01,  644.40002441, 532.20001221), ...,
+        (1., 1.905359e+03, 1.905453e+03, 1068.19995117, 514.79998779),
+        (0., 1.905515e+03, 1.905641e+03,  853.5       , 488.5       ),
+        (1., 1.905506e+03, 1.905641e+03,  858.70001221, 567.40002441)],
+       shape=(8342,), dtype=[(&#39;eye&#39;, &#39;&lt;f8&#39;), (&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;etime&#39;, &#39;&lt;f8&#39;), (&#39;axp&#39;, &#39;&lt;f8&#39;), (&#39;ayp&#39;, &#39;&lt;f8&#39;)]),
+ &#39;saccades&#39;: array([(1., 2.600000e-01, 3.180000e-01,  978.70001221, 627.09997559,  655.09997559, 535.70001221, 349.5       ),
+        (0., 2.600000e-01, 3.490000e-01,  974.        , 628.29998779,  651.90002441, 494.1000061 , 265.3999939 ),
+        (1., 4.490000e-01, 5.050000e-01,  649.70001221, 530.20001221,  405.79998779, 517.59997559, 295.70001221),
+        ...,
+        (1., 1.905350e+03, 1.905358e+03, 1027.19995117, 563.5       , 1043.90002441, 545.40002441,  76.90000153),
+        (1., 1.905454e+03, 1.905505e+03, 1074.80004883, 502.70001221,  873.90002441, 562.79998779, 474.3999939 ),
+        (0., 1.905452e+03, 1.905514e+03, 1045.90002441, 441.20001221,  852.40002441, 488.70001221, 352.        )],
+       shape=(8340,), dtype=[(&#39;eye&#39;, &#39;&lt;f8&#39;), (&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;etime&#39;, &#39;&lt;f8&#39;), (&#39;sxp&#39;, &#39;&lt;f8&#39;), (&#39;syp&#39;, &#39;&lt;f8&#39;), (&#39;exp&#39;, &#39;&lt;f8&#39;), (&#39;eyp&#39;, &#39;&lt;f8&#39;), (&#39;pv&#39;, &#39;&lt;f8&#39;)]),
+ &#39;blinks&#39;: array([(1.,    7.771,    7.866), (0.,    7.769,    7.867),
+        (1.,   12.847,   12.948), ..., (1., 1904.197, 1904.301),
+        (0., 1905.097, 1905.194), (1., 1904.869, 1905.205)],
+       shape=(1114,), dtype=[(&#39;eye&#39;, &#39;&lt;f8&#39;), (&#39;stime&#39;, &#39;&lt;f8&#39;), (&#39;etime&#39;, &#39;&lt;f8&#39;)])}
+</pre></div></div>
+</div>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/importdata_edf.ipynb">notebooks/importdata_edf.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/importdata_edf.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../notebooks.html"
+                          title="previous chapter">Tutorials/Example Notebooks</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="importdata_asc.html"
+                          title="next chapter">Importing data from Eyelink ASC files</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/notebooks/importdata_edf.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="importdata_asc.html" title="Importing data from Eyelink ASC files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../notebooks.html" title="Tutorials/Example Notebooks"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Importing data from Eyelink EDF files</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+    </div>
+  </body>
+</html>

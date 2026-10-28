@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Event-related pupil dilations &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Modeling the pupillometric signal" href="modeling.html" />
+    <link rel="prev" title="Summarizing pupillometric data" href="summary.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modeling.html" title="Modeling the pupillometric signal"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="summary.html" title="Summarizing pupillometric data"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Event-related pupil dilations</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/erpds.ipynb">notebooks/erpds.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/erpds.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div><section id="Event-related-pupil-dilations">
+<h1>Event-related pupil dilations<a class="headerlink" href="#Event-related-pupil-dilations" title="Link to this heading">¶</a></h1>
+<p>We are often interested in how the pupil responds to certain events, for example stimuli. One method to investigate this is to extract the average pupil dilation surrounding the events of interest (event-related pupil dilation, ERPD).</p>
+<p>In <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>, this works in two steps:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> selects the events and defines a time window around each of them</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_segments()</span></code> cuts the data in these windows into a <code class="docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code> object that can be baseline-corrected, plotted and averaged</p></li>
+</ol>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</pre></div>
+</div>
+</div>
+<p>Here, we use the EDF file from the <a class="reference internal" href="importdata_edf.html"><span class="doc">import</span></a> examples, which is stored in the <code class="docutils literal notranslate"><span class="pre">data</span></code> folder of the repository.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s2">"../../data/test.edf"</span><span class="p">)</span>
+<span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 12:52:42</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">628</span> | <span class="ansi-bold">Loading EDF file: ../../data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 12:53:00</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1292</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">test.edf</span></h3>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Samples</div>
+      <div style="font-weight:600;">1,245,363</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+      <div style="font-weight:600;">500.0 Hz</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Duration</div>
+      <div style="font-weight:600;">41.51 min (start 0.00, end 41.51)</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Eyes</div>
+      <div style="font-weight:600;">left, right</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Variables</div>
+      <div style="font-weight:600;">left_x, left_y, left_pupil, right_x, right_y, right_pupil</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Events</div>
+      <div style="font-weight:600;">1027</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Blinks</div>
+      <div style="font-weight:600;"></div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
+      <div style="font-weight:600;">124.5MiB</div>
+    </div>
+
+  </div>
+
+
+  <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil</div>
+        <img src="data:image/png;base64,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" alt="left_pupil sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_x</div>
+        <img src="data:image/png;base64,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" alt="left_x sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_y</div>
+        <img src="data:image/png;base64,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" alt="left_y sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_pupil</div>
+        <img src="data:image/png;base64,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" alt="right_pupil sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_x</div>
+        <img src="data:image/png;base64,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" alt="right_x sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_y</div>
+        <img src="data:image/png;base64,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" alt="right_y sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+    </div>
+  </details>
+
+
+
+
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Data glimpse</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">EyeDataDict(vars=6,n=1245363,shape=(1245363,)):
+  left_x (float64): 817.2999877929688, 817.0, 816.7000122070312, 816.7000122070312, 816.7000122070312...
+  left_y (float64): 345.20001220703125, 343.5, 341.6000061035156, 340.3999938964844, 340.20001220703125...
+  left_pupil (float64): 1707.0, 1706.0, 1705.0, 1706.0, 1707.0...
+  right_x (float64): 860.5999755859375, 860.7000122070312, 861.2000122070312, 861.7000122070312, 861.5999755859375...
+  right_y (float64): 375.20001220703125, 375.8999938964844, 376.6000061035156, 376.79998779296875, 376.8999938964844...
+  right_pupil (float64): 1738.0, 1739.0, 1739.0, 1740.0, 1742.0...
+</pre>
+  </details>
+
+
+
+  <details>
+    <summary style="cursor:pointer; font-weight:600;">Recent history</summary>
+    <ol style="margin-top:8px;">
+
+      <li>fill_time_discontinuities()</li>
+
+      <li>set_events(Events(1027))</li>
+
+    </ol>
+  </details>
+
+</div></div>
+</div>
+<p>Next, we apply a basic blink detection and interpolation pipeline as illustrated in the <a class="reference internal" href="blinks.html"><span class="doc">blinks</span></a> example, followed by a low-pass filter and z-scaling:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">vel_onset</span><span class="o">=-</span><span class="mi">15</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
+ <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
+ <span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>\
+ <span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>\
+ <span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"min"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_erpds_5_0.png" src="../_images/notebooks_erpds_5_0.png" />
+</div>
+</div>
+<p>Next, we want to create ERPDs based on some of the event markers in this dataset. The markers have a special structure where each label contains information about the stimulus, the experimental condition, the block etc. Let’s look at the first few events:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">event_labels</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">5</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[np.str_(&#39;DISPLAY_COORDS = 0 0 1919 1079&#39;),
+ np.str_(&#39;experiment_start&#39;),
+ np.str_(&#39;C_GW_1_1_UD_UD&#39;),
+ np.str_(&#39;F_GW_1_1_10_0&#39;),
+ np.str_(&#39;C_NW_1_2_UD_UD&#39;)]
+</pre></div></div>
+</div>
+<p>The first letter codes which stimulus was presented, the letters after the first underscore code the experimental condition. We use <code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> to select the events and the time window around them. We start by extracting all stimuli coded as “C” (cues) by using <code class="docutils literal notranslate"><span class="pre">event_select=&quot;C_&quot;</span></code>, which matches all labels that contain the string “C_”. The window goes from 500 ms before until 2000 ms after each cue:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cue_intervals</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"C_"</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">cue_intervals</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Intervals &#39;C_&#39; | 400 intervals (total duration: 1000000.00 ms), 2500.00 ms +/- 0.00 ms, [2500.00 ms, 2500.00 ms] | fs=500.0Hz
+</pre></div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">get_segments()</span></code> extracts the data in these intervals for one variable (here, the pupil of the left eye). We then apply a baseline correction by subtracting the mean in the 200 ms before the cue (the baseline window is given in ms):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">erpd_cue</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">cue_intervals</span><span class="p">,</span> <span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"cue"</span><span class="p">)</span>\
+            <span class="o">.</span><span class="n">baseline_correct</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">erpd_cue</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 12:53:05</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Baseline correction applied using window (-200, 0)</span>
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width:400px;">
+  <h3 style="margin-top:0;">SegmentedEyeData — <span style="color:#555;">cue</span></h3>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px;">
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Intervals</div>
+          <div style="font-weight:600;">C_</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Variable</div>
+          <div style="font-weight:600;">left_pupil</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Segments</div>
+          <div style="font-weight:600;">400</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Time points</div>
+          <div style="font-weight:600;">1,250</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Window</div>
+          <div style="font-weight:600;">-500 to 2000 ms</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Missing</div>
+          <div style="font-weight:600;">99.6%</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+          <div style="font-weight:600;">500 Hz</div>
+        </div>
+  </div>
+
+    <div style="margin-top:10px;">
+      <div style="font-size:0.85em; color:#666; margin-bottom:4px;">Mean signal (red line = event onset)</div>
+      <img src="data:image/png;base64,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" alt="Mean signal" style="width:100%; max-width:300px; border-radius:4px;">
+    </div>
+
+</div></div>
+</div>
+<p>This ERPD contains one segment per cue, from 500 ms before until 2000 ms after the cue onset. The <code class="docutils literal notranslate"><span class="pre">plot()</span></code> function shows the mean curve and its standard error. In addition, it shows the percentage of missing (masked, e.g., interpolated) datapoints at each time point. We can choose what is displayed as the error ribbon by passing a function to <code class="docutils literal notranslate"><span class="pre">varfct</span></code>. For example, we can use <code class="docutils literal notranslate"><span class="pre">varfct=np.std</span></code> to display the standard deviation instead of the standard error.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">erpd_cue</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">"standard error"</span><span class="p">)</span>
+<span class="n">erpd_cue</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">varfct</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">"standard deviation"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_erpds_13_0.png" src="../_images/notebooks_erpds_13_0.png" />
+</div>
+</div>
+<p>Sometimes, selecting events based on a string is not sufficient. For example, in our dataset, we would like to compare cues (labels starting with “C_”) from conditions “GW” and “NA” against cues from conditions “NW” and “GA” (what exactly that means is not important here). We can do that by passing a function as <code class="docutils literal notranslate"><span class="pre">event_select</span></code>. The function should return <code class="docutils literal notranslate"><span class="pre">True</span></code> whenever a label should be used and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise. Here are two such functions, one for cues from the “GW”/”NA” conditions
+(call them “congruent”) and one for the “NW”/”GA” conditions (call them “conflict”):</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">is_conflict_cue</span><span class="p">(</span><span class="n">label</span><span class="p">):</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"C"</span> <span class="ow">and</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"NW"</span><span class="p">,</span> <span class="s2">"GA"</span><span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_congruent_cue</span><span class="p">(</span><span class="n">label</span><span class="p">):</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"C"</span> <span class="ow">and</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"GW"</span><span class="p">,</span> <span class="s2">"NA"</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p>First, the label is split into parts at “_”. The functions return <code class="docutils literal notranslate"><span class="pre">True</span></code> only if the first part is a “C” and the second part is one of the relevant conditions. We can check that the functions work by applying them to some labels:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">is_congruent_cue</span><span class="p">(</span><span class="s2">"C_GW"</span><span class="p">),</span> <span class="n">is_congruent_cue</span><span class="p">(</span><span class="s2">"C_GA"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(True, False)
+</pre></div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">test_selector()</span></code> shows which of the events in the dataset are selected by such a function:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">test_selector</span>
+<span class="n">test_selector</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">is_conflict_cue</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#39;,
+       &#39;C_GA_1_8_UD_UD&#39;, &#39;C_NW_1_10_UD_UD&#39;, &#39;C_GA_1_12_UD_UD&#39;,
+       &#39;C_NW_1_14_UD_UD&#39;, &#39;C_GA_1_17_UD_UD&#39;, &#39;C_GA_1_18_UD_UD&#39;,
+       &#39;C_NW_1_20_UD_UD&#39;, &#39;C_NW_1_25_UD_UD&#39;, &#39;C_GA_1_27_UD_UD&#39;,
+       &#39;C_GA_1_28_UD_UD&#39;, &#39;C_NW_1_29_UD_UD&#39;, &#39;C_GA_1_30_UD_UD&#39;,
+       &#39;C_NW_1_32_UD_UD&#39;, &#39;C_NW_1_34_UD_UD&#39;, &#39;C_NW_1_37_UD_UD&#39;,
+       &#39;C_NW_1_39_UD_UD&#39;, &#39;C_GA_1_40_UD_UD&#39;, &#39;C_GA_1_41_UD_UD&#39;,
+       &#39;C_NW_1_42_UD_UD&#39;, &#39;C_GA_1_45_UD_UD&#39;, &#39;C_NW_1_47_UD_UD&#39;,
+       &#39;C_NW_1_50_UD_UD&#39;, &#39;C_NW_1_52_UD_UD&#39;, &#39;C_GA_1_54_UD_UD&#39;,
+       &#39;C_NW_1_55_UD_UD&#39;, &#39;C_GA_1_57_UD_UD&#39;, &#39;C_NW_1_59_UD_UD&#39;,
+       &#39;C_GA_1_64_UD_UD&#39;, &#39;C_NW_1_66_UD_UD&#39;, &#39;C_GA_1_67_UD_UD&#39;,
+       &#39;C_GA_1_70_UD_UD&#39;, &#39;C_GA_1_72_UD_UD&#39;, &#39;C_GA_1_73_UD_UD&#39;,
+       &#39;C_NW_1_75_UD_UD&#39;, &#39;C_NW_1_76_UD_UD&#39;, &#39;C_GA_1_77_UD_UD&#39;,
+       &#39;C_NW_1_79_UD_UD&#39;, &#39;C_GA_2_3_UD_UD&#39;, &#39;C_GA_2_6_UD_UD&#39;,
+       &#39;C_NW_2_9_UD_UD&#39;, &#39;C_GA_2_10_UD_UD&#39;, &#39;C_NW_2_11_UD_UD&#39;,
+       &#39;C_NW_2_13_UD_UD&#39;, &#39;C_GA_2_14_UD_UD&#39;, &#39;C_NW_2_16_UD_UD&#39;,
+       &#39;C_GA_2_17_UD_UD&#39;, &#39;C_NW_2_18_UD_UD&#39;, &#39;C_GA_2_25_UD_UD&#39;,
+       &#39;C_NW_2_28_UD_UD&#39;, &#39;C_GA_2_30_UD_UD&#39;, &#39;C_NW_2_31_UD_UD&#39;,
+       &#39;C_NW_2_32_UD_UD&#39;, &#39;C_NW_2_33_UD_UD&#39;, &#39;C_GA_2_34_UD_UD&#39;,
+       &#39;C_NW_2_35_UD_UD&#39;, &#39;C_NW_2_36_UD_UD&#39;, &#39;C_GA_2_37_UD_UD&#39;,
+       &#39;C_GA_2_39_UD_UD&#39;, &#39;C_GA_2_42_UD_UD&#39;, &#39;C_NW_2_43_UD_UD&#39;,
+       &#39;C_NW_2_44_UD_UD&#39;, &#39;C_NW_2_46_UD_UD&#39;, &#39;C_NW_2_49_UD_UD&#39;,
+       &#39;C_GA_2_58_UD_UD&#39;, &#39;C_GA_2_59_UD_UD&#39;, &#39;C_GA_2_60_UD_UD&#39;,
+       &#39;C_NW_2_61_UD_UD&#39;, &#39;C_GA_2_62_UD_UD&#39;, &#39;C_NW_2_65_UD_UD&#39;,
+       &#39;C_NW_2_67_UD_UD&#39;, &#39;C_NW_2_69_UD_UD&#39;, &#39;C_GA_2_71_UD_UD&#39;,
+       &#39;C_GA_2_75_UD_UD&#39;, &#39;C_NW_2_76_UD_UD&#39;, &#39;C_GA_2_78_UD_UD&#39;,
+       &#39;C_GA_2_79_UD_UD&#39;, &#39;C_GA_2_80_UD_UD&#39;, &#39;C_GA_3_1_UD_UD&#39;,
+       &#39;C_GA_3_3_UD_UD&#39;, &#39;C_NW_3_6_UD_UD&#39;, &#39;C_GA_3_8_UD_UD&#39;,
+       &#39;C_GA_3_10_UD_UD&#39;, &#39;C_NW_3_12_UD_UD&#39;, &#39;C_GA_3_15_UD_UD&#39;,
+       &#39;C_NW_3_17_UD_UD&#39;, &#39;C_NW_3_21_UD_UD&#39;, &#39;C_NW_3_22_UD_UD&#39;,
+       &#39;C_NW_3_23_UD_UD&#39;, &#39;C_GA_3_24_UD_UD&#39;, &#39;C_GA_3_28_UD_UD&#39;,
+       &#39;C_NW_3_30_UD_UD&#39;, &#39;C_GA_3_31_UD_UD&#39;, &#39;C_NW_3_32_UD_UD&#39;,
+       &#39;C_GA_3_33_UD_UD&#39;, &#39;C_NW_3_34_UD_UD&#39;, &#39;C_NW_3_35_UD_UD&#39;,
+       &#39;C_GA_3_38_UD_UD&#39;, &#39;C_NW_3_39_UD_UD&#39;, &#39;C_GA_3_45_UD_UD&#39;,
+       &#39;C_GA_3_49_UD_UD&#39;, &#39;C_NW_3_50_UD_UD&#39;, &#39;C_NW_3_51_UD_UD&#39;,
+       &#39;C_GA_3_52_UD_UD&#39;, &#39;C_NW_3_53_UD_UD&#39;, &#39;C_GA_3_55_UD_UD&#39;,
+       &#39;C_NW_3_56_UD_UD&#39;, &#39;C_GA_3_57_UD_UD&#39;, &#39;C_GA_3_61_UD_UD&#39;,
+       &#39;C_NW_3_64_UD_UD&#39;, &#39;C_GA_3_66_UD_UD&#39;, &#39;C_NW_3_67_UD_UD&#39;,
+       &#39;C_GA_3_68_UD_UD&#39;, &#39;C_NW_3_69_UD_UD&#39;, &#39;C_NW_3_70_UD_UD&#39;,
+       &#39;C_NW_3_72_UD_UD&#39;, &#39;C_GA_3_78_UD_UD&#39;, &#39;C_GA_3_79_UD_UD&#39;,
+       &#39;C_NW_4_1_UD_UD&#39;, &#39;C_NW_4_5_UD_UD&#39;, &#39;C_NW_4_9_UD_UD&#39;,
+       &#39;C_NW_4_11_UD_UD&#39;, &#39;C_GA_4_13_UD_UD&#39;, &#39;C_GA_4_17_UD_UD&#39;,
+       &#39;C_NW_4_21_UD_UD&#39;, &#39;C_GA_4_22_UD_UD&#39;, &#39;C_NW_4_24_UD_UD&#39;,
+       &#39;C_GA_4_25_UD_UD&#39;, &#39;C_NW_4_26_UD_UD&#39;, &#39;C_GA_4_27_UD_UD&#39;,
+       &#39;C_NW_4_29_UD_UD&#39;, &#39;C_GA_4_31_UD_UD&#39;, &#39;C_GA_4_33_UD_UD&#39;,
+       &#39;C_NW_4_34_UD_UD&#39;, &#39;C_NW_4_35_UD_UD&#39;, &#39;C_NW_4_37_UD_UD&#39;,
+       &#39;C_GA_4_38_UD_UD&#39;, &#39;C_GA_4_39_UD_UD&#39;, &#39;C_NW_4_41_UD_UD&#39;,
+       &#39;C_NW_4_43_UD_UD&#39;, &#39;C_GA_4_47_UD_UD&#39;, &#39;C_GA_4_49_UD_UD&#39;,
+       &#39;C_GA_4_50_UD_UD&#39;, &#39;C_GA_4_52_UD_UD&#39;, &#39;C_GA_4_53_UD_UD&#39;,
+       &#39;C_GA_4_54_UD_UD&#39;, &#39;C_GA_4_56_UD_UD&#39;, &#39;C_NW_4_58_UD_UD&#39;,
+       &#39;C_NW_4_59_UD_UD&#39;, &#39;C_GA_4_60_UD_UD&#39;, &#39;C_NW_4_66_UD_UD&#39;,
+       &#39;C_NW_4_67_UD_UD&#39;, &#39;C_GA_4_68_UD_UD&#39;, &#39;C_NW_4_72_UD_UD&#39;,
+       &#39;C_NW_4_74_UD_UD&#39;, &#39;C_NW_4_75_UD_UD&#39;, &#39;C_GA_4_78_UD_UD&#39;,
+       &#39;C_GA_4_80_UD_UD&#39;, &#39;C_GA_5_1_UD_UD&#39;, &#39;C_NW_5_2_UD_UD&#39;,
+       &#39;C_GA_5_3_UD_UD&#39;, &#39;C_GA_5_6_UD_UD&#39;, &#39;C_GA_5_7_UD_UD&#39;,
+       &#39;C_NW_5_8_UD_UD&#39;, &#39;C_NW_5_9_UD_UD&#39;, &#39;C_NW_5_11_UD_UD&#39;,
+       &#39;C_NW_5_14_UD_UD&#39;, &#39;C_GA_5_21_UD_UD&#39;, &#39;C_GA_5_22_UD_UD&#39;,
+       &#39;C_NW_5_24_UD_UD&#39;, &#39;C_NW_5_25_UD_UD&#39;, &#39;C_NW_5_27_UD_UD&#39;,
+       &#39;C_NW_5_28_UD_UD&#39;, &#39;C_NW_5_30_UD_UD&#39;, &#39;C_GA_5_31_UD_UD&#39;,
+       &#39;C_GA_5_34_UD_UD&#39;, &#39;C_GA_5_35_UD_UD&#39;, &#39;C_NW_5_36_UD_UD&#39;,
+       &#39;C_NW_5_38_UD_UD&#39;, &#39;C_NW_5_41_UD_UD&#39;, &#39;C_NW_5_42_UD_UD&#39;,
+       &#39;C_GA_5_43_UD_UD&#39;, &#39;C_GA_5_45_UD_UD&#39;, &#39;C_NW_5_46_UD_UD&#39;,
+       &#39;C_NW_5_47_UD_UD&#39;, &#39;C_GA_5_49_UD_UD&#39;, &#39;C_GA_5_50_UD_UD&#39;,
+       &#39;C_NW_5_53_UD_UD&#39;, &#39;C_NW_5_56_UD_UD&#39;, &#39;C_GA_5_58_UD_UD&#39;,
+       &#39;C_NW_5_62_UD_UD&#39;, &#39;C_NW_5_67_UD_UD&#39;, &#39;C_GA_5_70_UD_UD&#39;,
+       &#39;C_GA_5_71_UD_UD&#39;, &#39;C_GA_5_74_UD_UD&#39;, &#39;C_GA_5_77_UD_UD&#39;,
+       &#39;C_GA_5_78_UD_UD&#39;, &#39;C_GA_5_79_UD_UD&#39;], dtype=&#39;&lt;U260&#39;)
+</pre></div></div>
+</div>
+<p>Now we can create one ERPD for each of the selection functions:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">erpd_conf</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">is_conflict_cue</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">),</span>
+                           <span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"conflict"</span><span class="p">)</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">erpd_cong</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="n">is_congruent_cue</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">),</span>
+                           <span class="s2">"left_pupil"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"congruent"</span><span class="p">)</span><span class="o">.</span><span class="n">baseline_correct</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+<span class="ansi-green-fg">pp: 12:53:06</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Baseline correction applied using window (-200, 0)</span>
+<span class="ansi-green-fg">pp: 12:53:07</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Baseline correction applied using window (-200, 0)</span>
+</pre></div></div>
+</div>
+<p>Finally, we plot both into the same axes to compare them:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">erpd_conf</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"conflict"</span><span class="p">)</span>
+<span class="n">erpd_cong</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"congruent"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Cues"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_erpds_23_0.png" src="../_images/notebooks_erpds_23_0.png" />
+</div>
+</div>
+<section id="Group-level-ERPDs">
+<h2>Group-level ERPDs<a class="headerlink" href="#Group-level-ERPDs" title="Link to this heading">¶</a></h2>
+<p>With data from several subjects, <code class="docutils literal notranslate"><span class="pre">pp.group_segments()</span></code> averages the ERPDs of each subject (here, we use the two conditions as a stand-in for two subjects). The result is a <code class="docutils literal notranslate"><span class="pre">GroupLevelSegmentedData</span></code> object which can be plotted in the same way:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">group</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">group_segments</span><span class="p">([</span><span class="n">erpd_conf</span><span class="p">,</span> <span class="n">erpd_cong</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">"all cues"</span><span class="p">)</span>
+<span class="n">group</span><span class="o">.</span><span class="n">plot</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_erpds_25_0.png" src="../_images/notebooks_erpds_25_0.png" />
+</div>
+</div>
+</section>
+</section>
+<div class="admonition note">
+This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/erpds.ipynb">notebooks/erpds.ipynb</a>
+<br>
+Interactive version:
+<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/erpds.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+</div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Event-related pupil dilations</a><ul>
+<li><a class="reference internal" href="#Group-level-ERPDs">Group-level ERPDs</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="summary.html"
+                          title="previous chapter">Summarizing pupillometric data</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="modeling.html"
+                          title="next chapter">Modeling the pupillometric signal</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/notebooks/erpds.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modeling.html" title="Modeling the pupillometric signal"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="summary.html" title="Summarizing pupillometric data"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Event-related pupil dilations</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+    </div>
+  </body>
+</html>

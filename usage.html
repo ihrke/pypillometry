@@ -93,12 +93,12 @@ Once the data has been manually parsed into <code class="xref py py-mod docutils
 </tbody>
 </table>
 <p><a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> provides functions to load data from local data directories (<code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_local()</span></code>) and from OSF-projects (<code class="xref py py-func docutils literal notranslate"><span class="pre">load_study_osf()</span></code>) based on a user-provided configuration file (<span class="xref std std-ref">/examples/pypillometry_conf.py</span>).</p>
-<p>The package comes with a few example datasets for convenience (see <a class="reference internal" href="example_datasets.html"><span class="std std-ref">this notebook</span></a>). These can be loaded using the <code class="xref py py-func docutils literal notranslate"><span class="pre">get_example_data()</span></code> function.</p>
+<p>The package comes with a few example datasets for convenience (see <a class="reference internal" href="notebooks/example_datasets.html"><span class="std std-ref">this notebook</span></a>). These can be loaded using the <code class="xref py py-func docutils literal notranslate"><span class="pre">get_example_data()</span></code> function.</p>
 <p>Please refer to the following notebooks for more information:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="importdata_edf.html"><span class="std std-ref">An example for importing data from Eyelink EDF-files</span></a></p></li>
-<li><p><a class="reference internal" href="importdata_asc.html"><span class="std std-ref">An example for importing data from Eyelink ASC-files</span></a></p></li>
-<li><p><a class="reference internal" href="example_datasets.html"><span class="std std-ref">Example datasets included in the package</span></a></p></li>
+<li><p><a class="reference internal" href="notebooks/importdata_edf.html"><span class="std std-ref">An example for importing data from Eyelink EDF-files</span></a></p></li>
+<li><p><a class="reference internal" href="notebooks/importdata_asc.html"><span class="std std-ref">An example for importing data from Eyelink ASC-files</span></a></p></li>
+<li><p><a class="reference internal" href="notebooks/example_datasets.html"><span class="std std-ref">Example datasets included in the package</span></a></p></li>
 <li><p><a class="reference internal" href="examples/share_study.html"><span class="std std-ref">Providing a configuration file for loading/sharing data from a local directory or OSF</span></a></p></li>
 </ul>
 </section>
@@ -118,7 +118,7 @@ This will return a new object with the results of the operations.</p>
 <p>This will return a new object <cite>d_new</cite> with the results of the operations. The original object <cite>d</cite> is not modified.</p>
 <p>See the following notebook for more on these issues:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="pipes.html"><span class="std std-ref">Pipeline-based processing in pypillometry</span></a></p></li>
+<li><p><a class="reference internal" href="notebooks/pipes.html"><span class="std std-ref">Pipeline-based processing in pypillometry</span></a></p></li>
 </ul>
 </section>
 <section id="data-modalities-variables-and-monocular-vs-binocular-data">
@@ -128,7 +128,7 @@ This will return a new object with the results of the operations.</p>
 <p>Finally, new variables (or even “eyes”) can be created and added to the object. For example, when combining the data from both eyes, one can create a new variable that contains the average of the left and right pupil size which might be called “average_pupil”. In that case, the <code class="docutils literal notranslate"><span class="pre">eye=&quot;average&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">variable=&quot;pupil&quot;</span></code> arguments should be used to access this new variable.</p>
 <p>Please see the following example for more details:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="eyes_and_variables.html"><span class="std std-ref">Processing monocular and binocular data</span></a></p></li>
+<li><p><a class="reference internal" href="notebooks/eyes_and_variables.html"><span class="std std-ref">Processing monocular and binocular data</span></a></p></li>
 </ul>
 </section>
 <section id="plotting-data">
@@ -231,8 +231,8 @@ This will return a new object with the results of the operations.</p>
 <h3>Handling Blinks<a class="headerlink" href="#handling-blinks" title="Link to this heading">¶</a></h3>
 <p>Pupillometric data usually contain blinks which show up as missing data in the signal where the eyetracker is unable to record the size of the pupil.
 A range of functions are available for detecting and interpolating blinks.</p>
-<p>More details and an example can be found in the notebook: <a class="reference internal" href="blinks.html"><span class="std std-ref">An example for how to handle blinks</span></a></p>
-<p>A fully worked-out example of a real study can be found in this notebook: <a class="reference internal" href="preproc_example_pavlov.html"><span class="std std-ref">Preprocessing of a full dataset with multiple subjects</span></a></p>
+<p>More details and an example can be found in the notebook: <a class="reference internal" href="notebooks/blinks.html"><span class="std std-ref">An example for how to handle blinks</span></a></p>
+<p>A fully worked-out example of a real study can be found in this notebook: <a class="reference internal" href="notebooks/preproc_example_pavlov.html"><span class="std std-ref">Preprocessing of a full dataset with multiple subjects</span></a></p>
 <p>The following is a list of functions for that purpose. Note that the functions take multiple arguments that control the algorithms behaviour. It is often crucial to adjust the parameters on an individual level since the artifacts tend to be quite dissimilar between subjects (but usually stable within-subject). All arguments are documented in the <a class="reference internal" href="api.html"><span class="std std-ref">API-docs</span></a>.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -284,7 +284,7 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <section id="plotting">
 <h3>Plotting<a class="headerlink" href="#plotting" title="Link to this heading">¶</a></h3>
 <p>It is crucial to validate preprocessing steps by visually inspecting the results using plots. Therefore, <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a> implements several plotting facilities that encourage active exploration of the dataset.</p>
-<p>Please see the tutorial <a class="reference internal" href="plotting.html"><span class="std std-ref">Plotting of pupillometric data</span></a> for more details.</p>
+<p>Please see the tutorial <a class="reference internal" href="notebooks/plotting.html"><span class="std std-ref">Plotting of pupillometric data</span></a> for more details.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.plot" title="pypillometry.PupilData.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.plot</span></code></a></p></td>
@@ -296,7 +296,7 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <section id="inspecting-summarizing">
 <h3>Inspecting/Summarizing<a class="headerlink" href="#inspecting-summarizing" title="Link to this heading">¶</a></h3>
 <p>The package also provides several functions for summarizing datasets. Simply <cite>print()`ing a :class:`PupilData</cite> object gives a readable summary of the main properties of the dataset and also prints the complete history of the results. By calling <a class="reference internal" href="api.html#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.summary()</span></code></a>, summary data can be arranged and summarized in tabular form.</p>
-<p>See the notebook <a class="reference internal" href="summary.html"><span class="std std-ref">Summarizing pupillometric data</span></a> for more details.</p>
+<p>See the notebook <a class="reference internal" href="notebooks/summary.html"><span class="std std-ref">Summarizing pupillometric data</span></a> for more details.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="api.html#pypillometry.PupilData.summary" title="pypillometry.PupilData.summary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PupilData.summary</span></code></a>()</p></td>
@@ -312,7 +312,7 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <h3>Event-Related Pupil Dilation<a class="headerlink" href="#event-related-pupil-dilation" title="Link to this heading">¶</a></h3>
 <p>The average pupillometric signal, timelocked to repeating events during the experiment, is referred to as “Event-related pupil dilation” or ERPD. In <a class="reference internal" href="api.html#module-pypillometry" title="pypillometry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry</span></code></a>, the functionality for this is implemented in the class <code class="xref py py-class docutils literal notranslate"><span class="pre">pypillometry.erpd.ERPD</span></code>.</p>
 <p>Running <code class="xref py py-func docutils literal notranslate"><span class="pre">PupilData.get_erpd()</span></code> returns an Object of class <code class="xref py py-class docutils literal notranslate"><span class="pre">ERPDSingleSubject</span></code>. This object has functions for plotting and summarising the event-related pupillary dilation.</p>
-<p><a class="reference internal" href="erpds.html"><span class="std std-ref">Here is an example notebook for for how to work with ERPDs</span></a>.</p>
+<p><a class="reference internal" href="notebooks/erpds.html"><span class="std std-ref">Here is an example notebook for for how to work with ERPDs</span></a>.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 </tbody>
@@ -327,7 +327,7 @@ A range of functions are available for detecting and interpolating blinks.</p>
 <h2>Modeling the pupillometric signal<a class="headerlink" href="#modeling-the-pupillometric-signal" title="Link to this heading">¶</a></h2>
 <p>For some applications, it is interesting to model the full pupillometric signal as consisting of a (tonic) baseline and a (phasic) response component.
 The package implements novel algorithms developed in our lab and documentation will become available here.</p>
-<p>More details are availabel in this notebook: <a class="reference internal" href="modeling.html"><span class="std std-ref">Modeling the pupillometric signal</span></a>.</p>
+<p>More details are availabel in this notebook: <a class="reference internal" href="notebooks/modeling.html"><span class="std std-ref">Modeling the pupillometric signal</span></a>.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 </tbody>
