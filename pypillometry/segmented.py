@@ -588,16 +588,18 @@ class SegmentedEyeData:
         
         return ax1
     
-    def write_file(self, fname: str):
+    def write_file(self, fname: str, compress: bool = True):
         """
-        Save to file using pickle.
+        Save to file using pickle (see :func:`~pypillometry.io.write_pickle`).
         
         Parameters
         ----------
         fname : str
             Filename to save to
+        compress : bool, optional
+            compress the file with zstd (default True)
         """
-        write_pickle(self, fname)
+        write_pickle(self, fname, compress=compress)
     
     @classmethod
     def from_file(cls, fname: str, **kwargs) -> 'SegmentedEyeData':
