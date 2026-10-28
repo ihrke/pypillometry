@@ -11,15 +11,15 @@ for a 90 MB EDF file (64 min of binocular data at 1000 Hz), mostly in the
 and to work with the converted files, e.g., with the command-line program
 ``edf2pypil`` (``edf2pypil recording.edf`` writes ``recording.pkl``) or
 with :func:`write_pickle`. Reading the pickle file with :func:`read_pickle`
-took 0.1-0.25 s for the same recordings (more than 200 times faster; from
-a slow disk it can take a few seconds). Pickle files are larger (about
-400 MB for a 90 MB EDF file) and should only be read from trusted sources.
+is more than 100 times faster. :func:`write_pickle` compresses the file
+with zstd by default: a 400 MB pickle (90 MB EDF file) shrinks to about
+31 MB, takes 0.5 s to write and 0.35 s to read (uncompressed: 0.2 s from
+a warm cache, more from a slow disk or network). Pickle files should only
+be read from trusted sources.
 """
 
-try:
-   import cPickle as pickle
-except:
-   import pickle
+import gzip
+import pickle
 import os
 import requests
 from contextlib import contextmanager
@@ -28,6 +28,16 @@ from typing import Optional
 from loguru import logger
 from .convenience import is_url, suppress_all_output, requires_package
 from .logging import logging_get_level
+
+try:
+    from compression import zstd  # Python >= 3.14
+except ImportError:
+    from backports import zstd
+
+#: zstd compression level used by :func:`write_pickle`
+ZSTD_LEVEL = 3
+_ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
+_GZIP_MAGIC = b"\x1f\x8b"
 
 __all__ = [
     "osf_authenticate", "download", "fetch_url", "local_copy", "write_pickle",
@@ -497,20 +507,43 @@ def local_copy(
                 os.remove(target)
 
 
-def write_pickle(obj, fname):
+def write_pickle(obj, fname, compress: bool = True):
     """
     Store any Python object in a file using :mod:`pickle`.
-    
+
+    By default, the file is compressed with zstd (about 13 times smaller
+    for eyedata objects). :func:`read_pickle` detects the compression
+    automatically.
+
     Parameters
     ----------
     obj : object
         object to save
     fname : str
         filename to save to
+    compress : bool, optional
+        if True (default), compress the file with zstd; if False, write a
+        plain pickle file
     """
-    with open(fname, "wb") as f:
-        pickle.dump(obj, f)
-    
+    if compress:
+        f = zstd.open(fname, "wb", level=ZSTD_LEVEL)
+    else:
+        f = open(fname, "wb")
+    with f:
+        pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def _open_maybe_compressed(fname):
+    """Open `fname` for reading, decompressing zstd or gzip files."""
+    with open(fname, "rb") as f:
+        magic = f.read(4)
+    if magic.startswith(_ZSTD_MAGIC):
+        return zstd.open(fname, "rb")
+    if magic.startswith(_GZIP_MAGIC):
+        return gzip.open(fname, "rb")
+    return open(fname, "rb")
+
+
 
 def read_pickle(
     fname: str,
@@ -521,6 +554,9 @@ def read_pickle(
     autodelete: Optional[bool] = None):
     """
     Read a Python object from a file using :mod:`pickle`.
+
+    Plain, zstd- and gzip-compressed pickle files are supported (the
+    format is detected from the file content).
 
     URLs are downloaded with :func:`~pypillometry.io.fetch_url`, in the
     same way as in :func:`~pypillometry.io.read_eyelink`.
@@ -555,7 +591,7 @@ def read_pickle(
     with local_copy(fname, cache_file=cache_file, cache_dir=cache_dir,
                     autodelete=autodelete, force_download=force_download,
                     session=session) as local:
-        with open(local, 'rb') as f:
+        with _open_maybe_compressed(local) as f:
             return pickle.load(f)
 
 @requires_package("eyelinkio")

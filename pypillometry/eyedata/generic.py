@@ -1115,17 +1115,19 @@ class GenericEyeData(ABC):
         
         return obj
     
-    def write_file(self, fname:str):
+    def write_file(self, fname:str, compress:bool=True):
         """
-        Save to file (using :mod:`pickle`).
+        Save to file (using :func:`~pypillometry.io.write_pickle`).
         
         Parameters
         ----------
         
         fname: str
             filename
+        compress: bool
+            compress the file with zstd (default True)
         """
-        io.write_pickle(self, fname)
+        io.write_pickle(self, fname, compress=compress)
 
 
     @classmethod

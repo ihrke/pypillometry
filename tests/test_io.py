@@ -145,6 +145,29 @@ class TestIO(unittest.TestCase):
             else:
                 self.assertEqual(value, loaded)
                 
+    def test_write_pickle_compressed_by_default(self):
+        """write_pickle writes zstd files by default, plain ones on request."""
+        test_file = os.path.join(self.temp_dir, 'test.pkl')
+        value = np.zeros(10000)
+        write_pickle(value, test_file)
+        with open(test_file, "rb") as f:
+            self.assertEqual(f.read(4), b"\x28\xb5\x2f\xfd")
+        compressed_size = os.path.getsize(test_file)
+        np.testing.assert_array_equal(read_pickle(test_file), value)
+
+        write_pickle(value, test_file, compress=False)
+        with open(test_file, "rb") as f:
+            self.assertEqual(pickle.load(f).shape, value.shape)
+        self.assertLess(compressed_size, os.path.getsize(test_file))
+
+    def test_read_pickle_gzip(self):
+        """read_pickle reads gzip-compressed pickle files."""
+        import gzip
+        test_file = os.path.join(self.temp_dir, 'test.pkl.gz')
+        with gzip.open(test_file, "wb") as f:
+            pickle.dump(self.test_data["dict"], f)
+        self.assertEqual(read_pickle(test_file), self.test_data["dict"])
+
     def _fake_download(self, content):
         def fake(url, fname, session=None):
             with open(fname, "wb") as f:
