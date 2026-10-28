@@ -82,7 +82,13 @@ and saves it as a pickle file that loads much faster (see <code class="docutils 
 edf2pypil<span class="w"> </span>recording.edf<span class="w"> </span>-o<span class="w"> </span>rec.pypil
 </pre></div>
 </div>
-<p>Both programs accept <code class="docutils literal notranslate"><span class="pre">-q</span></code> (only warnings and errors, no progress bars) and
+<p><code class="docutils literal notranslate"><span class="pre">pypilinfo</span></code> prints a summary of one or more EDF or pickle files (variables,
+sampling rate, duration, events, blinks, processing history):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pypilinfo<span class="w"> </span>recording.pkl
+pypilinfo<span class="w"> </span>data/*.pkl
+</pre></div>
+</div>
+<p>All three programs accept <code class="docutils literal notranslate"><span class="pre">-q</span></code> (only warnings and errors, no progress bars) and
 <code class="docutils literal notranslate"><span class="pre">-v</span></code> (debug messages, including the output of <code class="docutils literal notranslate"><span class="pre">eyelinkio</span></code>).</p>
 <hr class="docutils" />
 <p>The project is maintained by Matthias Mittner <a class="reference external" href="mailto:matthias&#46;mittner&#37;&#52;&#48;uit&#46;no">matthias<span>&#46;</span>mittner<span>&#64;</span>uit<span>&#46;</span>no</a></p>
