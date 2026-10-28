@@ -176,9 +176,14 @@ def download(url: str, fname: str = None, chunk_size: int = 1024, session: Optio
     try:
         with session.get(url, stream=True) as resp:
             resp.raise_for_status()
-            total = int(resp.headers.get("content-length", 0))
+            # unknown size (no content-length): progress bar without total
+            total = int(resp.headers.get("content-length", 0)) or None
+            # fetch_url() downloads to "<name>.part"
+            name = os.path.basename(fname)
+            if name.endswith(".part"):
+                name = name[:-len(".part")]
             with open(fname, "wb") as file, tqdm(
-                desc=os.path.basename(fname),
+                desc=name,
                 total=total,
                 unit="iB",
                 unit_scale=True,

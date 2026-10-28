@@ -1,3 +1,4 @@
+import shutil
 import unittest
 import sys
 import os
@@ -340,6 +341,28 @@ class TestIO(unittest.TestCase):
         finally:
             if os.path.exists(fname):
                 os.remove(fname)
+
+    @patch("pypillometry.io._osf_client_url_to_download_url", side_effect=lambda url, session=None: url)
+    @patch("pypillometry.io.tqdm")
+    def test_download_progress_bar(self, mock_tqdm, mock_osf_url):
+        """the bar shows the name without ".part" and has no total for an unknown size"""
+        session = MagicMock()
+        response = MagicMock()
+        response.iter_content.return_value = [b"data"]
+        session.get.return_value.__enter__.return_value = response
+        session.get.return_value.__exit__.return_value = False
+        mock_tqdm.return_value.__enter__.return_value = MagicMock()
+        tmpdir = tempfile.mkdtemp()
+        try:
+            fname = os.path.join(tmpdir, "rec.edf.part")
+            for headers, total in [({"content-length": "4"}, 4), ({}, None)]:
+                response.headers = headers
+                download("https://example.com/rec.edf", fname=fname, session=session)
+                kwargs = mock_tqdm.call_args.kwargs
+                self.assertEqual(kwargs["desc"], "rec.edf")
+                self.assertEqual(kwargs["total"], total)
+        finally:
+            shutil.rmtree(tmpdir, ignore_errors=True)
 
 if __name__ == '__main__':
     unittest.main()
