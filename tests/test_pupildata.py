@@ -140,3 +140,25 @@ class TestPupilData(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class TestMergeBlinkWindows(unittest.TestCase):
+    def merge(self, blinks, n=10000):
+        from pypillometry.eyedata.pupildata import _merge_overlapping_blink_windows
+        return _merge_overlapping_blink_windows(blinks, n)
+
+    def test_separate_blinks(self):
+        self.assertEqual(self.merge([(100, 110), (200, 210)]),
+                         [(90, 100, 110, 120), (190, 200, 210, 220)])
+
+    def test_overlapping_windows_merge(self):
+        self.assertEqual(self.merge([(100, 110), (115, 125)]),
+                         [(90, 100, 125, 135)])
+
+    def test_no_cascade(self):
+        # each blink's window only reaches its neighbour if blinks are close;
+        # the merged blink must not widen the window and swallow the rest
+        blinks = [(100, 200), (290, 390)] + [(1000 + 300*i, 1050 + 300*i)
+                                             for i in range(20)]
+        merged = self.merge(blinks)
+        self.assertEqual(merged[0], (0, 100, 390, 490))
+        self.assertEqual(len(merged), 21)
