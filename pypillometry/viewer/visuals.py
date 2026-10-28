@@ -7,6 +7,32 @@ from typing import List, Optional, Tuple, Dict
 import numpy.ma as ma
 
 
+class _AxisWidget(scene.AxisWidget):
+    """Axis that also updates its ticks when it or its view is moved or resized.
+
+    vispy's AxisWidget only updates its domain when the camera of the
+    linked view changes. If the layout moves or resizes the axis or the
+    view afterwards (e.g. when the window is first shown), the ticks show
+    a wrong range.
+    """
+    def link_view(self, view):
+        if view is self._linked_view:
+            return
+        if self._linked_view is not None:
+            self._linked_view.events.resize.disconnect(self._view_changed)
+        else:
+            # the layout sets the position of an axis after its size,
+            # without a resize event
+            self.transform.changed.connect(self._view_changed)
+        super().link_view(view)
+        view.events.resize.connect(self._view_changed)
+
+    def on_resize(self, event):
+        super().on_resize(event)
+        if self._linked_view is not None:
+            self._view_changed()
+
+
 class LODLine:
     """Line visual with LOD - normal color + lighter color in masked regions."""
     

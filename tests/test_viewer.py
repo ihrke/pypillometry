@@ -73,3 +73,29 @@ class TestTweakKeys(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestAxisWidget(unittest.TestCase):
+    def test_domain_follows_layout(self):
+        """axis ticks match the view after the layout moves view and axis
+        (wrong time axis in pp.tweak(), bug 1.10)"""
+        from vispy import scene
+        from vispy.geometry import Rect
+        from pypillometry.viewer.visuals import _AxisWidget
+
+        root = scene.Widget()
+        vb = scene.ViewBox(parent=root)
+        vb.camera = scene.PanZoomCamera(aspect=None)
+        ax = _AxisWidget(orientation="bottom")
+        ax.parent = root
+        ax.link_view(vb)
+        vb.rect = Rect(0, 0, 1000, 500)
+        ax.size, ax.pos = (1000, 50), (0, 500)
+        vb.camera.set_range(x=(0, 10), y=(0, 1))
+        cam = vb.camera.rect
+        # the layout moves the view and the axis (grid sets the size of
+        # the axis before its position), then the window is resized
+        for x, w in [(100, 1000), (100, 500)]:
+            vb.rect = Rect(x, 0, w, 500)
+            ax.size, ax.pos = (w, 50), (x, 500)
+            np.testing.assert_allclose(ax.axis.domain, (cam.left, cam.right), atol=1e-4)

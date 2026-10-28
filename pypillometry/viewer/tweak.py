@@ -10,7 +10,7 @@ from vispy.scene import SceneCanvas
 from vispy.color import Color
 from typing import Dict, Callable, Any, Optional, List, Union, Tuple
 
-from .visuals import LODLine, DynamicMaskRegions, HighlightRegion
+from .visuals import _AxisWidget, LODLine, DynamicMaskRegions, HighlightRegion
 from .navigation import NavigationHandler
 
 # Colors for multiple overlay lines
@@ -156,7 +156,7 @@ class TweakCanvas(SceneCanvas):
     def _create_subplot(self):
         """Create single subplot with y-axis and viewbox."""
         # Y-axis
-        y_axis = scene.AxisWidget(
+        y_axis = _AxisWidget(
             orientation='left',
             axis_font_size=8,
             axis_label='Value',
@@ -187,7 +187,7 @@ class TweakCanvas(SceneCanvas):
         )
         x_label = 'Sample' if is_sample_index else 'Time (s)'
         
-        x_axis = scene.AxisWidget(
+        x_axis = _AxisWidget(
             orientation='bottom',
             axis_label=x_label,
             axis_font_size=8,
