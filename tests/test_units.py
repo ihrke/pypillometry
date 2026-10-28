@@ -468,3 +468,14 @@ def test_plot_range_with_units(eyedata):
     plt.close("all")
     with pytest.raises(ValueError, match="does not overlap"):
         eyedata.plot.pupil_plot(plot_range=(10, 20) * u.min)
+
+
+def test_unset_repr_and_identity():
+    """UNSET shows as 'UNSET' in signatures and survives copy/pickle (bug 1.7)"""
+    import copy, inspect, pickle
+    from pypillometry.units import UNSET
+    from pypillometry import Intervals
+    assert repr(UNSET) == "UNSET"
+    assert "units=UNSET" in str(inspect.signature(Intervals))
+    assert copy.deepcopy(UNSET) is UNSET
+    assert pickle.loads(pickle.dumps(UNSET)) is UNSET

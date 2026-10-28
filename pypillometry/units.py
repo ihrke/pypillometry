@@ -344,7 +344,16 @@ def _first_unit(value, dimension):
     return _split(value, dimension)[1] if _has_units(value) else None
 
 
-UNSET = object()
+class _Unset:
+    """Type of :data:`UNSET`; its repr keeps API signatures readable."""
+    def __repr__(self):
+        return "UNSET"
+
+    def __reduce__(self):
+        return "UNSET"  # copies and pickles stay the same object
+
+
+UNSET = _Unset()
 """Default for `units=` arguments of containers: take the unit from the values."""
 
 
