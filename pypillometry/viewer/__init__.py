@@ -130,7 +130,12 @@ def view(data, variables=None, eyes=None, time=None,
     
     Opens an interactive viewer window using VisPy for fast GPU-based
     rendering. Suitable for long recordings (60+ minutes at 1000 Hz).
-    
+
+    .. image:: /images/viewer_eyedata.png
+       :alt: Viewer showing pupil size and gaze of both eyes
+
+    See :doc:`/user_guide/viewer` for more examples.
+
     Parameters
     ----------
     data : EyeData, ndarray, list of ndarrays, or dict
@@ -468,7 +473,12 @@ def tweak(data, func, params, variable=None, time=None):
     Opens a viewer showing the original data with the function result overlaid.
     A parameter panel next to the plot allows adjusting numeric parameters in
     real-time, with the overlay updating to reflect the changes.
-    
+
+    .. image:: /images/tweak_intervals.png
+       :alt: Tweak window with detected blinks and the parameter panel
+
+    See :doc:`/user_guide/tweak` for more examples.
+
     Parameters
     ----------
     data : EyeData, ndarray, or list of ndarrays

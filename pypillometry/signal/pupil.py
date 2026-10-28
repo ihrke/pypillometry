@@ -349,6 +349,17 @@ def plot_prf(npar=10.1,tmax=930,max_duration="estimate",fs=500,**kwargs):
         sampling rate in Hz used to evaluate the PRF
     **kwargs
         passed on to :func:`matplotlib.pyplot.plot`
+
+    Examples
+    --------
+    The default response function and one that peaks earlier:
+
+    .. plot::
+
+       >>> import pypillometry as pp
+       >>> import matplotlib.pyplot as plt
+       >>> pp.plot_prf()
+       >>> pp.plot_prf(npar=5, tmax=500)
     """
     if max_duration=="estimate":
         max_duration=pupil_get_max_duration(npar,tmax)

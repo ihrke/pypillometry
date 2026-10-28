@@ -9,8 +9,7 @@ _build
 jupyter_execute/
 docs/html/
 docs/_build/
-docs/_static/
-docs/_templates/
+docs/api/generated/
 docs/doctrees/
 docs/_autosummary/
 docs/v1

@@ -18,13 +18,14 @@ The simplest use case is viewing an :class:`EyeData` object directly:
     import pypillometry as pp
 
     eyedata = pp.get_example_data("rlmw_002_short")
+    eyedata.pupil_blinks_detect(apply_mask=True)
     pp.view(eyedata)
 
-.. image:: images/viewer_eyedata.png
+.. image:: ../images/viewer_eyedata.png
    :alt: Viewer showing EyeData with pupil, x, and y subplots
    :width: 100%
 
-The viewer automatically creates subplots for each modality (pupil, x, y) and shows both left (blue) and right (red) eye data. Masked regions are highlighted in orange.
+The viewer automatically creates subplots for each modality (pupil, x, y) and shows both left (blue) and right (red) eye data. Masked regions (here, the detected blinks) are highlighted in orange. Event labels are shown when you zoom in far enough that at most ten events are visible.
 
 
 Viewing Numpy Arrays
@@ -44,7 +45,7 @@ You can also view raw numpy arrays. Use a dictionary to create multiple subplots
 
     pp.view({"Signal A": signal_a, "Signal B": signal_b}, time=t)
 
-.. image:: images/viewer_arrays.png
+.. image:: ../images/viewer_arrays.png
    :alt: Viewer showing two numpy arrays as separate subplots
    :width: 100%
 
@@ -59,9 +60,9 @@ For EyeData objects, you can filter which modalities to display using the ``vari
     import pypillometry as pp
 
     eyedata = pp.get_example_data("rlmw_002_short")
-    pp.view(eyedata, variables=['pupil'])
+    pp.view(eyedata, variables=["pupil"])
 
-.. image:: images/viewer_pupil_only.png
+.. image:: ../images/viewer_pupil_only.png
    :alt: Viewer showing only pupil data
    :width: 100%
 
@@ -83,15 +84,12 @@ You can overlay additional data on top of the main plots for comparison. This is
     import pypillometry as pp
 
     eyedata = pp.get_example_data("rlmw_002_short")
-    
-    # Create a smoothed version of the pupil signal
-    pupil = np.array(eyedata['left_pupil'])
-    kernel = np.ones(50) / 50
-    smoothed = np.convolve(pupil, kernel, mode='same')
-    
-    pp.view(eyedata, variables=['pupil'], overlay_pupil={'smoothed': smoothed})
+    smoothed = eyedata.pupil_lowpass_filter(cutoff=2, inplace=False)
 
-.. image:: images/viewer_overlay.png
+    pp.view(eyedata, variables=["pupil"],
+            overlay_pupil={"smoothed": smoothed["left_pupil"]})
+
+.. image:: ../images/viewer_overlay.png
    :alt: Viewer showing pupil data with smoothed overlay
    :width: 100%
 
@@ -109,14 +107,14 @@ You can add additional subplots below the main EyeData variables using ``extra_p
     import pypillometry as pp
 
     eyedata = pp.get_example_data("rlmw_002_short")
-    
-    # Compute velocity (derivative of pupil size)
-    pupil = np.array(eyedata['left_pupil'])
-    velocity = np.gradient(pupil)
-    
-    pp.view(eyedata, variables=['pupil'], extra_plots={'velocity': velocity})
 
-.. image:: images/viewer_extra_plots.png
+    # Compute velocity (derivative of pupil size)
+    pupil = np.array(eyedata["left_pupil"])
+    velocity = np.gradient(pupil)
+
+    pp.view(eyedata, variables=["pupil"], extra_plots={"velocity": velocity})
+
+.. image:: ../images/viewer_extra_plots.png
    :alt: Viewer showing pupil data with velocity subplot
    :width: 100%
 
@@ -131,13 +129,23 @@ Use ``highlight`` to shade :class:`Intervals` (e.g., detected blinks) in the plo
     import pypillometry as pp
 
     eyedata = pp.get_example_data("rlmw_002_short")
-    blinks = eyedata.pupil_blinks_detect(eyes='left')  # Intervals
+    blinks = eyedata.pupil_blinks_detect(eyes="left")  # Intervals
 
-    # same intervals in all subplots
-    pp.view(eyedata, highlight=blinks, highlight_color='orange')
+    pp.view(eyedata, variables=["pupil"], highlight=blinks)
+
+.. image:: ../images/viewer_highlight.png
+   :alt: Viewer showing pupil data with blinks highlighted in light blue
+   :width: 100%
+
+To use another color or to highlight different intervals in each subplot:
+
+.. code-block:: python
+
+    # same intervals in all subplots, in orange
+    pp.view(eyedata, highlight=blinks, highlight_color="orange")
 
     # or per subplot
-    pp.view(eyedata, highlight={'pupil': blinks})
+    pp.view(eyedata, highlight={"pupil": blinks})
 
 ``highlight`` is either a single :class:`Intervals` object (shown in all subplots) or a dict mapping subplot keys to :class:`Intervals`. The keys are ``'pupil'``, ``'x'``, ``'y'`` and ``'extra_<label>'`` for ``extra_plots`` (EyeData), or the plot labels (arrays). Intervals in time units are converted to seconds, sample-index Intervals are placed using the time vector.
 
@@ -168,8 +176,8 @@ The viewer supports interactive region selection:
 The returned dict has the same keys as ``highlight`` (``'pupil'``, ``'x'``, ``'y'``, ``'extra_<label>'`` or the plot labels for arrays). The Intervals are in seconds (``units='sec'``); for raw arrays without ``time`` they are sample indices (``units=None``). If no region was selected, :func:`view` returns ``None``.
 
 
-API Reference
+API reference
 -------------
 
-.. autofunction:: view
+All parameters are documented in the API reference: :func:`view`.
 

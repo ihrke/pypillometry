@@ -128,6 +128,20 @@ class GenericPlotter:
         ------
         TypeError
             if `intervals` is not an :class:`~pypillometry.Intervals` object
+
+        Examples
+        --------
+        The pupil around each stimulus, one panel per interval:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+           >>> d.plot.plot_intervals(intervals, variables="pupil", nrow=2, ncol=5,
+           ...                       figsize=(12, 4))
         """
         if not isinstance(intervals, Intervals):
             raise TypeError("intervals must be an Intervals object. Use get_intervals() to create one.")
@@ -258,6 +272,17 @@ class GenericPlotter:
         ValueError
             if `show_onsets` is not one of the allowed values or if
             `plot_range` does not overlap with the data
+
+        Examples
+        --------
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> plt.figure(figsize=(10, 6))
+           >>> d.plot.plot_timeseries(plot_range=(0, 20) * u.sec, units="sec")
         """
         obj = self.obj
         eyes,variables=obj._get_eye_var(eyes, variables)
@@ -438,6 +463,25 @@ class GenericPlotter:
         -------
         list of matplotlib.figure.Figure or None
             one figure per segment; None if `pdf_file` is given
+
+        Examples
+        --------
+        Split the 40-second recording into 10-second pieces (one figure each, here
+        only the first is shown):
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> figs = d.plot.plot_timeseries_segments(interv=10, units="sec",
+           ...                                        variables="pupil", figsize=(10, 3))
+           >>> for f in figs[1:]:
+           ...     plt.close(f)
+
+        With ``pdf_file="segments.pdf"``, the figures are written to a PDF file
+        instead.
         """
 
         # Calculate start and end times in the specified units
@@ -520,24 +564,23 @@ class GenericPlotter:
         -------
         None
             Modifies the current axes in place
-            
+
         Examples
         --------
-        Plot masked intervals for left pupil:
-        
-        >>> data.plot.plot_masked('left', 'pupil')
-        
-        Plot for multiple eyes with different colors:
-        
-        >>> data.plot.plot_masked(['left', 'right'], 'pupil', merge=False)
-        
-        Merge all masks and plot as one:
-        
-        >>> data.plot.plot_masked(['left', 'right'], 'pupil', merge=True)
-        
-        Plot with event markers:
-        
-        >>> data.plot.plot_masked('left', 'pupil', show_events=True)
+        One line per masked interval (here: detected blinks) and eye:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d.pupil_blinks_detect(apply_mask=True)
+           >>> plt.figure(figsize=(8, 4))
+           >>> d.plot.plot_masked(variables="pupil", units="sec")
+
+        With ``merge=True``, the masks of all eyes and variables are combined;
+        ``show_events=True`` adds the event markers.
         """
         from ..intervals import merge_intervals
         

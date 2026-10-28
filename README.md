@@ -17,7 +17,7 @@
 > [!NOTE]
 > This is `pypillometry` version 2 that contains a major restructuring of the code. Scripts written for version 1 will not continue to work. The reason for the update is that the new version will be able to handle eyetracking-data in addition to pupillometry data (and it will be able to handle more than one eye and other data sources at the same time).
 > 
-> The documentation for v2 is currently incomplete and broken as we focus on developing the new API.  
+> The documentation for v2, including a quickstart and tutorials, is at <https://ihrke.github.io/pypillometry/>.
 >
 > - Version 1 is here: [pypillometry version 1](https://github.com/ihrke/pypillometry/tree/v1)
 > - Documentation for Version 1 is here: [pypillometry docs v1](https://ihrke.github.io/pypillometry/v1/html/index.html)

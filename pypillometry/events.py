@@ -321,6 +321,19 @@ class Events:
         -------
         None
             Plot is drawn on the current matplotlib axes.
+
+        Examples
+        --------
+        The stimulus events of the example dataset:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> plt.figure(figsize=(10, 3))
+           >>> d.get_events().filter("S_").plot(units="sec")
         """
         import matplotlib.pyplot as plt
 

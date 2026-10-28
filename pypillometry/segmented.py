@@ -506,20 +506,28 @@ class SegmentedEyeData:
         -------
         ax : matplotlib.axes.Axes
             The axes object for further customization
-            
+
         Examples
         --------
-        >>> # Quick standalone plot
-        >>> segments.plot()
-        
-        >>> # Overlay multiple segments
-        >>> fig, ax = plt.subplots()
-        >>> seg1.plot(ax=ax, color='blue', label='Condition A')
-        >>> seg2.plot(ax=ax, color='red', label='Condition B')
-        >>> ax.legend()
-        
-        >>> # Customize appearance
-        >>> segments.plot(varfct=np.std, color='green', linewidth=2, linestyle='--')
+        Event-related pupil dilation after each stimulus. Pass ``ax=`` to overlay
+        several segments (e.g., two conditions or eyes) in one plot:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d.pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate()
+           >>> intervals = d.get_intervals("S_", (-500, 2500) * u.ms)
+           >>> erpd = d.get_segments(intervals, "left_pupil").baseline_correct((-500, 0))
+           >>> erpd.plot()
+           >>> # overlay two eyes
+           >>> right = d.get_segments(intervals, "right_pupil").baseline_correct((-500, 0))
+           >>> fig, ax = plt.subplots()
+           >>> erpd.plot(ax=ax, label="left eye")
+           >>> right.plot(ax=ax, label="right eye")
+           >>> ax.legend()
         """
         import matplotlib.pyplot as plt
         

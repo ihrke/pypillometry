@@ -107,6 +107,16 @@ class GazePlotter(GenericPlotter):
         ------
         ValueError
             if `plot_range` does not overlap with the data
+
+        Examples
+        --------
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d.plot.plot_heatmap(eyes="left")
         """
         obj = self.obj
         
@@ -345,6 +355,18 @@ class GazePlotter(GenericPlotter):
         ------
         ValueError
             if `plot_range` does not overlap with the data
+
+        Examples
+        --------
+        Two seconds of gaze of the left eye:
+
+        .. plot::
+
+           >>> import pypillometry as pp
+           >>> from pypillometry import u
+           >>> import matplotlib.pyplot as plt
+           >>> d = pp.get_example_data("rlmw_002_short")
+           >>> d.plot.plot_scanpath(plot_range=(10, 12) * u.sec, eyes="left")
         """
         obj = self.obj
 
