@@ -64,6 +64,14 @@ class TestPupilData(unittest.TestCase):
             u = s.unscale("pupil", mean=mean, sd=sd, inplace=False)
             np.testing.assert_allclose(u.data["left","pupil"], [1,2,1,2])
 
+    def test_constructor_history_empty(self):
+        # filling time gaps in the constructor is not a user operation
+        d = pp.PupilData(sampling_rate=10, left_pupil=[1., 2., 3.])
+        self.assertEqual(d.history, [])
+        d.fill_time_discontinuities()
+        self.assertEqual([h["funcname"] for h in d.history],
+                         ["fill_time_discontinuities"])
+
     def test_fill_time_discontinuities(self):
         # three segments sampled at 2 ms, separated by gaps of 500 ms
         segs = [np.arange(0, 1000, 2), np.arange(1500, 2500, 2), np.arange(3000, 4000, 2)]

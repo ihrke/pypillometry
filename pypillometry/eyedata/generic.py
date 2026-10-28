@@ -184,9 +184,10 @@ class GenericEyeData(ABC):
         ## set info
         self.info = info if info is not None else {}
 
-        ## fill in time discontinuities
+        ## fill in time discontinuities (part of construction, so bypass
+        ## @keephistory and keep it out of the history)
         if fill_time_discontinuities:
-            self.fill_time_discontinuities()
+            type(self).fill_time_discontinuities.__wrapped__(self)
 
     def _unit_fac(self, units):
         """Convert time units to factor for converting from milliseconds.

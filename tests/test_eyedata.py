@@ -2453,14 +2453,14 @@ class TestHistoryLog(unittest.TestCase):
         from pypillometry.intervals import Intervals
         d = pp.EyeData(left_x=np.ones(100), left_y=np.ones(100), left_pupil=np.ones(100),
                        sampling_rate=100)
-        self.assertEqual([h["funcname"] for h in d.history], ["fill_time_discontinuities"])
+        self.assertEqual(d.history, [])
         d["left_pupil"] = np.full(100, 2.)
         d.set_blinks(Intervals([(10, 20)], units=None, sampling_rate=100), eyes=["left"], variables=["pupil"])
         d.set_event_onsets(np.array([100., 200.]), np.array(["a", "b"]))
         d.set_experimental_setup(screen_resolution=(1280, 1024))
         d2 = d.drop_data(variables=["x"])
         del d2["left_y"]
-        self.assertEqual([h["funcstring"] for h in d.history][1:],
+        self.assertEqual([h["funcstring"] for h in d.history],
                          ["__setitem__('left_pupil',array(100,))",
                           "set_blinks(Intervals(1),eyes=['left'],variables=['pupil'])",
                           "set_event_onsets(array(2,),array(2,))",
