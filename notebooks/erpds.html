@@ -1,64 +1,510 @@
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../">
+
+<html lang="en" data-content_root="../" data-theme="light">
+
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Event-related pupil dilations &#8212; pypillometry  documentation</title>
+    <title>Event-related pupil dilations &#8212; pypillometry v2.0a2</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
-    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
-    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../_static/documentation_options.js?v=13c34846"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
-    <script src="../_static/thebelab-helper.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/erpds';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Modeling the pupillometric signal" href="modeling.html" />
-    <link rel="prev" title="Summarizing pupillometric data" href="summary.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="Related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="modeling.html" title="Modeling the pupillometric signal"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="summary.html" title="Summarizing pupillometric data"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../notebooks.html" accesskey="U">Tutorials/Example Notebooks</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Event-related pupil dilations</a></li> 
-      </ul>
-    </div>  
+    <link rel="prev" title="Intervals" href="intervals.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.0a2" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="admonition note">
-This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/erpds.ipynb">notebooks/erpds.ipynb</a>
-<br>
-Interactive version:
-<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/erpds.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Reading data</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="importdata_edf.html">Importing data from Eyelink EDF files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importdata_asc.html">Importing data from Eyelink ASC files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_datasets.html">Example datasets included in <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code></a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Working with data objects</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="pipes.html">Pipeline-based processing in pypillometry</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eyes_and_variables.html">Processing monocular and binocular data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="summary.html">Summarizing pupillometric data</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Preprocessing and plotting</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="blinks.html">Blink preprocessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting pupillometric data for exploration</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Events and event-related analyses</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intervals.html">Intervals</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Event-related pupil dilations</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Modeling and complete analyses</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="modeling.html">Modeling the pupillometric signal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preproc_example_pavlov.html">Example: Preprocessing of a full dataset with multiple subjects</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../tutorials/index.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Event-related pupil dilations</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="pp-notebook-banner">
+  <span>This page was generated from a Jupyter notebook.</span>
+  <a href="https://github.com/ihrke/pypillometry/blob/master/docs/notebooks/erpds.ipynb">View on GitHub</a>
+  <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/notebooks/erpds.ipynb">
+    <img alt="Binder badge" src="https://mybinder.org/badge_logo.svg"
+         style="vertical-align:text-bottom">
+  </a>
 </div><section id="Event-related-pupil-dilations">
-<h1>Event-related pupil dilations<a class="headerlink" href="#Event-related-pupil-dilations" title="Link to this heading">¶</a></h1>
+<h1>Event-related pupil dilations<a class="headerlink" href="#Event-related-pupil-dilations" title="Link to this heading">#</a></h1>
 <p>We are often interested in how the pupil responds to certain events, for example stimuli. One method to investigate this is to extract the average pupil dilation surrounding the events of interest (event-related pupil dilation, ERPD).</p>
 <p>In <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code>, this works in two steps:</p>
 <ol class="arabic simple">
@@ -91,8 +537,8 @@ Interactive version:
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:52:42</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">628</span> | <span class="ansi-bold">Loading EDF file: ../../data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
-<span class="ansi-green-fg">pp: 12:53:00</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1292</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
+<span class="ansi-green-fg">pp: 21:20:37</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">_read_edf</span>:<span class="ansi-cyan-fg">688</span> | <span class="ansi-bold">Loading EDF file: ../../data/test.edf (current log level: INFO, set to DEBUG to see eyelinkio output)</span>
+<span class="ansi-green-fg">pp: 21:20:50</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">from_eyelink</span>:<span class="ansi-cyan-fg">1297</span> | <span class="ansi-bold">Filtering out Eyelink triggers</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -207,8 +653,6 @@ Interactive version:
     <summary style="cursor:pointer; font-weight:600;">Recent history</summary>
     <ol style="margin-top:8px;">
 
-      <li>fill_time_discontinuities()</li>
-
       <li>set_events(Events(1027))</li>
 
     </ol>
@@ -296,7 +740,7 @@ Intervals &#39;C_&#39; | 400 intervals (total duration: 1000000.00 ms), 2500.00 
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:53:05</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Baseline correction applied using window (-200, 0)</span>
+<span class="ansi-green-fg">pp: 21:20:54</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Baseline correction applied using window (-200, 0)</span>
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -324,7 +768,7 @@ Intervals &#39;C_&#39; | 400 intervals (total duration: 1000000.00 ms), 2500.00 
           <div style="font-weight:600;">-500 to 2000 ms</div>
         </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
           <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Missing</div>
-          <div style="font-weight:600;">99.6%</div>
+          <div style="font-weight:600;">19.2%</div>
         </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
           <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
           <div style="font-weight:600;">500 Hz</div>
@@ -333,7 +777,7 @@ Intervals &#39;C_&#39; | 400 intervals (total duration: 1000000.00 ms), 2500.00 
 
     <div style="margin-top:10px;">
       <div style="font-size:0.85em; color:#666; margin-bottom:4px;">Mean signal (red line = event onset)</div>
-      <img src="data:image/png;base64,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" alt="Mean signal" style="width:100%; max-width:300px; border-radius:4px;">
+      <img src="data:image/png;base64,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" alt="Mean signal" style="width:100%; max-width:300px; border-radius:4px;">
     </div>
 
 </div></div>
@@ -492,8 +936,8 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-<span class="ansi-green-fg">pp: 12:53:06</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Baseline correction applied using window (-200, 0)</span>
-<span class="ansi-green-fg">pp: 12:53:07</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Baseline correction applied using window (-200, 0)</span>
+<span class="ansi-green-fg">pp: 21:20:55</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Baseline correction applied using window (-200, 0)</span>
+<span class="ansi-green-fg">pp: 21:20:56</span> | <span class="ansi-bold">INFO    </span> | <span class="ansi-cyan-fg">baseline_correct</span>:<span class="ansi-cyan-fg">448</span> | <span class="ansi-bold">Baseline correction applied using window (-200, 0)</span>
 </pre></div></div>
 </div>
 <p>Finally, we plot both into the same axes to compare them:</p>
@@ -515,7 +959,7 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
 </div>
 </div>
 <section id="Group-level-ERPDs">
-<h2>Group-level ERPDs<a class="headerlink" href="#Group-level-ERPDs" title="Link to this heading">¶</a></h2>
+<h2>Group-level ERPDs<a class="headerlink" href="#Group-level-ERPDs" title="Link to this heading">#</a></h2>
 <p>With data from several subjects, <code class="docutils literal notranslate"><span class="pre">pp.group_segments()</span></code> averages the ERPDs of each subject (here, we use the two conditions as a stand-in for two subjects). The result is a <code class="docutils literal notranslate"><span class="pre">GroupLevelSegmentedData</span></code> object which can be plotted in the same way:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
@@ -535,86 +979,137 @@ array([&#39;C_NW_1_2_UD_UD&#39;, &#39;C_GA_1_4_UD_UD&#39;, &#39;C_GA_1_5_UD_UD&#
 </div>
 </section>
 </section>
-<div class="admonition note">
-This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/notebooks/erpds.ipynb">notebooks/erpds.ipynb</a>
-<br>
-Interactive version:
-<a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=notebooks/erpds.ipynb"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="intervals.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Intervals</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="modeling.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Modeling the pupillometric signal</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Group-level-ERPDs">Group-level ERPDs</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/notebooks/erpds.ipynb">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
 </div>
 
-            <div class="clearer"></div>
-          </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../index.html">
-              <img class="logo" src="../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
-            </a></p>
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">Event-related pupil dilations</a><ul>
-<li><a class="reference internal" href="#Group-level-ERPDs">Group-level ERPDs</a></li>
-</ul>
-</li>
-</ul>
+  <div class="sidebar-secondary-item">
 
+  <div class="tocsection sourcelink">
+    <a href="../_sources/notebooks/erpds.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
   </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="summary.html"
-                          title="previous chapter">Summarizing pupillometric data</a></p>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
   </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="modeling.html"
-                          title="next chapter">Modeling the pupillometric signal</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/notebooks/erpds.ipynb.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
     </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
     </div>
-    <div class="related" role="navigation" aria-label="Related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="modeling.html" title="Modeling the pupillometric signal"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="summary.html" title="Summarizing pupillometric data"
-             >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">pypillometry  documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../notebooks.html" >Tutorials/Example Notebooks</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Event-related pupil dilations</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-    &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
-    </div>
+  
+</div>
+
+  </footer>
   </body>
 </html>

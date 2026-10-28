@@ -1,0 +1,6 @@
+﻿load\_study\_osf
+================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: load_study_osf

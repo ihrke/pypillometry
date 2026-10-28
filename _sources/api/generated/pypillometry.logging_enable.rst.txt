@@ -1,0 +1,6 @@
+﻿logging\_enable
+===============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: logging_enable

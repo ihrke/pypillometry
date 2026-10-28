@@ -1,0 +1,6 @@
+﻿downsample
+==========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: downsample

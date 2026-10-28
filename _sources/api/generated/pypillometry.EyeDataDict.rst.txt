@@ -1,0 +1,42 @@
+﻿EyeDataDict
+===========
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: EyeDataDict
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~EyeDataDict.clear
+      ~EyeDataDict.copy
+      ~EyeDataDict.count_masked
+      ~EyeDataDict.get
+      ~EyeDataDict.get_available_eyes
+      ~EyeDataDict.get_available_variables
+      ~EyeDataDict.get_eye
+      ~EyeDataDict.get_mask
+      ~EyeDataDict.get_size
+      ~EyeDataDict.get_variable
+      ~EyeDataDict.items
+      ~EyeDataDict.keys
+      ~EyeDataDict.pop
+      ~EyeDataDict.popitem
+      ~EyeDataDict.set_mask
+      ~EyeDataDict.set_with_mask
+      ~EyeDataDict.setdefault
+      ~EyeDataDict.update
+      ~EyeDataDict.values
+   
+   
+
+
+   .. rubric:: Details

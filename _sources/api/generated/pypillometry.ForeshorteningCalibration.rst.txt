@@ -1,0 +1,25 @@
+﻿ForeshorteningCalibration
+=========================
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: ForeshorteningCalibration
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ForeshorteningCalibration.evaluate_spline
+      ~ForeshorteningCalibration.get_correction_factor
+   
+   
+
+
+   .. rubric:: Details

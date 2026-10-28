@@ -1,0 +1,6 @@
+﻿get\_available\_datasets
+========================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: get_available_datasets

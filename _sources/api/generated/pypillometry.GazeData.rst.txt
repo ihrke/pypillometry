@@ -1,0 +1,61 @@
+﻿GazeData
+========
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: GazeData
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~GazeData.add_to_history
+      ~GazeData.blink_stats
+      ~GazeData.blinks_merge_close
+      ~GazeData.copy
+      ~GazeData.downsample
+      ~GazeData.drop_data
+      ~GazeData.drop_original
+      ~GazeData.fill_time_discontinuities
+      ~GazeData.from_eyelink
+      ~GazeData.from_file
+      ~GazeData.get_blinks
+      ~GazeData.get_duration
+      ~GazeData.get_events
+      ~GazeData.get_interpolated_blinks
+      ~GazeData.get_intervals
+      ~GazeData.get_segments
+      ~GazeData.get_size
+      ~GazeData.interpolate_intervals
+      ~GazeData.mask_as_intervals
+      ~GazeData.mask_eye_divergences
+      ~GazeData.mask_intervals
+      ~GazeData.mask_offscreen_coords
+      ~GazeData.merge_eyes
+      ~GazeData.merge_masks
+      ~GazeData.nblinks
+      ~GazeData.nevents
+      ~GazeData.print_history
+      ~GazeData.reset_time
+      ~GazeData.scale
+      ~GazeData.set_blinks
+      ~GazeData.set_event_onsets
+      ~GazeData.set_events
+      ~GazeData.set_experimental_setup
+      ~GazeData.stat_per_event
+      ~GazeData.sub_slice
+      ~GazeData.summary
+      ~GazeData.unscale
+      ~GazeData.write_file
+   
+   
+
+
+   .. rubric:: Details

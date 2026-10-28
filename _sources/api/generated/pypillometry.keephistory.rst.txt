@@ -1,0 +1,6 @@
+﻿keephistory
+===========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: keephistory

@@ -1,0 +1,30 @@
+﻿SegmentedEyeData
+================
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: SegmentedEyeData
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SegmentedEyeData.baseline_correct
+      ~SegmentedEyeData.from_eyedata
+      ~SegmentedEyeData.from_file
+      ~SegmentedEyeData.from_masked_array
+      ~SegmentedEyeData.plot
+      ~SegmentedEyeData.summary
+      ~SegmentedEyeData.write_file
+   
+   
+
+
+   .. rubric:: Details

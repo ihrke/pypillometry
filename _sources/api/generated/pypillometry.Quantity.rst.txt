@@ -1,0 +1,24 @@
+﻿Quantity
+========
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: Quantity
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Quantity.to
+   
+   
+
+
+   .. rubric:: Details

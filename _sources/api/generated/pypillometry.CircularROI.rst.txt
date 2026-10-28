@@ -1,0 +1,27 @@
+﻿CircularROI
+===========
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: CircularROI
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~CircularROI.contains
+      ~CircularROI.from_degrees
+      ~CircularROI.from_mm
+      ~CircularROI.plot
+   
+   
+
+
+   .. rubric:: Details

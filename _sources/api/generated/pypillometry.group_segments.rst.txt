@@ -1,0 +1,6 @@
+﻿group\_segments
+===============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: group_segments

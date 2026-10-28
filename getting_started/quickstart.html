@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Quickstart &#8212; pypillometry v2.0a2</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../_static/documentation_options.js?v=13c34846"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'getting_started/quickstart';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Command-line tools" href="cli.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.0a2" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command-line tools</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Getting started</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Quickstart</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="pp-notebook-banner">
+  <span>This page was generated from a Jupyter notebook.</span>
+  <a href="https://github.com/ihrke/pypillometry/blob/master/docs/getting_started/quickstart.ipynb">View on GitHub</a>
+  <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/getting_started/quickstart.ipynb">
+    <img alt="Binder badge" src="https://mybinder.org/badge_logo.svg"
+         style="vertical-align:text-bottom">
+  </a>
+</div><section id="Quickstart">
+<h1>Quickstart<a class="headerlink" href="#Quickstart" title="Link to this heading">#</a></h1>
+<p>This page walks through a typical analysis: load a recording, look at it, deal with blinks, filter the signal and compute the average pupil response to an event. Every step links to a page with more details.</p>
+<p>We start by importing the package. <code class="docutils literal notranslate"><span class="pre">u</span></code> holds the units (e.g., <code class="docutils literal notranslate"><span class="pre">u.ms</span></code>, <code class="docutils literal notranslate"><span class="pre">u.sec</span></code>) that can be attached to times and distances. By default, <code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> logs every step; here we only show warnings.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">logging_set_level</span><span class="p">(</span><span class="s2">"WARNING"</span><span class="p">)</span>  <span class="c1"># show only warnings, not every step</span>
+</pre></div>
+</div>
+</div>
+<section id="Load-data">
+<h2>Load data<a class="headerlink" href="#Load-data" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">pypillometry</span></code> comes with a few example datasets. <code class="docutils literal notranslate"><span class="pre">rlmw_002_short</span></code> is the first 40 seconds of a binocular recording from a reinforcement-learning task, recorded with an Eyelink eye tracker at 500 Hz.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002_short"</span><span class="p">)</span>
+<span class="n">d</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">EyeData — <span style="color:#555;">rlmw_002_short</span></h3>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Samples</div>
+      <div style="font-weight:600;">20,465</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+      <div style="font-weight:600;">500.0 Hz</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Duration</div>
+      <div style="font-weight:600;">0.68 min (start 0.00, end 0.68)</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Eyes</div>
+      <div style="font-weight:600;">left, right</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Variables</div>
+      <div style="font-weight:600;">left_x, left_y, left_pupil, right_x, right_y, right_pupil</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Events</div>
+      <div style="font-weight:600;">40</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Blinks</div>
+      <div style="font-weight:600;"></div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
+      <div style="font-weight:600;">2.0MiB</div>
+    </div>
+
+  </div>
+
+
+  <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil</div>
+        <img src="data:image/png;base64,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" alt="left_pupil sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_x</div>
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAA8CAYAAADPLpCHAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjExLjIsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvgI3uAAAAAAlwSFlzAAAPYQAAD2EBqD+naQAAEw5JREFUeJztXQmQFOUVfrs7s/fJwrLLAgssBOVQQEWioqEMBtSklJioRQ5zEFOaxCSmjLmMiSaVaKx4JFoxpkyw4hFzmAomiIAHQUBBQG7YXZYF9mTP2fuYSX1/9+t509PT05OCZentr4qa2dne6e7///7vfe/9b4akUCgUIg8eXILks30BHjycTniE9uAqeIT24Cp4hPbgKniE9uAqeIT24Cp4hPbgKniE9jAsON7STUdPdZ3x8yR5GysehgNT7n1VPVb/4rozeh5PoT24Ch6hPbgKHqE9uAoeoc8RNHT00rmKgaHgsJ3LI/Q5gNq2Hrr05xvo5e3H6VxEa1e/8fxMN3e6gtDt3QPUOzDk6NhnNx9VBDkTCPQOOD72mU1V9P1/7HF0bGffoHrcWtUS85gX362hV3aedESYX649SBWNnTRcaOkOE7q739k8uY7Qbx1uorV766LC7t6T7VHHXvjTdXTz77bEfc++wSH6yb/20z1//YBON7Cg5t6/jp5+u9LR8Q++eoCe31bj6NjBIY2knX3WCyYYDNG9f99D33xpFy144HV6fX9DzPfCsU+9WUlfe/59cory7/+bHn7tIK35oJZe/SByTqxw14s76YkNR+hfu2vpUH2AWjr7oxbnmYKPRiie23KMOnoGaNmcEuO1xb98g/qHgqqW+eahRjWB7/9wqfrd7hPRRDejrdu5giaKVl2FHt9QQV+5stz22MEEPWWPHn1ikeFYS7d6XLV4Kv1+01HadbyVls4ab3ksxg/oG3R+DUPBED35ZiWx+F8x/RrKy/THPP6fu2ojfn5q5QLjeaB3kMbn0uhTaJA5YJpAngzgNxsrFEF5shMhXWZqymm3GZgopwpU0ZRYuO/T75HPYcYHJ9rU4x0fmU7nFedQZ4zjtPfSCe1w3NjC+FPCVOnQ7/lIQ4D+uetk3PeQc3SmFXrEErq9Z4C6xM2bvSFnzl39zgeotUubiKy0cGCqauq0DdF2eK+6RdkM2CDpn+MpsCSmE8/bO2hP6JNtPZSf6aeCrFTKTvNFCYFE39BQlDjYgZU8SbzGY77012/TXS/uSojQck5HFaGhAnI1NwX6In7fr/vK7j7nCt2mK3RWWlih/7ythr7z8u7/K/uub+81/H6HIFt3HPUbEOHeLvSj/6GyqZN6+oO2hB4YDFGqrqDZ6T5b0vTr52OlZsDvYnGbwe+VJBhtFwGsSnS94lyx7mFUKLQcuBrdJ5pVMJGsuVX30Om+MKFhW3CuU3riguf45wQpyUlG6JUT1RPnmgaC4cVjR77FD71BVz/yllHB6Y4RjUAitgTZaT7bsM4LyLyQvv7CTlrx1DtRx3dZCAYigIxIvEjYKpqB689J91FJXnrEwnA1oVGr3HW8zZggEBVhEZUJgAlnVoJEPBl76EFBqPYe7TUuY13/xCa68CfrHL0fk/Foc3fEBMdbZFKhnSxIDtkgoVUkwVik+rSpBHHsFJTJZ2U5rJJmHt8kYTpw37A55mMAKzHAAs9N99OW711NH5tdTKOC0Lf98T264bebo1Y5T05zl2Y5eIUP6JaDSZqI5ZDqxBNQ0RhQj8dbegzVjQcmIxIsqdCxlJQxGAyf30kOwAqNaoMM3wyQ05+iDUxcD21hcVg0rMDXpwcjY04k+eUCktZLLsiM05iInxOErtAJhDqpXOW8+pt1hYZAYWKZFExSJ+BJkCGSz3VEV+iZ43PU4+GG+JUInmwopFRoO8uBczeLnTOrkB51HnEMxgOVBfhrK8uRleZMoSXsjreKgHhNzhFXPWIpNEQnwz88hB4xdWifmhBN6eQqZ+U71dkXMSlhhXZeW+61CLdM8tVbjtGM8TlGBOjXqwF2YOLiWnCdeRl+rToTg9BQ2ln3rSXheOKqOVDf0RNBHlQWpo3Loo13f0Q7/2AowkN32Sp0+NpgX5KSkmxtG5Mdx0UQWoy7jE5WhMaG2HAResQoNIdMrGY7hWZC8qTJPoF46Ncnkz0sbEVjoE8REfjRK3spqHtUKyXDotpa1WwkpKycOFbbMEhTP/fEICkSW0lm+R52ONEaJnS1/qmPFnHfykOnhD00FhSi2MH6DlUliRyD6AqLXeWBx1l6d5Dcao5iJYV1bb2U5k92N6ERojHoDF+ydiltpioDKwTIBPVhEvNkSA8dr/RmTohQRwWmjs0yjmHltyI0ynu3PL2VXt1TF6GumuUYpHE5abaJnlXS5aQui96THP3eD9Zr1ixFKKby0D720H7DDi17dJOqkliNgVNCM1m5FImFg9faevppbLZ2v9JuWfXUYEG6WqHhk7Eh8dBrB6NKYPDEHVYK3dVPxXnp6vlhkbBJyxFvs0CSVda1P7OojKYUZka0aZqTJyyWnTVaFWbHsVb1yNYC74dQjkwetxGL0HKhpvmSVVSKZTnk5gwIMVZfLAfqOtRjssjSpIfOSdeILy2BhLwvJrdRybAoqXEEYa3ABg576KKcNIPgdvkD5sXVSSGH0LcONUVZDq4LF2T61QBzyQoKjTqmTOCgEDIp7O0P0u7jbfTXHSci1D9KoQeD9H6NRkpg6thMevzW+eo5k5HJv726hdbtq6djzd3qunBObEJAWbv1idTKi0FK96dQZqovZlIoCY0FXJCZSk3CSqFZacWTm9XfSyuC9x6bnRqh0FDFjQcb1HuieYkJPT5XG6PGgHX/tFTo/+yto0t+tt5o+LIKcMdbI+v/E/IzVMkO8wRyYyNHKjzvaprhyqQQKvfIusNUr6tgkT74sjasFLp3QPlakBkhDAqEAZyQl2EoNAYTBJcKvaOmhVat3qHIDMVceWlZxPn7uDFnKKg+gQw123D3VVSUkx6RdMqJv/X3WxW5b79qmvr5ziXlqmNv1ertht/G9YF0UF30iaw/0EB7a9vp4iljaOXCyYaaSkLjb6cXZRvlQqgct5M+uv4wff6yKRHXk5eRqhYB18tRvvviH7dT+bgsRbJcv2Y1OIpJ3433Zrsmk0JEGkSqxzYcMV5DBEAugXrxqiun0f5aLSIwFk4dQ0+/XaWi1fI5xeoesBBvvmSSWuy8q2kGFrvrFBqZ8rajzUpB1c/id0aS1z2gLEduhl8NAiaOE7+SfF2hGzqprDBLkUcmhS+8e1ypHhp02B7EUuiAvmhAZqAwK9WIErLKkazH4Wc3V9OkMRn0hcun0hO3zqd3KptVfzL+BmsRiSATetvRFtVxBmLAb39l9Xa1CNsj/D4pMvx7Tz39bccJo8FoxYJS+t3bVVEtrgjZTMqFU8YYr1c2dak8gq89N91HWakptE8QsU5sglhZDgmQc/uxVkVylAf313XQmCwtOgCLpoXPPWlMJj12yzwlOsgvYCXNCs3K7FrLsVy0g0pV5BCL8AUlA9mwRY3BatKPY4VGOB2blaoGSaoemozQNjl/coERRtfvb6AH1+xXPcBGlUNP4pggvNhgF8yTHRI/XzAxXz2//oISmqArIZSTk9c0fwql6dvqX7piqnr87RsVtG5/A9301Duqb0QSujRfu5+7X95NWyub1WL4xYoL6KaLJtJ/K05FjFu6L9m41xvml0b87kBdwLAcSUlJSqVl33h1c7ciGyo0PJY81mY8t/WYujeoOjceXVZeaPweY3DbZVPoz1++lO5ddh6V5GXQrz59Ib15qIkW/nx9lHdnEXKl5QA+uWAiVZ3qVFn6f/bWq5CH0M8JHVZ4R49W0033JytCc8mOBwcJIv4G6i23sYGZ47MV0V96r4Y++4dttOlImBiTx2RGlNmQxElAYRk4BtYFj9PGZlHVqS66pKzAIM21c0vomf8epRlF2Wph4v3w9zPGZ9OhhgDdOL9UKRw876ySXLWI2PsDIQrRsjnFtHZfvYomj2+soIvLCtQW9veWn2dEMQai1Yr5pVTd3EUfv7Ak4tMuuE6/uPaSvAzarSs+kjZ4/j0n2+nxDUeM5BvAAkGUwLXCPnzrpV2qr/yOJdPV382bnK/GbPWWalqjN/aDmPd/YnbEtS2ZWURfWzKdfvNGhRonLEzORSYVZFJVk/aaKwmNxvAHb5hLz22pVjVgJCUP3XSB8XsQGAONcKZZjiFj25uTQqgbkpGkpOgEJD8zlZbPLVZeE6H/ZzfOUaqJkMjlJbYcXBFg+MRko5uP/eZdH51Bc0rz1OQwvvOxmbRyURlVNnbSlqpmtd0MQsOOPHrzPLVRBE+JHpSrzy9Sij3vp68bf491CNv0jzsup7V76+mJjUfokxdNVL8rzE6j+z8+i9YfaFReH0kYFukDN8yJul8QDvVtrkMDUH5WeFz7w68dIoZMlpGrwE7cuWS6+vlPX1yovDcWoKyiyPf2CVsmgagBQtc0d1F+ht8g9D3LZtK1c4vp6vOtP3Dgmp3CvMywL8PHdAD4QCY0FBohHCp8KtCvVrhUVNRbrSoZSBZB4B9cN8t47Z3KU4Y/h81ANMBuJNuGyN1KMkjP1QosrPJx2RHH4jXUr2UXIM4L9eZJZ0vzqYsmqYUGf4vXatt7jYQSgFLjn8Rtl09V/5Y/tkkRGpZDAou7rr2Xygo1Qkv/P3WcVldHWe32K6fRvtp2evdoixovjAFUFgk3ogrbHm3sUtU/M6T6+/X9AjO4Bo9S5uTCLHWPXHWZPSGPhgtnbWNl2exiemHVIrVhwLtfUBsQGMqRm+FTkwgLgomDL5SfmoC6cubMnWaA1YSw9+ZeaJAVnjfHZDmk+oD0XDK083+SSObdsEdvmUev3Hk5TdZr3Lvuu4ae/tzF6rnT9mvYLvVoCtnrv30V7f7xNcYil2NTri8+LG4s0idXXkTbf7hU5RYAohuA5NtJ9UEqtFRuCSxWngck2Ax5Xa4mNG7+w+WFqpmGv8QPIRgbDRhozUNrluNkW7dSEklcSeg0MWgId2ZwKQtQCg3L0RfbcsA6IIHkzja7DF36bjnxwMSCTJo3SUskmQzyeCfg42UPN4BxwxhxFJDEmaYrdIpJTXmLn3cdkX/wgrGDHPdYQGRCRAAm6LmO+tvRQmipmAiZKDVh8wAJIJwElEdLCoMq5E4syIiYNEwkK2em+AQKVMkMEJ9LT9npfqW+ASuF1gnApOdtXDOZJOQ1pZ0mckQeb1/24kUp33eynvwiiTSrKMC7jkCiCm0Hth34KFj4+kcdoX1KKeC1MLi89SwVuratV9kGGd5BOlYXSUwzScPn0SYuW3/ERg2HXobRU5zuU5spTOiM1GRnhLYh/v87wXzHsZSU70GOjT8lmQ4+sIy+vFgrHTJQ2wdQtUmE0E5tw3i9pi8FQFZVRkX7KJdzinLTlOJy6yjXoUE8dJaVFmREtDCCuDwZsp4cawB5kLHxYlYsc1LICs0e2o6okqBO7IQT0kuw1Y4VJXgBm0mXbkFU9tuoIGEo4ePtok+ii3CKvlCGaxNlZCq0vpkBhUZVg6HtFCarmjUgs3Gzh4b6sn+LBR5k7nXgc0jwYsB7Y3ucqxx2E5R6hhWaOwjNSSGD/TDvaNqB7w8VEl4ATjy0021rVv7h1eSRptD6hIBosprAloObhKDQEprl0I7H5Kz5xhVRnwyXYCXinmVgnN7+yAh/jAmN+j3GBwLsqhwRCu3EQyeYJHE1JJaS8lcy2H2MisFdcVB1JNKIQk528GR7rR1QQgQaOmLPg+sVmj0tFFaqBewAKzaEhZX1L7d/WG3FonLBk4FkDj0ZdvVOJptU6EK9g43BVQFck6pyiDq0Mw8dfzil13UCrlfHihI8ZuavJbACb2HPKc01FqIT9eVkLx5QpeKIiV3P0anQwnKwgsBXw8/yZBXnhkMkur2eX7VIPeffOyEJk1+qsmy6Ue+nTzKsg0oKB4eUotolNhF1aAeWQ+YBCSl0DPVnQsZq25RA9x//lxCJWA6ngMhgb2H+5Hz66lXlUR2Mo4LQKNcxoYf0rjBz7dVsNxiGQjsI4zzxbHGsCPjgjXPo/JLciJ3CeBOeaFKYKNDzAcSyBnxOq0+D24EXqVN/jO18O0vHwN4CQ35D1aixHGEPHbYcrNpcaptZrH0S24ywh46vek7UHLblW0s/pEjKO4XxJlxuBZ+Jz82FFdr6Onixzy1NbHuZ2wacEhq9GuiPHuk4+wqtExpk4h3D8iJt6xbfPIrQaO5zMG9Vx+ovkOCJ46+mtQNUD6VCfBJ89gT7r8qM1cRzuhCvbIfOup0/Wmq5oeTkKxjMlZ5zHWed0GhbzPSnqKSH1QgN+lzpWLFA60CzApMzVgeYxBQ9YYGKwsbK2rUZi2eMo8vKG1UydN/14SanWLj54kmUkqJ9pMopeHvaadnOTv3lzpxTcC+03GRxBUIjCPtOtofKvrsmtONYi6PjBwaHQve8vDvU0N4T99ihoWBo85Em9byjpz8U6B0InS1UNgZCbV39jo6taAyE7ntlTygYDJ7Wayj77hr1D+PiJoy4/3gT9dREd9M8jNz/CHPUWQ4zPDIPDz56flHUl964ASNOoT14OKfLdh48nE54hPbgKniE9uAqeIT24Cp4hPbgKniE9uAqeIT2QG7C/wA7gHuNI011RAAAAABJRU5ErkJggg==" alt="left_x sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_y</div>
+        <img src="data:image/png;base64,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" alt="left_y sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_pupil</div>
+        <img src="data:image/png;base64,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" alt="right_pupil sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_x</div>
+        <img src="data:image/png;base64,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" alt="right_x sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">right_y</div>
+        <img src="data:image/png;base64,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" alt="right_y sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+    </div>
+  </details>
+
+
+
+
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Data glimpse</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">EyeDataDict(vars=6,n=20465,shape=(20465,)):
+  left_x (float64): 655.6, 655.7, 655.0, 654.5, 655.0...
+  left_y (float64): 599.9, 598.9, 597.6, 597.8, 597.8...
+  left_pupil (float64): 1121.0, 1122.0, 1124.0, 1126.0, 1126.0...
+  right_x (float64): 773.1, 773.8, 774.8, 776.3, 776.7...
+  right_y (float64): 594.2, 593.9, 596.5, 597.4, 597.3...
+  right_pupil (float64): 949.0, 951.0, 956.0, 959.0, 960.0...
+</pre>
+  </details>
+
+
+
+  <details>
+    <summary style="cursor:pointer; font-weight:600;">Recent history</summary>
+    <ol style="margin-top:8px;">
+
+      <li>reset_time()</li>
+
+    </ol>
+  </details>
+
+</div></div>
+</div>
+<p>The result is an <code class="docutils literal notranslate"><span class="pre">EyeData</span></code> object holding pupil size and gaze position (x, y) of both eyes, the time vector, the events (triggers sent by the experiment) and a description of the experimental setup. At the bottom, you can see the history of all operations applied to the data.</p>
+<p>Your own Eyelink files are read with <code class="docutils literal notranslate"><span class="pre">EyeData.from_eyelink()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_eyelink</span><span class="p">(</span><span class="s2">"recording.edf"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="../user_guide/loading_data.html"><span class="doc">Loading data</span></a> for other formats.</p>
+<p>The data is stored under keys of the form <code class="docutils literal notranslate"><span class="pre">&lt;eye&gt;_&lt;variable&gt;</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">eyes</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span>
+<span class="n">d</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">][:</span><span class="mi">10</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;left&#39;, &#39;right&#39;] [&#39;x&#39;, &#39;y&#39;, &#39;pupil&#39;]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+masked_array(data=[1121.0, 1122.0, 1124.0, 1126.0, 1126.0, 1124.0, 1123.0,
+                   1122.0, 1122.0, 1122.0],
+             mask=[False, False, False, False, False, False, False, False,
+                   False, False],
+       fill_value=nan)
+</pre></div></div>
+</div>
+</section>
+<section id="Look-at-the-data">
+<h2>Look at the data<a class="headerlink" href="#Look-at-the-data" title="Link to this heading">#</a></h2>
+<p>All plotting functions are available under <code class="docutils literal notranslate"><span class="pre">d.plot</span></code>. Here we plot the pupil size of both eyes for the first 20 seconds; the vertical lines mark events and the shaded areas are blinks (none have been detected yet).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/getting_started_quickstart_7_0.png" src="../_images/getting_started_quickstart_7_0.png" />
+</div>
+</div>
+<p>For long recordings, the interactive viewer is faster: <code class="docutils literal notranslate"><span class="pre">pp.view(d)</span></code> opens the data in a separate window (see <a class="reference internal" href="../user_guide/viewer.html"><span class="doc">Interactive tools</span></a>).</p>
+</section>
+<section id="Events">
+<h2>Events<a class="headerlink" href="#Events" title="Link to this heading">#</a></h2>
+<p>The events are the triggers that the experiment software sent to the eye tracker. <code class="docutils literal notranslate"><span class="pre">get_events()</span></code> returns them as an <code class="docutils literal notranslate"><span class="pre">Events</span></code> object, which displays as a table:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">events</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_events</span><span class="p">()</span>
+<span class="n">events</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (ms)</th>
+      <th>Label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5177.0</td>
+      <td>F_1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5677.0</td>
+      <td>S_1_1_5</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>6773.0</td>
+      <td>C_1_5_2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>7010.0</td>
+      <td>R_1_15</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>8776.0</td>
+      <td>F_2</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>9575.0</td>
+      <td>S_2_6_2</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>10581.0</td>
+      <td>C_2_6_1</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>10808.0</td>
+      <td>R_2_20</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 8 events | Data range: [0.0, 40928.0] ms</p></div>
+</div>
+<p>In this task, each trial has four events whose labels start with <code class="docutils literal notranslate"><span class="pre">F</span></code>, <code class="docutils literal notranslate"><span class="pre">S</span></code>, <code class="docutils literal notranslate"><span class="pre">C</span></code> and <code class="docutils literal notranslate"><span class="pre">R</span></code>, followed by the trial number and some trial-specific information. <code class="docutils literal notranslate"><span class="pre">filter()</span></code> selects events, e.g., all labels containing <code class="docutils literal notranslate"><span class="pre">&quot;S_&quot;</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">events</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Onset (ms)</th>
+      <th>Label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5677.0</td>
+      <td>S_1_1_5</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>9575.0</td>
+      <td>S_2_6_2</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>12574.0</td>
+      <td>S_3_2_1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>16473.0</td>
+      <td>S_4_4_1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>20388.0</td>
+      <td>S_5_3_5</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>23987.0</td>
+      <td>S_6_4_5</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>27002.0</td>
+      <td>S_7_3_1</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>30601.0</td>
+      <td>S_8_6_5</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>34799.0</td>
+      <td>S_9_4_6</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>38415.0</td>
+      <td>S_10_2_5</td>
+    </tr>
+  </tbody>
+</table><p style="font-size: 0.9em; color: #666; margin-top: 8px;">Total: 10 events | Data range: [0.0, 40928.0] ms</p></div>
+</div>
+<p>More in the <a class="reference internal" href="../notebooks/events.html"><span class="doc">Events tutorial</span></a>.</p>
+</section>
+<section id="Blinks">
+<h2>Blinks<a class="headerlink" href="#Blinks" title="Link to this heading">#</a></h2>
+<p>During blinks, the eye tracker loses the pupil. <code class="docutils literal notranslate"><span class="pre">pupil_blinks_detect()</span></code> finds blinks, and <code class="docutils literal notranslate"><span class="pre">apply_mask=True</span></code> marks (masks) the affected samples so that they are ignored in later steps. Short gaps between blinks are merged with <code class="docutils literal notranslate"><span class="pre">blinks_merge_close()</span></code>.</p>
+<p>Most methods return the object itself, so the steps can be chained into a pipeline:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
+ <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">blink_stats</span><span class="p">())</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>n</th>
+      <th>mean</th>
+      <th>sd</th>
+      <th>min</th>
+      <th>max</th>
+      <th>total_duration</th>
+      <th>units</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>left</th>
+      <td>13</td>
+      <td>235.230769</td>
+      <td>260.023121</td>
+      <td>48.0</td>
+      <td>984.0</td>
+      <td>3058.0</td>
+      <td>ms</td>
+    </tr>
+    <tr>
+      <th>right</th>
+      <td>13</td>
+      <td>138.0</td>
+      <td>84.85644</td>
+      <td>44.0</td>
+      <td>404.0</td>
+      <td>1794.0</td>
+      <td>ms</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">pupil_blinks_interpolate()</span></code> then replaces the pupil size during blinks with a smooth interpolation (Mathôt, 2013). The interpolated samples stay masked, so you can still tell them apart from the recorded ones.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">();</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">sec</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/getting_started_quickstart_15_0.png" src="../_images/getting_started_quickstart_15_0.png" />
+</div>
+</div>
+<p>Blink detection often needs some tuning per participant. The <a class="reference internal" href="../notebooks/blinks.html"><span class="doc">blinks tutorial</span></a> shows how to check and adjust it.</p>
+</section>
+<section id="Filtering">
+<h2>Filtering<a class="headerlink" href="#Filtering" title="Link to this heading">#</a></h2>
+<p>Pupil size changes slowly, so high-frequency noise is usually removed with a low-pass filter (here, 4 Hz):</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">4</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Every step was recorded in the object’s history:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">print_history</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+* rlmw_002_short
+└ reset_time()
+ └ pupil_blinks_detect(apply_mask=True)
+  └ blinks_merge_close(distance=100 ms,apply_mask=True)
+   └ pupil_blinks_interpolate()
+    └ pupil_lowpass_filter(cutoff=4)
+</pre></div></div>
+</div>
+<p>Note that these operations changed <code class="docutils literal notranslate"><span class="pre">d</span></code> itself (they work <em>in place</em>). Use <code class="docutils literal notranslate"><span class="pre">inplace=False</span></code> or <code class="docutils literal notranslate"><span class="pre">d.copy()</span></code> to keep the original; see <a class="reference internal" href="../user_guide/data_model.html#pipelines-and-history"><span class="std std-ref">Pipelines and history</span></a>.</p>
+</section>
+<section id="Event-related-pupil-dilation">
+<h2>Event-related pupil dilation<a class="headerlink" href="#Event-related-pupil-dilation" title="Link to this heading">#</a></h2>
+<p>How does the pupil respond to the stimulus? The short example contains only ten trials, so we switch to the full 20-minute recording of the same participant (about 300 trials). It is downloaded once (37 MB) and then cached. We apply the same steps as above, this time as a single pipeline:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">get_example_data</span><span class="p">(</span><span class="s2">"rlmw_002"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
+ <span class="o">.</span><span class="n">blinks_merge_close</span><span class="p">(</span><span class="n">distance</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">apply_mask</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
+ <span class="o">.</span><span class="n">pupil_blinks_interpolate</span><span class="p">()</span>\
+ <span class="o">.</span><span class="n">pupil_lowpass_filter</span><span class="p">(</span><span class="n">cutoff</span><span class="o">=</span><span class="mi">4</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>First, <code class="docutils literal notranslate"><span class="pre">get_intervals()</span></code> selects a time window around each stimulus event, from 500 ms before until 2500 ms after its onset. The result is an <code class="docutils literal notranslate"><span class="pre">Intervals</span></code> object (see the <a class="reference internal" href="../notebooks/intervals.html"><span class="doc">Intervals tutorial</span></a>):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">intervals</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"S_"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">2500</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">intervals</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Intervals &#39;S_&#39; | 300 intervals (total duration: 900000.00 ms), 3000.00 ms +/- 0.00 ms, [3000.00 ms, 3000.00 ms] | fs=500.0Hz
+</pre></div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">get_segments()</span></code> cuts these windows out of one variable, here the pupil of the right eye. After subtracting the mean of the 500 ms before the stimulus from each segment (baseline correction), <code class="docutils literal notranslate"><span class="pre">plot()</span></code> shows the average response with its standard error:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">erpd</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_segments</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="s2">"right_pupil"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"stimulus"</span><span class="p">)</span>\
+        <span class="o">.</span><span class="n">baseline_correct</span><span class="p">((</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">erpd</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width:400px;">
+  <h3 style="margin-top:0;">SegmentedEyeData — <span style="color:#555;">stimulus</span></h3>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px;">
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Intervals</div>
+          <div style="font-weight:600;">S_</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Variable</div>
+          <div style="font-weight:600;">right_pupil</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Segments</div>
+          <div style="font-weight:600;">300</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Time points</div>
+          <div style="font-weight:600;">1,500</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Window</div>
+          <div style="font-weight:600;">-500 to 2500 ms</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Missing</div>
+          <div style="font-weight:600;">6.5%</div>
+        </div><div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+          <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+          <div style="font-weight:600;">500 Hz</div>
+        </div>
+  </div>
+
+    <div style="margin-top:10px;">
+      <div style="font-size:0.85em; color:#666; margin-bottom:4px;">Mean signal (red line = event onset)</div>
+      <img src="data:image/png;base64,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" alt="Mean signal" style="width:100%; max-width:300px; border-radius:4px;">
+    </div>
+
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">erpd</span><span class="o">.</span><span class="n">plot</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/getting_started_quickstart_26_0.png" src="../_images/getting_started_quickstart_26_0.png" />
+</div>
+</div>
+<p>The pupil first constricts (a light response to the stimulus on the screen) and then dilates. The orange line (right axis) shows the percentage of masked samples, e.g., interpolated blinks, at each time point.</p>
+<p>With several participants, <code class="docutils literal notranslate"><span class="pre">pp.group_segments()</span></code> combines their responses into a group-level curve (see the <a class="reference internal" href="../notebooks/erpds.html"><span class="doc">ERPD tutorial</span></a>).</p>
+<p>Instead of whole curves, <code class="docutils literal notranslate"><span class="pre">stat_per_event()</span></code> computes one number per trial, e.g., the mean pupil size in the second after each stimulus. This is useful for statistical models of trial-by-trial data:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">means</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">stat_per_event</span><span class="p">(</span><span class="n">interval</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">event_select</span><span class="o">=</span><span class="s2">"S_"</span><span class="p">,</span>
+                         <span class="n">variables</span><span class="o">=</span><span class="s2">"pupil"</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">means</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+
+<span class="c1"># ## Save the result</span>
+<span class="c1">#</span>
+<span class="c1"># `write_file()` saves the processed object including its history; read it</span>
+<span class="c1"># back with `pp.EyeData.from_file()`:</span>
+<span class="c1">#</span>
+<span class="c1"># ```python</span>
+<span class="c1"># d.write_file("subject01.pypil")</span>
+<span class="c1"># d = pp.EyeData.from_file("subject01.pypil")</span>
+<span class="c1"># ```</span>
+<span class="c1">#</span>
+<span class="c1"># ## Next steps</span>
+<span class="c1">#</span>
+<span class="c1"># - The [User guide](../user_guide/index.rst) explains the concepts used here</span>
+<span class="c1">#   in more detail.</span>
+<span class="c1"># - The [Tutorials](../tutorials/index.rst) contain worked examples for</span>
+<span class="c1">#   specific tasks.</span>
+<span class="c1"># - The [API reference](../api/index.rst) lists all classes and functions.</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>left_pupil</th>
+      <th>right_pupil</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1002.4</td>
+      <td>831.1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1180.9</td>
+      <td>965.9</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1270.0</td>
+      <td>1077.6</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1152.7</td>
+      <td>955.7</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1098.4</td>
+      <td>912.2</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="installation.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Installation</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="cli.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Command-line tools</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Load-data">Load data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Look-at-the-data">Look at the data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Events">Events</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Blinks">Blinks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Filtering">Filtering</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Event-related-pupil-dilation">Event-related pupil dilation</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/getting_started/quickstart.ipynb">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/getting_started/quickstart.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

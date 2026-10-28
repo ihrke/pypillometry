@@ -1,0 +1,30 @@
+﻿GazePlotter
+===========
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: GazePlotter
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~GazePlotter.plot_calibration
+      ~GazePlotter.plot_heatmap
+      ~GazePlotter.plot_intervals
+      ~GazePlotter.plot_masked
+      ~GazePlotter.plot_scanpath
+      ~GazePlotter.plot_timeseries
+      ~GazePlotter.plot_timeseries_segments
+   
+   
+
+
+   .. rubric:: Details

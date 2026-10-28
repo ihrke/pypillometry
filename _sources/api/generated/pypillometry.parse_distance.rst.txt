@@ -1,0 +1,6 @@
+﻿parse\_distance
+===============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: parse_distance

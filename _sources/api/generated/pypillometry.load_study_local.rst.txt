@@ -1,0 +1,6 @@
+﻿load\_study\_local
+==================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: load_study_local

@@ -1,0 +1,65 @@
+﻿PupilData
+=========
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: PupilData
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PupilData.add_to_history
+      ~PupilData.blink_stats
+      ~PupilData.blinks_merge_close
+      ~PupilData.copy
+      ~PupilData.downsample
+      ~PupilData.drop_data
+      ~PupilData.drop_original
+      ~PupilData.fill_time_discontinuities
+      ~PupilData.from_eyelink
+      ~PupilData.from_file
+      ~PupilData.get_blinks
+      ~PupilData.get_duration
+      ~PupilData.get_events
+      ~PupilData.get_interpolated_blinks
+      ~PupilData.get_intervals
+      ~PupilData.get_segments
+      ~PupilData.get_size
+      ~PupilData.interpolate_intervals
+      ~PupilData.mask_as_intervals
+      ~PupilData.mask_intervals
+      ~PupilData.merge_eyes
+      ~PupilData.merge_masks
+      ~PupilData.nblinks
+      ~PupilData.nevents
+      ~PupilData.print_history
+      ~PupilData.pupil_blinks_detect
+      ~PupilData.pupil_blinks_interpolate
+      ~PupilData.pupil_estimate_baseline
+      ~PupilData.pupil_estimate_response
+      ~PupilData.pupil_lowpass_filter
+      ~PupilData.pupil_merge_eyes
+      ~PupilData.pupil_smooth_window
+      ~PupilData.reset_time
+      ~PupilData.scale
+      ~PupilData.set_blinks
+      ~PupilData.set_event_onsets
+      ~PupilData.set_events
+      ~PupilData.stat_per_event
+      ~PupilData.sub_slice
+      ~PupilData.summary
+      ~PupilData.unscale
+      ~PupilData.write_file
+   
+   
+
+
+   .. rubric:: Details

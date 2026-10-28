@@ -1,0 +1,30 @@
+﻿PupilPlotter
+============
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: PupilPlotter
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~PupilPlotter.plot_blinks
+      ~PupilPlotter.plot_intervals
+      ~PupilPlotter.plot_masked
+      ~PupilPlotter.plot_timeseries
+      ~PupilPlotter.plot_timeseries_segments
+      ~PupilPlotter.pupil_plot
+      ~PupilPlotter.pupil_plot_segments
+   
+   
+
+
+   .. rubric:: Details

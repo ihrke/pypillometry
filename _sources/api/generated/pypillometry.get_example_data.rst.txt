@@ -1,0 +1,6 @@
+﻿get\_example\_data
+==================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: get_example_data

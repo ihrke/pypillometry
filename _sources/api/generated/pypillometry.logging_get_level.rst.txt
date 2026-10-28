@@ -1,0 +1,6 @@
+﻿logging\_get\_level
+===================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: logging_get_level

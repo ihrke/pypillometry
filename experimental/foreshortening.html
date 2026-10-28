@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Correcting pupil foreshortening &#8212; pypillometry v2.0a2</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../_static/documentation_options.js?v=13c34846"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'experimental/foreshortening';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../_static/pypillometry_logo_200x200.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Foreshortening Correction for Pupil Size Measurements" href="foreshortening_correction_algorithm.html" />
+    <link rel="prev" title="Experimental features" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.0a2" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="../_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Correcting pupil foreshortening</a></li>
+<li class="toctree-l1"><a class="reference internal" href="foreshortening_correction_algorithm.html">Foreshortening Correction for Pupil Size Measurements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaze_rois.html">Experimental setup and regions of interest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spatial_calibration.html">Spatial calibration</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Experimental features</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Correcting pupil foreshortening</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <div class="pp-notebook-banner">
+  <span>This page was generated from a Jupyter notebook.</span>
+  <a href="https://github.com/ihrke/pypillometry/blob/master/docs/experimental/foreshortening.ipynb">View on GitHub</a>
+  <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath=docs/experimental/foreshortening.ipynb">
+    <img alt="Binder badge" src="https://mybinder.org/badge_logo.svg"
+         style="vertical-align:text-bottom">
+  </a>
+</div><section id="Correcting-pupil-foreshortening">
+<h1>Correcting pupil foreshortening<a class="headerlink" href="#Correcting-pupil-foreshortening" title="Link to this heading">#</a></h1>
+<div class="admonition warning">
+<p><strong>Experimental:</strong> The method works on simulated data, but it has not been validated on real recordings yet, and the API will change. A fitted model cannot yet be applied to the data with a single method call; the correction is applied by hand below.</p>
+</div>
+<p>Video-based eye trackers measure the pupil as it appears to the camera. When the eye looks away from the camera, the pupil is seen at an angle and appears smaller, even though its true size does not change. This <em>pupil foreshortening error</em> can be large compared to the effects of interest, and it is a problem whenever gaze position differs between conditions.</p>
+<p>If <span class="math notranslate nohighlight">\(\alpha\)</span> is the angle between the direction from the eye to the camera and the direction of gaze, the measured pupil size <span class="math notranslate nohighlight">\(A\)</span> is related to the true size <span class="math notranslate nohighlight">\(A_0\)</span> by</p>
+<div class="math notranslate nohighlight">
+\[A(t) = A_0(t) \cdot \cos\alpha(x(t), y(t)),\]</div>
+<p>where <span class="math notranslate nohighlight">\(x, y\)</span> is the gaze position on the screen. <span class="math notranslate nohighlight">\(\alpha\)</span> depends on the geometry of the setup: the distance between eye and screen, and the position of the camera. The details of the model and the fitting procedure are described in <a class="reference internal" href="foreshortening_correction_algorithm.html"><span class="doc">the algorithm description</span></a>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">pp</span><span class="o">.</span><span class="n">logging_set_level</span><span class="p">(</span><span class="s2">"WARNING"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="The-experimental-setup">
+<h2>The experimental setup<a class="headerlink" href="#The-experimental-setup" title="Link to this heading">#</a></h2>
+<p>The geometry is described by an <code class="docutils literal notranslate"><span class="pre">ExperimentalSetup</span></code>: screen resolution and physical size, the distance from the eye to the screen, and the position of the camera relative to the eye, in spherical coordinates (<span class="math notranslate nohighlight">\(\theta\)</span>: angle from the line of sight to the screen center, <span class="math notranslate nohighlight">\(\phi\)</span>: direction around it, <span class="math notranslate nohighlight">\(r\)</span>: distance). Here, the camera sits below the screen (<span class="math notranslate nohighlight">\(\phi = -90°\)</span>), 20° below the line of sight:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">setup</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">ExperimentalSetup</span><span class="p">(</span>
+    <span class="n">screen_resolution</span><span class="o">=</span><span class="p">(</span><span class="mi">1920</span><span class="p">,</span> <span class="mi">1080</span><span class="p">),</span>
+    <span class="n">physical_screen_size</span><span class="o">=</span><span class="p">(</span><span class="s2">"52 cm"</span><span class="p">,</span> <span class="s2">"29 cm"</span><span class="p">),</span>
+    <span class="n">eye_to_screen_center</span><span class="o">=</span><span class="s2">"60 cm"</span><span class="p">,</span>
+    <span class="n">camera_spherical</span><span class="o">=</span><span class="p">(</span><span class="s2">"20 deg"</span><span class="p">,</span> <span class="s2">"-90 deg"</span><span class="p">,</span> <span class="s2">"70 cm"</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">setup</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ExperimentalSetup(
+  screen=1920x1080px
+  physical=520x290mm
+  d=600mm
+  camera: r=700mm, θ=20.0°, φ=-90.0°
+)
+</pre></div></div>
+</div>
+<p>For your own data, set these values with <code class="docutils literal notranslate"><span class="pre">d.set_experimental_setup()</span></code>. Eye-to-screen distance and screen size are easy to measure; the camera angles are harder, which is why the method below estimates them from the data.</p>
+</section>
+<section id="Simulated-data">
+<h2>Simulated data<a class="headerlink" href="#Simulated-data" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">generate_foreshortening_data()</span></code> simulates two minutes of recording: a slowly changing true pupil size <span class="math notranslate nohighlight">\(A_0\)</span>, fixations at random places on the screen, the resulting foreshortening and some measurement noise. The true values are kept in <code class="docutils literal notranslate"><span class="pre">sim_data</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fd</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">generate_foreshortening_data</span><span class="p">(</span><span class="n">experimental_setup</span><span class="o">=</span><span class="n">setup</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>
+                                     <span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">true_pupil</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">sim_data</span><span class="p">[</span><span class="s2">"left_A0"</span><span class="p">])</span>
+<span class="n">fd</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div style="font-family:system-ui, sans-serif; border:1px solid #ddd; border-radius:6px; padding:12px; max-width: min(600px, 50vw); min-width: 300px;">
+  <h3 style="margin-top:0;">FakeEyeData — <span style="color:#555;">supuleku</span></h3>
+
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-bottom:10px;">
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Samples</div>
+      <div style="font-weight:600;">60,000</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Sampling rate</div>
+      <div style="font-weight:600;">500 Hz</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Duration</div>
+      <div style="font-weight:600;">2.00 min (start 0.00, end 2.00)</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Eyes</div>
+      <div style="font-weight:600;">left</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Variables</div>
+      <div style="font-weight:600;">left_x, left_y, left_pupil</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Events</div>
+      <div style="font-weight:600;">0</div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Blinks</div>
+      <div style="font-weight:600;"></div>
+    </div>
+
+    <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0;">
+      <div style="font-size:0.85em; color:#666; text-transform:uppercase;">Size</div>
+      <div style="font-weight:600;">3.2MiB</div>
+    </div>
+
+  </div>
+
+
+  <details open style="margin-bottom:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Signal overview</summary>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; margin-top:8px;">
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_pupil</div>
+        <img src="data:image/png;base64,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" alt="left_pupil sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_x</div>
+        <img src="data:image/png;base64,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" alt="left_x sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+      <div style="background:#f6f6f6; border-radius:4px; padding:6px 8px; border:1px solid #e0e0e0; text-align:center;">
+        <div style="font-size:0.85em; color:#666; margin-bottom:4px;">left_y</div>
+        <img src="data:image/png;base64,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" alt="left_y sparkline" style="height:60px; width:100%; object-fit:cover;">
+      </div>
+
+    </div>
+  </details>
+
+
+
+
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; font-weight:600;">Data glimpse</summary>
+    <pre style="margin-top:8px; background:#f9f9f9; padding:8px; border-radius:4px;">EyeDataDict(vars=3,n=60000,shape=(60000,)):
+  left_x (float64): 179.3079109382324, 179.3079109382324, 179.3079109382324, 179.3079109382324, 179.3079109382324...
+  left_y (float64): 830.902834943248, 830.902834943248, 830.902834943248, 830.902834943248, 830.902834943248...
+  left_pupil (float64): 671.0408184163064, 681.3718232549013, 681.0167318094741, 666.7572984335031, 667.4368546882736...
+</pre>
+  </details>
+
+
+
+</div></div>
+</div>
+<p>The measured pupil size depends on where the eye looks. Points far away from the camera (at the top of the screen) give the smallest values:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">measured</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fd</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">])</span>
+<span class="n">y_px</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fd</span><span class="p">[</span><span class="s2">"left_y"</span><span class="p">])</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">y_px</span><span class="p">[::</span><span class="mi">50</span><span class="p">],</span> <span class="p">(</span><span class="n">measured</span> <span class="o">/</span> <span class="n">true_pupil</span><span class="p">)[::</span><span class="mi">50</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"gaze y (pixels, 0 = top of the screen)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"measured / true pupil size"</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_foreshortening_8_0.png" src="../_images/experimental_foreshortening_8_0.png" />
+</div>
+</div>
+</section>
+<section id="A-simple-correction">
+<h2>A simple correction<a class="headerlink" href="#A-simple-correction" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">correct_pupil_foreshortening()</span></code> uses a simple geometric correction that only needs the eye-to-screen distance. It assumes that the pupil appears undistorted when the eye looks at the screen center, i.e. that the camera is right behind the screen center:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simple</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">correct_pupil_foreshortening</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">simple_pupil</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">simple</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Fitting-the-camera-position">
+<h2>Fitting the camera position<a class="headerlink" href="#Fitting-the-camera-position" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">fit_foreshortening()</span></code> estimates the camera angles <span class="math notranslate nohighlight">\(\theta\)</span> and <span class="math notranslate nohighlight">\(\phi\)</span> together with the time course of the true pupil size, which is modeled as a smooth B-spline. The idea is that the same true pupil size seen from different angles has to produce the measured values. The data are low-pass filtered and downsampled before fitting.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cal</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">fit_foreshortening</span><span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">cal</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ForeshorteningCalibration(eye=&#39;left&#39;, theta=16.4°, phi=-89.5°, n_coeffs=124, R²=0.948, RMSE=21.995)
+</pre></div></div>
+</div>
+<p>The estimated angles are close to the true values (<span class="math notranslate nohighlight">\(\theta = 20°\)</span>, <span class="math notranslate nohighlight">\(\phi = -90°\)</span>):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"theta = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">cal</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> deg, phi = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">cal</span><span class="o">.</span><span class="n">phi</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> deg"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+theta = 16.4 deg, phi = -89.5 deg
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fd</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">plot_experimental_setup</span><span class="p">(</span><span class="n">calibration</span><span class="o">=</span><span class="n">cal</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_foreshortening_15_0.png" src="../_images/experimental_foreshortening_15_0.png" />
+</div>
+</div>
+<p>The fitted model gives a correction factor <span class="math notranslate nohighlight">\(1/\cos\alpha\)</span> for every gaze position. Multiplying the measured pupil size by it gives the corrected signal:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">factor</span> <span class="o">=</span> <span class="n">cal</span><span class="o">.</span><span class="n">get_correction_factor</span><span class="p">(</span><span class="n">fd</span><span class="p">[</span><span class="s2">"left_x"</span><span class="p">],</span> <span class="n">fd</span><span class="p">[</span><span class="s2">"left_y"</span><span class="p">])</span>
+<span class="n">fitted_pupil</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fd</span><span class="p">[</span><span class="s2">"left_pupil"</span><span class="p">]</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Comparison">
+<h2>Comparison<a class="headerlink" href="#Comparison" title="Link to this heading">#</a></h2>
+<p>Since the data are simulated, we can compare each version with the true pupil size:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">rmse</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">true_pupil</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">signal</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">"measured"</span><span class="p">,</span> <span class="n">measured</span><span class="p">),</span> <span class="p">(</span><span class="s2">"simple correction"</span><span class="p">,</span> <span class="n">simple_pupil</span><span class="p">),</span>
+                     <span class="p">(</span><span class="s2">"fitted model"</span><span class="p">,</span> <span class="n">fitted_pupil</span><span class="p">)]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">18s</span><span class="si">}</span><span class="s2"> RMSE = </span><span class="si">{</span><span class="n">rmse</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span><span class="si">:</span><span class="s2">5.1f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+measured           RMSE =  79.7
+simple correction  RMSE =  55.9
+fitted model       RMSE =  17.8
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">t</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">tx</span> <span class="o">/</span> <span class="mi">1000</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">measured</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"lightgrey"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"measured"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">simple_pupil</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"tab:orange"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"simple correction"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">fitted_pupil</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"tab:blue"</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"fitted model"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">true_pupil</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"true"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"time (s)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"pupil size"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">ncol</span><span class="o">=</span><span class="mi">4</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/experimental_foreshortening_20_0.png" src="../_images/experimental_foreshortening_20_0.png" />
+</div>
+</div>
+<p>The simple correction helps only partly, because the camera is not behind the screen center. The fitted model removes most of the error.</p>
+</section>
+<section id="Open-issues">
+<h2>Open issues<a class="headerlink" href="#Open-issues" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>The fitted correction is not yet available as a method of the data objects (it has to be applied by hand as above).</p></li>
+<li><p>Only one eye is fitted at a time, and screen offset and tilt in the experimental setup are not taken into account.</p></li>
+<li><p>The method still needs to be validated on real data, e.g., with a calibration task in which participants fixate points across the screen.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Experimental features</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="foreshortening_correction_algorithm.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Foreshortening Correction for Pupil Size Measurements</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#The-experimental-setup">The experimental setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Simulated-data">Simulated data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#A-simple-correction">A simple correction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Fitting-the-camera-position">Fitting the camera position</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Comparison">Comparison</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Open-issues">Open issues</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/ihrke/pypillometry/edit/master/docs/experimental/foreshortening.ipynb">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/experimental/foreshortening.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

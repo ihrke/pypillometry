@@ -1,0 +1,31 @@
+﻿GroupLevelSegmentedData
+=======================
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: GroupLevelSegmentedData
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~GroupLevelSegmentedData.baseline_correct
+      ~GroupLevelSegmentedData.from_eyedata
+      ~GroupLevelSegmentedData.from_file
+      ~GroupLevelSegmentedData.from_masked_array
+      ~GroupLevelSegmentedData.from_segments
+      ~GroupLevelSegmentedData.plot
+      ~GroupLevelSegmentedData.summary
+      ~GroupLevelSegmentedData.write_file
+   
+   
+
+
+   .. rubric:: Details

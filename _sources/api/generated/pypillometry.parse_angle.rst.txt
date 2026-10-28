@@ -1,0 +1,6 @@
+﻿parse\_angle
+============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: parse_angle

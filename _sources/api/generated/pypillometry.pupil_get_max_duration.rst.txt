@@ -1,0 +1,6 @@
+﻿pupil\_get\_max\_duration
+=========================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: pupil_get_max_duration

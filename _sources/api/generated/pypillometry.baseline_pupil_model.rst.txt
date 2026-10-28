@@ -1,0 +1,6 @@
+﻿baseline\_pupil\_model
+======================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: baseline_pupil_model

@@ -1,0 +1,71 @@
+﻿EyeData
+=======
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: EyeData
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~EyeData.add_to_history
+      ~EyeData.blink_stats
+      ~EyeData.blinks_merge_close
+      ~EyeData.copy
+      ~EyeData.correct_pupil_foreshortening
+      ~EyeData.downsample
+      ~EyeData.drop_data
+      ~EyeData.drop_original
+      ~EyeData.fill_time_discontinuities
+      ~EyeData.fit_foreshortening
+      ~EyeData.from_eyelink
+      ~EyeData.from_file
+      ~EyeData.get_blinks
+      ~EyeData.get_duration
+      ~EyeData.get_events
+      ~EyeData.get_interpolated_blinks
+      ~EyeData.get_intervals
+      ~EyeData.get_pupildata
+      ~EyeData.get_segments
+      ~EyeData.get_size
+      ~EyeData.interpolate_intervals
+      ~EyeData.mask_as_intervals
+      ~EyeData.mask_eye_divergences
+      ~EyeData.mask_intervals
+      ~EyeData.mask_offscreen_coords
+      ~EyeData.merge_eyes
+      ~EyeData.merge_masks
+      ~EyeData.nblinks
+      ~EyeData.nevents
+      ~EyeData.print_history
+      ~EyeData.pupil_blinks_detect
+      ~EyeData.pupil_blinks_interpolate
+      ~EyeData.pupil_estimate_baseline
+      ~EyeData.pupil_estimate_response
+      ~EyeData.pupil_lowpass_filter
+      ~EyeData.pupil_merge_eyes
+      ~EyeData.pupil_smooth_window
+      ~EyeData.reset_time
+      ~EyeData.scale
+      ~EyeData.set_blinks
+      ~EyeData.set_event_onsets
+      ~EyeData.set_events
+      ~EyeData.set_experimental_setup
+      ~EyeData.stat_per_event
+      ~EyeData.sub_slice
+      ~EyeData.summary
+      ~EyeData.unscale
+      ~EyeData.write_file
+   
+   
+
+
+   .. rubric:: Details

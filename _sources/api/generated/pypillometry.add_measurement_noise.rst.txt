@@ -1,0 +1,6 @@
+﻿add\_measurement\_noise
+=======================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: add_measurement_noise

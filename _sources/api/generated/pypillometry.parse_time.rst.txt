@@ -1,0 +1,6 @@
+﻿parse\_time
+===========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: parse_time

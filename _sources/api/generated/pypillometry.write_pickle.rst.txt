@@ -1,0 +1,6 @@
+﻿write\_pickle
+=============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: write_pickle

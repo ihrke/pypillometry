@@ -1,0 +1,6 @@
+﻿download
+========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: download

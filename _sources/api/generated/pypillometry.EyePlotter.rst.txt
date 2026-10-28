@@ -1,0 +1,35 @@
+﻿EyePlotter
+==========
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: EyePlotter
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~EyePlotter.plot_blinks
+      ~EyePlotter.plot_calibration
+      ~EyePlotter.plot_experimental_setup
+      ~EyePlotter.plot_heatmap
+      ~EyePlotter.plot_intervals
+      ~EyePlotter.plot_masked
+      ~EyePlotter.plot_pupil_foreshortening_error_surface
+      ~EyePlotter.plot_scanpath
+      ~EyePlotter.plot_timeseries
+      ~EyePlotter.plot_timeseries_segments
+      ~EyePlotter.pupil_plot
+      ~EyePlotter.pupil_plot_segments
+   
+   
+
+
+   .. rubric:: Details

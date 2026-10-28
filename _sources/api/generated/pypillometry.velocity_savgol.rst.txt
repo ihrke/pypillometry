@@ -1,0 +1,6 @@
+﻿velocity\_savgol
+================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: velocity_savgol

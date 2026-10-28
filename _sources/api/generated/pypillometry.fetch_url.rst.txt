@@ -1,0 +1,6 @@
+﻿fetch\_url
+==========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: fetch_url

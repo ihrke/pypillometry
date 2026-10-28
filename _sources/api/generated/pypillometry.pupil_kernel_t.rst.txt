@@ -1,0 +1,6 @@
+﻿pupil\_kernel\_t
+================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: pupil_kernel_t

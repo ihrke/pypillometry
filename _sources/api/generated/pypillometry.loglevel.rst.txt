@@ -1,0 +1,6 @@
+﻿loglevel
+========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: loglevel

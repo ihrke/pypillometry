@@ -1,0 +1,6 @@
+﻿nologging
+=========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: nologging

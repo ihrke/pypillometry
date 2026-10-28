@@ -1,0 +1,26 @@
+﻿SpatialCalibration
+==================
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: SpatialCalibration
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~SpatialCalibration.from_eyelink
+      ~SpatialCalibration.get_stats
+      ~SpatialCalibration.plot
+   
+   
+
+
+   .. rubric:: Details

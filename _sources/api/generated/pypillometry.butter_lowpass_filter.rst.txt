@@ -1,0 +1,6 @@
+﻿butter\_lowpass\_filter
+=======================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: butter_lowpass_filter

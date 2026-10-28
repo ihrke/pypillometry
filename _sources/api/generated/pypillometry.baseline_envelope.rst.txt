@@ -1,0 +1,6 @@
+﻿baseline\_envelope
+==================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: baseline_envelope

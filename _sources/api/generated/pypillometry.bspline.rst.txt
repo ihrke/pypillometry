@@ -1,0 +1,6 @@
+﻿bspline
+=======
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: bspline

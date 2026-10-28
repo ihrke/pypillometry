@@ -1,0 +1,6 @@
+﻿logging\_disable
+================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: logging_disable

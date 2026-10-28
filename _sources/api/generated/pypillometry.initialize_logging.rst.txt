@@ -1,0 +1,6 @@
+﻿initialize\_logging
+===================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: initialize_logging

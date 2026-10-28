@@ -1,0 +1,6 @@
+﻿read\_pickle
+============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: read_pickle

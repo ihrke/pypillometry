@@ -1,0 +1,6 @@
+﻿fake\_gaze\_fixations
+=====================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: fake_gaze_fixations

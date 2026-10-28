@@ -1,0 +1,6 @@
+﻿merge\_intervals
+================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: merge_intervals

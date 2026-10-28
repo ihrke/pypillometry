@@ -1,0 +1,6 @@
+﻿lowpass\_filter\_iterative
+==========================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: lowpass_filter_iterative

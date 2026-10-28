@@ -1,0 +1,6 @@
+﻿plot\_prf
+=========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: plot_prf

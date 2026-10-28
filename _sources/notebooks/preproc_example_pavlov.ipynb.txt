@@ -9,7 +9,7 @@
     "\n",
     "This is an example of a real dataset of a study from our cognitive neuroscience lab at the University of Tromsø.\n",
     "\n",
-    "The notebook cannot be run without the underlying data (which can be found at <https://osf.io/7wcej/>) but it can be used as an example to adapt for your own studies. To load and share the data of a study more easily, consider using a [configuration file](../examples/share_study.rst)."
+    "The notebook cannot be run without the underlying data (which can be found at <https://osf.io/7wcej/>) but it can be used as an example to adapt for your own studies. To load and share the data of a study more easily, consider using a [configuration file](../user_guide/studies.rst)."
    ]
   },
   {

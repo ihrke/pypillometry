@@ -1,21 +1,52 @@
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+
+<html lang="en" data-content_root="./" data-theme="light">
+
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; pypillometry  documentation</title>
+    <title>Index &#8212; pypillometry v2.0a2</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
-    <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
-    <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
-    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=e89b0eda" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="_static/documentation_options.js?v=13c34846"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
-    <script src="_static/thebelab-helper.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
@@ -375,28 +406,374 @@ mermaid.initialize(
 
 window.addEventListener("load", load);
 window.runMermaid = runMermaid;</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="_static/pypillometry_logo_200x200.png"/>
     <link rel="index" title="Index" href="#" />
-    <link rel="search" title="Search" href="search.html" /> 
-  </head><body>
-    <div class="related" role="navigation" aria-label="Related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="#" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Index</a></li> 
-      </ul>
-    </div>  
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="v2.0a2" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="light">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">pypillometry v2 is a major rewrite and not compatible with v1. The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>v1 documentation</a> is still available.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="_static/pypillometry_logo_200x200.png" class="logo__image only-light" alt=""/>
+    <img src="_static/pypillometry_logo_200x200.png" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">pypillometry</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorials/index.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="experimental/index.html">
+    Experimental features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="development/index.html">
+    Development
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ihrke/pypillometry" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/pypillometry/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
 
 <h1 id="index">Index</h1>
 
@@ -408,7 +785,9 @@ window.runMermaid = runMermaid;</script>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
@@ -421,18 +800,31 @@ window.runMermaid = runMermaid;</script>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
+ | <a href="#Z"><strong>Z</strong></a>
  
 </div>
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.signal.fake.add_measurement_noise">add_measurement_noise() (in module pypillometry.signal.fake)</a>
+      <li><a href="api/generated/pypillometry.add_measurement_noise.html#pypillometry.add_measurement_noise">add_measurement_noise() (in module pypillometry)</a>
 </li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.add_to_history">add_to_history() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.add_to_history">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.add_to_history">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.add_to_history">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.add_to_history">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GenericEyeData.add_to_history">add_to_history() (pypillometry.GenericEyeData method)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.alpha_tilt">alpha_tilt (pypillometry.ExperimentalSetup property)</a>
 </li>
-      <li><a href="api.html#pypillometry.Intervals.as_pandas">as_pandas() (pypillometry.Intervals method)</a>
+      <li><a href="api/generated/pypillometry.Intervals.html#pypillometry.Intervals.as_pandas">as_pandas() (pypillometry.Intervals method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -440,29 +832,65 @@ window.runMermaid = runMermaid;</script>
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.SegmentedEyeData.baseline_correct">baseline_correct() (pypillometry.SegmentedEyeData method)</a>
+      <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.baseline_correct">baseline_correct() (pypillometry.GroupLevelSegmentedData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.baseline_correct">(pypillometry.SegmentedEyeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.baseline.baseline_envelope">baseline_envelope() (in module pypillometry.signal.baseline)</a>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.baseline_envelope.html#pypillometry.baseline_envelope">baseline_envelope() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.baseline.baseline_envelope_iter_bspline">baseline_envelope_iter_bspline() (in module pypillometry.signal.baseline)</a>
+      <li><a href="api/generated/pypillometry.baseline_envelope_iter_bspline.html#pypillometry.baseline_envelope_iter_bspline">baseline_envelope_iter_bspline() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.baseline.baseline_pupil_model">baseline_pupil_model() (in module pypillometry.signal.baseline)</a>
+      <li><a href="api/generated/pypillometry.baseline_pupil_model.html#pypillometry.baseline_pupil_model">baseline_pupil_model() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.preproc.blink_onsets_mahot">blink_onsets_mahot() (in module pypillometry.signal.preproc)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.beta_tilt">beta_tilt (pypillometry.ExperimentalSetup property)</a>
 </li>
+      <li><a href="api/generated/pypillometry.blink_onsets_mahot.html#pypillometry.blink_onsets_mahot">blink_onsets_mahot() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.blink_stats">blink_stats() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.blink_stats">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.blink_stats">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.blink_stats">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.blink_stats">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GenericEyeData.blink_stats">blink_stats() (pypillometry.GenericEyeData method)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.blinks">blinks (pypillometry.EyeData property)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.blinks">(pypillometry.FakeEyeData property)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.blinks">blinks (pypillometry.GenericEyeData property)</a>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.blinks">(pypillometry.GazeData property)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.blinks_merge_close">blinks_merge_close() (pypillometry.GenericEyeData method)</a>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.blinks">(pypillometry.GenericEyeData property)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.baseline.bspline">bspline() (in module pypillometry.signal.baseline)</a>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.blinks">(pypillometry.PupilData property)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.baseline.butter_lowpass">butter_lowpass() (in module pypillometry.signal.baseline)</a>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.blinks_merge_close">blinks_merge_close() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.blinks_merge_close">(pypillometry.FakeEyeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.baseline.butter_lowpass_filter">butter_lowpass_filter() (in module pypillometry.signal.baseline)</a>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.blinks_merge_close">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.blinks_merge_close">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.blinks_merge_close">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.bspline.html#pypillometry.bspline">bspline() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.butter_lowpass.html#pypillometry.butter_lowpass">butter_lowpass() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.butter_lowpass_filter.html#pypillometry.butter_lowpass_filter">butter_lowpass_filter() (in module pypillometry)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -470,27 +898,43 @@ window.runMermaid = runMermaid;</script>
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.CircularROI">CircularROI (class in pypillometry)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.camera_position">camera_position (pypillometry.ExperimentalSetup property)</a>
 </li>
-      <li><a href="api.html#pypillometry.CircularROI.contains">contains() (pypillometry.CircularROI method)</a>
+      <li><a href="api/generated/pypillometry.CircularROI.html#pypillometry.CircularROI">CircularROI (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.clear">clear() (pypillometry.EyeDataDict method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.CircularROI.html#pypillometry.CircularROI.contains">contains() (pypillometry.CircularROI method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.RectangularROI.contains">(pypillometry.RectangularROI method)</a>
+        <li><a href="api/generated/pypillometry.RectangularROI.html#pypillometry.RectangularROI.contains">(pypillometry.RectangularROI method)</a>
 </li>
-        <li><a href="api.html#pypillometry.ROI.contains">(pypillometry.ROI method)</a>
+        <li><a href="api/generated/pypillometry.ROI.html#pypillometry.ROI.contains">(pypillometry.ROI method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.copy">copy() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.copy">(pypillometry.EyeDataDict method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.copy">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.copy">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.copy">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.copy">(pypillometry.PupilData method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.EyeDataDict.copy">copy() (pypillometry.EyeDataDict method)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.correct_pupil_foreshortening">correct_pupil_foreshortening() (pypillometry.EyeData method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GenericEyeData.copy">(pypillometry.GenericEyeData method)</a>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.correct_pupil_foreshortening">(pypillometry.FakeEyeData method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.EyeData.correct_pupil_foreshortening">correct_pupil_foreshortening() (pypillometry.EyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyeDataDict.count_masked">count_masked() (pypillometry.EyeDataDict method)</a>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.count_masked">count_masked() (pypillometry.EyeDataDict method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -498,46 +942,116 @@ window.runMermaid = runMermaid;</script>
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.signal.preproc.detect_blinks_velocity">detect_blinks_velocity() (in module pypillometry.signal.preproc)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.d">d (pypillometry.ExperimentalSetup property)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.preproc.detect_blinks_zero">detect_blinks_zero() (in module pypillometry.signal.preproc)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.degrees_to_mm">degrees_to_mm() (pypillometry.ExperimentalSetup method)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.baseline.downsample">downsample() (in module pypillometry.signal.baseline)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.degrees_to_pixels">degrees_to_pixels() (pypillometry.ExperimentalSetup method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.delta_x">delta_x (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.delta_y">delta_y (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.detect_blinks_velocity.html#pypillometry.detect_blinks_velocity">detect_blinks_velocity() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.detect_blinks_zero.html#pypillometry.detect_blinks_zero">detect_blinks_zero() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.Quantity.html#pypillometry.Quantity.dimension">dimension (pypillometry.Quantity property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.download.html#pypillometry.download">download() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.downsample.html#pypillometry.downsample">downsample() (in module pypillometry)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GenericEyeData.downsample">(pypillometry.GenericEyeData method)</a>
+        <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.downsample">(pypillometry.EyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.downsample">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.downsample">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.downsample">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.downsample">(pypillometry.PupilData method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GenericEyeData.drop_data">drop_data() (pypillometry.GenericEyeData method)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.drop_data">drop_data() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.drop_data">(pypillometry.FakeEyeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.drop_original">drop_original() (pypillometry.GenericEyeData method)</a>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.drop_data">(pypillometry.GazeData method)</a>
 </li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.drop_data">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.drop_data">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.drop_original">drop_original() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.drop_original">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.drop_original">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.drop_original">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.drop_original">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.Events">Events (class in pypillometry)</a>
+      <li><a href="api/generated/pypillometry.ForeshorteningCalibration.html#pypillometry.ForeshorteningCalibration.evaluate_spline">evaluate_spline() (pypillometry.ForeshorteningCalibration method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.events">events (pypillometry.GenericEyeData property)</a>
+      <li><a href="api/generated/pypillometry.Events.html#pypillometry.Events">Events (class in pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.SegmentedEyeData.eye">eye (pypillometry.SegmentedEyeData property)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyeData">EyeData (class in pypillometry)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.EyeDataDict">EyeDataDict (class in pypillometry)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyePlotter">EyePlotter (class in pypillometry)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyeDataDict.eyes">eyes (pypillometry.EyeDataDict property)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.events">events (pypillometry.EyeData property)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GenericEyeData.eyes">(pypillometry.GenericEyeData property)</a>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.events">(pypillometry.FakeEyeData property)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.events">(pypillometry.GazeData property)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.events">(pypillometry.GenericEyeData property)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.events">(pypillometry.PupilData property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup">ExperimentalSetup (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.eye">eye (pypillometry.GroupLevelSegmentedData property)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.eye">(pypillometry.SegmentedEyeData property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.eye_to_screen_center">eye_to_screen_center (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData">EyeData (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict">EyeDataDict (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter">EyePlotter (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.eyes">eyes (pypillometry.EyeData property)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.eyes">(pypillometry.EyeDataDict property)</a>
+</li>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.eyes">(pypillometry.FakeEyeData property)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.eyes">(pypillometry.GazeData property)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.eyes">(pypillometry.GenericEyeData property)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.eyes">(pypillometry.PupilData property)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -546,51 +1060,101 @@ window.runMermaid = runMermaid;</script>
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.signal.fake.fake_gaze_fixations">fake_gaze_fixations() (in module pypillometry.signal.fake)</a>
+      <li><a href="api/generated/pypillometry.fake_gaze_fixations.html#pypillometry.fake_gaze_fixations">fake_gaze_fixations() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.fake.fake_pupil_baseline">fake_pupil_baseline() (in module pypillometry.signal.fake)</a>
+      <li><a href="api/generated/pypillometry.fake_pupil_baseline.html#pypillometry.fake_pupil_baseline">fake_pupil_baseline() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.io.fetch_url">fetch_url() (in module pypillometry.io)</a>
+      <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData">FakeEyeData (class in pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.fill_time_discontinuities">fill_time_discontinuities() (pypillometry.GenericEyeData method)</a>
+      <li><a href="api/generated/pypillometry.fetch_url.html#pypillometry.fetch_url">fetch_url() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.Events.filter">filter() (pypillometry.Events method)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.fill_time_discontinuities">fill_time_discontinuities() (pypillometry.EyeData method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.Intervals.filter">(pypillometry.Intervals method)</a>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.fill_time_discontinuities">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.fill_time_discontinuities">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.fill_time_discontinuities">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.fill_time_discontinuities">(pypillometry.PupilData method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.EyeData.fit_foreshortening">fit_foreshortening() (pypillometry.EyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.CircularROI.from_degrees">from_degrees() (pypillometry.CircularROI class method)</a>
+      <li><a href="api/generated/pypillometry.Events.html#pypillometry.Events.filter">filter() (pypillometry.Events method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.RectangularROI.from_degrees">(pypillometry.RectangularROI class method)</a>
+        <li><a href="api/generated/pypillometry.Intervals.html#pypillometry.Intervals.filter">(pypillometry.Intervals method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.fit_foreshortening">fit_foreshortening() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.fit_foreshortening">(pypillometry.FakeEyeData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.ForeshorteningCalibration.html#pypillometry.ForeshorteningCalibration">ForeshorteningCalibration (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.CircularROI.html#pypillometry.CircularROI.from_degrees">from_degrees() (pypillometry.CircularROI class method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.RectangularROI.html#pypillometry.RectangularROI.from_degrees">(pypillometry.RectangularROI class method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.from_dict">from_dict() (pypillometry.ExperimentalSetup class method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.from_eyedata">from_eyedata() (pypillometry.GroupLevelSegmentedData class method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.from_eyedata">(pypillometry.SegmentedEyeData class method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.SegmentedEyeData.from_eyedata">from_eyedata() (pypillometry.SegmentedEyeData class method)</a>
-</li>
-      <li><a href="api.html#pypillometry.GenericEyeData.from_eyelink">from_eyelink() (pypillometry.GenericEyeData class method)</a>
-</li>
-      <li><a href="api.html#pypillometry.GenericEyeData.from_file">from_file() (pypillometry.GenericEyeData class method)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.from_eyelink">from_eyelink() (pypillometry.EyeData class method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.SegmentedEyeData.from_file">(pypillometry.SegmentedEyeData class method)</a>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.from_eyelink">(pypillometry.FakeEyeData class method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.from_eyelink">(pypillometry.GazeData class method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.from_eyelink">(pypillometry.GenericEyeData class method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.from_eyelink">(pypillometry.PupilData class method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.SpatialCalibration.html#pypillometry.SpatialCalibration.from_eyelink">(pypillometry.SpatialCalibration class method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.Intervals.from_mask">from_mask() (pypillometry.Intervals class method)</a>
-</li>
-      <li><a href="api.html#pypillometry.SegmentedEyeData.from_masked_array">from_masked_array() (pypillometry.SegmentedEyeData class method)</a>
-</li>
-      <li><a href="api.html#pypillometry.CircularROI.from_mm">from_mm() (pypillometry.CircularROI class method)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.from_file">from_file() (pypillometry.EyeData class method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.RectangularROI.from_mm">(pypillometry.RectangularROI class method)</a>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.from_file">(pypillometry.FakeEyeData class method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.from_file">(pypillometry.GazeData class method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.from_file">(pypillometry.GenericEyeData class method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.from_file">(pypillometry.GroupLevelSegmentedData class method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.from_file">(pypillometry.PupilData class method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.from_file">(pypillometry.SegmentedEyeData class method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.GroupLevelSegmentedData.from_segments">from_segments() (pypillometry.GroupLevelSegmentedData class method)</a>
+      <li><a href="api/generated/pypillometry.Intervals.html#pypillometry.Intervals.from_mask">from_mask() (pypillometry.Intervals class method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.from_masked_array">from_masked_array() (pypillometry.GroupLevelSegmentedData class method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.from_masked_array">(pypillometry.SegmentedEyeData class method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.CircularROI.html#pypillometry.CircularROI.from_mm">from_mm() (pypillometry.CircularROI class method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.RectangularROI.html#pypillometry.RectangularROI.from_mm">(pypillometry.RectangularROI class method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.from_segments">from_segments() (pypillometry.GroupLevelSegmentedData class method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -598,53 +1162,157 @@ window.runMermaid = runMermaid;</script>
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GazeData">GazeData (class in pypillometry)</a>
+      <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData">GazeData (class in pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.GazePlotter">GazePlotter (class in pypillometry)</a>
+      <li><a href="api/generated/pypillometry.GazePlotter.html#pypillometry.GazePlotter">GazePlotter (class in pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.fake.generate_foreshortening_data">generate_foreshortening_data() (in module pypillometry.signal.fake)</a>
+      <li><a href="api/generated/pypillometry.generate_foreshortening_data.html#pypillometry.generate_foreshortening_data">generate_foreshortening_data() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData">GenericEyeData (class in pypillometry)</a>
+      <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData">GenericEyeData (class in pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.example_data.get_available_datasets">get_available_datasets() (in module pypillometry.example_data)</a>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.get">get() (pypillometry.EyeDataDict method)</a>
 </li>
-      <li><a href="api.html#pypillometry.EyeDataDict.get_available_eyes">get_available_eyes() (pypillometry.EyeDataDict method)</a>
+      <li><a href="api/generated/pypillometry.get_available_datasets.html#pypillometry.get_available_datasets">get_available_datasets() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.EyeDataDict.get_available_variables">get_available_variables() (pypillometry.EyeDataDict method)</a>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.get_available_eyes">get_available_eyes() (pypillometry.EyeDataDict method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.get_blinks">get_blinks() (pypillometry.GenericEyeData method)</a>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.get_available_variables">get_available_variables() (pypillometry.EyeDataDict method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.get_duration">get_duration() (pypillometry.GenericEyeData method)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_blinks">get_blinks() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.get_blinks">(pypillometry.FakeEyeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.get_events">get_events() (pypillometry.GenericEyeData method)</a>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.get_blinks">(pypillometry.GazeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.example_data.get_example_data">get_example_data() (in module pypillometry.example_data)</a>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_blinks">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.get_blinks">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.ForeshorteningCalibration.html#pypillometry.ForeshorteningCalibration.get_correction_factor">get_correction_factor() (pypillometry.ForeshorteningCalibration method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.get_default_inplace.html#pypillometry.get_default_inplace">get_default_inplace() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_duration">get_duration() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.get_duration">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.get_duration">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_duration">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.get_duration">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_events">get_events() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.get_events">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.get_events">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_events">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.get_events">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.get_example_data.html#pypillometry.get_example_data">get_example_data() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.get_eye">get_eye() (pypillometry.EyeDataDict method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.get_generation_call">get_generation_call() (pypillometry.FakeEyeData method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_interpolated_blinks">get_interpolated_blinks() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.get_interpolated_blinks">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.get_interpolated_blinks">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_interpolated_blinks">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.get_interpolated_blinks">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_intervals">get_intervals() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.get_intervals">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.get_intervals">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_intervals">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.get_intervals">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.get_mask">get_mask() (pypillometry.EyeDataDict method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.get_osf_project_files.html#pypillometry.get_osf_project_files">get_osf_project_files() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_pupildata">get_pupildata() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.get_pupildata">(pypillometry.FakeEyeData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.get_rlmw_002.html#pypillometry.get_rlmw_002">get_rlmw_002() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.get_rlmw_002_short.html#pypillometry.get_rlmw_002_short">get_rlmw_002_short() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.get_rlmw_010_edf.html#pypillometry.get_rlmw_010_edf">get_rlmw_010_edf() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_segments">get_segments() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.get_segments">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.get_segments">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_segments">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.get_segments">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.get_size">get_size() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.get_size">(pypillometry.EyeDataDict method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.get_size">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.get_size">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.get_size">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.get_size">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.SpatialCalibration.html#pypillometry.SpatialCalibration.get_stats">get_stats() (pypillometry.SpatialCalibration method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.get_variable">get_variable() (pypillometry.EyeDataDict method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.group_segments.html#pypillometry.group_segments">group_segments() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData">GroupLevelSegmentedData (class in pypillometry)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.has_camera_position">has_camera_position() (pypillometry.ExperimentalSetup method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.EyeDataDict.get_eye">get_eye() (pypillometry.EyeDataDict method)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.has_eye_distance">has_eye_distance() (pypillometry.ExperimentalSetup method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.get_interpolated_blinks">get_interpolated_blinks() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.GenericEyeData.get_intervals">get_intervals() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyeDataDict.get_mask">get_mask() (pypillometry.EyeDataDict method)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyeData.get_pupildata">get_pupildata() (pypillometry.EyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.GenericEyeData.get_segments">get_segments() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyeDataDict.get_size">get_size() (pypillometry.EyeDataDict method)</a>
-
-      <ul>
-        <li><a href="api.html#pypillometry.GenericEyeData.get_size">(pypillometry.GenericEyeData method)</a>
-</li>
-      </ul></li>
-      <li><a href="api.html#pypillometry.EyeDataDict.get_variable">get_variable() (pypillometry.EyeDataDict method)</a>
-</li>
-      <li><a href="api.html#pypillometry.group_segments">group_segments() (in module pypillometry)</a>
-</li>
-      <li><a href="api.html#pypillometry.GroupLevelSegmentedData">GroupLevelSegmentedData (class in pypillometry)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.has_screen_info">has_screen_info() (pypillometry.ExperimentalSetup method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -652,11 +1320,41 @@ window.runMermaid = runMermaid;</script>
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GenericEyeData.interpolate_intervals">interpolate_intervals() (pypillometry.GenericEyeData method)</a>
+      <li><a href="api/generated/pypillometry.initialize_logging.html#pypillometry.initialize_logging">initialize_logging() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.interpolate_intervals">interpolate_intervals() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.interpolate_intervals">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.interpolate_intervals">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.interpolate_intervals">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.interpolate_intervals">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/pypillometry.Intervals.html#pypillometry.Intervals">Intervals (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.ipd">ipd (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.is_complete">is_complete() (pypillometry.ExperimentalSetup method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.items">items() (pypillometry.EyeDataDict method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/pypillometry.keephistory.html#pypillometry.keephistory">keephistory() (in module pypillometry)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.Intervals">Intervals (class in pypillometry)</a>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.keys">keys() (pypillometry.EyeDataDict method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -664,21 +1362,27 @@ window.runMermaid = runMermaid;</script>
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.study.load_study_local">load_study_local() (in module pypillometry.study)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.left_eye_offset">left_eye_offset (pypillometry.ExperimentalSetup property)</a>
 </li>
-      <li><a href="api.html#pypillometry.study.load_study_osf">load_study_osf() (in module pypillometry.study)</a>
+      <li><a href="api/generated/pypillometry.load_study_local.html#pypillometry.load_study_local">load_study_local() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.io.local_copy">local_copy() (in module pypillometry.io)</a>
+      <li><a href="api/generated/pypillometry.load_study_osf.html#pypillometry.load_study_osf">load_study_osf() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.local_copy.html#pypillometry.local_copy">local_copy() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.logging_disable.html#pypillometry.logging_disable">logging_disable() (in module pypillometry)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.logging_disable">logging_disable() (in module pypillometry)</a>
+      <li><a href="api/generated/pypillometry.logging_enable.html#pypillometry.logging_enable">logging_enable() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.logging_enable">logging_enable() (in module pypillometry)</a>
+      <li><a href="api/generated/pypillometry.logging_get_level.html#pypillometry.logging_get_level">logging_get_level() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.logging_set_level">logging_set_level() (in module pypillometry)</a>
+      <li><a href="api/generated/pypillometry.logging_set_level.html#pypillometry.logging_set_level">logging_set_level() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.pupil.lowpass_filter_iterative">lowpass_filter_iterative() (in module pypillometry.signal.pupil)</a>
+      <li><a href="api/generated/pypillometry.loglevel.html#pypillometry.loglevel">loglevel() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.lowpass_filter_iterative.html#pypillometry.lowpass_filter_iterative">lowpass_filter_iterative() (in module pypillometry)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -686,43 +1390,91 @@ window.runMermaid = runMermaid;</script>
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GenericEyeData.mask_as_intervals">mask_as_intervals() (pypillometry.GenericEyeData method)</a>
+      <li><a href="api/generated/pypillometry.Quantity.html#pypillometry.Quantity.magnitude">magnitude (pypillometry.Quantity property)</a>
 </li>
-      <li><a href="api.html#pypillometry.GazeData.mask_eye_divergences">mask_eye_divergences() (pypillometry.GazeData method)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.mask_as_intervals">mask_as_intervals() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.mask_as_intervals">(pypillometry.FakeEyeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.mask_intervals">mask_intervals() (pypillometry.GenericEyeData method)</a>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.mask_as_intervals">(pypillometry.GazeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GazeData.mask_offscreen_coords">mask_offscreen_coords() (pypillometry.GazeData method)</a>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.mask_as_intervals">(pypillometry.GenericEyeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.Intervals.merge">merge() (pypillometry.Intervals method)</a>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.mask_as_intervals">(pypillometry.PupilData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.merge_eyes">merge_eyes() (pypillometry.GenericEyeData method)</a>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.mask_eye_divergences">mask_eye_divergences() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.mask_eye_divergences">(pypillometry.FakeEyeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.merge_intervals">merge_intervals() (in module pypillometry)</a>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.mask_eye_divergences">(pypillometry.GazeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.merge_masks">merge_masks() (pypillometry.GenericEyeData method)</a>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.mask_intervals">mask_intervals() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.mask_intervals">(pypillometry.FakeEyeData method)</a>
 </li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.mask_intervals">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.mask_intervals">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.mask_intervals">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.mask_offscreen_coords">mask_offscreen_coords() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.mask_offscreen_coords">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.mask_offscreen_coords">(pypillometry.GazeData method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/pypillometry.Intervals.html#pypillometry.Intervals.merge">merge() (pypillometry.Intervals method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.merge_eyes">merge_eyes() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.merge_eyes">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.merge_eyes">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.merge_eyes">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.merge_eyes">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.merge_intervals.html#pypillometry.merge_intervals">merge_intervals() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.merge_masks">merge_masks() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.merge_masks">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.merge_masks">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.merge_masks">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.merge_masks">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.mm_per_pixel_x">mm_per_pixel_x (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.mm_per_pixel_y">mm_per_pixel_y (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.mm_to_degrees">mm_to_degrees() (pypillometry.ExperimentalSetup method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.mm_to_pixels">mm_to_pixels() (pypillometry.ExperimentalSetup method)</a>
+</li>
       <li>
     module
 
       <ul>
-        <li><a href="api.html#module-pypillometry">pypillometry</a>
-</li>
-        <li><a href="api.html#module-pypillometry.example_data">pypillometry.example_data</a>
-</li>
-        <li><a href="api.html#module-pypillometry.io">pypillometry.io</a>
-</li>
-        <li><a href="api.html#module-pypillometry.signal.baseline">pypillometry.signal.baseline</a>
-</li>
-        <li><a href="api.html#module-pypillometry.signal.fake">pypillometry.signal.fake</a>
-</li>
-        <li><a href="api.html#module-pypillometry.signal.preproc">pypillometry.signal.preproc</a>
-</li>
-        <li><a href="api.html#module-pypillometry.signal.pupil">pypillometry.signal.pupil</a>
-</li>
-        <li><a href="api.html#module-pypillometry.study">pypillometry.study</a>
+        <li><a href="api/index.html#module-pypillometry">pypillometry</a>
 </li>
       </ul></li>
   </ul></td>
@@ -731,15 +1483,45 @@ window.runMermaid = runMermaid;</script>
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.SegmentedEyeData.n_segments">n_segments (pypillometry.SegmentedEyeData property)</a>
+      <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.n_segments">n_segments (pypillometry.GroupLevelSegmentedData property)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.n_segments">(pypillometry.SegmentedEyeData property)</a>
 </li>
-      <li><a href="api.html#pypillometry.SegmentedEyeData.n_timepoints">n_timepoints (pypillometry.SegmentedEyeData property)</a>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.n_timepoints">n_timepoints (pypillometry.GroupLevelSegmentedData property)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.n_timepoints">(pypillometry.SegmentedEyeData property)</a>
 </li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.nblinks">nblinks() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.nblinks">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.nblinks">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.nblinks">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.nblinks">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GenericEyeData.nblinks">nblinks() (pypillometry.GenericEyeData method)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.nevents">nevents() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.nevents">(pypillometry.FakeEyeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.nevents">nevents() (pypillometry.GenericEyeData method)</a>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.nevents">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.nevents">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.nevents">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.nologging.html#pypillometry.nologging">nologging() (in module pypillometry)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -747,7 +1529,7 @@ window.runMermaid = runMermaid;</script>
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.io.osf_authenticate">osf_authenticate() (in module pypillometry.io)</a>
+      <li><a href="api/generated/pypillometry.osf_authenticate.html#pypillometry.osf_authenticate">osf_authenticate() (in module pypillometry)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -755,208 +1537,243 @@ window.runMermaid = runMermaid;</script>
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.Intervals.pad">pad() (pypillometry.Intervals method)</a>
+      <li><a href="api/generated/pypillometry.Intervals.html#pypillometry.Intervals.pad">pad() (pypillometry.Intervals method)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.params">params (pypillometry.GenericEyeData attribute)</a>
-</li>
-      <li><a href="api.html#pypillometry.parse_angle">parse_angle() (in module pypillometry)</a>
-</li>
-      <li><a href="api.html#pypillometry.parse_distance">parse_distance() (in module pypillometry)</a>
-</li>
-      <li><a href="api.html#pypillometry.parse_time">parse_time() (in module pypillometry)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyeData.plot">plot (pypillometry.EyeData property)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.params">params (pypillometry.EyeData attribute)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GazeData.plot">(pypillometry.GazeData property)</a>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.params">(pypillometry.FakeEyeData attribute)</a>
 </li>
-        <li><a href="api.html#pypillometry.PupilData.plot">(pypillometry.PupilData property)</a>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.params">(pypillometry.GazeData attribute)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.params">(pypillometry.GenericEyeData attribute)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.params">(pypillometry.PupilData attribute)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.CircularROI.plot">plot() (pypillometry.CircularROI method)</a>
+      <li><a href="api/generated/pypillometry.parse_angle.html#pypillometry.parse_angle">parse_angle() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.parse_distance.html#pypillometry.parse_distance">parse_distance() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.parse_time.html#pypillometry.parse_time">parse_time() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.phi">phi (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.physical_screen_height">physical_screen_height (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.physical_screen_size">physical_screen_size (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.physical_screen_width">physical_screen_width (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.pixels_to_degrees">pixels_to_degrees() (pypillometry.ExperimentalSetup method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.pixels_to_mm">pixels_to_mm() (pypillometry.ExperimentalSetup method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.plot">plot (pypillometry.EyeData property)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.Events.plot">(pypillometry.Events method)</a>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.plot">(pypillometry.FakeEyeData property)</a>
 </li>
-        <li><a href="api.html#pypillometry.GroupLevelSegmentedData.plot">(pypillometry.GroupLevelSegmentedData method)</a>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.plot">(pypillometry.GazeData property)</a>
 </li>
-        <li><a href="api.html#pypillometry.Intervals.plot">(pypillometry.Intervals method)</a>
-</li>
-        <li><a href="api.html#pypillometry.RectangularROI.plot">(pypillometry.RectangularROI method)</a>
-</li>
-        <li><a href="api.html#pypillometry.ROI.plot">(pypillometry.ROI method)</a>
-</li>
-        <li><a href="api.html#pypillometry.SegmentedEyeData.plot">(pypillometry.SegmentedEyeData method)</a>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.plot">(pypillometry.PupilData property)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.EyePlotter.plot_blinks">plot_blinks() (pypillometry.EyePlotter method)</a>
+      <li><a href="api/generated/pypillometry.CircularROI.html#pypillometry.CircularROI.plot">plot() (pypillometry.CircularROI method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.PupilPlotter.plot_blinks">(pypillometry.PupilPlotter method)</a>
+        <li><a href="api/generated/pypillometry.Events.html#pypillometry.Events.plot">(pypillometry.Events method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.plot">(pypillometry.ExperimentalSetup method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.plot">(pypillometry.GroupLevelSegmentedData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.Intervals.html#pypillometry.Intervals.plot">(pypillometry.Intervals method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.RectangularROI.html#pypillometry.RectangularROI.plot">(pypillometry.RectangularROI method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.ROI.html#pypillometry.ROI.plot">(pypillometry.ROI method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.plot">(pypillometry.SegmentedEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.SpatialCalibration.html#pypillometry.SpatialCalibration.plot">(pypillometry.SpatialCalibration method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.EyePlotter.plot_calibration">plot_calibration() (pypillometry.EyePlotter method)</a>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.plot_blinks">plot_blinks() (pypillometry.EyePlotter method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GazePlotter.plot_calibration">(pypillometry.GazePlotter method)</a>
+        <li><a href="api/generated/pypillometry.PupilPlotter.html#pypillometry.PupilPlotter.plot_blinks">(pypillometry.PupilPlotter method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.EyePlotter.plot_experimental_setup">plot_experimental_setup() (pypillometry.EyePlotter method)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyePlotter.plot_heatmap">plot_heatmap() (pypillometry.EyePlotter method)</a>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.plot_calibration">plot_calibration() (pypillometry.EyePlotter method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GazePlotter.plot_heatmap">(pypillometry.GazePlotter method)</a>
+        <li><a href="api/generated/pypillometry.GazePlotter.html#pypillometry.GazePlotter.plot_calibration">(pypillometry.GazePlotter method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.Intervals.plot_highlight">plot_highlight() (pypillometry.Intervals method)</a>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.plot_experimental_setup">plot_experimental_setup() (pypillometry.EyePlotter method)</a>
 </li>
-      <li><a href="api.html#pypillometry.EyePlotter.plot_intervals">plot_intervals() (pypillometry.EyePlotter method)</a>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.plot_heatmap">plot_heatmap() (pypillometry.EyePlotter method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GazePlotter.plot_intervals">(pypillometry.GazePlotter method)</a>
-</li>
-        <li><a href="api.html#pypillometry.PupilPlotter.plot_intervals">(pypillometry.PupilPlotter method)</a>
+        <li><a href="api/generated/pypillometry.GazePlotter.html#pypillometry.GazePlotter.plot_heatmap">(pypillometry.GazePlotter method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.EyePlotter.plot_masked">plot_masked() (pypillometry.EyePlotter method)</a>
+      <li><a href="api/generated/pypillometry.Intervals.html#pypillometry.Intervals.plot_highlight">plot_highlight() (pypillometry.Intervals method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.plot_intervals">plot_intervals() (pypillometry.EyePlotter method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GazePlotter.plot_masked">(pypillometry.GazePlotter method)</a>
+        <li><a href="api/generated/pypillometry.GazePlotter.html#pypillometry.GazePlotter.plot_intervals">(pypillometry.GazePlotter method)</a>
 </li>
-        <li><a href="api.html#pypillometry.PupilPlotter.plot_masked">(pypillometry.PupilPlotter method)</a>
+        <li><a href="api/generated/pypillometry.PupilPlotter.html#pypillometry.PupilPlotter.plot_intervals">(pypillometry.PupilPlotter method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.signal.pupil.plot_prf">plot_prf() (in module pypillometry.signal.pupil)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyePlotter.plot_pupil_foreshortening_error_surface">plot_pupil_foreshortening_error_surface() (pypillometry.EyePlotter method)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyePlotter.plot_scanpath">plot_scanpath() (pypillometry.EyePlotter method)</a>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.plot_masked">plot_masked() (pypillometry.EyePlotter method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GazePlotter.plot_scanpath">(pypillometry.GazePlotter method)</a>
+        <li><a href="api/generated/pypillometry.GazePlotter.html#pypillometry.GazePlotter.plot_masked">(pypillometry.GazePlotter method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilPlotter.html#pypillometry.PupilPlotter.plot_masked">(pypillometry.PupilPlotter method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.EyePlotter.plot_timeseries">plot_timeseries() (pypillometry.EyePlotter method)</a>
+      <li><a href="api/generated/pypillometry.plot_prf.html#pypillometry.plot_prf">plot_prf() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.plot_pupil_foreshortening_error_surface">plot_pupil_foreshortening_error_surface() (pypillometry.EyePlotter method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.plot_scanpath">plot_scanpath() (pypillometry.EyePlotter method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GazePlotter.plot_timeseries">(pypillometry.GazePlotter method)</a>
-</li>
-        <li><a href="api.html#pypillometry.PupilPlotter.plot_timeseries">(pypillometry.PupilPlotter method)</a>
+        <li><a href="api/generated/pypillometry.GazePlotter.html#pypillometry.GazePlotter.plot_scanpath">(pypillometry.GazePlotter method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.EyePlotter.plot_timeseries_segments">plot_timeseries_segments() (pypillometry.EyePlotter method)</a>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.plot_timeseries">plot_timeseries() (pypillometry.EyePlotter method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GazePlotter.plot_timeseries_segments">(pypillometry.GazePlotter method)</a>
+        <li><a href="api/generated/pypillometry.GazePlotter.html#pypillometry.GazePlotter.plot_timeseries">(pypillometry.GazePlotter method)</a>
 </li>
-        <li><a href="api.html#pypillometry.PupilPlotter.plot_timeseries_segments">(pypillometry.PupilPlotter method)</a>
+        <li><a href="api/generated/pypillometry.PupilPlotter.html#pypillometry.PupilPlotter.plot_timeseries">(pypillometry.PupilPlotter method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GenericEyeData.print_history">print_history() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.PupilData.pupil_blinks_detect">pupil_blinks_detect() (pypillometry.PupilData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.PupilData.pupil_blinks_interpolate">pupil_blinks_interpolate() (pypillometry.PupilData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.signal.pupil.pupil_build_design_matrix">pupil_build_design_matrix() (in module pypillometry.signal.pupil)</a>
-</li>
-      <li><a href="api.html#pypillometry.PupilData.pupil_estimate_baseline">pupil_estimate_baseline() (pypillometry.PupilData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.PupilData.pupil_estimate_response">pupil_estimate_response() (pypillometry.PupilData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.signal.pupil.pupil_eye_offset">pupil_eye_offset() (in module pypillometry.signal.pupil)</a>
-</li>
-      <li><a href="api.html#pypillometry.signal.pupil.pupil_get_max_duration">pupil_get_max_duration() (in module pypillometry.signal.pupil)</a>
-</li>
-      <li><a href="api.html#pypillometry.signal.pupil.pupil_kernel">pupil_kernel() (in module pypillometry.signal.pupil)</a>
-</li>
-      <li><a href="api.html#pypillometry.signal.pupil.pupil_kernel_t">pupil_kernel_t() (in module pypillometry.signal.pupil)</a>
-</li>
-      <li><a href="api.html#pypillometry.PupilData.pupil_lowpass_filter">pupil_lowpass_filter() (pypillometry.PupilData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.PupilData.pupil_merge_eyes">pupil_merge_eyes() (pypillometry.PupilData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyePlotter.pupil_plot">pupil_plot() (pypillometry.EyePlotter method)</a>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.plot_timeseries_segments">plot_timeseries_segments() (pypillometry.EyePlotter method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.PupilPlotter.pupil_plot">(pypillometry.PupilPlotter method)</a>
+        <li><a href="api/generated/pypillometry.GazePlotter.html#pypillometry.GazePlotter.plot_timeseries_segments">(pypillometry.GazePlotter method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilPlotter.html#pypillometry.PupilPlotter.plot_timeseries_segments">(pypillometry.PupilPlotter method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.EyePlotter.pupil_plot_segments">pupil_plot_segments() (pypillometry.EyePlotter method)</a>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.pop">pop() (pypillometry.EyeDataDict method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.popitem">popitem() (pypillometry.EyeDataDict method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.print_history">print_history() (pypillometry.EyeData method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.PupilPlotter.pupil_plot_segments">(pypillometry.PupilPlotter method)</a>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.print_history">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.print_history">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.print_history">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.print_history">(pypillometry.PupilData method)</a>
 </li>
       </ul></li>
-      <li><a href="api.html#pypillometry.signal.pupil.pupil_response">pupil_response() (in module pypillometry.signal.pupil)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.pupil_blinks_detect">pupil_blinks_detect() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.pupil_blinks_detect">(pypillometry.FakeEyeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.pupil.pupil_signal_quality">pupil_signal_quality() (in module pypillometry.signal.pupil)</a>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_blinks_detect">(pypillometry.PupilData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.PupilData.pupil_smooth_window">pupil_smooth_window() (pypillometry.PupilData method)</a>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.pupil_blinks_interpolate">pupil_blinks_interpolate() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.pupil_blinks_interpolate">(pypillometry.FakeEyeData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.PupilData">PupilData (class in pypillometry)</a>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_blinks_interpolate">(pypillometry.PupilData method)</a>
 </li>
-      <li><a href="api.html#pypillometry.PupilPlotter">PupilPlotter (class in pypillometry)</a>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.pupil_build_design_matrix.html#pypillometry.pupil_build_design_matrix">pupil_build_design_matrix() (in module pypillometry)</a>
 </li>
-      <li><a href="api.html#pypillometry.signal.pupil.pupilresponse_nnls">pupilresponse_nnls() (in module pypillometry.signal.pupil)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.pupil_estimate_baseline">pupil_estimate_baseline() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.pupil_estimate_baseline">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_estimate_baseline">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.pupil_estimate_response">pupil_estimate_response() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.pupil_estimate_response">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_estimate_response">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.pupil_eye_offset.html#pypillometry.pupil_eye_offset">pupil_eye_offset() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.pupil_get_max_duration.html#pypillometry.pupil_get_max_duration">pupil_get_max_duration() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.pupil_kernel.html#pypillometry.pupil_kernel">pupil_kernel() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.pupil_kernel_t.html#pypillometry.pupil_kernel_t">pupil_kernel_t() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.pupil_lowpass_filter">pupil_lowpass_filter() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.pupil_lowpass_filter">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_lowpass_filter">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.pupil_merge_eyes">pupil_merge_eyes() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.pupil_merge_eyes">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_merge_eyes">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.pupil_plot">pupil_plot() (pypillometry.EyePlotter method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.PupilPlotter.html#pypillometry.PupilPlotter.pupil_plot">(pypillometry.PupilPlotter method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyePlotter.html#pypillometry.EyePlotter.pupil_plot_segments">pupil_plot_segments() (pypillometry.EyePlotter method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.PupilPlotter.html#pypillometry.PupilPlotter.pupil_plot_segments">(pypillometry.PupilPlotter method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.pupil_response.html#pypillometry.pupil_response">pupil_response() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.pupil_signal_quality.html#pypillometry.pupil_signal_quality">pupil_signal_quality() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.pupil_smooth_window">pupil_smooth_window() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.pupil_smooth_window">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.pupil_smooth_window">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData">PupilData (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.PupilPlotter.html#pypillometry.PupilPlotter">PupilPlotter (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.pupilresponse_nnls.html#pypillometry.pupilresponse_nnls">pupilresponse_nnls() (in module pypillometry)</a>
 </li>
       <li>
     pypillometry
 
       <ul>
-        <li><a href="api.html#module-pypillometry">module</a>
-</li>
-      </ul></li>
-      <li>
-    pypillometry.example_data
-
-      <ul>
-        <li><a href="api.html#module-pypillometry.example_data">module</a>
-</li>
-      </ul></li>
-      <li>
-    pypillometry.io
-
-      <ul>
-        <li><a href="api.html#module-pypillometry.io">module</a>
-</li>
-      </ul></li>
-      <li>
-    pypillometry.signal.baseline
-
-      <ul>
-        <li><a href="api.html#module-pypillometry.signal.baseline">module</a>
-</li>
-      </ul></li>
-      <li>
-    pypillometry.signal.fake
-
-      <ul>
-        <li><a href="api.html#module-pypillometry.signal.fake">module</a>
-</li>
-      </ul></li>
-      <li>
-    pypillometry.signal.preproc
-
-      <ul>
-        <li><a href="api.html#module-pypillometry.signal.preproc">module</a>
-</li>
-      </ul></li>
-      <li>
-    pypillometry.signal.pupil
-
-      <ul>
-        <li><a href="api.html#module-pypillometry.signal.pupil">module</a>
-</li>
-      </ul></li>
-      <li>
-    pypillometry.study
-
-      <ul>
-        <li><a href="api.html#module-pypillometry.study">module</a>
+        <li><a href="api/index.html#module-pypillometry">module</a>
 </li>
       </ul></li>
   </ul></td>
@@ -965,7 +1782,7 @@ window.runMermaid = runMermaid;</script>
 <h2 id="Q">Q</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.Quantity">Quantity (class in pypillometry)</a>
+      <li><a href="api/generated/pypillometry.Quantity.html#pypillometry.Quantity">Quantity (class in pypillometry)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -973,17 +1790,33 @@ window.runMermaid = runMermaid;</script>
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.io.read_eyelink">read_eyelink() (in module pypillometry.io)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.r">r (pypillometry.ExperimentalSetup property)</a>
 </li>
-      <li><a href="api.html#pypillometry.io.read_pickle">read_pickle() (in module pypillometry.io)</a>
+      <li><a href="api/generated/pypillometry.read_eyelink.html#pypillometry.read_eyelink">read_eyelink() (in module pypillometry)</a>
 </li>
+      <li><a href="api/generated/pypillometry.read_pickle.html#pypillometry.read_pickle">read_pickle() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.RectangularROI.html#pypillometry.RectangularROI">RectangularROI (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.regenerate">regenerate() (pypillometry.FakeEyeData method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.reset_time">reset_time() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.reset_time">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.reset_time">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.reset_time">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.reset_time">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.RectangularROI">RectangularROI (class in pypillometry)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.right_eye_offset">right_eye_offset (pypillometry.ExperimentalSetup property)</a>
 </li>
-      <li><a href="api.html#pypillometry.GenericEyeData.reset_time">reset_time() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.ROI">ROI (class in pypillometry)</a>
+      <li><a href="api/generated/pypillometry.ROI.html#pypillometry.ROI">ROI (class in pypillometry)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -991,44 +1824,138 @@ window.runMermaid = runMermaid;</script>
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GenericEyeData.scale">scale() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.SegmentedEyeData">SegmentedEyeData (class in pypillometry)</a>
-</li>
-      <li><a href="api.html#pypillometry.GenericEyeData.set_blinks">set_blinks() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.GenericEyeData.set_event_onsets">set_event_onsets() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.GenericEyeData.set_events">set_events() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.GazeData.set_experimental_setup">set_experimental_setup() (pypillometry.GazeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyeDataDict.set_mask">set_mask() (pypillometry.EyeDataDict method)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyeDataDict.set_with_mask">set_with_mask() (pypillometry.EyeDataDict method)</a>
-</li>
-      <li><a href="api.html#pypillometry.signal.preproc.smooth_window">smooth_window() (in module pypillometry.signal.preproc)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GenericEyeData.stat_per_event">stat_per_event() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.Intervals.stats">stats() (pypillometry.Intervals method)</a>
-</li>
-      <li><a href="api.html#pypillometry.GenericEyeData.sub_slice">sub_slice() (pypillometry.GenericEyeData method)</a>
-</li>
-      <li><a href="api.html#pypillometry.EyeData.summary">summary() (pypillometry.EyeData method)</a>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.scale">scale() (pypillometry.EyeData method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GazeData.summary">(pypillometry.GazeData method)</a>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.scale">(pypillometry.FakeEyeData method)</a>
 </li>
-        <li><a href="api.html#pypillometry.GenericEyeData.summary">(pypillometry.GenericEyeData method)</a>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.scale">(pypillometry.GazeData method)</a>
 </li>
-        <li><a href="api.html#pypillometry.GroupLevelSegmentedData.summary">(pypillometry.GroupLevelSegmentedData method)</a>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.scale">(pypillometry.GenericEyeData method)</a>
 </li>
-        <li><a href="api.html#pypillometry.PupilData.summary">(pypillometry.PupilData method)</a>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.scale">(pypillometry.PupilData method)</a>
 </li>
-        <li><a href="api.html#pypillometry.SegmentedEyeData.summary">(pypillometry.SegmentedEyeData method)</a>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.screen_height">screen_height (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.screen_offset">screen_offset (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.screen_pitch">screen_pitch (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.screen_point_to_eye_frame">screen_point_to_eye_frame() (pypillometry.ExperimentalSetup method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.screen_resolution">screen_resolution (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.screen_width">screen_width (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.screen_xlim">screen_xlim (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.screen_yaw">screen_yaw (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.screen_ylim">screen_ylim (pypillometry.ExperimentalSetup property)</a>
+</li>
+      <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData">SegmentedEyeData (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.set_blinks">set_blinks() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.set_blinks">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.set_blinks">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.set_blinks">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.set_blinks">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.set_default_inplace.html#pypillometry.set_default_inplace">set_default_inplace() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.set_event_onsets">set_event_onsets() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.set_event_onsets">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.set_event_onsets">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.set_event_onsets">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.set_event_onsets">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.set_events">set_events() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.set_events">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.set_events">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.set_events">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.set_events">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.set_experimental_setup">set_experimental_setup() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.set_experimental_setup">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.set_experimental_setup">(pypillometry.GazeData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.set_mask">set_mask() (pypillometry.EyeDataDict method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.set_with_mask">set_with_mask() (pypillometry.EyeDataDict method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.setdefault">setdefault() (pypillometry.EyeDataDict method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.smooth_window.html#pypillometry.smooth_window">smooth_window() (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.SpatialCalibration.html#pypillometry.SpatialCalibration">SpatialCalibration (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.stat_per_event">stat_per_event() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.stat_per_event">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.stat_per_event">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.stat_per_event">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.stat_per_event">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.Intervals.html#pypillometry.Intervals.stats">stats() (pypillometry.Intervals method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.sub_slice">sub_slice() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.sub_slice">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.sub_slice">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.sub_slice">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.sub_slice">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.summary">summary() (pypillometry.ExperimentalSetup method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.summary">(pypillometry.EyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.summary">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.summary">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.summary">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.summary">(pypillometry.GroupLevelSegmentedData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.summary">(pypillometry.PupilData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.summary">(pypillometry.SegmentedEyeData method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1037,21 +1964,25 @@ window.runMermaid = runMermaid;</script>
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.Quantity.to">to() (pypillometry.Quantity method)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.theta">theta (pypillometry.ExperimentalSetup property)</a>
 </li>
-      <li><a href="api.html#pypillometry.Events.to_array">to_array() (pypillometry.Events method)</a>
+      <li><a href="api/generated/pypillometry.Quantity.html#pypillometry.Quantity.to">to() (pypillometry.Quantity method)</a>
 </li>
-      <li><a href="api.html#pypillometry.Intervals.to_mask">to_mask() (pypillometry.Intervals method)</a>
+      <li><a href="api/generated/pypillometry.Events.html#pypillometry.Events.to_array">to_array() (pypillometry.Events method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.to_dict">to_dict() (pypillometry.ExperimentalSetup method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.Events.to_units">to_units() (pypillometry.Events method)</a>
+      <li><a href="api/generated/pypillometry.Intervals.html#pypillometry.Intervals.to_mask">to_mask() (pypillometry.Intervals method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.Events.html#pypillometry.Events.to_units">to_units() (pypillometry.Events method)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.Intervals.to_units">(pypillometry.Intervals method)</a>
+        <li><a href="api/generated/pypillometry.Intervals.html#pypillometry.Intervals.to_units">(pypillometry.Intervals method)</a>
 </li>
       </ul></li>
-      <li><a href="tweak.html#pypillometry.tweak">tweak() (in module pypillometry)</a>
+      <li><a href="api/generated/pypillometry.tweak.html#pypillometry.tweak">tweak() (in module pypillometry)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1059,7 +1990,25 @@ window.runMermaid = runMermaid;</script>
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.GenericEyeData.unscale">unscale() (pypillometry.GenericEyeData method)</a>
+      <li><a href="api/units.html#pypillometry.u">u (in module pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.Unit.html#pypillometry.Unit">Unit (class in pypillometry)</a>
+</li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.unscale">unscale() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.unscale">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.unscale">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.unscale">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.unscale">(pypillometry.PupilData method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.update">update() (pypillometry.EyeDataDict method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1067,19 +2016,35 @@ window.runMermaid = runMermaid;</script>
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.SegmentedEyeData.var">var (pypillometry.SegmentedEyeData property)</a>
+      <li><a href="api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup.validate">validate() (pypillometry.ExperimentalSetup method)</a>
 </li>
-      <li><a href="api.html#pypillometry.EyeDataDict.variables">variables (pypillometry.EyeDataDict property)</a>
+      <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.values">values() (pypillometry.EyeDataDict method)</a>
+</li>
+      <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.var">var (pypillometry.GroupLevelSegmentedData property)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.GenericEyeData.variables">(pypillometry.GenericEyeData property)</a>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.var">(pypillometry.SegmentedEyeData property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.variables">variables (pypillometry.EyeData property)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.variables">(pypillometry.EyeDataDict property)</a>
+</li>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.variables">(pypillometry.FakeEyeData property)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.variables">(pypillometry.GazeData property)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.variables">(pypillometry.GenericEyeData property)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.variables">(pypillometry.PupilData property)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.signal.preproc.velocity_savgol">velocity_savgol() (in module pypillometry.signal.preproc)</a>
+      <li><a href="api/generated/pypillometry.velocity_savgol.html#pypillometry.velocity_savgol">velocity_savgol() (in module pypillometry)</a>
 </li>
-      <li><a href="viewer.html#pypillometry.view">view() (in module pypillometry)</a>
+      <li><a href="api/generated/pypillometry.view.html#pypillometry.view">view() (in module pypillometry)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1087,62 +2052,113 @@ window.runMermaid = runMermaid;</script>
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.SegmentedEyeData.window">window (pypillometry.SegmentedEyeData property)</a>
-</li>
-      <li><a href="api.html#pypillometry.GenericEyeData.write_file">write_file() (pypillometry.GenericEyeData method)</a>
+      <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.window">window (pypillometry.GroupLevelSegmentedData property)</a>
 
       <ul>
-        <li><a href="api.html#pypillometry.SegmentedEyeData.write_file">(pypillometry.SegmentedEyeData method)</a>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.window">(pypillometry.SegmentedEyeData property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/pypillometry.EyeData.html#pypillometry.EyeData.write_file">write_file() (pypillometry.EyeData method)</a>
+
+      <ul>
+        <li><a href="api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.write_file">(pypillometry.FakeEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GazeData.html#pypillometry.GazeData.write_file">(pypillometry.GazeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.write_file">(pypillometry.GenericEyeData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.write_file">(pypillometry.GroupLevelSegmentedData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.PupilData.html#pypillometry.PupilData.write_file">(pypillometry.PupilData method)</a>
+</li>
+        <li><a href="api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.write_file">(pypillometry.SegmentedEyeData method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#pypillometry.io.write_pickle">write_pickle() (in module pypillometry.io)</a>
+      <li><a href="api/generated/pypillometry.write_pickle.html#pypillometry.write_pickle">write_pickle() (in module pypillometry)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Z">Z</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/pypillometry.zscale.html#pypillometry.zscale">zscale() (in module pypillometry)</a>
 </li>
   </ul></td>
 </tr></table>
 
 
 
-            <div class="clearer"></div>
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="Main">
-        <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="index.html">
-              <img class="logo" src="_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
-            </a></p>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
     </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-        </div>
-      </div>
-      <div class="clearer"></div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2026, Matthias Mittner.
+      <br/>
+    
+  </p>
+</div>
+      
     </div>
-    <div class="related" role="navigation" aria-label="Related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="#" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pypillometry  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Index</a></li> 
-      </ul>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+  </p>
+</div>
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
     </div>
-    <div class="footer" role="contentinfo">
-    &#169; Copyright 2020-2025, Matthias Mittner.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
-    </div>
+  
+</div>
+
+  </footer>
   </body>
 </html>

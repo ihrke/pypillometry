@@ -1,0 +1,6 @@
+﻿pupil\_eye\_offset
+==================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: pupil_eye_offset

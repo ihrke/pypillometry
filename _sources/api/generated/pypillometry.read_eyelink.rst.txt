@@ -1,0 +1,6 @@
+﻿read\_eyelink
+=============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: read_eyelink

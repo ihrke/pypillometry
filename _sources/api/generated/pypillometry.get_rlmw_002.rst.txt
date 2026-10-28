@@ -1,0 +1,6 @@
+﻿get\_rlmw\_002
+==============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: get_rlmw_002

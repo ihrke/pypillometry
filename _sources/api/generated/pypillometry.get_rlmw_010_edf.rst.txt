@@ -1,0 +1,6 @@
+﻿get\_rlmw\_010\_edf
+===================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: get_rlmw_010_edf

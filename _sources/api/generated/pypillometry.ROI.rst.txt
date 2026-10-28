@@ -1,0 +1,25 @@
+﻿ROI
+===
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: ROI
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ROI.contains
+      ~ROI.plot
+   
+   
+
+
+   .. rubric:: Details

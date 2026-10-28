@@ -1,0 +1,6 @@
+﻿osf\_authenticate
+=================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: osf_authenticate

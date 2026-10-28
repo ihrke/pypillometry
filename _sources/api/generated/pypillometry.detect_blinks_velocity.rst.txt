@@ -1,0 +1,6 @@
+﻿detect\_blinks\_velocity
+========================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: detect_blinks_velocity

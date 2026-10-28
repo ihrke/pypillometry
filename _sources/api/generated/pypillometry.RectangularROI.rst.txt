@@ -1,0 +1,27 @@
+﻿RectangularROI
+==============
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: RectangularROI
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~RectangularROI.contains
+      ~RectangularROI.from_degrees
+      ~RectangularROI.from_mm
+      ~RectangularROI.plot
+   
+   
+
+
+   .. rubric:: Details

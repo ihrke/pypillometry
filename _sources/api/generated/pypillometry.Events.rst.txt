@@ -1,0 +1,27 @@
+﻿Events
+======
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: Events
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Events.filter
+      ~Events.plot
+      ~Events.to_array
+      ~Events.to_units
+   
+   
+
+
+   .. rubric:: Details

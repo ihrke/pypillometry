@@ -1,0 +1,6 @@
+﻿view
+====
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: view

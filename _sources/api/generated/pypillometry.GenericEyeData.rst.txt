@@ -1,0 +1,58 @@
+﻿GenericEyeData
+==============
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: GenericEyeData
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~GenericEyeData.add_to_history
+      ~GenericEyeData.blink_stats
+      ~GenericEyeData.blinks_merge_close
+      ~GenericEyeData.copy
+      ~GenericEyeData.downsample
+      ~GenericEyeData.drop_data
+      ~GenericEyeData.drop_original
+      ~GenericEyeData.fill_time_discontinuities
+      ~GenericEyeData.from_eyelink
+      ~GenericEyeData.from_file
+      ~GenericEyeData.get_blinks
+      ~GenericEyeData.get_duration
+      ~GenericEyeData.get_events
+      ~GenericEyeData.get_interpolated_blinks
+      ~GenericEyeData.get_intervals
+      ~GenericEyeData.get_segments
+      ~GenericEyeData.get_size
+      ~GenericEyeData.interpolate_intervals
+      ~GenericEyeData.mask_as_intervals
+      ~GenericEyeData.mask_intervals
+      ~GenericEyeData.merge_eyes
+      ~GenericEyeData.merge_masks
+      ~GenericEyeData.nblinks
+      ~GenericEyeData.nevents
+      ~GenericEyeData.print_history
+      ~GenericEyeData.reset_time
+      ~GenericEyeData.scale
+      ~GenericEyeData.set_blinks
+      ~GenericEyeData.set_event_onsets
+      ~GenericEyeData.set_events
+      ~GenericEyeData.stat_per_event
+      ~GenericEyeData.sub_slice
+      ~GenericEyeData.summary
+      ~GenericEyeData.unscale
+      ~GenericEyeData.write_file
+   
+   
+
+
+   .. rubric:: Details

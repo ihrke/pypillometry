@@ -1,0 +1,33 @@
+﻿Intervals
+=========
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: Intervals
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Intervals.as_pandas
+      ~Intervals.filter
+      ~Intervals.from_mask
+      ~Intervals.merge
+      ~Intervals.pad
+      ~Intervals.plot
+      ~Intervals.plot_highlight
+      ~Intervals.stats
+      ~Intervals.to_mask
+      ~Intervals.to_units
+   
+   
+
+
+   .. rubric:: Details

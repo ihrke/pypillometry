@@ -1,0 +1,6 @@
+﻿get\_default\_inplace
+=====================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: get_default_inplace

@@ -1,0 +1,6 @@
+﻿baseline\_envelope\_iter\_bspline
+=================================
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: baseline_envelope_iter_bspline

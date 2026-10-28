@@ -1,0 +1,6 @@
+﻿pupil\_response
+===============
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: pupil_response

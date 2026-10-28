@@ -1,0 +1,39 @@
+﻿ExperimentalSetup
+=================
+
+.. currentmodule:: pypillometry
+
+.. autoclass:: ExperimentalSetup
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
+   
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ExperimentalSetup.degrees_to_mm
+      ~ExperimentalSetup.degrees_to_pixels
+      ~ExperimentalSetup.from_dict
+      ~ExperimentalSetup.has_camera_position
+      ~ExperimentalSetup.has_eye_distance
+      ~ExperimentalSetup.has_screen_info
+      ~ExperimentalSetup.is_complete
+      ~ExperimentalSetup.mm_to_degrees
+      ~ExperimentalSetup.mm_to_pixels
+      ~ExperimentalSetup.pixels_to_degrees
+      ~ExperimentalSetup.pixels_to_mm
+      ~ExperimentalSetup.plot
+      ~ExperimentalSetup.screen_point_to_eye_frame
+      ~ExperimentalSetup.summary
+      ~ExperimentalSetup.to_dict
+      ~ExperimentalSetup.validate
+   
+   
+
+
+   .. rubric:: Details

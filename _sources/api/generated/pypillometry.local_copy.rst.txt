@@ -1,0 +1,6 @@
+﻿local\_copy
+===========
+
+.. currentmodule:: pypillometry
+
+.. autofunction:: local_copy
