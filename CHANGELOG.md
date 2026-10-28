@@ -122,6 +122,8 @@
   argument)
 - `tweak()`: "?" did not open the help
 - `nblinks()` was annotated as returning `int` (returns a dict)
+- `get_segments()`: the number of samples per segment depended on the timing
+  of the first event, so `group_segments()` could fail
 - `ExperimentalSetup.screen_point_to_eye_frame()`: tilting the screen moved
   its center towards the eye (z was `d*cos(pitch)*cos(yaw)` instead of `d`)
 
