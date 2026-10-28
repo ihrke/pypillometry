@@ -8,11 +8,11 @@ Segmented eye data for event-related analysis.
 import numpy as np
 import numpy.ma as ma
 from typing import Optional, Tuple, Union
-from collections.abc import Iterable
 from loguru import logger
 import scipy.stats
 
 from .io import write_pickle, read_pickle
+from .units import parse_time
 from .convenience import _warn_if_ignores_mask, _check_accepts_axis
 
 __all__ = [
@@ -402,8 +402,9 @@ class SegmentedEyeData:
         
         Parameters
         ----------
-        window : tuple (float, float), float, or None
-            Baseline window in ms relative to event onset (time 0):
+        window : tuple (float, float), float, str, Quantity or None
+            Baseline window relative to event onset (time 0), in ms or with
+            units (e.g., ``(-200, 0) * u.ms``):
 
             - If None, no baseline correction is applied
             - If tuple (start, end), the mean value in this time window is subtracted
@@ -421,6 +422,7 @@ class SegmentedEyeData:
         --------
         >>> # Use pre-event period as baseline
         >>> segments_bc = segments.baseline_correct(window=(-200, 0))
+        >>> segments_bc = segments.baseline_correct(window=(-200, 0) * u.ms)
         
         >>> # Use single time point as baseline
         >>> segments_bc = segments.baseline_correct(window=-100)
@@ -431,8 +433,9 @@ class SegmentedEyeData:
         
         # Create copy of data
         corrected_data = self.data.copy()
-        
-        if not isinstance(window, Iterable):
+        window = parse_time(window)
+
+        if np.ndim(window) == 0:
             # Single time point
             blwin_ix = np.argmin(np.abs(self.tx - window))
             for i in range(self.n_segments):

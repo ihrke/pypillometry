@@ -131,6 +131,7 @@
 
 ### Documentation
 
+- Updated website to a more modern feel.
 - Updated docstrings across the package (eyedata classes, signal, plotting,
   intervals, io, viewer, experimental setup).
 - Fixed broken links, references and markup in the docs and notebooks.

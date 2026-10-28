@@ -241,6 +241,18 @@ class TestSegmentedEyeDataBaselineCorrection(unittest.TestCase):
         for i in range(n_segments):
             self.assertAlmostEqual(seg_bc.data[:, i].mean(), 0, places=5)
     
+    def test_baseline_correct_with_units(self):
+        """window with units gives the same result as plain ms (bug 1.2)"""
+        from pypillometry import u
+        tx = np.linspace(-200, 800, 100)
+        data = np.random.default_rng(1).normal(size=(100, 3))
+        seg = SegmentedEyeData.from_masked_array(data=data, tx=tx, variable="left_pupil")
+        ref = seg.baseline_correct(window=(-200, 0)).data
+        np.testing.assert_allclose(seg.baseline_correct(window=(-200, 0) * u.ms).data, ref)
+        np.testing.assert_allclose(seg.baseline_correct(window=(-0.2 * u.sec, 0 * u.sec)).data, ref)
+        np.testing.assert_allclose(seg.baseline_correct(window=-100 * u.ms).data,
+                                   seg.baseline_correct(window=-100).data)
+
     def test_baseline_correct_none(self):
         """Test that None window returns original data"""
         tx = np.linspace(-200, 800, 100)
