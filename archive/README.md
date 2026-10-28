@@ -7,3 +7,5 @@ pypillometry.
 - `notebooks/symp_talk_uit2019.ipynb`: slides from a 2019 symposium talk on
   tonic/phasic pupil modeling (v1 API, needs pystan). Its figures are in
   `data/stuff/`.
+- `notebooks/eyedata.ipynb`: scratch notebook from the development of the
+  `EyeData` class (contains a TODO list and cells that no longer run).
