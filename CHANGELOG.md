@@ -18,9 +18,16 @@
   are no longer exported at the top level (still in `pp.convenience`)
 - `stat_event_interval` is no longer exported at the top level (use
   `stat_per_event()`)
+- `pint` is no longer used: `pp.ureg` is replaced by the unit namespace
+  `pp.u` (e.g., `60 * pp.u.cm`, `20 * pp.u.deg`)
 
 ### Added
 
+- Times with units, e.g. `d.sub_slice(3*u.min, 5*u.min)`,
+  `d.get_intervals("stim", (-200, 800) * u.ms)` or `"20 ms"`; accepted by
+  `sub_slice()`, `get_intervals()`, `stat_per_event()`, the blink functions,
+  plot ranges, and `Intervals`/`Events` (where `units=` can then be omitted)
+- `pp.parse_time()` converts times with units
 - `pp.set_default_inplace()` and `pp.get_default_inplace()`: package-level
   default for `inplace` (initially `True`).
 - `detect_blinks_zero()` accepts `blink_val=np.nan` to detect runs of NaN.

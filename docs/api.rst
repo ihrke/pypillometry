@@ -179,6 +179,38 @@ These functions are used by the main classes to process the data. They are state
     :members:
 
 
+Units
+-----
+
+Times, distances and angles can be given with units, either multiplied by a
+unit from :data:`pypillometry.u` or as strings:
+
+.. code-block:: python
+
+    from pypillometry import u
+
+    d.sub_slice(3*u.min, 5*u.min)                   # or ("3 min", "5 min")
+    d.get_intervals("stim", (-200, 800) * u.ms)
+    d.pupil_blinks_detect(min_duration="20 ms")
+    d.plot.pupil_plot(plot_range=(3, 5) * u.min)
+    ExperimentalSetup(eye_to_screen_center=60 * u.cm, screen_pitch="-5 deg")
+
+Internally, all values are converted to ms, mm and radians. Plain numbers
+are interpreted as documented for each function (usually ms for times).
+Available units: ``u.ms``, ``u.sec``, ``u.min``, ``u.h``, ``u.samples``,
+``u.mm``, ``u.cm``, ``u.m``, ``u.inch``, ``u.deg``, ``u.rad`` (plus aliases
+such as ``u.seconds`` or ``u.degree``).
+
+.. autoclass:: pypillometry.Quantity
+    :members: to
+
+.. autofunction:: pypillometry.parse_time
+
+.. autofunction:: pypillometry.parse_distance
+
+.. autofunction:: pypillometry.parse_angle
+
+
 Logging
 -------
 
