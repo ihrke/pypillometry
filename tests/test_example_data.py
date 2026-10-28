@@ -8,6 +8,8 @@ from unittest import mock
 import pypillometry as pp
 from pypillometry import example_data
 
+TEST_EDF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "test.edf")
+
 
 class TestExampleData(unittest.TestCase):
     def test_every_dataset_has_loader(self):
@@ -16,7 +18,7 @@ class TestExampleData(unittest.TestCase):
 
     def test_get_rlmw_010_edf(self):
         """Loader reads the downloaded EDF file (download mocked)"""
-        edf = files('pypillometry.data').joinpath('test.edf')
+        edf = TEST_EDF
 
         def fake_download(url, fname, **kwargs):
             shutil.copy(edf, fname)

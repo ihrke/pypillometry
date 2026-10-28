@@ -13,7 +13,7 @@ import pypillometry as pp
 from pypillometry.cli import (pypilview_main, edf2pypil_main, pypilinfo_main,
                               _default_output, _format_size)
 
-EDF = os.path.join(os.path.dirname(pp.__file__), "data", "test.edf")
+EDF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "test.edf")
 
 
 class CLITestCase(unittest.TestCase):

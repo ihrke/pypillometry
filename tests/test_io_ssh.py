@@ -7,12 +7,11 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from importlib.resources import files
 from io import StringIO
 
 from pypillometry import io
 
-DATA_DIR = str(files("pypillometry.data"))
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
 class FakeServer:

@@ -8,7 +8,9 @@ import pickle
 import requests
 from unittest.mock import patch, MagicMock
 from pypillometry.io import write_pickle, read_pickle, read_eyelink, download
-from importlib.resources import files
+
+TEST_EDF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "test.edf")
+
 
 class TestIO(unittest.TestCase):
     @patch("requests.Session")
@@ -202,7 +204,7 @@ class TestIO(unittest.TestCase):
     def test_read_eyelink_local_file(self):
         """Test reading EDF file using read_eyelink function."""
         # Get path to test EDF file
-        test_edf_path = files('pypillometry.data').joinpath('test.edf')
+        test_edf_path = TEST_EDF
         test_edf_path = os.path.abspath(test_edf_path)
         
         # Skip test if eyelinkio is not available
@@ -240,7 +242,7 @@ class TestIO(unittest.TestCase):
         except ImportError:
             self.skipTest("eyelinkio package not available")
         import pypillometry as pp
-        fname = str(files('pypillometry.data').joinpath('test.edf'))
+        fname = TEST_EDF
         for cls in (pp.PupilData, pp.GazeData, pp.EyeData):
             with self.subTest(cls=cls.__name__):
                 obj = cls.from_eyelink(fname)
@@ -253,7 +255,7 @@ class TestIO(unittest.TestCase):
             import eyelinkio
         except ImportError:
             self.skipTest("eyelinkio package not available")
-        test_edf_path = os.path.abspath(files('pypillometry.data').joinpath('test.edf'))
+        test_edf_path = TEST_EDF
         with open(test_edf_path, "rb") as f:
             content = f.read()
 
@@ -289,7 +291,7 @@ class TestIO(unittest.TestCase):
             self.skipTest("eyelinkio package not available")
         
         # Get path to test EDF file
-        test_edf_path = files('pypillometry.data').joinpath('test.edf')        
+        test_edf_path = TEST_EDF        
         test_edf_path = os.path.abspath(test_edf_path)
         
         # Skip test if test file doesn't exist

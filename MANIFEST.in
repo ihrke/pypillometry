@@ -1,0 +1,2 @@
+# files the tests need in the source distribution (not installed)
+include tests/data/*.edf
