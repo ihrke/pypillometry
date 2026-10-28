@@ -127,11 +127,11 @@ paper/apa.csl
 data/test_events.asc
 data/test_samples.asc
 .DS_Store
-docs/baseline.stan
+archive/notebooks/baseline.stan
 *.swp
 *.pkl
 src/*
-docs/symp_talk_uit2019.pdf
+archive/notebooks/symp_talk_uit2019.pdf
 data/002_rlmw_events.asc
 data/002_rlmw_samples.asc
 docs/notebooks/example_data/
