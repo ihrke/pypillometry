@@ -9,7 +9,7 @@ from unittest.mock import patch
 import numpy as np
 
 import pypillometry as pp
-from pypillometry.cli import pypilview_main
+from pypillometry.cli import pypilview_main, edf2pypil_main, _default_output
 
 EDF = os.path.join(os.path.dirname(pp.__file__), "data", "test.edf")
 
@@ -97,6 +97,67 @@ class TestPypilview(unittest.TestCase):
         d = view.call_args.args[0]
         self.assertIsInstance(d, pp.EyeData)
         self.assertGreater(len(d), 0)
+
+
+class TestEdf2pypil(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.edf = os.path.join(self.tmp, "rec.edf")
+        shutil.copy(EDF, self.edf)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def run_main(self, argv):
+        with patch("sys.stdout"):
+            return edf2pypil_main(argv)
+
+    def assert_exits(self, argv):
+        with self.assertRaises(SystemExit) as cm, patch("sys.stderr"):
+            edf2pypil_main(argv)
+        self.assertEqual(cm.exception.code, 2)
+
+    def test_default_output(self):
+        self.assertEqual(self.run_main([self.edf]), 0)
+        d = pp.read_pickle(os.path.join(self.tmp, "rec.pkl"))
+        self.assertIsInstance(d, pp.EyeData)
+        self.assertEqual(len(d), len(pp.EyeData.from_eyelink(EDF)))
+
+    def test_output_option(self):
+        out = os.path.join(self.tmp, "out.pypil")
+        self.run_main([self.edf, "-o", out])
+        self.assertIsInstance(pp.read_pickle(out), pp.EyeData)
+        self.assertFalse(os.path.exists(os.path.join(self.tmp, "rec.pkl")))
+
+    def test_keep_triggers(self):
+        with patch.object(pp.EyeData, "from_eyelink", return_value={"a": 1}) as read:
+            self.run_main([self.edf, "--keep-triggers"])
+        read.assert_called_once_with(self.edf, remove_eyelink_triggers=False)
+
+    def test_no_overwrite_without_force(self):
+        out = os.path.join(self.tmp, "rec.pkl")
+        with open(out, "w") as f:
+            f.write("old")
+        self.assert_exits([self.edf])
+        with open(out) as f:
+            self.assertEqual(f.read(), "old")
+        self.run_main([self.edf, "--force"])
+        self.assertIsInstance(pp.read_pickle(out), pp.EyeData)
+
+    def test_not_an_edf(self):
+        fname = os.path.join(self.tmp, "data.edf")
+        pp.write_pickle({"a": 1}, fname)
+        self.assert_exits([fname])
+        self.assertFalse(os.path.exists(os.path.join(self.tmp, "data.pkl")))
+
+    def test_missing_file(self):
+        self.assert_exits([os.path.join(self.tmp, "missing.edf")])
+
+    def test_default_output_names(self):
+        self.assertEqual(_default_output("data/rec.edf"), "data/rec.pkl")
+        self.assertEqual(_default_output("rec.EDF"), "rec.pkl")
+        self.assertEqual(_default_output("ssh://server/data/rec.edf"), "rec.pkl")
+        self.assertEqual(_default_output("https://example.com/a/rec%201.edf"), "rec 1.pkl")
 
 
 if __name__ == "__main__":
