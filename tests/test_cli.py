@@ -10,7 +10,8 @@ from unittest.mock import patch
 import numpy as np
 
 import pypillometry as pp
-from pypillometry.cli import pypilview_main, edf2pypil_main, _default_output
+from pypillometry.cli import (pypilview_main, edf2pypil_main, pypilinfo_main,
+                              _default_output, _format_size)
 
 EDF = os.path.join(os.path.dirname(pp.__file__), "data", "test.edf")
 
@@ -164,6 +165,50 @@ class TestEdf2pypil(CLITestCase):
         self.assertEqual(_default_output("rec.EDF"), "rec.pkl")
         self.assertEqual(_default_output("ssh://server/data/rec.edf"), "rec.pkl")
         self.assertEqual(_default_output("https://example.com/a/rec%201.edf"), "rec 1.pkl")
+
+
+class TestPypilinfo(CLITestCase):
+    def run_main(self, argv):
+        out, err = StringIO(), StringIO()
+        with patch("sys.stdout", out), patch("sys.stderr", err):
+            status = pypilinfo_main(argv)
+        return status, out.getvalue(), err.getvalue()
+
+    def test_pickle(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fname = os.path.join(self.tmp, "rec.pkl")
+        pp.write_pickle(d, fname)
+        status, out, _ = self.run_main([fname])
+        self.assertEqual(status, 0)
+        self.assertIn(f"{fname} (PICKLE, ", out)
+        self.assertIn("EyeData(rlmw_002_short", out)
+        self.assertIn("sampling_rate", out)
+
+    def test_edf(self):
+        with patch.object(pp.EyeData, "from_eyelink", return_value="edfdata") as read:
+            status, out, _ = self.run_main([EDF, "--keep-triggers"])
+        self.assertEqual(status, 0)
+        read.assert_called_once_with(EDF, remove_eyelink_triggers=False)
+        self.assertIn("(EDF, ", out)
+        self.assertIn("edfdata", out)
+
+    def test_bad_files_are_skipped(self):
+        good = os.path.join(self.tmp, "good.pkl")
+        pp.write_pickle({"a": 1}, good)
+        bad = os.path.join(self.tmp, "bad.txt")
+        with open(bad, "w") as f:
+            f.write("hello")
+        missing = os.path.join(self.tmp, "missing.pkl")
+        status, out, err = self.run_main([bad, missing, good])
+        self.assertEqual(status, 1)
+        self.assertIn("{'a': 1}", out)
+        self.assertIn("neither an EDF file nor a pickle file", err)
+        self.assertIn("file not found", err)
+
+    def test_format_size(self):
+        self.assertEqual(_format_size(500), "500 B")
+        self.assertEqual(_format_size(2048), "2.0 KB")
+        self.assertEqual(_format_size(31 * 1024**2), "31.0 MB")
 
 
 class TestVerbosity(CLITestCase):
