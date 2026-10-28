@@ -4,6 +4,7 @@ import os
 import shutil
 import tempfile
 import unittest
+from io import StringIO
 from unittest.mock import patch
 
 import numpy as np
@@ -14,13 +15,21 @@ from pypillometry.cli import pypilview_main, edf2pypil_main, _default_output
 EDF = os.path.join(os.path.dirname(pp.__file__), "data", "test.edf")
 
 
-class TestPypilview(unittest.TestCase):
+class CLITestCase(unittest.TestCase):
+    """The programs set the log level (and TQDM_DISABLE): restore both after each test."""
+
     def setUp(self):
+        level = pp.logging_get_level()
+        self.addCleanup(pp.logging_set_level, level)
+        p = patch.dict(os.environ)
+        p.start()
+        self.addCleanup(p.stop)
+        os.environ.pop("TQDM_DISABLE", None)
         self.tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.tmp, True)
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp, ignore_errors=True)
 
+class TestPypilview(CLITestCase):
     def run_main(self, argv):
         with patch.object(pp.EyeData, "from_eyelink", return_value="data") as read, \
              patch.object(pp, "view") as view:
@@ -28,7 +37,7 @@ class TestPypilview(unittest.TestCase):
         return status, read, view
 
     def assert_exits(self, argv):
-        with self.assertRaises(SystemExit) as cm, patch("sys.stderr"), \
+        with self.assertRaises(SystemExit) as cm, patch("sys.stderr", new_callable=StringIO), \
              patch.object(pp, "view") as view:
             pypilview_main(argv)
         self.assertEqual(cm.exception.code, 2)
@@ -99,21 +108,18 @@ class TestPypilview(unittest.TestCase):
         self.assertGreater(len(d), 0)
 
 
-class TestEdf2pypil(unittest.TestCase):
+class TestEdf2pypil(CLITestCase):
     def setUp(self):
-        self.tmp = tempfile.mkdtemp()
+        super().setUp()
         self.edf = os.path.join(self.tmp, "rec.edf")
         shutil.copy(EDF, self.edf)
 
-    def tearDown(self):
-        shutil.rmtree(self.tmp, ignore_errors=True)
-
     def run_main(self, argv):
-        with patch("sys.stdout"):
+        with patch("sys.stdout", new_callable=StringIO):
             return edf2pypil_main(argv)
 
     def assert_exits(self, argv):
-        with self.assertRaises(SystemExit) as cm, patch("sys.stderr"):
+        with self.assertRaises(SystemExit) as cm, patch("sys.stderr", new_callable=StringIO):
             edf2pypil_main(argv)
         self.assertEqual(cm.exception.code, 2)
 
@@ -160,24 +166,14 @@ class TestEdf2pypil(unittest.TestCase):
         self.assertEqual(_default_output("https://example.com/a/rec%201.edf"), "rec 1.pkl")
 
 
-class TestVerbosity(unittest.TestCase):
+class TestVerbosity(CLITestCase):
     def setUp(self):
-        self.tmp = tempfile.mkdtemp()
+        super().setUp()
         self.edf = os.path.join(self.tmp, "rec.edf")
         shutil.copy(EDF, self.edf)
-        level = pp.logging_get_level()
-        self.addCleanup(pp.logging_set_level, level)
-        p = patch.dict(os.environ)
-        p.start()
-        self.addCleanup(p.stop)
-        os.environ.pop("TQDM_DISABLE", None)
-
-    def tearDown(self):
-        shutil.rmtree(self.tmp, ignore_errors=True)
 
     def run_both(self, opts):
         """Run both programs with `opts`; return (log level, TQDM_DISABLE, stdout) of each."""
-        from io import StringIO
         out = []
         for main, argv in [(pypilview_main, [self.edf]), (edf2pypil_main, [self.edf, "-f"])]:
             stdout = StringIO()
@@ -209,7 +205,7 @@ class TestVerbosity(unittest.TestCase):
 
     def test_quiet_and_verbose_exclusive(self):
         for main in (pypilview_main, edf2pypil_main):
-            with self.assertRaises(SystemExit), patch("sys.stderr"):
+            with self.assertRaises(SystemExit), patch("sys.stderr", new_callable=StringIO):
                 main([self.edf, "-q", "-v"])
 
 
