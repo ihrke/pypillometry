@@ -1,6 +1,6 @@
 from ..plot.gazeplotter import GazePlotter
 from ..plot.pupilplotter import PupilPlotter
-from ..units import parse_angle
+from ..units import parse_angle, u
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -411,11 +411,11 @@ class EyePlotter(GazePlotter,PupilPlotter):
         # Get theta and phi from calibration if provided
         if calibration is not None:
             if theta is None:
-                theta = calibration.theta
-                logger.info(f"Using theta={np.degrees(theta):.1f}° from calibration")
+                theta = calibration.theta * u.rad  # fitted angles are in radians
+                logger.info(f"Using theta={np.degrees(calibration.theta):.1f}° from calibration")
             if phi is None:
-                phi = calibration.phi
-                logger.info(f"Using phi={np.degrees(phi):.1f}° from calibration")
+                phi = calibration.phi * u.rad
+                logger.info(f"Using phi={np.degrees(calibration.phi):.1f}° from calibration")
         
         # Parse angles if provided as strings
         if theta is not None:

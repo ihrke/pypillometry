@@ -382,10 +382,16 @@ class TestPlottingExperimentalSetup(unittest.TestCase):
             fit_metrics={'R2': 0.95, 'RMSE': 10.0}
         )
         
-        fig, axes = self.data.plot.plot_experimental_setup(
-            calibration=calib,
-            projection='2d'
-        )
+        import warnings
+        from pypillometry.units import _unit_warnings_issued
+        _unit_warnings_issued.clear()
+        with warnings.catch_warnings():
+            # fitted angles are in radians, no "plain number" warning (bug 1.4)
+            warnings.filterwarnings("error", message=".*plain number provided.*")
+            fig, axes = self.data.plot.plot_experimental_setup(
+                calibration=calib,
+                projection='2d'
+            )
         self.assertIsNotNone(fig)
         self.assertEqual(len(axes), 3)
     
