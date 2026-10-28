@@ -302,7 +302,7 @@ def get_rlmw_002_short():
         physical_screen_size=("30 cm", "20 cm"),
         eye_to_screen_center="60 cm",
     )
-    d = EyeData(time=df.time, name="test short",
+    d = EyeData(time=df.time, name="rlmw_002_short",
                 experimental_setup=setup,
                 left_x=left_x, left_y=left_y, left_pupil=left_p,
                 right_x=right_x, right_y=right_y, right_pupil=right_p,

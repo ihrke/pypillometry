@@ -26,6 +26,16 @@ class TestPupilData(unittest.TestCase):
         d = d.scale("pupil", inplace=False)
         self.assertEqual(d.params["scale"]["mean"]["left"]["pupil"], 2.)
         self.assertEqual(d.params["scale"]["sd"]["left"]["pupil"], 1.)
+    def test_scale_masked_samples(self):
+        # masked samples are scaled as well and stay masked
+        d = pp.PupilData(sampling_rate=10, left_pupil=[1., 3., 1., 3., 5.])
+        d.data.mask["left_pupil"][4] = 1
+        s = d.scale("pupil", inplace=False)
+        np.testing.assert_allclose(s.data["left", "pupil"], [-1, 1, -1, 1, 3])
+        self.assertEqual(s.data.mask["left_pupil"][4], 1)
+        u = s.unscale("pupil", inplace=False)
+        np.testing.assert_allclose(u.data["left", "pupil"], [1, 3, 1, 3, 5])
+        self.assertEqual(u.data.mask["left_pupil"][4], 1)
     def test_scale_fixed(self):
         d = pp.PupilData(sampling_rate=10, left_pupil=[1,2,1,2], right_pupil=[3,4,3,4])
         scalepars = {
@@ -53,6 +63,14 @@ class TestPupilData(unittest.TestCase):
             self.assertEqual(s.data["left","pupil"].mean(), 0.25)
             u = s.unscale("pupil", mean=mean, sd=sd, inplace=False)
             np.testing.assert_allclose(u.data["left","pupil"], [1,2,1,2])
+
+    def test_constructor_history_empty(self):
+        # filling time gaps in the constructor is not a user operation
+        d = pp.PupilData(sampling_rate=10, left_pupil=[1., 2., 3.])
+        self.assertEqual(d.history, [])
+        d.fill_time_discontinuities()
+        self.assertEqual([h["funcname"] for h in d.history],
+                         ["fill_time_discontinuities"])
 
     def test_fill_time_discontinuities(self):
         # three segments sampled at 2 ms, separated by gaps of 500 ms
@@ -140,3 +158,25 @@ class TestPupilData(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class TestMergeBlinkWindows(unittest.TestCase):
+    def merge(self, blinks, n=10000):
+        from pypillometry.eyedata.pupildata import _merge_overlapping_blink_windows
+        return _merge_overlapping_blink_windows(blinks, n)
+
+    def test_separate_blinks(self):
+        self.assertEqual(self.merge([(100, 110), (200, 210)]),
+                         [(90, 100, 110, 120), (190, 200, 210, 220)])
+
+    def test_overlapping_windows_merge(self):
+        self.assertEqual(self.merge([(100, 110), (115, 125)]),
+                         [(90, 100, 125, 135)])
+
+    def test_no_cascade(self):
+        # each blink's window only reaches its neighbour if blinks are close;
+        # the merged blink must not widen the window and swallow the rest
+        blinks = [(100, 200), (290, 390)] + [(1000 + 300*i, 1050 + 300*i)
+                                             for i in range(20)]
+        merged = self.merge(blinks)
+        self.assertEqual(merged[0], (0, 100, 390, 490))
+        self.assertEqual(len(merged), 21)

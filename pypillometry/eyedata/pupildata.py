@@ -32,25 +32,31 @@ def _merge_overlapping_blink_windows(blinks, n):
     Each blink `(t2, t3)` is interpolated from the anchor points
     ``t1 = t2-(t3-t2)`` and ``t4 = t3+(t3-t2)``. Neighbouring blinks are
     merged if the window ``[t1, t4]`` of one reaches into the other.
+
+    Windows are computed from the original blinks, not from the merged
+    ones (a merged blink is longer, so its window would be wider and
+    would reach further blinks, merging the whole recording).
+
+    Returns
+    -------
+    list of tuple
+        ``(t1, t2, t3, t4)`` for each merged blink: `t2`/`t3` are the
+        on-/offset of the merged blink, `t1`/`t4` the anchor points (from
+        the windows of the first/last original blink in the group)
     """
     def window(on, off):
         return max(0, 2*on-off), min(2*off-on, n-1)
 
-    merged = [tuple(int(v) for v in b) for b in sorted(blinks, key=lambda b: b[0])]
-    changed = True
-    while changed:
-        changed = False
-        out = []
-        for on, off in merged:
-            if out:
-                pon, poff = out[-1]
-                if window(pon, poff)[1] >= on or window(on, off)[0] <= poff:
-                    out[-1] = (pon, max(poff, off))
-                    changed = True
-                    continue
-            out.append((on, off))
-        merged = out
-    return merged
+    out = []
+    for on, off in sorted((int(b[0]), int(b[1])) for b in blinks):
+        t1, t4 = window(on, off)
+        if out:
+            pt1, pon, poff, pt4 = out[-1]
+            if pt4 >= on or t1 <= poff:
+                out[-1] = (pt1, pon, max(poff, off), max(pt4, t4))
+                continue
+        out.append((t1, on, off, t4))
+    return out
 
 class PupilData(GenericEyeData):
     """
@@ -157,8 +163,7 @@ class PupilData(GenericEyeData):
             duration_minutes=self.get_duration("min"),
             start_min=self.tx.min()/1000./60.,
             end_min=self.tx.max()/1000./60.,
-            params=self._strfy_params(),
-            glimpse=repr(self.data)
+            params=self._strfy_params()
         )
         
         return summary            
@@ -508,6 +513,7 @@ class PupilData(GenericEyeData):
     def pupil_blinks_detect(self, eyes=[], min_duration:float=20, blink_val:float=0,
                       winsize: float=11, vel_onset=-5.0, vel_offset=5.0, 
                       vel_onset_min_duration: float=5.0, vel_offset_min_duration: float=5.0,
+                      max_duration: float=1000,
                       strategies: list=["zero","velocity"],
                       apply_mask=False, ignore_existing_mask=False, inplace=None):
         """
@@ -554,6 +560,11 @@ class PupilData(GenericEyeData):
         vel_offset_min_duration : float, str or Quantity
             minimum duration (in ms, or with units) that velocity must exceed threshold to detect as offset
             (to avoid noise-induced false detections)
+        max_duration : float, str, Quantity or None
+            maximum duration (in ms, or with units) of a blink detected by the
+            "velocity" strategy; an onset without an offset within this time
+            is dropped. `None` means no limit. Does not apply to the "zero"
+            strategy.
         strategies : list
             list of strategies to use;
             so far, use a list containing any combination of "zero" and "velocity"
@@ -586,6 +597,8 @@ class PupilData(GenericEyeData):
         min_duration_ix=int(parse_time(min_duration)/1000.*self.fs)
         vel_onset_min_samples = max(1, int(parse_time(vel_onset_min_duration)/1000.*self.fs))
         vel_offset_min_samples = max(1, int(parse_time(vel_offset_min_duration)/1000.*self.fs))
+        max_duration_ix = (None if max_duration is None
+                           else int(parse_time(max_duration)/1000.*self.fs))
 
         
         # check for unknown strategies
@@ -610,7 +623,8 @@ class PupilData(GenericEyeData):
                 vel_onset_samples, vel_offset_samples = self._convert_velocity_thresholds(
                     pupil_data, winsize_ix, vel_onset, vel_offset
                 )
-                blinks_vel=preproc.detect_blinks_velocity(pupil_data, winsize_ix, vel_onset_samples, vel_offset_samples, vel_onset_min_samples, vel_offset_min_samples, min_duration_ix)
+                blinks_vel=preproc.detect_blinks_velocity(pupil_data, winsize_ix, vel_onset_samples, vel_offset_samples, vel_onset_min_samples, vel_offset_min_samples, min_duration_ix,
+                    max_duration_ix)
                 logger.debug(f"Detected {len(blinks_vel)} blinks with velocity strategy")
             else: 
                 blinks_vel=np.array([])
@@ -770,12 +784,7 @@ class PupilData(GenericEyeData):
             interpolated_intervals = []
             
             # loop through blinks
-            for ix,(onset,offset) in enumerate(blink_onsets):                
-                # calc the 4 time points
-                t2,t3=onset,offset
-                t1=max(0,t2-t3+t2)
-                t4=min(t3-t2+t3, len(self)-1)
-                
+            for ix,(t1,t2,t3,t4) in enumerate(blink_onsets):
                 # Ensure all 4 time points are distinct and in order
                 if t1==t2:
                     t2+=1

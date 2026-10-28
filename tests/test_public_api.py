@@ -39,7 +39,7 @@ INTERNAL = {
 }
 
 # Modules that are not imported by the package (legacy code).
-SKIP_MODULES = {"pypillometry.eyedata.fakedata"}
+SKIP_MODULES = set()
 
 
 def _package_modules():

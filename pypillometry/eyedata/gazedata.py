@@ -140,8 +140,7 @@ class GazeData(GenericEyeData):
             duration_minutes=self.get_duration("min"),
             start_min=self.tx.min()/1000./60.,
             end_min=self.tx.max()/1000./60.,
-            parameters=self._strfy_params(),
-            glimpse=repr(self.data)
+            params=self._strfy_params()
         )
         
         return summary            

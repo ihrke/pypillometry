@@ -283,6 +283,22 @@ class TestDetectBlinksVelocity(unittest.TestCase):
         self.assertLess(blinks[0][0], 160)
         self.assertEqual(blinks[0][1], len(signal) - 1)
 
+    def test_max_blink_samples(self):
+        """Onsets without an offset within max_blink_samples are dropped"""
+        signal = np.ones(400) * 1000
+        signal[40:50] = np.linspace(1000, 100, 10)   # onset, no offset nearby
+        signal[50:200] = 100
+        signal[200:210] = np.linspace(100, 1000, 10) # offset far away
+        signal[300:310] = np.linspace(1000, 100, 10) # short blink
+        signal[310:320] = 100
+        signal[320:330] = np.linspace(100, 1000, 10)
+        kw = dict(smooth_winsize=5, vel_onset=-50, vel_offset=50,
+                  min_onset_len=2, min_offset_len=2)
+        self.assertEqual(len(detect_blinks_velocity(signal, **kw)), 2)
+        blinks = detect_blinks_velocity(signal, max_blink_samples=60, **kw)
+        self.assertEqual(len(blinks), 1)
+        self.assertGreater(blinks[0][0], 250)
+
     def test_returns_empty_for_flat_signal(self):
         """Flat signal should have no blinks"""
         signal = np.ones(200) * 100

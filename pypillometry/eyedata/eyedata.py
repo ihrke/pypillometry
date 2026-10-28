@@ -270,8 +270,11 @@ class EyeData(GazeData,PupilData):
             ydist = np.abs(self.data[vy] - midpoint[1]) * scaling_factor_y
             dist = np.sqrt(xdist**2 + ydist**2)
             corr = np.sqrt((dist**2) / (setup.d**2) + 1)  # correction factor
-            # Use masked array access to preserve masks from blinks/artifacts
-            obj[eye, store_as] = self[eye, "pupil"] * corr
+            # correct the masked samples too and keep the mask
+            x = self[eye, "pupil"]
+            corrected = x.data * corr
+            obj[eye, store_as] = np.ma.array(
+                corrected, mask=np.ma.getmaskarray(x) | np.isnan(corrected))
 
         return obj
 

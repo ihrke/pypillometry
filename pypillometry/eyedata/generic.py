@@ -184,9 +184,10 @@ class GenericEyeData(ABC):
         ## set info
         self.info = info if info is not None else {}
 
-        ## fill in time discontinuities
+        ## fill in time discontinuities (part of construction, so bypass
+        ## @keephistory and keep it out of the history)
         if fill_time_discontinuities:
-            self.fill_time_discontinuities()
+            type(self).fill_time_discontinuities.__wrapped__(self)
 
     def _unit_fac(self, units):
         """Convert time units to factor for converting from milliseconds.
@@ -1312,9 +1313,10 @@ class GenericEyeData(ABC):
         s="{cname}({name}, {size}):\n".format(cname=self.__class__.__name__,
                                               name=self.name, 
                                               size=str(size))
-        flen=max([len(k) for k in pars.keys()])
+        flen=max(len(k) for k in list(pars.keys())+["glimpse"])
         for k,v in pars.items():
             s+=(" {k:<"+str(flen)+"}: {v}\n").format(k=k,v=v)
+        s+=(" {k:<"+str(flen)+"}: {v}\n").format(k="glimpse", v=repr(self.data))
         if self.info:
             s+=f" Info: {len(self.info)} keys: {', '.join(list(self.info.keys())[:5])}" + ("..." if len(self.info) > 5 else "") + "\n"
         s+=" History:\n *\n"
@@ -1412,7 +1414,7 @@ class GenericEyeData(ABC):
             "class_name": self.__class__.__name__,
             "name": summary["name"],
             "overview": overview,
-            "glimpse": summary.get("glimpse"),
+            "glimpse": repr(self.data),
             "blink_stats": blink_stats,
             "history": history_items,
             "sparklines": sparklines,
@@ -2194,8 +2196,11 @@ class GenericEyeData(ABC):
                     raise ValueError("No data for eye %s available" % eye)
                 if var not in obj.variables:
                     raise ValueError("No data for variable %s available" % var)
-                # Use masked array access to preserve masks
-                obj[eye, var] = (obj[eye, var] - mean[eye][var]) / sd[eye][var]
+                # scale the masked samples too (masked-array arithmetic
+                # would leave them unchanged), keep the mask
+                x = obj[eye, var]
+                obj[eye, var] = np.ma.array((x.data - mean[eye][var]) / sd[eye][var],
+                                            mask=np.ma.getmaskarray(x))
         return obj
         
     @keephistory    
@@ -2261,8 +2266,10 @@ class GenericEyeData(ABC):
             for var in variables:                
                 if var not in obj.variables:
                     raise ValueError("No data for variable %s available" % var)
-                # Use masked array access to preserve masks
-                obj[eye, var] = (obj[eye, var] * sd[eye][var]) + mean[eye][var]
+                # unscale the masked samples too, keep the mask
+                x = obj[eye, var]
+                obj[eye, var] = np.ma.array(x.data * sd[eye][var] + mean[eye][var],
+                                            mask=np.ma.getmaskarray(x))
         return obj    
 
     

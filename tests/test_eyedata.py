@@ -41,7 +41,7 @@ class TestEyeData(unittest.TestCase):
             pp.EyeData(left_x=[1,2])
             
         # Test with complete data
-        self.assertEqual(self.eyedata.name, "test short")
+        self.assertEqual(self.eyedata.name, "rlmw_002_short")
         self.assertEqual(self.eyedata.fs, 500.0)  # Updated to match actual sampling rate
         self.assertEqual(self.eyedata.experimental_setup.screen_width, 1280)  # Updated to match actual screen resolution
         self.assertEqual(self.eyedata.experimental_setup.screen_height, 1024)
@@ -2453,16 +2453,28 @@ class TestHistoryLog(unittest.TestCase):
         from pypillometry.intervals import Intervals
         d = pp.EyeData(left_x=np.ones(100), left_y=np.ones(100), left_pupil=np.ones(100),
                        sampling_rate=100)
-        self.assertEqual([h["funcname"] for h in d.history], ["fill_time_discontinuities"])
+        self.assertEqual(d.history, [])
         d["left_pupil"] = np.full(100, 2.)
         d.set_blinks(Intervals([(10, 20)], units=None, sampling_rate=100), eyes=["left"], variables=["pupil"])
         d.set_event_onsets(np.array([100., 200.]), np.array(["a", "b"]))
         d.set_experimental_setup(screen_resolution=(1280, 1024))
         d2 = d.drop_data(variables=["x"])
         del d2["left_y"]
-        self.assertEqual([h["funcstring"] for h in d.history][1:],
+        self.assertEqual([h["funcstring"] for h in d.history],
                          ["__setitem__('left_pupil',array(100,))",
                           "set_blinks(Intervals(1),eyes=['left'],variables=['pupil'])",
                           "set_event_onsets(array(2,),array(2,))",
                           "set_experimental_setup(screen_resolution=(1280, 1024))"])
         self.assertEqual([h["funcname"] for h in d2.history][-2:], ["drop_data", "__delitem__"])
+
+
+def test_summary_keys():
+    d = pp.EyeData(left_x=np.ones(100), left_y=np.ones(100),
+                   left_pupil=np.ones(100), sampling_rate=100)
+    g = pp.GazeData(left_x=np.ones(100), left_y=np.ones(100), sampling_rate=100)
+    for obj in [d, d.get_pupildata(), g]:
+        s = obj.summary()
+        assert "params" in s
+        assert "parameters" not in s
+        assert "glimpse" not in s
+        assert "glimpse" in repr(obj)
