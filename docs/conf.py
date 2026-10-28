@@ -1,152 +1,185 @@
 # Configuration file for the Sphinx documentation builder.
 #
-# This file only contains a selection of the most common options. For a full
-# list see the documentation:
+# Build from the repository root with `make html` (output in _build/html).
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# -- Path setup --------------------------------------------------------------
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-import os
 import sys
 from pathlib import Path
 
-# Get the absolute path to the project root directory
+# -- Path setup --------------------------------------------------------------
+
 project_root = Path(__file__).parent.parent.absolute()
 sys.path.insert(0, str(project_root))
 
-# Verify the package can be imported
-try:
-    import pypillometry
-    print(f"Successfully imported pypillometry from {pypillometry.__package_path__}")
-except ImportError as e:
-    print(f"Failed to import pypillometry: {e}")
-    print(f"Python path: {sys.path}")
-    print(f"Project root: {project_root}")
-
+import pypillometry  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 
-project = 'pypillometry'
-copyright = '2020-2025, Matthias Mittner'
-author = 'Matthias Mittner'
-
+project = "pypillometry"
+copyright = "2020-2026, Matthias Mittner"
+author = "Matthias Mittner"
+release = (project_root / "VERSION").read_text().strip()
+version = release
 
 # -- General configuration ---------------------------------------------------
 
-# Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
-# ones.
-extensions=['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon', 
-            "sphinx.ext.doctest", 'sphinx.ext.viewcode', ## enable doctests
-            "sphinxcontrib.mermaid", ## enable mermaid diagrams
-            'sphinx_math_dollar', 'sphinx.ext.mathjax', 'sphinx_autodoc_typehints', 
-            #"sphinx_mdinclude", ## include markdown files
-            "myst_parser", ## enable myst-parser
-            'sphinx.ext.intersphinx', 'sphinx.ext.autosummary', 
-            "nbsphinx", ## enable jupyter notebooks
-            "numpydoc", ## enable numpy-style docstrings
-            "jupyter_sphinx" ## enable jupyter-execute 
-            ]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.coverage",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.githubpages",  # writes .nojekyll (needed for _static)
+    "sphinx_autodoc_typehints",
+    "sphinx_math_dollar",
+    "sphinxcontrib.mermaid",
+    "sphinx_design",       # cards, grids, tabs
+    "sphinx_copybutton",   # copy button on code blocks
+    "myst_parser",         # markdown pages
+    "nbsphinx",            # jupyter notebooks
+    "numpydoc",            # numpy-style docstrings
+]
 
-myst_enable_extensions = ["colon_fence"]
+myst_enable_extensions = ["colon_fence", "dollarmath"]
+myst_heading_anchors = 3
 
-nbsphinx_epilog = """
+templates_path = ["_templates"]
+exclude_patterns = [
+    "_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints",
+    "**nbsphinx", "html", "src", "v1",
+]
 
-.. raw:: html
+# -- Autodoc / autosummary ---------------------------------------------------
 
-    <div class="admonition note">
-    This file was created from the following Jupyter-notebook: <a href="https://github.com/ihrke/pypillometry/tree/master/{{ env.doc2path(env.docname, base=None) }}">{{ env.doc2path(env.docname, base=None) }}</a>
-    <br>
-    Interactive version:
-    <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath={{ env.doc2path(env.docname, base=None)|e }}"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>
-    </div>
-
-"""
-
-# do not create TOC entries for each function/class
-toc_object_entries = False
-
+autosummary_generate = True
+autosummary_imported_members = True
+autodoc_default_options = {
+    "member-order": "groupwise",
+}
 # members are documented by autodoc (:members:); numpydoc's additional
 # "Methods"/"Attributes" tables duplicate them and cause "more than one
 # target found" warnings
 numpydoc_show_class_members = False
+numpydoc_validation_checks = set()
 
-nbsphinx_prolog=nbsphinx_epilog
+# one entry per method in the page's "On this page" sidebar
+toc_object_entries = True
+toc_object_entries_show_parents = "hide"
 
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
-# This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints', "**nbsphinx", "docs/html", "src", "docs/v1"]
-
-
-# Add mappings
 intersphinx_mapping = {
-#    'urllib3': ('http://urllib3.readthedocs.org/en/latest', None),
-#    'python': ('http://docs.python.org/3', None),
-#    'numpy': ('https://numpy.org/doc/stable/', None),
-#    'scipy': ('https://docs.scipy.org/doc/scipy', None),
-#    'matplotlib': ('http://matplotlib.sourceforge.net', None),
-#    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
 }
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+# -- Notebooks ---------------------------------------------------------------
 
+# notebooks are committed with their outputs and never executed during the
+# build (see the development section of the docs)
+nbsphinx_execute = "never"
 
-# -- Options for HTML output -------------------------------------------------
-pygments_style = 'sphinx'
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
-html_theme = 'nature'
-#alabaster'
+_nb_path = "docs/{{ env.doc2path(env.docname, base=None) }}"
+nbsphinx_prolog = f"""
+.. raw:: html
 
+    <div class="pp-notebook-banner">
+      <span>This page was generated from a Jupyter notebook.</span>
+      <a href="https://github.com/ihrke/pypillometry/blob/master/{_nb_path}">View on GitHub</a>
+      <a href="https://mybinder.org/v2/gh/ihrke/pypillometry/master?filepath={_nb_path}">
+        <img alt="Binder badge" src="https://mybinder.org/badge_logo.svg"
+             style="vertical-align:text-bottom">
+      </a>
+    </div>
+"""
+
+# -- HTML output -------------------------------------------------------------
+
+html_theme = "pydata_sphinx_theme"
+html_title = f"pypillometry {release}"
 html_logo = "../logo/pypillometry_logo_200x200.png"
+html_favicon = "../logo/pypillometry_logo_200x200.png"
+html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = []
-
-
-_GITHUB_ADMONITIONS = {
-    "> [!NOTE]": "note",
-    "> [!TIP]": "tip",
-    "> [!IMPORTANT]": "important",
-    "> [!WARNING]": "warning",
-    "> [!CAUTION]": "caution",
+html_context = {
+    "github_user": "ihrke",
+    "github_repo": "pypillometry",
+    "github_version": "master",
+    "doc_path": "docs",
+    "default_mode": "light",
 }
 
-def run_convert_github_admonitions_to_rst(app, relative_path, parent_docname, lines):
-    print("HOOK:", relative_path, parent_docname)
-    # loop through lines, replace github admonitions
-    for i, orig_line in enumerate(lines):
-        orig_line_splits = orig_line.split("\n")
-        replacing = False
-        for j, line in enumerate(orig_line_splits):
-            # look for admonition key
-            for admonition_key in _GITHUB_ADMONITIONS:
-                if admonition_key in line:
-                    line = line.replace(admonition_key, ":::{" + _GITHUB_ADMONITIONS[admonition_key] + "}\n")
-                    # start replacing quotes in subsequent lines
-                    replacing = True
-                    break
-            else:
-                # replace indent to match directive
-                if replacing and "> " in line:
-                    line = line.replace("> ", "  ")
-                elif replacing:
-                    # missing "> ", so stop replacing and terminate directive
-                    line = f"\n:::\n{line}"
-                    replacing = False
-            # swap line back in splits
-            orig_line_splits[j] = line
-        # swap line back in original
-        lines[i] = "\n".join(orig_line_splits)
+html_theme_options = {
+    "logo": {"text": "pypillometry"},
+    "github_url": "https://github.com/ihrke/pypillometry",
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/pypillometry/",
+            "icon": "fa-brands fa-python",
+        },
+    ],
+    "header_links_before_dropdown": 6,
+    "navbar_align": "left",
+    "show_toc_level": 2,
+    "navigation_depth": 3,
+    "show_prev_next": True,
+    "use_edit_page_button": True,
+    "secondary_sidebar_items": ["page-toc", "edit-this-page", "sourcelink"],
+    "footer_start": ["copyright"],
+    "footer_end": ["sphinx-version", "theme-version"],
+    "announcement": (
+        "pypillometry v2 is a major rewrite and not compatible with v1. "
+        "The <a href='https://ihrke.github.io/pypillometry/v1/html/index.html'>"
+        "v1 documentation</a> is still available."
+    ),
+}
 
-#def setup(app):
-#    app.connect('include-read', run_convert_github_admonitions_to_rst)
+# the landing page has no sidebar
+html_sidebars = {
+    "index": [],
+}
+
+pygments_style = "sphinx"
+pygments_dark_style = "monokai"
+
+
+# -- Cross-references to internal module paths --------------------------------
+#
+# Docstrings often link to the module where an object is defined, e.g.
+# :func:`pypillometry.signal.pupil.pupil_response`, but the API reference
+# documents everything under its public name (pypillometry.pupil_response).
+# This hook redirects such links (and bare method names) to the public name.
+
+_PUBLIC_CLASSES = ["GenericEyeData", "PupilData", "GazeData", "EyeData"]
+
+
+def _resolve_public_name(app, env, node, contnode):
+    if node.get("refdomain") != "py":
+        return None
+    target = node.get("reftarget", "")
+    parts = target.split(".")
+    candidates = []
+    if target.startswith("pypillometry."):
+        candidates += [f"pypillometry.{parts[-1]}",
+                       f"pypillometry.{'.'.join(parts[-2:])}"]
+    elif len(parts) == 1:
+        cls = node.get("py:class")
+        if cls:
+            candidates.append(f"pypillometry.{cls.split('.')[-1]}.{target}")
+        candidates += [f"pypillometry.{target}"]
+        candidates += [f"pypillometry.{c}.{target}" for c in _PUBLIC_CLASSES]
+    py = env.get_domain("py")
+    for cand in candidates:
+        if cand in py.objects:
+            return py.resolve_xref(env, node["refdoc"], app.builder,
+                                   node["reftype"], cand, node, contnode)
+    return None
+
+
+def setup(app):
+    app.connect("missing-reference", _resolve_public_name)

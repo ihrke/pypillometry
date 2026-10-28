@@ -1,16 +1,16 @@
-sphinx>=4.0.0
+sphinx>=7.0
+pydata-sphinx-theme
+sphinx-design
+sphinx-copybutton
 sphinx-autodoc-typehints
 sphinxcontrib-mermaid
 sphinx-math-dollar
-#sphinx-mdinclude
 myst-parser
-jupyter_sphinx
 nbsphinx
 numpydoc
 ipykernel
 matplotlib
 numpy
 pandas
-pathlib
-# Note: Some extensions like autodoc, coverage, napoleon, doctest, viewcode, 
-# intersphinx, and autosummary are included in the main sphinx package
+# Note: autodoc, autosummary, coverage, napoleon, doctest, viewcode,
+# githubpages and intersphinx are part of sphinx itself

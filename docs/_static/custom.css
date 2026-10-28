@@ -1,0 +1,120 @@
+/* pypillometry theme tweaks for pydata-sphinx-theme
+   Colors follow the logo: python blue (primary) and amber (accent). */
+
+html[data-theme="light"] {
+  --pst-color-primary: #2f6a9e;
+  --pst-color-secondary: #c98a00;
+  --pst-color-accent: #c98a00;
+  --pp-hero-bg: linear-gradient(135deg, #eef4fa 0%, #fdf6e3 100%);
+  --pp-hero-border: #d9e4ef;
+}
+
+html[data-theme="dark"] {
+  --pst-color-primary: #6fa8dc;
+  --pst-color-secondary: #f2c14e;
+  --pst-color-accent: #f2c14e;
+  --pp-hero-bg: linear-gradient(135deg, #1b2733 0%, #2a2414 100%);
+  --pp-hero-border: #2f3d4a;
+}
+
+/* ---------- landing page ---------- */
+
+.pp-hero {
+  background: var(--pp-hero-bg);
+  border: 1px solid var(--pp-hero-border);
+  border-radius: 12px;
+  padding: 2rem 2rem 1.5rem 2rem;
+  margin: 0.5rem 0 2rem 0;
+}
+
+.pp-hero h1 {
+  margin-top: 0;
+  font-size: 2.4rem;
+}
+
+.pp-hero .pp-tagline {
+  font-size: 1.25rem;
+  color: var(--pst-color-text-muted);
+  margin-bottom: 1.2rem;
+}
+
+.pp-hero img.pp-hero-logo {
+  float: right;
+  width: 140px;
+  margin: 0 0 1rem 1.5rem;
+}
+
+@media (max-width: 720px) {
+  .pp-hero img.pp-hero-logo { display: none; }
+}
+
+/* feature cards */
+.sd-card {
+  border-radius: 10px !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sd-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12) !important;
+}
+
+.sd-card .sd-card-title {
+  font-weight: 600;
+}
+
+.sd-card .sd-card-title .fa,
+.sd-card .sd-card-title svg {
+  color: var(--pst-color-primary);
+}
+
+/* ---------- notebooks ---------- */
+
+.pp-notebook-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--pst-color-text-muted);
+  border-left: 3px solid var(--pst-color-primary);
+  background: var(--pst-color-surface);
+  padding: 0.4rem 0.8rem;
+  margin-bottom: 1.2rem;
+  border-radius: 4px;
+}
+
+/* nbsphinx prompts take a lot of space and are not useful here */
+div.nbinput .prompt,
+div.nboutput .prompt {
+  display: none;
+}
+
+/* ---------- API pages ---------- */
+
+/* make class/function signatures stand out */
+dl.py.class > dt,
+dl.py.function > dt {
+  background: var(--pst-color-surface);
+  border-left: 3px solid var(--pst-color-primary);
+  padding: 0.3rem 0.6rem;
+}
+
+dl.py.method > dt {
+  border-left: 3px solid var(--pst-color-border);
+  padding-left: 0.6rem;
+}
+
+/* experimental admonition */
+.admonition.experimental {
+  border-color: var(--pst-color-secondary);
+}
+
+.admonition.experimental > .admonition-title {
+  background-color: color-mix(in srgb, var(--pst-color-secondary) 15%, transparent);
+}
+
+.admonition.experimental > .admonition-title::after {
+  color: var(--pst-color-secondary);
+  content: "\f0c3"; /* flask */
+}
