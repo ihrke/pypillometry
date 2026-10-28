@@ -738,7 +738,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">tmpdir</span>
         <span class="k">if</span> <span class="n">autodelete</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">autodelete</span> <span class="o">=</span> <span class="n">tmpdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="n">local_path</span> <span class="o">=</span> <span class="n">_cache_path</span><span class="p">(</span><span class="n">remote</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">)</span>
+        <span class="n">local_path</span> <span class="o">=</span> <span class="n">_cache_path</span><span class="p">(</span><span class="n">remote</span><span class="p">,</span> <span class="n">cache_dir</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s2">"mirror"</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">local_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading study from '</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">' (files are downloaded to </span><span class="si">{</span><span class="n">local_path</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -755,7 +755,8 @@ window.runMermaid = runMermaid;</script>
             <span class="n">config_path</span> <span class="o">=</span> <span class="n">config_file</span>
         <span class="k">elif</span> <span class="n">remote</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">config_path</span> <span class="o">=</span> <span class="n">fetch_url</span><span class="p">(</span><span class="n">remote</span> <span class="o">+</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
-                                    <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">)</span>
+                                    <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">,</span>
+                                    <span class="n">cache_layout</span><span class="o">=</span><span class="s2">"mirror"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># If not found, look in the specified path</span>
             <span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">config_file</span><span class="p">)</span>
@@ -793,7 +794,8 @@ window.runMermaid = runMermaid;</script>
                         <span class="k">continue</span>
                     <span class="k">try</span><span class="p">:</span>
                         <span class="n">downloaded</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fetch_url</span><span class="p">(</span><span class="n">remote</span> <span class="o">+</span> <span class="n">value</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
-                                                    <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">))</span>
+                                                    <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">,</span>
+                                                    <span class="n">cache_layout</span><span class="o">=</span><span class="s2">"mirror"</span><span class="p">))</span>
                     <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="c1"># entries in raw_data need not be files</span>
                         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Could not download '</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">' for subject </span><span class="si">{</span><span class="n">subject_id</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
