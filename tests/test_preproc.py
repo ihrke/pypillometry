@@ -399,5 +399,14 @@ class TestBlinkOnsetsMahot(unittest.TestCase):
         self.assertEqual(len(early), 1)
         np.testing.assert_array_equal(early[0] - 100, late[0] - 1500)
 
+    def test_no_velocity_crossing_keeps_blink(self):
+        """a blink without a velocity drop before it is kept (bug 1.1)"""
+        p = self.make(1000, 1500)
+        p[1000-30:1000] = 5000.0   # signal does not drop before the blink
+        out = blink_onsets_mahot(p, [(1000, 1500)], 11, -5, 5, (5, 5), 500)
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out[0][0], 995)  # detected start minus margin
+        self.assertGreaterEqual(out[0][1], 1500)
+
 if __name__ == '__main__':
     unittest.main()

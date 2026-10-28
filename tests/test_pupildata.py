@@ -180,3 +180,13 @@ class TestMergeBlinkWindows(unittest.TestCase):
         merged = self.merge(blinks)
         self.assertEqual(merged[0], (0, 100, 390, 490))
         self.assertEqual(len(merged), 21)
+
+
+def test_blinks_interpolate_without_onset_crossing():
+    """all blinks of the example data are interpolated, no NaN left (bug 1.1)"""
+    import pypillometry as pp
+    d = pp.get_example_data("rlmw_002_short")
+    d = d.pupil_blinks_detect(apply_mask=True).pupil_blinks_interpolate()
+    for eye in d.eyes:
+        assert not np.isnan(d.data[eye, "pupil"]).any()
+    d.pupil_estimate_baseline()
