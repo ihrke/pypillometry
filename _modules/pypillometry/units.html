@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pypillometry.units &#8212; pypillometry  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/thebelab-helper.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.units</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pypillometry.units</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Units for times, distances and angles.</span>
+
+<span class="sd">Values with units can be given in two ways:</span>
+
+<span class="sd">- multiplied by a unit from the :data:`u` namespace: ``3 * u.min``,</span>
+<span class="sd">  ``(-200, 800) * u.ms``, ``60 * u.cm``, ``20 * u.deg``</span>
+<span class="sd">- as strings: ``"3 min"``, ``"60 cm"``, ``"20 deg"``</span>
+
+<span class="sd">Internally, pypillometry converts everything to canonical units and stores</span>
+<span class="sd">plain floats or arrays: ms for times, mm for distances and radians for</span>
+<span class="sd">angles. Each function that takes such a value documents what a plain number</span>
+<span class="sd">(without units) means.</span>
+
+<span class="sd">Examples</span>
+<span class="sd">--------</span>
+<span class="sd">&gt;&gt;&gt; from pypillometry import u</span>
+<span class="sd">&gt;&gt;&gt; (3 * u.min).to(u.sec)</span>
+<span class="sd">180.0 sec</span>
+<span class="sd">&gt;&gt;&gt; (-200, 800) * u.ms</span>
+<span class="sd">[-200.  800.] ms</span>
+<span class="sd">&gt;&gt;&gt; parse_time("2 sec")</span>
+<span class="sd">2000.0</span>
+<span class="sd">&gt;&gt;&gt; parse_distance("60 cm")</span>
+<span class="sd">600.0</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"u"</span><span class="p">,</span> <span class="s2">"Unit"</span><span class="p">,</span> <span class="s2">"Quantity"</span><span class="p">,</span>
+    <span class="s2">"parse_time"</span><span class="p">,</span> <span class="s2">"parse_distance"</span><span class="p">,</span> <span class="s2">"parse_angle"</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Unit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A unit of time, length or angle.</span>
+
+<span class="sd">    Multiplying a number, tuple, list or array by a unit gives a</span>
+<span class="sd">    :class:`Quantity`. Units are available in the :data:`u` namespace.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        canonical name of the unit (e.g., "ms", "sec", "mm", "deg")</span>
+<span class="sd">    dimension : str</span>
+<span class="sd">        one of "time", "length", "angle"</span>
+<span class="sd">    factor : float or None</span>
+<span class="sd">        size of the unit in the base unit of its dimension (ms, mm or radians);</span>
+<span class="sd">        None for "samples", whose size depends on the sampling rate</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"dimension"</span><span class="p">,</span> <span class="s2">"factor"</span><span class="p">)</span>
+    <span class="n">__array_ufunc__</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># numpy arrays defer `array * unit` to __rmul__</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span> <span class="o">=</span> <span class="n">dimension</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="fm">__mul__</span> <span class="o">=</span> <span class="fm">__rmul__</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"&lt;Unit </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&gt;"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># unpickle to the shared instance</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">_get_unit</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="Quantity">
+<a class="viewcode-back" href="../../api.html#pypillometry.Quantity">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A number or array together with a :class:`Unit`.</span>
+
+<span class="sd">    Usually created by multiplying with a unit, e.g. ``3 * u.min`` or</span>
+<span class="sd">    ``(-200, 800) * u.ms``. Tuples and lists are stored as numpy arrays.</span>
+<span class="sd">    Iterating over or indexing an array quantity gives quantities.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : float or array-like</span>
+<span class="sd">        magnitude</span>
+<span class="sd">    unit : Unit or str</span>
+<span class="sd">        unit of `value`</span>
+<span class="sd">    """</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"value"</span><span class="p">,</span> <span class="s2">"unit"</span><span class="p">)</span>
+    <span class="n">__array_ufunc__</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># keep numpy from treating quantities as objects</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unit</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"cannot multiply a Quantity by a Unit; use .to()"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="n">_get_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">unit</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">magnitude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The value without unit."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Dimension of the unit ("time", "length" or "angle")."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">dimension</span>
+
+<div class="viewcode-block" id="Quantity.to">
+<a class="viewcode-back" href="../../api.html#pypillometry.Quantity.to">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Return the quantity converted to `unit`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        unit : Unit or str</span>
+<span class="sd">            target unit; must have the same dimension</span>
+<span class="sd">        fs : float, optional</span>
+<span class="sd">            sampling rate in Hz; needed to convert from or to samples</span>
+<span class="sd">        """</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">_get_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="n">_convert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">fs</span><span class="p">),</span> <span class="n">unit</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">Quantity</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__neg__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="n">other</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">Unit</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+
+    <span class="fm">__rmul__</span> <span class="o">=</span> <span class="fm">__mul__</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="n">Quantity</span><span class="p">,</span> <span class="n">Unit</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="n">Quantity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">)</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="n">dimension</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+
+    <span class="fm">__hash__</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span></div>
+
+
+
+<span class="c1"># Units by dimension: canonical name, size in base unit, aliases.</span>
+<span class="c1"># The base units are ms, mm and radians.</span>
+<span class="n">_UNIT_TABLE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"time"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">"ms"</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">[</span><span class="s2">"millisecond"</span><span class="p">,</span> <span class="s2">"milliseconds"</span><span class="p">,</span> <span class="s2">"msec"</span><span class="p">]),</span>
+        <span class="p">(</span><span class="s2">"sec"</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="p">[</span><span class="s2">"s"</span><span class="p">,</span> <span class="s2">"secs"</span><span class="p">,</span> <span class="s2">"second"</span><span class="p">,</span> <span class="s2">"seconds"</span><span class="p">]),</span>
+        <span class="p">(</span><span class="s2">"min"</span><span class="p">,</span> <span class="mf">60000.0</span><span class="p">,</span> <span class="p">[</span><span class="s2">"m"</span><span class="p">,</span> <span class="s2">"mins"</span><span class="p">,</span> <span class="s2">"minute"</span><span class="p">,</span> <span class="s2">"minutes"</span><span class="p">]),</span>
+        <span class="p">(</span><span class="s2">"h"</span><span class="p">,</span> <span class="mf">3600000.0</span><span class="p">,</span> <span class="p">[</span><span class="s2">"hr"</span><span class="p">,</span> <span class="s2">"hrs"</span><span class="p">,</span> <span class="s2">"hour"</span><span class="p">,</span> <span class="s2">"hours"</span><span class="p">]),</span>
+        <span class="p">(</span><span class="s2">"samples"</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[</span><span class="s2">"sample"</span><span class="p">,</span> <span class="s2">"index"</span><span class="p">,</span> <span class="s2">"indices"</span><span class="p">,</span> <span class="s2">"idx"</span><span class="p">]),</span>
+    <span class="p">],</span>
+    <span class="s2">"length"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">"mm"</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">[</span><span class="s2">"millimeter"</span><span class="p">,</span> <span class="s2">"millimeters"</span><span class="p">,</span> <span class="s2">"millimetre"</span><span class="p">,</span> <span class="s2">"millimetres"</span><span class="p">]),</span>
+        <span class="p">(</span><span class="s2">"cm"</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="p">[</span><span class="s2">"centimeter"</span><span class="p">,</span> <span class="s2">"centimeters"</span><span class="p">,</span> <span class="s2">"centimetre"</span><span class="p">,</span> <span class="s2">"centimetres"</span><span class="p">]),</span>
+        <span class="p">(</span><span class="s2">"m"</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="p">[</span><span class="s2">"meter"</span><span class="p">,</span> <span class="s2">"meters"</span><span class="p">,</span> <span class="s2">"metre"</span><span class="p">,</span> <span class="s2">"metres"</span><span class="p">]),</span>
+        <span class="p">(</span><span class="s2">"inch"</span><span class="p">,</span> <span class="mf">25.4</span><span class="p">,</span> <span class="p">[</span><span class="s2">"in"</span><span class="p">,</span> <span class="s2">"inches"</span><span class="p">]),</span>
+    <span class="p">],</span>
+    <span class="s2">"angle"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">"rad"</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">[</span><span class="s2">"radian"</span><span class="p">,</span> <span class="s2">"radians"</span><span class="p">]),</span>
+        <span class="p">(</span><span class="s2">"deg"</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span><span class="p">,</span> <span class="p">[</span><span class="s2">"degree"</span><span class="p">,</span> <span class="s2">"degrees"</span><span class="p">,</span> <span class="s2">"°"</span><span class="p">]),</span>
+    <span class="p">],</span>
+<span class="p">}</span>
+
+<span class="c1"># name/alias -&gt; Unit, separately for each dimension</span>
+<span class="n">_UNITS</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">_dim</span><span class="p">,</span> <span class="n">_entries</span> <span class="ow">in</span> <span class="n">_UNIT_TABLE</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">_UNITS</span><span class="p">[</span><span class="n">_dim</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">_name</span><span class="p">,</span> <span class="n">_factor</span><span class="p">,</span> <span class="n">_aliases</span> <span class="ow">in</span> <span class="n">_entries</span><span class="p">:</span>
+        <span class="n">_unit</span> <span class="o">=</span> <span class="n">Unit</span><span class="p">(</span><span class="n">_name</span><span class="p">,</span> <span class="n">_dim</span><span class="p">,</span> <span class="n">_factor</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_alias</span> <span class="ow">in</span> <span class="p">[</span><span class="n">_name</span><span class="p">]</span> <span class="o">+</span> <span class="n">_aliases</span><span class="p">:</span>
+            <span class="n">_UNITS</span><span class="p">[</span><span class="n">_dim</span><span class="p">][</span><span class="n">_alias</span><span class="p">]</span> <span class="o">=</span> <span class="n">_unit</span>
+
+<span class="c1"># without a dimension, "m" means metre (it means minutes for times)</span>
+<span class="n">_DIMENSION_ORDER</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"length"</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">,</span> <span class="s2">"angle"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">dimension</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return the Unit for a name/alias or Unit, optionally checking its dimension."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">Unit</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">unit</span><span class="o">.</span><span class="n">dimension</span> <span class="o">!=</span> <span class="n">dimension</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"expected a unit of </span><span class="si">{</span><span class="n">dimension</span><span class="si">}</span><span class="s2">, got '</span><span class="si">{</span><span class="n">unit</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' "</span>
+                             <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">unit</span><span class="o">.</span><span class="n">dimension</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">unit</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="p">(</span><span class="n">dimension</span><span class="p">,)</span> <span class="k">if</span> <span class="n">dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_DIMENSION_ORDER</span>
+    <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_UNITS</span><span class="p">[</span><span class="n">dim</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="n">_UNITS</span><span class="p">[</span><span class="n">dim</span><span class="p">][</span><span class="n">k</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">_DIMENSION_ORDER</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">_UNITS</span><span class="p">[</span><span class="n">dim</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"expected a unit of </span><span class="si">{</span><span class="n">dimension</span><span class="si">}</span><span class="s2">, got '</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">' (</span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">_UNIT_TABLE</span><span class="p">[</span><span class="n">dimension</span><span class="p">])</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown unit '</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">'. Valid units are: </span><span class="si">{</span><span class="n">valid</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown unit '</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_convert</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">from_unit</span><span class="p">,</span> <span class="n">to_unit</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Convert a magnitude between two units of the same dimension."""</span>
+    <span class="k">if</span> <span class="n">from_unit</span> <span class="ow">is</span> <span class="n">to_unit</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">if</span> <span class="n">from_unit</span><span class="o">.</span><span class="n">factor</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">to_unit</span><span class="o">.</span><span class="n">factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"converting between '</span><span class="si">{</span><span class="n">from_unit</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' and "</span>
+                             <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">to_unit</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' needs the sampling rate"</span><span class="p">)</span>
+        <span class="n">ms_per_sample</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">/</span> <span class="n">fs</span>
+    <span class="n">from_factor</span> <span class="o">=</span> <span class="n">from_unit</span><span class="o">.</span><span class="n">factor</span> <span class="k">if</span> <span class="n">from_unit</span><span class="o">.</span><span class="n">factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ms_per_sample</span>
+    <span class="n">to_factor</span> <span class="o">=</span> <span class="n">to_unit</span><span class="o">.</span><span class="n">factor</span> <span class="k">if</span> <span class="n">to_unit</span><span class="o">.</span><span class="n">factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ms_per_sample</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="o">*</span> <span class="p">(</span><span class="n">from_factor</span> <span class="o">/</span> <span class="n">to_factor</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_UnitNamespace</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Namespace of units, e.g. ``u.ms``, ``u.sec``, ``u.min``, ``u.cm``, ``u.deg``.</span>
+
+<span class="sd">    All aliases work as attributes (e.g. ``u.seconds``, ``u.degrees``).</span>
+<span class="sd">    ``u.m`` is metres (use ``u.min`` for minutes).</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_get_unit</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown unit '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__dir__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">a</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">_UNITS</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">d</span> <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">()})</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">"&lt;units: "</span> <span class="o">+</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">_UNIT_TABLE</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">d</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"&gt;"</span>
+
+
+<span class="n">u</span> <span class="o">=</span> <span class="n">_UnitNamespace</span><span class="p">()</span>
+<span class="sd">"""Namespace of units: ``u.ms``, ``u.sec``, ``u.min``, ``u.h``, ``u.samples``,</span>
+<span class="sd">``u.mm``, ``u.cm``, ``u.m``, ``u.inch``, ``u.deg``, ``u.rad`` (and aliases)."""</span>
+
+
+<span class="n">_NUMBER_UNIT_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">"^\s*([-+]?(?:inf|(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?))\s*(\S.*?)?\s*$"</span><span class="p">,</span>
+    <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_split</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Split `value` into (magnitude, Unit or None); None means no unit given."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">):</span>
+        <span class="n">_get_unit</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">unit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>  <span class="c1"># check dimension</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">unit</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">_NUMBER_UNIT_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid unit string '</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">'; expected a number with unit "</span>
+                             <span class="sa">f</span><span class="s2">"such as '3 min', '60 cm' or '20 deg'"</span><span class="p">)</span>
+        <span class="n">number</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">number</span><span class="p">),</span> <span class="p">(</span><span class="n">_get_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span> <span class="k">if</span> <span class="n">unit</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"magnitude"</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">):</span>
+        <span class="c1"># pint-like quantity (pint itself is not needed)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span> \
+            <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">magnitude</span><span class="p">),</span> <span class="n">_get_unit</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">units</span><span class="p">),</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span><span class="p">,</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_sequence</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="n">to</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Convert `value` to unit `to`; values without unit are in `default`.</span>
+
+<span class="sd">    Returns None, a float or an ndarray (for sequences).</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">to</span> <span class="o">=</span> <span class="n">_get_unit</span><span class="p">(</span><span class="n">to</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_is_sequence</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">_parse</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dimension</span><span class="p">,</span> <span class="n">to</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">magnitude</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">_split</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">' has no unit"</span><span class="p">)</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">_get_unit</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">magnitude</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+        <span class="n">magnitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">magnitude</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">magnitude</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">magnitude</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_convert</span><span class="p">(</span><span class="n">magnitude</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">to</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_has_units</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""True if `value` (or any element of a tuple/list) carries a unit."""</span>
+    <span class="k">if</span> <span class="n">_is_sequence</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">_has_units</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_NUMBER_UNIT_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
+            <span class="n">_NUMBER_UNIT_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"magnitude"</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"units"</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_first_unit</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dimension</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Unit of the first element of `value` that carries one (or None)."""</span>
+    <span class="k">if</span> <span class="n">_is_sequence</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="n">_first_unit</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">unit</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">_split</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">_has_units</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="n">UNSET</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+<span class="sd">"""Default for `units=` arguments of containers: take the unit from the values."""</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_time_values_and_units</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">UNSET</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Values and canonical unit name for containers such as Intervals.</span>
+
+<span class="sd">    If `value` carries units, it is converted to `units` (a time unit, or</span>
+<span class="sd">    None for samples) or, if `units` is UNSET, to the unit of its first</span>
+<span class="sd">    element. Plain values are returned unchanged, together with `units`.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_has_units</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="n">UNSET</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"plain numbers need units (e.g., units='ms'); "</span>
+                             <span class="s2">"or give values with units, e.g., (0, 100) * u.ms"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span><span class="p">,</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="n">UNSET</span><span class="p">:</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">_first_unit</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">_get_unit</span><span class="p">(</span><span class="s2">"samples"</span> <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">units</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">_parse</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">values</span><span class="p">,</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="parse_time">
+<a class="viewcode-back" href="../../api.html#pypillometry.parse_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_time</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Convert a time (or tuple/array of times) to unit `to`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : float, array-like, str, Quantity, tuple or None</span>
+<span class="sd">        time value(s), e.g. ``500``, ``"2 sec"``, ``3 * u.min``,</span>
+<span class="sd">        ``(-200, 800) * u.ms`` or ``("1 min", "2 min")``</span>
+<span class="sd">    to : str or Unit, optional</span>
+<span class="sd">        target unit; default "ms"</span>
+<span class="sd">    default : str, Unit or None, optional</span>
+<span class="sd">        unit of plain numbers; default "ms". If None, plain numbers raise</span>
+<span class="sd">        a ValueError.</span>
+<span class="sd">    fs : float, optional</span>
+<span class="sd">        sampling rate in Hz; needed to convert from or to "samples"</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float, ndarray or None</span>
+<span class="sd">        the value in unit `to` (an ndarray for tuples, lists and arrays)</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; parse_time("2 sec")</span>
+<span class="sd">    2000.0</span>
+<span class="sd">    &gt;&gt;&gt; parse_time(3 * u.min, to="sec")</span>
+<span class="sd">    180.0</span>
+<span class="sd">    &gt;&gt;&gt; parse_time((-200, 800), to="sec")</span>
+<span class="sd">    array([-0.2,  0.8])</span>
+<span class="sd">    &gt;&gt;&gt; parse_time(10 * u.samples, fs=500)</span>
+<span class="sd">    20.0</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_parse</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">,</span> <span class="n">to</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">fs</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Session-wide tracking of issued warnings (one per parameter name)</span>
+<span class="n">_unit_warnings_issued</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_param_name</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Name of the variable that the caller of parse_* assigns to.</span>
+
+<span class="sd">    For ``camera_eye_distance = parse_distance(value)``, this returns</span>
+<span class="sd">    "camera_eye_distance"; "parameter" if it cannot be determined.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Go back two frames: _get_param_name -&gt; parse_* -&gt; caller</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">currentframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_back</span><span class="o">.</span><span class="n">f_back</span>
+        <span class="n">code_context</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getframeinfo</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span><span class="o">.</span><span class="n">code_context</span>
+        <span class="k">if</span> <span class="n">code_context</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">code_context</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s1">'='</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">and</span> <span class="s1">'=='</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'='</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'='</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="s2">"parameter"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_plain</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="n">unit_name</span><span class="p">):</span>
+    <span class="n">param_name</span> <span class="o">=</span> <span class="n">_get_param_name</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">param_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_unit_warnings_issued</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">param_name</span><span class="si">}</span><span class="s2">: plain number provided, assuming </span><span class="si">{</span><span class="n">unit_name</span><span class="si">}</span><span class="s2">. "</span>
+            <span class="sa">f</span><span class="s2">"Use a string ('</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">') or a unit (value * u.</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">) "</span>
+            <span class="sa">f</span><span class="s2">"for explicit units."</span><span class="p">,</span>
+            <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span>
+        <span class="p">)</span>
+        <span class="n">_unit_warnings_issued</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="parse_distance">
+<a class="viewcode-back" href="../../api.html#pypillometry.parse_distance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_distance</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Convert a distance to mm.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : float, str, Quantity or None</span>
+<span class="sd">        e.g. ``"60 cm"``, ``60 * u.cm``, ``"0.6 m"``; plain numbers are mm</span>
+<span class="sd">        (with a one-time warning)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float, ndarray or None</span>
+<span class="sd">        distance in mm</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; parse_distance("60 cm")</span>
+<span class="sd">    600.0</span>
+<span class="sd">    &gt;&gt;&gt; parse_distance(60 * u.cm)</span>
+<span class="sd">    600.0</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_has_units</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="n">_warn_plain</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"mm"</span><span class="p">,</span> <span class="s2">"mm"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_parse</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"length"</span><span class="p">,</span> <span class="s2">"mm"</span><span class="p">,</span> <span class="s2">"mm"</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="parse_angle">
+<a class="viewcode-back" href="../../api.html#pypillometry.parse_angle">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_angle</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Convert an angle to radians.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : float, str, Quantity or None</span>
+<span class="sd">        e.g. ``"20 deg"``, ``20 * u.deg``, ``"0.349 rad"``; plain numbers are</span>
+<span class="sd">        radians (with a one-time warning)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float, ndarray or None</span>
+<span class="sd">        angle in radians</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; round(parse_angle("180 deg"), 4)</span>
+<span class="sd">    3.1416</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_has_units</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="n">_warn_plain</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"rad"</span><span class="p">,</span> <span class="s2">"radians"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_parse</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"angle"</span><span class="p">,</span> <span class="s2">"rad"</span><span class="p">,</span> <span class="s2">"rad"</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># canonical time unit names used by `units=` arguments ("samples" is None)</span>
+<span class="n">CANONICAL_UNITS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"ms"</span><span class="p">,</span> <span class="s2">"sec"</span><span class="p">,</span> <span class="s2">"min"</span><span class="p">,</span> <span class="s2">"h"</span><span class="p">}</span>
+<span class="n">UNIT_ALIASES</span> <span class="o">=</span> <span class="p">{</span><span class="n">alias</span><span class="p">:</span> <span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">unit</span><span class="o">.</span><span class="n">factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">alias</span><span class="p">,</span> <span class="n">unit</span> <span class="ow">in</span> <span class="n">_UNITS</span><span class="p">[</span><span class="s2">"time"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Normalize a time unit to its canonical name.</span>
+
+<span class="sd">    Accepts aliases (e.g., "seconds", "s", "secs") and :class:`Unit` objects</span>
+<span class="sd">    (e.g., ``u.sec``) and returns "ms", "sec", "min" or "h". Returns None if</span>
+<span class="sd">    `unit` is None or means sample indices ("index", "indices", "idx",</span>
+<span class="sd">    "sample", "samples").</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    unit : str, Unit or None</span>
+<span class="sd">        unit to normalize; case and surrounding whitespace are ignored</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        canonical unit name, or None for indices/samples (or None input)</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the unit is not a known time unit</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; normalize_unit("seconds")</span>
+<span class="sd">    'sec'</span>
+<span class="sd">    &gt;&gt;&gt; normalize_unit(u.min)</span>
+<span class="sd">    'min'</span>
+<span class="sd">    &gt;&gt;&gt; normalize_unit("samples") is None</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; normalize_unit("invalid")</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">        ...</span>
+<span class="sd">    ValueError: Unknown unit 'invalid'. Valid units are: h, min, ms, sec</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">Unit</span><span class="p">):</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">UNIT_ALIASES</span><span class="p">:</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">CANONICAL_UNITS</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown unit '</span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">'. Valid units are: </span><span class="si">{</span><span class="n">valid</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">UNIT_ALIASES</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+    <span class="n">unit</span> <span class="o">=</span> <span class="n">_get_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="s2">"time"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">unit</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">unit</span><span class="o">.</span><span class="n">factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/pypillometry_logo_200x200.png" alt="Logo of pypillometry"/>
+            </a></p>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pypillometry  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pypillometry.units</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2020-2025, Matthias Mittner.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
+    </div>
+  </body>
+</html>

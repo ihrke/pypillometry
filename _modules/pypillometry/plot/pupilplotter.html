@@ -403,6 +403,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..eyedata</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericEyeData</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.genplotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericPlotter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..units</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span>
@@ -410,7 +411,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
@@ -459,7 +460,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        eyes : str or list</span>
 <span class="sd">            eye(s) to plot; if empty, all eyes with pupil data are plotted</span>
 <span class="sd">        plot_range : tuple (start,end)</span>
-<span class="sd">            plot from start to end (in units of `units`)</span>
+<span class="sd">            plot from start to end (in units of `units`, or with units, e.g.</span>
+<span class="sd">            ``(3, 5) * u.min``)</span>
 <span class="sd">        show_events : bool</span>
 <span class="sd">            plot events as vertical lines with labels</span>
 <span class="sd">        show_blinks : bool</span>
@@ -490,6 +492,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Plotting eyes </span><span class="si">%s</span><span class="s2">"</span><span class="o">%</span><span class="n">eyes</span><span class="p">)</span>
 
         <span class="c1"># Validate plot_range</span>
+        <span class="n">plot_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_range_in</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_plot_range</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
 
         <span class="n">fac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
@@ -620,8 +623,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        ----------</span>
 <span class="sd">        pdf_file : str or None</span>
 <span class="sd">            file name to store the PDF; if None, no PDF is written</span>
-<span class="sd">        interv : float</span>
-<span class="sd">            duration of each of the segments to be plotted (in units specified by ``units``)</span>
+<span class="sd">        interv : float, str or Quantity</span>
+<span class="sd">            duration of each of the segments to be plotted (in units specified</span>
+<span class="sd">            by ``units``, or with units, e.g. ``"2 min"``)</span>
 <span class="sd">        figsize : Tuple[int,int]</span>
 <span class="sd">            dimensions of the figures</span>
 <span class="sd">        ylim : Tuple[float,float] or None</span>
@@ -639,6 +643,7 @@ window.runMermaid = runMermaid;</script>
 
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
         <span class="n">unit_factor</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span> <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">1.0</span>
+        <span class="n">interv</span> <span class="o">=</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">interv</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="n">units</span> <span class="ow">or</span> <span class="s2">"ms"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">units</span> <span class="ow">or</span> <span class="s2">"ms"</span><span class="p">)</span>
         <span class="n">start_unit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span> <span class="o">*</span> <span class="n">unit_factor</span><span class="p">)</span>
         <span class="n">end_unit</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">tx</span><span class="p">)</span> <span class="o">*</span> <span class="n">unit_factor</span><span class="p">)</span>
 

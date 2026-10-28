@@ -410,7 +410,6 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">cmdstanpy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">importlib.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">files</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 
@@ -440,6 +439,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_stan_models</span><span class="p">:</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">filecmp</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">cmdstanpy</span>  <span class="c1"># imported only when needed (slow, imports readline)</span>
         <span class="n">fpath</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">files</span><span class="p">(</span><span class="s1">'pypillometry.stan'</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">".stan"</span><span class="p">))</span>
         <span class="n">exe</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fpath</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="s2">".exe"</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"nt"</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
         <span class="n">exe_ok</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">exe</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">exe</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>

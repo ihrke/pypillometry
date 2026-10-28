@@ -415,11 +415,9 @@ window.runMermaid = runMermaid;</script>
 as well as tools for plotting and analyzing these data.</p>
 <section id="unit-handling">
 <h2><a class="toc-backref" href="#id1" role="doc-backlink">Unit Handling:</a><a class="headerlink" href="#unit-handling" title="Link to this heading">¶</a></h2>
-<p>Distance and angle parameters accept three formats:
-1. Plain numbers (assumed to be mm for distances, radians for angles - with warning)
-2. String format: “600 mm”, “60 cm”, “20 degrees”, “-90 degrees”
-3. Pint Quantity: 600 * ureg.mm, 20 * ureg.degree</p>
-<p>The unit registry is available as <cite>pypillometry.ureg</cite> for advanced users.</p>
+<p>Times, distances and angles can carry units, either from the <cite>pypillometry.u</cite>
+namespace (<code class="docutils literal notranslate"><span class="pre">3</span> <span class="pre">*</span> <span class="pre">u.min</span></code>, <code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">800)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>, <code class="docutils literal notranslate"><span class="pre">60</span> <span class="pre">*</span> <span class="pre">u.cm</span></code>,
+<code class="docutils literal notranslate"><span class="pre">20</span> <span class="pre">*</span> <span class="pre">u.deg</span></code>) or as strings (<code class="docutils literal notranslate"><span class="pre">&quot;3</span> <span class="pre">min&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;60</span> <span class="pre">cm&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;20</span> <span class="pre">deg&quot;</span></code>).</p>
 <ul class="simple">
 <li><p>Github: <a class="reference external" href="https://github.com/ihrke/pypillometry">https://github.com/ihrke/pypillometry</a></p></li>
 <li><p>Documentation: <a class="reference external" href="https://ihrke.github.io/pypillometry">https://ihrke.github.io/pypillometry</a></p></li>
@@ -454,12 +452,13 @@ as well as tools for plotting and analyzing these data.</p>
 <li><p><a class="reference internal" href="#pupil-py" id="id17">pupil.py</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#logging" id="id18">Logging</a></p></li>
-<li><p><a class="reference internal" href="#module-pypillometry.io" id="id19">Modules</a></p>
+<li><p><a class="reference internal" href="#units" id="id18">Units</a></p></li>
+<li><p><a class="reference internal" href="#logging" id="id19">Logging</a></p></li>
+<li><p><a class="reference internal" href="#module-pypillometry.io" id="id20">Modules</a></p>
 <ul>
-<li><p><a class="reference internal" href="#io-py" id="id20">io.py</a></p></li>
-<li><p><a class="reference internal" href="#study-py" id="id21">study.py</a></p></li>
-<li><p><a class="reference internal" href="#example-data-py" id="id22">example_data.py</a></p></li>
+<li><p><a class="reference internal" href="#io-py" id="id21">io.py</a></p></li>
+<li><p><a class="reference internal" href="#study-py" id="id22">study.py</a></p></li>
+<li><p><a class="reference internal" href="#example-data-py" id="id23">example_data.py</a></p></li>
 </ul>
 </li>
 </ul>
@@ -644,7 +643,7 @@ preprocessed (filtered and downsampled) before fitting.</p>
 <ul>
 <li><p>Plain number: assumed to be mm (with warning)</p></li>
 <li><p>String: e.g., “600 mm”, “60 cm”</p></li>
-<li><p>Quantity: e.g., 600 * ureg.mm</p></li>
+<li><p>Quantity: e.g., 600 * u.mm</p></li>
 </ul>
 </p></li>
 <li><p><strong>d</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span>]</span>) – <p>Eye-to-screen distance. If not provided, uses the
@@ -652,7 +651,7 @@ preprocessed (filtered and downsampled) before fitting.</p>
 <ul>
 <li><p>Plain number: assumed to be mm (with warning)</p></li>
 <li><p>String: e.g., “700 mm”, “70 cm”</p></li>
-<li><p>Quantity: e.g., 700 * ureg.mm</p></li>
+<li><p>Quantity: e.g., 700 * u.mm</p></li>
 </ul>
 </p></li>
 <li><p><strong>intervals</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="#pypillometry.Intervals" title="pypillometry.intervals.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>]</span>) – Time intervals to use for fitting. If None, uses all available data.
@@ -672,7 +671,7 @@ pi/2 (horizontal) as starting point.</p>
 <ul>
 <li><p>Plain number: assumed to be radians (with warning)</p></li>
 <li><p>String: e.g., “20 degrees”, “0.349 radians”</p></li>
-<li><p>Quantity: e.g., 20 * ureg.degree</p></li>
+<li><p>Quantity: e.g., 20 * u.deg</p></li>
 </ul>
 </p></li>
 <li><p><strong>initial_phi</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span>]</span>) – <p>Initial guess for camera azimuthal angle. If None,
@@ -680,7 +679,7 @@ uses 0 (camera on x-axis) as starting point.</p>
 <ul>
 <li><p>Plain number: assumed to be radians (with warning)</p></li>
 <li><p>String: e.g., “-90 degrees”, “-1.57 radians”</p></li>
-<li><p>Quantity: e.g., -90 * ureg.degree</p></li>
+<li><p>Quantity: e.g., -90 * u.deg</p></li>
 </ul>
 </p></li>
 <li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Print optimization progress and fit statistics.</p></li>
@@ -871,14 +870,14 @@ the blinks are also applied as masks to the data. When <cite>apply_mask=False</c
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to process; if empty, all available eyes are processed</p></li>
-<li><p><strong>min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – minimum duration in ms for a sequence of missing numbers to be treated as blink</p></li>
+<li><p><strong>min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – minimum duration (in ms, or with units) for a sequence of missing numbers to be treated as blink</p></li>
 <li><p><strong>blink_val</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – “missing value” code for the “zero” strategy. Missing samples
 (NaN) are always detected; samples equal to <cite>blink_val</cite> (default
 0) are detected in addition. Use <cite>np.nan</cite> to detect only NaN
 (e.g., for baseline-corrected data where 0 is a valid value).
 The “zero” strategy always uses the raw data, so regions masked
 for other reasons are not detected as blinks.</p></li>
-<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – window-size for Savitzky-Golay velocity estimation in ms</p></li>
+<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – window-size for Savitzky-Golay velocity estimation (in ms, or with units)</p></li>
 <li><p><strong>vel_onset</strong> (<em>float</em><em> or </em><em>str</em>) – <p>velocity threshold to detect blink onset (negative value).</p>
 <ul>
 <li><p>If float: threshold in pupil-units per millisecond (e.g., -5.0)</p></li>
@@ -891,9 +890,9 @@ for other reasons are not detected as blinks.</p></li>
 <li><p>If str: percentile of velocity distribution (e.g., “95%” for top 5%)</p></li>
 </ul>
 </p></li>
-<li><p><strong>vel_onset_min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – minimum duration in ms that velocity must exceed threshold to detect as onset
+<li><p><strong>vel_onset_min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – minimum duration (in ms, or with units) that velocity must exceed threshold to detect as onset
 (to avoid noise-induced false detections)</p></li>
-<li><p><strong>vel_offset_min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – minimum duration in ms that velocity must exceed threshold to detect as offset
+<li><p><strong>vel_offset_min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – minimum duration (in ms, or with units) that velocity must exceed threshold to detect as offset
 (to avoid noise-induced false detections)</p></li>
 <li><p><strong>strategies</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – list of strategies to use;
 so far, use a list containing any combination of “zero” and “velocity”</p></li>
@@ -946,7 +945,7 @@ good parameter values for <cite>winsize</cite>, <cite>vel_onset</cite>, <cite>ve
 the original pupil data or a string that will be used as the new variable
 name in the data (e.g., “pupilinterp”)</p></li>
 <li><p><strong>method</strong> (<em>str</em>) – method to use; so far, only “mahot” is implemented</p></li>
-<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – size of the Savitzky-Golay window in ms</p></li>
+<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – size of the Savitzky-Golay window (in ms, or with units)</p></li>
 <li><p><strong>vel_onset</strong> (<em>float</em><em> or </em><em>str</em>) – <p>velocity threshold to detect blink onset (negative value).</p>
 <ul>
 <li><p>If float: threshold in pupil-units per millisecond (e.g., -5.0)</p></li>
@@ -959,8 +958,10 @@ name in the data (e.g., “pupilinterp”)</p></li>
 <li><p>If str: percentile of velocity distribution (e.g., “95%” for top 5%)</p></li>
 </ul>
 </p></li>
-<li><p><strong>margin</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – margin that is subtracted/added to onset and offset (in ms)</p></li>
-<li><p><strong>blinkwindow</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – how much time before and after each blink to include (in ms)</p></li>
+<li><p><strong>margin</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – margin that is subtracted/added to onset and offset (in ms, or
+with units, e.g. <code class="docutils literal notranslate"><span class="pre">(10,</span> <span class="pre">30)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>)</p></li>
+<li><p><strong>blinkwindow</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – how much time before and after each blink to include (in ms, or
+with units)</p></li>
 <li><p><strong>interp_type</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – type of interpolation accepted by <code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.interpolate.interp1d()</span></code></p></li>
 <li><p><strong>inplace</strong> (<em>bool</em><em> or </em><em>None</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes
@@ -1180,7 +1181,7 @@ The smoothed signal replaces the pupil data; the mask is preserved.</p>
 <li><p><strong>eyes</strong> (<em>list</em>) – list of eyes to smooth; if empty, all available eyes are smoothed</p></li>
 <li><p><strong>window</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – (the type of window from ‘flat’, ‘hanning’, ‘hamming’, ‘bartlett’, ‘blackman’);
 flat window will produce a moving average smoothing.</p></li>
-<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – the length of the window in ms</p></li>
+<li><p><strong>winsize</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – the length of the window in ms (or with units, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;20</span> <span class="pre">ms&quot;</span></code>)</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em><em> or </em><em>None</em>) – if <cite>True</cite>, make change in-place and return the object
 if <cite>False</cite>, make and return copy before making changes
 if <cite>None</cite>, use the object-level setting</p></li>
@@ -1579,7 +1580,8 @@ number of samples per bin.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to plot (in <cite>units</cite>). Default is (-np.inf, +np.inf), i.e. all data.</p></li>
+<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to plot (in <cite>units</cite>, or with units, e.g.
+<code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">5)</span> <span class="pre">*</span> <span class="pre">u.min</span></code>). Default is (-np.inf, +np.inf), i.e. all data.</p></li>
 <li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – The eyes to plot. Default is [], which means all available data (“left”, “right”,
 average, regression, …)</p></li>
 <li><p><strong>show_screen</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to plot the screen limits (if an experimental setup is
@@ -1723,7 +1725,8 @@ Each eye is plotted in a separate subplot.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]</span>) – Which eye(s) to plot: “left”, “right”, “average”, or a list of these.
 Default is [] which plots all available eyes.</p></li>
-<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to include in the analysis. Default is (-np.inf, +np.inf),
+<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to include in the analysis (in <cite>units</cite>, or with
+units, e.g. <code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">5)</span> <span class="pre">*</span> <span class="pre">u.min</span></code>). Default is (-np.inf, +np.inf),
 i.e. all data.</p></li>
 <li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Time units for plot_range. Default is “sec”.</p></li>
 <li><p><strong>show_screen</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to plot the screen limits. Default is True.</p></li>
@@ -1790,7 +1793,8 @@ A new figure is created for the plot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to plot (in <cite>units</cite>). Default is (-np.inf, +np.inf), i.e. all data.</p></li>
+<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to plot (in <cite>units</cite>, or with units, e.g.
+<code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">5)</span> <span class="pre">*</span> <span class="pre">u.min</span></code>). Default is (-np.inf, +np.inf), i.e. all data.</p></li>
 <li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – The eyes to plot. Default is [], which means all available data (“left”, “right”,
 average, regression, …)</p></li>
 <li><p><strong>show_screen</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to plot the screen limits (if an experimental setup is
@@ -1903,7 +1907,8 @@ The <cite>interv</cite> parameter is also interpreted in these units.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – eye(s) to plot; if empty, all eyes with pupil data are plotted</p></li>
-<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – plot from start to end (in units of <cite>units</cite>)</p></li>
+<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – plot from start to end (in units of <cite>units</cite>, or with units, e.g.
+<code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">5)</span> <span class="pre">*</span> <span class="pre">u.min</span></code>)</p></li>
 <li><p><strong>show_events</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – plot events as vertical lines with labels</p></li>
 <li><p><strong>show_blinks</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – highlight masked regions of the pupil data (e.g., detected blinks)
 with a red background</p></li>
@@ -1936,7 +1941,8 @@ Default is “” (no prefix).</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pdf_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – file name to store the PDF; if None, no PDF is written</p></li>
-<li><p><strong>interv</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – duration of each of the segments to be plotted (in units specified by <code class="docutils literal notranslate"><span class="pre">units</span></code>)</p></li>
+<li><p><strong>interv</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – duration of each of the segments to be plotted (in units specified
+by <code class="docutils literal notranslate"><span class="pre">units</span></code>, or with units, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;2</span> <span class="pre">min&quot;</span></code>)</p></li>
 <li><p><strong>figsize</strong> (<em>Tuple</em><em>[</em><em>int</em><em>,</em><em>int</em><em>]</em>) – dimensions of the figures</p></li>
 <li><p><strong>ylim</strong> (<em>Tuple</em><em>[</em><em>float</em><em>,</em><em>float</em><em>] or </em><em>None</em>) – y-axis limits for the plots; if None, matplotlib’s automatic limits are used</p></li>
 <li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Time units for segment boundaries passed to <a class="reference internal" href="#pypillometry.EyePlotter.pupil_plot" title="pypillometry.EyePlotter.pupil_plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_plot()</span></code></a>. Default “min”.</p></li>
@@ -2163,7 +2169,8 @@ The <cite>interv</cite> parameter is also interpreted in these units.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – eye(s) to plot; if empty, all eyes with pupil data are plotted</p></li>
-<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – plot from start to end (in units of <cite>units</cite>)</p></li>
+<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – plot from start to end (in units of <cite>units</cite>, or with units, e.g.
+<code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">5)</span> <span class="pre">*</span> <span class="pre">u.min</span></code>)</p></li>
 <li><p><strong>show_events</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – plot events as vertical lines with labels</p></li>
 <li><p><strong>show_blinks</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – highlight masked regions of the pupil data (e.g., detected blinks)
 with a red background</p></li>
@@ -2196,7 +2203,8 @@ Default is “” (no prefix).</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pdf_file</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – file name to store the PDF; if None, no PDF is written</p></li>
-<li><p><strong>interv</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – duration of each of the segments to be plotted (in units specified by <code class="docutils literal notranslate"><span class="pre">units</span></code>)</p></li>
+<li><p><strong>interv</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – duration of each of the segments to be plotted (in units specified
+by <code class="docutils literal notranslate"><span class="pre">units</span></code>, or with units, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;2</span> <span class="pre">min&quot;</span></code>)</p></li>
 <li><p><strong>figsize</strong> (<em>Tuple</em><em>[</em><em>int</em><em>,</em><em>int</em><em>]</em>) – dimensions of the figures</p></li>
 <li><p><strong>ylim</strong> (<em>Tuple</em><em>[</em><em>float</em><em>,</em><em>float</em><em>] or </em><em>None</em>) – y-axis limits for the plots; if None, matplotlib’s automatic limits are used</p></li>
 <li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Time units for segment boundaries passed to <a class="reference internal" href="#pypillometry.PupilPlotter.pupil_plot" title="pypillometry.PupilPlotter.pupil_plot"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pupil_plot()</span></code></a>. Default “min”.</p></li>
@@ -2285,7 +2293,8 @@ number of samples per bin.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to plot (in <cite>units</cite>). Default is (-np.inf, +np.inf), i.e. all data.</p></li>
+<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to plot (in <cite>units</cite>, or with units, e.g.
+<code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">5)</span> <span class="pre">*</span> <span class="pre">u.min</span></code>). Default is (-np.inf, +np.inf), i.e. all data.</p></li>
 <li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – The eyes to plot. Default is [], which means all available data (“left”, “right”,
 average, regression, …)</p></li>
 <li><p><strong>show_screen</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to plot the screen limits (if an experimental setup is
@@ -2429,7 +2438,8 @@ A new figure is created for the plot.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to plot (in <cite>units</cite>). Default is (-np.inf, +np.inf), i.e. all data.</p></li>
+<li><p><strong>plot_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – The time range to plot (in <cite>units</cite>, or with units, e.g.
+<code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">5)</span> <span class="pre">*</span> <span class="pre">u.min</span></code>). Default is (-np.inf, +np.inf), i.e. all data.</p></li>
 <li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – The eyes to plot. Default is [], which means all available data (“left”, “right”,
 average, regression, …)</p></li>
 <li><p><strong>show_screen</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to plot the screen limits (if an experimental setup is
@@ -2543,7 +2553,7 @@ events, see <a class="reference internal" href="#pypillometry.GenericEyeData.get
 (see <a class="reference internal" href="#pypillometry.GenericEyeData.get_events" title="pypillometry.GenericEyeData.get_events"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_events()</span></code></a>).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pypillometry.Intervals">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">Intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intervals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_onsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/intervals.html#Intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">Intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intervals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_onsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/intervals.html#Intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals" title="Link to this definition">¶</a></dt>
 <dd><p>Container for intervals with metadata.</p>
 <p>This class wraps a list of (start, end) intervals and provides additional
 metadata such as units, labels, and associated event information.</p>
@@ -2560,8 +2570,12 @@ as Intervals. Several Intervals can be combined with <code class="docutils liter
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>intervals</strong> (<em>list</em><em> of </em><em>tuples</em><em> or </em><em>np.ndarray</em>) – Intervals as list of (start, end) tuples or 2D array</p></li>
-<li><p><strong>units</strong> (<em>str</em><em> or </em><em>None</em>) – Units of the intervals (“ms”, “sec”, “min”, “h”, or None for indices)</p></li>
+<li><p><strong>intervals</strong> (<em>list</em><em> of </em><em>tuples</em><em>, </em><em>np.ndarray</em><em> or </em><a class="reference internal" href="#pypillometry.Quantity" title="pypillometry.Quantity"><em>Quantity</em></a>) – Intervals as list of (start, end) tuples or 2D array; can carry
+units, e.g. <code class="docutils literal notranslate"><span class="pre">[(0,</span> <span class="pre">100),</span> <span class="pre">(200,</span> <span class="pre">300)]</span> <span class="pre">*</span> <span class="pre">u.ms</span></code> or
+<code class="docutils literal notranslate"><span class="pre">[(&quot;1</span> <span class="pre">min&quot;,</span> <span class="pre">&quot;2</span> <span class="pre">min&quot;)]</span></code></p></li>
+<li><p><strong>units</strong> (<em>str</em><em>, </em><em>Unit</em><em> or </em><em>None</em>) – Units of the intervals (“ms”, “sec”, “min”, “h”, or None for indices).
+Can be omitted if <cite>intervals</cite> carry units; otherwise, intervals with
+units are converted to <cite>units</cite>.</p></li>
 <li><p><strong>label</strong> (<em>str</em><em>, </em><em>optional</em>) – Descriptive label for the interval collection</p></li>
 <li><p><strong>event_labels</strong> (<em>list</em><em>, </em><em>optional</em>) – Event labels corresponding to each interval</p></li>
 <li><p><strong>event_indices</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Indices (into the dataset’s events) of the event corresponding to
@@ -2581,6 +2595,7 @@ zero corresponds to event onset. Used by
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">intervals</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">)],</span> <span class="n">units</span><span class="o">=</span><span class="s2">"ms"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"stimulus"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">intervals</span> <span class="o">=</span> <span class="n">Intervals</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">)]</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"stimulus"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span>
 <span class="go">2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="n">intervals</span><span class="p">:</span>
@@ -2620,9 +2635,11 @@ are included. If the intervals have units, the column <code class="docutils lite
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>selector</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">callable</span></code></span>) – Function called as <code class="docutils literal notranslate"><span class="pre">selector(start,</span> <span class="pre">end)</span></code> for each interval that
 returns bool: True to keep the interval, False to discard it.</p></li>
-<li><p><strong>min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Minimum duration of intervals to keep (in current units)</p></li>
-<li><p><strong>max_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Maximum duration of intervals to keep (in current units)</p></li>
-<li><p><strong>time_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – (start, end) time range. Only keeps intervals that overlap with this range.
+<li><p><strong>min_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Minimum duration of intervals to keep (in current units, unless
+it carries units, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;50</span> <span class="pre">ms&quot;</span></code>)</p></li>
+<li><p><strong>max_duration</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Maximum duration of intervals to keep (as <cite>min_duration</cite>)</p></li>
+<li><p><strong>time_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – (start, end) time range (in current units, unless it carries
+units, e.g. <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">2)</span> <span class="pre">*</span> <span class="pre">u.min</span></code>). Only keeps intervals that overlap with this range.
 An interval overlaps if its end &gt; range_start AND its start &lt; range_end.</p></li>
 </ul>
 </dd>
@@ -2715,7 +2732,8 @@ are converted with <a class="reference internal" href="#pypillometry.Intervals.t
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>merge_sep</strong> (<em>str</em><em>, </em><em>optional</em>) – Separator to use when joining event labels of merged intervals.
 Default is ‘_’.</p></li>
-<li><p><strong>distance</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – <p>Maximum gap (in milliseconds) between intervals to still merge them.
+<li><p><strong>distance</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – <p>Maximum gap (in milliseconds, or with units such as
+<code class="docutils literal notranslate"><span class="pre">50</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>) between intervals to still merge them.
 If two intervals are separated by less than or equal to this distance,
 they will be merged. Default is 0 (only merge overlapping intervals).</p>
 <p>Example: If distance=2 and intervals are (10, 15) and (17, 22), they
@@ -2739,7 +2757,8 @@ will be merged into (10, 22) because the gap (17-15=2) is &lt;= distance.</p>
 <dt class="sig sig-object py" id="pypillometry.Intervals.pad">
 <span class="sig-name descname"><span class="pre">pad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">left</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/intervals.html#Intervals.pad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Intervals.pad" title="Link to this definition">¶</a></dt>
 <dd><p>Add padding to the left (start) and right (end) of each interval.</p>
-<p>The padding is in the current units of the Intervals object.
+<p>The padding is in the current units of the Intervals object, unless
+it carries units (e.g., <code class="docutils literal notranslate"><span class="pre">left=50</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>).
 Padding is applied independently to each interval without merging.
 Use <cite>.merge()</cite> after padding if you want to merge overlapping intervals.</p>
 <p>Intervals are clipped to stay within valid bounds:
@@ -3016,7 +3035,7 @@ Intervals objects with their metadata preserved.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pypillometry.Events">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">Events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">onsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ms'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/events.html#Events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">Events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">onsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_time_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/events.html#Events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Events" title="Link to this definition">¶</a></dt>
 <dd><p>Container for events with metadata.</p>
 <p>This class wraps arrays of event onsets and labels and provides additional
 functionality such as unit conversion, filtering, and display capabilities.</p>
@@ -3028,10 +3047,12 @@ with <a class="reference internal" href="#pypillometry.GenericEyeData.set_events
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>onsets</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>]</span>) – Event onset times (stored as float array)</p></li>
+<li><p><strong>onsets</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>]</span>) – Event onset times (stored as float array); can carry units, e.g.
+<code class="docutils literal notranslate"><span class="pre">[100,</span> <span class="pre">500]</span> <span class="pre">*</span> <span class="pre">u.ms</span></code></p></li>
 <li><p><strong>labels</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>]</span>) – Event labels (stored as array of strings), same length as <cite>onsets</cite></p></li>
 <li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Units of the onsets (“ms”, “sec”, “min”, “h”, or None for indices).
-Default is “ms”.</p></li>
+Default is “ms”, or the units of <cite>onsets</cite> if they carry units
+(otherwise, onsets with units are converted to <cite>units</cite>).</p></li>
 <li><p><strong>data_time_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</span>) – Time range (min, max) of the original dataset (in same units as onsets)</p></li>
 </ul>
 </dd>
@@ -3694,11 +3715,11 @@ Positive x = right, positive y = up.
 Each coordinate can be:
 - float: assumed to be radians
 - str: with units, e.g., “5 deg”, “0.087 rad”
-- pint Quantity</p></li>
+- with a unit, e.g., 5 * u.deg</p></li>
 <li><p><strong>radius</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Radius in visual angle. Can be:
 - float: assumed to be radians
 - str: with units, e.g., “2 deg”, “0.035 rad”
-- pint Quantity</p></li>
+- with a unit, e.g., 5 * u.deg</p></li>
 <li><p><strong>setup</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentalSetup</span></code></span>) – Experimental setup with screen geometry and eye distance
 (screen_resolution, physical_screen_size, and eye_to_screen_center
 must be set)</p></li>
@@ -3834,13 +3855,13 @@ Positive x = right, positive y = up.
 Each coordinate can be:
 - float: assumed to be radians
 - str: with units, e.g., “-5 deg”, “-0.087 rad”
-- pint Quantity</p></li>
+- with a unit, e.g., 5 * u.deg</p></li>
 <li><p><strong>corner2</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]</span>) – (x, y) second corner in visual angle from screen center.
 Positive x = right, positive y = up.
 Each coordinate can be:
 - float: assumed to be radians
 - str: with units, e.g., “5 deg”, “0.087 rad”
-- pint Quantity</p></li>
+- with a unit, e.g., 5 * u.deg</p></li>
 <li><p><strong>setup</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExperimentalSetup</span></code></span>) – Experimental setup with screen geometry and eye distance
 (screen_resolution, physical_screen_size, and eye_to_screen_center
 must be set)</p></li>
@@ -4005,9 +4026,11 @@ min, max and total duration of blinks), or None if no blinks</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eyes</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – eye(s) to process; if empty, all available eyes</p></li>
 <li><p><strong>variables</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – variable(s) to process; if empty, all available variables</p></li>
-<li><p><strong>distance</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Merge blinks closer than this distance (in units specified by
-<code class="docutils literal notranslate"><span class="pre">units</span></code>). Default 100.</p></li>
-<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Units for <code class="docutils literal notranslate"><span class="pre">distance</span></code>. Can be “ms”, “sec”, “min”, or “h”. Default “ms”.</p></li>
+<li><p><strong>distance</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Merge blinks closer than this distance, e.g. <code class="docutils literal notranslate"><span class="pre">100</span> <span class="pre">*</span> <span class="pre">u.ms</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;0.1</span> <span class="pre">sec&quot;</span></code>; plain numbers are in units given by <code class="docutils literal notranslate"><span class="pre">units</span></code>.
+Default 100.</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Units for <code class="docutils literal notranslate"><span class="pre">distance</span></code> if it is a plain number. Can be “ms”,
+“sec”, “min”, or “h”. Default “ms”.</p></li>
 <li><p><strong>apply_mask</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, store the merged blinks, apply them as masks to the data
 and return the object.
 If False, return merged blinks as dict of Intervals objects without
@@ -4393,7 +4416,7 @@ If multiple eyes/variables: returns dict with keys like “left_pupil”.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GenericEyeData.get_intervals">
-<span class="sig-name descname"><span class="pre">get_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event_select</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-200,</span> <span class="pre">200)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.get_intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.get_intervals" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event_select</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">200)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.get_intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.get_intervals" title="Link to this definition">¶</a></dt>
 <dd><p>Return an Intervals object containing intervals relative to event-onsets.
 For example, extract the interval before and after a stimulus has been presented.
 It is possible to select based on the event label, e.g. only select
@@ -4422,11 +4445,14 @@ its first event.</p></li>
 </ul>
 </p></li>
 <li><p><strong>interval</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></span>) – time-window relative to event-onset (0 is event-onset); i.e., negative
-numbers are before the event, positive numbers after. Units are defined
-by the <cite>units</cite> parameter. Default <code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">200)</span></code>.</p></li>
-<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – units of the interval (one of “ms”, “sec”, “min”, “h”); units=None
-(default) means that the interval is in sampling units (i.e.,
-indices into the time-array)</p></li>
+numbers are before the event, positive numbers after, e.g.
+<code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">800)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code> or <code class="docutils literal notranslate"><span class="pre">(&quot;-0.2</span> <span class="pre">sec&quot;,</span> <span class="pre">&quot;0.8</span> <span class="pre">sec&quot;)</span></code>. Plain numbers
+are in units given by the <cite>units</cite> parameter. Default <code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">200)</span></code>.</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – units of the returned intervals (one of “ms”, “sec”, “min”, “h”, or
+None for sampling units, i.e., indices into the time-array); plain
+numbers in <cite>interval</cite> are in these units, an <cite>interval</cite> with units
+is converted to them. If not given, the units of <cite>interval</cite> are used
+(sampling units if <cite>interval</cite> has no units).</p></li>
 <li><p><strong>label</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <span class="highlight sphinx_autodoc_typehints-value"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></span></span>) – optional label for the Intervals object. If None, a label is automatically
 generated from the event_select parameter</p></li>
 <li><p><strong>**kwargs</strong> – passed onto the event_select function</p></li>
@@ -4949,8 +4975,8 @@ pupil-size in interval before trial onset.</p>
 <li><p><strong>intervals</strong> (<a class="reference internal" href="#pypillometry.Intervals" title="pypillometry.Intervals"><em>Intervals</em></a><em>, </em><em>optional</em>) – Intervals object to use, in any time units or in sample indices
 (<cite>units=None</cite>, the default of <a class="reference internal" href="#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a>). If
 provided, interval and event_select are ignored.</p></li>
-<li><p><strong>interval</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – time-window relative to event-onset (0 is event-onset), in
-units given by <cite>units</cite>.
+<li><p><strong>interval</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – time-window relative to event-onset (0 is event-onset), e.g.
+<code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">0)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>; plain numbers are in units given by <cite>units</cite>.
 Required if intervals is not provided.</p></li>
 <li><p><strong>event_select</strong> (<em>str</em><em> or </em><em>function</em><em>, </em><em>optional</em>) – variable describing which events to select and align to
 see <a class="reference internal" href="#pypillometry.GenericEyeData.get_intervals" title="pypillometry.GenericEyeData.get_intervals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_intervals()</span></code></a> for details.
@@ -4961,7 +4987,7 @@ Required if intervals is not provided.</p></li>
 ignore masked samples (e.g., <cite>np.mean</cite> (default) or
 <cite>np.ma.median</cite>, but not <cite>np.median</cite>; a warning is logged
 otherwise). Intervals where all samples are masked give NaN.</p></li>
-<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – units for interval parameter (if used); default “ms”</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – units for plain numbers in <cite>interval</cite> (if used); default “ms”</p></li>
 <li><p><strong>**kwargs</strong> – passed onto the event_select function</p></li>
 </ul>
 </dd>
@@ -4980,7 +5006,8 @@ value per interval/event</p>
 <span class="sig-name descname"><span class="pre">sub_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/eyedata/generic.html#GenericEyeData.sub_slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.GenericEyeData.sub_slice" title="Link to this definition">¶</a></dt>
 <dd><p>Return a shortened version of the current object.</p>
 <p>The result contains all data (and events) between <cite>start</cite> and <cite>end</cite>
-(inclusive), in units given by <cite>units</cite> (one of “ms”, “sec”, “min”, “h”).
+(inclusive), e.g. <code class="docutils literal notranslate"><span class="pre">d.sub_slice(3*u.min,</span> <span class="pre">5*u.min)</span></code> or
+<code class="docutils literal notranslate"><span class="pre">d.sub_slice(&quot;3</span> <span class="pre">min&quot;,</span> <span class="pre">&quot;5</span> <span class="pre">min&quot;)</span></code>.
 <cite>start</cite> and <cite>end</cite> refer to the values of the time-vector (not to
 the time since the start of the recording). Masks are kept; stored
 blinks (in sample indices) are shifted and cut to the new range.</p>
@@ -4989,9 +5016,9 @@ blinks (in sample indices) are shifted and cut to the new range.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>start</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – start for new dataset; default: beginning of the data</p></li>
 <li><p><strong>end</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – end of new dataset; default: end of the data</p></li>
-<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – time units in which <cite>start</cite> and <cite>end</cite> are provided
-(one of “ms”, “sec”, “min”, “h”).
-If units is <cite>None</cite>, use the units in the time vector (ms).</p></li>
+<li><p><strong>units</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – time units of <cite>start</cite> and <cite>end</cite> if they are plain numbers
+(one of “ms”, “sec”, “min”, “h”). If units is <cite>None</cite>, plain
+numbers are ms (the units of the time vector).</p></li>
 <li><p><strong>inplace</strong> (<em>bool</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – if <cite>True</cite>, make change in-place and return the object;
 if <cite>False</cite>, make and return copy before making changes;
 if <cite>None</cite>, use the object-level setting (specified in the constructor)</p></li>
@@ -6305,8 +6332,141 @@ Corresponds to area-proportional measurements, not diameter.</p></li>
 </dd></dl>
 
 </section>
+<section id="units">
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">Units</a><a class="headerlink" href="#units" title="Link to this heading">¶</a></h2>
+<p>Times, distances and angles can be given with units, either multiplied by a
+unit from <code class="xref py py-data docutils literal notranslate"><span class="pre">pypillometry.u</span></code> or as strings:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">u</span>
+
+<span class="n">d</span><span class="o">.</span><span class="n">sub_slice</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="mi">5</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">)</span>                   <span class="c1"># or ("3 min", "5 min")</span>
+<span class="n">d</span><span class="o">.</span><span class="n">get_intervals</span><span class="p">(</span><span class="s2">"stim"</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">800</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">ms</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">pupil_blinks_detect</span><span class="p">(</span><span class="n">min_duration</span><span class="o">=</span><span class="s2">"20 ms"</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">pupil_plot</span><span class="p">(</span><span class="n">plot_range</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">)</span>
+<span class="n">ExperimentalSetup</span><span class="p">(</span><span class="n">eye_to_screen_center</span><span class="o">=</span><span class="mi">60</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="p">,</span> <span class="n">screen_pitch</span><span class="o">=</span><span class="s2">"-5 deg"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Internally, all values are converted to ms, mm and radians. Plain numbers
+are interpreted as documented for each function (usually ms for times).
+Available units: <code class="docutils literal notranslate"><span class="pre">u.ms</span></code>, <code class="docutils literal notranslate"><span class="pre">u.sec</span></code>, <code class="docutils literal notranslate"><span class="pre">u.min</span></code>, <code class="docutils literal notranslate"><span class="pre">u.h</span></code>, <code class="docutils literal notranslate"><span class="pre">u.samples</span></code>,
+<code class="docutils literal notranslate"><span class="pre">u.mm</span></code>, <code class="docutils literal notranslate"><span class="pre">u.cm</span></code>, <code class="docutils literal notranslate"><span class="pre">u.m</span></code>, <code class="docutils literal notranslate"><span class="pre">u.inch</span></code>, <code class="docutils literal notranslate"><span class="pre">u.deg</span></code>, <code class="docutils literal notranslate"><span class="pre">u.rad</span></code> (plus aliases
+such as <code class="docutils literal notranslate"><span class="pre">u.seconds</span></code> or <code class="docutils literal notranslate"><span class="pre">u.degree</span></code>).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pypillometry.Quantity">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">Quantity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/units.html#Quantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Quantity" title="Link to this definition">¶</a></dt>
+<dd><p>A number or array together with a <code class="xref py py-class docutils literal notranslate"><span class="pre">Unit</span></code>.</p>
+<p>Usually created by multiplying with a unit, e.g. <code class="docutils literal notranslate"><span class="pre">3</span> <span class="pre">*</span> <span class="pre">u.min</span></code> or
+<code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">800)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code>. Tuples and lists are stored as numpy arrays.
+Iterating over or indexing an array quantity gives quantities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>float</em><em> or </em><em>array-like</em>) – magnitude</p></li>
+<li><p><strong>unit</strong> (<em>Unit</em><em> or </em><em>str</em>) – unit of <cite>value</cite></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pypillometry.Quantity.to">
+<span class="sig-name descname"><span class="pre">to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/units.html#Quantity.to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.Quantity.to" title="Link to this definition">¶</a></dt>
+<dd><p>Return the quantity converted to <cite>unit</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>unit</strong> (<em>Unit</em><em> or </em><em>str</em>) – target unit; must have the same dimension</p></li>
+<li><p><strong>fs</strong> (<em>float</em><em>, </em><em>optional</em>) – sampling rate in Hz; needed to convert from or to samples</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.parse_time">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">parse_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ms'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ms'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/units.html#parse_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.parse_time" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a time (or tuple/array of times) to unit <cite>to</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>float</em><em>, </em><em>array-like</em><em>, </em><em>str</em><em>, </em><a class="reference internal" href="#pypillometry.Quantity" title="pypillometry.Quantity"><em>Quantity</em></a><em>, </em><em>tuple</em><em> or </em><em>None</em>) – time value(s), e.g. <code class="docutils literal notranslate"><span class="pre">500</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;2</span> <span class="pre">sec&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">3</span> <span class="pre">*</span> <span class="pre">u.min</span></code>,
+<code class="docutils literal notranslate"><span class="pre">(-200,</span> <span class="pre">800)</span> <span class="pre">*</span> <span class="pre">u.ms</span></code> or <code class="docutils literal notranslate"><span class="pre">(&quot;1</span> <span class="pre">min&quot;,</span> <span class="pre">&quot;2</span> <span class="pre">min&quot;)</span></code></p></li>
+<li><p><strong>to</strong> (<em>str</em><em> or </em><em>Unit</em><em>, </em><em>optional</em>) – target unit; default “ms”</p></li>
+<li><p><strong>default</strong> (<em>str</em><em>, </em><em>Unit</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – unit of plain numbers; default “ms”. If None, plain numbers raise
+a ValueError.</p></li>
+<li><p><strong>fs</strong> (<em>float</em><em>, </em><em>optional</em>) – sampling rate in Hz; needed to convert from or to “samples”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the value in unit <cite>to</cite> (an ndarray for tuples, lists and arrays)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float, ndarray or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_time</span><span class="p">(</span><span class="s2">"2 sec"</span><span class="p">)</span>
+<span class="go">2000.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_time</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<span class="go">180.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_time</span><span class="p">((</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span> <span class="mi">800</span><span class="p">),</span> <span class="n">to</span><span class="o">=</span><span class="s2">"sec"</span><span class="p">)</span>
+<span class="go">array([-0.2,  0.8])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_time</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="go">20.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.parse_distance">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">parse_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/units.html#parse_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.parse_distance" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a distance to mm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>float</em><em>, </em><em>str</em><em>, </em><a class="reference internal" href="#pypillometry.Quantity" title="pypillometry.Quantity"><em>Quantity</em></a><em> or </em><em>None</em>) – e.g. <code class="docutils literal notranslate"><span class="pre">&quot;60</span> <span class="pre">cm&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">60</span> <span class="pre">*</span> <span class="pre">u.cm</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;0.6</span> <span class="pre">m&quot;</span></code>; plain numbers are mm
+(with a one-time warning)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>distance in mm</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float, ndarray or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_distance</span><span class="p">(</span><span class="s2">"60 cm"</span><span class="p">)</span>
+<span class="go">600.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_distance</span><span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="p">)</span>
+<span class="go">600.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pypillometry.parse_angle">
+<span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">parse_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pypillometry/units.html#parse_angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.parse_angle" title="Link to this definition">¶</a></dt>
+<dd><p>Convert an angle to radians.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>float</em><em>, </em><em>str</em><em>, </em><a class="reference internal" href="#pypillometry.Quantity" title="pypillometry.Quantity"><em>Quantity</em></a><em> or </em><em>None</em>) – e.g. <code class="docutils literal notranslate"><span class="pre">&quot;20</span> <span class="pre">deg&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">20</span> <span class="pre">*</span> <span class="pre">u.deg</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;0.349</span> <span class="pre">rad&quot;</span></code>; plain numbers are
+radians (with a one-time warning)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>angle in radians</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float, ndarray or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">parse_angle</span><span class="p">(</span><span class="s2">"180 deg"</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">3.1416</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
 <section id="logging">
-<h2><a class="toc-backref" href="#id18" role="doc-backlink">Logging</a><a class="headerlink" href="#logging" title="Link to this heading">¶</a></h2>
+<h2><a class="toc-backref" href="#id19" role="doc-backlink">Logging</a><a class="headerlink" href="#logging" title="Link to this heading">¶</a></h2>
 <p>By default, the log-level is set to <cite>INFO</cite> which results in a moderate amount of logging information.
 The logging can be turned off by running <a class="reference internal" href="#pypillometry.logging_disable" title="pypillometry.logging_disable"><code class="xref py py-func docutils literal notranslate"><span class="pre">logging_disable()</span></code></a> and turned back on by running <a class="reference internal" href="#pypillometry.logging_enable" title="pypillometry.logging_enable"><code class="xref py py-func docutils literal notranslate"><span class="pre">logging_enable()</span></code></a>.
 You can also set the log-level to <cite>DEBUG</cite> or <cite>WARN</cite> by running <a class="reference internal" href="#pypillometry.logging_set_level" title="pypillometry.logging_set_level"><code class="xref py py-func docutils literal notranslate"><span class="pre">logging_set_level()</span></code></a>.</p>
@@ -6336,10 +6496,20 @@ You can also set the log-level to <cite>DEBUG</cite> or <cite>WARN</cite> by run
 
 </section>
 <section id="module-pypillometry.io">
-<span id="modules"></span><h2><a class="toc-backref" href="#id19" role="doc-backlink">Modules</a><a class="headerlink" href="#module-pypillometry.io" title="Link to this heading">¶</a></h2>
+<span id="modules"></span><h2><a class="toc-backref" href="#id20" role="doc-backlink">Modules</a><a class="headerlink" href="#module-pypillometry.io" title="Link to this heading">¶</a></h2>
 <section id="io-py">
-<h3><a class="toc-backref" href="#id20" role="doc-backlink">io.py</a><a class="headerlink" href="#io-py" title="Link to this heading">¶</a></h3>
+<h3><a class="toc-backref" href="#id21" role="doc-backlink">io.py</a><a class="headerlink" href="#io-py" title="Link to this heading">¶</a></h3>
 <p>Read/Write data from/to disk.</p>
+<p>Reading EDF files is slow: <a class="reference internal" href="#pypillometry.io.read_eyelink" title="pypillometry.io.read_eyelink"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_eyelink()</span></code></a> (and
+<a class="reference internal" href="#pypillometry.GenericEyeData.from_eyelink" title="pypillometry.GenericEyeData.from_eyelink"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_eyelink()</span></code></a>) takes about a minute
+for a 90 MB EDF file (64 min of binocular data at 1000 Hz), mostly in the
+<cite>eyelinkio</cite> package. It is therefore recommended to convert EDF files once
+and to work with the converted files, e.g., with the command-line program
+<code class="docutils literal notranslate"><span class="pre">edf2pypil</span></code> (<code class="docutils literal notranslate"><span class="pre">edf2pypil</span> <span class="pre">recording.edf</span></code> writes <code class="docutils literal notranslate"><span class="pre">recording.pkl</span></code>) or
+with <a class="reference internal" href="#pypillometry.io.write_pickle" title="pypillometry.io.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>. Reading the pickle file with <a class="reference internal" href="#pypillometry.io.read_pickle" title="pypillometry.io.read_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_pickle()</span></code></a>
+took 0.1-0.25 s for the same recordings (more than 200 times faster; from
+a slow disk it can take a few seconds). Pickle files are larger (about
+400 MB for a 90 MB EDF file) and should only be read from trusted sources.</p>
 </section>
 <dl class="py function">
 <dt class="sig sig-object py" id="pypillometry.io.fetch_url">
@@ -6518,7 +6688,7 @@ never deleted.</p></li>
 </dd></dl>
 
 <section id="study-py">
-<span id="module-pypillometry.study"></span><h3><a class="toc-backref" href="#id21" role="doc-backlink">study.py</a><a class="headerlink" href="#study-py" title="Link to this heading">¶</a></h3>
+<span id="module-pypillometry.study"></span><h3><a class="toc-backref" href="#id22" role="doc-backlink">study.py</a><a class="headerlink" href="#study-py" title="Link to this heading">¶</a></h3>
 <p>Load a complete study (all subjects) from a local directory, an SSH URL or
 an OSF project, based on a user-provided configuration file
 (<code class="docutils literal notranslate"><span class="pre">pypillometry_conf.py</span></code>) that defines a dict <cite>raw_data</cite> and a function
@@ -6601,7 +6771,7 @@ of <cite>read_subject</cite>)</p></li>
 </dd></dl>
 
 <section id="example-data-py">
-<span id="module-pypillometry.example_data"></span><h3><a class="toc-backref" href="#id22" role="doc-backlink">example_data.py</a><a class="headerlink" href="#example-data-py" title="Link to this heading">¶</a></h3>
+<span id="module-pypillometry.example_data"></span><h3><a class="toc-backref" href="#id23" role="doc-backlink">example_data.py</a><a class="headerlink" href="#example-data-py" title="Link to this heading">¶</a></h3>
 <p>Example datasets for pypillometry.</p>
 <p>This module provides example datasets for pypillometry. The datasets are
 used in the documentation and for testing purposes. Most of them are stored on
@@ -6704,6 +6874,7 @@ Ignored for datasets included in the package.</p></li>
 <li><a class="reference internal" href="#pupil-py">pupil.py</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#units">Units</a></li>
 <li><a class="reference internal" href="#logging">Logging</a></li>
 <li><a class="reference internal" href="#module-pypillometry.io">Modules</a><ul>
 <li><a class="reference internal" href="#io-py">io.py</a></li>

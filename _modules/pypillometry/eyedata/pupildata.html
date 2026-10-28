@@ -417,6 +417,7 @@ window.runMermaid = runMermaid;</script>
 <span class="c1">#from .. import io</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilPlotter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..units</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_time</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
@@ -626,8 +627,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        window : str</span>
 <span class="sd">            (the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'); </span>
 <span class="sd">            flat window will produce a moving average smoothing.</span>
-<span class="sd">        winsize : float</span>
-<span class="sd">            the length of the window in ms </span>
+<span class="sd">        winsize : float, str or Quantity</span>
+<span class="sd">            the length of the window in ms (or with units, e.g. ``"20 ms"``)</span>
 <span class="sd">        inplace : bool or None</span>
 <span class="sd">            if `True`, make change in-place and return the object</span>
 <span class="sd">            if `False`, make and return copy before making changes                            </span>
@@ -642,7 +643,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
 
         <span class="c1"># convert winsize to index based on sampling rate</span>
-        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">winsize</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span> 
+        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">winsize</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
 
         <span class="c1"># process requested eyes</span>
         <span class="k">for</span> <span class="n">eye</span> <span class="ow">in</span> <span class="n">eyes</span><span class="p">:</span>
@@ -943,8 +944,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        ----------</span>
 <span class="sd">        eyes : list</span>
 <span class="sd">            list of eyes to process; if empty, all available eyes are processed</span>
-<span class="sd">        min_duration : float</span>
-<span class="sd">            minimum duration in ms for a sequence of missing numbers to be treated as blink</span>
+<span class="sd">        min_duration : float, str or Quantity</span>
+<span class="sd">            minimum duration (in ms, or with units) for a sequence of missing numbers to be treated as blink</span>
 <span class="sd">        blink_val : float</span>
 <span class="sd">            "missing value" code for the "zero" strategy. Missing samples</span>
 <span class="sd">            (NaN) are always detected; samples equal to `blink_val` (default</span>
@@ -952,8 +953,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            (e.g., for baseline-corrected data where 0 is a valid value).</span>
 <span class="sd">            The "zero" strategy always uses the raw data, so regions masked</span>
 <span class="sd">            for other reasons are not detected as blinks.</span>
-<span class="sd">        winsize : float</span>
-<span class="sd">            window-size for Savitzky-Golay velocity estimation in ms</span>
+<span class="sd">        winsize : float, str or Quantity</span>
+<span class="sd">            window-size for Savitzky-Golay velocity estimation (in ms, or with units)</span>
 <span class="sd">        vel_onset : float or str</span>
 <span class="sd">            velocity threshold to detect blink onset (negative value).</span>
 
@@ -964,11 +965,11 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., 5.0)</span>
 <span class="sd">            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)</span>
-<span class="sd">        vel_onset_min_duration : float</span>
-<span class="sd">            minimum duration in ms that velocity must exceed threshold to detect as onset</span>
+<span class="sd">        vel_onset_min_duration : float, str or Quantity</span>
+<span class="sd">            minimum duration (in ms, or with units) that velocity must exceed threshold to detect as onset</span>
 <span class="sd">            (to avoid noise-induced false detections)</span>
-<span class="sd">        vel_offset_min_duration : float</span>
-<span class="sd">            minimum duration in ms that velocity must exceed threshold to detect as offset</span>
+<span class="sd">        vel_offset_min_duration : float, str or Quantity</span>
+<span class="sd">            minimum duration (in ms, or with units) that velocity must exceed threshold to detect as offset</span>
 <span class="sd">            (to avoid noise-induced false detections)</span>
 <span class="sd">        strategies : list</span>
 <span class="sd">            list of strategies to use;</span>
@@ -996,12 +997,12 @@ window.runMermaid = runMermaid;</script>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
 
         <span class="c1"># Convert ms to samples</span>
-        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">winsize</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">winsize</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">winsize_ix</span> <span class="o">%</span> <span class="mi">2</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
             <span class="n">winsize_ix</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">min_duration_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">min_duration</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
-        <span class="n">vel_onset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">vel_onset_min_duration</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
-        <span class="n">vel_offset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">vel_offset_min_duration</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+        <span class="n">min_duration_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">min_duration</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">vel_onset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">vel_onset_min_duration</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+        <span class="n">vel_offset_min_samples</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">vel_offset_min_duration</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
 
         
         <span class="c1"># check for unknown strategies</span>
@@ -1121,8 +1122,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            name in the data (e.g., "pupilinterp")</span>
 <span class="sd">        method : str</span>
 <span class="sd">            method to use; so far, only "mahot" is implemented</span>
-<span class="sd">        winsize : float</span>
-<span class="sd">            size of the Savitzky-Golay window in ms</span>
+<span class="sd">        winsize : float, str or Quantity</span>
+<span class="sd">            size of the Savitzky-Golay window (in ms, or with units)</span>
 <span class="sd">        vel_onset : float or str</span>
 <span class="sd">            velocity threshold to detect blink onset (negative value).</span>
 
@@ -1133,10 +1134,12 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">            - If float: threshold in pupil-units per millisecond (e.g., 5.0)</span>
 <span class="sd">            - If str: percentile of velocity distribution (e.g., "95%" for top 5%)</span>
-<span class="sd">        margin : Tuple[float,float]</span>
-<span class="sd">            margin that is subtracted/added to onset and offset (in ms)</span>
-<span class="sd">        blinkwindow : float</span>
-<span class="sd">            how much time before and after each blink to include (in ms)</span>
+<span class="sd">        margin : Tuple[float,float] or Quantity</span>
+<span class="sd">            margin that is subtracted/added to onset and offset (in ms, or</span>
+<span class="sd">            with units, e.g. ``(10, 30) * u.ms``)</span>
+<span class="sd">        blinkwindow : float, str or Quantity</span>
+<span class="sd">            how much time before and after each blink to include (in ms, or</span>
+<span class="sd">            with units)</span>
 <span class="sd">        interp_type : str</span>
 <span class="sd">            type of interpolation accepted by :func:`scipy.interpolate.interp1d()`</span>
 <span class="sd">        inplace : bool or None</span>
@@ -1153,9 +1156,9 @@ window.runMermaid = runMermaid;</script>
         <span class="n">eyes</span><span class="p">,</span><span class="n">_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,[])</span>
 
         <span class="c1"># parameters in sampling units (from ms)</span>
-        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">winsize</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span> 
-        <span class="n">margin_ix</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">m</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">margin</span><span class="p">)</span>
-        <span class="n">blinkwindow_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">blinkwindow</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+        <span class="n">winsize_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">winsize</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+        <span class="n">margin_ix</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">m</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">margin</span><span class="p">))</span>
+        <span class="n">blinkwindow_ix</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">blinkwindow</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">winsize_ix</span> <span class="o">%</span> <span class="mi">2</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span> <span class="c1">## ensure smoothing window is odd</span>
             <span class="n">winsize_ix</span><span class="o">+=</span><span class="mi">1</span> 
 

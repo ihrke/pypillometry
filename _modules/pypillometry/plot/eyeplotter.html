@@ -403,7 +403,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..plot.pupilplotter</span><span class="w"> </span><span class="kn">import</span> <span class="n">PupilPlotter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..units</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_angle</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.axes_grid1</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_axes_locatable</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
@@ -460,7 +460,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            Which eye(s) to plot: "left", "right", "average", or a list of these.</span>
 <span class="sd">            Default is [] which plots all available eyes.</span>
 <span class="sd">        plot_range : tuple, optional</span>
-<span class="sd">            The time range to include in the analysis. Default is (-np.inf, +np.inf),</span>
+<span class="sd">            The time range to include in the analysis (in `units`, or with</span>
+<span class="sd">            units, e.g. ``(3, 5) * u.min``). Default is (-np.inf, +np.inf),</span>
 <span class="sd">            i.e. all data.</span>
 <span class="sd">        units : str, optional</span>
 <span class="sd">            Time units for plot_range. Default is "sec".</span>
@@ -528,6 +529,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">eyes</span> <span class="o">=</span> <span class="p">[</span><span class="n">eyes</span><span class="p">]</span>
         
         <span class="c1"># Validate plot_range</span>
+        <span class="n">plot_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_range_in</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_plot_range</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
         
         <span class="c1"># Handle time range</span>

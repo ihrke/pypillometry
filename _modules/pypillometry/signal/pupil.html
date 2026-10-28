@@ -407,7 +407,6 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">"""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.optimize</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">uniform_filter1d</span>
 
@@ -774,6 +773,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">n</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">fs</span><span class="o">*</span><span class="p">(</span><span class="n">max_duration</span><span class="o">/</span><span class="mf">1000.</span><span class="p">))</span>
     <span class="n">tx</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">max_duration</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>
     <span class="n">prf</span><span class="o">=</span><span class="n">pupil_kernel_t</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">npar</span><span class="p">,</span><span class="n">tmax</span><span class="p">)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span><span class="n">prf</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"time [ms]"</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"AU"</span><span class="p">)</span></div>

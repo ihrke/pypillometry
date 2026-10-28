@@ -407,6 +407,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">normalize_unit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSET</span><span class="p">,</span> <span class="n">_has_units</span><span class="p">,</span> <span class="n">_time_values_and_units</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"Events"</span><span class="p">,</span>
@@ -430,13 +431,15 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    onsets : np.ndarray or list</span>
-<span class="sd">        Event onset times (stored as float array)</span>
+<span class="sd">    onsets : np.ndarray, list or Quantity</span>
+<span class="sd">        Event onset times (stored as float array); can carry units, e.g.</span>
+<span class="sd">        ``[100, 500] * u.ms``</span>
 <span class="sd">    labels : np.ndarray or list</span>
 <span class="sd">        Event labels (stored as array of strings), same length as `onsets`</span>
-<span class="sd">    units : str or None, optional</span>
+<span class="sd">    units : str, Unit or None, optional</span>
 <span class="sd">        Units of the onsets ("ms", "sec", "min", "h", or None for indices).</span>
-<span class="sd">        Default is "ms".</span>
+<span class="sd">        Default is "ms", or the units of `onsets` if they carry units</span>
+<span class="sd">        (otherwise, onsets with units are converted to `units`).</span>
 <span class="sd">    data_time_range : tuple or None, optional</span>
 <span class="sd">        Time range (min, max) of the original dataset (in same units as onsets)</span>
 
@@ -457,16 +460,16 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                  <span class="n">onsets</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">,</span>
                  <span class="n">labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">,</span>
-                 <span class="n">units</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"ms"</span><span class="p">,</span>
+                 <span class="n">units</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">UNSET</span><span class="p">,</span>
                  <span class="n">data_time_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize an Events object (see class docstring for parameters).</span>
 <span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="n">UNSET</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_has_units</span><span class="p">(</span><span class="n">onsets</span><span class="p">):</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="s2">"ms"</span>
+        <span class="n">onsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">_time_values_and_units</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">onsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">onsets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
-        
-        <span class="c1"># Normalize units to canonical form (handles aliases)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span> <span class="o">=</span> <span class="n">data_time_range</span>
         

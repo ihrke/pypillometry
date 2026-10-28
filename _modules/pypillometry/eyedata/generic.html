@@ -410,6 +410,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">io</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">sizeof_fmt</span><span class="p">,</span> <span class="n">ByteSize</span><span class="p">,</span> <span class="n">requires_package</span><span class="p">,</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">suppress_all_output</span><span class="p">,</span> <span class="n">normalize_unit</span><span class="p">,</span> <span class="n">_warn_if_ignores_mask</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..units</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSET</span><span class="p">,</span> <span class="n">_has_units</span><span class="p">,</span> <span class="n">_time_values_and_units</span><span class="p">,</span> <span class="n">parse_time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..io</span><span class="w"> </span><span class="kn">import</span> <span class="n">download</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.eyedatadict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EyeDataDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.experimental_setup</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperimentalSetup</span>
@@ -1493,21 +1494,22 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Return a shortened version of the current object.</span>
 
 <span class="sd">        The result contains all data (and events) between `start` and `end`</span>
-<span class="sd">        (inclusive), in units given by `units` (one of "ms", "sec", "min", "h").</span>
+<span class="sd">        (inclusive), e.g. ``d.sub_slice(3*u.min, 5*u.min)`` or</span>
+<span class="sd">        ``d.sub_slice("3 min", "5 min")``.</span>
 <span class="sd">        `start` and `end` refer to the values of the time-vector (not to</span>
 <span class="sd">        the time since the start of the recording). Masks are kept; stored</span>
 <span class="sd">        blinks (in sample indices) are shifted and cut to the new range.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        start : float, optional</span>
+<span class="sd">        start : float, str or Quantity, optional</span>
 <span class="sd">            start for new dataset; default: beginning of the data</span>
-<span class="sd">        end : float, optional</span>
+<span class="sd">        end : float, str or Quantity, optional</span>
 <span class="sd">            end of new dataset; default: end of the data</span>
 <span class="sd">        units : str or None, optional</span>
-<span class="sd">            time units in which `start` and `end` are provided</span>
-<span class="sd">            (one of "ms", "sec", "min", "h").</span>
-<span class="sd">            If units is `None`, use the units in the time vector (ms).</span>
+<span class="sd">            time units of `start` and `end` if they are plain numbers</span>
+<span class="sd">            (one of "ms", "sec", "min", "h"). If units is `None`, plain</span>
+<span class="sd">            numbers are ms (the units of the time vector).</span>
 <span class="sd">        inplace : bool or None, optional</span>
 <span class="sd">            if `True`, make change in-place and return the object;</span>
 <span class="sd">            if `False`, make and return copy before making changes;</span>
@@ -1520,13 +1522,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        """</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> 
-            <span class="n">fac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
-            <span class="n">tx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">*</span><span class="n">fac</span>
-            <span class="n">evon</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">*</span><span class="n">fac</span>
-        <span class="k">else</span><span class="p">:</span> 
-            <span class="n">tx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">evon</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">default</span> <span class="o">=</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">units</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"ms"</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default</span><span class="p">)</span>
+        <span class="n">tx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tx</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">evon</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">event_onsets</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">keepix</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">tx</span><span class="o">&gt;=</span><span class="n">start</span><span class="p">,</span> <span class="n">tx</span><span class="o">&lt;=</span><span class="n">end</span><span class="p">))</span>
 
         <span class="n">keepix</span><span class="o">=</span><span class="n">keepix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -2297,7 +2297,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_intervals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                     <span class="n">event_select</span><span class="p">,</span>
                     <span class="n">interval</span><span class="p">:</span> <span class="nb">tuple</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">),</span>
-                    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                    <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span><span class="n">UNSET</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Return an Intervals object containing intervals relative to event-onsets.</span>
 <span class="sd">        For example, extract the interval before and after a stimulus has been presented.</span>
@@ -2325,14 +2325,17 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">              its first event.</span>
 <span class="sd">            - if Events: use the events from the</span>
 <span class="sd">              :class:`~pypillometry.Events` object directly</span>
-<span class="sd">        interval : tuple (min,max), optional</span>
+<span class="sd">        interval : tuple (min,max) or Quantity, optional</span>
 <span class="sd">            time-window relative to event-onset (0 is event-onset); i.e., negative</span>
-<span class="sd">            numbers are before the event, positive numbers after. Units are defined</span>
-<span class="sd">            by the `units` parameter. Default ``(-200, 200)``.</span>
+<span class="sd">            numbers are before the event, positive numbers after, e.g.</span>
+<span class="sd">            ``(-200, 800) * u.ms`` or ``("-0.2 sec", "0.8 sec")``. Plain numbers</span>
+<span class="sd">            are in units given by the `units` parameter. Default ``(-200, 200)``.</span>
 <span class="sd">        units : str or None, optional</span>
-<span class="sd">            units of the interval (one of "ms", "sec", "min", "h"); units=None</span>
-<span class="sd">            (default) means that the interval is in sampling units (i.e.,</span>
-<span class="sd">            indices into the time-array)</span>
+<span class="sd">            units of the returned intervals (one of "ms", "sec", "min", "h", or</span>
+<span class="sd">            None for sampling units, i.e., indices into the time-array); plain</span>
+<span class="sd">            numbers in `interval` are in these units, an `interval` with units</span>
+<span class="sd">            is converted to them. If not given, the units of `interval` are used</span>
+<span class="sd">            (sampling units if `interval` has no units).</span>
 <span class="sd">        label : str or None, optional</span>
 <span class="sd">            optional label for the Intervals object. If None, a label is automatically</span>
 <span class="sd">            generated from the event_select parameter</span>
@@ -2348,10 +2351,17 @@ window.runMermaid = runMermaid;</script>
         <span class="kn">from</span><span class="w"> </span><span class="nn">..intervals</span><span class="w"> </span><span class="kn">import</span> <span class="n">Intervals</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">..events</span><span class="w"> </span><span class="kn">import</span> <span class="n">Events</span>
         
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"interval must be iterable"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_has_units</span><span class="p">(</span><span class="n">interval</span><span class="p">):</span>
+            <span class="n">interval</span><span class="p">,</span> <span class="n">units</span> <span class="o">=</span> <span class="n">_time_values_and_units</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">interval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">interval</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">units</span> <span class="ow">is</span> <span class="n">UNSET</span><span class="p">:</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">fac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"interval must be iterable"</span><span class="p">)</span>
         <span class="c1"># between two events, interval[0] and interval[1] shift different</span>
         <span class="c1"># events, so e.g. (0,0) is valid; the resulting intervals are checked below</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_select</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="n">interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&lt;=</span><span class="n">interval</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
@@ -2903,11 +2913,13 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            eye(s) to process; if empty, all available eyes</span>
 <span class="sd">        variables : str or list of str, optional</span>
 <span class="sd">            variable(s) to process; if empty, all available variables</span>
-<span class="sd">        distance : float, optional</span>
-<span class="sd">            Merge blinks closer than this distance (in units specified by</span>
-<span class="sd">            ``units``). Default 100.</span>
+<span class="sd">        distance : float, str or Quantity, optional</span>
+<span class="sd">            Merge blinks closer than this distance, e.g. ``100 * u.ms`` or</span>
+<span class="sd">            ``"0.1 sec"``; plain numbers are in units given by ``units``.</span>
+<span class="sd">            Default 100.</span>
 <span class="sd">        units : str, optional</span>
-<span class="sd">            Units for ``distance``. Can be "ms", "sec", "min", or "h". Default "ms".</span>
+<span class="sd">            Units for ``distance`` if it is a plain number. Can be "ms",</span>
+<span class="sd">            "sec", "min", or "h". Default "ms".</span>
 <span class="sd">        apply_mask : bool, default=False</span>
 <span class="sd">            If True, store the merged blinks, apply them as masks to the data</span>
 <span class="sd">            and return the object.</span>
@@ -2929,10 +2941,10 @@ window.runMermaid = runMermaid;</script>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_inplace</span><span class="p">(</span><span class="n">inplace</span><span class="p">)</span>
         <span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_get_eye_var</span><span class="p">(</span><span class="n">eyes</span><span class="p">,</span> <span class="n">variables</span><span class="p">)</span>
 
-        <span class="n">fac</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
-        <span class="n">distance_ix</span> <span class="o">=</span> <span class="p">(</span><span class="n">distance</span> <span class="o">/</span> <span class="n">fac</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">)</span>        
+        <span class="n">distance_ix</span> <span class="o">=</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">"samples"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">normalize_unit</span><span class="p">(</span><span class="n">units</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"ms"</span><span class="p">,</span>
+                                 <span class="n">fs</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Distance '</span><span class="si">{</span><span class="n">distance</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">units</span><span class="si">}</span><span class="s2">' in index units: </span><span class="si">{</span><span class="n">distance_ix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Distance '</span><span class="si">{</span><span class="n">distance</span><span class="si">}</span><span class="s2">' in index units: </span><span class="si">{</span><span class="n">distance_ix</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Dictionary to store merged intervals</span>
         <span class="n">merged_dict</span> <span class="o">=</span> <span class="p">{}</span>
@@ -2999,9 +3011,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            Intervals object to use, in any time units or in sample indices</span>
 <span class="sd">            (`units=None`, the default of :meth:`get_intervals`). If</span>
 <span class="sd">            provided, interval and event_select are ignored.</span>
-<span class="sd">        interval : tuple (min,max), optional</span>
-<span class="sd">            time-window relative to event-onset (0 is event-onset), in</span>
-<span class="sd">            units given by `units`.</span>
+<span class="sd">        interval : tuple (min,max) or Quantity, optional</span>
+<span class="sd">            time-window relative to event-onset (0 is event-onset), e.g.</span>
+<span class="sd">            ``(-200, 0) * u.ms``; plain numbers are in units given by `units`.</span>
 <span class="sd">            Required if intervals is not provided.</span>
 <span class="sd">        event_select : str or function, optional</span>
 <span class="sd">            variable describing which events to select and align to</span>
@@ -3017,7 +3029,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            `np.ma.median`, but not `np.median`; a warning is logged</span>
 <span class="sd">            otherwise). Intervals where all samples are masked give NaN.</span>
 <span class="sd">        units : str, optional</span>
-<span class="sd">            units for interval parameter (if used); default "ms"</span>
+<span class="sd">            units for plain numbers in `interval` (if used); default "ms"</span>
 <span class="sd">        **kwargs</span>
 <span class="sd">            passed onto the event_select function</span>
 

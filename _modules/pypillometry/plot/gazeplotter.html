@@ -405,7 +405,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">patches</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.axes_grid1</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_axes_locatable</span>
@@ -465,7 +465,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        plot_range : tuple</span>
-<span class="sd">            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.</span>
+<span class="sd">            The time range to plot (in `units`, or with units, e.g.</span>
+<span class="sd">            ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.</span>
 <span class="sd">        eyes : str or list</span>
 <span class="sd">            The eyes to plot. Default is [], which means all available data ("left", "right",</span>
 <span class="sd">            average, regression, ...)</span>
@@ -515,6 +516,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
         
         <span class="c1"># Validate plot_range</span>
+        <span class="n">plot_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_range_in</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_plot_range</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
         
         <span class="n">fac</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">_unit_fac</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
@@ -715,7 +717,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        plot_range : tuple</span>
-<span class="sd">            The time range to plot (in `units`). Default is (-np.inf, +np.inf), i.e. all data.</span>
+<span class="sd">            The time range to plot (in `units`, or with units, e.g.</span>
+<span class="sd">            ``(3, 5) * u.min``). Default is (-np.inf, +np.inf), i.e. all data.</span>
 <span class="sd">        eyes : str or list</span>
 <span class="sd">            The eyes to plot. Default is [], which means all available data ("left", "right",</span>
 <span class="sd">            average, regression, ...)</span>
@@ -754,6 +757,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span>
 
         <span class="c1"># Validate plot_range</span>
+        <span class="n">plot_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot_range_in</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_plot_range</span><span class="p">(</span><span class="n">plot_range</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> 

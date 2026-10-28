@@ -405,6 +405,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">requires_package</span><span class="p">,</span> <span class="n">normalize_unit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSET</span><span class="p">,</span> <span class="n">_has_units</span><span class="p">,</span> <span class="n">_time_values_and_units</span><span class="p">,</span> <span class="n">parse_time</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"Intervals"</span><span class="p">,</span> <span class="s2">"merge_intervals"</span><span class="p">,</span>
@@ -642,10 +643,14 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    intervals : list of tuples or np.ndarray</span>
-<span class="sd">        Intervals as list of (start, end) tuples or 2D array</span>
-<span class="sd">    units : str or None</span>
-<span class="sd">        Units of the intervals ("ms", "sec", "min", "h", or None for indices)</span>
+<span class="sd">    intervals : list of tuples, np.ndarray or Quantity</span>
+<span class="sd">        Intervals as list of (start, end) tuples or 2D array; can carry</span>
+<span class="sd">        units, e.g. ``[(0, 100), (200, 300)] * u.ms`` or</span>
+<span class="sd">        ``[("1 min", "2 min")]``</span>
+<span class="sd">    units : str, Unit or None</span>
+<span class="sd">        Units of the intervals ("ms", "sec", "min", "h", or None for indices).</span>
+<span class="sd">        Can be omitted if `intervals` carry units; otherwise, intervals with</span>
+<span class="sd">        units are converted to `units`.</span>
 <span class="sd">    label : str, optional</span>
 <span class="sd">        Descriptive label for the interval collection</span>
 <span class="sd">    event_labels : list, optional</span>
@@ -672,23 +677,25 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; intervals = Intervals([(0, 100), (200, 300)], units="ms", label="stimulus")</span>
+<span class="sd">    &gt;&gt;&gt; intervals = Intervals([(0, 100), (200, 300)] * u.ms, label="stimulus")</span>
 <span class="sd">    &gt;&gt;&gt; len(intervals)</span>
 <span class="sd">    2</span>
 <span class="sd">    &gt;&gt;&gt; for start, end in intervals:</span>
 <span class="sd">    ...     print(f"{start}-{end}")</span>
 <span class="sd">    """</span>
     
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intervals</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_time_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event_onsets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interval_window</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intervals</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">UNSET</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_time_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event_onsets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interval_window</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize an Intervals object (see class docstring for parameters).</span>
 <span class="sd">        """</span>
+        <span class="n">intervals</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">_time_values_and_units</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> \
+                <span class="ow">and</span> <span class="n">intervals</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"f"</span><span class="p">:</span>
+            <span class="n">intervals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>  <span class="c1"># converted to indices</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">intervals</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">intervals</span><span class="p">]</span>
-        
-        <span class="c1"># Normalize units to canonical form (handles aliases)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">normalize_unit</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">label</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">event_labels</span> <span class="o">=</span> <span class="n">event_labels</span>
@@ -699,6 +706,16 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_offset</span> <span class="o">=</span> <span class="n">time_offset</span> <span class="k">if</span> <span class="n">time_offset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interval_window</span> <span class="o">=</span> <span class="n">interval_window</span>
     
+    <span class="k">def</span><span class="w"> </span><span class="nf">_in_own_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""`value` in the units of this object; plain numbers are unchanged."""</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_has_units</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">parse_time</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">"samples"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Return number of intervals."""</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">)</span>
@@ -1280,8 +1297,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        merge_sep : str, optional</span>
 <span class="sd">            Separator to use when joining event labels of merged intervals. </span>
 <span class="sd">            Default is '_'.</span>
-<span class="sd">        distance : float, optional</span>
-<span class="sd">            Maximum gap (in milliseconds) between intervals to still merge them.</span>
+<span class="sd">        distance : float, str or Quantity, optional</span>
+<span class="sd">            Maximum gap (in milliseconds, or with units such as</span>
+<span class="sd">            ``50 * u.ms``) between intervals to still merge them.</span>
 <span class="sd">            If two intervals are separated by less than or equal to this distance,</span>
 <span class="sd">            they will be merged. Default is 0 (only merge overlapping intervals).</span>
 <span class="sd">            </span>
@@ -1300,6 +1318,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">parse_time</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span>
         
         <span class="c1"># If distance &gt; 0 and units are not ms, convert to ms, merge, convert back</span>
         <span class="k">if</span> <span class="n">distance</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">!=</span> <span class="s1">'ms'</span><span class="p">:</span>
@@ -1364,7 +1383,8 @@ window.runMermaid = runMermaid;</script>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Add padding to the left (start) and right (end) of each interval.</span>
 <span class="sd">        </span>
-<span class="sd">        The padding is in the current units of the Intervals object.</span>
+<span class="sd">        The padding is in the current units of the Intervals object, unless</span>
+<span class="sd">        it carries units (e.g., ``left=50 * u.ms``).</span>
 <span class="sd">        Padding is applied independently to each interval without merging.</span>
 <span class="sd">        Use `.merge()` after padding if you want to merge overlapping intervals.</span>
 <span class="sd">        </span>
@@ -1408,6 +1428,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_own_units</span><span class="p">(</span><span class="n">left</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_own_units</span><span class="p">(</span><span class="n">right</span><span class="p">)</span>
         
         <span class="c1"># Determine bounds for clipping</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_time_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1504,12 +1525,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        selector : callable, optional</span>
 <span class="sd">            Function called as ``selector(start, end)`` for each interval that</span>
 <span class="sd">            returns bool: True to keep the interval, False to discard it.</span>
-<span class="sd">        min_duration : float, optional</span>
-<span class="sd">            Minimum duration of intervals to keep (in current units)</span>
-<span class="sd">        max_duration : float, optional</span>
-<span class="sd">            Maximum duration of intervals to keep (in current units)</span>
+<span class="sd">        min_duration : float, str or Quantity, optional</span>
+<span class="sd">            Minimum duration of intervals to keep (in current units, unless</span>
+<span class="sd">            it carries units, e.g. ``"50 ms"``)</span>
+<span class="sd">        max_duration : float, str or Quantity, optional</span>
+<span class="sd">            Maximum duration of intervals to keep (as `min_duration`)</span>
 <span class="sd">        time_range : tuple, optional</span>
-<span class="sd">            (start, end) time range. Only keeps intervals that overlap with this range.</span>
+<span class="sd">            (start, end) time range (in current units, unless it carries</span>
+<span class="sd">            units, e.g. ``(1, 2) * u.min``). Only keeps intervals that overlap with this range.</span>
 <span class="sd">            An interval overlaps if its end &gt; range_start AND its start &lt; range_end.</span>
 <span class="sd">            </span>
 <span class="sd">        Returns</span>
@@ -1560,6 +1583,9 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">interval_window</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">interval_window</span>
             <span class="p">)</span>
         
+        <span class="n">min_duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_own_units</span><span class="p">(</span><span class="n">min_duration</span><span class="p">)</span>
+        <span class="n">max_duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_own_units</span><span class="p">(</span><span class="n">max_duration</span><span class="p">)</span>
+        <span class="n">time_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_in_own_units</span><span class="p">(</span><span class="n">time_range</span><span class="p">)</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         
         <span class="c1"># Apply duration filters</span>

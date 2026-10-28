@@ -404,6 +404,17 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">=====</span>
 
 <span class="sd">Read/Write data from/to disk.</span>
+
+<span class="sd">Reading EDF files is slow: :func:`read_eyelink` (and</span>
+<span class="sd">:meth:`~pypillometry.GenericEyeData.from_eyelink`) takes about a minute</span>
+<span class="sd">for a 90 MB EDF file (64 min of binocular data at 1000 Hz), mostly in the</span>
+<span class="sd">`eyelinkio` package. It is therefore recommended to convert EDF files once</span>
+<span class="sd">and to work with the converted files, e.g., with the command-line program</span>
+<span class="sd">``edf2pypil`` (``edf2pypil recording.edf`` writes ``recording.pkl``) or</span>
+<span class="sd">with :func:`write_pickle`. Reading the pickle file with :func:`read_pickle`</span>
+<span class="sd">took 0.1-0.25 s for the same recordings (more than 200 times faster; from</span>
+<span class="sd">a slow disk it can take a few seconds). Pickle files are larger (about</span>
+<span class="sd">400 MB for a 90 MB EDF file) and should only be read from trusted sources.</span>
 <span class="sd">"""</span>
 
 <span class="k">try</span><span class="p">:</span>
@@ -743,6 +754,8 @@ window.runMermaid = runMermaid;</script>
         <span class="k">while</span> <span class="n">worker</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
             <span class="n">worker</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
             <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_local_size</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">-</span> <span class="n">bar</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+        <span class="c1"># final size (also if scp finished before the first update)</span>
+        <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_local_size</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">-</span> <span class="n">bar</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
     <span class="k">if</span> <span class="s2">"error"</span> <span class="ow">in</span> <span class="n">out</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">out</span><span class="p">[</span><span class="s2">"error"</span><span class="p">]</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="s2">"result"</span><span class="p">]</span>
