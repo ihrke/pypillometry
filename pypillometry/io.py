@@ -339,6 +339,8 @@ def _scp(url: str, target: str):
         while worker.is_alive():
             worker.join(0.2)
             bar.update(_local_size(target) - bar.n)
+        # final size (also if scp finished before the first update)
+        bar.update(_local_size(target) - bar.n)
     if "error" in out:
         raise out["error"]
     result = out["result"]
