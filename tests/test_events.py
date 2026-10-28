@@ -439,6 +439,18 @@ class TestEventsFiltering(unittest.TestCase):
         self.assertEqual(len(middle_events), 3)
         np.testing.assert_array_equal(middle_events.onsets, [500, 1000, 1500])
     
+    def test_filter_time_range_with_units(self):
+        """time range with units is converted to the Events units (bug 1.3)"""
+        u = pp.u
+        expected = [500, 1000, 1500]
+        for sel in [(0.4 * u.sec, 1.6 * u.sec), (0.4, 1.6) * u.sec, ("400 ms", "1.6 sec")]:
+            np.testing.assert_array_equal(self.events.filter(sel).onsets, expected)
+
+    def test_filter_time_range_units_on_index_events(self):
+        ev = Events([10, 20], ["a", "b"], units=None)
+        with self.assertRaises(ValueError):
+            ev.filter((1 * pp.u.sec, 2 * pp.u.sec))
+
     def test_filter_time_range_beginning(self):
         """Test filtering by time range at beginning"""
         early_events = self.events.filter((0, 600))

@@ -6,7 +6,8 @@ from typing import Optional, List, Tuple
 
 from loguru import logger
 from pypillometry.convenience import normalize_unit
-from pypillometry.units import UNSET, _has_units, _time_values_and_units
+from pypillometry.units import (UNSET, Quantity, _has_units, _time_values_and_units,
+                                parse_time)
 
 __all__ = [
     "Events",
@@ -436,7 +437,8 @@ class Events:
             - str: substring to search for in labels
             - callable: function that takes a label and returns bool
             - tuple: (min_time, max_time) to filter by onset time range
-              (inclusive, in the units of the Events object)
+              (inclusive, in the units of the Events object unless it
+              carries units, e.g. ``(10, 30) * u.sec``)
 
         Returns
         -------
@@ -468,11 +470,16 @@ class Events:
             # Function selector: apply to each label
             mask = np.array([bool(selector(label)) for label in self.labels], dtype=bool)
         
-        elif isinstance(selector, tuple):
+        elif isinstance(selector, (tuple, Quantity)):
             # Time range selector
             if len(selector) != 2:
                 raise ValueError("Time range selector must be a tuple of (min_time, max_time)")
-            
+            if _has_units(selector):
+                if self.units is None:
+                    raise ValueError("cannot filter Events in index units by a time "
+                                     "range with units; give the range in indices")
+                selector = parse_time(selector, to=self.units, default=None)
+
             min_time, max_time = selector
             if min_time >= max_time:
                 raise ValueError(f"min_time must be < max_time, got {min_time} >= {max_time}")
