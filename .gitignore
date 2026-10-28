@@ -134,8 +134,8 @@ src/*
 docs/symp_talk_uit2019.pdf
 data/002_rlmw_events.asc
 data/002_rlmw_samples.asc
-docs/example_data/
-docs/my_osf_token.secret
+docs/notebooks/example_data/
+docs/notebooks/my_osf_token.secret
 .vscode
 CLAUDE.md
 /TODO

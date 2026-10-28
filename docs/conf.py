@@ -80,7 +80,7 @@ nbsphinx_prolog=nbsphinx_epilog
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints', 'notebooks', "**nbsphinx", "docs/html", "src", "docs/v1"]
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints', "**nbsphinx", "docs/html", "src", "docs/v1"]
 
 
 # Add mappings
