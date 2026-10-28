@@ -640,7 +640,8 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="detect_blinks_velocity">
 <a class="viewcode-back" href="../../../api.html#pypillometry.signal.preproc.detect_blinks_velocity">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">detect_blinks_velocity</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_blink_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">detect_blinks_velocity</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">smooth_winsize</span><span class="p">,</span> <span class="n">vel_onset</span><span class="p">,</span> <span class="n">vel_offset</span><span class="p">,</span> <span class="n">min_onset_len</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_offset_len</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">min_blink_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                           <span class="n">max_blink_samples</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Detect blinks as everything between a fast downward and a fast upward-trending PD-changes.</span>
 <span class="sd">    </span>
@@ -669,6 +670,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    min_blink_samples : int</span>
 <span class="sd">        minimum duration of a blink in samples; offsets that would create shorter intervals</span>
 <span class="sd">        are skipped during matching (to avoid spurious short offsets stealing real onsets)</span>
+<span class="sd">    max_blink_samples : int or None</span>
+<span class="sd">        maximum duration of a blink in samples; an onset without an offset</span>
+<span class="sd">        within this many samples is not a blink and is dropped (otherwise it</span>
+<span class="sd">        would be paired with an arbitrarily distant offset); `None` means no</span>
+<span class="sd">        limit</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -676,7 +682,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        array (nblinks x 2) of blink onset/offset sample indices (both</span>
 <span class="sd">        inclusive); the offset is the last sample of the matching offset run,</span>
 <span class="sd">        or the last sample of `sy` if no offset was found after the last</span>
-<span class="sd">        onset; empty array if no blinks were found</span>
+<span class="sd">        onset (and `max_blink_samples` allows it); empty array if no blinks</span>
+<span class="sd">        were found</span>
 <span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sy</span><span class="p">)</span>
     
@@ -761,6 +768,11 @@ window.runMermaid = runMermaid;</script>
             <span class="n">off</span> <span class="o">=</span> <span class="n">offset_ends</span><span class="p">[</span><span class="n">first_valid_idx</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">off</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">max_blink_samples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">off</span> <span class="o">-</span> <span class="n">on</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="n">max_blink_samples</span><span class="p">:</span>
+            <span class="c1"># no offset close enough: drop this onset, try the next one</span>
+            <span class="n">ons</span> <span class="o">=</span> <span class="n">onsets</span><span class="p">[</span><span class="n">onsets</span> <span class="o">&gt;</span> <span class="n">on</span><span class="p">]</span>
+            <span class="n">on</span> <span class="o">=</span> <span class="n">ons</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">ons</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">continue</span>
         <span class="n">blinks</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">on</span><span class="p">,</span> <span class="n">off</span><span class="p">])</span>
         <span class="n">ons</span> <span class="o">=</span> <span class="n">onsets</span><span class="p">[</span><span class="n">onsets</span> <span class="o">&gt;</span> <span class="n">off</span><span class="p">]</span>
         <span class="n">on</span> <span class="o">=</span> <span class="n">ons</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">ons</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>

@@ -196,7 +196,7 @@ This will return a new object with the results of the operations.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>{'left_pupil': Intervals 'left_pupil_blinks' | 15 intervals (total duration: 2659.00 indices), 177.27 indices +/- 281.27 indices, [24.00 indices, 1139.00 indices] | fs=500.0Hz, 'right_pupil': Intervals 'right_pupil_blinks' | 13 intervals (total duration: 897.00 indices), 69.00 indices +/- 42.43 indices, [22.00 indices, 202.00 indices] | fs=500.0Hz}
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>{'left_pupil': Intervals 'left_pupil_blinks' | 14 intervals (total duration: 1520.00 indices), 108.57 indices +/- 118.24 indices, [24.00 indices, 492.00 indices] | fs=500.0Hz, 'right_pupil': Intervals 'right_pupil_blinks' | 13 intervals (total duration: 897.00 indices), 69.00 indices +/- 42.43 indices, [22.00 indices, 202.00 indices] | fs=500.0Hz}
 </pre></div>
 </div>
 <div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>[&lt;Figure size 1000x1000 with 15 Axes&gt;]
@@ -335,10 +335,18 @@ The package implements novel algorithms developed in our lab and documentation w
 </section>
 <section id="artificial-data">
 <h2>Artificial Data<a class="headerlink" href="#artificial-data" title="Link to this heading">¶</a></h2>
-<p>For validation and testing purposes, it can be useful to generate artificial datasets. The package implements a <code class="xref py py-class docutils literal notranslate"><span class="pre">FakePupilData</span></code> as inheriting from regular <code class="xref py py-class docutils literal notranslate"><span class="pre">PupilData</span></code> and therefore shares all its functionality. In addition to that, <code class="xref py py-class docutils literal notranslate"><span class="pre">FakePupilData</span></code> stores “ground-truth” data and parameters that was used while creating the artificial data.</p>
-<p>The function <code class="xref py py-func docutils literal notranslate"><span class="pre">create_fake_pupildata()</span></code> allows to quickly create datasets generating according to a provided experimental structure (see the functions documentation for an overview over the many available options).</p>
+<p>For validation and testing purposes, it can be useful to generate artificial datasets. The module <a class="reference internal" href="api.html#module-pypillometry.signal.fake" title="pypillometry.signal.fake"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry.signal.fake</span></code></a> provides functions for the individual components (slow baseline fluctuations, gaze fixations, measurement noise); event-related responses can be added with <code class="xref py py-func docutils literal notranslate"><span class="pre">pupil_build_design_matrix()</span></code> (see the modeling notebook for an example).</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fake_pupil_baseline</span></code>(duration, fs[, mean, ...])</p></td>
+<td><p>Generate smooth baseline pupil size via filtered noise.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fake_gaze_fixations</span></code>(duration, fs[, ...])</p></td>
+<td><p>Generate step-function gaze positions (fixations with random locations and durations).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_measurement_noise</span></code>(signal[, noise_level, ...])</p></td>
+<td><p>Add Gaussian measurement noise to a signal.</p></td>
+</tr>
 </tbody>
 </table>
 </section>

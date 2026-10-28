@@ -254,9 +254,6 @@ Modules
     .. automodule:: pypillometry.preproc
         :members:
 
-    .. automodule:: pypillometry.fakedata
-        :members:
-
     .. automodule:: pypillometry.baseline
         :members:
 

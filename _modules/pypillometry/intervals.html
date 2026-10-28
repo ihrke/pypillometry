@@ -1080,10 +1080,18 @@ window.runMermaid = runMermaid;</script>
             <span class="n">interval_window</span><span class="o">=</span><span class="n">combined_interval_window</span>
         <span class="p">)</span>
     
-    <span class="k">def</span><span class="w"> </span><span class="nf">__array__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__array__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Convert intervals to numpy array.</span>
-<span class="sd">        </span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dtype : data-type, optional</span>
+<span class="sd">            dtype of the returned array (as in ``np.asarray(intervals, dtype=int)``)</span>
+<span class="sd">        copy : bool or None, optional</span>
+<span class="sd">            numpy 2 copy keyword; the array is always newly created, so</span>
+<span class="sd">            `False` (no copy allowed) raises a `ValueError`</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        np.ndarray</span>
@@ -1094,7 +1102,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        &gt;&gt;&gt; intervals = data.get_intervals("stim", units="ms")</span>
 <span class="sd">        &gt;&gt;&gt; arr = np.array(intervals)</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">copy</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Intervals cannot be converted to an array without a copy"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">intervals</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
     
 <div class="viewcode-block" id="Intervals.to_units">
 <a class="viewcode-back" href="../../api.html#pypillometry.Intervals.to_units">[docs]</a>
