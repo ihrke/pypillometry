@@ -22,6 +22,8 @@
 
 ### Added
 
+- files are now saved with compression by default
+- `pypilinfo` command prints a summary of EDF or pickle files
 - Times with units (`units=` can be omitted)
 - `pp.parse_time()` converts times with units
 - `pp.set_default_inplace()` and `pp.get_default_inplace()`: package-level
