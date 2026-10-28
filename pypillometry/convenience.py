@@ -41,6 +41,15 @@ def change_dir(path: Union[str]):
         os.chdir(old_dir)
 
 
+def _flush_c_stdio():
+    """Flush all C stdio buffers (``fflush(NULL)``); does nothing if libc is not found."""
+    import ctypes
+    try:
+        ctypes.CDLL(None).fflush(None)
+    except (OSError, AttributeError, TypeError):
+        pass  # e.g., Windows: no libc with this name
+
+
 @contextmanager
 def suppress_all_output():
     """Suppress all output including C library output."""
@@ -52,13 +61,19 @@ def suppress_all_output():
     devnull_fd = os.open(os.devnull, os.O_WRONLY)
     
     try:
+        # Flush pending Python output first, so that it is not lost
+        sys.stdout.flush()
+        sys.stderr.flush()
         # Redirect file descriptors
         os.dup2(devnull_fd, 1)  # stdout
         os.dup2(devnull_fd, 2)  # stderr
-        sys.stdout.flush()
-        sys.stderr.flush()
         yield
     finally:
+        # Flush output buffered in Python and C (e.g., printf in a C
+        # library) while still redirected; otherwise it is written later
+        sys.stdout.flush()
+        sys.stderr.flush()
+        _flush_c_stdio()
         # Restore original file descriptors
         os.dup2(original_stdout_fd, 1)
         os.dup2(original_stderr_fd, 2)
