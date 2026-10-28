@@ -17,6 +17,7 @@ When clicking on this link, the notebook will open in an interactive session in 
    notebooks/importdata_asc
    notebooks/example_datasets
    notebooks/pipes
+   notebooks/eyes_and_variables
    notebooks/blinks
    notebooks/plotting
    notebooks/summary
