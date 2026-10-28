@@ -443,8 +443,9 @@ class GenericPlotter:
         ----------
         pdf_file : str or None
             file name to store the PDF; if None, no PDF is written
-        interv : float
-            duration of each of the segments to be plotted (in the units specified by `units`)
+        interv : float, str or Quantity
+            duration of each of the segments to be plotted (in the units
+            specified by `units`, or with units, e.g. ``10 * u.sec``)
         figsize : Tuple[int,int]
             dimensions of the figures
         ylim : Tuple[float,float] or None
@@ -487,6 +488,7 @@ class GenericPlotter:
         # Calculate start and end times in the specified units
         obj=self.obj
         fac=obj._unit_fac(units)
+        interv = parse_time(interv, to=units or "ms", default=units or "ms")
         stime = obj.tx.min() * fac
         etime = obj.tx.max() * fac
         

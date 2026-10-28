@@ -298,6 +298,16 @@ class TestSegmentPlotParameters(unittest.TestCase):
             self.assertGreater(len(figs), 0)
             plt.close('all')
     
+    def test_segments_interv_with_units(self):
+        """interv with units gives the same segments as plain numbers (bug 1.8)"""
+        ref = self.data.plot.plot_timeseries_segments(interv=10, units="sec")
+        n = len(ref)
+        plt.close('all')
+        for interv in [10 * pp.u.sec, "10 sec", 1 / 6 * pp.u.min]:
+            figs = self.data.plot.plot_timeseries_segments(interv=interv, units="sec")
+            self.assertEqual(len(figs), n)
+            plt.close('all')
+
     def test_segments_with_ylim(self):
         """Test plot_timeseries_segments with ylim parameter"""
         figs = self.data.plot.plot_timeseries_segments(interv=1.0, ylim=(0, 10))
