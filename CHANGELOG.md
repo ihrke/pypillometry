@@ -25,6 +25,7 @@
   default for `inplace` (initially `True`).
 - `detect_blinks_zero()` accepts `blink_val=np.nan` to detect runs of NaN.
 - Reading from SSH URLs (`ssh://[user@]host[:port]/path`)
+- `pypilview`: interactive viewer EDF file stored pypil object
 
 ### Changed
 

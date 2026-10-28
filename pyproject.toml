@@ -35,6 +35,9 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
 
+[project.scripts]
+pypilview = "pypillometry.cli:pypilview_main"
+
 [project.urls]
 Homepage = "https://github.com/ihrke/pypillometry"
 
