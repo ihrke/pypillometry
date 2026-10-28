@@ -20,7 +20,7 @@ The simplest use case is viewing an :class:`EyeData` object directly:
     eyedata = pp.get_example_data("rlmw_002_short")
     pp.view(eyedata)
 
-.. image:: images/viewer_eyedata.png
+.. image:: ../images/viewer_eyedata.png
    :alt: Viewer showing EyeData with pupil, x, and y subplots
    :width: 100%
 
@@ -44,7 +44,7 @@ You can also view raw numpy arrays. Use a dictionary to create multiple subplots
 
     pp.view({"Signal A": signal_a, "Signal B": signal_b}, time=t)
 
-.. image:: images/viewer_arrays.png
+.. image:: ../images/viewer_arrays.png
    :alt: Viewer showing two numpy arrays as separate subplots
    :width: 100%
 
@@ -61,7 +61,7 @@ For EyeData objects, you can filter which modalities to display using the ``vari
     eyedata = pp.get_example_data("rlmw_002_short")
     pp.view(eyedata, variables=['pupil'])
 
-.. image:: images/viewer_pupil_only.png
+.. image:: ../images/viewer_pupil_only.png
    :alt: Viewer showing only pupil data
    :width: 100%
 
@@ -91,7 +91,7 @@ You can overlay additional data on top of the main plots for comparison. This is
     
     pp.view(eyedata, variables=['pupil'], overlay_pupil={'smoothed': smoothed})
 
-.. image:: images/viewer_overlay.png
+.. image:: ../images/viewer_overlay.png
    :alt: Viewer showing pupil data with smoothed overlay
    :width: 100%
 
@@ -116,7 +116,7 @@ You can add additional subplots below the main EyeData variables using ``extra_p
     
     pp.view(eyedata, variables=['pupil'], extra_plots={'velocity': velocity})
 
-.. image:: images/viewer_extra_plots.png
+.. image:: ../images/viewer_extra_plots.png
    :alt: Viewer showing pupil data with velocity subplot
    :width: 100%
 
@@ -168,8 +168,8 @@ The viewer supports interactive region selection:
 The returned dict has the same keys as ``highlight`` (``'pupil'``, ``'x'``, ``'y'``, ``'extra_<label>'`` or the plot labels for arrays). The Intervals are in seconds (``units='sec'``); for raw arrays without ``time`` they are sample indices (``units=None``). If no region was selected, :func:`view` returns ``None``.
 
 
-API Reference
+API reference
 -------------
 
-.. autofunction:: view
+All parameters are documented in the API reference: :func:`view`.
 
