@@ -29,6 +29,7 @@ dependencies = [
     "eyelinkio",
     "PyQt5",
     "vispy>=0.14",
+    "backports.zstd; python_version < '3.14'",
 ]
 
 [project.optional-dependencies]
