@@ -3,7 +3,7 @@
 Installation
 ============
 
-:mod:`pypillometry` requires Python 3.10 or newer. Released versions are on
+:mod:`pypillometry` requires Python 3.11 or newer. Released versions are on
 `PyPI <https://pypi.org/project/pypillometry/>`_:
 
 .. code-block:: bash
@@ -11,12 +11,6 @@ Installation
     pip install pypillometry
 
 The dependencies are installed automatically.
-
-.. note::
-
-   Until version 2.0 is released, ``pip install pypillometry`` installs
-   version 1. Use ``pip install --pre pypillometry`` to get the latest
-   pre-release of version 2.
 
 .. tab-set::
 
