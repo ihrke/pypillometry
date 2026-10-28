@@ -8,15 +8,15 @@ camera position, and screen orientation.
 
 import numpy as np
 from typing import Optional, Tuple, Union, Dict, Any
-from ..units import parse_distance, parse_angle, ureg
+from ..units import parse_distance, parse_angle, _has_units, Quantity, u
 from loguru import logger
 
 
 
 def _degrees_to_radians(value):
-    """Angle in radians; plain numbers/arrays are degrees, strings and pint
-    Quantities carry their units."""
-    if isinstance(value, (str, ureg.Quantity)):
+    """Angle in radians; plain numbers/arrays are degrees, strings and
+    quantities carry their units."""
+    if _has_units(value):
         return parse_angle(value)
     return np.radians(value)
 
@@ -44,8 +44,8 @@ class ExperimentalSetup:
     All parameters are optional; an incomplete setup can be created and
     used for whatever is set (accessing a missing value raises ``ValueError``).
     Lengths and angles can be given as plain numbers, as strings with units
-    (e.g., ``"52 cm"``, ``"-5 deg"``) or as :class:`pint.Quantity` (e.g.,
-    ``52 * pypillometry.units.ureg.cm``). Plain numbers are interpreted as mm
+    (e.g., ``"52 cm"``, ``"-5 deg"``) or with a unit (e.g.,
+    ``52 * pp.u.cm``). Plain numbers are interpreted as mm
     (lengths) or radians (angles), with a one-time warning.
     
     Parameters
@@ -62,7 +62,7 @@ class ExperimentalSetup:
         Positive delta_y = screen center is above eye.
         Note: For binocular setups, the reference is the midpoint between
         the two eyes (root of nose).
-    eye_to_screen_center : float, str or pint.Quantity, optional
+    eye_to_screen_center : float, str or Quantity, optional
         Distance from eye to screen center (default unit mm), e.g., ``"65 cm"``.
         The perpendicular distance d between eye and screen plane is computed from
         ``d = sqrt(eye_to_screen_center**2 - delta_x**2 - delta_y**2)``.
@@ -70,11 +70,11 @@ class ExperimentalSetup:
         Raises ``ValueError`` if it is smaller than the screen offset.
         Note: For binocular setups, "eye" refers to the midpoint between
         the two eyes (root of nose).
-    screen_pitch : float, str or pint.Quantity, optional
+    screen_pitch : float, str or Quantity, optional
         Screen pitch angle (alpha_tilt; default unit radians), e.g., ``"-5 deg"``.
         Rotation about horizontal axis.
         Positive = top of screen tilted away from eye. Default 0.
-    screen_yaw : float, str or pint.Quantity, optional
+    screen_yaw : float, str or Quantity, optional
         Screen yaw angle (beta_tilt; default unit radians), e.g., ``"3 deg"``.
         Rotation about vertical axis.
         Positive = right side of screen closer to eye. Default 0.
@@ -87,7 +87,7 @@ class ExperimentalSetup:
         relative to eye: theta is the polar angle from the z-axis and phi the
         azimuthal angle in the x-y plane (angles, default unit radians);
         r is the distance from eye (length, default unit mm).
-    ipd : float, str or pint.Quantity, optional
+    ipd : float, str or Quantity, optional
         Inter-pupillary distance for binocular setups (default unit mm),
         e.g., ``"63 mm"``.
     
@@ -589,10 +589,10 @@ class ExperimentalSetup:
         
         Parameters
         ----------
-        angle_x, angle_y : float, array, str or pint.Quantity
+        angle_x, angle_y : float, array, str or Quantity
             Visual angles. Plain numbers and arrays are in degrees (like the
             output of :meth:`mm_to_degrees`). Strings with units, e.g.,
-            ``"5 deg"``, ``"0.087 rad"``, or pint Quantities are converted.
+            ``"5 deg"``, ``"0.087 rad"``, or quantities are converted.
             Positive x = right, positive y = up.
         
         Returns
@@ -654,9 +654,9 @@ class ExperimentalSetup:
         
         Parameters
         ----------
-        angle_x, angle_y : float, str or pint.Quantity
+        angle_x, angle_y : float, str or Quantity
             Visual angles, in the same forms as for :meth:`degrees_to_mm`:
-            plain numbers and arrays are degrees, strings and pint
+            plain numbers and arrays are degrees, strings and
             Quantities carry their units.
             Positive x = right, positive y = up.
         
@@ -885,9 +885,9 @@ class ExperimentalSetup:
         # values are stored in canonical units (mm, radians); attach the
         # units so that they are not parsed as plain numbers (with warnings)
         def mm(x):
-            return None if x is None else ureg.Quantity(x, ureg.mm)
+            return None if x is None else Quantity(x, u.mm)
         def rad(x):
-            return None if x is None else ureg.Quantity(x, ureg.radian)
+            return None if x is None else Quantity(x, u.rad)
         def mm_tuple(x):
             return None if x is None else tuple(mm(v) for v in x)
 

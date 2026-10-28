@@ -3,7 +3,7 @@
 import pytest
 import numpy as np
 import warnings
-from pypillometry.units import ureg, parse_distance, parse_angle, _unit_warnings_issued
+from pypillometry.units import u, parse_distance, parse_angle, _unit_warnings_issued
 
 
 def test_parse_distance_plain_number():
@@ -62,13 +62,13 @@ def test_parse_distance_string_m():
     assert np.isclose(result, 600.0)
 
 
-def test_parse_distance_pint_quantity():
+def test_parse_distance_unit_quantity():
     """Test parse_distance with Pint Quantity."""
     _unit_warnings_issued.clear()
     
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        result = parse_distance(60 * ureg.cm)
+        result = parse_distance(60 * u.cm)
         
         # Should return 600.0 mm
         assert result == 600.0
@@ -151,13 +151,13 @@ def test_parse_angle_string_radians():
         assert len(w) == 0
 
 
-def test_parse_angle_pint_quantity():
+def test_parse_angle_unit_quantity():
     """Test parse_angle with Pint Quantity."""
     _unit_warnings_issued.clear()
     
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        result = parse_angle(20 * ureg.degree)
+        result = parse_angle(20 * u.degree)
         
         # Should return ~0.349 radians
         assert np.isclose(result, np.radians(20))
@@ -208,8 +208,8 @@ def test_mixed_units_distance():
     d1 = parse_distance("600 mm")
     d2 = parse_distance("60 cm")
     d3 = parse_distance("0.6 m")
-    d4 = parse_distance(600 * ureg.mm)
-    d5 = parse_distance(60 * ureg.cm)
+    d4 = parse_distance(600 * u.mm)
+    d5 = parse_distance(60 * u.cm)
     
     # All should be 600.0 mm
     assert all(np.isclose(d, 600.0) for d in [d1, d2, d3, d4, d5])
@@ -222,23 +222,23 @@ def test_mixed_units_angle():
     # All should convert to the same value in radians
     a1 = parse_angle("20 degrees")
     a2 = parse_angle(f"{np.radians(20)} radians")
-    a3 = parse_angle(20 * ureg.degree)
-    a4 = parse_angle(np.radians(20) * ureg.radian)
+    a3 = parse_angle(20 * u.degree)
+    a4 = parse_angle(np.radians(20) * u.radian)
     
     # All should be ~0.349 radians
     expected = np.radians(20)
     assert all(np.isclose(a, expected) for a in [a1, a2, a3, a4])
 
 
-def test_ureg_available():
-    """Test that ureg is properly exported and usable."""
+def test_unit_namespace_available():
+    """Test that the unit namespace is exported and usable."""
     # Should be able to create quantities
-    distance = 600 * ureg.mm
-    angle = 20 * ureg.degree
+    distance = 600 * u.mm
+    angle = 20 * u.degree
     
     # Should be able to convert
-    assert distance.to(ureg.cm).magnitude == 60.0
-    assert np.isclose(angle.to(ureg.radian).magnitude, np.radians(20))
+    assert distance.to(u.cm).magnitude == 60.0
+    assert np.isclose(angle.to(u.radian).magnitude, np.radians(20))
 
 
 def test_parse_distance_tuple():
@@ -265,3 +265,96 @@ def test_angle_precision():
     result = parse_angle("12.345 degrees")
     assert np.isclose(result, np.radians(12.345))
 
+
+
+# --- unit namespace, Quantity and parse_time ---------------------------------
+
+from pypillometry.units import Quantity, Unit, parse_time, normalize_unit
+
+
+def test_quantity_from_tuple_and_list():
+    q = (3, 5) * u.min
+    assert isinstance(q, Quantity)
+    assert q.unit is u.min
+    np.testing.assert_array_equal(q.value, [3, 5])
+    q2 = [(0, 100), (200, 300)] * u.ms
+    assert q2.value.shape == (2, 2)
+
+
+def test_quantity_from_numpy_array():
+    q = np.array([1.0, 2.0]) * u.sec
+    assert isinstance(q, Quantity)
+    np.testing.assert_array_equal(q.value, [1, 2])
+
+
+def test_quantity_unpack_and_arithmetic():
+    start, end = (3, 5) * u.min
+    assert isinstance(start, Quantity) and start.unit is u.min
+    assert (start + 30 * u.sec).value == 3.5
+    assert (-start).value == -3
+    assert (2 * start).value == 6
+    assert 3 * u.min == 180 * u.sec
+
+
+def test_quantity_to():
+    assert (3 * u.min).to(u.sec).value == 180
+    assert (3 * u.min).to("ms").value == 180000
+    assert (60 * u.cm).to(u.mm).value == 600
+    with pytest.raises(ValueError, match="unit of time"):
+        (3 * u.min).to(u.cm)
+
+
+def test_unit_aliases():
+    assert u.seconds is u.sec
+    assert u.s is u.sec
+    assert u.degree is u.deg
+    assert u.m.dimension == "length"
+    with pytest.raises(AttributeError):
+        u.parsec
+
+
+def test_parse_time_forms():
+    assert parse_time(500) == 500
+    assert parse_time("2 sec") == 2000
+    assert parse_time("2sec") == 2000
+    assert parse_time("3 m") == 180000  # "m" is minutes for times
+    assert parse_time(3 * u.min, to="sec") == 180
+    np.testing.assert_allclose(parse_time((-200, 800), to="sec"), [-0.2, 0.8])
+    np.testing.assert_allclose(parse_time(("1 min", 30 * u.sec)), [60000, 30000])
+    np.testing.assert_allclose(parse_time((1, 2), default="sec"), [1000, 2000])
+    np.testing.assert_array_equal(parse_time((-np.inf, np.inf)), [-np.inf, np.inf])
+    assert parse_time(None) is None
+
+
+def test_parse_time_samples():
+    assert parse_time(10 * u.samples, fs=500) == 20
+    assert parse_time(100, to="samples", fs=500) == 50
+    with pytest.raises(ValueError, match="sampling rate"):
+        parse_time(10 * u.samples)
+
+
+def test_parse_time_wrong_dimension():
+    with pytest.raises(ValueError, match="unit of time"):
+        parse_time("3 cm")
+    with pytest.raises(ValueError, match="unit of time"):
+        parse_time(3 * u.deg)
+
+
+def test_parse_pint_like_quantity():
+    class FakePint:
+        magnitude = 60
+        units = "centimeter"
+    assert parse_distance(FakePint()) == 600
+
+
+def test_quantity_pickle():
+    import pickle
+    q = pickle.loads(pickle.dumps((3, 5) * u.min))
+    assert q.unit is u.min
+
+
+def test_normalize_unit_accepts_units():
+    assert normalize_unit(u.min) == "min"
+    assert normalize_unit(u.samples) is None
+    with pytest.raises(ValueError):
+        normalize_unit(u.cm)

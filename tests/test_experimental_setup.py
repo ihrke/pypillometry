@@ -338,9 +338,9 @@ class TestExperimentalSetupCoordinateConversion:
         assert np.isclose(y_mm, expected_y)
     
     def test_degrees_to_mm_pint_input(self):
-        """Test degrees_to_mm with pint Quantity input."""
-        from pypillometry.units import ureg
-        x_mm, y_mm = self.setup.degrees_to_mm(5 * ureg.degree, 2.5 * ureg.degree)
+        """Test degrees_to_mm with Quantity input."""
+        from pypillometry.units import u
+        x_mm, y_mm = self.setup.degrees_to_mm(5 * u.degree, 2.5 * u.degree)
         expected_x = 700 * np.tan(np.radians(5))
         expected_y = 700 * np.tan(np.radians(2.5))
         assert np.isclose(x_mm, expected_x)
@@ -348,13 +348,13 @@ class TestExperimentalSetupCoordinateConversion:
     
     def test_degrees_to_mm_array_input(self):
         """Plain arrays and array Quantities are accepted."""
-        from pypillometry.units import ureg
+        from pypillometry.units import u
         angles = np.array([0, 5, -10])
         expected = 700 * np.tan(np.radians(angles))
         x_mm, y_mm = self.setup.degrees_to_mm(angles, angles)
         assert np.allclose(x_mm, expected)
         assert np.allclose(y_mm, expected)
-        x_mm, _ = self.setup.degrees_to_mm(angles * ureg.degree, 0)
+        x_mm, _ = self.setup.degrees_to_mm(angles * u.degree, 0)
         assert np.allclose(x_mm, expected)
     
     def test_degrees_to_mm_consistency_with_mm_to_degrees(self):
@@ -463,16 +463,16 @@ class TestExperimentalSetupUnitParsing:
         setup = ExperimentalSetup(screen_pitch=0.1)
         assert np.isclose(setup.alpha_tilt, 0.1)
     
-    def test_pint_quantity_distance(self):
-        """Test parsing pint.Quantity for distance."""
+    def test_unit_quantity_distance(self):
+        """Test parsing Quantity for distance."""
         import pypillometry as pp
-        setup = ExperimentalSetup(eye_to_screen_center=70 * pp.ureg.cm)
+        setup = ExperimentalSetup(eye_to_screen_center=70 * pp.u.cm)
         assert setup.d == 700.0
     
-    def test_pint_quantity_angle(self):
-        """Test parsing pint.Quantity for angle."""
+    def test_unit_quantity_angle(self):
+        """Test parsing Quantity for angle."""
         import pypillometry as pp
-        setup = ExperimentalSetup(screen_pitch=5 * pp.ureg.degree)
+        setup = ExperimentalSetup(screen_pitch=5 * pp.u.degree)
         assert np.isclose(setup.alpha_tilt, np.radians(5))
 
 

@@ -227,12 +227,12 @@ class CircularROI(ROI):
             Each coordinate can be:
             - float: assumed to be radians
             - str: with units, e.g., "5 deg", "0.087 rad"
-            - pint Quantity
+            - with a unit, e.g., 5 * u.deg
         radius : float or str
             Radius in visual angle. Can be:
             - float: assumed to be radians
             - str: with units, e.g., "2 deg", "0.035 rad"
-            - pint Quantity
+            - with a unit, e.g., 5 * u.deg
         setup : ExperimentalSetup
             Experimental setup with screen geometry and eye distance
             (screen_resolution, physical_screen_size, and eye_to_screen_center 
@@ -454,14 +454,14 @@ class RectangularROI(ROI):
             Each coordinate can be:
             - float: assumed to be radians
             - str: with units, e.g., "-5 deg", "-0.087 rad"
-            - pint Quantity
+            - with a unit, e.g., 5 * u.deg
         corner2 : Tuple[float or str, float or str]
             (x, y) second corner in visual angle from screen center.
             Positive x = right, positive y = up.
             Each coordinate can be:
             - float: assumed to be radians
             - str: with units, e.g., "5 deg", "0.087 rad"
-            - pint Quantity
+            - with a unit, e.g., 5 * u.deg
         setup : ExperimentalSetup
             Experimental setup with screen geometry and eye distance
             (screen_resolution, physical_screen_size, and eye_to_screen_center 

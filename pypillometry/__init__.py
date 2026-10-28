@@ -5,12 +5,9 @@ as well as tools for plotting and analyzing these data.
 
 Unit Handling:
 --------------
-Distance and angle parameters accept three formats:
-1. Plain numbers (assumed to be mm for distances, radians for angles - with warning)
-2. String format: "600 mm", "60 cm", "20 degrees", "-90 degrees"
-3. Pint Quantity: 600 * ureg.mm, 20 * ureg.degree
-
-The unit registry is available as `pypillometry.ureg` for advanced users.
+Times, distances and angles can carry units, either from the `pypillometry.u`
+namespace (``3 * u.min``, ``(-200, 800) * u.ms``, ``60 * u.cm``,
+``20 * u.deg``) or as strings (``"3 min"``, ``"60 cm"``, ``"20 deg"``).
 
 - Github: https://github.com/ihrke/pypillometry
 - Documentation: https://ihrke.github.io/pypillometry
@@ -72,7 +69,7 @@ from .viewer import view, tweak
 
 # ---------------------------------------------------------------------------
 # Units, settings and logging
-from .units import ureg, parse_distance, parse_angle
+from .units import u, Unit, Quantity, parse_time, parse_distance, parse_angle
 from .config import set_default_inplace, get_default_inplace
 from .logging import (
     logging_disable, logging_enable, logging_set_level, logging_get_level,
@@ -112,7 +109,7 @@ __all__ = [
     # viewer
     "view", "tweak",
     # units, settings and logging
-    "ureg", "parse_distance", "parse_angle",
+    "u", "Unit", "Quantity", "parse_time", "parse_distance", "parse_angle",
     "set_default_inplace", "get_default_inplace",
     "logging_disable", "logging_enable", "logging_set_level",
     "logging_get_level", "loglevel", "nologging", "initialize_logging",
