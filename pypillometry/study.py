@@ -123,7 +123,8 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     Example: https://osf.io/p2u74/
 
     The configuration file (downloaded from the project) must define a
-    dict `raw_data` (subject ID -> dict of data files) and a function
+    dict `raw_data` (subject ID -> dict of data files; entries that are not
+    files in the project are passed on unchanged) and a function
     `read_subject(info)` that returns the data for one subject. The
     listing of the project's files is cached in `path/info_osf.pkl` and
     data files are only downloaded if they are not yet in `path`.
@@ -211,12 +212,17 @@ def load_study_osf(osf_id: str, path: str, subjects: list[str] = None, force_dow
     for subject_id in subject_ids:
         subject_files = config.raw_data[subject_id]
         for file_type, data_file in subject_files.items():
+            if not isinstance(data_file, str):
+                continue
             file_path = os.path.join(path, data_file)
             matching_file = next((f for f in files if f.endswith(data_file)), None)
-            
+
             if matching_file is None:
-                raise ValueError(f"Could not find {data_file} in project")
-                
+                # entries in raw_data need not be files
+                logger.warning(f"Could not find '{data_file}' for subject "
+                               f"{subject_id} in project")
+                continue
+
             if os.path.exists(file_path) and not force_download:
                 continue
             to_download.append((data_file, file_path, matching_file))
