@@ -39,6 +39,14 @@ pypilview recording.edf --eyes left --variables pupil
 pypilview preprocessed.pypil
 ```
 
+Reading large EDF files takes a while. `edf2pypil` reads an EDF file once
+and saves it as a pickle file that loads much faster (see `edf2pypil --help`):
+
+```bash
+edf2pypil recording.edf              # writes recording.pkl
+edf2pypil recording.edf -o rec.pypil
+```
+
 
 
 ---
