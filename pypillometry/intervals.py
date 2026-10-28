@@ -668,10 +668,18 @@ class Intervals:
             interval_window=combined_interval_window
         )
     
-    def __array__(self) -> np.ndarray:
+    def __array__(self, dtype=None, copy=None) -> np.ndarray:
         """
         Convert intervals to numpy array.
-        
+
+        Parameters
+        ----------
+        dtype : data-type, optional
+            dtype of the returned array (as in ``np.asarray(intervals, dtype=int)``)
+        copy : bool or None, optional
+            numpy 2 copy keyword; the array is always newly created, so
+            `False` (no copy allowed) raises a `ValueError`
+
         Returns
         -------
         np.ndarray
@@ -682,7 +690,9 @@ class Intervals:
         >>> intervals = data.get_intervals("stim", units="ms")
         >>> arr = np.array(intervals)
         """
-        return np.array(self.intervals)
+        if copy is False:
+            raise ValueError("Intervals cannot be converted to an array without a copy")
+        return np.array(self.intervals, dtype=dtype)
     
     def to_units(self, target_units: str|None) -> 'Intervals':
         """

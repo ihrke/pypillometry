@@ -62,6 +62,14 @@ class TestIntervalsClass(unittest.TestCase):
         self.assertEqual(arr.shape, (2, 2))
         np.testing.assert_array_equal(arr, [[0, 100], [200, 300]])
     
+    def test_intervals_to_array_dtype(self):
+        """np.asarray with dtype (numpy 2 passes dtype and copy)"""
+        intervals = Intervals([(0.5, 100.2), (200., 300.)], units="ms")
+        arr = np.asarray(intervals, dtype=int)
+        self.assertEqual(arr.dtype, int)
+        np.testing.assert_array_equal(arr, [[0, 100], [200, 300]])
+        np.testing.assert_array_equal(np.array(intervals, copy=True), [[0.5, 100.2], [200., 300.]])
+
     def test_intervals_with_metadata(self):
         """Test Intervals with event metadata"""
         intervals_list = [(0, 100), (200, 300)]
