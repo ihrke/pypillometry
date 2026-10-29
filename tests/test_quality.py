@@ -183,6 +183,26 @@ class TestQualityReport(unittest.TestCase):
         self.assertIn('title="dir/b"', html)
         self.assertNotIn("Summary", _html_page([("A", good)]))
 
+    def test_descriptions(self):
+        d = _make_data()
+        d.calibration = {"left": pp.SpatialCalibration(
+            "left", "HV9", np.zeros((9, 2)), np.zeros((9, 2)),
+            np.c_[np.full(9, 0.3), np.zeros((9, 2))])}
+        d.pupil_blinks_detect(apply_mask=True)
+        r = d.quality_report()
+        for section, group, m in r.metrics():
+            self.assertTrue(m.description, f"{section}.{m.name} has no description")
+        txt = r.to_text(color=False)
+        self.assertNotIn("percentage of samples without valid pupil data", txt)
+        txt = r.to_text(color=False, descriptions=True)
+        self.assertIn("percentage of samples without valid pupil data", txt)
+        self.assertIn("labels: good <= 5%, ok <= 15%, poor <= 30%, else bad", txt)
+        self.assertTrue(all(len(line) <= 80 for line in txt.splitlines()
+                            if line.startswith("    ")))
+        html = r._repr_html_()
+        self.assertIn('cursor:help;">missing data</span>', html)
+        self.assertIn("(labels: good &lt;= 5%", html)
+
     def test_html_is_escaped(self):
         d = _make_data()
         d.name = "<b>x&y</b>"

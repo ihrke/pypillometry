@@ -225,6 +225,17 @@ class TestPypilinfo(CLITestCase):
         self.assertIn("missing data", out)
         self.assertNotIn("sampling_rate", out)  # no summary
 
+    def test_quality_descriptions(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fname = os.path.join(self.tmp, "rec.pkl")
+        pp.write_pickle(d, fname)
+        _, out, _ = self.run_main([fname, "-Q"])
+        self.assertNotIn("labels: good", out)
+        _, out, _ = self.run_main([fname, "-Q", "-d"])
+        self.assertIn("labels: good", out)
+        with patch("sys.stderr", StringIO()), self.assertRaises(SystemExit):
+            pypilinfo_main([fname, "-d"])
+
     def test_quality_needs_eyedata(self):
         fname = os.path.join(self.tmp, "dict.pkl")
         pp.write_pickle({"a": 1}, fname)
