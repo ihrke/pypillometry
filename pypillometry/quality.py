@@ -129,6 +129,28 @@ def _worst(labels) -> Optional[str]:
     return max(labels, key=LABELS.index)
 
 
+def _ansi_label(label, width=0, color=True) -> str:
+    """Return `label` padded to `width`, colored with ANSI codes if `color`."""
+    if label is None:
+        return " " * width
+    txt = label.ljust(width)
+    return _ANSI_COLORS[label] + txt + _ANSI_RESET if color else txt
+
+
+def _html_badge(label, big=False) -> str:
+    """Return `label` as a colored HTML badge."""
+    if label is None:
+        return ""
+    pad = "3px 10px" if big else "1px 6px"
+    size = "1em" if big else "0.8em"
+    return (f'<span style="background:{_HTML_COLORS[label]}; color:#fff; '
+            f'border-radius:3px; padding:{pad}; font-size:{size}; '
+            f'font-weight:600; text-transform:uppercase;">{label}</span>')
+
+
+_HTML_CELL = "padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"
+
+
 def _supports_color(stream=None) -> bool:
     """Whether colored (ANSI) output is likely to be shown correctly."""
     if os.environ.get("NO_COLOR"):
@@ -359,10 +381,7 @@ class QualityReport:
             color = _supports_color()
 
         def lab(label, width=0):
-            if label is None:
-                return " " * width
-            txt = label.ljust(width)
-            return _ANSI_COLORS[label] + txt + _ANSI_RESET if color else txt
+            return _ansi_label(label, width, color)
 
         overall = self.overall
         lines = [f"Quality report: {self.name} ({self.class_name})"]
@@ -430,16 +449,8 @@ class QualityReport:
         """Rich HTML representation for Jupyter notebooks."""
         esc = html.escape
 
-        def badge(label, big=False):
-            if label is None:
-                return ""
-            pad = "3px 10px" if big else "1px 6px"
-            size = "1em" if big else "0.8em"
-            return (f'<span style="background:{_HTML_COLORS[label]}; color:#fff; '
-                    f'border-radius:3px; padding:{pad}; font-size:{size}; '
-                    f'font-weight:600; text-transform:uppercase;">{label}</span>')
-
-        cell = "padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"
+        badge = _html_badge
+        cell = _HTML_CELL
         out = ['<div style="font-family:system-ui, sans-serif; '
                'border:1px solid rgba(128,128,128,0.4); border-radius:6px; '
                'padding:12px; max-width:720px;">']
@@ -499,6 +510,82 @@ class QualityReport:
                    "The overall label is the worst label of all measures.</div>"
                    "</details></div>")
         return "\n".join(out)
+
+
+# ----------------------------------------------------------------------
+# Summary of several reports
+# ----------------------------------------------------------------------
+def _summary_rows(reports):
+    """
+    Return the columns and rows of a summary table for several reports.
+
+    Each row has the duration, the overall label, the worst label of each
+    section and the number of issues (measures labeled poor or bad).
+    """
+    sections = [s for s in SECTION_TITLES if s != "info"
+                and any(s in r.labels() for r in reports)]
+    rows = []
+    for r in reports:
+        labels = r.labels()
+        try:
+            duration = r["info"]["all"]["duration"].format_value()
+        except KeyError:
+            duration = "n/a"
+        rows.append(dict(duration=duration, overall=r.overall,
+                         sections={s: _worst(labels.get(s, {}).values()) for s in sections},
+                         issues=len(r.issues())))
+    return sections, rows
+
+
+def _summary_text(names, reports, color: Optional[bool] = None) -> str:
+    """Summary table of several reports as text (one row per report)."""
+    if color is None:
+        color = _supports_color()
+    sections, rows = _summary_rows(reports)
+    titles = ["Duration", "Overall"] + [SECTION_TITLES[s] for s in sections] + ["Issues"]
+    name_w = max(len(n) for n in list(names) + ["File"])
+    dur_w = max(len(r["duration"]) for r in rows + [dict(duration="duration")])
+    widths = [dur_w] + [max(len(t), 4) for t in titles[1:]]
+    lines = [f"Summary of {len(reports)} files",
+             "  ".join(["File".ljust(name_w)] + [t.ljust(w) for t, w in zip(titles, widths)]).rstrip()]
+    for name, row in zip(names, rows):
+        labs = [row["overall"]] + [row["sections"][s] for s in sections]
+        cells = [name.ljust(name_w), row["duration"].rjust(dur_w)]
+        cells += [_ansi_label(lab, w, color) if lab else "-".ljust(w)
+                  for lab, w in zip(labs, widths[1:-1])]
+        cells.append(str(row["issues"]).rjust(widths[-1]))
+        lines.append("  ".join(cells).rstrip())
+    return "\n".join(lines)
+
+
+def _summary_html(names, reports, anchors=None, tooltips=None) -> str:
+    """
+    Summary table of several reports as HTML.
+
+    Names link to `anchors` and show `tooltips` on hover if given.
+    """
+    esc = html.escape
+    sections, rows = _summary_rows(reports)
+    cell = _HTML_CELL
+    out = ['<div style="overflow-x:auto;"><table style="border-collapse:collapse;">',
+           "<thead><tr>"]
+    for t in ["File", "Duration", "Overall"] + [SECTION_TITLES[s] for s in sections] + ["Issues"]:
+        align = "left" if t == "File" else "center"
+        out.append(f'<th style="{cell} text-align:{align};">{esc(t)}</th>')
+    out.append("</tr></thead><tbody>")
+    for i, (name, row) in enumerate(zip(names, rows)):
+        label = esc(name)
+        if anchors is not None:
+            label = f'<a href="#{esc(anchors[i])}">{label}</a>'
+        tip = f' title="{esc(tooltips[i])}"' if tooltips is not None else ""
+        out.append(f'<tr><td style="{cell}"{tip}>{label}</td>'
+                   f'<td style="{cell} text-align:right; white-space:nowrap;">'
+                   f'{esc(row["duration"])}</td>')
+        for lab in [row["overall"]] + [row["sections"][s] for s in sections]:
+            out.append(f'<td style="{cell} text-align:center;">{_html_badge(lab) or "–"}</td>')
+        out.append(f'<td style="{cell} text-align:right;">{row["issues"]}</td></tr>')
+    out.append("</tbody></table></div>")
+    return "\n".join(out)
 
 
 # ----------------------------------------------------------------------
