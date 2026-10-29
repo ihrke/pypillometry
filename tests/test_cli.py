@@ -215,6 +215,58 @@ class TestPypilinfo(CLITestCase):
         self.assertIn("neither an EDF file nor a pickle file", err)
         self.assertIn("file not found", err)
 
+    def test_quality(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fname = os.path.join(self.tmp, "rec.pkl")
+        pp.write_pickle(d, fname)
+        status, out, _ = self.run_main([fname, "--quality"])
+        self.assertEqual(status, 0)
+        self.assertIn("Quality report: rlmw_002_short (EyeData)", out)
+        self.assertIn("missing data", out)
+        self.assertNotIn("sampling_rate", out)  # no summary
+
+    def test_quality_needs_eyedata(self):
+        fname = os.path.join(self.tmp, "dict.pkl")
+        pp.write_pickle({"a": 1}, fname)
+        status, _, err = self.run_main([fname, "-Q"])
+        self.assertEqual(status, 1)
+        self.assertIn("no quality report for dict objects", err)
+
+    def test_html(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fnames = [os.path.join(self.tmp, f"rec{i}.pkl") for i in range(2)]
+        for fname in fnames:
+            pp.write_pickle(d, fname)
+        html = os.path.join(self.tmp, "report.html")
+        with patch("webbrowser.open") as wopen:
+            status, out, _ = self.run_main(fnames + ["--html", "-o", html])
+        self.assertEqual(status, 0)
+        self.assertIn(f"Wrote {html}", out)
+        self.assertNotIn("sampling_rate", out)
+        wopen.assert_called_once()
+        self.assertTrue(wopen.call_args[0][0].startswith("file://"))
+        with open(html) as f:
+            page = f.read()
+        self.assertTrue(page.startswith("<!doctype html>"))
+        self.assertEqual(page.count("Quality report — rlmw_002_short"), 2)
+
+    def test_html_temp_file_no_open(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fname = os.path.join(self.tmp, "rec.pkl")
+        pp.write_pickle(d, fname)
+        with patch("webbrowser.open") as wopen:
+            status, out, _ = self.run_main([fname, "--html", "--no-open", "-Q"])
+        self.assertEqual(status, 0)
+        wopen.assert_not_called()
+        self.assertIn("Quality report", out)
+        html = out.strip().splitlines()[-1].removeprefix("Wrote ")
+        self.assertTrue(os.path.isfile(html))
+        os.remove(html)
+
+    def test_output_needs_html(self):
+        with patch("sys.stderr", StringIO()), self.assertRaises(SystemExit):
+            pypilinfo_main([EDF, "-o", "x.html"])
+
     def test_format_size(self):
         self.assertEqual(_format_size(500), "500 B")
         self.assertEqual(_format_size(2048), "2.0 KB")
