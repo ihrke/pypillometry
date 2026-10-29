@@ -4,8 +4,8 @@ Command-line programs of pypillometry.
 - ``pypilview``: open the interactive viewer for an Eyelink EDF file or a
   saved eyedata object
 - ``edf2pypil``: read an Eyelink EDF file and save it as a pickle file
-- ``pypilinfo``: print a summary of an Eyelink EDF file or a saved eyedata
-  object
+- ``pypilinfo``: print a summary or a quality report of an Eyelink EDF file
+  or a saved eyedata object
 """
 import argparse
 import os
@@ -229,8 +229,35 @@ def _pypilinfo_parser():
     parser.add_argument("--keep-triggers", action="store_true",
                         help="EDF only: keep Eyelink triggers (calibration, "
                              "validation etc.) in the events")
+    parser.add_argument("-Q", "--quality", action="store_true",
+                        help="print a data-quality report instead of the summary")
+    parser.add_argument("--html", action="store_true",
+                        help="write the quality reports of all files to an HTML "
+                             "file and open it in the browser")
+    parser.add_argument("-o", "--output", metavar="FILE",
+                        help="with --html: name of the HTML file (default: a "
+                             "temporary file)")
+    parser.add_argument("--no-open", action="store_true",
+                        help="with --html: do not open the browser")
     _add_verbosity(parser)
     return parser
+
+
+def _write_html_report(fname, reports):
+    """Write `reports` (list of (source, header, QualityReport)) to an HTML page."""
+    import html
+    parts = []
+    for source, header, report in reports:
+        parts.append(f'<h2 style="font-size:1.1em; margin:24px 0 6px;">{html.escape(header)}</h2>')
+        parts.append(report._repr_html_())
+    title = "Quality report" if len(reports) != 1 else f"Quality report: {reports[0][0]}"
+    page = ("<!doctype html>\n<html><head><meta charset=\"utf-8\">"
+            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+            f"<title>{html.escape(title)}</title></head>"
+            "<body style=\"font-family:system-ui, sans-serif; margin:16px;\">\n"
+            + "\n".join(parts) + "\n</body></html>\n")
+    with open(fname, "w", encoding="utf-8") as f:
+        f.write(page)
 
 
 def pypilinfo_main(argv=None):
@@ -239,8 +266,12 @@ def pypilinfo_main(argv=None):
 
     Reads each file like ``pypilview`` (EDF or pickle, detected from the
     file content) and prints its format, size and a summary of the stored
-    object (its :func:`repr`). Files that cannot be read are reported and
-    skipped. Only open pickle files you trust: unpickling can run arbitrary
+    object (its :func:`repr`). With ``--quality``, the data-quality report
+    (:meth:`~pypillometry.GenericEyeData.quality_report`) is printed
+    instead. With ``--html``, the quality reports of all files are written
+    to an HTML file (``-o``, default: a temporary file), which is opened in
+    the browser (unless ``--no-open``).
+    Files that cannot be read are reported and skipped. Only open pickle files you trust: unpickling can run arbitrary
     code.
 
     Parameters
@@ -259,10 +290,13 @@ def pypilinfo_main(argv=None):
     args = parser.parse_args(argv)
     _set_verbosity(args)
 
+    if not args.html and (args.output or args.no_open):
+        parser.error("-o/--output and --no-open need --html")
+
     status = 0
-    for i, source in enumerate(args.files):
-        if i > 0:
-            print()
+    reports = []
+    printed = False
+    for source in args.files:
         if "://" not in source and not os.path.isfile(source):
             print(f"pypilinfo: file not found: {source}", file=sys.stderr)
             status = 1
@@ -273,6 +307,34 @@ def pypilinfo_main(argv=None):
             print(f"pypilinfo: {source}: {e}", file=sys.stderr)
             status = 1
             continue
-        print(f"{source} ({fmt.upper()}, {_format_size(size)})")
-        print(repr(d).rstrip("\n"))
+        header = f"{source} ({fmt.upper()}, {_format_size(size)})"
+        report = None
+        if args.quality or args.html:
+            if not hasattr(d, "quality_report"):
+                print(f"pypilinfo: {source}: no quality report for "
+                      f"{type(d).__name__} objects", file=sys.stderr)
+                status = 1
+                continue
+            report = d.quality_report()
+            if args.html:
+                reports.append((source, header, report))
+        if args.quality or not args.html:
+            if printed:
+                print()
+            print(header)
+            print(str(report) if args.quality else repr(d).rstrip("\n"))
+            printed = True
+
+    if args.html and reports:
+        fname = args.output
+        if not fname:
+            import tempfile
+            fd, fname = tempfile.mkstemp(prefix="pypilinfo_", suffix=".html")
+            os.close(fd)
+        _write_html_report(fname, reports)
+        print(f"Wrote {fname}")
+        if not args.no_open:
+            import pathlib
+            import webbrowser
+            webbrowser.open(pathlib.Path(fname).resolve().as_uri())
     return status
