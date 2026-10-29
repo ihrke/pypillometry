@@ -26,6 +26,7 @@ on thresholds (see :data:`DEFAULT_QUALITY_THRESHOLDS`).
 import functools
 import os
 import sys
+import textwrap
 from dataclasses import dataclass
 from typing import Optional, Union
 
@@ -98,6 +99,7 @@ SECTION_TITLES = {
 _ANSI_COLORS = {"good": "\033[32m", "ok": "\033[33m", "poor": "\033[38;5;208m",
                 "bad": "\033[1;31m"}
 _ANSI_RESET = "\033[0m"
+_ANSI_DIM = "\033[2m"
 
 
 def _label(value, bounds) -> Optional[str]:
@@ -113,12 +115,14 @@ def _label(value, bounds) -> Optional[str]:
     return LABELS[-1]
 
 
-def _bounds_text(bounds) -> str:
-    """Describe the thresholds in words."""
+def _bounds_text(bounds, unit: str = "") -> str:
+    """Describe the thresholds in words (with `unit` after each number)."""
     if bounds is None:
         return "no label"
     op = "<=" if bounds[0] <= bounds[-1] else ">="
-    return ", ".join(f"{lab} {op} {b:g}" for lab, b in zip(LABELS, bounds)) + ", else bad"
+    sep = "" if unit in ("", "%") else " "
+    return ", ".join(f"{lab} {op} {b:g}{sep}{unit}"
+                     for lab, b in zip(LABELS, bounds)) + ", else bad"
 
 
 def _worst(labels) -> Optional[str]:
@@ -362,7 +366,8 @@ class QualityReport:
     # ------------------------------------------------------------------
     # Text representation
     # ------------------------------------------------------------------
-    def to_text(self, color: Optional[bool] = None) -> str:
+    def to_text(self, color: Optional[bool] = None, descriptions: bool = False,
+                width: int = 80) -> str:
         """
         Return the report as a (multi-line) text.
 
@@ -373,6 +378,10 @@ class QualityReport:
             colors are used if the output supports it (terminal or
             Jupyter; disable by setting the environment variable
             ``NO_COLOR``)
+        descriptions : bool
+            if True, explain each measure (and its thresholds) below its row
+        width : int
+            maximum line width for the descriptions (default 80)
 
         Returns
         -------
@@ -415,6 +424,12 @@ class QualityReport:
                         line += c.format_value().rjust(vw) + (" " + lab(c.label, 4) if hl else "")
                     line += "  "
                 lines.append(line.rstrip())
+                if descriptions and row["description"]:
+                    text = textwrap.wrap(row["description"], width=width - 4)
+                    if row["thresholds"] is not None:
+                        text.append("labels: " + _bounds_text(row["thresholds"], row["unit"]))
+                    for t in text:
+                        lines.append("    " + (_ANSI_DIM + t + _ANSI_RESET if color else t))
 
         issues = self.issues()
         if issues:
@@ -451,7 +466,9 @@ class QualityReport:
             for name in dict.fromkeys(n for metrics in groups.values() for n in metrics):
                 cells = [groups[g].get(name) for g in group_names]
                 first = next(c for c in cells if c is not None)
-                rows.append(dict(title=first.title, description=first.description, cells=cells))
+                rows.append(dict(title=first.title, description=first.description,
+                                 thresholds=first.thresholds, unit=first.unit,
+                                 cells=cells))
             tables.append(dict(section=section, title=SECTION_TITLES.get(section, section),
                                groups=group_names, rows=rows))
         return tables
@@ -644,39 +661,48 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         gaze_eyes = [e for e in gaze_eyes if e in eyes]
 
     # --- recording info -------------------------------------------------
-    b.add("info", "all", "duration", "duration", dur_min, "min")
-    b.add("info", "all", "sampling_rate", "sampling rate", fs, "Hz")
-    b.add("info", "all", "n_samples", "samples", int(n))
-    b.add("info", "all", "n_events", "events", int(obj.nevents()))
+    b.add("info", "all", "duration", "duration", dur_min, "min",
+          "length of the recording")
+    b.add("info", "all", "sampling_rate", "sampling rate", fs, "Hz",
+          "number of samples per second")
+    b.add("info", "all", "n_samples", "samples", int(n),
+          description="number of samples in the recording")
+    b.add("info", "all", "n_events", "events", int(obj.nevents()),
+          description="number of events (e.g., triggers) in the recording")
     if n > 1:
         gaps = int(np.sum(np.diff(obj.tx) > 1.5 * 1000.0 / fs))
         b.add("info", "all", "time_gaps", "time gaps", gaps, "",
-              "number of gaps in the time vector (missing samples)")
+              "number of gaps in the time vector, where the eye tracker stored no "
+              "samples (filled with missing data when the data were read)")
 
     def dropouts(section, eye, missing):
         runs = _run_lengths(missing)
         b.add(section, eye, "dropout_rate", "dropouts",
               len(runs) / dur_min if dur_min > 0 else np.nan, "/min",
-              "number of periods with missing data per minute (incl. blinks)")
+              "number of periods with missing data per minute (including blinks; "
+              "many short dropouts indicate unstable tracking)")
         b.add(section, eye, "longest_dropout", "longest dropout",
               runs.max() / fs if runs.size else 0.0, "s",
-              "duration of the longest period with missing data")
+              "duration of the longest period with missing data (long periods "
+              "cannot be interpolated)")
 
     # --- pupil ----------------------------------------------------------
     for eye in pupil_eyes:
         v = raw[f"{eye}_pupil"]
         missing = ~np.isfinite(v)
         b.add("pupil", eye, "missing_pct", "missing data", _pct(missing.sum(), n), "%",
-              "percentage of samples without valid pupil data")
+              "percentage of samples without valid pupil data (e.g., blinks, "
+              "lost tracking)")
         dropouts("pupil", eye, missing)
         sd = _diff_noise(v)
         med = np.nanmedian(v) if (~missing).any() else np.nan
         rel = 100 * sd / abs(med) if np.isfinite(sd) and np.isfinite(med) and med != 0 else np.nan
         b.add("pupil", eye, "noise", "noise", rel, "%",
-              "high-frequency noise (robust SD from sample-to-sample differences) "
-              "relative to the median pupil size")
+              "high-frequency noise in percent of the median pupil size, estimated "
+              "robustly from sample-to-sample differences (insensitive to blinks "
+              "and slow pupil changes)")
         b.add("pupil", eye, "noise_sd", "noise (SD)", sd, "",
-              "high-frequency noise in units of the pupil data")
+              "high-frequency noise (SD) in the units of the pupil data")
 
     # --- gaze -----------------------------------------------------------
     setup = getattr(obj, "experimental_setup", None)
@@ -684,7 +710,7 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         x, y = raw[f"{eye}_x"], raw[f"{eye}_y"]
         missing = ~(np.isfinite(x) & np.isfinite(y))
         b.add("gaze", eye, "missing_pct", "missing data", _pct(missing.sum(), n), "%",
-              "percentage of samples without valid gaze data")
+              "percentage of samples without valid gaze data (x or y missing)")
         if eye not in pupil_eyes:
             dropouts("gaze", eye, missing)
         valid = ~missing
@@ -692,21 +718,24 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
             w, h = setup.screen_resolution
             off = valid & ((x < 0) | (x > w) | (y < 0) | (y > h))
             b.add("gaze", eye, "offscreen_pct", "off-screen", _pct(off.sum(), valid.sum()),
-                  "%", "percentage of valid gaze samples outside the screen")
+                  "%", "percentage of valid gaze samples outside the screen (looking away "
+                  "or poor calibration)")
         deg = _degrees(setup, x, y)
         if deg is not None:
             s2s = np.hypot(np.diff(deg[0]), np.diff(deg[1]))
             s2s = s2s[np.isfinite(s2s)]
             b.add("gaze", eye, "precision_deg", "precision",
                   float(np.median(s2s)) if s2s.size else np.nan, "deg",
-                  "median sample-to-sample distance of gaze in degrees")
+                  "precision of the gaze: median distance between consecutive "
+                  "samples in degrees of visual angle (lower is better)")
         else:
             s2s = np.hypot(np.diff(x), np.diff(y))
             s2s = s2s[np.isfinite(s2s)]
             b.add("gaze", eye, "precision_px", "precision",
                   float(np.median(s2s)) if s2s.size else np.nan, "px",
-                  "median sample-to-sample distance of gaze in pixels "
-                  "(set screen size and eye distance to get degrees and a label)")
+                  "precision of the gaze: median distance between consecutive "
+                  "samples in pixels (set screen size and eye distance in the "
+                  "experimental setup to get degrees and a label)")
 
     # --- binocular ------------------------------------------------------
     if "left" in pupil_eyes and "right" in pupil_eyes:
@@ -716,7 +745,8 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         if both.sum() > 10 and np.std(lp[both]) > 0 and np.std(rp[both]) > 0:
             r = float(np.corrcoef(lp[both], rp[both])[0, 1])
         b.add("binocular", "left/right", "pupil_correlation", "pupil correlation", r, "",
-              "correlation of left and right pupil (samples valid in both eyes)")
+              "correlation of left and right pupil size (samples valid in both "
+              "eyes); the pupils of both eyes should move together")
     if "left" in gaze_eyes and "right" in gaze_eyes:
         lx, ly, rx, ry = raw["left_x"], raw["left_y"], raw["right_x"], raw["right_y"]
         ldeg, rdeg = _degrees(setup, lx, ly), _degrees(setup, rx, ry)
@@ -729,7 +759,8 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         dist = dist[np.isfinite(dist)]
         b.add("binocular", "left/right", name, "gaze disparity",
               float(np.median(dist)) if dist.size else np.nan, unit,
-              "median distance between left and right gaze position")
+              "median distance between the gaze positions of the left and right "
+              "eye; large values indicate calibration problems for one eye")
 
     # --- blinks (only if blink detection was run) ------------------------
     blinks_mask = {}
@@ -743,15 +774,18 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         b.add("blinks", eye, "n", "number", int(len(bl)), "", "number of detected blinks")
         b.add("blinks", eye, "rate", "blink rate",
               len(bl) / dur_min if dur_min > 0 else np.nan, "/min",
-              "number of detected blinks per minute")
+              "number of detected blinks per minute (typical: 10-20 at rest, fewer "
+              "during tasks)")
         b.add("blinks", eye, "mean_duration", "mean duration",
               float(dur_ms.mean()) if dur_ms.size else np.nan, "ms",
               "mean duration of the detected blinks")
         b.add("blinks", eye, "time_pct", "time in blinks", _pct(blinks_mask[eye].sum(), n),
-              "%", "percentage of the recording covered by blinks")
+              "%", "percentage of the recording covered by blinks (and the samples "
+              "around them that were removed)")
         b.add("blinks", eye, "n_long", f"long (>{LONG_BLINK_MS} ms)",
               int(np.sum(dur_ms > LONG_BLINK_MS)), "",
-              f"number of blinks longer than {LONG_BLINK_MS} ms")
+              f"number of blinks longer than {LONG_BLINK_MS} ms (may be eye "
+              "closures or tracking losses rather than blinks)")
 
     # --- artifacts (only if data was masked/interpolated) ---------------
     for eye in list(dict.fromkeys(pupil_eyes + gaze_eyes)):
@@ -763,19 +797,21 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
             nan = ~np.isfinite(raw[key])
             processed |= bool(np.any(m != nan))
             metrics.append(("pupil_masked_pct", "pupil masked", _pct(m.sum(), n),
-                            "percentage of masked pupil samples (all reasons)"))
+                            "percentage of masked pupil samples (missing data, blinks and "
+                            "other artifacts)"))
             other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n, bool))
             if obj._interpolated_blinks.get(key) is not None:
                 processed = True
                 interp = obj.get_interpolated_blinks(eye, "pupil").to_mask(n).sum()
                 metrics.append(("interpolated_pct", "interpolated", _pct(interp, n),
-                                "percentage of interpolated pupil samples"))
+                                "percentage of pupil samples that were interpolated (e.g., blinks)"))
         if eye in gaze_eyes:
             m = masks[f"{eye}_x"].astype(bool) | masks[f"{eye}_y"].astype(bool)
             nan = ~(np.isfinite(raw[f"{eye}_x"]) & np.isfinite(raw[f"{eye}_y"]))
             processed |= bool(np.any(m != nan))
             metrics.append(("gaze_masked_pct", "gaze masked", _pct(m.sum(), n),
-                            "percentage of masked gaze samples (all reasons)"))
+                            "percentage of masked gaze samples (missing data, blinks and other "
+                            "artifacts)"))
             if eye not in pupil_eyes:
                 other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n, bool))
         if not processed:
@@ -796,12 +832,15 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
                 stats = cal.get_stats()
             except Exception:
                 continue
-            b.add("calibration", eye, "model", "model", str(cal.model))
-            b.add("calibration", eye, "n_points", "points", int(stats["n"]))
+            b.add("calibration", eye, "model", "model", str(cal.model),
+                  description="calibration model (e.g., HV9: 9 points)")
+            b.add("calibration", eye, "n_points", "points", int(stats["n"]),
+                  description="number of validation points")
             b.add("calibration", eye, "mean_error", "mean error", stats["mean"], "deg",
-                  "mean validation error in degrees of visual angle")
+                  "mean validation error in degrees of visual angle: distance between "
+                  "target and measured gaze")
             b.add("calibration", eye, "max_error", "max error", stats["max"], "deg",
-                  "maximum validation error in degrees of visual angle")
+                  "largest validation error of all points in degrees of visual angle")
 
     return QualityReport(name=obj.name, class_name=type(obj).__name__,
                          sections=b.sections, thresholds=thresholds)
