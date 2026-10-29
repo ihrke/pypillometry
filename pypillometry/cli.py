@@ -243,14 +243,38 @@ def _pypilinfo_parser():
     return parser
 
 
+def _short_names(sources):
+    """File names without directories if they are unique, else `sources` as given."""
+    names = [os.path.basename(src.rstrip("/")) or src for src in sources]
+    return names if len(set(names)) == len(names) else list(sources)
+
+
 def _write_html_report(fname, reports):
-    """Write `reports` (list of (source, header, QualityReport)) to an HTML page."""
+    """
+    Write `reports` (list of (source, header, QualityReport)) to an HTML page.
+
+    For several reports, the page starts with a summary table that links to
+    the individual reports.
+    """
     import html
+    from .quality import _summary_html
+    multi = len(reports) > 1
     parts = []
-    for source, header, report in reports:
-        parts.append(f'<h2 style="font-size:1.1em; margin:24px 0 6px;">{html.escape(header)}</h2>')
+    if multi:
+        anchors = [f"report-{i}" for i in range(len(reports))]
+        parts.append('<h2 id="summary" style="font-size:1.2em;">'
+                     f'Summary of {len(reports)} files</h2>')
+        sources = [src for src, _, _ in reports]
+        parts.append(_summary_html(_short_names(sources), [r for _, _, r in reports],
+                                   anchors, tooltips=sources))
+    for i, (source, header, report) in enumerate(reports):
+        anchor = f' id="report-{i}"' if multi else ""
+        back = (' <a href="#summary" style="font-size:0.8em; font-weight:normal;">'
+                '(back to summary)</a>') if multi else ""
+        parts.append(f'<h2{anchor} style="font-size:1.1em; margin:24px 0 6px;">'
+                     f'{html.escape(header)}{back}</h2>')
         parts.append(report._repr_html_())
-    title = "Quality report" if len(reports) != 1 else f"Quality report: {reports[0][0]}"
+    title = "Quality report" if multi else f"Quality report: {reports[0][0]}"
     page = ("<!doctype html>\n<html><head><meta charset=\"utf-8\">"
             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
             f"<title>{html.escape(title)}</title></head>"
@@ -268,9 +292,10 @@ def pypilinfo_main(argv=None):
     file content) and prints its format, size and a summary of the stored
     object (its :func:`repr`). With ``--quality``, the data-quality report
     (:meth:`~pypillometry.GenericEyeData.quality_report`) is printed
-    instead. With ``--html``, the quality reports of all files are written
+    instead; for several files, a summary table comes first. With ``--html``, the quality reports of all files are written
     to an HTML file (``-o``, default: a temporary file), which is opened in
-    the browser (unless ``--no-open``).
+    the browser (unless ``--no-open``); for several files, the page starts
+    with a summary table that links to the individual reports.
     Files that cannot be read are reported and skipped. Only open pickle files you trust: unpickling can run arbitrary
     code.
 
@@ -308,22 +333,30 @@ def pypilinfo_main(argv=None):
             status = 1
             continue
         header = f"{source} ({fmt.upper()}, {_format_size(size)})"
-        report = None
-        if args.quality or args.html:
-            if not hasattr(d, "quality_report"):
-                print(f"pypilinfo: {source}: no quality report for "
-                      f"{type(d).__name__} objects", file=sys.stderr)
-                status = 1
-                continue
-            report = d.quality_report()
-            if args.html:
-                reports.append((source, header, report))
-        if args.quality or not args.html:
+        if not (args.quality or args.html):
             if printed:
                 print()
             print(header)
-            print(str(report) if args.quality else repr(d).rstrip("\n"))
+            print(repr(d).rstrip("\n"))
             printed = True
+            continue
+        if not hasattr(d, "quality_report"):
+            print(f"pypilinfo: {source}: no quality report for "
+                  f"{type(d).__name__} objects", file=sys.stderr)
+            status = 1
+            continue
+        reports.append((source, header, d.quality_report()))
+
+    if args.quality and reports:
+        if len(reports) > 1:
+            from .quality import _summary_text
+            print(_summary_text(_short_names([src for src, _, _ in reports]),
+                                [r for _, _, r in reports]))
+        for i, (source, header, report) in enumerate(reports):
+            if i > 0 or len(reports) > 1:
+                print()
+            print(header)
+            print(report)
 
     if args.html and reports:
         fname = args.output
