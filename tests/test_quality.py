@@ -165,5 +165,22 @@ class TestQualityReport(unittest.TestCase):
         self.assertIn("pupil", r.labels())
 
 
+    def test_summary(self):
+        from pypillometry.quality import _summary_text, _summary_html
+        good = _make_data().quality_report()
+        bad = _make_data(missing=[(1000, 5000)]).quality_report()
+        txt = _summary_text(["a", "b"], [good, bad], color=False)
+        lines = txt.splitlines()
+        self.assertEqual(lines[0], "Summary of 2 files")
+        self.assertIn("Pupil", lines[1])
+        self.assertNotIn("Blinks", lines[1])  # no report has blinks
+        self.assertTrue(lines[3].startswith("b "))
+        self.assertIn("bad", lines[3])
+        html = _summary_html(["a", "b"], [good, bad], anchors=["r0", "r1"],
+                             tooltips=["dir/a", "dir/b"])
+        self.assertIn('<a href="#r1">b</a>', html)
+        self.assertIn('title="dir/b"', html)
+
+
 if __name__ == "__main__":
     unittest.main()

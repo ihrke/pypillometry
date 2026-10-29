@@ -249,6 +249,37 @@ class TestPypilinfo(CLITestCase):
             page = f.read()
         self.assertTrue(page.startswith("<!doctype html>"))
         self.assertEqual(page.count("Quality report — rlmw_002_short"), 2)
+        # summary table with links to the reports
+        self.assertIn("Summary of 2 files", page)
+        self.assertLess(page.index("Summary of 2 files"), page.index("Quality report — "))
+        self.assertIn('<a href="#report-1">rec1.pkl</a>', page)
+        self.assertIn('id="report-1"', page)
+
+    def test_quality_summary(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fnames = [os.path.join(self.tmp, f"rec{i}.pkl") for i in range(2)]
+        for fname in fnames:
+            pp.write_pickle(d, fname)
+        status, out, _ = self.run_main(fnames + ["-Q"])
+        self.assertEqual(status, 0)
+        self.assertTrue(out.startswith("Summary of 2 files"))
+        self.assertLess(out.index("rec1.pkl  "), out.index("Quality report:"))
+        self.assertEqual(out.count("Quality report: rlmw_002_short"), 2)
+
+    def test_single_file_has_no_summary(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fname = os.path.join(self.tmp, "rec.pkl")
+        pp.write_pickle(d, fname)
+        html = os.path.join(self.tmp, "report.html")
+        status, out, _ = self.run_main([fname, "-Q", "--html", "--no-open", "-o", html])
+        self.assertNotIn("Summary", out)
+        with open(html) as f:
+            self.assertNotIn("Summary", f.read())
+
+    def test_short_names(self):
+        from pypillometry.cli import _short_names
+        self.assertEqual(_short_names(["a/x.pkl", "/b/y.pkl"]), ["x.pkl", "y.pkl"])
+        self.assertEqual(_short_names(["a/x.pkl", "b/x.pkl"]), ["a/x.pkl", "b/x.pkl"])
 
     def test_html_temp_file_no_open(self):
         d = pp.get_example_data("rlmw_002_short")
