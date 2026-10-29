@@ -33,7 +33,8 @@ an overall label (the worst one). The thresholds can be changed with the
 
     report = d.quality_report()
     print(report)            # text (colored labels in a terminal)
-    report                   # HTML table in a notebook
+    print(report.to_text(descriptions=True))  # explain each measure
+    report                   # HTML table in a notebook (hover for descriptions)
     report.to_dict(flat=True)  # e.g., for a DataFrame over participants
     d.quality_report(thresholds={"pupil.missing_pct": (2, 10, 20)})
 

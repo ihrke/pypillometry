@@ -88,18 +88,21 @@ eye, and the history lists all processing steps applied to the data so far.
 With ``-Q``/``--quality``, ``pypilinfo`` prints a data-quality report
 instead of the summary (see :meth:`~pypillometry.GenericEyeData.quality_report`):
 missing data, dropouts, noise, gaze precision, calibration errors etc.,
-each labeled "good", "ok", "poor" or "bad". For several files, a summary
+each labeled "good", "ok", "poor" or "bad". Add ``-d``/``--descriptions``
+to explain each measure and its thresholds. For several files, a summary
 table (one row per file with the overall label and the worst label of each
 section) comes before the individual reports.
 
 With ``--html``, the quality reports of all files are written to one HTML
-page, which is opened in the browser. For several files, the page starts
+page, which is opened in the browser; hover over a measure to see its
+description. For several files, the page starts
 with the summary table, which links to the individual reports. Use ``-o`` to choose the file name
 (default: a temporary file) and ``--no-open`` to only write the file.
 
 .. code-block:: bash
 
     pypilinfo -Q recording.pkl
+    pypilinfo -Q -d recording.pkl
     pypilinfo --html data/*.pkl
     pypilinfo --html -o quality.html --no-open data/*.pkl
 
