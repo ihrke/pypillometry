@@ -166,7 +166,7 @@ class TestQualityReport(unittest.TestCase):
 
 
     def test_summary(self):
-        from pypillometry.quality import _summary_text, _summary_html
+        from pypillometry.quality import _summary_text, _html_page
         good = _make_data().quality_report()
         bad = _make_data(missing=[(1000, 5000)]).quality_report()
         txt = _summary_text(["a", "b"], [good, bad], color=False)
@@ -176,10 +176,19 @@ class TestQualityReport(unittest.TestCase):
         self.assertNotIn("Blinks", lines[1])  # no report has blinks
         self.assertTrue(lines[3].startswith("b "))
         self.assertIn("bad", lines[3])
-        html = _summary_html(["a", "b"], [good, bad], anchors=["r0", "r1"],
-                             tooltips=["dir/a", "dir/b"])
-        self.assertIn('<a href="#r1">b</a>', html)
+        html = _html_page([("A", good), ("B", bad)], names=["a", "b"],
+                          tooltips=["dir/a", "dir/b"])
+        self.assertIn('<a href="#report-1">b</a>', html)
+        self.assertIn('id="report-1"', html)
         self.assertIn('title="dir/b"', html)
+        self.assertNotIn("Summary", _html_page([("A", good)]))
+
+    def test_html_is_escaped(self):
+        d = _make_data()
+        d.name = "<b>x&y</b>"
+        html = d.quality_report()._repr_html_()
+        self.assertIn("&lt;b&gt;x&amp;y&lt;/b&gt;", html)
+        self.assertNotIn("<b>x", html)
 
 
 if __name__ == "__main__":
