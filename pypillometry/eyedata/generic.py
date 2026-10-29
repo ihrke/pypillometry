@@ -1334,7 +1334,7 @@ class GenericEyeData(ABC):
     @requires_package("jinja2")
     def _repr_html_(self):
         """Rich HTML representation for notebooks using Jinja templates."""
-        from jinja2 import Template
+        from jinja2 import Environment
 
         summary = self.summary()
         blink_stats_raw = summary.get("blinks", {}) or {}
@@ -1425,7 +1425,8 @@ class GenericEyeData(ABC):
         }
 
         template_source = resources.read_text("pypillometry.templates", "eyedata_repr.html")
-        template = Template(template_source)
+        # autoescape, so that names, labels etc. with "<" or "&" are shown as text
+        template = Environment(autoescape=True).from_string(template_source)
         return template.render(**context)
 
     def copy(self, new_name: Optional[str]=None):
