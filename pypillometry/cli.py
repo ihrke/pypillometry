@@ -231,6 +231,9 @@ def _pypilinfo_parser():
                              "validation etc.) in the events")
     parser.add_argument("-Q", "--quality", action="store_true",
                         help="print a data-quality report instead of the summary")
+    parser.add_argument("-d", "--descriptions", action="store_true",
+                        help="with -Q: explain each quality measure and its "
+                             "thresholds (in the HTML report, hover over a measure)")
     parser.add_argument("--html", action="store_true",
                         help="write the quality reports of all files to an HTML "
                              "file and open it in the browser")
@@ -272,7 +275,8 @@ def pypilinfo_main(argv=None):
     file content) and prints its format, size and a summary of the stored
     object (its :func:`repr`). With ``--quality``, the data-quality report
     (:meth:`~pypillometry.GenericEyeData.quality_report`) is printed
-    instead; for several files, a summary table comes first. With ``--html``, the quality reports of all files are written
+    instead (with ``--descriptions``, each measure is explained); for several
+    files, a summary table comes first. With ``--html``, the quality reports of all files are written
     to an HTML file (``-o``, default: a temporary file), which is opened in
     the browser (unless ``--no-open``); for several files, the page starts
     with a summary table that links to the individual reports.
@@ -297,6 +301,8 @@ def pypilinfo_main(argv=None):
 
     if not args.html and (args.output or args.no_open):
         parser.error("-o/--output and --no-open need --html")
+    if args.descriptions and not args.quality:
+        parser.error("-d/--descriptions needs -Q/--quality")
 
     status = 0
     reports = []
@@ -336,7 +342,7 @@ def pypilinfo_main(argv=None):
             if i > 0 or len(reports) > 1:
                 print()
             print(header)
-            print(report)
+            print(report.to_text(descriptions=args.descriptions))
 
     if args.html and reports:
         fname = args.output
