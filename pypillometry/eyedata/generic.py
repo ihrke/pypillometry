@@ -923,6 +923,57 @@ class GenericEyeData(ABC):
         return stats
 
 
+    def quality_report(self, thresholds: Optional[dict] = None, eyes: str|list = []):
+        """
+        Report the quality of the data.
+
+        Measures that need no preprocessing are always computed (on the
+        stored values, where missing samples are NaN):
+
+        - pupil (if available): missing data, dropouts (periods of missing
+          data) and high-frequency noise
+        - gaze (if available): missing data, off-screen samples (needs the
+          screen resolution) and precision (in degrees if screen size and
+          eye distance are set in the experimental setup, else in pixels)
+        - both eyes: correlation of the pupils and disparity of the gaze
+
+        Further measures are added if available: blinks (after
+        :meth:`~pypillometry.PupilData.pupil_blinks_detect`), masked and
+        interpolated data (after preprocessing) and calibration/validation
+        errors (e.g., when read from an Eyelink file).
+
+        Where it makes sense, each measure is labeled as "good", "ok",
+        "poor" or "bad". The overall label is the worst of all labels.
+
+        Parameters
+        ----------
+        thresholds : dict, optional
+            thresholds for the labels, overriding the defaults in
+            :data:`pypillometry.quality.DEFAULT_QUALITY_THRESHOLDS`.
+            Keys are ``"<section>.<metric>"`` (e.g., ``"pupil.missing_pct"``),
+            values are three bounds ``(good, ok, poor)``. Increasing bounds
+            mean that lower values are better, decreasing bounds that higher
+            values are better. `None` turns the label off.
+        eyes : str or list of str, optional
+            eye(s) to report; if empty, all available eyes
+
+        Returns
+        -------
+        :class:`~pypillometry.QualityReport`
+            the report; print it for a text version, display it in a
+            notebook for an HTML version or use
+            :meth:`~pypillometry.QualityReport.to_dict` to get a dict
+
+        Examples
+        --------
+        >>> import pypillometry as pp
+        >>> d = pp.get_rlmw_002_short()  # doctest: +SKIP
+        >>> print(d.quality_report())  # doctest: +SKIP
+        >>> d.quality_report(thresholds={"pupil.missing_pct": (2, 10, 20)})  # doctest: +SKIP
+        """
+        from ..quality import _compute_quality_report
+        return _compute_quality_report(self, thresholds=thresholds, eyes=eyes)
+
     @property
     def eyes(self) -> List[str]:
         """
