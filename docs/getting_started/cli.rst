@@ -85,6 +85,21 @@ For a 40-minute binocular recording:
 The calibration line shows the validation error (in degrees) for each
 eye, and the history lists all processing steps applied to the data so far.
 
+With ``-Q``/``--quality``, ``pypilinfo`` prints a data-quality report
+instead of the summary (see :meth:`~pypillometry.GenericEyeData.quality_report`):
+missing data, dropouts, noise, gaze precision, calibration errors etc.,
+each labeled "good", "ok", "poor" or "bad".
+
+With ``--html``, the quality reports of all files are written to one HTML
+page, which is opened in the browser. Use ``-o`` to choose the file name
+(default: a temporary file) and ``--no-open`` to only write the file.
+
+.. code-block:: bash
+
+    pypilinfo -Q recording.pkl
+    pypilinfo --html data/*.pkl
+    pypilinfo --html -o quality.html --no-open data/*.pkl
+
 
 ``edf2pypil``: convert EDF files
 --------------------------------
