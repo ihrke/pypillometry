@@ -698,5 +698,14 @@ class TestMaskOffscreenCoords(unittest.TestCase):
         self.assertEqual(d.summary()["eyes"], ["left"])
         self.assertIn("left", d._repr_html_())
 
+    def test_repr_html_is_escaped(self):
+        """names and history with "<" or "&" are shown as text, not markup"""
+        x = np.random.randn(100)
+        d = pp.GazeData(left_x=x, left_y=x, sampling_rate=100, name="<b>x&y</b>")
+        html = d._repr_html_()
+        self.assertIn("&lt;b&gt;x&amp;y&lt;/b&gt;", html)
+        self.assertNotIn("<b>x&y</b>", html)
+        self.assertIn("data:image/png;base64,", html)  # sparklines still work
+
 if __name__ == '__main__':
     unittest.main()
