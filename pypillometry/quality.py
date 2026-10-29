@@ -23,7 +23,7 @@ it makes sense, a measure is labeled as "good", "ok", "poor" or "bad" based
 on thresholds (see :data:`DEFAULT_QUALITY_THRESHOLDS`).
 """
 
-import html
+import functools
 import os
 import sys
 from dataclasses import dataclass
@@ -93,8 +93,8 @@ SECTION_TITLES = {
     "calibration": "Calibration",
 }
 
-# colors for the labels (HTML and ANSI escape codes)
-_HTML_COLORS = {"good": "#2e7d32", "ok": "#9a7d0a", "poor": "#e65100", "bad": "#c62828"}
+# colors for the labels in text output (ANSI escape codes; HTML colors are
+# in templates/quality_macros.html)
 _ANSI_COLORS = {"good": "\033[32m", "ok": "\033[33m", "poor": "\033[38;5;208m",
                 "bad": "\033[1;31m"}
 _ANSI_RESET = "\033[0m"
@@ -137,18 +137,19 @@ def _ansi_label(label, width=0, color=True) -> str:
     return _ANSI_COLORS[label] + txt + _ANSI_RESET if color else txt
 
 
-def _html_badge(label, big=False) -> str:
-    """Return `label` as a colored HTML badge."""
-    if label is None:
-        return ""
-    pad = "3px 10px" if big else "1px 6px"
-    size = "1em" if big else "0.8em"
-    return (f'<span style="background:{_HTML_COLORS[label]}; color:#fff; '
-            f'border-radius:3px; padding:{pad}; font-size:{size}; '
-            f'font-weight:600; text-transform:uppercase;">{label}</span>')
+@functools.lru_cache(maxsize=None)
+def _jinja_env():
+    """Jinja environment for the templates in pypillometry/templates (autoescaped)."""
+    import jinja2
+    env = jinja2.Environment(loader=jinja2.PackageLoader("pypillometry", "templates"),
+                             autoescape=True, trim_blocks=True, lstrip_blocks=True)
+    env.filters["bounds"] = _bounds_text
+    return env
 
 
-_HTML_CELL = "padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);"
+def _render(template: str, **context) -> str:
+    """Render one of the quality-report templates."""
+    return _jinja_env().get_template(template).render(**context)
 
 
 def _supports_color(stream=None) -> bool:
@@ -392,40 +393,28 @@ class QualityReport:
         else:
             lines.append("Overall: " + overall.upper())
 
-        for section, groups in self.sections.items():
-            if not groups:
-                continue
+        for table in self._tables():
             lines.append("")
-            group_names = list(groups.keys())
-            metric_names = list(dict.fromkeys(n for g in groups.values() for n in g))
-            titles = {}
-            for metrics in groups.values():
-                for n, m in metrics.items():
-                    titles.setdefault(n, m.title)
-            name_w = max(len(t) for t in titles.values()) + 2
-            cells = {(g, n): groups[g][n] for g in group_names for n in groups[g]}
-            val_w = {g: max([len(g)] + [len(m.format_value()) for (gg, _), m in cells.items()
-                                        if gg == g]) for g in group_names}
-            has_label = {g: any(m.label for (gg, _), m in cells.items() if gg == g)
-                         for g in group_names}
-            col_w = {g: val_w[g] + (5 if has_label[g] else 0) for g in group_names}
-            title = SECTION_TITLES.get(section, section)
-            header = title.ljust(name_w + 2)
-            if section != "info":
-                header += "  ".join(g.rjust(val_w[g]).ljust(col_w[g]) for g in group_names)
+            cols = list(zip(*[row["cells"] for row in table["rows"]]))  # one per group
+            name_w = max(len(row["title"]) for row in table["rows"]) + 2
+            val_w = [max([len(g)] + [len(c.format_value()) for c in col if c])
+                     for g, col in zip(table["groups"], cols)]
+            has_label = [any(c and c.label for c in col) for col in cols]
+            col_w = [w + (5 if hl else 0) for w, hl in zip(val_w, has_label)]
+            header = table["title"].ljust(name_w + 2)
+            if table["section"] != "info":
+                header += "  ".join(g.rjust(vw).ljust(cw) for g, vw, cw
+                                    in zip(table["groups"], val_w, col_w))
             lines.append(header.rstrip())
-            for n in metric_names:
-                row = "  " + titles[n].ljust(name_w)
-                for g in group_names:
-                    m = cells.get((g, n))
-                    if m is None:
-                        row += " " * col_w[g] + "  "
-                        continue
-                    row += m.format_value().rjust(val_w[g])
-                    if has_label[g]:
-                        row += " " + lab(m.label, 4)
-                    row += "  "
-                lines.append(row.rstrip())
+            for row in table["rows"]:
+                line = "  " + row["title"].ljust(name_w)
+                for c, vw, cw, hl in zip(row["cells"], val_w, col_w, has_label):
+                    if c is None:
+                        line += " " * cw
+                    else:
+                        line += c.format_value().rjust(vw) + (" " + lab(c.label, 4) if hl else "")
+                    line += "  "
+                lines.append(line.rstrip())
 
         issues = self.issues()
         if issues:
@@ -445,71 +434,35 @@ class QualityReport:
     # ------------------------------------------------------------------
     # HTML representation
     # ------------------------------------------------------------------
-    def _repr_html_(self) -> str:
-        """Rich HTML representation for Jupyter notebooks."""
-        esc = html.escape
+    def _tables(self) -> list:
+        """
+        Return the sections as tables (shared by the text and HTML output).
 
-        badge = _html_badge
-        cell = _HTML_CELL
-        out = ['<div style="font-family:system-ui, sans-serif; '
-               'border:1px solid rgba(128,128,128,0.4); border-radius:6px; '
-               'padding:12px; max-width:720px;">']
-        out.append('<div style="display:flex; align-items:center; gap:12px; '
-                   'margin-bottom:8px;">'
-                   f'<h3 style="margin:0;">Quality report — {esc(self.name)} '
-                   f'<span style="opacity:0.6; font-weight:normal;">'
-                   f'({esc(self.class_name)})</span></h3>'
-                   f'{badge(self.overall, big=True)}</div>')
-
+        Each table is a dict with the section name, its title, the groups
+        (columns, usually the eyes) and the rows (one per measure, with
+        title, description and one cell per group: a QualityMetric or None).
+        """
+        tables = []
         for section, groups in self.sections.items():
             if not groups:
                 continue
-            group_names = list(groups.keys())
-            metric_names = list(dict.fromkeys(n for g in groups.values() for n in g))
-            out.append(f'<div style="font-weight:600; margin-top:10px;">'
-                       f'{esc(SECTION_TITLES.get(section, section))}</div>')
-            out.append('<table style="border-collapse:collapse; margin-top:4px; '
-                       'min-width:60%;">')
-            if section != "info":
-                out.append("<thead><tr>" + f'<th style="{cell} text-align:left;"></th>' +
-                           "".join(f'<th style="{cell} text-align:right;">{esc(g)}</th>'
-                                   for g in group_names) + "</tr></thead>")
-            out.append("<tbody>")
-            for n in metric_names:
-                first = next(groups[g][n] for g in group_names if n in groups[g])
-                out.append(f'<tr><td style="{cell} text-align:left;" '
-                           f'title="{esc(first.description)}">{esc(first.title)}</td>')
-                for g in group_names:
-                    m = groups[g].get(n)
-                    if m is None:
-                        out.append(f'<td style="{cell}"></td>')
-                        continue
-                    tip = esc(m.description + " (" + _bounds_text(m.thresholds) + ")")
-                    out.append(f'<td style="{cell} text-align:right; white-space:nowrap;" '
-                               f'title="{tip}">{esc(m.format_value())} {badge(m.label)}</td>')
-                out.append("</tr>")
-            out.append("</tbody></table>")
+            group_names = list(groups)
+            rows = []
+            for name in dict.fromkeys(n for metrics in groups.values() for n in metrics):
+                cells = [groups[g].get(name) for g in group_names]
+                first = next(c for c in cells if c is not None)
+                rows.append(dict(title=first.title, description=first.description, cells=cells))
+            tables.append(dict(section=section, title=SECTION_TITLES.get(section, section),
+                               groups=group_names, rows=rows))
+        return tables
 
-        issues = self.issues()
-        if issues:
-            out.append('<div style="font-weight:600; margin-top:10px;">Issues</div><ul '
-                       'style="margin:4px 0;">')
-            for section, group, m in issues:
-                out.append(f"<li>{badge(m.label)} {esc(section)}/{esc(group)}: "
-                           f"{esc(m.title)} = {esc(m.format_value())}</li>")
-            out.append("</ul>")
+    def _html_context(self) -> dict:
+        """Context for templates/quality_report.html."""
+        return dict(report=self, tables=self._tables(), issues=self.issues())
 
-        out.append('<details style="margin-top:8px;"><summary style="cursor:pointer; '
-                   'opacity:0.7;">Thresholds</summary><table style="border-collapse:'
-                   'collapse; font-size:0.85em; margin-top:4px;">')
-        for key, bounds in self.thresholds.items():
-            if bounds is not None:
-                out.append(f'<tr><td style="{cell}">{esc(key)}</td>'
-                           f'<td style="{cell}">{esc(_bounds_text(bounds))}</td></tr>')
-        out.append("</table><div style=\"font-size:0.85em; opacity:0.7; margin-top:4px;\">"
-                   "The overall label is the worst label of all measures.</div>"
-                   "</details></div>")
-        return "\n".join(out)
+    def _repr_html_(self) -> str:
+        """Rich HTML representation for Jupyter notebooks."""
+        return _render("quality_report.html", **self._html_context())
 
 
 # ----------------------------------------------------------------------
@@ -558,34 +511,35 @@ def _summary_text(names, reports, color: Optional[bool] = None) -> str:
     return "\n".join(lines)
 
 
-def _summary_html(names, reports, anchors=None, tooltips=None) -> str:
+def _html_page(entries, names=None, tooltips=None) -> str:
     """
-    Summary table of several reports as HTML.
+    Return a full HTML page with several quality reports.
 
-    Names link to `anchors` and show `tooltips` on hover if given.
+    Parameters
+    ----------
+    entries : list of (header, QualityReport)
+        the reports, each shown below its header
+    names, tooltips : list of str, optional
+        names (and hover texts) of the reports in the summary table, which is
+        shown (and linked to the reports) if there is more than one report;
+        default: the headers
     """
-    esc = html.escape
-    sections, rows = _summary_rows(reports)
-    cell = _HTML_CELL
-    out = ['<div style="overflow-x:auto;"><table style="border-collapse:collapse;">',
-           "<thead><tr>"]
-    for t in ["File", "Duration", "Overall"] + [SECTION_TITLES[s] for s in sections] + ["Issues"]:
-        align = "left" if t == "File" else "center"
-        out.append(f'<th style="{cell} text-align:{align};">{esc(t)}</th>')
-    out.append("</tr></thead><tbody>")
-    for i, (name, row) in enumerate(zip(names, rows)):
-        label = esc(name)
-        if anchors is not None:
-            label = f'<a href="#{esc(anchors[i])}">{label}</a>'
-        tip = f' title="{esc(tooltips[i])}"' if tooltips is not None else ""
-        out.append(f'<tr><td style="{cell}"{tip}>{label}</td>'
-                   f'<td style="{cell} text-align:right; white-space:nowrap;">'
-                   f'{esc(row["duration"])}</td>')
-        for lab in [row["overall"]] + [row["sections"][s] for s in sections]:
-            out.append(f'<td style="{cell} text-align:center;">{_html_badge(lab) or "–"}</td>')
-        out.append(f'<td style="{cell} text-align:right;">{row["issues"]}</td></tr>')
-    out.append("</tbody></table></div>")
-    return "\n".join(out)
+    multi = len(entries) > 1
+    names = names or [h for h, _ in entries]
+    page_entries = [dict(header=header, anchor=f"report-{i}" if multi else None,
+                         **report._html_context())
+                    for i, (header, report) in enumerate(entries)]
+    context = dict(entries=page_entries, rows=None,
+                   title="Quality report" if multi else f"Quality report: {names[0]}")
+    if multi:
+        reports = [r for _, r in entries]
+        sections, rows = _summary_rows(reports)
+        for i, row in enumerate(rows):
+            row.update(name=names[i], anchor=f"report-{i}",
+                       tooltip=tooltips[i] if tooltips else None,
+                       labels=[row["overall"]] + [row["sections"][s] for s in sections])
+        context.update(rows=rows, sections=[SECTION_TITLES[s] for s in sections])
+    return _render("quality_page.html", **context)
 
 
 # ----------------------------------------------------------------------

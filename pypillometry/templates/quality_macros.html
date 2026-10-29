@@ -1,0 +1,9 @@
+{#- Shared styles and macros for the quality-report templates. -#}
+{% set colors = {"good": "#2e7d32", "ok": "#9a7d0a", "poor": "#e65100", "bad": "#c62828"} %}
+{% set cell = "padding:3px 8px; border-bottom:1px solid rgba(128,128,128,0.25);" %}
+
+{% macro badge(label, big=False) -%}
+{% if label -%}
+<span style="background:{{ colors[label] }}; color:#fff; border-radius:3px; padding:{{ '3px 10px' if big else '1px 6px' }}; font-size:{{ '1em' if big else '0.8em' }}; font-weight:600; text-transform:uppercase;">{{ label }}</span>
+{%- endif %}
+{%- endmacro %}

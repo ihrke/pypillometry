@@ -256,30 +256,10 @@ def _write_html_report(fname, reports):
     For several reports, the page starts with a summary table that links to
     the individual reports.
     """
-    import html
-    from .quality import _summary_html
-    multi = len(reports) > 1
-    parts = []
-    if multi:
-        anchors = [f"report-{i}" for i in range(len(reports))]
-        parts.append('<h2 id="summary" style="font-size:1.2em;">'
-                     f'Summary of {len(reports)} files</h2>')
-        sources = [src for src, _, _ in reports]
-        parts.append(_summary_html(_short_names(sources), [r for _, _, r in reports],
-                                   anchors, tooltips=sources))
-    for i, (source, header, report) in enumerate(reports):
-        anchor = f' id="report-{i}"' if multi else ""
-        back = (' <a href="#summary" style="font-size:0.8em; font-weight:normal;">'
-                '(back to summary)</a>') if multi else ""
-        parts.append(f'<h2{anchor} style="font-size:1.1em; margin:24px 0 6px;">'
-                     f'{html.escape(header)}{back}</h2>')
-        parts.append(report._repr_html_())
-    title = "Quality report" if multi else f"Quality report: {reports[0][0]}"
-    page = ("<!doctype html>\n<html><head><meta charset=\"utf-8\">"
-            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
-            f"<title>{html.escape(title)}</title></head>"
-            "<body style=\"font-family:system-ui, sans-serif; margin:16px;\">\n"
-            + "\n".join(parts) + "\n</body></html>\n")
+    from .quality import _html_page
+    sources = [src for src, _, _ in reports]
+    page = _html_page([(header, r) for _, header, r in reports],
+                      names=_short_names(sources), tooltips=sources)
     with open(fname, "w", encoding="utf-8") as f:
         f.write(page)
 
