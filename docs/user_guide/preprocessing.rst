@@ -17,26 +17,14 @@ change them.
 Data quality
 ------------
 
-:meth:`~GenericEyeData.quality_report` summarizes the quality of a
-dataset: missing data, dropouts and noise of the pupil, missing and
-off-screen samples and precision of the gaze, and agreement between the
-eyes. These measures need no preprocessing. After preprocessing, blinks and
-masked/interpolated data are reported as well, and calibration errors if
-they are available (e.g., from an Eyelink file).
-
-Each measure is labeled "good", "ok", "poor" or "bad", and the report has
-an overall label (the worst one). The thresholds can be changed with the
-``thresholds`` argument (see
-:data:`pypillometry.quality.DEFAULT_QUALITY_THRESHOLDS`).
+Before and after preprocessing, :meth:`~GenericEyeData.quality_report`
+summarizes the quality of a dataset (missing data, noise, blinks, artifacts,
+calibration) and labels each measure "good", "ok", "poor" or "bad". See
+:doc:`quality`.
 
 .. code-block:: python
 
-    report = d.quality_report()
-    print(report)            # text (colored labels in a terminal)
-    print(report.to_text(descriptions=True))  # explain each measure
-    report                   # HTML table in a notebook (hover for descriptions)
-    report.to_dict(flat=True)  # e.g., for a DataFrame over participants
-    d.quality_report(thresholds={"pupil.missing_pct": (2, 10, 20)})
+    d.quality_report()
 
 
 Blinks
