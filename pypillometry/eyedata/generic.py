@@ -1548,9 +1548,6 @@ class GenericEyeData(ABC):
         >>> # Drop right eye and pupil data
         >>> left_gaze = data.drop_data(eyes=['right'], variables=['pupil'])
         """
-        # Import here to avoid circular imports
-        from . import PupilData, GazeData, EyeData
-        
         # Normalize inputs to lists
         if isinstance(eyes, str):
             eyes = [eyes]
@@ -1609,10 +1606,23 @@ class GenericEyeData(ABC):
         for key in interp_to_remove:
             del result._interpolated_blinks[key]
         
-        # Determine target class based on remaining variables
-        has_pupil = 'pupil' in remaining_vars
-        has_gaze = 'x' in remaining_vars or 'y' in remaining_vars
-        
+        return result._cast_to_data_class()
+
+    def _cast_to_data_class(self):
+        """
+        Return the object cast to the class that matches its data.
+
+        Objects with pupil and gaze data become EyeData, objects with only
+        pupil data PupilData and objects with only gaze data GazeData. Objects
+        with neither keep their class. The attributes are shared with `self`
+        (not copied).
+        """
+        # Import here to avoid circular imports
+        from . import PupilData, GazeData, EyeData
+
+        variables = self.data.get_available_variables()
+        has_pupil = 'pupil' in variables
+        has_gaze = 'x' in variables or 'y' in variables
         if has_pupil and has_gaze:
             target_class = EyeData
         elif has_pupil:
@@ -1620,16 +1630,12 @@ class GenericEyeData(ABC):
         elif has_gaze:
             target_class = GazeData
         else:
-            # Other variables only - keep current class
             target_class = self.__class__
-        
-        # Cast to target class if different
-        if target_class != result.__class__:
-            new_result = target_class.__new__(target_class)
-            for k, v in result.__dict__.items():
-                setattr(new_result, k, v)
-            return new_result
-        
+
+        if target_class is self.__class__:
+            return self
+        result = target_class.__new__(target_class)
+        result.__dict__.update(self.__dict__)
         return result
 
     @keephistory
