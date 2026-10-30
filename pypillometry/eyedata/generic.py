@@ -1170,14 +1170,16 @@ class GenericEyeData(ABC):
     def write_file(self, fname:str, compress:bool=True):
         """
         Save to file (using :func:`~pypillometry.io.write_pickle`).
-        
+
+        The format follows from the extension: HDF5 for ``.h5`` and
+        ``.hdf5``, pickle otherwise (e.g., ``.pypil``).
+
         Parameters
         ----------
-        
         fname: str
             filename
         compress: bool
-            compress the file with zstd (default True)
+            compress the file (default True; pickle: zstd, HDF5: gzip)
         """
         io.write_pickle(self, fname, compress=compress)
 
@@ -1185,11 +1187,13 @@ class GenericEyeData(ABC):
     @classmethod
     def from_file(cls, fname:str, **kwargs):
         """
-        Reads a :class:`~pypillometry.GenericEyeData` object from a pickle-file.
-        Use as ``pypillometry.PupilData.from_file("yourfile.pd")``.
+        Reads a :class:`~pypillometry.GenericEyeData` object from a pickle
+        or HDF5 file (see :meth:`write_file`).
+        Use as ``pypillometry.PupilData.from_file("yourfile.pypil")``.
 
         The file is read with :func:`pypillometry.io.read_pickle`, so
-        `fname` can also be an HTTP(S) or SSH URL.
+        `fname` can also be an HTTP(S) or SSH URL. Files written by older
+        versions of pypillometry are upgraded to the current version.
 
         Parameters
         ----------

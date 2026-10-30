@@ -636,21 +636,24 @@ class SegmentedEyeData:
 
     def write_file(self, fname: str, compress: bool = True):
         """
-        Save to file using pickle (see :func:`~pypillometry.io.write_pickle`).
-        
+        Save to file (see :func:`~pypillometry.io.write_pickle`).
+
+        The format follows from the extension: HDF5 for ``.h5`` and
+        ``.hdf5``, pickle otherwise.
+
         Parameters
         ----------
         fname : str
             Filename to save to
         compress : bool, optional
-            compress the file with zstd (default True)
+            compress the file (default True; pickle: zstd, HDF5: gzip)
         """
         write_pickle(self, fname, compress=compress)
     
     @classmethod
     def from_file(cls, fname: str, **kwargs) -> 'SegmentedEyeData':
         """
-        Read a SegmentedEyeData object from a pickle file.
+        Read a SegmentedEyeData object from a pickle or HDF5 file.
         
         Parameters
         ----------
