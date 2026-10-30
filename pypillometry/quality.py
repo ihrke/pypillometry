@@ -45,16 +45,20 @@ LABELS = ("good", "ok", "poor", "bad")
 #: "poor" and anything above is "bad"). If they are decreasing, higher values
 #: are better (``value >= good`` is "good", etc.). `None` means that the
 #: measure is reported without a label.
+#:
+#: The defaults are rules of thumb, not established standards; the reasoning
+#: behind them is explained in the user guide (:doc:`/user_guide/quality`).
+#: Change them to suit your setup and research question.
 DEFAULT_QUALITY_THRESHOLDS = {
     # pupil (raw data)
     "pupil.missing_pct": (5, 15, 30),
-    "pupil.dropout_rate": (30, 45, 60),
+    "pupil.dropout_rate": (20, 35, 70),
     "pupil.longest_dropout": (1, 3, 10),
     "pupil.noise": (0.5, 1, 2),
     "pupil.noise_sd": None,
     # gaze (raw data)
     "gaze.missing_pct": (5, 15, 30),
-    "gaze.dropout_rate": (30, 45, 60),
+    "gaze.dropout_rate": (20, 35, 70),
     "gaze.longest_dropout": (1, 3, 10),
     "gaze.offscreen_pct": (5, 15, 30),
     "gaze.precision_deg": (0.05, 0.1, 0.2),
@@ -63,11 +67,12 @@ DEFAULT_QUALITY_THRESHOLDS = {
     "binocular.pupil_correlation": (0.9, 0.8, 0.6),
     "binocular.gaze_disparity_deg": (1, 2, 3),
     "binocular.gaze_disparity_px": None,
-    # blinks (after blink detection)
+    # blinks (after blink detection); the rate bounds are 1, 2 and 3 SD above
+    # the median of a log-normal distribution (median 10/min, SD of log 0.65)
     "blinks.n": None,
-    "blinks.rate": (30, 45, 60),
+    "blinks.rate": (20, 35, 70),
     "blinks.mean_duration": None,
-    "blinks.time_pct": (5, 10, 20),
+    "blinks.time_pct": (10, 20, 35),
     "blinks.n_long": None,
     # masks and interpolation (after preprocessing)
     "artifacts.pupil_masked_pct": (10, 20, 35),
@@ -774,8 +779,8 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         b.add("blinks", eye, "n", "number", int(len(bl)), "", "number of detected blinks")
         b.add("blinks", eye, "rate", "blink rate",
               len(bl) / dur_min if dur_min > 0 else np.nan, "/min",
-              "number of detected blinks per minute (typical: 10-20 at rest, fewer "
-              "during tasks)")
+              "number of detected blinks per minute (median across people about 10 "
+              "during screen tasks and 13 at rest; varies a lot between people)")
         b.add("blinks", eye, "mean_duration", "mean duration",
               float(dur_ms.mean()) if dur_ms.size else np.nan, "ms",
               "mean duration of the detected blinks")
