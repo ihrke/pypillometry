@@ -30,6 +30,7 @@ from .segmented import (
 from .events import Events
 from .intervals import Intervals, merge_intervals
 from .roi import ROI, CircularROI, RectangularROI
+from .quality import QualityReport, QualityMetric
 
 # ---------------------------------------------------------------------------
 # Reading and writing data
@@ -87,6 +88,7 @@ __all__ = [
     "Events",
     "Intervals", "merge_intervals",
     "ROI", "CircularROI", "RectangularROI",
+    "QualityReport", "QualityMetric",
     # reading and writing data
     "read_eyelink", "read_pickle", "write_pickle", "download", "fetch_url",
     "local_copy", "osf_authenticate",

@@ -1,0 +1,26 @@
+{#- Summary table of several reports. Context: sections (titles), rows (from _summary_rows(), with name, anchor and tooltip). -#}
+{% import "quality_macros.html" as m %}
+<div style="overflow-x:auto;">
+<table style="border-collapse:collapse;">
+  <thead><tr>
+    <th style="{{ m.cell }} text-align:left;">File</th>
+    {% for title in ["Duration", "Overall"] + sections + ["Issues"] %}
+    <th style="{{ m.cell }} text-align:center;">{{ title }}</th>
+    {% endfor %}
+  </tr></thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td style="{{ m.cell }}"{% if row.tooltip %} title="{{ row.tooltip }}"{% endif %}>
+        {%- if row.anchor %}<a href="#{{ row.anchor }}">{{ row.name }}</a>{% else %}{{ row.name }}{% endif -%}
+      </td>
+      <td style="{{ m.cell }} text-align:right; white-space:nowrap;">{{ row.duration }}</td>
+      {% for label in row.labels %}
+      <td style="{{ m.cell }} text-align:center;">{{ m.badge(label) if label else "–" }}</td>
+      {% endfor %}
+      <td style="{{ m.cell }} text-align:right;">{{ row.issues }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>

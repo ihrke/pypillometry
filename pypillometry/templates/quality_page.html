@@ -1,0 +1,24 @@
+{#- Full HTML page with the quality reports of one or more files (pypilinfo --html).
+    Context: title, entries (header, anchor, report, tables, issues); for several files also sections and rows for the summary. -#}
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+</head>
+<body style="font-family:system-ui, sans-serif; margin:16px;">
+{% if rows %}
+<h2 id="summary" style="font-size:1.2em;">Summary of {{ rows | length }} files</h2>
+{% include "quality_summary.html" %}
+{% endif %}
+
+{% for e in entries %}
+<h2{% if e.anchor %} id="{{ e.anchor }}"{% endif %} style="font-size:1.1em; margin:24px 0 6px;">{{ e.header }}
+  {%- if rows %} <a href="#summary" style="font-size:0.8em; font-weight:normal;">(back to summary)</a>{% endif %}</h2>
+{% with report=e.report, tables=e.tables, issues=e.issues %}
+{% include "quality_report.html" %}
+{% endwith %}
+{% endfor %}
+</body>
+</html>

@@ -1,0 +1,60 @@
+{#- One quality report. Context: report (QualityReport), tables (report._tables()), issues (report.issues()). -#}
+{% import "quality_macros.html" as m %}
+<div style="font-family:system-ui, sans-serif; border:1px solid rgba(128,128,128,0.4); border-radius:6px; padding:12px; max-width:720px;">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+    <h3 style="margin:0;">Quality report — {{ report.name }}
+      <span style="opacity:0.6; font-weight:normal;">({{ report.class_name }})</span></h3>
+    {{ m.badge(report.overall, big=True) }}
+  </div>
+
+  {% for table in tables %}
+  <div style="font-weight:600; margin-top:10px;">{{ table.title }}</div>
+  <table style="border-collapse:collapse; margin-top:4px; min-width:60%;">
+    {% if table.section != "info" %}
+    <thead><tr>
+      <th style="{{ m.cell }}"></th>
+      {% for group in table.groups %}
+      <th style="{{ m.cell }} text-align:right;">{{ group }}</th>
+      {% endfor %}
+    </tr></thead>
+    {% endif %}
+    <tbody>
+      {% for row in table.rows %}
+      <tr>
+        <td style="{{ m.cell }} text-align:left;">
+          {%- if row.description -%}
+          <span title="{{ row.description }}{% if row.thresholds %} (labels: {{ row.thresholds | bounds(row.unit) }}){% endif %}" style="text-decoration:underline dotted rgba(128,128,128,0.7); text-underline-offset:3px; cursor:help;">{{ row.title }}</span>
+          {%- else %}{{ row.title }}{% endif -%}
+        </td>
+        {% for c in row.cells %}
+        {% if c %}
+        <td style="{{ m.cell }} text-align:right; white-space:nowrap;" title="{{ c.thresholds | bounds(c.unit) if c.thresholds else c.description }}">{{ c.format_value() }} {{ m.badge(c.label) }}</td>
+        {% else %}
+        <td style="{{ m.cell }}"></td>
+        {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endfor %}
+
+  {% if issues %}
+  <div style="font-weight:600; margin-top:10px;">Issues</div>
+  <ul style="margin:4px 0;">
+    {% for section, group, metric in issues %}
+    <li>{{ m.badge(metric.label) }} {{ section }}/{{ group }}: {{ metric.title }} = {{ metric.format_value() }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <details style="margin-top:8px;">
+    <summary style="cursor:pointer; opacity:0.7;">Thresholds</summary>
+    <table style="border-collapse:collapse; font-size:0.85em; margin-top:4px;">
+      {% for key, bounds in report.thresholds.items() if bounds is not none %}
+      <tr><td style="{{ m.cell }}">{{ key }}</td><td style="{{ m.cell }}">{{ bounds | bounds }}</td></tr>
+      {% endfor %}
+    </table>
+    <div style="font-size:0.85em; opacity:0.7; margin-top:4px;">The overall label is the worst label of all measures. Hover over a measure for a description.</div>
+  </details>
+</div>

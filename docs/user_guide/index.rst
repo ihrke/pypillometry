@@ -40,6 +40,13 @@ If you have not used the package before, start with the
       Blinks, gaze artifacts, filtering, downsampling, scaling and
       combining the eyes.
 
+   .. grid-item-card:: :fas:`clipboard-check` Data quality
+      :link: quality
+      :link-type: doc
+
+      A quality report with labeled measures (missing data, noise,
+      blinks, calibration) and how the thresholds were chosen.
+
    .. grid-item-card:: :fas:`stopwatch` Events, intervals and segments
       :link: events_intervals
       :link-type: doc
@@ -89,6 +96,7 @@ If you have not used the package before, start with the
    loading_data
    units
    preprocessing
+   quality
    events_intervals
    plotting
    interactive

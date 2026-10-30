@@ -215,6 +215,100 @@ class TestPypilinfo(CLITestCase):
         self.assertIn("neither an EDF file nor a pickle file", err)
         self.assertIn("file not found", err)
 
+    def test_quality(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fname = os.path.join(self.tmp, "rec.pkl")
+        pp.write_pickle(d, fname)
+        status, out, _ = self.run_main([fname, "--quality"])
+        self.assertEqual(status, 0)
+        self.assertIn("Quality report: rlmw_002_short (EyeData)", out)
+        self.assertIn("missing data", out)
+        self.assertNotIn("sampling_rate", out)  # no summary
+
+    def test_quality_descriptions(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fname = os.path.join(self.tmp, "rec.pkl")
+        pp.write_pickle(d, fname)
+        _, out, _ = self.run_main([fname, "-Q"])
+        self.assertNotIn("labels: good", out)
+        _, out, _ = self.run_main([fname, "-Q", "-d"])
+        self.assertIn("labels: good", out)
+        with patch("sys.stderr", StringIO()), self.assertRaises(SystemExit):
+            pypilinfo_main([fname, "-d"])
+
+    def test_quality_needs_eyedata(self):
+        fname = os.path.join(self.tmp, "dict.pkl")
+        pp.write_pickle({"a": 1}, fname)
+        status, _, err = self.run_main([fname, "-Q"])
+        self.assertEqual(status, 1)
+        self.assertIn("no quality report for dict objects", err)
+
+    def test_html(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fnames = [os.path.join(self.tmp, f"rec{i}.pkl") for i in range(2)]
+        for fname in fnames:
+            pp.write_pickle(d, fname)
+        html = os.path.join(self.tmp, "report.html")
+        with patch("webbrowser.open") as wopen:
+            status, out, _ = self.run_main(fnames + ["--html", "-o", html])
+        self.assertEqual(status, 0)
+        self.assertIn(f"Wrote {html}", out)
+        self.assertNotIn("sampling_rate", out)
+        wopen.assert_called_once()
+        self.assertTrue(wopen.call_args[0][0].startswith("file://"))
+        with open(html) as f:
+            page = f.read()
+        self.assertTrue(page.startswith("<!doctype html>"))
+        self.assertEqual(page.count("Quality report — rlmw_002_short"), 2)
+        # summary table with links to the reports
+        self.assertIn("Summary of 2 files", page)
+        self.assertLess(page.index("Summary of 2 files"), page.index("Quality report — "))
+        self.assertIn('<a href="#report-1">rec1.pkl</a>', page)
+        self.assertIn('id="report-1"', page)
+
+    def test_quality_summary(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fnames = [os.path.join(self.tmp, f"rec{i}.pkl") for i in range(2)]
+        for fname in fnames:
+            pp.write_pickle(d, fname)
+        status, out, _ = self.run_main(fnames + ["-Q"])
+        self.assertEqual(status, 0)
+        self.assertTrue(out.startswith("Summary of 2 files"))
+        self.assertLess(out.index("rec1.pkl  "), out.index("Quality report:"))
+        self.assertEqual(out.count("Quality report: rlmw_002_short"), 2)
+
+    def test_single_file_has_no_summary(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fname = os.path.join(self.tmp, "rec.pkl")
+        pp.write_pickle(d, fname)
+        html = os.path.join(self.tmp, "report.html")
+        status, out, _ = self.run_main([fname, "-Q", "--html", "--no-open", "-o", html])
+        self.assertNotIn("Summary", out)
+        with open(html) as f:
+            self.assertNotIn("Summary", f.read())
+
+    def test_short_names(self):
+        from pypillometry.cli import _short_names
+        self.assertEqual(_short_names(["a/x.pkl", "/b/y.pkl"]), ["x.pkl", "y.pkl"])
+        self.assertEqual(_short_names(["a/x.pkl", "b/x.pkl"]), ["a/x.pkl", "b/x.pkl"])
+
+    def test_html_temp_file_no_open(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fname = os.path.join(self.tmp, "rec.pkl")
+        pp.write_pickle(d, fname)
+        with patch("webbrowser.open") as wopen:
+            status, out, _ = self.run_main([fname, "--html", "--no-open", "-Q"])
+        self.assertEqual(status, 0)
+        wopen.assert_not_called()
+        self.assertIn("Quality report", out)
+        html = out.strip().splitlines()[-1].removeprefix("Wrote ")
+        self.assertTrue(os.path.isfile(html))
+        os.remove(html)
+
+    def test_output_needs_html(self):
+        with patch("sys.stderr", StringIO()), self.assertRaises(SystemExit):
+            pypilinfo_main([EDF, "-o", "x.html"])
+
     def test_format_size(self):
         self.assertEqual(_format_size(500), "500 B")
         self.assertEqual(_format_size(2048), "2.0 KB")

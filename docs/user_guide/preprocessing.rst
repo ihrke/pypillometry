@@ -14,6 +14,19 @@ before and after each step (see :doc:`plotting`). To tune parameters, use
 change them.
 
 
+Data quality
+------------
+
+Before and after preprocessing, :meth:`~GenericEyeData.quality_report`
+summarizes the quality of a dataset (missing data, noise, blinks, artifacts,
+calibration) and labels each measure "good", "ok", "poor" or "bad". See
+:doc:`quality`.
+
+.. code-block:: python
+
+    d.quality_report()
+
+
 Blinks
 ------
 
