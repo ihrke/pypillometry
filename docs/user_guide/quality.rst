@@ -184,6 +184,18 @@ Pupil
             --note "lab A, EyeLink 1000, chin rest" data/*.edf
 
 
+``pupil.jump_rate`` (no label) jumps per minute
+    The number of changes from one sample to the next that are larger than
+    5% of the median pupil size. Physiological changes of the pupil are much
+    slower, so such jumps are artifacts, e.g., distortions of the pupil
+    image during saccades or a partly covered pupil. A jump away and back
+    counts once. Changes within 50 ms of missing data are ignored, because
+    the edges of every blink would otherwise count as jumps (the jump size
+    and the margin are set by ``pypillometry.quality.JUMP_PCT`` and
+    ``JUMP_DROPOUT_MARGIN_MS``). There are no thresholds yet: they will be
+    set once reference data from several datasets are available.
+
+
 Gaze
 ----
 
