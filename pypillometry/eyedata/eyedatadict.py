@@ -243,6 +243,22 @@ class EyeDataDict(MutableMapping):
             raise ValueError("Key must be in format 'eye_variable'")
         return key
 
+    def _to_state(self) -> dict:
+        """State of the dictionary: data and masks (see :mod:`pypillometry.state`)."""
+        return {"data": dict(self.data), "mask": dict(self.mask)}
+
+    @classmethod
+    def _from_state(cls, state: dict) -> 'EyeDataDict':
+        """Create the dictionary from its state (from :meth:`_to_state`)."""
+        obj = cls()
+        obj.data = dict(state["data"])
+        obj.mask = dict(state["mask"])
+        if obj.data:
+            first = next(iter(obj.data.values()))
+            obj.length = first.shape[0]
+            obj.shape = first.shape
+        return obj
+
     def copy(self) -> 'EyeDataDict':
         """Create a deep copy of the dictionary (data and masks)."""
         new_dict = EyeDataDict()

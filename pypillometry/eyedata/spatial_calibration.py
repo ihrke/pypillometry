@@ -183,6 +183,18 @@ class SpatialCalibration:
             screen_resolution=screen_resolution
         )
     
+    _STATE_KEYS = ("eye", "model", "points", "measured", "errors",
+                   "screen_resolution")
+
+    def _to_state(self) -> dict:
+        """State of the object (see :mod:`pypillometry.state`)."""
+        return {k: getattr(self, k) for k in self._STATE_KEYS}
+
+    @classmethod
+    def _from_state(cls, state: dict) -> 'SpatialCalibration':
+        """Create the object from its state (from :meth:`_to_state`)."""
+        return cls(**{k: state[k] for k in cls._STATE_KEYS})
+
     def get_stats(self) -> Dict[str, float]:
         """
         Calculate calibration error statistics.

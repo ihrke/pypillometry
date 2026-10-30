@@ -310,6 +310,32 @@ class Intervals:
                                     fs=self.sampling_rate))
         return value.astype(int) if np.ndim(value) else int(value)
 
+    def _to_state(self) -> dict:
+        """State of the object (see :mod:`pypillometry.state`); intervals as (n, 2) array."""
+        return {
+            "intervals": np.array(self.intervals).reshape(len(self.intervals), 2),
+            "units": self.units,
+            "label": self.label,
+            "event_labels": self.event_labels,
+            "event_indices": self.event_indices,
+            "event_onsets": self.event_onsets,
+            "data_time_range": self.data_time_range,
+            "sampling_rate": self.sampling_rate,
+            "time_offset": self.time_offset,
+            "interval_window": self.interval_window,
+        }
+
+    @classmethod
+    def _from_state(cls, state: dict) -> 'Intervals':
+        """Create the object from its state (from :meth:`_to_state`)."""
+        obj = cls.__new__(cls)
+        obj.intervals = [tuple(row) for row in np.asarray(state["intervals"]).tolist()]
+        for key in ("units", "label", "event_labels", "event_indices",
+                    "event_onsets", "data_time_range", "sampling_rate",
+                    "time_offset", "interval_window"):
+            setattr(obj, key, state[key])
+        return obj
+
     def __len__(self):
         """Return number of intervals."""
         return len(self.intervals)

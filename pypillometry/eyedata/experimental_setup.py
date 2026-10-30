@@ -884,6 +884,25 @@ class ExperimentalSetup:
         """
         return cls(**cls._constructor_kwargs(d))
 
+    def _to_state(self) -> Dict[str, Any]:
+        """State of the object (see :mod:`pypillometry.state`); same as :meth:`to_dict`."""
+        return self.to_dict()
+
+    @classmethod
+    def _from_state(cls, state: Dict[str, Any]) -> 'ExperimentalSetup':
+        """
+        Create the object from its state (from :meth:`_to_state`).
+
+        The stored values (in mm and radians) are set directly, without
+        parsing or validating them again (unlike :meth:`from_dict`).
+        """
+        obj = cls.__new__(cls)
+        for key in ("screen_resolution", "physical_screen_size", "d",
+                    "screen_offset", "alpha_tilt", "beta_tilt",
+                    "camera_offset", "camera_spherical", "ipd"):
+            setattr(obj, "_" + key, state[key])
+        return obj
+
     @staticmethod
     def _constructor_kwargs(d: Dict[str, Any]) -> Dict[str, Any]:
         """Constructor arguments (with units) from a dict from :meth:`to_dict`."""
