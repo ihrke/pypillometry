@@ -138,7 +138,19 @@ Pupil
     of a percent of the pupil size. Task-evoked dilations are often only a
     few percent, so noise of more than 1--2% per sample makes small effects
     hard to see without heavy filtering. These bounds are guesses; noise
-    depends a lot on the tracker and the sampling rate.
+    depends a lot on the tracker, its filter settings, the sampling rate
+    and whether pupil area or diameter is recorded (in percent, the noise
+    of the area is about twice that of the diameter).
+
+    To see what is typical for your own setup, the script
+    :download:`collect_pupil_noise.py <../scripts/collect_pupil_noise.py>`
+    collects the noise of many EDF or pypillometry files in a CSV table,
+    together with the eye tracker, pupil units, filter levels and a note.
+    It uses :meth:`~GenericEyeData.quality_report`, so the noise is computed
+    exactly as in the report::
+
+        python docs/scripts/collect_pupil_noise.py -o noise.csv \
+            --note "lab A, EyeLink 1000, chin rest" data/*.edf
 
 
 Gaze
