@@ -109,7 +109,7 @@ HDF5 file instead:
 
 HDF5 files do not run code when they are read, and other programs (e.g.,
 h5py, R or MATLAB) can read them: the data are datasets (``tx``,
-``data/left_pupil``, ``mask/left_pupil``, ...), the other information
+``data/values/left_pupil``, ``data/mask/left_pupil``, ...), the other information
 (name, sampling rate, blinks, history, ...) is stored in groups and
 attributes. They work for eyedata objects and :class:`SegmentedEyeData`
 (not for arbitrary Python objects). Values in ``info`` or ``params`` that
