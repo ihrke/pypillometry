@@ -15,6 +15,16 @@
   new user-guide page on data quality
 - `pypilinfo --quality/--html/--descriptions`: quality reports (with a summary
   table for several files)
+- HDF5 files: `write_file()`/`write_pickle()` write HDF5 if the filename ends
+  in `.h5` or `.hdf5`; `from_file()`/`read_pickle()`, `pypilinfo` and
+  `pypilview` read them, `edf2pypil -o rec.h5` writes them
+
+### Changed
+
+- Saved files (pickle and HDF5) contain a versioned state of the object;
+  files from older versions are upgraded when they are loaded. A
+  `PupilData` made from `EyeData` no longer saves the experimental setup
+  and calibration of the `EyeData`.
 
 ### Fixed
 

@@ -59,6 +59,33 @@ support ``eyes=``, ``variables=`` and ``inplace=`` like the existing
 methods.
 
 
+Saved files and their state
+---------------------------
+
+The content of eyedata and segmented objects is defined by their *state*:
+a dict with only numbers, strings, lists, dicts and numpy arrays, written
+by ``_to_state()`` and read by ``_set_state()`` (nested objects such as
+:class:`Intervals` have ``_to_state()``/``_from_state()``). Pickle files
+(via ``__getstate__``/``__setstate__``) and HDF5 files
+(``pypillometry/hdf5.py``) only store this state, together with its
+``format_version``.
+
+If you add an attribute to a class (or change what an attribute
+contains), the saved files have to follow:
+
+1. add it to ``_to_state()`` and ``_set_state()`` of the class,
+2. increase ``FORMAT_VERSION`` in ``pypillometry/state.py`` and add a
+   function to ``_MIGRATIONS`` that upgrades a state of the previous
+   version (e.g., sets a default for the new entry); old migrations are
+   never changed,
+3. keep the fixture files of the older versions in ``tests/data/state/``
+   (they must keep loading) and add files written by the new version
+   (e.g., ``eyedata_v2.h5``).
+
+Files written before the state was versioned (pypillometry 2.0) count as
+version 0.
+
+
 Documenting code
 ----------------
 
