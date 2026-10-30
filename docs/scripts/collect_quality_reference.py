@@ -10,9 +10,13 @@ Each file (EDF or pypillometry pickle, as for ``pypilinfo``) gives one row
 per measure, in long format: the measure is identified by ``section``,
 ``group`` (eye, "left/right" or "all") and ``metric``, followed by its value,
 unit and current label. Every row also has the file, the note and the
-eye-tracker information (tracker, camera, pupil units, filter levels, ...;
-see collect_pupil_noise.py), so the table can be filtered and grouped
-directly, e.g., with pandas::
+eye-tracker information that may explain differences between datasets: the
+eye tracker and camera, the pupil units (area or diameter; noise in percent
+of the area is about twice the noise in percent of the diameter), the
+pupil-fitting method, the tracker's filter levels and the sampling rate.
+These are read from the EDF header and messages and are empty if not
+available (e.g., for data not read from EDF). The table can be filtered and
+grouped directly, e.g., with pandas::
 
     df = pd.read_csv("quality.csv")
     df[df.metric == "noise"].groupby("note").value.describe()
@@ -39,14 +43,14 @@ import argparse
 import csv
 import importlib.metadata
 import os
+import re
 import sys
+from pathlib import Path
 
 import pypillometry as pp
 from pypillometry.cli import _read_file
 
-# shared with the noise script (in the same folder)
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from collect_pupil_noise import find_files, recording_info  # noqa: E402
+EXTENSIONS = (".edf", ".pypil", ".pkl")
 
 INFO_COLUMNS = [
     "file", "path", "format", "name", "note",
@@ -56,6 +60,39 @@ INFO_COLUMNS = [
 ]
 COLUMNS = INFO_COLUMNS + ["section", "group", "metric", "title", "value", "unit",
                           "label"]
+
+
+def find_files(sources):
+    """Expand directories into the data files they contain."""
+    for src in sources:
+        p = Path(src)
+        if p.is_dir():
+            for f in sorted(p.rglob("*")):
+                if f.suffix.lower() in EXTENSIONS and f.is_file():
+                    yield str(f)
+        else:
+            yield src
+
+
+def recording_info(d):
+    """Eye-tracker information from the EDF header and messages, if any."""
+    info = {}
+    el = (getattr(d, "info", None) or {}).get("eyelink_info", {}) or {}
+    info["tracker"] = el.get("version", "")
+    info["camera"] = el.get("camera", "")
+    info["serial"] = el.get("serial", "")
+    info["pupil_units"] = el.get("ps_units", "")
+    info["tracked_eyes"] = el.get("eye", "")
+    labels = [str(lab) for lab in getattr(d, "event_labels", [])]
+    for lab in labels:
+        # e.g., "RECCFG CR 500 2 1 LR": mode, rate, file filter, link filter, eyes
+        m = re.match(r"\s*RECCFG\s+(\S+)\s+\S+\s+(\d)\s+(\d)", lab)
+        if m and "record_mode" not in info:
+            info["record_mode"], info["file_filter"], info["link_filter"] = m.groups()
+        m = re.match(r"\s*ELCL_PROC\s+(.+)", lab)
+        if m and "pupil_fit" not in info:
+            info["pupil_fit"] = m.group(1).strip()
+    return info
 
 
 def rows_for(source, note, raw_only=False):

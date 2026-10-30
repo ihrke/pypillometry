@@ -263,15 +263,13 @@ Pupil
     start. Six datasets cannot cover all eye trackers and settings, so treat
     the bounds as a starting point.
 
-    To see what is typical for your own setup, the script
-    :download:`collect_pupil_noise.py <../scripts/collect_pupil_noise.py>`
-    collects the noise of many EDF or pypillometry files in a CSV table,
-    together with the eye tracker, pupil units, filter levels and a note.
-    It uses :meth:`~GenericEyeData.quality_report`, so the noise is computed
-    exactly as in the report::
-
-        python docs/scripts/collect_pupil_noise.py -o noise.csv \
-            --note "lab A, EyeLink 1000, chin rest" data/*.edf
+    To see what is typical for your own setup, collect the measures of
+    many files with
+    :download:`collect_quality_reference.py <../scripts/collect_quality_reference.py>`
+    (see `Labels and thresholds`_) and look at the rows with
+    ``metric == "noise"``. The table includes the eye tracker, pupil units
+    and filter levels of each file, which explain much of the differences
+    between setups.
 
 
 ``pupil.jump_rate`` ``(1, 10, 100)`` jumps per minute
