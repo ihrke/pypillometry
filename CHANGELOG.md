@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+
+- `EyeData.get_pupildata()` was removed, use `to_pupildata()` 
+
+### Added
+
+- `EyeData.to_pupildata()` and `to_gazedata()`
+- `quality_report()`: data-quality measures (dropout, blinks, noise, jumps,
+  gaze, ...) labelled good/ok/poor/bad, as text, HTML or dict
+- Default quality thresholds based on reference data from six datasets;
+  new user-guide page on data quality
+- `pypilinfo --quality/--html/--descriptions`: quality reports (with a summary
+  table for several files)
+
+### Fixed
+
+- HTML representation of eyedata objects escapes names, labels and history
+
 ## 2.0.0 (2026-10-28)
 
 ### Breaking changes
