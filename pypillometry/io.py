@@ -28,6 +28,7 @@ from typing import Optional
 from loguru import logger
 from .convenience import is_url, suppress_all_output, requires_package
 from .logging import logging_get_level
+from . import state
 
 try:
     from compression import zstd  # Python >= 3.14
@@ -612,7 +613,8 @@ def read_pickle(
                     autodelete=autodelete, force_download=force_download,
                     session=session, cache_layout=cache_layout) as local:
         with _open_maybe_compressed(local) as f:
-            return pickle.load(f)
+            # maps classes that moved to their new location
+            return state._Unpickler(f).load()
 
 @requires_package("eyelinkio")
 def read_eyelink(

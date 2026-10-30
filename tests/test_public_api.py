@@ -29,6 +29,7 @@ INTERNAL = {
     "pypillometry.plot.genplotter": {"GenericPlotter"},
     "pypillometry.units": {"normalize_unit"},
     "pypillometry.signal.preproc": {"helper_merge_blinks"},
+    "pypillometry.state": {"to_state", "from_state", "migrate"},
     "pypillometry.viewer.canvas": {"ViewerCanvas"},
     "pypillometry.viewer.navigation": {"NavigationHandler"},
     "pypillometry.viewer.tweak": {"TweakCanvas", "TweakViewer"},

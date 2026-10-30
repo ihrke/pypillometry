@@ -4,6 +4,7 @@ import inspect
 from .eyedata import EyeData
 from .eyedatadict import EyeDataDict
 from .experimental_setup import ExperimentalSetup
+from .. import state
 
 
 class FakeEyeData(EyeData):
@@ -56,7 +57,29 @@ class FakeEyeData(EyeData):
         self.sim_fct_name = sim_fct_name or (sim_fct.__name__ if sim_fct else None)
         self.sim_params = sim_params or {}
         self.sim_data = sim_data if sim_data is not None else EyeDataDict()
-    
+
+    def _to_state(self) -> dict:
+        """
+        State of the object, including the simulation (see :mod:`pypillometry.state`).
+
+        `sim_fct` is stored as its name (``"module:qualname"``) and imported
+        again when the object is restored.
+        """
+        st = super()._to_state()
+        st["sim_fct"] = state._function_name(self.sim_fct)
+        st["sim_fct_name"] = self.sim_fct_name
+        st["sim_params"] = self.sim_params
+        st["sim_data"] = self.sim_data._to_state()
+        return st
+
+    def _set_state(self, st: dict):
+        """Set the attributes from a state (from :meth:`_to_state`)."""
+        super()._set_state(st)
+        self.sim_fct = state._import_function(st["sim_fct"])
+        self.sim_fct_name = st["sim_fct_name"]
+        self.sim_params = st["sim_params"]
+        self.sim_data = EyeDataDict._from_state(st["sim_data"])
+
     def get_generation_call(self):
         """
         Return string representation of the function call used to generate this data.

@@ -105,6 +105,24 @@ class GazeData(GenericEyeData):
         """Plotting functions for this object (a :class:`~pypillometry.GazePlotter`)."""
         return GazePlotter(self)
 
+    def _to_state(self) -> dict:
+        """State of the object, including setup and calibration (see :mod:`pypillometry.state`)."""
+        st = super()._to_state()
+        setup = getattr(self, "experimental_setup", None)
+        cal = getattr(self, "calibration", None)
+        st["experimental_setup"] = None if setup is None else setup._to_state()
+        st["calibration"] = None if cal is None else {
+            eye: c._to_state() for eye, c in cal.items()}
+        return st
+
+    def _set_state(self, st: dict):
+        """Set the attributes from a state (from :meth:`_to_state`)."""
+        super()._set_state(st)
+        setup, cal = st["experimental_setup"], st["calibration"]
+        self.experimental_setup = None if setup is None else ExperimentalSetup._from_state(setup)
+        self.calibration = None if cal is None else {
+            eye: SpatialCalibration._from_state(c) for eye, c in cal.items()}
+
     def summary(self):
         """
         Return a summary of the dataset as a dictionary.
