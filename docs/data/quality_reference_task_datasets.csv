@@ -1,0 +1,51 @@
+measure,dataset,n,P5,P25,P50,P75,P95
+pupil.missing_pct,RLMW,100,1.283,3.147,4.62,6.312,11.37
+pupil.missing_pct,Ambient,166,0.8859,3.527,6.104,9.868,20.91
+pupil.missing_pct,Pavlov,170,0.8533,2.771,5.21,9.282,21.18
+pupil.missing_pct,Respiration,86,2.751,5.648,10.13,21.82,50.99
+pupil.missing_pct,FTRNGT 3T,27,0.9757,3.546,6.576,15.76,48.07
+pupil.missing_pct,Trondheim 7T,101,1.768,4.897,13.01,28.74,82.27
+pupil.dropout_rate,RLMW,100,7.03,14.39,19.97,26.54,41.35
+pupil.dropout_rate,Ambient,166,11.98,30.91,49.31,83.92,339
+pupil.dropout_rate,Pavlov,170,4.2,14.66,26.11,40.54,79.27
+pupil.dropout_rate,Respiration,86,8.11,16.15,25.75,38.53,99.72
+pupil.dropout_rate,FTRNGT 3T,27,5.382,22.57,59.66,156.8,950.8
+pupil.dropout_rate,Trondheim 7T,101,7.51,42.55,104.4,737,2276
+pupil.longest_dropout,RLMW,100,0.3719,0.55,0.779,1.079,1.883
+pupil.longest_dropout,Ambient,166,0.339,0.4862,0.7575,1.487,6.588
+pupil.longest_dropout,Pavlov,170,0.2546,0.494,0.791,1.362,79.51
+pupil.longest_dropout,Respiration,86,1.004,2.049,4.969,23.76,724.2
+pupil.longest_dropout,FTRNGT 3T,27,0.2204,0.9085,1.679,4.902,13.09
+pupil.longest_dropout,Trondheim 7T,101,0.282,0.475,1.104,4.054,18.2
+pupil.noise,RLMW,100,0.09006,0.1133,0.1319,0.1571,0.2183
+pupil.noise,Ambient,166,0.1797,0.2227,0.2797,0.3477,0.4598
+pupil.noise,Pavlov,170,0.05121,0.06783,0.07906,0.09861,0.1502
+pupil.noise,Respiration,85,0.1024,0.1413,0.1833,0.2212,0.2647
+pupil.noise,FTRNGT 3T,27,0.02871,0.03608,0.05069,0.08671,0.1251
+pupil.noise,Trondheim 7T,101,0.3224,0.4908,0.6483,0.9143,5.204
+pupil.jump_rate,RLMW,100,0,0,0.02522,0.3026,1.011
+pupil.jump_rate,Ambient,166,0.1495,0.2134,0.2563,1.469,41.26
+pupil.jump_rate,Pavlov,170,0.07912,0.1318,0.1978,0.6008,2.104
+pupil.jump_rate,Respiration,86,0,0.02696,0.08384,0.1386,0.3263
+pupil.jump_rate,FTRNGT 3T,27,3.682,79.71,198.1,864.2,1906
+pupil.jump_rate,Trondheim 7T,101,0.4451,15.53,63.84,439.9,1051
+gaze.offscreen_pct,RLMW,100,0.01892,0.1792,0.517,1.231,3.932
+gaze.offscreen_pct,Ambient,166,0.0008676,0.03667,0.241,1.004,3.014
+gaze.offscreen_pct,Pavlov,170,0.09499,0.3911,1.079,2.355,5.135
+gaze.offscreen_pct,Respiration,85,0.114,0.2915,0.4902,1.284,3.128
+gaze.offscreen_pct,FTRNGT 3T,27,0.4245,1.349,4.127,10.86,25.49
+gaze.offscreen_pct,Trondheim 7T,95,0,0.01062,0.1144,0.766,8.521
+calibration.mean_error,RLMW,100,0.3108,0.4092,0.5039,0.6517,0.8311
+calibration.mean_error,Ambient,166,0.2478,0.3103,0.3633,0.4428,0.595
+calibration.mean_error,Pavlov,170,0.2392,0.3269,0.3917,0.5092,0.8347
+calibration.mean_error,Respiration,86,0.3094,0.4036,0.4567,0.5525,0.8331
+calibration.mean_error,FTRNGT 3T,23,0.3247,0.395,0.5233,0.5833,0.8681
+calibration.max_error,RLMW,100,0.578,0.7175,0.86,1.152,1.871
+calibration.max_error,Ambient,166,0.4625,0.57,0.69,0.8075,1.05
+calibration.max_error,Pavlov,170,0.4445,0.6125,0.75,1.048,1.641
+calibration.max_error,Respiration,86,0.5925,0.73,0.82,1.085,1.69
+calibration.max_error,FTRNGT 3T,23,0.5,0.805,0.93,1.2,2.833
+binocular.pupil_correlation,RLMW,50,0.8705,0.9048,0.9297,0.9502,0.9735
+binocular.pupil_correlation,Ambient,83,0.9797,0.99,0.9938,0.9957,0.9979
+binocular.pupil_correlation,Pavlov,84,0.8572,0.9216,0.9538,0.9722,0.987
+binocular.pupil_correlation,Respiration,42,0.8759,0.9377,0.9664,0.9762,0.9821

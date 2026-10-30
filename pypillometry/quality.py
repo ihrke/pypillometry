@@ -51,17 +51,17 @@ LABELS = ("good", "ok", "poor", "bad")
 #: behind them is explained in the user guide (:doc:`/user_guide/quality`).
 #: Change them to suit your setup and research question.
 DEFAULT_QUALITY_THRESHOLDS = {
-    # pupil (raw data)
-    "pupil.missing_pct": (5, 15, 30),
-    "pupil.dropout_rate": (20, 35, 70),
-    "pupil.longest_dropout": (1, 3, 10),
+    # pupil (raw data); based on the task periods of six reference datasets
+    "pupil.missing_pct": (10, 20, 40),
+    "pupil.dropout_rate": (30, 60, 150),
+    "pupil.longest_dropout": (2, 5, 30),
     "pupil.noise": (0.5, 1, 2),
     "pupil.noise_sd": None,
-    "pupil.jump_rate": None,
+    "pupil.jump_rate": (1, 10, 100),
     # gaze (raw data)
-    "gaze.missing_pct": (5, 15, 30),
-    "gaze.dropout_rate": (20, 35, 70),
-    "gaze.longest_dropout": (1, 3, 10),
+    "gaze.missing_pct": (10, 20, 40),
+    "gaze.dropout_rate": (30, 60, 150),
+    "gaze.longest_dropout": (2, 5, 30),
     "gaze.offscreen_pct": (5, 15, 30),
     "gaze.precision_deg": (0.05, 0.1, 0.2),
     "gaze.precision_px": None,

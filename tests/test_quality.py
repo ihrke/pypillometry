@@ -77,7 +77,7 @@ class TestQualityReport(unittest.TestCase):
             self.assertNotIn(section, r)
         m = r["pupil"]["left"]["missing_pct"]
         self.assertAlmostEqual(m.value, 6.0)
-        self.assertEqual(m.label, "ok")
+        self.assertEqual(m.label, "good")
         self.assertAlmostEqual(r["pupil"]["left"]["longest_dropout"].value, 1.0)
         self.assertAlmostEqual(r["pupil"]["left"]["dropout_rate"].value, 2 / (20 / 60))
         self.assertEqual(r["pupil"]["right"]["missing_pct"].value, 0)
@@ -88,10 +88,10 @@ class TestQualityReport(unittest.TestCase):
         self.assertIsNone(r["gaze"]["left"]["precision_px"].label)
         # gaze dropouts only reported for eyes without pupil
         self.assertNotIn("dropout_rate", r["gaze"]["left"])
-        self.assertEqual(r.overall, "ok")
+        self.assertEqual(r.overall, "good")
         # smooth data with noise of ~0.1%: no jumps
         self.assertEqual(r["pupil"]["left"]["jump_rate"].value, 0)
-        self.assertIsNone(r["pupil"]["left"]["jump_rate"].label)
+        self.assertEqual(r["pupil"]["left"]["jump_rate"].label, "good")
         self.assertNotIn("jump_rate", r["gaze"]["left"])
 
     def test_jump_rate(self):
@@ -99,6 +99,7 @@ class TestQualityReport(unittest.TestCase):
         d.data["left_pupil"][[1000, 3000, 6000]] = 1200  # 3 spikes in 20 s
         r = d.quality_report()
         self.assertAlmostEqual(r["pupil"]["left"]["jump_rate"].value, 3 / (20 / 60))
+        self.assertEqual(r["pupil"]["left"]["jump_rate"].label, "ok")
         self.assertEqual(r["pupil"]["right"]["jump_rate"].value, 0)
 
     def test_setup_measures(self):
@@ -158,7 +159,7 @@ class TestQualityReport(unittest.TestCase):
         r = d.quality_report(thresholds={"pupil.missing_pct": None})
         self.assertIsNone(r["pupil"]["left"]["missing_pct"].label)
         # defaults are not changed
-        self.assertEqual(DEFAULT_QUALITY_THRESHOLDS["pupil.missing_pct"], (5, 15, 30))
+        self.assertEqual(DEFAULT_QUALITY_THRESHOLDS["pupil.missing_pct"], (10, 20, 40))
         with self.assertRaises(ValueError):
             d.quality_report(thresholds={"pupil.nonsense": (1, 2, 3)})
         with self.assertRaises(ValueError):
@@ -192,7 +193,7 @@ class TestQualityReport(unittest.TestCase):
     def test_summary(self):
         from pypillometry.quality import _summary_text, _html_page
         good = _make_data().quality_report()
-        bad = _make_data(missing=[(1000, 5000)]).quality_report()
+        bad = _make_data(missing=[(1000, 6000)]).quality_report()
         txt = _summary_text(["a", "b"], [good, bad], color=False)
         lines = txt.splitlines()
         self.assertEqual(lines[0], "Summary of 2 files")
@@ -220,12 +221,12 @@ class TestQualityReport(unittest.TestCase):
         self.assertNotIn("percentage of samples without valid pupil data", txt)
         txt = r.to_text(color=False, descriptions=True)
         self.assertIn("percentage of samples without valid pupil data", txt)
-        self.assertIn("labels: good <= 5%, ok <= 15%, poor <= 30%, else bad", txt)
+        self.assertIn("labels: good <= 10%, ok <= 20%, poor <= 40%, else bad", txt)
         self.assertTrue(all(len(line) <= 80 for line in txt.splitlines()
                             if line.startswith("    ")))
         html = r._repr_html_()
         self.assertIn('cursor:help;">missing data</span>', html)
-        self.assertIn("(labels: good &lt;= 5%", html)
+        self.assertIn("(labels: good &lt;= 10%", html)
 
     def test_html_is_escaped(self):
         d = _make_data()
