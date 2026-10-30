@@ -808,7 +808,7 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
         if obj._blinks.get(f"{eye}_{var}") is None:
             continue
         bl = obj.get_blinks(eye, var)
-        blinks_mask[eye] = bl.to_mask(n).astype(bool)
+        blinks_mask[eye] = bl.to_mask(obj).astype(bool)
         dur_ms = np.array([(e - s) for s, e in bl.intervals], dtype=float) / fs * 1000
         b.add("blinks", eye, "n", "number", int(len(bl)), "", "number of detected blinks")
         b.add("blinks", eye, "rate", "blink rate",
@@ -841,7 +841,7 @@ def _compute_quality_report(obj, thresholds: Optional[dict] = None, eyes=[]) -> 
             other = m & ~nan & ~blinks_mask.get(eye, np.zeros(n, bool))
             if obj._interpolated_blinks.get(key) is not None:
                 processed = True
-                interp = obj.get_interpolated_blinks(eye, "pupil").to_mask(n).sum()
+                interp = obj.get_interpolated_blinks(eye, "pupil").to_mask(obj).sum()
                 metrics.append(("interpolated_pct", "interpolated", _pct(interp, n),
                                 "percentage of pupil samples that were interpolated (e.g., blinks)"))
         if eye in gaze_eyes:

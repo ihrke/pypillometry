@@ -69,11 +69,8 @@ class Events:
         """
         if units is UNSET and not _has_units(onsets):
             units = "ms"
-        if units is None:
-            raise ValueError("Events need time units (e.g., units='ms'), "
-                             "not sample indices")
         onsets, self.units = _time_values_and_units(onsets, units)
-        if self.units is None:
+        if self.units == "samples":
             raise ValueError("Events need time units (e.g., units='ms'), "
                              "not sample indices")
         self.onsets = np.array(onsets, dtype=float)
@@ -170,7 +167,7 @@ class Events:
         # Normalize target units (source units already normalized in __init__)
         target_units = normalize_unit(target_units)
         
-        if target_units is None:
+        if target_units == "samples":
             raise ValueError("Events need time units (e.g., 'ms'), not sample "
                              "indices; use the data object to find samples")
         

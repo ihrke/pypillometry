@@ -268,8 +268,8 @@ class PupilPlotter(GenericPlotter):
         """
 
         obj = self.obj
-        unit_factor = obj._unit_fac(units) if units is not None else 1.0
-        interv = parse_time(interv, to=units or "ms", default=units or "ms")
+        unit_factor = obj._unit_fac(units)
+        interv = parse_time(interv, to=units, default=units)
         start_unit = float(np.min(obj.tx) * unit_factor)
         end_unit = float(np.max(obj.tx) * unit_factor)
 
@@ -383,7 +383,7 @@ class PupilPlotter(GenericPlotter):
         padded_blinks = blinks.pad(left=pre_blink, right=post_blink)
         
         # Convert to desired display units
-        intervals = padded_blinks.to_units(units)
+        intervals = padded_blinks.to_units(units, self.obj)
         
         return self.plot_intervals(intervals, eyes, variables,
                                   pdf_file, nrow, ncol, figsize, show_index=show_index)

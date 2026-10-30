@@ -16,7 +16,6 @@ from ..signal import pupil
 #from .. import io
 from ..plot import PupilPlotter
 from ..intervals import Intervals
-from ..units import parse_time
 
 import json
 from loguru import logger
@@ -237,7 +236,7 @@ class PupilData(GenericEyeData):
         eyes,_=self._get_eye_var(eyes,[])
 
         # convert winsize to index based on sampling rate
-        winsize_ix=int(np.ceil(parse_time(winsize)/1000.*self.fs))
+        winsize_ix=self._samples(winsize, rounding="up")
 
         # process requested eyes
         for eye in eyes:
@@ -591,14 +590,14 @@ class PupilData(GenericEyeData):
         eyes,_=self._get_eye_var(eyes,[])
 
         # Convert ms to samples
-        winsize_ix=int(parse_time(winsize)/1000.*self.fs)
+        winsize_ix=self._samples(winsize)
         if winsize_ix % 2==0:
             winsize_ix += 1
-        min_duration_ix=int(parse_time(min_duration)/1000.*self.fs)
-        vel_onset_min_samples = max(1, int(parse_time(vel_onset_min_duration)/1000.*self.fs))
-        vel_offset_min_samples = max(1, int(parse_time(vel_offset_min_duration)/1000.*self.fs))
+        min_duration_ix=self._samples(min_duration)
+        vel_onset_min_samples = max(1, self._samples(vel_onset_min_duration))
+        vel_offset_min_samples = max(1, self._samples(vel_offset_min_duration))
         max_duration_ix = (None if max_duration is None
-                           else int(parse_time(max_duration)/1000.*self.fs))
+                           else self._samples(max_duration))
 
         
         # check for unknown strategies
@@ -653,12 +652,9 @@ class PupilData(GenericEyeData):
             logger.debug(f"Filtered {len(filtered_blinks)} blinks by minimum duration")
             intervals_obj = Intervals(
                 intervals=filtered_blinks,
-                units=None,  # Using index units
+                units="samples",
                 label=f"{eye}_pupil_blinks",
-                data_time_range=(0, len(obj.tx)),
-                sampling_rate=obj.fs,
-                time_offset=obj.tx[0]  # Store starting time for correct unit conversion
-            )
+                data_time_range=(0, len(obj.tx)))
             
             # Store detected blinks internally (always)
             key = f"{eye}_pupil"
@@ -750,9 +746,9 @@ class PupilData(GenericEyeData):
         eyes,_=self._get_eye_var(eyes,[])
 
         # parameters in sampling units (from ms)
-        winsize_ix=int(np.ceil(parse_time(winsize)/1000.*self.fs))
-        margin_ix=tuple(int(np.ceil(m/1000.*self.fs)) for m in parse_time(margin))
-        blinkwindow_ix=int(parse_time(blinkwindow)/1000.*self.fs)
+        winsize_ix=self._samples(winsize, rounding="up")
+        margin_ix=self._samples(margin, rounding="up")
+        blinkwindow_ix=self._samples(blinkwindow)
         if winsize_ix % 2==0: ## ensure smoothing window is odd
             winsize_ix+=1 
 
@@ -814,12 +810,9 @@ class PupilData(GenericEyeData):
             key = f"{eye}_pupil"
             obj._interpolated_blinks[key] = Intervals(
                 intervals=interpolated_intervals,
-                units=None,  # Using index units
+                units="samples",
                 label=f"{key}_interpolated_blinks",
-                data_time_range=(0, len(obj.tx)),
-                sampling_rate=obj.fs,
-                time_offset=obj.tx[0]
-            )
+                data_time_range=(0, len(obj.tx)))
             logger.debug(f"Stored {len(interpolated_intervals)} interpolated blinks for {eye}")
 
         return obj

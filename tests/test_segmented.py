@@ -567,7 +567,6 @@ class TestSegmentedEyeDataTimeAxis(unittest.TestCase):
             [(0, 100), (200, 300)],
             units="ms",
             label="test",
-            sampling_rate=1000,
             interval_window=(-50, 50)
         )
         

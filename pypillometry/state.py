@@ -32,6 +32,10 @@ Version history
     the raw attributes of the object (its ``__dict__``)
 1
     the state as declared in `_STATE_FIELDS` of the classes
+2
+    Intervals without `sampling_rate` and `time_offset` (conversions
+    between sample indices and time use the data object); sample indices
+    are ``units="samples"`` (instead of None)
 """
 
 import importlib
@@ -44,7 +48,7 @@ from loguru import logger
 __all__ = []
 
 #: version of the state written by this version of pypillometry
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2
 
 # classes that moved: (old module, old name) -> (new module, new name),
 # used when reading pickle files (see _Unpickler)
@@ -420,5 +424,28 @@ def _migrate_0_to_1(raw, class_name):
     return state
 
 
-_MIGRATIONS = [_migrate_0_to_1]
+def _v1_intervals(st):
+    """Version-2 state of an Intervals object (version-1 state `st`)."""
+    if st is None:
+        return None
+    st = {k: v for k, v in st.items() if k not in ("sampling_rate", "time_offset")}
+    if st.get("units") is None:
+        st["units"] = "samples"
+    return st
+
+
+def _migrate_1_to_2(state, class_name):
+    """Version 1 -> 2: Intervals lose `sampling_rate` and `time_offset`;
+    sample indices are "samples" instead of None."""
+    state = dict(state)
+    if class_name in _SEGMENTED_CLASSES:
+        state["intervals"] = _v1_intervals(state.get("intervals"))
+        return state
+    for key in ("blinks", "interpolated_blinks"):
+        if state.get(key) is not None:
+            state[key] = {k: _v1_intervals(v) for k, v in state[key].items()}
+    return state
+
+
+_MIGRATIONS = [_migrate_0_to_1, _migrate_1_to_2]
 assert len(_MIGRATIONS) == FORMAT_VERSION

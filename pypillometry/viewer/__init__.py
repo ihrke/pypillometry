@@ -29,6 +29,7 @@ Features
 
 from typing import Dict, Optional, Union, List, TYPE_CHECKING
 import numpy as np
+from types import SimpleNamespace
 
 if TYPE_CHECKING:
     from ..intervals import Intervals
@@ -189,9 +190,9 @@ def view(data, variables=None, eyes=None, time=None,
           `extra_plots` (EyeData), or the plot labels (arrays)
 
         Intervals in time units are converted to seconds; Intervals in
-        sample indices (``units=None``) are placed using the time vector.
+        sample indices (``units="samples"``) are placed using the time vector.
         For raw arrays without `time`, the x-axis is in sample indices and
-        Intervals in time units need a sampling rate.
+        only Intervals in sample indices can be shown.
     highlight_color : str, optional
         Color for highlighted regions (default: 'lightblue')
     
@@ -202,7 +203,7 @@ def view(data, variables=None, eyes=None, time=None,
         button), returns a dict mapping plot key (same keys as for
         `highlight`) to :class:`~pypillometry.Intervals` objects containing
         the selected regions with ``units='sec'``; for raw arrays without
-        `time` the values are sample indices (``units=None``). Returns None
+        `time` the values are sample indices (``units="samples"``). Returns None
         if no selections were made.
     
     Raises
@@ -437,32 +438,31 @@ def _intervals_to_axis(intervals, time_seconds, sample_index=False):
     """Convert Intervals to a list of (start, end) in x-axis units.
 
     The x-axis is in seconds, or in sample indices if `sample_index` is True
-    (raw arrays without `time`). Index Intervals (``units=None``) are placed
+    (raw arrays without `time`). Index Intervals (``units="samples"``) are placed
     using `time_seconds` (end indices are exclusive). `intervals` is not
     modified.
     """
     if sample_index:
-        # converting time units to indices needs the Intervals' sampling rate
-        return list(intervals.to_units(None).intervals)
-    if intervals.units is not None:
-        return list(intervals.to_units('sec').intervals)
-    # time of sample i, plus one sample past the end for exclusive end indices
+        if intervals.units != "samples":
+            raise ValueError("Intervals in time units cannot be placed on an axis of "
+                             "sample indices (no time vector); give them in samples")
+        return list(intervals.intervals)
+    # the time vector as data object for the conversion from sample indices
     t = np.asarray(time_seconds, dtype=float)
-    dt = t[-1] - t[-2] if len(t) > 1 else 0.0
-    t = np.append(t, t[-1] + dt)
-    idx = np.clip(np.asarray(intervals.intervals, dtype=int).reshape(-1, 2), 0, len(t) - 1)
-    return [(float(t[s]), float(t[e])) for s, e in idx]
+    fs = 1.0 / np.median(np.diff(t)) if len(t) > 1 else 1.0
+    base = SimpleNamespace(tx=t * 1000., fs=fs)
+    return [(float(s), float(e)) for s, e in intervals.to_units('sec', base).intervals]
 
 
 def _selections_to_intervals(selections, sample_index=False):
     """Convert selections (dict of lists of (start, end)) to Intervals.
 
     The selections are in seconds, or in sample indices if `sample_index`
-    is True (raw arrays without `time`); these get ``units=None``.
+    is True (raw arrays without `time`); these get ``units="samples"``.
     """
     # Import Intervals here to avoid circular imports
     from ..intervals import Intervals
-    units = None if sample_index else 'sec'
+    units = 'samples' if sample_index else 'sec'
     return {var_type: Intervals(intervals_list, units=units, label=f'selected_{var_type}')
             for var_type, intervals_list in selections.items()}
 

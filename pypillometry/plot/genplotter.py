@@ -2,7 +2,7 @@ import itertools
 from typing import Iterable, Optional, Tuple, Union
 from ..eyedata import GenericEyeData
 from ..intervals import Intervals
-from ..units import parse_time
+from ..units import parse_time, normalize_unit
 import numpy as np
 from loguru import logger
 from pathlib import Path
@@ -21,13 +21,12 @@ class GenericPlotter:
     obj: GenericEyeData # link to the data object
 
     @staticmethod
-    def _plot_range_in(plot_range, units: str = None) -> tuple:
-        """`plot_range` in `units` (None: ms); plain numbers are already in `units`."""
-        units = units or "ms"
+    def _plot_range_in(plot_range, units: str = "ms") -> tuple:
+        """`plot_range` in `units`; plain numbers are already in `units`."""
         start, end = parse_time(plot_range, to=units, default=units)
         return float(start), float(end)
 
-    def _validate_plot_range(self, plot_range: tuple, units: str = None) -> None:
+    def _validate_plot_range(self, plot_range: tuple, units: str = "ms") -> None:
         """
         Validate that plot_range overlaps with the data time range.
         
@@ -35,8 +34,8 @@ class GenericPlotter:
         ----------
         plot_range : tuple
             The (start, end) range to validate
-        units : str or None
-            Time units for plot_range. If None, assumes raw time vector units.
+        units : str
+            Time units for plot_range.
             
         Raises
         ------
@@ -50,10 +49,7 @@ class GenericPlotter:
             return
         
         # Get data time range in the specified units
-        if units is not None:
-            fac = self.obj._unit_fac(units)
-        else:
-            fac = 1.0
+        fac = self.obj._unit_fac(units)
         
         data_start = float(np.min(self.obj.tx) * fac)
         data_end = float(np.max(self.obj.tx) * fac)
@@ -149,14 +145,16 @@ class GenericPlotter:
         obj = self.obj  # PupilData object
         nsubplots = nrow * ncol  # number of subplots per figure
         
-        # Get display factor based on Intervals' units
-        units = intervals.units
-        fac = obj._unit_fac(units)
+        # x-axis in the units of the Intervals (sample numbers for indices)
+        if intervals.units == "samples":
+            xvals = np.arange(len(obj.tx), dtype=float)
+        else:
+            xvals = obj.tx * obj._unit_fac(intervals.units)
         
         eyes, variables = obj._get_eye_var(eyes, variables)
         
         # Convert Intervals to indices for data slicing
-        intervals_idx = intervals.to_units(None).intervals
+        intervals_idx = intervals.to_units("samples", obj).intervals
             
         nfig = int(np.ceil(len(intervals_idx) / nsubplots))
 
@@ -174,10 +172,10 @@ class GenericPlotter:
 
             for ix, (start, end) in enumerate(intervals_idx[(i*nsubplots):(i+1)*nsubplots]):
                 iinterv += 1
-                slic = slice(int(start), int(end))
+                slic = slice(max(int(start), 0), max(int(end), 0))
                 ax = axs[ix]
                 for eye, var in itertools.product(eyes, variables):
-                    ax.plot(obj.tx[slic] * fac, obj.data[eye, var][slic], label="%s_%s" % (eye, var))
+                    ax.plot(xvals[slic], obj.data[eye, var][slic], label="%s_%s" % (eye, var))
 
                 # Plot vertical line at event onset
                 if intervals.event_onsets is not None and len(intervals.event_onsets) > (iinterv - 1):
@@ -190,11 +188,11 @@ class GenericPlotter:
                     mask = np.zeros(slic.stop - slic.start, dtype=bool)
                     for eye, var in itertools.product(eyes, variables):
                         mask |= obj.data.mask[eye + "_" + var][slic].astype(bool)
-                    txm = obj.tx[slic]
+                    txm = xvals[slic]
                     mint = obj._mask_to_intervals_list(mask)
                     for sm, em in mint:
                         # em is exclusive (Python convention), so use em-1 for the actual last index
-                        ax.axvspan(txm[sm] * fac, txm[em-1] * fac, color="grey", alpha=0.3)
+                        ax.axvspan(txm[sm], txm[em-1], color="grey", alpha=0.3)
                 if show_index: 
                     ax.text(0.5, 0.5, '%i' % (iinterv), fontsize=12, horizontalalignment='center',     
                             verticalalignment='center', transform=ax.transAxes)
@@ -222,7 +220,7 @@ class GenericPlotter:
             plot_range: tuple=(-np.inf, +np.inf),
             variables: list=[], 
             eyes: list=[],
-            units: Union[str, None]=None,
+            units: str="ms",
             show_onsets: str="line",
             show_masked: bool=True,
             show_mask_highlight: bool=True,
@@ -244,9 +242,9 @@ class GenericPlotter:
         eyes : list
             The eyes to plot. Default is [], which means all available data ("left", "right",
             "average", "regression", ...)
-        units : str or None
+        units : str
             The units of `plot_range` and the time axis ("ms", "sec", "min", "h").
-            If None (default), use the units in the time vector (ms).
+            Default "ms" (the units of the time vector).
         show_onsets : str
             Whether to plot markers for the event onsets. One of "line" (vertical lines),
             "label" (text label), "both" (both lines and labels), or "none" (no markers).
@@ -291,15 +289,9 @@ class GenericPlotter:
         plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
         
-        if units is not None: 
-            fac=obj._unit_fac(units)
-            tx = obj.tx*fac
-            evon = obj.event_onsets*fac
-        else:
-            tx=obj.tx.copy()
-            evon=obj.event_onsets.copy()
-            units="tx"
-
+        fac=obj._unit_fac(units)
+        tx = obj.tx*fac
+        evon = obj.event_onsets*fac
         xlab=units
 
         # plot_range
@@ -488,7 +480,7 @@ class GenericPlotter:
         # Calculate start and end times in the specified units
         obj=self.obj
         fac=obj._unit_fac(units)
-        interv = parse_time(interv, to=units or "ms", default=units or "ms")
+        interv = parse_time(interv, to=units, default=units)
         stime = obj.tx.min() * fac
         etime = obj.tx.max() * fac
         
@@ -549,7 +541,8 @@ class GenericPlotter:
         variables : str or list, optional
             Variable(s) to plot masks for. If empty, uses all available variables.
         units : str, optional
-            Time units for x-axis: "ms", "sec", "min", "h", or None for indices.
+            Time units for x-axis: "ms", "sec", "min", "h", or "samples" for
+            sample indices.
             Default is "min".
         merge : bool, optional
             If True, merge all masks into a single set of intervals for plotting.
@@ -679,18 +672,18 @@ class GenericPlotter:
         # Plot event markers as vertical grey lines
         if show_events:
             # Get events in appropriate units
-            events = obj.get_events(units=units if units is not None else "ms")
-            onsets = events.onsets
-            if units is None:
+            if normalize_unit(units) == "samples":
                 # x-axis is in sample indices
-                onsets = np.interp(onsets, obj.tx, np.arange(len(obj.tx)))
+                onsets = np.interp(obj.event_onsets, obj.tx, np.arange(len(obj.tx)))
+            else:
+                onsets = obj.get_events(units=units).onsets
             
             # Plot vertical lines at event positions
             for ev in onsets:
                 ax.axvline(ev, color='grey', alpha=0.5, zorder=0)
         
         # Set x-axis label based on units
-        if units is not None:
+        if normalize_unit(units) != "samples":
             ax.set_xlabel(f'Time ({units})')
         else:
-            ax.set_xlabel('Time (indices)')
+            ax.set_xlabel('Samples')

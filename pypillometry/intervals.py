@@ -4,12 +4,15 @@
 import numpy as np
 
 from pypillometry.convenience import requires_package, normalize_unit
-from pypillometry.units import UNSET, _has_units, _time_values_and_units, parse_time
+from pypillometry.units import (UNSET, _has_units, _time_values_and_units, parse_time,
+                                _ms_to_samples, _samples_to_ms)
 from pypillometry.state import Stateful
 
 __all__ = [
     "Intervals", "merge_intervals",
 ]
+
+_MS_PER_UNIT = {"ms": 1.0, "sec": 1000.0, "min": 60000.0, "h": 3600000.0}
 
 def merge_intervals(*args, label: str = 'merged'):
     """Combine multiple Intervals objects into a single Intervals object.
@@ -104,13 +107,6 @@ def merge_intervals(*args, label: str = 'merged'):
                 f"Found {first_units} and {obj.units}"
             )
     
-    # Get sampling_rate from first object that has one
-    sampling_rate = None
-    for obj in intervals_list:
-        if obj.sampling_rate is not None:
-            sampling_rate = obj.sampling_rate
-            break
-    
     # Collect all intervals and metadata
     all_intervals = []
     all_event_labels = []
@@ -147,7 +143,6 @@ def merge_intervals(*args, label: str = 'merged'):
         # All were empty
         return Intervals([], units=first_units, label=label,
                         data_time_range=intervals_list[0].data_time_range,
-                        sampling_rate=sampling_rate,
                         interval_window=intervals_list[0].interval_window)
     
     # Use data_time_range from first object if available
@@ -168,7 +163,6 @@ def merge_intervals(*args, label: str = 'merged'):
         event_indices=all_event_indices if has_indices else None,
         event_onsets=all_event_onsets if has_onsets else None,
         data_time_range=data_time_range,
-        sampling_rate=sampling_rate,
         interval_window=combined_window
     )
 
@@ -224,6 +218,8 @@ class Intervals(Stateful):
     
     This class wraps a list of (start, end) intervals and provides additional
     metadata such as units, labels, and associated event information.
+    Intervals are end-exclusive: ``(start, end)`` covers the samples with
+    ``start <= t < end``.
 
     Usually, Intervals objects are not created directly but returned by
     methods of the eye-data classes, e.g.,
@@ -236,14 +232,20 @@ class Intervals(Stateful):
     as Intervals. Several Intervals can be combined with ``+`` or
     :func:`~pypillometry.merge_intervals` and subtracted with ``-``.
 
+    Intervals in sample indices are only valid for the data object they
+    came from. Converting between sample indices and time needs that data
+    object (its time vector), e.g., ``iv.to_units("ms", d)`` or
+    ``iv.to_mask(d)``; conversions between time units work without it.
+
     Parameters
     ----------
     intervals : list of tuples, np.ndarray or Quantity
         Intervals as list of (start, end) tuples or 2D array; can carry
         units, e.g. ``[(0, 100), (200, 300)] * u.ms`` or
         ``[("1 min", "2 min")]``
-    units : str, Unit or None
-        Units of the intervals ("ms", "sec", "min", "h", or None for indices).
+    units : str or Unit
+        Units of the intervals ("ms", "sec", "min", "h", or "samples" for
+        sample indices).
         Can be omitted if `intervals` carry units; otherwise, intervals with
         units are converted to `units`.
     label : str, optional
@@ -254,15 +256,10 @@ class Intervals(Stateful):
         Indices (into the dataset's events) of the event corresponding to
         each interval
     data_time_range : tuple, optional
-        Time range (min, max) of the original dataset (in same units as intervals)
+        Range (min, max) of the original dataset (in same units as
+        intervals); used for clipping in :meth:`pad` and for plotting
     event_onsets : list or np.ndarray, optional
         Original event onset times (in same units as intervals)
-    sampling_rate : float, optional
-        Sampling rate in Hz. Required to convert index-based intervals to time units.
-    time_offset : float, optional
-        Time offset in milliseconds. When intervals are stored in indices (units=None),
-        this offset is added when converting to time units. This is needed when the
-        dataset's time vector doesn't start at 0. Default is 0.
     interval_window : tuple, optional
         The relative time window around events, in same units as intervals
         (e.g., (-200, 800) for 200ms before to 800ms after). When set, indicates that intervals are event-locked and
@@ -282,14 +279,22 @@ class Intervals(Stateful):
     # state (see pypillometry.state); intervals as (n, 2) array
     _STATE_FIELDS = (("intervals", "pairs"), "units", "label", "event_labels",
                      "event_indices", "event_onsets", "data_time_range",
-                     "sampling_rate", "time_offset", "interval_window")
+                     "interval_window")
 
-    def __init__(self, intervals, units=UNSET, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None, sampling_rate=None, time_offset=None, interval_window=None):
+    def __init__(self, intervals, units=UNSET, label=None, event_labels=None,
+                 event_indices=None, data_time_range=None, event_onsets=None,
+                 interval_window=None):
         """
         Initialize an Intervals object (see class docstring for parameters).
         """
-        intervals, self.units = _time_values_and_units(intervals, units, sampling_rate)
-        if self.units is None and isinstance(intervals, np.ndarray) \
+        try:
+            intervals, self.units = _time_values_and_units(intervals, units)
+        except ValueError as e:
+            if "sampling rate" not in str(e):
+                raise
+            raise ValueError("intervals with time units cannot be converted to sample "
+                             "indices here; use to_units() with the data object") from None
+        if self.units == "samples" and isinstance(intervals, np.ndarray) \
                 and intervals.dtype.kind == "f":
             intervals = np.round(intervals).astype(int).tolist()  # converted to indices
         if isinstance(intervals, np.ndarray):
@@ -302,18 +307,33 @@ class Intervals(Stateful):
         self.event_indices = event_indices
         self.data_time_range = data_time_range
         self.event_onsets = event_onsets
-        self.sampling_rate = sampling_rate
-        self.time_offset = time_offset if time_offset is not None else 0.0
         self.interval_window = interval_window
-    
+
+    def _copy_with(self, **changes):
+        """New Intervals with the attributes of this one, except `changes`."""
+        kwargs = dict(intervals=self.intervals, units=self.units, label=self.label,
+                      event_labels=self.event_labels, event_indices=self.event_indices,
+                      data_time_range=self.data_time_range,
+                      event_onsets=self.event_onsets,
+                      interval_window=self.interval_window)
+        kwargs.update(changes)
+        return Intervals(**kwargs)
+
     def _in_own_units(self, value):
-        """`value` in the units of this object; plain numbers are unchanged."""
+        """`value` (e.g., a duration) in the units of this object; plain numbers are unchanged."""
         if value is None or not _has_units(value):
             return value
-        if self.units is not None:
+        if self.units != "samples":
+            if _time_values_and_units(value)[1] == "samples":
+                raise ValueError(f"{value} is in samples, but the intervals are in "
+                                 f"{self.units}; give it in time units")
             return parse_time(value, to=self.units, default=None)
-        value = np.round(parse_time(value, to="samples", default=None,
-                                    fs=self.sampling_rate))
+        try:
+            value = np.round(parse_time(value, to="samples", default=None))
+        except ValueError:
+            raise ValueError(f"{value} has time units, but the intervals are in sample "
+                             "indices; give it in samples or convert the intervals "
+                             "first, e.g., to_units('ms', d)") from None
         return value.astype(int) if np.ndim(value) else int(value)
 
     def __len__(self):
@@ -328,93 +348,53 @@ class Intervals(Stateful):
         """Get interval(s) by index."""
         return self.intervals[idx]
     
-    def to_mask(self, length: int = None) -> np.ndarray:
+    def to_mask(self, data) -> np.ndarray:
         """
-        Convert intervals to a binary mask array.
-        
-        If intervals have time units, they are automatically converted to indices
-        using the sampling_rate.
+        Convert intervals to a binary mask array for the samples of `data`.
         
         Parameters
         ----------
-        length : int, optional
-            Length of the mask array. If None, uses data_time_range[1] 
-            (converted to indices if necessary).
+        data : GenericEyeData
+            data object the intervals belong to (anything with a time
+            vector `tx` in ms and a sampling rate `fs`); the mask has one
+            entry per sample of `data`
             
         Returns
         -------
         np.ndarray
             Binary array with 1s where intervals exist, 0s elsewhere.
             
-        Raises
-        ------
-        ValueError
-            If length is not provided and data_time_range is not set.
-            If intervals have time units but sampling_rate is not set.
-            
         Examples
         --------
-        >>> intervals = Intervals([(0, 10), (20, 30)], units=None, data_time_range=(0, 50))
-        >>> mask = intervals.to_mask()
-        >>> mask.shape
-        (50,)
-        
-        >>> # Time-based intervals are auto-converted
-        >>> intervals = Intervals([(0, 100), (200, 300)], units="ms", 
-        ...                       data_time_range=(0, 500), sampling_rate=1000)
-        >>> mask = intervals.to_mask()  # Converts to indices automatically
+        >>> blinks = d.get_blinks("left", "pupil")
+        >>> mask = blinks.to_mask(d)
         """
-        # Convert to index-based if needed
-        if self.units is not None:
-            if self.sampling_rate is None:
-                raise ValueError(
-                    "Cannot convert time-based intervals to mask without sampling_rate. "
-                    "Set sampling_rate when creating the Intervals object."
-                )
-            intervals_idx = self.to_units(None)
-        else:
-            intervals_idx = self
-        
-        # Determine length
-        # Note: We use data_time_range[1] (not the span) because intervals are stored
-        # as absolute indices. The mask covers indices 0 to data_time_range[1]-1.
-        if length is None:
-            if intervals_idx.data_time_range is None:
-                raise ValueError(
-                    "Cannot create mask without length. Either provide length argument "
-                    "or set data_time_range when creating the Intervals object."
-                )
-            length = int(intervals_idx.data_time_range[1])
-        
-        mask = np.zeros(length, dtype=np.int8)
-        for start, end in intervals_idx.intervals:
-            start_idx = max(0, int(start))
-            end_idx = min(length, int(end))
-            mask[start_idx:end_idx] = 1
-        
+        n = len(data.tx)
+        mask = np.zeros(n, dtype=np.int8)
+        for start, end in self.to_units("samples", data).intervals:
+            mask[min(max(int(start), 0), n):min(max(int(end), 0), n)] = 1
         return mask
     
     @classmethod
-    def from_mask(cls, mask: np.ndarray, units=None, label: str = None, 
-                  sampling_rate: float = None, time_offset: float = None) -> 'Intervals':
+    def from_mask(cls, mask: np.ndarray, data=None, units="samples",
+                  label: str = None) -> 'Intervals':
         """
         Create Intervals from a binary mask array.
         
+        Each contiguous run of non-zero values becomes one interval.
+
         Parameters
         ----------
         mask : np.ndarray
-            Binary array where non-zero values indicate interval membership.
-        units : str or None, optional
-            Units for the intervals. Default is None (indices). Time units
-            ("ms", "sec", ...) require `sampling_rate`; the sample indices
-            are converted with :meth:`to_units`.
+            Binary array where non-zero values indicate interval membership,
+            one entry per sample.
+        data : GenericEyeData, optional
+            data object the mask belongs to (anything with `tx` and `fs`);
+            needed for time units.
+        units : str, optional
+            Units for the intervals. Default is "samples" (sample indices).
         label : str, optional
             Label for the intervals.
-        sampling_rate : float, optional
-            Sampling rate in Hz.
-        time_offset : float, optional
-            Time offset in milliseconds for index-to-time conversion
-            (time of the first sample).
             
         Returns
         -------
@@ -428,37 +408,38 @@ class Intervals(Stateful):
         >>> intervals.intervals
         [(2, 5), (7, 9)]
         """
-        # Find transitions in the mask
         mask_bool = np.asarray(mask).astype(bool).astype(int)
+        if data is not None and len(mask_bool) != len(data.tx):
+            raise ValueError(f"mask has {len(mask_bool)} entries, but the data has "
+                             f"{len(data.tx)} samples")
         # Pad with zeros to detect edges
-        padded = np.concatenate([[0], mask_bool, [0]])
-        diff = np.diff(padded)
-        
+        diff = np.diff(np.concatenate([[0], mask_bool, [0]]))
         # Starts are where diff == 1, ends are where diff == -1
         starts = np.where(diff == 1)[0]
         ends = np.where(diff == -1)[0]
-        
-        intervals_list = list(zip(starts.tolist(), ends.tolist()))
-        
-        intervals = cls(
-            intervals_list,
-            units=None,
-            label=label,
-            data_time_range=(0, len(mask)),
-            sampling_rate=sampling_rate,
-            time_offset=time_offset
-        )
-        return intervals.to_units(units)
-    
+        intervals = cls(list(zip(starts.tolist(), ends.tolist())), units="samples",
+                        label=label, data_time_range=(0, len(mask_bool)))
+        return intervals.to_units(units, data)
+
+    @staticmethod
+    def _union(pairs):
+        """Sorted union of (start, end) pairs."""
+        out = []
+        for s, e in sorted(pairs):
+            if out and s <= out[-1][1]:
+                out[-1] = (out[-1][0], max(out[-1][1], e))
+            else:
+                out.append((s, e))
+        return out
+
     def __sub__(self, other: 'Intervals') -> 'Intervals':
         """
         Subtract intervals using the - operator.
         
-        Converts both Intervals to binary masks, subtracts them (with negative 
-        values clipped to 0), and converts back to Intervals. This effectively
-        removes the regions covered by 'other' from 'self'.
-        
-        Both Intervals must be index-based (units=None) or will be converted.
+        Removes the regions covered by `other` from `self`; overlapping
+        intervals of `self` are merged. Intervals in different time units
+        are converted to the units of `self`; Intervals in sample indices
+        can only be combined with Intervals in sample indices.
         
         Parameters
         ----------
@@ -472,65 +453,47 @@ class Intervals(Stateful):
             
         Raises
         ------
-        TypeError
-            If other is not an Intervals object
         ValueError
-            If neither object has data_time_range set
+            If one object is in sample indices and the other in time units
             
         Examples
         --------
-        >>> a = Intervals([(0, 100), (200, 300)], units=None, data_time_range=(0, 400))
-        >>> b = Intervals([(50, 150)], units=None, data_time_range=(0, 400))
+        >>> a = Intervals([(0, 100), (200, 300)], units="samples")
+        >>> b = Intervals([(50, 150)], units="samples")
         >>> c = a - b
         >>> c.intervals  # (0, 50) and (200, 300) remain
         [(0, 50), (200, 300)]
         """
         if not isinstance(other, Intervals):
             return NotImplemented
-        
-        # Convert to index-based if needed
-        if self.units is not None:
-            self_idx = self.to_units(None)
-        else:
-            self_idx = self
-        
-        if other.units is not None:
-            other_idx = other.to_units(None)
-        else:
-            other_idx = other
-        
-        # Determine mask length from data_time_range
-        if self_idx.data_time_range is not None:
-            length = int(self_idx.data_time_range[1])
-        elif other_idx.data_time_range is not None:
-            length = int(other_idx.data_time_range[1])
-        else:
+        other = self._same_units(other)
+        removed = self._union(other.intervals)
+        result = []
+        for s, e in self._union(self.intervals):
+            for rs, re in removed:
+                if re <= s or rs >= e:
+                    continue
+                if rs > s:
+                    result.append((s, rs))
+                s = max(s, re)
+                if s >= e:
+                    break
+            if s < e:
+                result.append((s, e))
+        return Intervals(result, self.units,
+                         label=f"{self.label or 'intervals'} - {other.label or 'intervals'}",
+                         data_time_range=self.data_time_range)
+
+    def _same_units(self, other):
+        """`other` converted to the units of self (only between time units)."""
+        if self.units == other.units:
+            return other
+        if self.units == "samples" or other.units == "samples":
             raise ValueError(
-                "Cannot subtract Intervals without data_time_range. "
-                "At least one Intervals object must have data_time_range set."
-            )
-        
-        # Convert to masks
-        mask_self = self_idx.to_mask(length)
-        mask_other = other_idx.to_mask(length)
-        
-        # Subtract and clip negative values to 0
-        result_mask = np.clip(mask_self - mask_other, 0, 1)
-        
-        # Convert back to Intervals (use time_offset from index-converted interval)
-        result = Intervals.from_mask(
-            result_mask,
-            units=None,
-            label=f"{self.label or 'intervals'} - {other.label or 'intervals'}",
-            sampling_rate=self.sampling_rate or other.sampling_rate,
-            time_offset=self_idx.time_offset if hasattr(self_idx, 'time_offset') else 0.0
-        )
-        
-        # Convert back to original units if self had time units
-        if self.units is not None:
-            result = result.to_units(self.units)
-        
-        return result
+                f"Cannot combine Intervals with units={self.units} and units={other.units}. "
+                "Both must have time units or both must be indices; convert them "
+                "with to_units(units, d).")
+        return other.to_units(self.units)
     
     def __add__(self, other: 'Intervals') -> 'Intervals':
         """
@@ -557,7 +520,7 @@ class Intervals(Stateful):
         TypeError
             If other is not an Intervals object
         ValueError
-            If units are incompatible (one is None/indices)
+            If units are incompatible (one is "samples")
             
         Examples
         --------
@@ -575,21 +538,7 @@ class Intervals(Stateful):
         """
         if not isinstance(other, Intervals):
             return NotImplemented
-        
-        # Handle unit conversion
-        if self.units is None and other.units is None:
-            # Both are indices - just concatenate
-            other_converted = other
-        elif self.units is None or other.units is None:
-            raise ValueError(
-                f"Cannot combine Intervals with units={self.units} and units={other.units}. "
-                "Both must have time units or both must be indices."
-            )
-        elif self.units != other.units:
-            # Convert other to self's units
-            other_converted = other.to_units(self.units)
-        else:
-            other_converted = other
+        other_converted = self._same_units(other)
         
         # Combine intervals
         combined_intervals = list(self.intervals) + list(other_converted.intervals)
@@ -649,12 +598,6 @@ class Intervals(Stateful):
         else:
             combined_range = None
         
-        # Use self's sampling_rate, or other's if self doesn't have one
-        combined_sampling_rate = self.sampling_rate or other.sampling_rate
-        
-        # Use self's time_offset (both should have same offset if combining)
-        combined_time_offset = self.time_offset if self.time_offset else other.time_offset
-        
         # Only preserve interval_window if both have the same value
         combined_interval_window = None
         if self.interval_window is not None and other_converted.interval_window is not None:
@@ -669,8 +612,6 @@ class Intervals(Stateful):
             event_indices=combined_event_indices,
             data_time_range=combined_range,
             event_onsets=combined_event_onsets,
-            sampling_rate=combined_sampling_rate,
-            time_offset=combined_time_offset,
             interval_window=combined_interval_window
         )
     
@@ -699,16 +640,34 @@ class Intervals(Stateful):
         if copy is False:
             raise ValueError("Intervals cannot be converted to an array without a copy")
         return np.array(self.intervals, dtype=dtype)
-    
-    def to_units(self, target_units: str|None) -> 'Intervals':
+
+    def _positions_to_ms(self, values, data):
+        """Absolute positions (in own units) -> ms."""
+        values = np.asarray(values, dtype=float)
+        if self.units == "samples":
+            return _samples_to_ms(data, values)
+        return values * _MS_PER_UNIT[self.units]
+
+    def to_units(self, target_units: str, data=None) -> 'Intervals':
         """
         Convert intervals to different time units or indices.
         
+        Conversions between time units ("ms", "sec", "min", "h") only
+        rescale the values. Conversions between sample indices and time
+        use the time vector of `data`, the data object the intervals belong
+        to: a sample index stands for the time of that sample, and a time
+        is converted to the first sample at or after it (so ``(start, end)``
+        covers the samples with ``start <= t < end``).
+
         Parameters
         ----------
-        target_units : str or None
-            Target units: "ms", "sec", "min", "h", or "indices"/"index" for sample indices.
-            Also accepts None for indices.
+        target_units : str
+            Target units: "ms", "sec", "min", "h", or "samples" for sample
+            indices (aliases such as "seconds" or "indices" work, too).
+        data : GenericEyeData, optional
+            data object the intervals belong to (anything with a time vector
+            `tx` in ms and a sampling rate `fs`); needed to convert between
+            sample indices and time
             
         Returns
         -------
@@ -718,7 +677,7 @@ class Intervals(Stateful):
         Raises
         ------
         ValueError
-            If conversion requires sampling_rate but it is not set
+            If the conversion involves sample indices and `data` is not given
         
         Examples
         --------
@@ -726,161 +685,63 @@ class Intervals(Stateful):
         >>> intervals_sec = intervals.to_units("sec")
         >>> intervals_seconds = intervals.to_units("seconds")  # alias works too
         
-        Convert from indices to time units (requires sampling_rate):
+        Convert between indices and time units (needs the data object):
         
-        >>> intervals_idx = Intervals([(0, 100), (200, 300)], units=None, sampling_rate=1000)
-        >>> intervals_ms = intervals_idx.to_units("ms")
-        
-        Convert from time units to indices (requires sampling_rate):
-        
-        >>> intervals_ms = Intervals([(0, 1000), (2000, 3000)], units="ms", sampling_rate=1000)
-        >>> intervals_idx = intervals_ms.to_units("indices")
+        >>> blinks = data.get_blinks("left", "pupil")
+        >>> blinks_ms = blinks.to_units("ms", data)
+        >>> blinks_idx = blinks_ms.to_units("samples", data)
         """
         # Normalize target units (source units already normalized in __init__)
-        # This converts "indices", "index", "samples" etc. to None
         target_units = normalize_unit(target_units)
         
         if self.units == target_units:
             return self
-        
-        units_to_ms = {"ms": 1.0, "sec": 1000.0, "min": 60000.0, "h": 3600000.0}
-        
-        # Handle conversion TO indices
-        if target_units is None:
-            if self.units is None:
-                return self  # Already indices
-            
-            if self.sampling_rate is None:
-                raise ValueError(
-                    "Cannot convert to indices without sampling_rate. "
-                    "Set sampling_rate when creating the Intervals object."
-                )
-            
-            if self.units not in units_to_ms:
-                raise ValueError(f"Unknown source units: {self.units}")
-            
-            # Convert to ms first, then to indices
-            # First, compute the time offset (starting time in ms)
-            fac_to_ms = units_to_ms[self.units]
-            samples_per_ms = self.sampling_rate / 1000.0
-            
-            # Compute time_offset from data_time_range start (in ms)
-            if self.data_time_range is not None:
-                time_offset = self.data_time_range[0] * fac_to_ms
-            else:
-                time_offset = 0.0
-            
-            # Subtract offset before converting to indices
-            converted = [
-                (int(round((s * fac_to_ms - time_offset) * samples_per_ms)), 
-                 int(round((e * fac_to_ms - time_offset) * samples_per_ms))) 
-                for s, e in self.intervals
-            ]
-            
-            # Convert data_time_range to indices (relative to offset, so starts at 0)
-            if self.data_time_range is not None:
-                data_time_range = (
-                    0,
-                    int(round((self.data_time_range[1] * fac_to_ms - time_offset) * samples_per_ms))
-                )
-            else:
-                data_time_range = None
-            
-            # Convert event_onsets (subtract offset)
-            if self.event_onsets is not None:
-                event_onsets = np.array(
-                    [int(round((o * fac_to_ms - time_offset) * samples_per_ms)) for o in self.event_onsets]
-                )
-            else:
-                event_onsets = None
-            
-            # Convert interval_window to indices if it exists
-            interval_window_idx = None
-            if self.interval_window is not None:
-                iw_fac = units_to_ms[self.units]
-                interval_window_idx = (
-                    int(round(self.interval_window[0] * iw_fac * samples_per_ms)),
-                    int(round(self.interval_window[1] * iw_fac * samples_per_ms))
-                )
-            
-            return Intervals(converted, None, self.label,
-                            self.event_labels, self.event_indices,
-                            data_time_range, event_onsets, self.sampling_rate,
-                            time_offset=time_offset, interval_window=interval_window_idx)
-        
-        # Handle conversion to time units
-        if target_units not in units_to_ms:
-            raise ValueError(f"Unknown target units: {target_units}")
-        
-        # Handle conversion FROM indices
-        if self.units is None:
-            if self.sampling_rate is None:
-                raise ValueError(
-                    "Cannot convert from indices (units=None) without sampling_rate. "
-                    "Set sampling_rate or use get_intervals(units='ms') instead."
-                )
-            # Convert indices to ms first: index / fs * 1000, then add time_offset
-            ms_per_sample = 1000.0 / self.sampling_rate
-            offset_ms = self.time_offset  # time_offset is already in ms
-            converted_ms = [(s * ms_per_sample + offset_ms, e * ms_per_sample + offset_ms) 
-                          for s, e in self.intervals]
-            # Then convert ms to target units
-            fac = 1.0 / units_to_ms[target_units]
-            converted = [(s * fac, e * fac) for s, e in converted_ms]
-            # Convert data_time_range (also add offset)
-            if self.data_time_range is not None:
-                data_time_range = (
-                    (self.data_time_range[0] * ms_per_sample + offset_ms) * fac,
-                    (self.data_time_range[1] * ms_per_sample + offset_ms) * fac
-                )
-            else:
-                data_time_range = None
-            # Convert event_onsets (also add offset)
-            if self.event_onsets is not None:
-                event_onsets = (np.array(self.event_onsets) * ms_per_sample + offset_ms) * fac
-            else:
-                event_onsets = None
+
+        if self.units != "samples" and target_units != "samples":
+            # between time units: rescale
+            fac = _MS_PER_UNIT[self.units] / _MS_PER_UNIT[target_units]
+            def scale(pair):
+                return None if pair is None else tuple(v * fac for v in pair)
+            return self._copy_with(
+                intervals=[(s * fac, e * fac) for s, e in self.intervals],
+                units=target_units,
+                data_time_range=scale(self.data_time_range),
+                event_onsets=None if self.event_onsets is None
+                else np.asarray(self.event_onsets) * fac,
+                interval_window=scale(self.interval_window))
+
+        if data is None:
+            raise ValueError(
+                "Converting between sample indices and time needs the data object "
+                "the intervals belong to, e.g., intervals.to_units('ms', d)")
+
+        n = len(data.tx)
+        # absolute positions via ms
+        starts_ends = self._positions_to_ms(np.reshape(self.intervals, (-1, 2)), data)
+        onsets = None if self.event_onsets is None \
+            else self._positions_to_ms(self.event_onsets, data)
+        window = self.interval_window
+        if target_units == "samples":
+            converted = _ms_to_samples(data, starts_ends).reshape(-1, 2)
+            if onsets is not None:
+                onsets = np.clip(_ms_to_samples(data, onsets), 0, n - 1)
+            data_time_range = (0, n)
+            if window is not None:
+                # durations relative to the event
+                window = tuple(int(round(w * _MS_PER_UNIT[self.units] * data.fs / 1000.))
+                               for w in window)
         else:
-            if self.units not in units_to_ms:
-                raise ValueError(f"Unknown source units: {self.units}")
-            
-            fac = units_to_ms[self.units] / units_to_ms[target_units]
-            converted = [(s * fac, e * fac) for s, e in self.intervals]
-            # convert data_time_range to target units if it is not None
-            if self.data_time_range is not None:
-                data_time_range = (self.data_time_range[0] * fac, self.data_time_range[1] * fac)
-            else:
-                data_time_range = None
-            # convert event_onsets to target units if it is not None
-            if self.event_onsets is not None:
-                event_onsets = np.array(self.event_onsets) * fac
-            else:
-                event_onsets = None
-        
-        # Convert interval_window to target units if it exists
-        interval_window_converted = None
-        if self.interval_window is not None:
-            if self.units is None:
-                # From indices to time units
-                ms_per_sample = 1000.0 / self.sampling_rate
-                fac_iw = ms_per_sample / units_to_ms[target_units]
-                interval_window_converted = (
-                    self.interval_window[0] * fac_iw,
-                    self.interval_window[1] * fac_iw
-                )
-            else:
-                # From time units to time units
-                fac_iw = units_to_ms[self.units] / units_to_ms[target_units]
-                interval_window_converted = (
-                    self.interval_window[0] * fac_iw,
-                    self.interval_window[1] * fac_iw
-                )
-        
-        # time_offset is 0 for time-based intervals (offset already incorporated into values)
-        return Intervals(converted, target_units, self.label,
-                        self.event_labels, self.event_indices,
-                        data_time_range, event_onsets, self.sampling_rate,
-                        time_offset=0.0, interval_window=interval_window_converted)
+            fac = 1.0 / _MS_PER_UNIT[target_units]
+            converted = starts_ends * fac
+            if onsets is not None:
+                onsets = onsets * fac
+            data_time_range = (float(data.tx[0]) * fac, float(data.tx[-1]) * fac)
+            if window is not None:
+                window = tuple(w * 1000. / data.fs * fac for w in window)
+        return self._copy_with(
+            intervals=[tuple(row) for row in np.asarray(converted).tolist()],
+            units=target_units, data_time_range=data_time_range,
+            event_onsets=onsets, interval_window=window)
     
     def merge(self, merge_sep='_', distance: float = 0):
         """
@@ -897,8 +758,10 @@ class Intervals(Stateful):
             Separator to use when joining event labels of merged intervals. 
             Default is '_'.
         distance : float, str or Quantity, optional
-            Maximum gap (in milliseconds, or with units such as
-            ``50 * u.ms``) between intervals to still merge them.
+            Maximum gap between intervals to still merge them, in the units
+            of the Intervals object unless it carries units (e.g.,
+            ``50 * u.ms``; for intervals in sample indices, convert them
+            to time units first or give the distance in samples).
             If two intervals are separated by less than or equal to this distance,
             they will be merged. Default is 0 (only merge overlapping intervals).
             
@@ -913,16 +776,12 @@ class Intervals(Stateful):
         Raises
         ------
         ValueError
-            If distance > 0 and conversion requires sampling_rate but it is not set.
+            If `distance` has time units and the intervals are in sample
+            indices (or the other way round).
         """
         if not self.intervals:
             return self
-        distance = parse_time(distance)
-        
-        # If distance > 0 and units are not ms, convert to ms, merge, convert back
-        if distance > 0 and self.units != 'ms':
-            merged_ms = self.to_units('ms').merge(merge_sep=merge_sep, distance=distance)
-            return merged_ms.to_units(self.units)
+        distance = self._in_own_units(distance)
         
         # Get indices that would sort intervals by start point
         sorted_indices = sorted(range(len(self.intervals)), 
@@ -936,7 +795,7 @@ class Intervals(Stateful):
         for idx, current in zip(sorted_indices[1:], sorted_intervals[1:]):
             last_merged = merged[-1]
             
-            # Check if intervals overlap or are within distance (distance is in ms here)
+            # Check if intervals overlap or are within distance
             if current[0] <= last_merged[1] + distance:
                 # Merge the intervals
                 merged[-1] = (last_merged[0], max(last_merged[1], current[1]))
@@ -971,8 +830,6 @@ class Intervals(Stateful):
                         event_indices=merged_indices,
                         data_time_range=self.data_time_range,
                         event_onsets=merged_onsets,
-                        sampling_rate=self.sampling_rate,
-                        time_offset=self.time_offset,
                         interval_window=None)
     
     def pad(self, left: float = 0, right: float = 0):
@@ -986,7 +843,7 @@ class Intervals(Stateful):
         
         Intervals are clipped to stay within valid bounds:
         - If data_time_range is set, intervals are clipped to that range
-        - Otherwise, intervals are clipped to start at 0 (or time_offset for time units)
+        - Otherwise, intervals in sample indices are clipped to start at 0
         
         Parameters
         ----------
@@ -1031,13 +888,7 @@ class Intervals(Stateful):
             min_bound = self.data_time_range[0]
             max_bound = self.data_time_range[1]
         else:
-            # Default bounds: 0 (or time_offset) to infinity
-            if self.units is None:
-                # Index-based: start at 0
-                min_bound = 0
-            else:
-                # Time-based: start at time_offset (usually 0)
-                min_bound = self.time_offset
+            min_bound = 0 if self.units == "samples" else -float('inf')
             max_bound = float('inf')
         
         # Apply padding and clip to bounds
@@ -1059,8 +910,6 @@ class Intervals(Stateful):
             event_indices=self.event_indices,
             data_time_range=self.data_time_range,
             event_onsets=self.event_onsets,
-            sampling_rate=self.sampling_rate,
-            time_offset=self.time_offset,
             interval_window=padded_window
         )
     
@@ -1168,8 +1017,6 @@ class Intervals(Stateful):
                 event_indices=None,
                 data_time_range=self.data_time_range,
                 event_onsets=None,
-                sampling_rate=self.sampling_rate,
-                time_offset=self.time_offset,
                 interval_window=self.interval_window
             )
         
@@ -1230,8 +1077,6 @@ class Intervals(Stateful):
             event_indices=filtered_event_indices,
             data_time_range=self.data_time_range,
             event_onsets=filtered_event_onsets,
-            sampling_rate=self.sampling_rate,
-            time_offset=self.time_offset,
             interval_window=self.interval_window
         )
 
@@ -1245,7 +1090,7 @@ class Intervals(Stateful):
         pandas.DataFrame
             DataFrame with columns ``start``, ``end``, and ``duration``. When metadata
             is available, columns ``event_label``, ``event_index``, and ``event_onset``
-            are included. If the intervals have units, the column ``units`` is added.
+            are included, and the column ``units`` gives the units.
 
         Raises
         ------
@@ -1261,8 +1106,7 @@ class Intervals(Stateful):
                 "end": end,
                 "duration": end - start,
             }
-            if self.units is not None:
-                record["units"] = self.units
+            record["units"] = self.units
             if self.event_labels is not None and idx < len(self.event_labels):
                 record["event_label"] = self.event_labels[idx]
             if self.event_indices is not None and idx < len(self.event_indices):
@@ -1350,10 +1194,10 @@ class Intervals(Stateful):
         ax.set_ylabel('Interval #')
         
         # Set x-axis label based on units
-        if self.units is not None:
+        if self.units != "samples":
             ax.set_xlabel(f'Time ({self.units})')
         else:
-            ax.set_xlabel('Time (indices)')
+            ax.set_xlabel('Samples')
         
         # Set title from global label
         if self.label is not None:
@@ -1465,11 +1309,7 @@ class Intervals(Stateful):
             parts.append(_format_interval_stats(stats))
         else:
             parts.append("0 intervals")
-                
-        # Add sampling rate if present
-        if self.sampling_rate is not None:
-            parts.append(f"fs={self.sampling_rate}Hz")
-        
+
         return " | ".join(parts)
 
 
@@ -1494,8 +1334,6 @@ def _format_interval_stats(stats: dict) -> str:
     maxv = stats.get("max", np.nan)
     total_duration = stats.get("total_duration", np.nan)
     units = stats.get("units")
-    if units is None:
-        units = "indices"
     return "%i intervals (total duration: %.2f %s), %.2f %s +/- %.2f %s, [%.2f %s, %.2f %s]" % (
         n, total_duration, units, mean, units, sd, units, minv, units, maxv, units
     )

@@ -72,6 +72,35 @@ merged when they overlap (:meth:`~Intervals.merge`), combined (``+``,
 (:meth:`~Intervals.stats`, :meth:`~Intervals.as_pandas`) and plotted
 (:meth:`~Intervals.plot`).
 
+Sample indices and time
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Intervals are either in time units ("ms", "sec", "min", "h") or in sample
+indices (``units="samples"``, e.g., blinks; also the default of
+:meth:`~GenericEyeData.get_intervals` for plain numbers). Intervals are
+end-exclusive: ``(start, end)`` covers the samples with
+``start <= t < end``.
+
+Intervals in sample indices are only valid for the data object they came
+from: after :meth:`~GenericEyeData.sub_slice`,
+:meth:`~GenericEyeData.downsample` or for another recording, the same
+indices point to other samples (blinks stored in the object are adjusted
+automatically). Therefore, every conversion between sample indices and
+time takes the data object and uses its time vector:
+
+.. code-block:: python
+
+    blinks = d.get_blinks("left", "pupil")      # sample indices
+    blinks.to_units("ms", d)                    # times of these samples
+    trials.to_units("samples", d)               # first sample at or after each time
+    mask = trials.to_mask(d)                    # one entry per sample of d
+    pp.Intervals.from_mask(mask, d, units="ms")
+
+Conversions between time units work without the data object, e.g.,
+``trials.to_units("sec")``. Times are converted to the first sample at or
+after them, so recordings that do not start at 0 or have gaps are handled
+correctly.
+
 Many methods of the data objects take intervals as input:
 
 .. autosummary::

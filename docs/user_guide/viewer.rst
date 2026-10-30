@@ -173,7 +173,7 @@ The viewer supports interactive region selection:
     if selections:
         print(selections)
 
-The returned dict has the same keys as ``highlight`` (``'pupil'``, ``'x'``, ``'y'``, ``'extra_<label>'`` or the plot labels for arrays). The Intervals are in seconds (``units='sec'``); for raw arrays without ``time`` they are sample indices (``units=None``). If no region was selected, :func:`view` returns ``None``.
+The returned dict has the same keys as ``highlight`` (``'pupil'``, ``'x'``, ``'y'``, ``'extra_<label>'`` or the plot labels for arrays). The Intervals are in seconds (``units='sec'``); for raw arrays without ``time`` they are sample indices (``units="samples"``). If no region was selected, :func:`view` returns ``None``.
 
 
 API reference

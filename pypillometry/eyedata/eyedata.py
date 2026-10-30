@@ -353,8 +353,9 @@ class EyeData(GazeData,PupilData):
         intervals : Intervals, optional
             Time intervals to use for fitting. If None, uses all available data.
             Useful for fitting only on calibration periods. Intervals in any
-            time units or in sample indices (`units=None`) are accepted; a
-            plain list of `(start, end)` tuples is taken as ms.
+            time units or in sample indices (``units="samples"``) are accepted; a
+            plain list of `(start, end)` tuples is taken as ms. Intervals are
+            end-exclusive.
         target_fs : float, default 50.0
             Target sampling rate in Hz after downsampling for efficiency.
             Pupil dynamics are typically well-preserved at 50 Hz.
@@ -528,21 +529,9 @@ class EyeData(GazeData,PupilData):
         
         # Apply interval mask if provided
         if intervals is not None:
-            # index-based Intervals are matched against sample numbers,
-            # others are converted to ms
-            if isinstance(intervals, Intervals):
-                if intervals.units is None:
-                    ref = np.arange(len(time))
-                    bounds = intervals.intervals
-                else:
-                    ref = np.asarray(time)
-                    bounds = intervals.to_units("ms").intervals
-            else:
-                ref = np.asarray(time)
-                bounds = intervals
-            mask = np.zeros(len(time), dtype=bool)
-            for start, end in bounds:
-                mask |= (ref >= start) & (ref <= end)
+            if not isinstance(intervals, Intervals):
+                intervals = Intervals(intervals, units="ms")  # plain list in ms
+            mask = intervals.to_mask(self).astype(bool)
             
             time = time[mask]
             x_gaze = x_gaze[mask]
