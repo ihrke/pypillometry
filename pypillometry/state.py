@@ -9,6 +9,11 @@ lists, tuples, dicts and numpy arrays (plus whatever the user stored in
 `info` and `params`). Its keys ``format_version`` and ``class`` say which
 version of the layout the state has and which class it belongs to.
 
+Each class declares the attributes that make up its state in
+`_STATE_FIELDS` (see :class:`Stateful`); objects of other classes inside
+it (e.g., :class:`~pypillometry.Intervals`) are stored as nested states.
+A test checks that every attribute of an object is part of its state.
+
 The file formats are thin layers around the state:
 
 - pickle: ``__getstate__`` returns the state and ``__setstate__`` restores
@@ -26,11 +31,12 @@ Version history
     pickles written before the state was versioned (pypillometry <= 2.0):
     the raw attributes of the object (its ``__dict__``)
 1
-    the state as defined by the ``_to_state()`` methods of the classes
+    the state as declared in `_STATE_FIELDS` of the classes
 """
 
 import importlib
 import pickle
+from collections import namedtuple
 
 import numpy as np
 from loguru import logger
@@ -171,6 +177,133 @@ class _Unpickler(pickle.Unpickler):
 
 
 # --------------------------------------------------------------------------
+# Declaring the state of a class
+# --------------------------------------------------------------------------
+
+Field = namedtuple("Field", "key kind attr")
+
+
+def _field(spec):
+    """Field from its spec: ``"name"``, ``(key, kind)`` or ``(key, kind, attribute)``."""
+    if isinstance(spec, str):
+        spec = (spec,)
+    key, kind, attr = (tuple(spec) + (None, None))[:3]
+    return Field(key, kind, attr or key)
+
+
+class Stateful:
+    """
+    Mixin for classes whose state is declared in `_STATE_FIELDS`.
+
+    Each class lists the fields it adds to the state of its base classes.
+    A field is the name of an attribute (stored as it is) or a tuple
+    ``(key, kind)`` or ``(key, kind, attribute)``; `kind` says how the value
+    is converted (see `_KINDS`; ``"dict:<kind>"`` converts the values of a
+    dict). None is stored as None for every kind. Attributes that are not
+    part of the state (e.g., derived ones) are listed in `_STATE_EXCLUDE`.
+    """
+    _STATE_FIELDS = ()
+    _STATE_EXCLUDE = ()
+
+    @classmethod
+    def _state_fields(cls):
+        """All fields of the class (those of the base classes first)."""
+        fields = {}
+        for c in reversed(cls.__mro__):
+            for spec in c.__dict__.get("_STATE_FIELDS", ()):
+                f = _field(spec)
+                fields[f.key] = f
+        return list(fields.values())
+
+    @classmethod
+    def _state_exclude(cls):
+        """Attributes that are not part of the state (of all base classes)."""
+        return {a for c in cls.__mro__ for a in c.__dict__.get("_STATE_EXCLUDE", ())}
+
+    def _to_state(self) -> dict:
+        """State of the object (without ``format_version`` and ``class``)."""
+        return {f.key: _convert(f.kind, getattr(self, f.attr), 0)
+                for f in self._state_fields()}
+
+    def _set_state(self, st: dict):
+        """Set the attributes from a state of the current version."""
+        for f in self._state_fields():
+            setattr(self, f.attr, _convert(f.kind, st[f.key], 1))
+
+    @classmethod
+    def _from_state(cls, st: dict):
+        """Create an object from a state of the current version."""
+        obj = cls.__new__(cls)
+        obj._set_state(st)
+        return obj
+
+
+class VersionedState(Stateful):
+    """
+    Mixin for classes that are saved to files: pickles store the versioned
+    state (see :func:`to_state`), older versions are upgraded when loaded.
+    """
+
+    def __getstate__(self):
+        return to_state(self)
+
+    def __setstate__(self, st):
+        self._set_state(migrate(st, type(self).__name__))
+
+
+def _nested_class(name):
+    """Classes stored as nested states (imported here to avoid import cycles)."""
+    from .intervals import Intervals
+    from .eyedata.eyedatadict import EyeDataDict
+    from .eyedata.experimental_setup import ExperimentalSetup
+    from .eyedata.spatial_calibration import SpatialCalibration
+    return {"Intervals": Intervals, "EyeDataDict": EyeDataDict,
+            "ExperimentalSetup": ExperimentalSetup,
+            "SpatialCalibration": SpatialCalibration}[name]
+
+
+def _pairs_to_state(pairs):
+    return np.array(pairs).reshape(len(pairs), 2)
+
+
+def _pairs_from_state(arr):
+    return [tuple(row) for row in np.asarray(arr).tolist()]
+
+
+def _masked_to_state(arr):
+    return {"values": np.ma.getdata(arr), "mask": np.ma.getmaskarray(arr)}
+
+
+def _masked_from_state(st):
+    return np.ma.masked_array(st["values"], mask=st["mask"])
+
+
+# kind -> (value to state, state to value)
+_KINDS = {
+    # whole object with its own format_version and class (e.g., `original`)
+    "versioned": (to_state, from_state),
+    # list of (start, end) tuples <-> (n, 2) array
+    "pairs": (_pairs_to_state, _pairs_from_state),
+    # masked array <-> {"values": ..., "mask": ...}
+    "masked": (_masked_to_state, _masked_from_state),
+    # function <-> "module:qualname"
+    "function": (_function_name, _import_function),
+}
+
+
+def _convert(kind, value, direction):
+    """Convert `value` to its state (direction 0) or back (direction 1)."""
+    if kind is None or value is None:
+        return value
+    if kind.startswith("dict:"):
+        return {k: _convert(kind[5:], v, direction) for k, v in value.items()}
+    if kind in _KINDS:
+        return _KINDS[kind][direction](value)
+    # nested object of one of the classes in _nested_class()
+    return value._to_state() if direction == 0 else _nested_class(kind)._from_state(value)
+
+
+# --------------------------------------------------------------------------
 # Migrations: _MIGRATIONS[v] upgrades a state from version v to v + 1.
 # These functions are frozen: they describe the layout at that version and
 # must not change when the classes change later.
@@ -187,7 +320,7 @@ def _v0_dict(obj):
 
 def _v0_eyedatadict(raw):
     """Version-1 state of an EyeDataDict (raw attributes `raw`)."""
-    return {"data": dict(raw["data"]), "mask": dict(raw["mask"])}
+    return {"values": dict(raw["data"]), "mask": dict(raw["mask"])}
 
 
 def _v0_intervals(raw):
@@ -235,8 +368,7 @@ def _migrate_0_to_1(raw, class_name):
             "name": raw["name"],
             "variable": raw["variable"],
             "tx": raw["tx"],
-            "data": np.ma.getdata(data),
-            "mask": np.ma.getmaskarray(data),
+            "data": {"values": np.ma.getdata(data), "mask": np.ma.getmaskarray(data)},
             "intervals": _v0_intervals(_v0_dict(raw.get("intervals"))),
             "sampling_rate": raw.get("sampling_rate"),
         }
@@ -258,7 +390,7 @@ def _migrate_0_to_1(raw, class_name):
         "name": raw["name"],
         "fs": raw["fs"],
         "tx": raw["tx"],
-        **_v0_eyedatadict(vars(raw["data"])),
+        "data": _v0_eyedatadict(vars(raw["data"])),
         "event_onsets": raw["event_onsets"],
         "event_labels": raw["event_labels"],
         "blinks": {k: _v0_intervals(_v0_dict(v)) for k, v in blinks.items()},

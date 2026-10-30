@@ -10,6 +10,7 @@ import numpy as np
 from typing import Optional, Tuple, Union, Dict, Any
 from ..units import parse_distance, parse_angle, _has_units, Quantity, u
 from loguru import logger
+from ..state import Stateful
 
 
 
@@ -21,7 +22,7 @@ def _degrees_to_radians(value):
     return np.radians(value)
 
 
-class ExperimentalSetup:
+class ExperimentalSetup(Stateful):
     """
     Complete geometric model of an eye-tracking experimental setup.
     
@@ -151,7 +152,13 @@ class ExperimentalSetup:
     >>> # Visualize the setup
     >>> fig, axes = setup.plot()
     """
-    
+
+    # state (see pypillometry.state): the stored values (mm, radians); they
+    # are set directly when loading, not parsed or validated again
+    _STATE_FIELDS = tuple((key, None, "_" + key) for key in (
+        "screen_resolution", "physical_screen_size", "screen_offset", "d",
+        "alpha_tilt", "beta_tilt", "camera_offset", "camera_spherical", "ipd"))
+
     def __init__(
         self,
         screen_resolution: Optional[Tuple[int, int]] = None,
@@ -883,25 +890,6 @@ class ExperimentalSetup:
         ExperimentalSetup
         """
         return cls(**cls._constructor_kwargs(d))
-
-    def _to_state(self) -> Dict[str, Any]:
-        """State of the object (see :mod:`pypillometry.state`); same as :meth:`to_dict`."""
-        return self.to_dict()
-
-    @classmethod
-    def _from_state(cls, state: Dict[str, Any]) -> 'ExperimentalSetup':
-        """
-        Create the object from its state (from :meth:`_to_state`).
-
-        The stored values (in mm and radians) are set directly, without
-        parsing or validating them again (unlike :meth:`from_dict`).
-        """
-        obj = cls.__new__(cls)
-        for key in ("screen_resolution", "physical_screen_size", "d",
-                    "screen_offset", "alpha_tilt", "beta_tilt",
-                    "camera_offset", "camera_spherical", "ipd"):
-            setattr(obj, "_" + key, state[key])
-        return obj
 
     @staticmethod
     def _constructor_kwargs(d: Dict[str, Any]) -> Dict[str, Any]:

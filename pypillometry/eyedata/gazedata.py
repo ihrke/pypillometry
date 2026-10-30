@@ -61,6 +61,10 @@ class GazeData(GenericEyeData):
         use the package-level setting (see :func:`~pypillometry.set_default_inplace`,
         initially True). The method-level `inplace` argument overrides this.
     """
+    # state (see pypillometry.state): adds to that of GenericEyeData
+    _STATE_FIELDS = (("experimental_setup", "ExperimentalSetup"),
+                     ("calibration", "dict:SpatialCalibration"))
+
     def __init__(self, 
                     time: np.ndarray = None,
                     left_x: np.ndarray = None,
@@ -104,24 +108,6 @@ class GazeData(GenericEyeData):
     def plot(self):
         """Plotting functions for this object (a :class:`~pypillometry.GazePlotter`)."""
         return GazePlotter(self)
-
-    def _to_state(self) -> dict:
-        """State of the object, including setup and calibration (see :mod:`pypillometry.state`)."""
-        st = super()._to_state()
-        setup = getattr(self, "experimental_setup", None)
-        cal = getattr(self, "calibration", None)
-        st["experimental_setup"] = None if setup is None else setup._to_state()
-        st["calibration"] = None if cal is None else {
-            eye: c._to_state() for eye, c in cal.items()}
-        return st
-
-    def _set_state(self, st: dict):
-        """Set the attributes from a state (from :meth:`_to_state`)."""
-        super()._set_state(st)
-        setup, cal = st["experimental_setup"], st["calibration"]
-        self.experimental_setup = None if setup is None else ExperimentalSetup._from_state(setup)
-        self.calibration = None if cal is None else {
-            eye: SpatialCalibration._from_state(c) for eye, c in cal.items()}
 
     def summary(self):
         """

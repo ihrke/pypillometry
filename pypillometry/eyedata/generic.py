@@ -110,7 +110,7 @@ def keephistory(func):
     return wrapper
         
 
-class GenericEyeData(ABC):
+class GenericEyeData(state.VersionedState, ABC):
     """
     Generic class for eyedata. 
     Defines the basic structure of an eyedata object and 
@@ -124,6 +124,13 @@ class GenericEyeData(ABC):
     inplace: Optional[bool] ## whether to make changes in-place (None: package default)
     info: dict ## optional info about the dataset
     params: dict ## parameters 
+
+    # state (see pypillometry.state); subclasses add their own fields
+    _STATE_FIELDS = (
+        "name", "fs", "tx", ("data", "EyeDataDict"), "event_onsets",
+        "event_labels", ("blinks", "dict:Intervals", "_blinks"),
+        ("interpolated_blinks", "dict:Intervals", "_interpolated_blinks"),
+        "params", "history", "inplace", "info", ("original", "versioned"))
 
     @abstractmethod
     def __init__():
@@ -1484,57 +1491,6 @@ class GenericEyeData(ABC):
         # autoescape, so that names, labels etc. with "<" or "&" are shown as text
         template = Environment(autoescape=True).from_string(template_source)
         return template.render(**context)
-
-    def _to_state(self) -> dict:
-        """
-        State of the object (see :mod:`pypillometry.state`).
-
-        Subclasses with further attributes extend it (and :meth:`_set_state`).
-        """
-        def ivs(blinks):
-            return {k: None if v is None else v._to_state() for k, v in blinks.items()}
-        return {
-            "name": self.name,
-            "fs": self.fs,
-            "tx": self.tx,
-            **self.data._to_state(),  # data and mask
-            "event_onsets": self.event_onsets,
-            "event_labels": self.event_labels,
-            "blinks": ivs(self._blinks),
-            "interpolated_blinks": ivs(self._interpolated_blinks),
-            "params": self.params,
-            "history": self.history,
-            "inplace": self.inplace,
-            "info": self.info,
-            "original": None if self.original is None else state.to_state(self.original),
-        }
-
-    def _set_state(self, st: dict):
-        """Set the attributes from a state of the current version (from :meth:`_to_state`)."""
-        def ivs(blinks):
-            return {k: None if v is None else Intervals._from_state(v)
-                    for k, v in blinks.items()}
-        self.data = EyeDataDict._from_state(st)
-        self.name = st["name"]
-        self.tx = st["tx"]
-        self.fs = st["fs"]
-        self.event_onsets = st["event_onsets"]
-        self.event_labels = st["event_labels"]
-        self.history = list(st["history"])
-        self._blinks = ivs(st["blinks"])
-        self._interpolated_blinks = ivs(st["interpolated_blinks"])
-        self.params = st["params"]
-        self.inplace = st["inplace"]
-        self.info = st["info"]
-        self.original = None if st["original"] is None else state.from_state(st["original"])
-
-    def __getstate__(self):
-        """State for pickling (see :func:`pypillometry.state.to_state`)."""
-        return state.to_state(self)
-
-    def __setstate__(self, st):
-        """Restore from a pickled state, upgrading older versions first."""
-        self._set_state(state.migrate(st, type(self).__name__))
 
     def copy(self, new_name: Optional[str]=None):
         """
