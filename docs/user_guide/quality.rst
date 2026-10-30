@@ -100,6 +100,17 @@ The figure is based on Doughty (2002) and Dang et al. (2017) for rest,
 Nagarajan et al. (2024) and Chidi-Egboka et al. (2023) for reading from a
 screen or print, and Chidi-Egboka et al. (2023) for conversation.
 
+Blinks also affect the pupil itself. Each blink is followed by a
+pulse-like pupil response, a constriction followed by a dilation, of
+substantial size and duration (Yoo, Ahn, & Lee, 2021). Interpolating the missing samples during the blink does not
+remove this response. Because blinking depends on the task (people blink
+less while they concentrate and more after a response or at the end of a
+trial), the blink-locked response can differ between experimental
+conditions and be mistaken for an effect of the condition. A blink rate in
+the "good" range does not rule this out: if blinks are frequent or their
+timing differs between conditions, check the blink rate per condition, and
+consider modeling or removing the blink-locked response (Yoo et al., 2021).
+
 
 Pupil
 -----
@@ -195,6 +206,32 @@ Calibration
 References
 ----------
 
+Chidi-Egboka, N. C., Jalbert, I., Chen, J., Briggs, N. E., & Golebiowski,
+B. (2023). Blink rate measured in situ decreases while reading from printed
+text or digital devices, regardless of task duration, difficulty, or viewing
+distance. *Investigative Ophthalmology & Visual Science*, 64(2), 14.
+https://doi.org/10.1167/iovs.64.2.14
+
+Dang, L. C., Samanez-Larkin, G. R., Castrellon, J. J., Perkins, S. F.,
+Cowan, R. L., Newhouse, P. A., & Zald, D. H. (2017). Spontaneous eye blink
+rate (EBR) is uncorrelated with dopamine D2 receptor availability and
+unmodulated by dopamine agonism in healthy adults. *eNeuro*, 4(5),
+ENEURO.0211-17.2017. https://doi.org/10.1523/ENEURO.0211-17.2017
+
+Doughty, M. J. (2002). Further assessment of gender- and blink
+pattern-related differences in the spontaneous eyeblink activity in primary
+gaze in young adult humans. *Optometry and Vision Science*, 79(7),
+439--447. https://doi.org/10.1097/00006324-200207000-00013
+
 Holmqvist, K., Nyström, M., & Mulvey, F. (2012). Eye tracker data quality:
-What it is and how to measure it. *Proceedings of the Symposium on Eye
-Tracking Research and Applications (ETRA)*, 45--52.
+What it is and how to measure it. In *Proceedings of the Symposium on Eye
+Tracking Research and Applications (ETRA '12)* (pp. 45--52).
+https://doi.org/10.1145/2168556.2168563
+
+Nagarajan, K., Ravi, K., Periakaruppan, S. P., & Satgunam, P. (2024). When
+noise becomes signal: A study of blink rate using an eye tracker. *The
+Ocular Surface*, 34, 516--520. https://doi.org/10.1016/j.jtos.2024.11.002
+
+Yoo, K., Ahn, J., & Lee, S.-H. (2021). The confounding effects of eye
+blinking on pupillometry, and their remedy. *PLOS ONE*, 16(12), e0261463.
+https://doi.org/10.1371/journal.pone.0261463
