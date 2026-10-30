@@ -502,6 +502,39 @@ def parse_angle(value):
     return _parse(value, "angle", "rad", "rad")
 
 
+def _samples_to_ms(data, ix):
+    """Time (ms) of sample indices `ix` of `data` (an object with `tx` and `fs`).
+
+    Interval ends are exclusive, so index ``len(tx)`` (one past the last
+    sample) is valid. Indices outside the recording are extrapolated with
+    the sampling rate.
+    """
+    tx = np.asarray(data.tx, dtype=float)
+    ix = np.asarray(ix)
+    inside = np.clip(ix, 0, len(tx) - 1).astype(int)
+    return tx[inside] + (ix - inside) * (1000.0 / data.fs)
+
+
+def _ms_to_samples(data, t):
+    """Index of the first sample of `data` at or after time `t` (ms).
+
+    `data` is an object with `tx` (ms) and `fs`. With end-exclusive
+    intervals, this is the rule for both ends: ``(start, end)`` in ms covers
+    the samples with ``start <= tx < end``. Times outside the recording are
+    extrapolated with the sampling rate (giving indices < 0 or >= len(tx)).
+    Returns an int or an int array.
+    """
+    tx = np.asarray(data.tx, dtype=float)
+    t = np.asarray(t, dtype=float)
+    dt = 1000.0 / data.fs
+    tol = dt * 1e-6  # rounding errors from unit conversions
+    ix = np.searchsorted(tx, t - tol, side="left")
+    ix = np.where(t < tx[0] - tol, -np.floor((tx[0] - t) / dt + 1e-6), ix)
+    ix = np.where(t > tx[-1] + tol, len(tx) - 1 + np.ceil((t - tx[-1]) / dt - 1e-6), ix)
+    ix = ix.astype(int)
+    return int(ix) if ix.ndim == 0 else ix
+
+
 # canonical time unit names used by `units=` arguments ("samples" is None)
 CANONICAL_UNITS = {"ms", "sec", "min", "h"}
 UNIT_ALIASES = {alias: (unit.name if unit.factor is not None else None)

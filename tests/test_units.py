@@ -480,3 +480,26 @@ def test_unset_repr_and_identity():
     assert "units=UNSET" in str(inspect.signature(Intervals))
     assert copy.deepcopy(UNSET) is UNSET
     assert pickle.loads(pickle.dumps(UNSET)) is UNSET
+
+
+# --- conversion between samples and time ----------------------------------------
+
+def test_samples_ms_conversion():
+    from types import SimpleNamespace
+    from pypillometry.units import _samples_to_ms, _ms_to_samples
+    d = SimpleNamespace(tx=np.array([1000., 1010., 1020., 1030.]), fs=100.)
+    # samples -> time; end index len(tx) is one sample past the last
+    np.testing.assert_array_equal(_samples_to_ms(d, [0, 3, 4, -1]),
+                                  [1000, 1030, 1040, 990])
+    # time -> first sample at or after the time
+    assert _ms_to_samples(d, 1000) == 0
+    assert _ms_to_samples(d, 1005) == 1
+    assert _ms_to_samples(d, 1010 + 1e-9) == 1  # rounding error
+    assert _ms_to_samples(d, 1030.5) == 4
+    assert _ms_to_samples(d, 1040) == 4
+    assert _ms_to_samples(d, 1050) == 5
+    assert _ms_to_samples(d, 985) == -1
+    assert _ms_to_samples(d, 980) == -2
+    # round trip from samples
+    ix = np.arange(-3, 8)
+    np.testing.assert_array_equal(_ms_to_samples(d, _samples_to_ms(d, ix)), ix)
