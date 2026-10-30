@@ -197,6 +197,18 @@ class GenericEyeData(state.VersionedState, ABC):
         if fill_time_discontinuities:
             type(self).fill_time_discontinuities.__wrapped__(self)
 
+    def _samples(self, duration, units="ms", rounding="down"):
+        """Number of samples in `duration` (e.g., a window size or margin).
+
+        Plain numbers are in `units`; `duration` can also carry units (e.g.,
+        ``50 * u.ms``) or be a tuple. `rounding` is "down" (towards zero),
+        "up" or "nearest". Returns an int (or a tuple of ints).
+        """
+        n = parse_time(duration, to="samples", default=units, fs=self.fs)
+        n = np.round(n, 9)  # rounding errors of the unit conversion
+        n = {"down": np.trunc, "up": np.ceil, "nearest": np.round}[rounding](n)
+        return tuple(int(v) for v in n) if np.ndim(n) else int(n)
+
     def _unit_fac(self, units):
         """Convert time units to factor for converting from milliseconds.
         
@@ -2293,8 +2305,7 @@ class GenericEyeData(state.VersionedState, ABC):
         obj = self._get_inplace(inplace)
         eyes, variables = obj._get_eye_var(eyes, variables)
 
-        distance_ix = parse_time(distance, to="samples", default=normalize_unit(units),
-                                 fs=obj.fs)
+        distance_ix = obj._samples(distance, units)
 
         logger.debug(f"Distance '{distance}' in index units: {distance_ix}")
 
@@ -2652,12 +2663,12 @@ class GenericEyeData(state.VersionedState, ABC):
         
         obj = self._get_inplace(inplace)
         
+        margin = parse_time(margin)
         if margin[0] > 0 or margin[1] < 0:
-            raise ValueError(f"margin must be (<=0, >=0) in ms, got {margin}")
+            raise ValueError(f"margin must be (<=0, >=0) in ms, got {tuple(margin)}")
 
         # Convert margin from ms to samples
-        margin_left_ix = int(-margin[0] / 1000.0 * obj.fs)
-        margin_right_ix = int(margin[1] / 1000.0 * obj.fs)
+        margin_left_ix, margin_right_ix = obj._samples((-margin[0], margin[1]))
         
         def interpolate_single_key(key, interval_obj):
             """Local helper to interpolate a single data key."""

@@ -1824,3 +1824,12 @@ class TestConversionWithData(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "samples"):
             Intervals([(0, 10)], units="ms").to_units(None)
         self.assertEqual(Intervals([(0, 10)], units="indices").units, "samples")
+
+    def test_samples_helper(self):
+        """durations -> number of samples (100 Hz)"""
+        self.assertEqual(self.d._samples(50), 5)
+        self.assertEqual(self.d._samples(55), 5)
+        self.assertEqual(self.d._samples(55, rounding="up"), 6)
+        self.assertEqual(self.d._samples(0.07, "sec"), 7)  # no rounding error
+        self.assertEqual(self.d._samples(70 * pp.u.ms, rounding="up"), 7)
+        self.assertEqual(self.d._samples((20, "0.1 sec")), (2, 10))

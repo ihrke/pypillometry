@@ -203,7 +203,7 @@ class SegmentedEyeData(state.VersionedState):
             w0, w1 = intervals_ms.interval_window
         else:
             w0, w1 = intervals_ms.intervals[0]
-        duration_ix = int(round((w1 - w0) * eyedata.fs / 1000.))
+        duration_ix = eyedata._samples(w1 - w0, rounding="nearest")
         txw = np.linspace(w0, w1, num=duration_ix)
         
         n_segments = len(intervals_idx)
