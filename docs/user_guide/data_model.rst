@@ -117,6 +117,33 @@ default) so that you can check them before applying them with
 :meth:`~GenericEyeData.mask_intervals` (see :doc:`events_intervals`).
 
 
+Excluded periods
+----------------
+
+Some parts of a recording are not part of the analysis at all, e.g., the
+calibration at the start or breaks between blocks. The data there may be
+perfectly valid, so they should not count as missing data or blinks.
+:meth:`~GenericEyeData.exclude_intervals` stores such periods with the
+object and masks all variables during them:
+
+.. code-block:: python
+
+    breaks = d.get_intervals(("break_start", "break_end"), interval=(0, 0),
+                             units="ms")
+    d = d.exclude_intervals(breaks)
+    d = d.exclude_intervals([(0, 2 * u.min)])   # calibration at the start
+    d.get_excluded()                            # the excluded periods
+    d.excluded_duration("min")                  # their total duration
+
+Because the samples are masked, everything that ignores masked data
+(averages, :meth:`~GenericEyeData.scale`, segments, ...) also ignores the
+excluded periods. Unlike other masks, excluded periods are not blinks:
+blink detection ignores them, and blinks that overlap an excluded period
+are removed, so they are not interpolated either. The periods are stored
+as times, so they stay valid after slicing, downsampling and
+:meth:`~GenericEyeData.reset_time`, and they are saved with the object.
+
+
 Pipelines and history
 ---------------------
 
