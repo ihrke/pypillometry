@@ -136,7 +136,7 @@ class TestQualityReport(unittest.TestCase):
 
     def test_pupildata_and_gazedata(self):
         d = _make_data()
-        r = d.get_pupildata("left").quality_report()
+        r = d.to_pupildata("left").quality_report()
         self.assertIn("pupil", r)
         self.assertNotIn("gaze", r)
         self.assertNotIn("binocular", r)

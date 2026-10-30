@@ -4,6 +4,7 @@ from .eyedatadict import EyeDataDict
 from ..plot import EyePlotter
 from ..units import parse_distance, parse_angle
 import numpy as np
+import warnings
 from loguru import logger
 
 from .pupildata import PupilData
@@ -150,9 +151,88 @@ class EyeData(GazeData,PupilData):
                   **PupilData.summary(self))
         return ds
 
+    def _select_eyes(self, eyes, variable):
+        """Return the eyes to drop so that only `eyes` (with `variable`) remain."""
+        available = self.data.get_available_eyes(variable)
+        if eyes is None:
+            eyes = available
+        elif isinstance(eyes, str):
+            eyes = [eyes]
+        if len(eyes) == 0:
+            raise ValueError("No eyes selected")
+        missing = [e for e in eyes if e not in available]
+        if missing:
+            raise ValueError("No %s data for eye(s): %s" % (variable, ", ".join(missing)))
+        return [e for e in self.eyes if e not in eyes]
+
+    @keephistory
+    def to_pupildata(self, eyes=None):
+        """
+        Return a copy of the data as a PupilData object (without gaze data).
+
+        All other data are kept (masks, blinks, events, parameters, history,
+        further variables), so the result can be processed further as if it
+        had been loaded as PupilData. This never works in place.
+
+        Parameters
+        ----------
+        eyes : str or list of str, optional
+            Eyes to keep (e.g., ``"left"`` or ``["left", "right"]``); if
+            `None`, all eyes with pupil data are kept.
+
+        Returns
+        -------
+        PupilData
+            copy of the data without the x/y variables
+
+        Raises
+        ------
+        ValueError
+            if there is no pupil data for one of `eyes`
+
+        Examples
+        --------
+        >>> pd = d.to_pupildata()           # all eyes
+        >>> pd_left = d.to_pupildata("left")
+        """
+        drop = self._select_eyes(eyes, "pupil")
+        return self.drop_data(eyes=drop, variables=["x", "y"])
+
+    @keephistory
+    def to_gazedata(self, eyes=None):
+        """
+        Return a copy of the data as a GazeData object (without pupil data).
+
+        All other data are kept (masks, blinks, events, parameters, history,
+        experimental setup, calibration, further variables). This never works
+        in place.
+
+        Parameters
+        ----------
+        eyes : str or list of str, optional
+            Eyes to keep (e.g., ``"left"`` or ``["left", "right"]``); if
+            `None`, all eyes with gaze data are kept.
+
+        Returns
+        -------
+        GazeData
+            copy of the data without the pupil variable
+
+        Raises
+        ------
+        ValueError
+            if there is no gaze data for one of `eyes`
+        """
+        drop = self._select_eyes(eyes, "x")
+        return self.drop_data(eyes=drop, variables=["pupil"])
+
     def get_pupildata(self, eye=None):
         """
-        Return the pupil data as a PupilData object.
+        Return the pupil data of one eye as a PupilData object.
+
+        .. deprecated::
+            Use :meth:`to_pupildata` instead, which keeps masks, blinks and
+            all other data and can return both eyes.
 
         Parameters
         ----------
@@ -163,8 +243,7 @@ class EyeData(GazeData,PupilData):
         Returns
         -------
         PupilData
-            A PupilData object containing the pupil data of `eye` (as
-            ``"<eye>_pupil"``), the time vector and the events.
+            the data of `eye` without gaze data
 
         Raises
         ------
@@ -172,26 +251,14 @@ class EyeData(GazeData,PupilData):
             if `eye` is `None` and there is more than one eye, or if there is
             no data for `eye`
         """
+        warnings.warn("get_pupildata() is deprecated, use to_pupildata() instead",
+                      DeprecationWarning, stacklevel=2)
         if eye is None:
             if len(self.eyes)==1:
                 eye=self.eyes[0]
             else:
                 raise ValueError("More than one eye in the dataset. Please specify which eye to use.")
-        if eye not in [k.split("_")[0] for k in self.data.keys()]:
-            raise ValueError("No pupil data for eye: %s" % eye)
-        kwargs = {
-            "time": self.tx,
-            eye+"_pupil": self.data[eye+"_pupil"],
-            "sampling_rate": self.fs,
-            "event_onsets": self.event_onsets,
-            "event_labels": self.event_labels,
-            "name": self.name+"_pd",
-            "keep_orig": False,
-            "inplace": self.inplace
-        }
-        pobj = PupilData(**kwargs)
-        return pobj        
-    
+        return self.to_pupildata(eyes=eye)
 
     @keephistory
     def correct_pupil_foreshortening(self, eyes=[], midpoint=None, store_as="pupil", inplace=None):

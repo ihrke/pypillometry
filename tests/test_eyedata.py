@@ -327,27 +327,54 @@ class TestEyeData(unittest.TestCase):
         self.assertIn('duration_minutes', summary)  # Updated to match actual key
         self.assertIn('nevents', summary)  # Updated to match actual key
 
-    def test_get_pupildata(self):
-        """Test the get_pupildata method"""
-        # Test getting left eye pupil data
-        left_pd = self.eyedata.get_pupildata(eye='left')
+    def test_to_pupildata(self):
+        """Test conversion to PupilData"""
+        pd = self.eyedata.to_pupildata()
+        self.assertEqual(pd.__class__, pp.PupilData)
+        self.assertEqual(sorted(pd.eyes), ["left", "right"])
+        self.assertEqual(pd.variables, ["pupil"])
+        np.testing.assert_array_equal(pd.tx, self.time)
+        np.testing.assert_array_equal(pd.data['left_pupil'], self.left_pupil)
+
+        left = self.eyedata.to_pupildata("left")
+        self.assertEqual(left.eyes, ["left"])
+        np.testing.assert_array_equal(left.data['left_pupil'], self.left_pupil)
+
+        with self.assertRaises(ValueError):
+            self.eyedata.to_pupildata(eyes='invalid')
+        with self.assertRaises(ValueError):
+            self.eyedata.to_pupildata(eyes=[])
+
+    def test_to_pupildata_keeps_masks_and_copies(self):
+        """Masks and history are kept, and the original is unchanged"""
+        d = self.eyedata.copy()
+        d.data.mask["left_pupil"][10:20] = 1
+        pd = d.to_pupildata()
+        np.testing.assert_array_equal(pd.data.mask["left_pupil"],
+                                      d.data.mask["left_pupil"])
+        self.assertEqual(pd.history[-1]["funcname"], "to_pupildata")
+        pd.data["left_pupil"][0] = -1
+        self.assertNotEqual(d.data["left_pupil"][0], -1)
+        self.assertIn("left_x", d.data)
+
+    def test_to_gazedata(self):
+        """Test conversion to GazeData"""
+        g = self.eyedata.to_gazedata("right")
+        self.assertEqual(g.__class__, pp.GazeData)
+        self.assertEqual(g.eyes, ["right"])
+        self.assertEqual(sorted(g.variables), ["x", "y"])
+        np.testing.assert_array_equal(g.data['right_x'], self.eyedata.data['right_x'])
+        with self.assertRaises(ValueError):
+            self.eyedata.to_gazedata(eyes='invalid')
+
+    def test_get_pupildata_deprecated(self):
+        """get_pupildata still works but warns"""
+        with self.assertWarns(DeprecationWarning):
+            left_pd = self.eyedata.get_pupildata(eye='left')
         self.assertEqual(left_pd.__class__, pp.PupilData)
-        np.testing.assert_array_equal(left_pd.tx, self.time)
-        np.testing.assert_array_equal(left_pd.data['left_pupil'], self.left_pupil)
-        
-        # Test getting right eye pupil data
-        right_pd = self.eyedata.get_pupildata(eye='right')
-        self.assertEqual(right_pd.__class__, pp.PupilData)
-        np.testing.assert_array_equal(right_pd.tx, self.time)
-        np.testing.assert_array_equal(right_pd.data['right_pupil'], self.right_pupil)
-        
-        # Test with no eye specified when multiple eyes are present
-        with self.assertRaises(ValueError):
+        self.assertEqual(left_pd.eyes, ["left"])
+        with self.assertWarns(DeprecationWarning), self.assertRaises(ValueError):
             self.eyedata.get_pupildata()
-            
-        # Test with invalid eye
-        with self.assertRaises(ValueError):
-            self.eyedata.get_pupildata(eye='invalid')
 
     def test_correct_pupil_foreshortening(self):
         """Test the correct_pupil_foreshortening method"""
@@ -2495,7 +2522,7 @@ def test_summary_keys():
     d = pp.EyeData(left_x=np.ones(100), left_y=np.ones(100),
                    left_pupil=np.ones(100), sampling_rate=100)
     g = pp.GazeData(left_x=np.ones(100), left_y=np.ones(100), sampling_rate=100)
-    for obj in [d, d.get_pupildata(), g]:
+    for obj in [d, d.to_pupildata(), g]:
         s = obj.summary()
         assert "params" in s
         assert "parameters" not in s
