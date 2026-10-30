@@ -35,7 +35,8 @@ Version history
 2
     Intervals without `sampling_rate` and `time_offset` (conversions
     between sample indices and time use the data object); sample indices
-    are ``units="samples"`` (instead of None)
+    are ``units="samples"`` (instead of None); eyedata objects have
+    excluded periods (`excluded`, Intervals in ms)
 """
 
 import importlib
@@ -436,7 +437,7 @@ def _v1_intervals(st):
 
 def _migrate_1_to_2(state, class_name):
     """Version 1 -> 2: Intervals lose `sampling_rate` and `time_offset`;
-    sample indices are "samples" instead of None."""
+    sample indices are "samples" instead of None; no excluded periods."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
         state["intervals"] = _v1_intervals(state.get("intervals"))
@@ -444,6 +445,10 @@ def _migrate_1_to_2(state, class_name):
     for key in ("blinks", "interpolated_blinks"):
         if state.get(key) is not None:
             state[key] = {k: _v1_intervals(v) for k, v in state[key].items()}
+    # no excluded periods
+    state["excluded"] = {"intervals": np.zeros((0, 2)), "units": "ms", "label": "excluded",
+                         "event_labels": None, "event_indices": None, "event_onsets": None,
+                         "data_time_range": None, "interval_window": None}
     return state
 
 

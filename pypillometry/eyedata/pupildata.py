@@ -164,7 +164,7 @@ class PupilData(GenericEyeData):
             end_min=self.tx.max()/1000./60.,
             params=self._strfy_params()
         )
-        if len(self._excluded_ms()) > 0:
+        if len(self._excluded) > 0:
             summary["excluded_minutes"] = self.excluded_duration("min")
 
         return summary
