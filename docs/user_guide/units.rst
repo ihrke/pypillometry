@@ -49,6 +49,12 @@ result should be returned:
     d.get_events(units="sec")
     d.sub_slice(3, 5, units="min")
 
+Sample indices are ``units="samples"`` (aliases: "sample", "index",
+"indices", "idx"); ``units=None`` is not accepted. Converting positions
+between sample indices and time needs the data object (see
+:doc:`events_intervals`); durations (e.g., ``10 * u.samples``) are
+converted with the sampling rate.
+
 To convert values yourself, use :func:`parse_time`,
 :func:`parse_distance` and :func:`parse_angle`, or the
 :meth:`Quantity.to` method:

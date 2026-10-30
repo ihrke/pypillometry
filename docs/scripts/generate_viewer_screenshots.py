@@ -347,7 +347,7 @@ def screenshot_tweak_intervals():
     if blink_intervals is not None:
         # Convert to seconds
         if blink_intervals.units != 'sec':
-            blink_intervals = blink_intervals.to_units('sec')
+            blink_intervals = blink_intervals.to_units('sec', eyedata)
         intervals_list = list(blink_intervals.intervals)
     
     canvas = TweakCanvas(
