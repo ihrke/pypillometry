@@ -203,6 +203,11 @@ Pupil
        :alt: Missing pupil data per recording and eye in six datasets, with
              the label borders at 10, 20 and 40%.
 
+    .. figure:: ../images/quality_example_missing.png
+       :alt: Examples of missing pupil data for each label (60 s of the task; red = missing samples).
+
+       Examples of missing pupil data for each label (60 s of the task; red = missing samples).
+
 ``pupil.dropout_rate`` ``(30, 60, 150)``
     In raw data, most dropouts are blinks. Up to 30 dropouts/min is within
     the range of normal blink rates (see `Blink rate`_) and the median of
@@ -214,6 +219,15 @@ Pupil
     .. image:: ../images/quality_ref_dropout_rate.png
        :alt: Dropouts per minute per recording and eye in six datasets, with
              the label borders at 30, 60 and 150 per minute.
+
+    .. figure:: ../images/quality_example_dropout_rate.png
+       :alt: Examples of dropout rates for each label (60 s; ticks = start of a dropout).
+
+       Examples of dropout rates for each label (60 s; ticks = start of a dropout).
+
+    The "bad" example consists of bursts of very short (single-sample) gaps, which
+    are easy to interpolate: a high dropout rate means that the tracking should be
+    checked, not necessarily that the data are unusable.
 
 ``pupil.longest_dropout`` ``(2, 5, 30)`` seconds
     Blinks rarely last longer than 0.5 s, and gaps of 1--2 s can still be
@@ -230,6 +244,11 @@ Pupil
        :alt: Longest dropout per recording and eye in six datasets, with the
              label borders at 2, 5 and 30 s.
 
+    .. figure:: ../images/quality_example_longest_dropout.png
+       :alt: Examples of the longest dropout for each label (window around the longest dropout, marked by the arrow).
+
+       Examples of the longest dropout for each label (window around the longest dropout, marked by the arrow).
+
 ``pupil.noise`` ``(0.5, 1, 2)`` % of the median pupil size
     The bounds are based on the noise in the reference data (see
     `Reference data`_): stationary EyeLink 1000 systems, portable EyeLink
@@ -240,6 +259,15 @@ Pupil
     .. image:: ../images/pupil_noise_datasets.png
        :alt: Pupil noise per recording and eye in six datasets, on a log
              scale, with the label borders at 0.5, 1 and 2%.
+
+    .. figure:: ../images/quality_example_noise.png
+       :alt: Examples of pupil noise for each label (1 s of the task, centered, same scale in all panels).
+
+       Examples of pupil noise for each label (1 s of the task, centered, same scale in all panels).
+
+    The "ok", "poor" and "bad" examples come from the 7T data (no other dataset
+    exceeds 0.5%); there, the noise mostly consists of repeated drops of the pupil
+    value from one sample to the next rather than of fine jitter.
 
     In the lab setups and the 3T scanner, the medians of the datasets are
     between about 0.05% and 0.3%, and almost all recordings (99%, maximum
@@ -293,6 +321,11 @@ Pupil
        :alt: Jumps per minute per recording and eye in six datasets, with
              the label borders at 1, 10 and 100 per minute.
 
+    .. figure:: ../images/quality_example_jump_rate.png
+       :alt: Examples of jump rates for each label (20 s; triangles = counted jumps). Changes at the edges of blinks are not counted.
+
+       Examples of jump rates for each label (20 s; triangles = counted jumps). Changes at the edges of blinks are not counted.
+
 
 Gaze
 ----
@@ -338,6 +371,11 @@ Both eyes
     .. image:: ../images/quality_ref_pupil_correlation.png
        :alt: Correlation of the left and right pupil per binocular recording
              in four datasets, with the label borders at 0.9, 0.8 and 0.6.
+
+    .. figure:: ../images/quality_example_pupil_correlation.png
+       :alt: Examples of the correlation between the eyes for each label (60 s; blue = left, orange = right eye). No recording in the reference data is below 0.6.
+
+       Examples of the correlation between the eyes for each label (60 s; blue = left, orange = right eye). No recording in the reference data is below 0.6.
 
 ``binocular.gaze_disparity_deg`` ``(1, 2, 3)`` degrees
     Both eyes look at the same point, apart from small vergence differences.
