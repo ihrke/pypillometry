@@ -30,6 +30,7 @@ INTERNAL = {
     "pypillometry.units": {"normalize_unit"},
     "pypillometry.signal.preproc": {"helper_merge_blinks"},
     "pypillometry.state": {"to_state", "from_state", "migrate"},
+    "pypillometry.hdf5": {"write_state", "read_state", "is_hdf5"},
     "pypillometry.viewer.canvas": {"ViewerCanvas"},
     "pypillometry.viewer.navigation": {"NavigationHandler"},
     "pypillometry.viewer.tweak": {"TweakCanvas", "TweakViewer"},
