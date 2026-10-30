@@ -30,9 +30,10 @@ class TestViewerHighlight(unittest.TestCase):
         self.assertEqual(res, [(10, 20)])
 
     def test_time_units_on_sample_axis(self):
-        iv = Intervals([(10, 20)], units="ms", sampling_rate=1000)
-        res = _intervals_to_axis(iv, np.arange(100), sample_index=True)
-        self.assertEqual(res, [(10, 20)])
+        """without a time vector, time units cannot be placed"""
+        iv = Intervals([(10, 20)], units="ms")
+        with self.assertRaises(ValueError):
+            _intervals_to_axis(iv, np.arange(100), sample_index=True)
 
     def test_index_on_time_axis(self):
         """index intervals are placed using the time vector"""
@@ -48,7 +49,6 @@ class TestViewerHighlight(unittest.TestCase):
     def test_intervals_not_modified(self):
         iv = Intervals([(10, 20)], units=None)
         _intervals_to_axis(iv, np.arange(100) * 0.01)
-        self.assertIsNone(iv.sampling_rate)
         self.assertIsNone(iv.units)
         self.assertEqual(iv.intervals, [(10, 20)])
 

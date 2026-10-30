@@ -11,6 +11,12 @@ import pypillometry as pp
 import numpy as np
 import pandas as pd
 from pypillometry.intervals import Intervals, merge_intervals
+from types import SimpleNamespace
+
+
+def timebase(n, fs=1000., t0=0.):
+    """Minimal data object (time vector in ms, sampling rate) for conversions."""
+    return SimpleNamespace(tx=t0 + np.arange(n) * 1000. / fs, fs=fs)
 
 
 class TestIntervalsClass(unittest.TestCase):
@@ -209,26 +215,26 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertEqual(merged_20.intervals[0], (10, 35))
     
     def test_intervals_merge_with_distance_indices(self):
-        """Test merging intervals with distance parameter when units are indices"""
-        # At 1000Hz, 2 samples = 2ms
-        intervals = Intervals([(10, 15), (17, 22), (30, 35)], units=None, sampling_rate=1000)
-        
-        # distance=2ms should merge first two (gap is 2 samples = 2ms at 1000Hz)
+        """distance is in the units of the intervals (here samples)"""
+        intervals = Intervals([(10, 15), (17, 22), (30, 35)], units=None)
         merged = intervals.merge(distance=2)
         self.assertEqual(len(merged), 2)
         self.assertEqual(merged.intervals[0], (10, 22))
-    
+        self.assertEqual(intervals.merge(distance=2 * pp.u.samples).intervals,
+                         merged.intervals)
+        with self.assertRaises(ValueError):
+            intervals.merge(distance=2 * pp.u.ms)
+
     def test_intervals_merge_with_distance_seconds(self):
-        """Test merging intervals with distance parameter in seconds units"""
-        # Gap is 0.002 sec = 2ms
-        intervals = Intervals([(0.010, 0.015), (0.017, 0.022)], units="sec", sampling_rate=1000)
-        
-        # distance=2ms should merge
-        merged = intervals.merge(distance=2)
-        self.assertEqual(len(merged), 1)
-        self.assertAlmostEqual(merged.intervals[0][0], 0.010)
-        self.assertAlmostEqual(merged.intervals[0][1], 0.022)
-    
+        """distance is in the units of the intervals unless it carries units"""
+        intervals = Intervals([(0.010, 0.015), (0.017, 0.022)], units="sec")
+        self.assertEqual(len(intervals.merge(distance=0.001)), 2)
+        for distance in [0.002, 2 * pp.u.ms, "2 ms"]:
+            merged = intervals.merge(distance=distance)
+            self.assertEqual(len(merged), 1)
+            self.assertAlmostEqual(merged.intervals[0][0], 0.010)
+            self.assertAlmostEqual(merged.intervals[0][1], 0.022)
+
     def test_intervals_merge_with_distance_preserves_metadata(self):
         """Test that merge with distance preserves and combines metadata correctly"""
         intervals = Intervals(
@@ -251,7 +257,7 @@ class TestIntervalsMethods(unittest.TestCase):
     def test_intervals_merge_with_distance_preserves_units(self):
         """Test that merge with distance returns intervals in original units"""
         for units in ["ms", "sec", "min"]:
-            intervals = Intervals([(10, 15), (17, 22)], units=units, sampling_rate=1000)
+            intervals = Intervals([(10, 15), (17, 22)], units=units)
             merged = intervals.merge(distance=1000)  # Large distance to force merge
             self.assertEqual(merged.units, units)
     
@@ -290,7 +296,6 @@ class TestIntervalsMethods(unittest.TestCase):
             event_labels=["a", "b"],
             event_indices=[0, 1],
             event_onsets=[100, 300],
-            sampling_rate=1000,
             data_time_range=(0, 1000)
         )
         
@@ -301,7 +306,6 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertEqual(padded.event_labels, ["a", "b"])
         self.assertEqual(padded.event_indices, [0, 1])
         self.assertEqual(padded.event_onsets, [100, 300])
-        self.assertEqual(padded.sampling_rate, 1000)
         self.assertEqual(padded.data_time_range, (0, 1000))
     
     def test_intervals_pad_empty_returns_self(self):
@@ -314,7 +318,7 @@ class TestIntervalsMethods(unittest.TestCase):
     
     def test_intervals_pad_with_indices(self):
         """Test padding with index units"""
-        intervals = Intervals([(10, 20), (30, 40)], units=None, sampling_rate=1000)
+        intervals = Intervals([(10, 20), (30, 40)], units=None)
         
         padded = intervals.pad(left=5, right=5)
         
@@ -359,17 +363,15 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertEqual(padded_right.intervals[0], (10, 70))
         self.assertEqual(padded_right.intervals[1], (80, 100))
     
-    def test_intervals_pad_clips_to_zero_without_data_time_range(self):
-        """Test that padding clips to 0 when no data_time_range is set"""
+    def test_intervals_pad_no_clipping_without_data_time_range(self):
+        """time intervals are not clipped without data_time_range (data need not start at 0)"""
         intervals = Intervals([(10, 50)], units="ms")
-        
-        # Padding left beyond 0 should clip to 0
         padded = intervals.pad(left=20)
-        self.assertEqual(padded.intervals[0][0], 0)
-    
+        self.assertEqual(padded.intervals[0][0], -10)
+
     def test_intervals_pad_clips_indices_to_zero(self):
         """Test that index-based intervals are clipped to 0"""
-        intervals = Intervals([(5, 20)], units=None, sampling_rate=1000)
+        intervals = Intervals([(5, 20)], units=None)
         
         # Padding left beyond 0 should clip to 0
         padded = intervals.pad(left=10)
@@ -947,7 +949,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     def test_to_indices_with_units_ms(self):
         """Test to_units('indices') with millisecond units"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
-        indices_intervals = intervals.to_units("indices")
+        indices_intervals = intervals.to_units("indices", self.data)
         indices = np.array(indices_intervals).astype(int)
         
         self.assertIsInstance(indices, np.ndarray)
@@ -958,21 +960,18 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         for start, end in indices:
             self.assertGreaterEqual(start, 0)
             self.assertLess(end, len(self.data.tx))
-    
+
     def test_to_indices_with_units_sec(self):
         """Test to_units('indices') with second units"""
         intervals = self.data.get_intervals("F", interval=(-0.2, 0.2), units="sec")
-        indices_intervals = intervals.to_units("indices")
-        indices = np.array(indices_intervals).astype(int)
-        
-        self.assertIsInstance(indices, np.ndarray)
-        self.assertEqual(indices.dtype, np.int_)
-        
-        # Check that indices are valid
+        indices = np.array(intervals.to_units("indices", self.data)).astype(int)
+        np.testing.assert_array_equal(
+            indices, np.array(self.data.get_intervals("F", interval=(-0.2, 0.2), units="sec")
+                              .to_units("ms").to_units("indices", self.data)))
         for start, end in indices:
             self.assertGreaterEqual(start, 0)
             self.assertLess(end, len(self.data.tx))
-    
+
     def test_to_units_ms_to_sec(self):
         """Test converting from milliseconds to seconds"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
@@ -1042,44 +1041,46 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         np.testing.assert_array_almost_equal(arr_seconds, arr_ms / 1000.0, decimal=6)
         np.testing.assert_array_almost_equal(arr_s, arr_ms / 1000.0, decimal=6)
     
-    def test_to_units_from_indices_works_with_sampling_rate(self):
-        """Test that converting from indices works when sampling_rate is set"""
+    def test_to_units_from_indices_uses_time_vector(self):
+        """converting from indices uses the time vector of the data object"""
         intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
-        # Should have sampling_rate set from get_intervals
-        self.assertIsNotNone(intervals.sampling_rate)
-        
-        # Conversion should work
-        intervals_ms = intervals.to_units("ms")
+        intervals_ms = intervals.to_units("ms", self.data)
         self.assertEqual(intervals_ms.units, "ms")
-    
-    def test_to_units_from_indices_raises_error_without_sampling_rate(self):
-        """Test that converting from indices raises error when sampling_rate not set"""
+        start, end = intervals.intervals[0]
+        self.assertEqual(intervals_ms.intervals[0], (self.data.tx[start], self.data.tx[end]))
+        # the time of the event sample
+        self.assertEqual(intervals_ms.event_onsets[0], self.data.tx[intervals.event_onsets[0]])
+
+    def test_to_units_from_indices_raises_error_without_data(self):
+        """converting from indices needs the data object"""
         intervals = Intervals([(0, 100), (200, 300)], units=None)
-        
         with self.assertRaises(ValueError) as cm:
             intervals.to_units("ms")
-        
-        self.assertIn("sampling_rate", str(cm.exception).lower())
-    
-    def test_to_units_to_indices_works_with_sampling_rate(self):
-        """Test that converting to indices works when sampling_rate is set"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units="ms")
-        # Should have sampling_rate set from get_intervals
-        self.assertIsNotNone(intervals.sampling_rate)
-        
-        # Conversion should work
-        intervals_idx = intervals.to_units("indices")
-        self.assertIsNone(intervals_idx.units)
-    
-    def test_to_units_to_indices_raises_error_without_sampling_rate(self):
-        """Test that converting to indices raises error when sampling_rate not set"""
+        self.assertIn("data object", str(cm.exception))
+
+    def test_to_units_to_indices_uses_time_vector(self):
+        """a time is converted to the first sample at or after it"""
+        d = timebase(10, fs=100., t0=1000.)  # samples at 1000, 1010, ..., 1090 ms
+        intervals = Intervals([(1000, 1020), (1015, 1100)], units="ms",
+                              event_onsets=[1005, 1015], interval_window=(-5, 15))
+        idx = intervals.to_units("indices", d)
+        self.assertIsNone(idx.units)
+        self.assertEqual(idx.intervals, [(0, 2), (2, 10)])
+        self.assertEqual(list(idx.event_onsets), [1, 2])
+        self.assertEqual(idx.interval_window, (0, 2))  # durations via fs
+        self.assertEqual(idx.data_time_range, (0, 10))
+        # and back: each index is the time of its sample
+        back = idx.to_units("ms", d)
+        self.assertEqual(back.intervals, [(1000., 1020.), (1020., 1100.)])
+        self.assertEqual(back.data_time_range, (1000., 1090.))
+
+    def test_to_units_to_indices_raises_error_without_data(self):
+        """converting to indices needs the data object"""
         intervals = Intervals([(0, 100), (200, 300)], units="ms")
-        
         with self.assertRaises(ValueError) as cm:
             intervals.to_units("indices")
-        
-        self.assertIn("sampling_rate", str(cm.exception).lower())
-    
+        self.assertIn("data object", str(cm.exception))
+
     def test_to_units_unknown_source_raises_error(self):
         """Test that unknown source units raise error in constructor"""
         # Now that units are normalized in __init__, invalid units are caught there
@@ -1315,8 +1316,8 @@ class TestIntervalsMaskConversion(unittest.TestCase):
     
     def test_to_mask_basic(self):
         """Test basic conversion to mask"""
-        intervals = Intervals([(0, 10), (20, 30)], units=None, data_time_range=(0, 50))
-        mask = intervals.to_mask()
+        intervals = Intervals([(0, 10), (20, 30)], units=None)
+        mask = intervals.to_mask(timebase(50))
         
         self.assertIsInstance(mask, np.ndarray)
         self.assertEqual(len(mask), 50)
@@ -1327,64 +1328,41 @@ class TestIntervalsMaskConversion(unittest.TestCase):
         np.testing.assert_array_equal(mask[10:20], 0)
         np.testing.assert_array_equal(mask[20:30], 1)
         np.testing.assert_array_equal(mask[30:50], 0)
-    
-    def test_to_mask_with_explicit_length(self):
-        """Test to_mask with explicit length argument"""
-        intervals = Intervals([(0, 10), (20, 30)], units=None)
-        mask = intervals.to_mask(length=40)
-        
-        self.assertEqual(len(mask), 40)
-        np.testing.assert_array_equal(mask[0:10], 1)
-        np.testing.assert_array_equal(mask[20:30], 1)
-    
+
+
+
     def test_to_mask_empty_intervals(self):
         """Test to_mask with empty intervals"""
-        intervals = Intervals([], units=None, data_time_range=(0, 100))
-        mask = intervals.to_mask()
-        
+        mask = Intervals([], units=None).to_mask(timebase(100))
         self.assertEqual(len(mask), 100)
         np.testing.assert_array_equal(mask, 0)
-    
-    def test_to_mask_auto_converts_time_units(self):
-        """Test that to_mask auto-converts time-based intervals to indices"""
-        # 100ms intervals at 1000Hz = 100 samples
-        intervals = Intervals([(0, 100), (200, 300)], units="ms", 
-                             data_time_range=(0, 500), sampling_rate=1000)
-        mask = intervals.to_mask()
-        
-        self.assertEqual(len(mask), 500)  # 500ms at 1000Hz = 500 samples
+
+    def test_to_mask_converts_time_units(self):
+        """to_mask converts time-based intervals with the time vector of the data"""
+        intervals = Intervals([(0, 100), (200, 300)], units="ms")
+        mask = intervals.to_mask(timebase(500))
+        self.assertEqual(len(mask), 500)
         np.testing.assert_array_equal(mask[0:100], 1)
         np.testing.assert_array_equal(mask[100:200], 0)
         np.testing.assert_array_equal(mask[200:300], 1)
         np.testing.assert_array_equal(mask[300:500], 0)
-    
-    def test_to_mask_raises_without_sampling_rate(self):
-        """Test that to_mask raises error for time units without sampling_rate"""
-        intervals = Intervals([(0, 100)], units="ms", data_time_range=(0, 500))
-        
-        with self.assertRaises(ValueError) as cm:
-            intervals.to_mask()
-        
-        self.assertIn("sampling_rate", str(cm.exception).lower())
-    
-    def test_to_mask_raises_without_length_or_data_time_range(self):
-        """Test that to_mask raises error without length or data_time_range"""
-        intervals = Intervals([(0, 10)], units=None)
-        
-        with self.assertRaises(ValueError) as cm:
-            intervals.to_mask()
-        
-        self.assertIn("length", str(cm.exception).lower())
-    
+        # recording that does not start at 0
+        mask = intervals.to_mask(timebase(500, t0=150.))
+        np.testing.assert_array_equal(np.where(mask)[0], np.arange(50, 150))
+
+
+
+    def test_to_mask_needs_data(self):
+        """to_mask needs the data object"""
+        with self.assertRaises(TypeError):
+            Intervals([(0, 10)], units=None).to_mask()
+
     def test_to_mask_clips_to_bounds(self):
         """Test that intervals outside mask bounds are clipped"""
-        intervals = Intervals([(-10, 10), (40, 60)], units=None, data_time_range=(0, 50))
-        mask = intervals.to_mask()
-        
-        # Should clip to [0, 50)
-        np.testing.assert_array_equal(mask[0:10], 1)
-        np.testing.assert_array_equal(mask[40:50], 1)
-    
+        intervals = Intervals([(-10, 10), (40, 60)], units=None)
+        mask = intervals.to_mask(timebase(50))
+        np.testing.assert_array_equal(np.where(mask)[0], list(range(10)) + list(range(40, 50)))
+
     def test_from_mask_basic(self):
         """Test basic creation from mask"""
         mask = np.array([0, 0, 1, 1, 1, 0, 0, 1, 1, 0])
@@ -1418,29 +1396,26 @@ class TestIntervalsMaskConversion(unittest.TestCase):
         
         self.assertEqual(intervals.label, "test_mask")
     
-    def test_from_mask_with_sampling_rate(self):
-        """Test from_mask with sampling_rate"""
-        mask = np.array([1, 1, 0, 0, 1, 1])
-        intervals = Intervals.from_mask(mask, sampling_rate=1000)
-        
-        self.assertEqual(intervals.sampling_rate, 1000)
+    def test_from_mask_checks_length(self):
+        """the mask must have one entry per sample of the data"""
+        with self.assertRaises(ValueError):
+            Intervals.from_mask(np.array([1, 1, 0]), timebase(4))
 
     def test_from_mask_time_units(self):
-        """from_mask with time units converts the sample indices"""
+        """from_mask with time units converts with the time vector of the data"""
         mask = np.array([0, 1, 1, 0])
-        intervals = Intervals.from_mask(mask, units="ms", sampling_rate=500)
+        intervals = Intervals.from_mask(mask, timebase(4, fs=500.), units="ms")
         self.assertEqual(intervals.units, "ms")
         self.assertEqual(intervals.intervals, [(2.0, 6.0)])
-        self.assertEqual(intervals.data_time_range, (0.0, 8.0))
-        intervals = Intervals.from_mask(mask, units="ms", sampling_rate=500,
-                                        time_offset=100)
+        self.assertEqual(intervals.data_time_range, (0.0, 6.0))
+        intervals = Intervals.from_mask(mask, timebase(4, fs=500., t0=100.), units="ms")
         self.assertEqual(intervals.intervals, [(102.0, 106.0)])
 
-    def test_from_mask_time_units_without_sampling_rate(self):
-        """from_mask with time units but no sampling rate raises"""
+    def test_from_mask_time_units_without_data(self):
+        """from_mask with time units but no data object raises"""
         with self.assertRaises(ValueError):
             Intervals.from_mask(np.array([0, 1, 1, 0]), units="ms")
-    
+
     def test_from_mask_boolean_input(self):
         """Test from_mask with boolean array"""
         mask = np.array([False, True, True, False, True])
@@ -1450,13 +1425,9 @@ class TestIntervalsMaskConversion(unittest.TestCase):
     
     def test_roundtrip_to_mask_from_mask(self):
         """Test roundtrip: intervals -> mask -> intervals"""
-        original = Intervals([(10, 20), (30, 50), (70, 80)], units=None, data_time_range=(0, 100))
-        
-        mask = original.to_mask()
-        recovered = Intervals.from_mask(mask)
-        
+        original = Intervals([(10, 20), (30, 50), (70, 80)], units=None)
+        recovered = Intervals.from_mask(original.to_mask(timebase(100)))
         self.assertEqual(original.intervals, recovered.intervals)
-
 
 class TestIntervalsFilter(unittest.TestCase):
     """Test Intervals.filter() method"""
@@ -1563,9 +1534,7 @@ class TestIntervalsFilter(unittest.TestCase):
             event_labels=["a", "b", "c"],
             event_indices=np.array([0, 1, 2]),
             event_onsets=np.array([50, 250, 450]),
-            data_time_range=(0, 1000),
-            sampling_rate=1000
-        )
+            data_time_range=(0, 1000))
         
         filtered = intervals.filter(min_duration=100)
         
@@ -1575,7 +1544,6 @@ class TestIntervalsFilter(unittest.TestCase):
         np.testing.assert_array_equal(filtered.event_indices, [0, 1, 2])
         np.testing.assert_array_equal(filtered.event_onsets, [50, 250, 450])
         self.assertEqual(filtered.data_time_range, (0, 1000))
-        self.assertEqual(filtered.sampling_rate, 1000)
     
     def test_filter_filters_metadata_correctly(self):
         """Test that metadata is filtered in sync with intervals"""
@@ -1752,9 +1720,9 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
         """Test subtraction with time-based intervals"""
         # 1000Hz sampling rate
         a = Intervals([(0, 100), (200, 300)], units="ms", 
-                     data_time_range=(0, 400), sampling_rate=1000)
+                     data_time_range=(0, 400))
         b = Intervals([(50, 150)], units="ms", 
-                     data_time_range=(0, 400), sampling_rate=1000)
+                     data_time_range=(0, 400))
         c = a - b
         
         # Result should also be in ms (converted back from indices)
@@ -1775,14 +1743,14 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
         self.assertIn("a", c.label)
         self.assertIn("b", c.label)
     
-    def test_subtract_preserves_sampling_rate(self):
-        """Test that subtraction preserves sampling_rate"""
-        a = Intervals([(0, 100)], units=None, data_time_range=(0, 200), sampling_rate=500)
-        b = Intervals([(50, 75)], units=None, data_time_range=(0, 200))
-        c = a - b
-        
-        self.assertEqual(c.sampling_rate, 500)
-    
+    def test_subtract_mixed_units(self):
+        """time units are converted; indices and time units cannot be combined"""
+        a = Intervals([(0, 1)], units="sec")
+        b = Intervals([(500, 1500)], units="ms")
+        self.assertEqual((a - b).intervals, [(0, 0.5)])
+        with self.assertRaises(ValueError):
+            a - Intervals([(0, 10)], units=None)
+
     def test_subtract_non_intervals_returns_notimplemented(self):
         """Test that subtracting non-Intervals returns NotImplemented"""
         a = Intervals([(0, 100)], units=None, data_time_range=(0, 200))
@@ -1790,16 +1758,12 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
         result = a.__sub__("not an Intervals")
         self.assertEqual(result, NotImplemented)
     
-    def test_subtract_raises_without_data_time_range(self):
-        """Test that subtraction raises error without data_time_range"""
-        a = Intervals([(0, 100)], units=None)
+    def test_subtract_without_data_time_range(self):
+        """subtraction does not need data_time_range"""
+        a = Intervals([(0, 100), (90, 120)], units=None)
         b = Intervals([(50, 75)], units=None)
-        
-        with self.assertRaises(ValueError) as cm:
-            a - b
-        
-        self.assertIn("data_time_range", str(cm.exception).lower())
-    
+        self.assertEqual((a - b).intervals, [(0, 50), (75, 120)])
+
     def test_subtract_uses_other_data_time_range(self):
         """Test that subtraction uses other's data_time_range if self doesn't have one"""
         a = Intervals([(0, 100)], units=None)
@@ -1824,3 +1788,27 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
+
+
+class TestConversionWithData(unittest.TestCase):
+    """Conversions use the time vector of the data (recording not starting at 0)."""
+
+    def setUp(self):
+        self.d = pp.PupilData(time=1000 + np.arange(0, 10000, 10.), left_pupil=np.ones(1000),
+                              event_onsets=[2000, 5005], event_labels=["a", "b"])
+
+    def test_get_intervals_samples_and_ms_agree(self):
+        ms = self.d.get_intervals("", (-100, 200), units="ms")
+        ix = self.d.get_intervals("", (-10, 20), units=None)
+        self.assertEqual(ix.intervals, [(90, 120), (391, 421)])
+        self.assertEqual(ms.to_units(None, self.d).intervals, ix.intervals)
+
+    def test_mask_intervals_in_ms(self):
+        d = self.d.mask_intervals(Intervals([(1100, 1150)], units="ms"), inplace=False)
+        np.testing.assert_array_equal(np.where(d.data.mask["left_pupil"])[0], np.arange(10, 15))
+
+    def test_segments_from_samples_and_ms(self):
+        seg_ms = self.d.get_segments(self.d.get_intervals("", (-100, 200), units="ms"), "left_pupil")
+        seg_ix = self.d.get_segments(self.d.get_intervals("", (-10, 20), units=None), "left_pupil")
+        np.testing.assert_allclose(seg_ms.tx, seg_ix.tx)
+        self.assertEqual(seg_ms.data.shape, seg_ix.data.shape)

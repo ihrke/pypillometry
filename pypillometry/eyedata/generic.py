@@ -9,7 +9,7 @@ All other eyedata classes should inherit from this class.
 from collections.abc import Iterable
 from .. import io
 from ..convenience import sizeof_fmt, ByteSize, _round_values, requires_package, is_url, suppress_all_output, normalize_unit, _warn_if_ignores_mask
-from ..units import UNSET, _has_units, _time_values_and_units, parse_time
+from ..units import UNSET, _has_units, _time_values_and_units, parse_time, _ms_to_samples
 from ..io import download
 from .eyedatadict import EyeDataDict
 from .experimental_setup import ExperimentalSetup
@@ -582,68 +582,28 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> blinks = data.get_blinks('left', 'pupil')
         >>> blinks_ms = data.get_blinks('left', 'pupil', units="ms")
         >>> blinks_dict = data.get_blinks(['left', 'right'], 'pupil')
-        >>> blinks_idx = blinks_ms.to_units("indices")
+        >>> blinks_idx = blinks_ms.to_units("indices", data)
+        """
+        return self._stored_intervals(self._blinks, eyes, variables, units, "blinks")
+
+    def _stored_intervals(self, store, eyes, variables, units, suffix):
+        """Intervals stored in `store` (e.g., blinks) for eyes/variables.
+
+        Returns an Intervals object for a single eye and variable, else a
+        dict (keys like "left_pupil"); missing entries are empty Intervals.
         """
         eyes, variables = self._get_eye_var(eyes, variables)
-        
-        # Normalize units (handles aliases like "seconds", "hrs", etc.)
-        units = normalize_unit(units)
-        
-        # Check if we need to return dict for multiple eyes/variables
-        return_dict = len(eyes) > 1 or len(variables) > 1
-        
-        if return_dict:
-            # Return dict of Intervals
-            result = {}
-            for e, v in itertools.product(eyes, variables):
-                key = e + "_" + v
-                if key in self._blinks and self._blinks[key] is not None:
-                    intervals_obj = self._blinks[key]
-                    # Ensure sampling_rate is set
-                    if intervals_obj.sampling_rate is None:
-                        intervals_obj.sampling_rate = self.fs
-                else:
-                    # No blinks stored - create empty Intervals
-                    intervals_obj = Intervals(
-                        intervals=[],
-                        units=None,
-                        label=f"{e}_{v}_blinks",
-                        data_time_range=(0, len(self.tx)),
-                        sampling_rate=self.fs,
-                        time_offset=self.tx[0]
-                    )
-                
-                # Convert to requested units if needed
-                if units is not None:
-                    intervals_obj = intervals_obj.to_units(units)
-                
-                result[key] = intervals_obj
-            
+        result = {}
+        for e, v in itertools.product(eyes, variables):
+            key = f"{e}_{v}"
+            iv = store.get(key)
+            if iv is None:
+                iv = Intervals([], units=None, label=f"{key}_{suffix}",
+                               data_time_range=(0, len(self.tx)))
+            result[key] = iv if units is None else iv.to_units(units, self)
+        if len(eyes) > 1 or len(variables) > 1:
             return result
-        else:
-            # Single eye/variable - return Intervals directly
-            key = eyes[0] + "_" + variables[0]
-            if key in self._blinks and self._blinks[key] is not None:
-                result = self._blinks[key]
-                # Ensure sampling_rate is set
-                if result.sampling_rate is None:
-                    result.sampling_rate = self.fs
-            else:
-                # No blinks stored - return empty Intervals
-                result = Intervals(
-                    intervals=[],
-                    units=None,
-                    label=f"{eyes[0]}_{variables[0]}_blinks",
-                    data_time_range=(0, len(self.tx)),
-                    sampling_rate=self.fs,
-                    time_offset=self.tx[0]
-                )
-            
-            # Convert to requested units if needed
-            if units is not None:
-                result = result.to_units(units)
-            
-            return result  
+        return next(iter(result.values()))
 
     def get_interpolated_blinks(self, eyes: str|list = [], variables: str|list = [], 
                                 units: str|None = None):
@@ -681,59 +641,8 @@ class GenericEyeData(state.VersionedState, ABC):
         get_blinks : Get detected (not interpolated) blinks
         pupil_blinks_interpolate : Interpolate blinks
         """
-        eyes, variables = self._get_eye_var(eyes, variables)
-        
-        # Multiple eyes/variables - return dict
-        if len(eyes) > 1 or len(variables) > 1:
-            result = {}
-            for e, v in itertools.product(eyes, variables):
-                key = e + "_" + v
-                if key in self._interpolated_blinks and self._interpolated_blinks[key] is not None:
-                    intervals_obj = self._interpolated_blinks[key]
-                    # Ensure sampling_rate is set
-                    if intervals_obj.sampling_rate is None:
-                        intervals_obj.sampling_rate = self.fs
-                    # Convert to requested units if needed
-                    if units is not None:
-                        intervals_obj = intervals_obj.to_units(units)
-                    result[key] = intervals_obj
-                else:
-                    # No interpolated blinks stored - return empty Intervals
-                    result[key] = Intervals(
-                        intervals=[],
-                        units=None,
-                        label=f"{key}_interpolated_blinks",
-                        data_time_range=(0, len(self.tx)),
-                        sampling_rate=self.fs,
-                        time_offset=self.tx[0]
-                    )
-                    if units is not None:
-                        result[key] = result[key].to_units(units)
-            return result
-        else:
-            # Single eye/variable - return Intervals directly
-            key = eyes[0] + "_" + variables[0]
-            if key in self._interpolated_blinks and self._interpolated_blinks[key] is not None:
-                result = self._interpolated_blinks[key]
-                # Ensure sampling_rate is set
-                if result.sampling_rate is None:
-                    result.sampling_rate = self.fs
-            else:
-                # No interpolated blinks stored - return empty Intervals
-                result = Intervals(
-                    intervals=[],
-                    units=None,
-                    label=f"{eyes[0]}_{variables[0]}_interpolated_blinks",
-                    data_time_range=(0, len(self.tx)),
-                    sampling_rate=self.fs,
-                    time_offset=self.tx[0]
-                )
-            
-            # Convert to requested units if needed
-            if units is not None:
-                result = result.to_units(units)
-            
-            return result
+        return self._stored_intervals(self._interpolated_blinks, eyes, variables,
+                                      units, "interpolated_blinks")
 
     def mask_as_intervals(self, eyes: str|list = [], variables: str|list = [], 
                           units: str|None = None, label: str|None = None):
@@ -770,68 +679,19 @@ class GenericEyeData(state.VersionedState, ABC):
         >>> mask_dict = data.mask_as_intervals(['left', 'right'], 'pupil')
         """
         eyes, variables = self._get_eye_var(eyes, variables)
-        
-        # Normalize units (handles aliases like "seconds", "hrs", etc.)
-        units = normalize_unit(units)
-        
-        # Check if we need to return dict for multiple eyes/variables
-        return_dict = len(eyes) > 1 or len(variables) > 1
-        
-        if return_dict:
-            # Return dict of Intervals
-            result = {}
-            for e, v in itertools.product(eyes, variables):
-                key = e + "_" + v
-                if key not in self.data.mask:
-                    continue
-                    
+        result = {}
+        for e, v in itertools.product(eyes, variables):
+            key = f"{e}_{v}"
+            if key in self.data.mask:
                 mask = self.data.mask[key]
-                intervals_list = self._mask_to_intervals_list(mask)
-                
-                intervals_obj = Intervals(
-                    intervals_list,
-                    units=None,
-                    label=label or f"{key}_mask",
-                    data_time_range=(0, len(self.tx)),
-                    sampling_rate=self.fs,
-                    time_offset=self.tx[0]
-                )
-                
-                # Convert to requested units if needed
-                if units is not None:
-                    intervals_obj = intervals_obj.to_units(units)
-                
-                result[key] = intervals_obj
-            
+            elif len(eyes) > 1 or len(variables) > 1:
+                continue  # leave out combinations not in the data
+            else:
+                mask = np.zeros(len(self.tx))
+            result[key] = Intervals.from_mask(mask, self, units, label=label or f"{key}_mask")
+        if len(eyes) > 1 or len(variables) > 1:
             return result
-        else:
-            # Single eye/variable - return Intervals directly
-            key = eyes[0] + "_" + variables[0]
-            if key not in self.data.mask:
-                empty_intervals = Intervals([], units=None, label=label or f"{key}_mask",
-                               data_time_range=(0, len(self.tx)), sampling_rate=self.fs,
-                               time_offset=self.tx[0])
-                if units is not None:
-                    return empty_intervals.to_units(units)
-                return empty_intervals
-                
-            mask = self.data.mask[key]
-            intervals_list = self._mask_to_intervals_list(mask)
-            
-            result = Intervals(
-                intervals_list,
-                units=None,
-                label=label or f"{key}_mask",
-                data_time_range=(0, len(self.tx)),
-                sampling_rate=self.fs,
-                time_offset=self.tx[0]
-            )
-            
-            # Convert to requested units if needed
-            if units is not None:
-                result = result.to_units(units)
-            
-            return result
+        return next(iter(result.values()))
     
     def _mask_to_intervals_list(self, mask):
         """Helper method to convert mask array to list of interval tuples.
@@ -1165,8 +1025,7 @@ class GenericEyeData(state.VersionedState, ABC):
                     continue
                 shifted = [(max(int(on)-first, 0), min(int(off)-first, n)) for on, off in iv.intervals]
                 store[key] = Intervals([(on, off) for on, off in shifted if off > on], None,
-                                       label=iv.label, data_time_range=(0, n), sampling_rate=obj.fs,
-                                       time_offset=obj.tx[0] if n > 0 else 0.0)
+                                       label=iv.label, data_time_range=(0, n))
 
         keepev=np.logical_and(evon>=start, evon<=end)
         obj.event_onsets=obj.event_onsets[keepev]
@@ -1887,8 +1746,7 @@ class GenericEyeData(state.VersionedState, ABC):
                         continue
                     moved = [(int(newpos[on]), int(newpos[off-1])+1) for on, off in iv.intervals]
                     store[key] = Intervals(moved, None, label=iv.label,
-                                           data_time_range=(0, len(ntx)), sampling_rate=self.fs,
-                                           time_offset=ntx[0])
+                                           data_time_range=(0, len(ntx)))
         return self
     
     def get_intervals(self, 
@@ -1964,182 +1822,88 @@ class GenericEyeData(state.VersionedState, ABC):
         if not isinstance(event_select, tuple) and interval[1]<=interval[0]:
             raise ValueError("interval must be (min,max) with min<max, got {}".format(interval))
         
-        # Handle Events object as event_select
+        def select(evsel):
+            """Boolean index of the events matching `evsel` (str or function)."""
+            if callable(evsel):
+                ix = np.array([bool(evsel(evlab, **kwargs)) for evlab in self.event_labels],
+                              dtype=bool)
+            elif isinstance(evsel, str):
+                ix = np.array([evsel in evlab for evlab in self.event_labels], dtype=bool)
+            else:
+                raise ValueError("event_select must be string or function")
+            if np.sum(ix)==0:
+                raise ValueError("no events found matching event_select")
+            return ix
+
         if isinstance(event_select, Events):
-            # Convert Events to ms if needed (internal format)
-            if event_select.units != "ms":
-                events_ms = event_select.to_units("ms")
-            else:
-                events_ms = event_select
-            
-            # Use events directly - create intervals around them
-            if units is None:
-                # Work in indices
-                eix = np.array([np.argmin(np.abs(self.tx - ev)) 
-                               for ev in events_ms.onsets])
-                sti = np.maximum(eix + interval[0], 0)
-                ste = np.minimum(eix + interval[1], len(self.tx))
-                event_onsets_list = eix.tolist()
-            else:
-                # Work in specified units
-                sti = (events_ms.onsets * fac) + interval[0]
-                ste = (events_ms.onsets * fac) + interval[1]
-                event_onsets_list = (events_ms.onsets * fac).tolist()
-            
-            intervals_list = [(s, e) for s, e in zip(sti, ste)]
-            
-            # Create label from Events if not provided
+            # events given directly
+            on1 = on2 = event_select.to_units("ms").onsets
+            selected_labels = event_select.labels.tolist()
+            selected_indices = None
             if label is None:
-                label = f"events_{len(events_ms)}"
-            
-            # Get data time range
-            if units is None:
-                data_time_range = (0, len(self.tx))
-                time_offset = self.tx[0]
-            else:
-                data_time_range = (self.tx[0] * fac, self.tx[-1] * fac)
-                time_offset = 0.0
-            
-            return Intervals(
-                intervals=intervals_list,
-                units=units,
-                label=label,
-                event_labels=events_ms.labels.tolist(),
-                event_indices=None,  # We don't have indices from Events object
-                data_time_range=data_time_range,
-                event_onsets=event_onsets_list,
-                sampling_rate=self.fs,
-                time_offset=time_offset,
-                interval_window=interval
-            )
-        
-        if isinstance(event_select, tuple):
+                label = f"events_{len(event_select)}"
+        elif isinstance(event_select, tuple):
             # two events and interval in between
             if len(event_select)!=2:
                 raise ValueError("event_select must be tuple with two entries")
-            event_ix=[None,None]
-            for i,evsel in enumerate(event_select):
-                if callable(evsel):
-                    event_ix[i]=np.array([bool(evsel(evlab, **kwargs)) 
-                                          for evlab in self.event_labels])
-                elif isinstance(evsel, str):
-                    event_ix[i]=np.array([evsel in evlab for evlab in self.event_labels])
-                else:
-                    raise ValueError("event_select must be string or function")
-                if np.sum(event_ix[i])==0:
-                    raise ValueError("no events found matching event_select")
-            if np.sum(event_ix[0])!=np.sum(event_ix[1]):
+            ix1, ix2 = select(event_select[0]), select(event_select[1])
+            if np.sum(ix1)!=np.sum(ix2):
                 raise ValueError("event_select must result in same number of events for both "
-                "selectors, got {} and {}".format(np.sum(event_ix[0]), np.sum(event_ix[1])))
+                "selectors, got {} and {}".format(np.sum(ix1), np.sum(ix2)))
             # pairs are matched by order: the n-th second event must not
             # come before the n-th first event (catches missing/extra events)
-            on1=self.event_onsets[event_ix[0]]
-            on2=self.event_onsets[event_ix[1]]
+            on1=self.event_onsets[ix1]
+            on2=self.event_onsets[ix2]
             bad=np.where(on2<on1)[0]
             if len(bad)>0:
                 raise ValueError("second event before first event in pair(s) {} "
                     "(onsets {} and {}); events are paired by order, check for "
                     "missing or extra events".format(bad.tolist(), on1[bad].tolist(),
                                                      on2[bad].tolist()))
-
-            if units is None:
-                eix1=np.array([np.argmin(np.abs(self.tx-ev))
-                               for ev in self.event_onsets[event_ix[0]]])
-                eix2=np.array([np.argmin(np.abs(self.tx-ev))
-                               for ev in self.event_onsets[event_ix[1]]])
-                sti=np.maximum(eix1+interval[0], 0)
-                ste=np.minimum(eix2+interval[1], len(self.tx))
-            else:
-                sti=(self.event_onsets[event_ix[0]]*fac)+interval[0]
-                ste=(self.event_onsets[event_ix[1]]*fac)+interval[1]
-            bad=np.where(ste<=sti)[0]
-            if len(bad)>0:
-                raise ValueError("interval {} gives empty intervals for pair(s) {}"
-                                 .format(interval, bad.tolist()))
-
-            # Create label for between-events intervals if not provided
             if label is None:
                 if isinstance(event_select[0], str) and isinstance(event_select[1], str):
                     label = f"{event_select[0]}_to_{event_select[1]}"
                 else:
                     label = "between_events"
-            
-            # Get labels and indices for selected events
-            selected_labels = [f"{self.event_labels[i]}_to_{self.event_labels[j]}" 
-                             for i, j in zip(np.where(event_ix[0])[0], np.where(event_ix[1])[0])]
-            selected_indices = np.where(event_ix[0])[0]
-            
-            # Get event onsets (use first event of the pair as reference)
-            if units is None:
-                # In index units
-                event_onsets_list = [np.argmin(np.abs(self.tx-self.event_onsets[i])) 
-                                    for i in np.where(event_ix[0])[0]]
-            else:
-                # In specified units
-                event_onsets_list = [self.event_onsets[i] * fac 
-                                    for i in np.where(event_ix[0])[0]]
-            
+            selected_labels = [f"{self.event_labels[i]}_to_{self.event_labels[j]}"
+                               for i, j in zip(np.where(ix1)[0], np.where(ix2)[0])]
+            selected_indices = np.where(ix1)[0]
         else:
             # one event with padding interval
-            if callable(event_select):
-                event_ix=np.array([bool(event_select(evlab, **kwargs)) 
-                                   for evlab in self.event_labels])
-            elif isinstance(event_select, str):
-                event_ix=np.array([event_select in evlab for evlab in self.event_labels])
-            else:
-                raise ValueError("event_select must be string or function")
-            if np.sum(event_ix)==0:
-                raise ValueError("no events found matching event_select")
-            if units is None:
-                eix=np.array([np.argmin(np.abs(self.tx-ev)) 
-                              for ev in self.event_onsets[event_ix]])
-                sti=np.maximum(eix+interval[0], 0)
-                ste=np.minimum(eix+interval[1], len(self.tx))
-            else:
-                sti=(self.event_onsets[event_ix]*fac)+interval[0]
-                ste=(self.event_onsets[event_ix]*fac)+interval[1]
-            
-            # Create label from event_select if not provided
+            ix = select(event_select)
+            on1 = on2 = self.event_onsets[ix]
             if label is None:
-                if isinstance(event_select, str):
-                    label = event_select
-                else:
-                    label = "custom_events"
-            
-            # Get labels and indices for selected events
-            selected_indices = np.where(event_ix)[0]
+                label = event_select if isinstance(event_select, str) else "custom_events"
+            selected_indices = np.where(ix)[0]
             selected_labels = [self.event_labels[i] for i in selected_indices]
-            
-            # Get event onsets in appropriate units
-            if units is None:
-                # In index units
-                event_onsets_list = eix.tolist()
-            else:
-                # In specified units
-                event_onsets_list = (self.event_onsets[event_ix] * fac).tolist()
-        
-        intervals_list = [(s,e) for s,e in zip(sti,ste)]
-        
-        # Get data time range for plotting (in same units as intervals)
+
+        n = len(self.tx)
         if units is None:
-            # Units are indices
-            data_time_range = (0, len(self.tx))
-            time_offset = self.tx[0]
+            # sample of each event, the window in samples around it
+            eix1 = np.clip(_ms_to_samples(self, on1), 0, n-1)
+            eix2 = np.clip(_ms_to_samples(self, on2), 0, n-1)
+            sti = np.maximum(eix1+interval[0], 0)
+            ste = np.minimum(eix2+interval[1], n)
+            event_onsets_list = np.atleast_1d(eix1).tolist()
+            data_time_range = (0, n)
         else:
-            # Convert tx range to specified units
-            data_time_range = (self.tx[0] * fac, self.tx[-1] * fac)
-            time_offset = 0.0
-        
+            sti = on1*fac+interval[0]
+            ste = on2*fac+interval[1]
+            event_onsets_list = (on1*fac).tolist()
+            data_time_range = (self.tx[0]*fac, self.tx[-1]*fac)
+        bad=np.where(ste<=sti)[0]
+        if len(bad)>0:
+            raise ValueError("interval {} gives empty intervals for pair(s) {}"
+                             .format(interval, bad.tolist()))
+
         return Intervals(
-            intervals=intervals_list,
+            intervals=list(zip(np.atleast_1d(sti).tolist(), np.atleast_1d(ste).tolist())),
             units=units,
             label=label,
             event_labels=selected_labels,
             event_indices=selected_indices,
             data_time_range=data_time_range,
             event_onsets=event_onsets_list,
-            sampling_rate=self.fs,
-            time_offset=time_offset,
             interval_window=interval
         )
 
@@ -2406,8 +2170,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 if iv is None or iv.units is not None:
                     continue
                 rescaled = [(int(on)//dsfac, min(int(np.ceil(off/dsfac)), n)) for on, off in iv.intervals]
-                store[key] = Intervals(rescaled, None, label=iv.label, data_time_range=(0, n),
-                                       sampling_rate=obj.fs, time_offset=obj.tx[0])
+                store[key] = Intervals(rescaled, None, label=iv.label, data_time_range=(0, n))
         return obj
 
     @keephistory
@@ -2557,10 +2320,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 intervals=[(int(s), int(e)) for s, e in newblinks],
                 units=None,
                 label=f"{eye}_{var}_blinks",
-                data_time_range=(0, len(obj.tx)),
-                sampling_rate=obj.fs,
-                time_offset=obj.tx[0]
-            )
+                data_time_range=(0, len(obj.tx)))
             
             key = f"{eye}_{var}"
             merged_dict[key] = merged_intervals
@@ -2634,14 +2394,9 @@ class GenericEyeData(state.VersionedState, ABC):
                 raise ValueError("Must provide either 'intervals' or both 'event_select' and 'interval'")
             intervs = self.get_intervals(event_select, interval, units=units, **kwargs)
 
-        # stat_event_interval matches the bounds against the time vector it
-        # gets: use sample numbers for index-based Intervals, else tx in ms
-        if intervs.units is None:
-            tx = np.arange(len(self.tx))
-            intervals_list = intervs.intervals
-        else:
-            tx = self.tx
-            intervals_list = intervs.to_units("ms").intervals
+        # bounds in sample indices, matched against the sample numbers
+        tx = np.arange(len(self.tx))
+        intervals_list = intervs.to_units(None, self).intervals
 
         _warn_if_ignores_mask(statfct, "statfct")
         stat={}
@@ -2788,55 +2543,23 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         obj = self._get_inplace(inplace)
 
-        # Check if intervals is a dict
         if isinstance(intervals, dict):
-            # Apply each Intervals object to its corresponding eye_variable
-            for key, interval_obj in intervals.items():
-                if not isinstance(interval_obj, Intervals):
-                    raise TypeError(f"Dict values must be Intervals objects, got {type(interval_obj)} for key '{key}'")
-                
-                # Ensure sampling_rate is set for unit conversion
-                if interval_obj.sampling_rate is None:
-                    interval_obj.sampling_rate = obj.fs
-                
-                # Convert to index-based intervals if needed
-                intervals_array = np.array(interval_obj.to_units("indices")).astype(int)
-                
-                # Apply mask for this specific eye_variable
-                if key not in obj.data.data:
-                    logger.warning(f"Key '{key}' not found in data, skipping")
-                    continue
-                    
-                for start, end in intervals_array:
-                    start_idx = int(max(0, min(len(obj.tx) - 1, start)))
-                    end_idx = int(max(0, min(len(obj.tx), end)))
-                    obj.data.mask[key][start_idx:end_idx] = 1
+            # one Intervals object per eye_variable
+            per_key = intervals
         else:
-            # Single Intervals object - apply to specified eyes/variables
-            if not isinstance(intervals, Intervals):
-                raise TypeError(f"intervals must be an Intervals object or dict, got {type(intervals)}")
-            
-            # Ensure sampling_rate is set for unit conversion
-            if intervals.sampling_rate is None:
-                intervals.sampling_rate = obj.fs
-            
             eyes, variables = obj._get_eye_var(eyes, variables)
-            
-            # Convert to index-based intervals if needed
-            intervals_array = np.array(intervals.to_units("indices")).astype(int)
-            
-            # Apply to all combinations of eyes and variables
-            for eye in eyes:
-                for var in variables:
-                    key = f"{eye}_{var}"
-                    if key not in obj.data.data:
-                        logger.warning(f"Key '{key}' not found in data, skipping")
-                        continue
-                    
-                    for start, end in intervals_array:
-                        start_idx = int(max(0, min(len(obj.tx) - 1, start)))
-                        end_idx = int(max(0, min(len(obj.tx), end)))
-                        obj.data.mask[key][start_idx:end_idx] = 1
+            per_key = {f"{eye}_{var}": intervals for eye in eyes for var in variables}
+
+        n = len(obj.tx)
+        for key, interval_obj in per_key.items():
+            if not isinstance(interval_obj, Intervals):
+                raise TypeError(f"intervals must be Intervals objects (or a dict of them), "
+                                f"got {type(interval_obj)} for '{key}'")
+            if key not in obj.data.data:
+                logger.warning(f"Key '{key}' not found in data, skipping")
+                continue
+            for start, end in interval_obj.to_units(None, obj).intervals:
+                obj.data.mask[key][min(max(int(start), 0), n):min(max(int(end), 0), n)] = 1
         
         return obj
 
@@ -2933,12 +2656,8 @@ class GenericEyeData(state.VersionedState, ABC):
         
         def interpolate_single_key(key, interval_obj):
             """Local helper to interpolate a single data key."""
-            # Ensure sampling_rate is set
-            if interval_obj.sampling_rate is None:
-                interval_obj.sampling_rate = obj.fs
-            
             # Convert to index-based intervals
-            intervals_array = np.array(interval_obj.to_units("indices")).astype(int)
+            intervals_array = np.array(interval_obj.to_units(None, obj)).astype(int)
             
             # Get the data and mask
             data = obj.data[key].copy()

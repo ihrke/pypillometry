@@ -383,7 +383,7 @@ class PupilPlotter(GenericPlotter):
         padded_blinks = blinks.pad(left=pre_blink, right=post_blink)
         
         # Convert to desired display units
-        intervals = padded_blinks.to_units(units)
+        intervals = padded_blinks.to_units(units, self.obj)
         
         return self.plot_intervals(intervals, eyes, variables,
                                   pdf_file, nrow, ncol, figsize, show_index=show_index)

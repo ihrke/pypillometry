@@ -460,7 +460,7 @@ class TestFitForeshorteningMethod:
                 logger.remove(hid)
             n_used.append([m for m in messages if "from specified intervals" in m])
         assert len(n_used[0]) == 1
-        assert n_used[0][0] == "Using 501 samples from specified intervals"
+        assert n_used[0][0] == "Using 500 samples from specified intervals"  # end-exclusive
         assert n_used[1] == n_used[0]
         assert n_used[2] == n_used[0]
 

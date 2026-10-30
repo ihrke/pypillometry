@@ -192,63 +192,19 @@ class SegmentedEyeData(state.VersionedState):
             available = list(eyedata.data.data.keys())
             raise KeyError(f"Variable '{variable}' not found in data. Available: {available}")
         
-        # Convert Intervals to indices for data extraction
-        if intervals.units is None:
-            intervals_idx = intervals.intervals
-            first_start, first_end = intervals_idx[0]
-            duration_ix = first_end - first_start
-            interval_ms = (first_start / eyedata.fs * 1000, first_end / eyedata.fs * 1000)
-        else:
-            fac_to_ms = 1.0 / eyedata._unit_fac(intervals.units)
-            intervals_idx = []
-            
-            first_start, first_end = intervals.intervals[0]
-            start_ms = first_start * fac_to_ms
-            end_ms = first_end * fac_to_ms
-            interval_ms = (start_ms, end_ms)
-            
-            for start, end in intervals.intervals:
-                start_ms = start * fac_to_ms
-                end_ms = end * fac_to_ms
-                start_ix = np.argmin(np.abs(eyedata.tx - start_ms))
-                end_ix = np.argmin(np.abs(eyedata.tx - end_ms))
-                intervals_idx.append((start_ix, end_ix))
-        
-        # Calculate duration and time window; for event-locked intervals, use
-        # the window, so that the length does not depend on the event timing
+        # start samples of the segments (converted with the data's time vector)
+        intervals_idx = intervals.to_units(None, eyedata).intervals
+        intervals_ms = intervals.to_units("ms", eyedata)
+
+        # for event-locked intervals, the length and time axis come from the
+        # window (relative to the event), so they do not depend on the event
+        # timing; otherwise from the first interval
         if intervals.interval_window is not None:
-            w0, w1 = intervals.interval_window
-            if intervals.units is None:
-                duration_ix = int(round(w1 - w0))
-            else:
-                fac_to_ms = 1.0 / eyedata._unit_fac(intervals.units)
-                duration_ix = int(round((w1 - w0) * fac_to_ms * eyedata.fs / 1000.))
+            w0, w1 = intervals_ms.interval_window
         else:
-            duration_ix = intervals_idx[0][1] - intervals_idx[0][0]
-        
-        # Use interval_window for relative time axis if available (event-locked intervals)
-        # Otherwise fall back to absolute interval times
-        if intervals.interval_window is not None:
-            # Convert interval_window to ms if needed
-            if intervals.units is None:
-                # interval_window is in indices, convert to ms
-                ms_per_sample = 1000.0 / eyedata.fs
-                txw = np.linspace(
-                    intervals.interval_window[0] * ms_per_sample,
-                    intervals.interval_window[1] * ms_per_sample,
-                    num=duration_ix
-                )
-            else:
-                # interval_window is in the same units as intervals, convert to ms
-                fac_to_ms = 1.0 / eyedata._unit_fac(intervals.units)
-                txw = np.linspace(
-                    intervals.interval_window[0] * fac_to_ms,
-                    intervals.interval_window[1] * fac_to_ms,
-                    num=duration_ix
-                )
-        else:
-            # No interval_window, use absolute times (not event-locked)
-            txw = np.linspace(interval_ms[0], interval_ms[1], num=duration_ix)
+            w0, w1 = intervals_ms.intervals[0]
+        duration_ix = int(round((w1 - w0) * eyedata.fs / 1000.))
+        txw = np.linspace(w0, w1, num=duration_ix)
         
         n_segments = len(intervals_idx)
         

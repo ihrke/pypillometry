@@ -377,9 +377,11 @@ def test_intervals_from_quantity():
 def test_intervals_quantity_converted_to_units():
     iv = Intervals([(0, 1)] * u.sec, units="ms")
     assert iv.units == "ms" and iv.intervals == [(0, 1000)]
-    iv = Intervals([(0, 1)] * u.sec, units=None, sampling_rate=500)
-    assert iv.units is None and iv.intervals == [(0, 500)]
+    iv = Intervals([(10, 20)] * u.samples, units=None)
+    assert iv.units is None and iv.intervals == [(10, 20)]
     assert isinstance(iv.intervals[0][1], int)
+    with pytest.raises(ValueError, match="to_units"):
+        Intervals([(0, 1)] * u.sec, units=None)  # needs the data object
 
 
 def test_intervals_plain_numbers_need_units():
@@ -393,8 +395,10 @@ def test_intervals_methods_accept_units():
     assert iv.merge(distance="100 ms").intervals == [(100, 400)]
     assert len(iv.filter(min_duration=0.2 * u.sec)) == 0
     assert iv.filter(time_range=(0.25, 1) * u.sec).intervals == [(300, 400)]
-    idx = Intervals([(100, 200)], None, sampling_rate=500)
-    assert idx.pad(left=10 * u.ms).intervals == [(95, 200)]
+    idx = Intervals([(100, 200)], None)
+    assert idx.pad(left=5 * u.samples).intervals == [(95, 200)]
+    with pytest.raises(ValueError, match="sample indices"):
+        idx.pad(left=10 * u.ms)  # durations in time units need the data object
 
 
 def test_events_from_quantity():

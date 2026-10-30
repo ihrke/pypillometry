@@ -149,14 +149,16 @@ class GenericPlotter:
         obj = self.obj  # PupilData object
         nsubplots = nrow * ncol  # number of subplots per figure
         
-        # Get display factor based on Intervals' units
-        units = intervals.units
-        fac = obj._unit_fac(units)
+        # x-axis in the units of the Intervals (sample numbers for indices)
+        if intervals.units is None:
+            xvals = np.arange(len(obj.tx), dtype=float)
+        else:
+            xvals = obj.tx * obj._unit_fac(intervals.units)
         
         eyes, variables = obj._get_eye_var(eyes, variables)
         
         # Convert Intervals to indices for data slicing
-        intervals_idx = intervals.to_units(None).intervals
+        intervals_idx = intervals.to_units(None, obj).intervals
             
         nfig = int(np.ceil(len(intervals_idx) / nsubplots))
 
@@ -174,10 +176,10 @@ class GenericPlotter:
 
             for ix, (start, end) in enumerate(intervals_idx[(i*nsubplots):(i+1)*nsubplots]):
                 iinterv += 1
-                slic = slice(int(start), int(end))
+                slic = slice(max(int(start), 0), max(int(end), 0))
                 ax = axs[ix]
                 for eye, var in itertools.product(eyes, variables):
-                    ax.plot(obj.tx[slic] * fac, obj.data[eye, var][slic], label="%s_%s" % (eye, var))
+                    ax.plot(xvals[slic], obj.data[eye, var][slic], label="%s_%s" % (eye, var))
 
                 # Plot vertical line at event onset
                 if intervals.event_onsets is not None and len(intervals.event_onsets) > (iinterv - 1):
@@ -190,11 +192,11 @@ class GenericPlotter:
                     mask = np.zeros(slic.stop - slic.start, dtype=bool)
                     for eye, var in itertools.product(eyes, variables):
                         mask |= obj.data.mask[eye + "_" + var][slic].astype(bool)
-                    txm = obj.tx[slic]
+                    txm = xvals[slic]
                     mint = obj._mask_to_intervals_list(mask)
                     for sm, em in mint:
                         # em is exclusive (Python convention), so use em-1 for the actual last index
-                        ax.axvspan(txm[sm] * fac, txm[em-1] * fac, color="grey", alpha=0.3)
+                        ax.axvspan(txm[sm], txm[em-1], color="grey", alpha=0.3)
                 if show_index: 
                     ax.text(0.5, 0.5, '%i' % (iinterv), fontsize=12, horizontalalignment='center',     
                             verticalalignment='center', transform=ax.transAxes)
