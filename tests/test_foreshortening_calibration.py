@@ -451,7 +451,7 @@ class TestFitForeshorteningMethod:
         n_used = []
         for iv in [Intervals([(0, 5000)], units='ms'),
                    Intervals([(0, 5)], units='sec'),
-                   Intervals([(0, 500)], units=None)]:
+                   Intervals([(0, 500)], units="samples")]:
             messages = []
             hid = logger.add(lambda m: messages.append(m.record["message"]), level="INFO")
             try:

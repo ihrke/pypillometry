@@ -121,7 +121,7 @@ class TestPlottingMinimalData(unittest.TestCase):
     def test_plot_intervals_minimal_data(self):
         """Test plot_intervals with minimal data"""
         from pypillometry.intervals import Intervals
-        intervals = Intervals([(0, 2), (2, 4)], units=None, label="minimal")
+        intervals = Intervals([(0, 2), (2, 4)], units="samples", label="minimal")
         figs = self.data.plot.plot_intervals(intervals)
         self.assertIsNotNone(figs)
 

@@ -34,7 +34,8 @@ Version history
     the state as declared in `_STATE_FIELDS` of the classes
 2
     Intervals without `sampling_rate` and `time_offset` (conversions
-    between sample indices and time use the data object)
+    between sample indices and time use the data object); sample indices
+    are ``units="samples"`` (instead of None)
 """
 
 import importlib
@@ -427,11 +428,15 @@ def _v1_intervals(st):
     """Version-2 state of an Intervals object (version-1 state `st`)."""
     if st is None:
         return None
-    return {k: v for k, v in st.items() if k not in ("sampling_rate", "time_offset")}
+    st = {k: v for k, v in st.items() if k not in ("sampling_rate", "time_offset")}
+    if st.get("units") is None:
+        st["units"] = "samples"
+    return st
 
 
 def _migrate_1_to_2(state, class_name):
-    """Version 1 -> 2: Intervals lose `sampling_rate` and `time_offset`."""
+    """Version 1 -> 2: Intervals lose `sampling_rate` and `time_offset`;
+    sample indices are "samples" instead of None."""
     state = dict(state)
     if class_name in _SEGMENTED_CLASSES:
         state["intervals"] = _v1_intervals(state.get("intervals"))

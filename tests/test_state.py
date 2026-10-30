@@ -257,6 +257,24 @@ class TestMigrate(unittest.TestCase):
         self.assertEqual(st["history"], [{"funcstring": "scale()",
                                           "funcname": "scale"}])
 
+    def test_v1_intervals(self):
+        """version 1 -> 2: sample indices become "samples", fs/offset dropped"""
+        for name, cls in [("eyedata_v1.pypil", pp.EyeData), ("eyedata_v1.h5", pp.EyeData),
+                          ("segmented_v1.h5", pp.SegmentedEyeData)]:
+            obj = cls.from_file(os.path.join(DATA, name))
+            ivs = [obj.intervals] if cls is pp.SegmentedEyeData else \
+                [iv for iv in obj._blinks.values() if iv is not None]
+            self.assertTrue(ivs)
+            for iv in ivs:
+                self.assertIn(iv.units, ("samples", "ms", "sec", "min", "h"))
+                self.assertFalse(hasattr(iv, "sampling_rate"))
+                self.assertFalse(hasattr(iv, "time_offset"))
+        st = state.migrate({"format_version": 1, "class": "PupilData",
+                            "blinks": {"left_pupil": {"units": None, "sampling_rate": 10.,
+                                                      "time_offset": 0., "label": "b"}},
+                            "interpolated_blinks": {"left_pupil": None}}, "PupilData")
+        self.assertEqual(st["blinks"]["left_pupil"], {"units": "samples", "label": "b"})
+
     def test_current_version_unchanged(self):
         st = state.to_state(make_eyedata(keep_orig=False))
         self.assertIs(state.migrate(st, "EyeData"), st)

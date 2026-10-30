@@ -193,7 +193,7 @@ class SegmentedEyeData(state.VersionedState):
             raise KeyError(f"Variable '{variable}' not found in data. Available: {available}")
         
         # start samples of the segments (converted with the data's time vector)
-        intervals_idx = intervals.to_units(None, eyedata).intervals
+        intervals_idx = intervals.to_units("samples", eyedata).intervals
         intervals_ms = intervals.to_units("ms", eyedata)
 
         # for event-locked intervals, the length and time axis come from the

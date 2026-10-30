@@ -216,7 +216,7 @@ class TestIntervalsMethods(unittest.TestCase):
     
     def test_intervals_merge_with_distance_indices(self):
         """distance is in the units of the intervals (here samples)"""
-        intervals = Intervals([(10, 15), (17, 22), (30, 35)], units=None)
+        intervals = Intervals([(10, 15), (17, 22), (30, 35)], units="samples")
         merged = intervals.merge(distance=2)
         self.assertEqual(len(merged), 2)
         self.assertEqual(merged.intervals[0], (10, 22))
@@ -318,7 +318,7 @@ class TestIntervalsMethods(unittest.TestCase):
     
     def test_intervals_pad_with_indices(self):
         """Test padding with index units"""
-        intervals = Intervals([(10, 20), (30, 40)], units=None)
+        intervals = Intervals([(10, 20), (30, 40)], units="samples")
         
         padded = intervals.pad(left=5, right=5)
         
@@ -371,7 +371,7 @@ class TestIntervalsMethods(unittest.TestCase):
 
     def test_intervals_pad_clips_indices_to_zero(self):
         """Test that index-based intervals are clipped to 0"""
-        intervals = Intervals([(5, 20)], units=None)
+        intervals = Intervals([(5, 20)], units="samples")
         
         # Padding left beyond 0 should clip to 0
         padded = intervals.pad(left=10)
@@ -408,9 +408,9 @@ class TestIntervalsMethods(unittest.TestCase):
         self.assertIn("ms", repr_str)  # units shown inline with values
 
     def test_intervals_repr_indices(self):
-        """Index intervals show 'indices' as unit, not 'None'"""
-        repr_str = repr(Intervals([(0, 10), (20, 30)], units=None))
-        self.assertIn("indices", repr_str)
+        """Index intervals show 'samples' as unit, not 'None'"""
+        repr_str = repr(Intervals([(0, 10), (20, 30)], units="samples"))
+        self.assertIn("samples", repr_str)
         self.assertNotIn("None", repr_str)
     
     def test_intervals_repr_empty(self):
@@ -424,7 +424,7 @@ class TestIntervalsMethods(unittest.TestCase):
     def test_intervals_repr_no_label(self):
         """Test string representation without label"""
         intervals_list = [(0, 100)]
-        intervals = Intervals(intervals_list, units=None)
+        intervals = Intervals(intervals_list, units="samples")
         
         repr_str = repr(intervals)
         self.assertIn("Intervals", repr_str)
@@ -517,18 +517,18 @@ class TestIntervalsAddOperator(unittest.TestCase):
         self.assertIsNone(c.data_time_range)
     
     def test_add_indices_units(self):
-        """Test adding intervals with units=None (indices)"""
-        a = Intervals([(0, 100), (200, 300)], units=None)
-        b = Intervals([(500, 600)], units=None)
+        """Test adding intervals with units="samples" (indices)"""
+        a = Intervals([(0, 100), (200, 300)], units="samples")
+        b = Intervals([(500, 600)], units="samples")
         c = a + b
         
         self.assertEqual(len(c), 3)
-        self.assertIsNone(c.units)
+        self.assertEqual(c.units, "samples")
     
     def test_add_incompatible_units_raises_error(self):
         """Test that mixing time units and indices raises error"""
         a = Intervals([(0, 100)], units="ms")
-        b = Intervals([(200, 300)], units=None)
+        b = Intervals([(200, 300)], units="samples")
         
         with self.assertRaises(ValueError) as cm:
             a + b
@@ -632,7 +632,7 @@ class TestIntervalsWithGetIntervals(unittest.TestCase):
     
     def test_get_intervals_different_units(self):
         """Test get_intervals with different units"""
-        for units in ["ms", "sec", "min", None]:
+        for units in ["ms", "sec", "min", "samples"]:
             intervals = self.data.get_intervals("F", interval=(-200, 200), units=units)
             self.assertIsInstance(intervals, Intervals)
             self.assertEqual(intervals.units, units)
@@ -752,12 +752,12 @@ class TestIntervalsPlotMethod(unittest.TestCase):
         self.assertIn("ms", ax.get_xlabel())
         plt.close('all')
         
-        # Test with None (indices)
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
+        # Test with sample indices
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="samples")
         fig = plt.figure()
         intervals.plot()
         ax = plt.gca()
-        self.assertIn("indices", ax.get_xlabel())
+        self.assertIn("Samples", ax.get_xlabel())
     
     def test_plot_handles_empty_intervals(self):
         """Test that plot handles empty intervals gracefully"""
@@ -775,7 +775,7 @@ class TestIntervalsPlotMethod(unittest.TestCase):
     
     def test_plot_with_different_units(self):
         """Test that plot works with different units"""
-        for units in ["ms", "sec", "min", None]:
+        for units in ["ms", "sec", "min", "samples"]:
             intervals = self.data.get_intervals("F", interval=(-200, 200), units=units)
             
             fig = plt.figure()
@@ -919,7 +919,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_array_conversion_with_units_none(self):
         """Test __array__() with index units"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="samples")
         arr = np.array(intervals)
         
         self.assertIsInstance(arr, np.ndarray)
@@ -937,7 +937,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_to_indices_with_units_none(self):
         """Test to_units('indices') when intervals already in indices"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="samples")
         indices_intervals = intervals.to_units("indices")
         indices = np.array(indices_intervals).astype(int)
         
@@ -1043,7 +1043,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
     
     def test_to_units_from_indices_uses_time_vector(self):
         """converting from indices uses the time vector of the data object"""
-        intervals = self.data.get_intervals("F", interval=(-200, 200), units=None)
+        intervals = self.data.get_intervals("F", interval=(-200, 200), units="samples")
         intervals_ms = intervals.to_units("ms", self.data)
         self.assertEqual(intervals_ms.units, "ms")
         start, end = intervals.intervals[0]
@@ -1053,7 +1053,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
 
     def test_to_units_from_indices_raises_error_without_data(self):
         """converting from indices needs the data object"""
-        intervals = Intervals([(0, 100), (200, 300)], units=None)
+        intervals = Intervals([(0, 100), (200, 300)], units="samples")
         with self.assertRaises(ValueError) as cm:
             intervals.to_units("ms")
         self.assertIn("data object", str(cm.exception))
@@ -1064,7 +1064,7 @@ class TestIntervalsConversionMethods(unittest.TestCase):
         intervals = Intervals([(1000, 1020), (1015, 1100)], units="ms",
                               event_onsets=[1005, 1015], interval_window=(-5, 15))
         idx = intervals.to_units("indices", d)
-        self.assertIsNone(idx.units)
+        self.assertEqual(idx.units, "samples")
         self.assertEqual(idx.intervals, [(0, 2), (2, 10)])
         self.assertEqual(list(idx.event_onsets), [1, 2])
         self.assertEqual(idx.interval_window, (0, 2))  # durations via fs
@@ -1301,7 +1301,7 @@ class TestMergeIntervals(unittest.TestCase):
     
     def test_merge_intervals_different_units(self):
         """Test merging with different unit types"""
-        for units in ["ms", "sec", "min", "h", None]:
+        for units in ["ms", "sec", "min", "h", "samples"]:
             intervals1 = Intervals([(0, 100)], units=units)
             intervals2 = Intervals([(200, 300)], units=units)
             
@@ -1316,7 +1316,7 @@ class TestIntervalsMaskConversion(unittest.TestCase):
     
     def test_to_mask_basic(self):
         """Test basic conversion to mask"""
-        intervals = Intervals([(0, 10), (20, 30)], units=None)
+        intervals = Intervals([(0, 10), (20, 30)], units="samples")
         mask = intervals.to_mask(timebase(50))
         
         self.assertIsInstance(mask, np.ndarray)
@@ -1333,7 +1333,7 @@ class TestIntervalsMaskConversion(unittest.TestCase):
 
     def test_to_mask_empty_intervals(self):
         """Test to_mask with empty intervals"""
-        mask = Intervals([], units=None).to_mask(timebase(100))
+        mask = Intervals([], units="samples").to_mask(timebase(100))
         self.assertEqual(len(mask), 100)
         np.testing.assert_array_equal(mask, 0)
 
@@ -1355,11 +1355,11 @@ class TestIntervalsMaskConversion(unittest.TestCase):
     def test_to_mask_needs_data(self):
         """to_mask needs the data object"""
         with self.assertRaises(TypeError):
-            Intervals([(0, 10)], units=None).to_mask()
+            Intervals([(0, 10)], units="samples").to_mask()
 
     def test_to_mask_clips_to_bounds(self):
         """Test that intervals outside mask bounds are clipped"""
-        intervals = Intervals([(-10, 10), (40, 60)], units=None)
+        intervals = Intervals([(-10, 10), (40, 60)], units="samples")
         mask = intervals.to_mask(timebase(50))
         np.testing.assert_array_equal(np.where(mask)[0], list(range(10)) + list(range(40, 50)))
 
@@ -1371,7 +1371,7 @@ class TestIntervalsMaskConversion(unittest.TestCase):
         self.assertIsInstance(intervals, Intervals)
         self.assertEqual(len(intervals), 2)
         self.assertEqual(intervals.intervals, [(2, 5), (7, 9)])
-        self.assertIsNone(intervals.units)
+        self.assertEqual(intervals.units, "samples")
         self.assertEqual(intervals.data_time_range, (0, 10))
     
     def test_from_mask_all_zeros(self):
@@ -1425,7 +1425,7 @@ class TestIntervalsMaskConversion(unittest.TestCase):
     
     def test_roundtrip_to_mask_from_mask(self):
         """Test roundtrip: intervals -> mask -> intervals"""
-        original = Intervals([(10, 20), (30, 50), (70, 80)], units=None)
+        original = Intervals([(10, 20), (30, 50), (70, 80)], units="samples")
         recovered = Intervals.from_mask(original.to_mask(timebase(100)))
         self.assertEqual(original.intervals, recovered.intervals)
 
@@ -1619,12 +1619,12 @@ class TestIntervalsFilter(unittest.TestCase):
     
     def test_filter_with_indices_units(self):
         """Test filtering with index-based intervals"""
-        intervals = Intervals([(0, 50), (100, 200), (300, 500)], units=None)
+        intervals = Intervals([(0, 50), (100, 200), (300, 500)], units="samples")
         
         filtered = intervals.filter(min_duration=100)
         
         self.assertEqual(len(filtered), 2)
-        self.assertIsNone(filtered.units)
+        self.assertEqual(filtered.units, "samples")
     
     def test_filter_returns_new_object(self):
         """Test that filter returns a new Intervals object"""
@@ -1664,8 +1664,8 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
     
     def test_subtract_basic(self):
         """Test basic subtraction of intervals"""
-        a = Intervals([(0, 100), (200, 300)], units=None, data_time_range=(0, 400))
-        b = Intervals([(50, 150)], units=None, data_time_range=(0, 400))
+        a = Intervals([(0, 100), (200, 300)], units="samples", data_time_range=(0, 400))
+        b = Intervals([(50, 150)], units="samples", data_time_range=(0, 400))
         c = a - b
         
         self.assertIsInstance(c, Intervals)
@@ -1675,8 +1675,8 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
     
     def test_subtract_complete_removal(self):
         """Test subtraction that completely removes an interval"""
-        a = Intervals([(50, 100)], units=None, data_time_range=(0, 200))
-        b = Intervals([(0, 150)], units=None, data_time_range=(0, 200))
+        a = Intervals([(50, 100)], units="samples", data_time_range=(0, 200))
+        b = Intervals([(0, 150)], units="samples", data_time_range=(0, 200))
         c = a - b
         
         # (50, 100) is completely contained in (0, 150), so nothing remains
@@ -1684,8 +1684,8 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
     
     def test_subtract_no_overlap(self):
         """Test subtraction with no overlap"""
-        a = Intervals([(0, 50), (100, 150)], units=None, data_time_range=(0, 200))
-        b = Intervals([(60, 90)], units=None, data_time_range=(0, 200))
+        a = Intervals([(0, 50), (100, 150)], units="samples", data_time_range=(0, 200))
+        b = Intervals([(60, 90)], units="samples", data_time_range=(0, 200))
         c = a - b
         
         # No overlap, a unchanged
@@ -1693,8 +1693,8 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
     
     def test_subtract_splits_interval(self):
         """Test subtraction that splits an interval in two"""
-        a = Intervals([(0, 100)], units=None, data_time_range=(0, 200))
-        b = Intervals([(40, 60)], units=None, data_time_range=(0, 200))
+        a = Intervals([(0, 100)], units="samples", data_time_range=(0, 200))
+        b = Intervals([(40, 60)], units="samples", data_time_range=(0, 200))
         c = a - b
         
         # (0, 100) - (40, 60) = (0, 40) and (60, 100)
@@ -1702,16 +1702,16 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
     
     def test_subtract_empty_left(self):
         """Test subtraction with empty left operand"""
-        a = Intervals([], units=None, data_time_range=(0, 100))
-        b = Intervals([(20, 50)], units=None, data_time_range=(0, 100))
+        a = Intervals([], units="samples", data_time_range=(0, 100))
+        b = Intervals([(20, 50)], units="samples", data_time_range=(0, 100))
         c = a - b
         
         self.assertEqual(len(c), 0)
     
     def test_subtract_empty_right(self):
         """Test subtraction with empty right operand"""
-        a = Intervals([(0, 50)], units=None, data_time_range=(0, 100))
-        b = Intervals([], units=None, data_time_range=(0, 100))
+        a = Intervals([(0, 50)], units="samples", data_time_range=(0, 100))
+        b = Intervals([], units="samples", data_time_range=(0, 100))
         c = a - b
         
         self.assertEqual(c.intervals, [(0, 50)])
@@ -1736,8 +1736,8 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
     
     def test_subtract_creates_label(self):
         """Test that subtraction creates combined label"""
-        a = Intervals([(0, 100)], units=None, data_time_range=(0, 200), label="a")
-        b = Intervals([(50, 75)], units=None, data_time_range=(0, 200), label="b")
+        a = Intervals([(0, 100)], units="samples", data_time_range=(0, 200), label="a")
+        b = Intervals([(50, 75)], units="samples", data_time_range=(0, 200), label="b")
         c = a - b
         
         self.assertIn("a", c.label)
@@ -1749,25 +1749,25 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
         b = Intervals([(500, 1500)], units="ms")
         self.assertEqual((a - b).intervals, [(0, 0.5)])
         with self.assertRaises(ValueError):
-            a - Intervals([(0, 10)], units=None)
+            a - Intervals([(0, 10)], units="samples")
 
     def test_subtract_non_intervals_returns_notimplemented(self):
         """Test that subtracting non-Intervals returns NotImplemented"""
-        a = Intervals([(0, 100)], units=None, data_time_range=(0, 200))
+        a = Intervals([(0, 100)], units="samples", data_time_range=(0, 200))
         
         result = a.__sub__("not an Intervals")
         self.assertEqual(result, NotImplemented)
     
     def test_subtract_without_data_time_range(self):
         """subtraction does not need data_time_range"""
-        a = Intervals([(0, 100), (90, 120)], units=None)
-        b = Intervals([(50, 75)], units=None)
+        a = Intervals([(0, 100), (90, 120)], units="samples")
+        b = Intervals([(50, 75)], units="samples")
         self.assertEqual((a - b).intervals, [(0, 50), (75, 120)])
 
     def test_subtract_uses_other_data_time_range(self):
         """Test that subtraction uses other's data_time_range if self doesn't have one"""
-        a = Intervals([(0, 100)], units=None)
-        b = Intervals([(50, 75)], units=None, data_time_range=(0, 200))
+        a = Intervals([(0, 100)], units="samples")
+        b = Intervals([(50, 75)], units="samples", data_time_range=(0, 200))
         c = a - b
         
         # Should work using b's data_time_range
@@ -1775,8 +1775,8 @@ class TestIntervalsSubtractOperator(unittest.TestCase):
     
     def test_subtract_multiple_from_multiple(self):
         """Test subtracting multiple intervals from multiple intervals"""
-        a = Intervals([(0, 50), (100, 150), (200, 250)], units=None, data_time_range=(0, 300))
-        b = Intervals([(25, 75), (125, 225)], units=None, data_time_range=(0, 300))
+        a = Intervals([(0, 50), (100, 150), (200, 250)], units="samples", data_time_range=(0, 300))
+        b = Intervals([(25, 75), (125, 225)], units="samples", data_time_range=(0, 300))
         c = a - b
         
         # (0, 50) - (25, 75) = (0, 25)
@@ -1799,9 +1799,9 @@ class TestConversionWithData(unittest.TestCase):
 
     def test_get_intervals_samples_and_ms_agree(self):
         ms = self.d.get_intervals("", (-100, 200), units="ms")
-        ix = self.d.get_intervals("", (-10, 20), units=None)
+        ix = self.d.get_intervals("", (-10, 20), units="samples")
         self.assertEqual(ix.intervals, [(90, 120), (391, 421)])
-        self.assertEqual(ms.to_units(None, self.d).intervals, ix.intervals)
+        self.assertEqual(ms.to_units("samples", self.d).intervals, ix.intervals)
 
     def test_mask_intervals_in_ms(self):
         d = self.d.mask_intervals(Intervals([(1100, 1150)], units="ms"), inplace=False)
@@ -1809,6 +1809,18 @@ class TestConversionWithData(unittest.TestCase):
 
     def test_segments_from_samples_and_ms(self):
         seg_ms = self.d.get_segments(self.d.get_intervals("", (-100, 200), units="ms"), "left_pupil")
-        seg_ix = self.d.get_segments(self.d.get_intervals("", (-10, 20), units=None), "left_pupil")
+        seg_ix = self.d.get_segments(self.d.get_intervals("", (-10, 20), units="samples"), "left_pupil")
         np.testing.assert_allclose(seg_ms.tx, seg_ix.tx)
         self.assertEqual(seg_ms.data.shape, seg_ix.data.shape)
+
+    def test_units_none_rejected(self):
+        """sample indices are units="samples"; units=None raises"""
+        with self.assertRaisesRegex(ValueError, "samples"):
+            Intervals([(0, 10)], units=None)
+        with self.assertRaisesRegex(ValueError, "samples"):
+            self.d.get_intervals("", (-10, 20), units=None)
+        with self.assertRaisesRegex(ValueError, "samples"):
+            self.d.get_blinks("left", "pupil", units=None)
+        with self.assertRaisesRegex(ValueError, "samples"):
+            Intervals([(0, 10)], units="ms").to_units(None)
+        self.assertEqual(Intervals([(0, 10)], units="indices").units, "samples")

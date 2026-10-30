@@ -243,8 +243,9 @@ class Intervals(Stateful):
         Intervals as list of (start, end) tuples or 2D array; can carry
         units, e.g. ``[(0, 100), (200, 300)] * u.ms`` or
         ``[("1 min", "2 min")]``
-    units : str, Unit or None
-        Units of the intervals ("ms", "sec", "min", "h", or None for indices).
+    units : str or Unit
+        Units of the intervals ("ms", "sec", "min", "h", or "samples" for
+        sample indices).
         Can be omitted if `intervals` carry units; otherwise, intervals with
         units are converted to `units`.
     label : str, optional
@@ -293,7 +294,7 @@ class Intervals(Stateful):
                 raise
             raise ValueError("intervals with time units cannot be converted to sample "
                              "indices here; use to_units() with the data object") from None
-        if self.units is None and isinstance(intervals, np.ndarray) \
+        if self.units == "samples" and isinstance(intervals, np.ndarray) \
                 and intervals.dtype.kind == "f":
             intervals = np.round(intervals).astype(int).tolist()  # converted to indices
         if isinstance(intervals, np.ndarray):
@@ -322,8 +323,8 @@ class Intervals(Stateful):
         """`value` (e.g., a duration) in the units of this object; plain numbers are unchanged."""
         if value is None or not _has_units(value):
             return value
-        if self.units is not None:
-            if _time_values_and_units(value)[1] is None:
+        if self.units != "samples":
+            if _time_values_and_units(value)[1] == "samples":
                 raise ValueError(f"{value} is in samples, but the intervals are in "
                                  f"{self.units}; give it in time units")
             return parse_time(value, to=self.units, default=None)
@@ -370,12 +371,12 @@ class Intervals(Stateful):
         """
         n = len(data.tx)
         mask = np.zeros(n, dtype=np.int8)
-        for start, end in self.to_units(None, data).intervals:
+        for start, end in self.to_units("samples", data).intervals:
             mask[min(max(int(start), 0), n):min(max(int(end), 0), n)] = 1
         return mask
     
     @classmethod
-    def from_mask(cls, mask: np.ndarray, data=None, units=None,
+    def from_mask(cls, mask: np.ndarray, data=None, units="samples",
                   label: str = None) -> 'Intervals':
         """
         Create Intervals from a binary mask array.
@@ -390,8 +391,8 @@ class Intervals(Stateful):
         data : GenericEyeData, optional
             data object the mask belongs to (anything with `tx` and `fs`);
             needed for time units.
-        units : str or None, optional
-            Units for the intervals. Default is None (indices).
+        units : str, optional
+            Units for the intervals. Default is "samples" (sample indices).
         label : str, optional
             Label for the intervals.
             
@@ -416,7 +417,7 @@ class Intervals(Stateful):
         # Starts are where diff == 1, ends are where diff == -1
         starts = np.where(diff == 1)[0]
         ends = np.where(diff == -1)[0]
-        intervals = cls(list(zip(starts.tolist(), ends.tolist())), units=None,
+        intervals = cls(list(zip(starts.tolist(), ends.tolist())), units="samples",
                         label=label, data_time_range=(0, len(mask_bool)))
         return intervals.to_units(units, data)
 
@@ -457,8 +458,8 @@ class Intervals(Stateful):
             
         Examples
         --------
-        >>> a = Intervals([(0, 100), (200, 300)], units=None)
-        >>> b = Intervals([(50, 150)], units=None)
+        >>> a = Intervals([(0, 100), (200, 300)], units="samples")
+        >>> b = Intervals([(50, 150)], units="samples")
         >>> c = a - b
         >>> c.intervals  # (0, 50) and (200, 300) remain
         [(0, 50), (200, 300)]
@@ -487,7 +488,7 @@ class Intervals(Stateful):
         """`other` converted to the units of self (only between time units)."""
         if self.units == other.units:
             return other
-        if self.units is None or other.units is None:
+        if self.units == "samples" or other.units == "samples":
             raise ValueError(
                 f"Cannot combine Intervals with units={self.units} and units={other.units}. "
                 "Both must have time units or both must be indices; convert them "
@@ -519,7 +520,7 @@ class Intervals(Stateful):
         TypeError
             If other is not an Intervals object
         ValueError
-            If units are incompatible (one is None/indices)
+            If units are incompatible (one is "samples")
             
         Examples
         --------
@@ -643,11 +644,11 @@ class Intervals(Stateful):
     def _positions_to_ms(self, values, data):
         """Absolute positions (in own units) -> ms."""
         values = np.asarray(values, dtype=float)
-        if self.units is None:
+        if self.units == "samples":
             return _samples_to_ms(data, values)
         return values * _MS_PER_UNIT[self.units]
 
-    def to_units(self, target_units: str|None, data=None) -> 'Intervals':
+    def to_units(self, target_units: str, data=None) -> 'Intervals':
         """
         Convert intervals to different time units or indices.
         
@@ -660,9 +661,9 @@ class Intervals(Stateful):
 
         Parameters
         ----------
-        target_units : str or None
-            Target units: "ms", "sec", "min", "h", or "indices"/"index" for sample indices.
-            Also accepts None for indices.
+        target_units : str
+            Target units: "ms", "sec", "min", "h", or "samples" for sample
+            indices (aliases such as "seconds" or "indices" work, too).
         data : GenericEyeData, optional
             data object the intervals belong to (anything with a time vector
             `tx` in ms and a sampling rate `fs`); needed to convert between
@@ -688,16 +689,15 @@ class Intervals(Stateful):
         
         >>> blinks = data.get_blinks("left", "pupil")
         >>> blinks_ms = blinks.to_units("ms", data)
-        >>> blinks_idx = blinks_ms.to_units("indices", data)
+        >>> blinks_idx = blinks_ms.to_units("samples", data)
         """
         # Normalize target units (source units already normalized in __init__)
-        # This converts "indices", "index", "samples" etc. to None
         target_units = normalize_unit(target_units)
         
         if self.units == target_units:
             return self
 
-        if self.units is not None and target_units is not None:
+        if self.units != "samples" and target_units != "samples":
             # between time units: rescale
             fac = _MS_PER_UNIT[self.units] / _MS_PER_UNIT[target_units]
             def scale(pair):
@@ -721,7 +721,7 @@ class Intervals(Stateful):
         onsets = None if self.event_onsets is None \
             else self._positions_to_ms(self.event_onsets, data)
         window = self.interval_window
-        if target_units is None:
+        if target_units == "samples":
             converted = _ms_to_samples(data, starts_ends).reshape(-1, 2)
             if onsets is not None:
                 onsets = np.clip(_ms_to_samples(data, onsets), 0, n - 1)
@@ -888,7 +888,7 @@ class Intervals(Stateful):
             min_bound = self.data_time_range[0]
             max_bound = self.data_time_range[1]
         else:
-            min_bound = 0 if self.units is None else -float('inf')
+            min_bound = 0 if self.units == "samples" else -float('inf')
             max_bound = float('inf')
         
         # Apply padding and clip to bounds
@@ -1090,7 +1090,7 @@ class Intervals(Stateful):
         pandas.DataFrame
             DataFrame with columns ``start``, ``end``, and ``duration``. When metadata
             is available, columns ``event_label``, ``event_index``, and ``event_onset``
-            are included. If the intervals have units, the column ``units`` is added.
+            are included, and the column ``units`` gives the units.
 
         Raises
         ------
@@ -1106,8 +1106,7 @@ class Intervals(Stateful):
                 "end": end,
                 "duration": end - start,
             }
-            if self.units is not None:
-                record["units"] = self.units
+            record["units"] = self.units
             if self.event_labels is not None and idx < len(self.event_labels):
                 record["event_label"] = self.event_labels[idx]
             if self.event_indices is not None and idx < len(self.event_indices):
@@ -1195,10 +1194,10 @@ class Intervals(Stateful):
         ax.set_ylabel('Interval #')
         
         # Set x-axis label based on units
-        if self.units is not None:
+        if self.units != "samples":
             ax.set_xlabel(f'Time ({self.units})')
         else:
-            ax.set_xlabel('Time (indices)')
+            ax.set_xlabel('Samples')
         
         # Set title from global label
         if self.label is not None:
@@ -1335,8 +1334,6 @@ def _format_interval_stats(stats: dict) -> str:
     maxv = stats.get("max", np.nan)
     total_duration = stats.get("total_duration", np.nan)
     units = stats.get("units")
-    if units is None:
-        units = "indices"
     return "%i intervals (total duration: %.2f %s), %.2f %s +/- %.2f %s, [%.2f %s, %.2f %s]" % (
         n, total_duration, units, mean, units, sd, units, minv, units, maxv, units
     )

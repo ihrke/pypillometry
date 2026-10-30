@@ -190,7 +190,7 @@ def view(data, variables=None, eyes=None, time=None,
           `extra_plots` (EyeData), or the plot labels (arrays)
 
         Intervals in time units are converted to seconds; Intervals in
-        sample indices (``units=None``) are placed using the time vector.
+        sample indices (``units="samples"``) are placed using the time vector.
         For raw arrays without `time`, the x-axis is in sample indices and
         only Intervals in sample indices can be shown.
     highlight_color : str, optional
@@ -203,7 +203,7 @@ def view(data, variables=None, eyes=None, time=None,
         button), returns a dict mapping plot key (same keys as for
         `highlight`) to :class:`~pypillometry.Intervals` objects containing
         the selected regions with ``units='sec'``; for raw arrays without
-        `time` the values are sample indices (``units=None``). Returns None
+        `time` the values are sample indices (``units="samples"``). Returns None
         if no selections were made.
     
     Raises
@@ -438,12 +438,12 @@ def _intervals_to_axis(intervals, time_seconds, sample_index=False):
     """Convert Intervals to a list of (start, end) in x-axis units.
 
     The x-axis is in seconds, or in sample indices if `sample_index` is True
-    (raw arrays without `time`). Index Intervals (``units=None``) are placed
+    (raw arrays without `time`). Index Intervals (``units="samples"``) are placed
     using `time_seconds` (end indices are exclusive). `intervals` is not
     modified.
     """
     if sample_index:
-        if intervals.units is not None:
+        if intervals.units != "samples":
             raise ValueError("Intervals in time units cannot be placed on an axis of "
                              "sample indices (no time vector); give them in samples")
         return list(intervals.intervals)
@@ -458,11 +458,11 @@ def _selections_to_intervals(selections, sample_index=False):
     """Convert selections (dict of lists of (start, end)) to Intervals.
 
     The selections are in seconds, or in sample indices if `sample_index`
-    is True (raw arrays without `time`); these get ``units=None``.
+    is True (raw arrays without `time`); these get ``units="samples"``.
     """
     # Import Intervals here to avoid circular imports
     from ..intervals import Intervals
-    units = None if sample_index else 'sec'
+    units = 'samples' if sample_index else 'sec'
     return {var_type: Intervals(intervals_list, units=units, label=f'selected_{var_type}')
             for var_type, intervals_list in selections.items()}
 

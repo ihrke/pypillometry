@@ -360,9 +360,9 @@ UNSET = _Unset()
 def _time_values_and_units(value, units=UNSET, fs=None):
     """Values and canonical unit name for containers such as Intervals.
 
-    If `value` carries units, it is converted to `units` (a time unit, or
-    None for samples) or, if `units` is UNSET, to the unit of its first
-    element. Plain values are returned unchanged, together with `units`.
+    If `value` carries units, it is converted to `units` (a time unit or
+    "samples") or, if `units` is UNSET, to the unit of its first element.
+    Plain values are returned unchanged, together with `units`.
     """
     if not _has_units(value):
         if units is UNSET:
@@ -372,7 +372,7 @@ def _time_values_and_units(value, units=UNSET, fs=None):
     if units is UNSET:
         unit = _first_unit(value, "time")
     else:
-        unit = _get_unit("samples" if units is None else units, "time")
+        unit = _get_unit(normalize_unit(units), "time")
     values = _parse(value, "time", unit, None, fs)
     return values, normalize_unit(unit)
 
@@ -535,35 +535,33 @@ def _ms_to_samples(data, t):
     return int(ix) if ix.ndim == 0 else ix
 
 
-# canonical time unit names used by `units=` arguments ("samples" is None)
-CANONICAL_UNITS = {"ms", "sec", "min", "h"}
-UNIT_ALIASES = {alias: (unit.name if unit.factor is not None else None)
-                for alias, unit in _UNITS["time"].items()
-}
+# canonical time unit names used by `units=` arguments
+CANONICAL_UNITS = {"ms", "sec", "min", "h", "samples"}
+UNIT_ALIASES = {alias: unit.name for alias, unit in _UNITS["time"].items()}
 
 
 def normalize_unit(unit):
     """Normalize a time unit to its canonical name.
 
-    Accepts aliases (e.g., "seconds", "s", "secs") and :class:`Unit` objects
-    (e.g., ``u.sec``) and returns "ms", "sec", "min" or "h". Returns None if
-    `unit` is None or means sample indices ("index", "indices", "idx",
-    "sample", "samples").
+    Accepts aliases (e.g., "seconds", "s", "secs"; "index", "indices",
+    "idx", "sample" for "samples") and :class:`Unit` objects (e.g.,
+    ``u.sec``) and returns "ms", "sec", "min", "h" or "samples".
 
     Parameters
     ----------
-    unit : str, Unit or None
+    unit : str or Unit
         unit to normalize; case and surrounding whitespace are ignored
 
     Returns
     -------
-    str or None
-        canonical unit name, or None for indices/samples (or None input)
+    str
+        canonical unit name
 
     Raises
     ------
     ValueError
-        If the unit is not a known time unit
+        If the unit is not a known time unit, or None (sample indices are
+        "samples")
 
     Examples
     --------
@@ -571,20 +569,20 @@ def normalize_unit(unit):
     'sec'
     >>> normalize_unit(u.min)
     'min'
-    >>> normalize_unit("samples") is None
-    True
+    >>> normalize_unit("indices")
+    'samples'
     >>> normalize_unit("invalid")
     Traceback (most recent call last):
         ...
-    ValueError: Unknown unit 'invalid'. Valid units are: h, min, ms, sec
+    ValueError: Unknown unit 'invalid'. Valid units are: h, min, ms, samples, sec
     """
     if unit is None:
-        return None
+        raise ValueError("units=None is not supported; use units='samples' for "
+                         "sample indices or a time unit ('ms', 'sec', 'min', 'h')")
     if not isinstance(unit, Unit):
         key = str(unit).lower().strip()
         if key not in UNIT_ALIASES:
             valid = ", ".join(sorted(CANONICAL_UNITS))
             raise ValueError(f"Unknown unit '{unit}'. Valid units are: {valid}")
         return UNIT_ALIASES[key]
-    unit = _get_unit(unit, "time")
-    return unit.name if unit.factor is not None else None
+    return _get_unit(unit, "time").name

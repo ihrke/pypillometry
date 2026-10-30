@@ -330,7 +330,7 @@ class GazeData(GenericEyeData):
         # Create Intervals object for the detected divergences
         intervals_obj = Intervals(
             intervals=intervals_list,
-            units=None,  # Using index units
+            units="samples",
             label="eye_divergences",
             data_time_range=(0, len(obj.tx)))
         
@@ -445,7 +445,7 @@ class GazeData(GenericEyeData):
             # Create Intervals object for this eye
             intervals_obj = Intervals(
                 intervals=intervals_list,
-                units=None,  # Using index units
+                units="samples",
                 label=f"{eye}_offscreen",
                 data_time_range=(0, len(obj.tx)))
             

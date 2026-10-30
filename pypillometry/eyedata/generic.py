@@ -202,7 +202,7 @@ class GenericEyeData(state.VersionedState, ABC):
         
         Parameters
         ----------
-        units : str or None
+        units : str
             Time unit (accepts aliases like "seconds", "s", "hrs", etc.)
             
         Returns
@@ -210,8 +210,9 @@ class GenericEyeData(state.VersionedState, ABC):
         float
             Conversion factor from milliseconds to target unit
         """
-        # Normalize unit (handles aliases and None)
         units = normalize_unit(units)
+        if units == "samples":
+            raise ValueError("samples are not a time unit")
         
         if units == "sec":
             fac = 1./1000.
@@ -219,7 +220,7 @@ class GenericEyeData(state.VersionedState, ABC):
             fac = 1./1000./60.
         elif units == "h":
             fac = 1./1000./60./60.
-        else:  # None or "ms"
+        else:  # "ms"
             fac = 1.
         return fac
 
@@ -350,7 +351,7 @@ class GenericEyeData(state.VersionedState, ABC):
         # Normalize unit (handles all aliases)
         unit = normalize_unit(unit)
         
-        if unit == "ms" or unit is None:
+        if unit == "ms":
             # Already in milliseconds
             self.tx = value.astype(float)
         else:
@@ -409,7 +410,7 @@ class GenericEyeData(state.VersionedState, ABC):
         # Normalize unit (handles all aliases)
         unit = normalize_unit(unit)
 
-        if unit == "ms" or unit is None:
+        if unit == "ms":
             return self.tx
 
         # Use _unit_fac which already handles all valid units
@@ -553,7 +554,7 @@ class GenericEyeData(state.VersionedState, ABC):
                 self.mask_intervals(intervals, eyes=eyes, variables=variables, inplace=True)
 
     def get_blinks(self, eyes: str|list = [], variables: str|list = [], 
-                   units: str|None = None):
+                   units: str = "samples"):
         """
         Get blinks as Intervals object or dict of Intervals.
 
@@ -568,8 +569,9 @@ class GenericEyeData(state.VersionedState, ABC):
         variables : str or list of str, optional
             Variable(s) to get blinks for; if empty, all available variables.
             If multiple, returns dict.
-        units : str or None, optional
-            Units for intervals: "ms", "sec", "min", "h", or None for indices
+        units : str, optional
+            Units for intervals: "ms", "sec", "min", "h", or "samples" for
+            sample indices (default)
             
         Returns
         -------
@@ -598,15 +600,15 @@ class GenericEyeData(state.VersionedState, ABC):
             key = f"{e}_{v}"
             iv = store.get(key)
             if iv is None:
-                iv = Intervals([], units=None, label=f"{key}_{suffix}",
+                iv = Intervals([], units="samples", label=f"{key}_{suffix}",
                                data_time_range=(0, len(self.tx)))
-            result[key] = iv if units is None else iv.to_units(units, self)
+            result[key] = iv.to_units(units, self)
         if len(eyes) > 1 or len(variables) > 1:
             return result
         return next(iter(result.values()))
 
     def get_interpolated_blinks(self, eyes: str|list = [], variables: str|list = [], 
-                                units: str|None = None):
+                                units: str = "samples"):
         """
         Get interpolated blinks as Intervals object or dict of Intervals.
         
@@ -627,8 +629,9 @@ class GenericEyeData(state.VersionedState, ABC):
         variables : str or list of str, optional
             Variable(s) to get interpolated blinks for; if empty, all available
             variables. If multiple, returns dict.
-        units : str or None, optional
-            Units for intervals: "ms", "sec", "min", "h", or None for indices
+        units : str, optional
+            Units for intervals: "ms", "sec", "min", "h", or "samples" for
+            sample indices (default)
             
         Returns
         -------
@@ -645,7 +648,7 @@ class GenericEyeData(state.VersionedState, ABC):
                                       units, "interpolated_blinks")
 
     def mask_as_intervals(self, eyes: str|list = [], variables: str|list = [], 
-                          units: str|None = None, label: str|None = None):
+                          units: str = "samples", label: str|None = None):
         """
         Convert masks to Intervals objects.
 
@@ -660,9 +663,9 @@ class GenericEyeData(state.VersionedState, ABC):
             Variable(s) to get masks for; if empty, all available variables.
             If multiple, returns dict (combinations not present in the data
             are left out).
-        units : str or None, optional
-            Units for intervals: "ms", "sec", "min", "h", or None for indices.
-            Default is None (indices).
+        units : str, optional
+            Units for intervals: "ms", "sec", "min", "h", or "samples" for
+            sample indices (default).
         label : str, optional
             Descriptive label for the intervals. Default is None.
             
@@ -968,7 +971,7 @@ class GenericEyeData(state.VersionedState, ABC):
     def sub_slice(self,
                 start: float=-np.inf, 
                 end: float=np.inf, 
-                units: str=None, inplace=None):
+                units: str="ms", inplace=None):
         """
         Return a shortened version of the current object.
 
@@ -985,10 +988,10 @@ class GenericEyeData(state.VersionedState, ABC):
             start for new dataset; default: beginning of the data
         end : float, str or Quantity, optional
             end of new dataset; default: end of the data
-        units : str or None, optional
+        units : str, optional
             time units of `start` and `end` if they are plain numbers
-            (one of "ms", "sec", "min", "h"). If units is `None`, plain
-            numbers are ms (the units of the time vector).
+            (one of "ms", "sec", "min", "h"); default "ms" (the units of
+            the time vector).
         inplace : bool or None, optional
             if `True`, make change in-place and return the object;
             if `False`, make and return copy before making changes;
@@ -1001,7 +1004,7 @@ class GenericEyeData(state.VersionedState, ABC):
         """
         obj = self._get_inplace(inplace)
 
-        default = normalize_unit(units) or "ms"
+        default = normalize_unit(units)
         start = parse_time(start, default=default)
         end = parse_time(end, default=default)
         tx = self.tx.copy()
@@ -1021,10 +1024,10 @@ class GenericEyeData(state.VersionedState, ABC):
         n = len(obj.tx)
         for store in (obj._blinks, obj._interpolated_blinks):
             for key, iv in store.items():
-                if iv is None or iv.units is not None:
+                if iv is None or iv.units != "samples":
                     continue
                 shifted = [(max(int(on)-first, 0), min(int(off)-first, n)) for on, off in iv.intervals]
-                store[key] = Intervals([(on, off) for on, off in shifted if off > on], None,
+                store[key] = Intervals([(on, off) for on, off in shifted if off > on], "samples",
                                        label=iv.label, data_time_range=(0, n))
 
         keepev=np.logical_and(evon>=start, evon<=end)
@@ -1742,17 +1745,17 @@ class GenericEyeData(state.VersionedState, ABC):
             # (blinks in time units stay valid)
             for store in (self._blinks, self._interpolated_blinks):
                 for key, iv in store.items():
-                    if iv is None or iv.units is not None:
+                    if iv is None or iv.units != "samples":
                         continue
                     moved = [(int(newpos[on]), int(newpos[off-1])+1) for on, off in iv.intervals]
-                    store[key] = Intervals(moved, None, label=iv.label,
+                    store[key] = Intervals(moved, "samples", label=iv.label,
                                            data_time_range=(0, len(ntx)))
         return self
     
     def get_intervals(self, 
                     event_select,
                     interval: tuple=(-200,200),
-                    units: str|None=UNSET, label: str|None=None, **kwargs):
+                    units: str=UNSET, label: str|None=None, **kwargs):
         """
         Return an Intervals object containing intervals relative to event-onsets.
         For example, extract the interval before and after a stimulus has been presented.
@@ -1785,12 +1788,13 @@ class GenericEyeData(state.VersionedState, ABC):
             numbers are before the event, positive numbers after, e.g.
             ``(-200, 800) * u.ms`` or ``("-0.2 sec", "0.8 sec")``. Plain numbers
             are in units given by the `units` parameter. Default ``(-200, 200)``.
-        units : str or None, optional
+        units : str, optional
             units of the returned intervals (one of "ms", "sec", "min", "h", or
-            None for sampling units, i.e., indices into the time-array); plain
-            numbers in `interval` are in these units, an `interval` with units
-            is converted to them. If not given, the units of `interval` are used
-            (sampling units if `interval` has no units).
+            "samples" for sample indices, i.e., indices into the time-array);
+            plain numbers in `interval` are in these units, an `interval` with
+            units is converted to them. If not given, the units of `interval`
+            are used ("samples" if `interval` has no units). In samples, each
+            event is placed at the first sample at or after its onset.
         label : str or None, optional
             optional label for the Intervals object. If None, a label is automatically
             generated from the event_select parameter
@@ -1810,12 +1814,12 @@ class GenericEyeData(state.VersionedState, ABC):
             raise ValueError("interval must be iterable")
         if _has_units(interval):
             interval, units = _time_values_and_units(interval, units, self.fs)
-            if units is None:
+            if units == "samples":
                 interval = np.round(interval).astype(int)
             interval = tuple(interval.tolist())
         elif units is UNSET:
-            units = None
-        fac=self._unit_fac(units)
+            units = "samples"
+        units = normalize_unit(units)
 
         # between two events, interval[0] and interval[1] shift different
         # events, so e.g. (0,0) is valid; the resulting intervals are checked below
@@ -1878,7 +1882,7 @@ class GenericEyeData(state.VersionedState, ABC):
             selected_labels = [self.event_labels[i] for i in selected_indices]
 
         n = len(self.tx)
-        if units is None:
+        if units == "samples":
             # sample of each event, the window in samples around it
             eix1 = np.clip(_ms_to_samples(self, on1), 0, n-1)
             eix2 = np.clip(_ms_to_samples(self, on2), 0, n-1)
@@ -1887,6 +1891,7 @@ class GenericEyeData(state.VersionedState, ABC):
             event_onsets_list = np.atleast_1d(eix1).tolist()
             data_time_range = (0, n)
         else:
+            fac = self._unit_fac(units)
             sti = on1*fac+interval[0]
             ste = on2*fac+interval[1]
             event_onsets_list = (on1*fac).tolist()
@@ -2167,10 +2172,10 @@ class GenericEyeData(state.VersionedState, ABC):
         n=len(obj.tx)
         for store in (obj._blinks, obj._interpolated_blinks):
             for key, iv in store.items():
-                if iv is None or iv.units is not None:
+                if iv is None or iv.units != "samples":
                     continue
                 rescaled = [(int(on)//dsfac, min(int(np.ceil(off/dsfac)), n)) for on, off in iv.intervals]
-                store[key] = Intervals(rescaled, None, label=iv.label, data_time_range=(0, n))
+                store[key] = Intervals(rescaled, "samples", label=iv.label, data_time_range=(0, n))
         return obj
 
     @keephistory
@@ -2288,7 +2293,7 @@ class GenericEyeData(state.VersionedState, ABC):
         obj = self._get_inplace(inplace)
         eyes, variables = obj._get_eye_var(eyes, variables)
 
-        distance_ix = parse_time(distance, to="samples", default=normalize_unit(units) or "ms",
+        distance_ix = parse_time(distance, to="samples", default=normalize_unit(units),
                                  fs=obj.fs)
 
         logger.debug(f"Distance '{distance}' in index units: {distance_ix}")
@@ -2297,7 +2302,7 @@ class GenericEyeData(state.VersionedState, ABC):
         merged_dict = {}
 
         for eye, var in itertools.product(eyes, variables):
-            blinks = obj.get_blinks(eye, var, units=None)
+            blinks = obj.get_blinks(eye, var)
             if len(blinks) == 0:
                 continue
             logger.debug(f"Processing blinks for eye {eye} and variable {var}: {len(blinks)} blinks")
@@ -2318,7 +2323,7 @@ class GenericEyeData(state.VersionedState, ABC):
             # Store merged blinks as Intervals
             merged_intervals = Intervals(
                 intervals=[(int(s), int(e)) for s, e in newblinks],
-                units=None,
+                units="samples",
                 label=f"{eye}_{var}_blinks",
                 data_time_range=(0, len(obj.tx)))
             
@@ -2350,7 +2355,7 @@ class GenericEyeData(state.VersionedState, ABC):
         ----------
         intervals : Intervals, optional
             Intervals object to use, in any time units or in sample indices
-            (`units=None`, the default of :meth:`get_intervals`). If
+            (``units="samples"``, the default of :meth:`get_intervals`). If
             provided, interval and event_select are ignored.
         interval : tuple (min,max) or Quantity, optional
             time-window relative to event-onset (0 is event-onset), e.g.
@@ -2396,7 +2401,7 @@ class GenericEyeData(state.VersionedState, ABC):
 
         # bounds in sample indices, matched against the sample numbers
         tx = np.arange(len(self.tx))
-        intervals_list = intervs.to_units(None, self).intervals
+        intervals_list = intervs.to_units("samples", self).intervals
 
         _warn_if_ignores_mask(statfct, "statfct")
         stat={}
@@ -2558,7 +2563,7 @@ class GenericEyeData(state.VersionedState, ABC):
             if key not in obj.data.data:
                 logger.warning(f"Key '{key}' not found in data, skipping")
                 continue
-            for start, end in interval_obj.to_units(None, obj).intervals:
+            for start, end in interval_obj.to_units("samples", obj).intervals:
                 obj.data.mask[key][min(max(int(start), 0), n):min(max(int(end), 0), n)] = 1
         
         return obj
@@ -2657,7 +2662,7 @@ class GenericEyeData(state.VersionedState, ABC):
         def interpolate_single_key(key, interval_obj):
             """Local helper to interpolate a single data key."""
             # Convert to index-based intervals
-            intervals_array = np.array(interval_obj.to_units(None, obj)).astype(int)
+            intervals_array = np.array(interval_obj.to_units("samples", obj)).astype(int)
             
             # Get the data and mask
             data = obj.data[key].copy()

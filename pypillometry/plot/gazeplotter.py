@@ -303,7 +303,7 @@ class GazePlotter(GenericPlotter):
             roi_style: dict={},
             show_onsets: bool=True,
             title: str="",
-            units: str=None,
+            units: str="ms",
             figsize: tuple=(10,10)
             ) -> None:
         """
@@ -345,9 +345,9 @@ class GazePlotter(GenericPlotter):
             onset. Plotted only for the first eye. Default is True.
         title : str
             The title of the plot. Default is "".
-        units : str or None
-            The units of `plot_range` ("ms", "sec", "min", "h"). If None (default),
-            the units of the time vector (ms) are used.
+        units : str
+            The units of `plot_range` ("ms", "sec", "min", "h"). Default "ms"
+            (the units of the time vector).
         figsize : tuple
             The figure size (width, height) in inches. Default is (10,10).
 
@@ -374,13 +374,9 @@ class GazePlotter(GenericPlotter):
         plot_range = self._plot_range_in(plot_range, units)
         self._validate_plot_range(plot_range, units)
 
-        if units is not None: 
-            fac=obj._unit_fac(units)
-            tx = obj.tx*fac
-            evon = obj.event_onsets*fac
-        else:
-            tx=obj.tx.copy()
-            evon=obj.event_onsets.copy()
+        fac=obj._unit_fac(units)
+        tx = obj.tx*fac
+        evon = obj.event_onsets*fac
 
         # plot_range
         start,end=plot_range

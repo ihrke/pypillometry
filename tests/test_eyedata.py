@@ -611,7 +611,7 @@ class TestEyeData(unittest.TestCase):
         """nblinks returns (and is annotated as) a dict"""
         import typing
         from pypillometry.intervals import Intervals
-        self.eyedata.set_blinks(Intervals([(100, 200)], units=None),
+        self.eyedata.set_blinks(Intervals([(100, 200)], units="samples"),
                                 eyes=['left'], variables=['pupil'])
         self.assertEqual(self.eyedata.nblinks(eyes='left', variables='pupil'), {'left_pupil': 1})
         hint = typing.get_type_hints(pp.EyeData.nblinks)["return"]
@@ -628,7 +628,7 @@ class TestEyeData(unittest.TestCase):
         from pypillometry.intervals import Intervals
         
         # First create some artificial blinks
-        intervals = Intervals([(100, 200), (250, 350)], units=None, 
+        intervals = Intervals([(100, 200), (250, 350)], units="samples", 
                              data_time_range=(0, len(self.eyedata.tx)))
         self.eyedata.set_blinks(intervals, eyes=['left'], variables=['pupil'])
         
@@ -646,7 +646,7 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(blinks_ix[0, 1], 350)  # End of last blink
 
         # Test merging with distance specified in seconds
-        intervals2 = Intervals([(100, 200), (250, 350)], units=None,
+        intervals2 = Intervals([(100, 200), (250, 350)], units="samples",
                               data_time_range=(0, len(self.eyedata.tx)))
         self.eyedata.set_blinks(intervals2, eyes=['left'], variables=['pupil'])
         merged_sec = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=0.1, units="sec", apply_mask=True)
@@ -656,7 +656,7 @@ class TestEyeData(unittest.TestCase):
         self.assertEqual(blinks_ix_sec[0, 1], 350)
 
         # Ensure blinks beyond distance remain separate
-        intervals3 = Intervals([(100, 200), (250, 350)], units=None,
+        intervals3 = Intervals([(100, 200), (250, 350)], units="samples",
                               data_time_range=(0, len(self.eyedata.tx)))
         self.eyedata.set_blinks(intervals3, eyes=['left'], variables=['pupil'])
         separated = self.eyedata.blinks_merge_close(eyes=['left'], variables=['pupil'], distance=10, units="ms", apply_mask=True)
@@ -668,7 +668,7 @@ class TestEyeData(unittest.TestCase):
 
         # Blink extending to end of signal should convert without IndexError
         end_idx = len(self.eyedata.tx) - 1
-        intervals_end = Intervals([(end_idx - 10, end_idx)], units=None,
+        intervals_end = Intervals([(end_idx - 10, end_idx)], units="samples",
                                  data_time_range=(0, len(self.eyedata.tx)))
         self.eyedata.set_blinks(intervals_end, eyes=['left'], variables=['pupil'])
         blinks_end = self.eyedata.get_blinks('left', 'pupil', units='ms')
@@ -682,7 +682,7 @@ class TestEyeData(unittest.TestCase):
         data = self.eyedata.copy()
         
         # Create artificial blinks that are close together
-        intervals = Intervals([(100, 200), (250, 350)], units=None, 
+        intervals = Intervals([(100, 200), (250, 350)], units="samples", 
                              data_time_range=(0, len(data.tx)))
         data.set_blinks(intervals, eyes=['left'], variables=['pupil'], apply_mask=False)
         
@@ -717,7 +717,7 @@ class TestEyeData(unittest.TestCase):
         data = self.eyedata.copy()
         
         # Create artificial blinks that are close together
-        intervals = Intervals([(100, 200), (250, 350)], units=None, 
+        intervals = Intervals([(100, 200), (250, 350)], units="samples", 
                              data_time_range=(0, len(data.tx)))
         data.set_blinks(intervals, eyes=['left'], variables=['pupil'], apply_mask=False)
         
@@ -754,9 +754,9 @@ class TestEyeData(unittest.TestCase):
         data = self.eyedata.copy()
         
         # Create blinks for both eyes
-        intervals_left = Intervals([(100, 200), (250, 350)], units=None, 
+        intervals_left = Intervals([(100, 200), (250, 350)], units="samples", 
                                    data_time_range=(0, len(data.tx)))
-        intervals_right = Intervals([(150, 250), (400, 500)], units=None, 
+        intervals_right = Intervals([(150, 250), (400, 500)], units="samples", 
                                     data_time_range=(0, len(data.tx)))
         
         data.set_blinks(intervals_left, eyes=['left'], variables=['pupil'], apply_mask=False)
@@ -817,12 +817,12 @@ class TestEyeData(unittest.TestCase):
         from pypillometry.intervals import Intervals
         
         # Create some artificial blinks
-        intervals = Intervals([(100, 200), (250, 350)], units=None,
+        intervals = Intervals([(100, 200), (250, 350)], units="samples",
                              data_time_range=(0, len(self.eyedata.tx)))
         self.eyedata.set_blinks(intervals, eyes=['left'], variables=['pupil'])
         
         # Get blinks in different units
-        blinks_idx = self.eyedata.get_blinks('left', 'pupil', units=None)
+        blinks_idx = self.eyedata.get_blinks('left', 'pupil', units="samples")
         blinks_ms = self.eyedata.get_blinks('left', 'pupil', units='ms')
         blinks_sec = self.eyedata.get_blinks('left', 'pupil', units='sec')
         
@@ -830,7 +830,7 @@ class TestEyeData(unittest.TestCase):
         self.assertIsInstance(blinks_ms, Intervals)
         self.assertIsInstance(blinks_sec, Intervals)
         
-        self.assertIsNone(blinks_idx.units)
+        self.assertEqual(blinks_idx.units, "samples")
         self.assertEqual(blinks_ms.units, 'ms')
         self.assertEqual(blinks_sec.units, 'sec')
         
@@ -854,9 +854,9 @@ class TestEyeData(unittest.TestCase):
         from pypillometry.intervals import Intervals
         
         # Create blinks for both eyes
-        intervals_left = Intervals([(100, 200)], units=None,
+        intervals_left = Intervals([(100, 200)], units="samples",
                                   data_time_range=(0, len(self.eyedata.tx)))
-        intervals_right = Intervals([(150, 250)], units=None,
+        intervals_right = Intervals([(150, 250)], units="samples",
                                    data_time_range=(0, len(self.eyedata.tx)))
         self.eyedata.set_blinks(intervals_left, eyes=['left'], variables=['pupil'])
         self.eyedata.set_blinks(intervals_right, eyes=['right'], variables=['pupil'])
@@ -915,7 +915,7 @@ class TestEyeData(unittest.TestCase):
         p[500:520] = np.nan   # whole third window missing
         d = pp.PupilData(left_pupil=p, time=t, sampling_rate=100,
                          event_onsets=np.array([1200., 3200., 5200.]), event_labels=np.array(["a"]*3))
-        d.mask_intervals(Intervals([(310, 315)], units=None), inplace=True)
+        d.mask_intervals(Intervals([(310, 315)], units="samples"), inplace=True)
         for f in (np.mean, np.nanmean, np.ma.median):
             with self.subTest(statfct=f.__name__):
                 res = d.stat_per_event(interval=(-200, 0), event_select="a", statfct=f)["left_pupil"]
@@ -1030,7 +1030,7 @@ class TestEyeData(unittest.TestCase):
         from pypillometry.intervals import Intervals
         
         # Create test intervals
-        intervals = Intervals([(100, 200), (300, 400)], units=None,
+        intervals = Intervals([(100, 200), (300, 400)], units="samples",
                              data_time_range=(0, len(self.eyedata.tx)))
         
         # Apply intervals as mask to left eye pupil
@@ -1048,9 +1048,9 @@ class TestEyeData(unittest.TestCase):
         
         # Create intervals for different variables
         intervals_dict = {
-            'left_pupil': Intervals([(100, 200)], units=None,
+            'left_pupil': Intervals([(100, 200)], units="samples",
                                    data_time_range=(0, len(self.eyedata.tx))),
-            'right_pupil': Intervals([(150, 250)], units=None,
+            'right_pupil': Intervals([(150, 250)], units="samples",
                                     data_time_range=(0, len(self.eyedata.tx)))
         }
         
@@ -1075,7 +1075,7 @@ class TestEyeData(unittest.TestCase):
         data_copy.data['left_pupil'][100:200] = np.nan  # Gap to interpolate
         
         # Create interval for the gap
-        intervals = Intervals([(100, 200)], units=None,
+        intervals = Intervals([(100, 200)], units="samples",
                              data_time_range=(0, len(self.eyedata.tx)))
         
         # Interpolate
@@ -1108,9 +1108,9 @@ class TestEyeData(unittest.TestCase):
         
         # Create intervals dict
         intervals_dict = {
-            'left_pupil': Intervals([(100, 150)], units=None,
+            'left_pupil': Intervals([(100, 150)], units="samples",
                                    data_time_range=(0, len(self.eyedata.tx))),
-            'right_pupil': Intervals([(150, 250)], units=None,
+            'right_pupil': Intervals([(150, 250)], units="samples",
                                     data_time_range=(0, len(self.eyedata.tx)))
         }
         
@@ -1138,7 +1138,7 @@ class TestEyeData(unittest.TestCase):
         data_copy.data['left_pupil'][200] = 200.0
         data_copy.data['left_pupil'][100:200] = np.nan
         
-        intervals = Intervals([(100, 200)], units=None,
+        intervals = Intervals([(100, 200)], units="samples",
                              data_time_range=(0, len(self.eyedata.tx)))
         
         # Interpolate with suffix
@@ -1166,7 +1166,7 @@ class TestEyeData(unittest.TestCase):
         data_copy.data['left_pupil'][110] = 100.0
         data_copy.data['left_pupil'][100:110] = np.nan
         
-        intervals = Intervals([(100, 110)], units=None,
+        intervals = Intervals([(100, 110)], units="samples",
                              data_time_range=(0, len(self.eyedata.tx)))
         
         # Interpolate with linear method
@@ -1192,7 +1192,7 @@ class TestEyeData(unittest.TestCase):
         data_copy.data['left_pupil'][150] = 100.0
         data_copy.data['left_pupil'][100:150] = np.nan
         
-        intervals = Intervals([(100, 150)], units=None,
+        intervals = Intervals([(100, 150)], units="samples",
                              data_time_range=(0, len(self.eyedata.tx)))
         
         # Interpolate with cubic method
@@ -1220,7 +1220,7 @@ class TestEyeData(unittest.TestCase):
         data_copy.data['left_pupil'][250] = 250.0
         data_copy.data['left_pupil'][200:250] = np.nan
         
-        intervals = Intervals([(100, 150), (200, 250)], units=None,
+        intervals = Intervals([(100, 150), (200, 250)], units="samples",
                              data_time_range=(0, len(self.eyedata.tx)))
         
         # Interpolate
@@ -1243,7 +1243,7 @@ class TestEyeData(unittest.TestCase):
         data_copy.data['left_pupil'][150] = 150.0
         data_copy.data['left_pupil'][100:150] = np.nan
         
-        intervals = Intervals([(100, 150)], units=None,
+        intervals = Intervals([(100, 150)], units="samples",
                              data_time_range=(0, len(self.eyedata.tx)))
         
         # Interpolate with inplace=False
@@ -1273,7 +1273,7 @@ class TestEyeData(unittest.TestCase):
         data_copy.data['left_pupil'][100:150] = np.nan  # Gap to interpolate
         data_copy.data['left_pupil'][150] = 150.0  # Right boundary valid
         
-        intervals = Intervals([(100, 150)], units=None,
+        intervals = Intervals([(100, 150)], units="samples",
                              data_time_range=(0, len(self.eyedata.tx)))
         
         # Should not raise but should not interpolate (left boundary margin is all NaN)
@@ -1288,7 +1288,7 @@ class TestEyeData(unittest.TestCase):
         d.data['left_pupil'][100:150] = np.nan
         d.data['left_pupil'][150:152] = 1000.0   # artifact right after the gap
         d.data.mask['left_pupil'][150:152] = 1
-        intervals = Intervals([(100, 150)], units=None)
+        intervals = Intervals([(100, 150)], units="samples")
         res = d.interpolate_intervals(intervals, margin=(-50, 50), inplace=False)
         np.testing.assert_allclose(res.data['left_pupil'][100:150], 10.0)
 
@@ -1297,7 +1297,7 @@ class TestEyeData(unittest.TestCase):
         from pypillometry.intervals import Intervals
         d = pp.PupilData(sampling_rate=100, left_pupil=np.full(300, 10.0))
         d.data['left_pupil'][100:150] = np.nan
-        intervals = Intervals([(100, 150)], units=None)
+        intervals = Intervals([(100, 150)], units="samples")
         for margin in [(20, 20), (-20, -20)]:
             with self.assertRaises(ValueError):
                 d.interpolate_intervals(intervals, margin=margin, inplace=False)
@@ -1317,7 +1317,7 @@ class TestEyeData(unittest.TestCase):
             data_copy.data[f'{eye}_pupil'][150] = 150.0
             data_copy.data[f'{eye}_pupil'][100:150] = np.nan
         
-        intervals = Intervals([(100, 150)], units=None,
+        intervals = Intervals([(100, 150)], units="samples",
                              data_time_range=(0, len(self.eyedata.tx)))
         
         # Interpolate with empty eyes (should apply to all)
@@ -1996,9 +1996,9 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         """Test get_intervals with Events using index units"""
         events = self.data.get_events()
         
-        intervals = self.data.get_intervals(events, interval=(-10, 10), units=None)
+        intervals = self.data.get_intervals(events, interval=(-10, 10), units="samples")
         
-        self.assertEqual(intervals.units, None)
+        self.assertEqual(intervals.units, "samples")
         self.assertEqual(len(intervals), len(events))
     
     def test_get_intervals_with_empty_events(self):
@@ -2047,7 +2047,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         # Test single eye/variable returns Intervals object
         intervals = data.mask_as_intervals('left', 'pupil')
         self.assertEqual(intervals.__class__.__name__, 'Intervals')
-        self.assertIsNone(intervals.units)  # Default is indices
+        self.assertEqual(intervals.units, "samples")  # Default is indices
         self.assertEqual(intervals.label, 'left_pupil_mask')
         self.assertEqual(intervals.data_time_range, (0, len(data.tx)))
         
@@ -2065,7 +2065,7 @@ class TestEventsWithGetIntervals(unittest.TestCase):
         # Each value should be an Intervals object
         for key, intervals in intervals_dict.items():
             self.assertEqual(intervals.__class__.__name__, 'Intervals')
-            self.assertIsNone(intervals.units)
+            self.assertEqual(intervals.units, "samples")
             
     def test_mask_as_intervals_multiple_variables(self):
         """Test mask_as_intervals with multiple variables returns dict"""
@@ -2378,7 +2378,7 @@ class TestMasksAndBlinksKept(unittest.TestCase):
         p = np.full(1000, 10.)
         p[400:410] = np.nan
         d = pp.PupilData(left_pupil=p, time=t, sampling_rate=100)
-        blinks = Intervals([(490, 520), (600, 620)], units=None,
+        blinks = Intervals([(490, 520), (600, 620)], units="samples",
                            data_time_range=(0, 1000))
         d.set_blinks(blinks, eyes=["left"], variables=["pupil"], apply_mask=True)
         return d
@@ -2422,7 +2422,7 @@ class TestMasksAndBlinksKept(unittest.TestCase):
                          sampling_rate=100, fill_time_discontinuities=False)
         g.data.mask["left_pupil"][300] = 1
         # blinks in the gapped data (570-590 = original samples 600-620)
-        g.set_blinks(Intervals([(490, 520), (570, 590)], units=None),
+        g.set_blinks(Intervals([(490, 520), (570, 590)], units="samples"),
                      eyes=["left"], variables=["pupil"], apply_mask=True)
         g.fill_time_discontinuities()
         self.assertEqual(len(g.tx), 1000)
@@ -2453,7 +2453,7 @@ class TestHistoryLog(unittest.TestCase):
     def test_entries_are_text_only(self):
         from pypillometry.intervals import Intervals
         d = self.make()
-        iv = Intervals([(10, 20), (50, 60)], units=None)
+        iv = Intervals([(10, 20), (50, 60)], units="samples")
         d.mask_intervals(iv, eyes=["left"], inplace=True)
         h = d.history[-1]
         self.assertEqual(set(h), {"funcname", "funcstring"})
@@ -2472,7 +2472,7 @@ class TestHistoryLog(unittest.TestCase):
                        sampling_rate=100)
         self.assertEqual(d.history, [])
         d["left_pupil"] = np.full(100, 2.)
-        d.set_blinks(Intervals([(10, 20)], units=None), eyes=["left"], variables=["pupil"])
+        d.set_blinks(Intervals([(10, 20)], units="samples"), eyes=["left"], variables=["pupil"])
         d.set_event_onsets(np.array([100., 200.]), np.array(["a", "b"]))
         d.set_experimental_setup(screen_resolution=(1280, 1024))
         d2 = d.drop_data(variables=["x"])

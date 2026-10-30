@@ -355,7 +355,7 @@ def test_quantity_pickle():
 
 def test_normalize_unit_accepts_units():
     assert normalize_unit(u.min) == "min"
-    assert normalize_unit(u.samples) is None
+    assert normalize_unit(u.samples) == "samples"
     with pytest.raises(ValueError):
         normalize_unit(u.cm)
 
@@ -377,11 +377,11 @@ def test_intervals_from_quantity():
 def test_intervals_quantity_converted_to_units():
     iv = Intervals([(0, 1)] * u.sec, units="ms")
     assert iv.units == "ms" and iv.intervals == [(0, 1000)]
-    iv = Intervals([(10, 20)] * u.samples, units=None)
-    assert iv.units is None and iv.intervals == [(10, 20)]
+    iv = Intervals([(10, 20)] * u.samples, units="samples")
+    assert iv.units == "samples" and iv.intervals == [(10, 20)]
     assert isinstance(iv.intervals[0][1], int)
     with pytest.raises(ValueError, match="to_units"):
-        Intervals([(0, 1)] * u.sec, units=None)  # needs the data object
+        Intervals([(0, 1)] * u.sec, units="samples")  # needs the data object
 
 
 def test_intervals_plain_numbers_need_units():
@@ -395,7 +395,7 @@ def test_intervals_methods_accept_units():
     assert iv.merge(distance="100 ms").intervals == [(100, 400)]
     assert len(iv.filter(min_duration=0.2 * u.sec)) == 0
     assert iv.filter(time_range=(0.25, 1) * u.sec).intervals == [(300, 400)]
-    idx = Intervals([(100, 200)], None)
+    idx = Intervals([(100, 200)], "samples")
     assert idx.pad(left=5 * u.samples).intervals == [(95, 200)]
     with pytest.raises(ValueError, match="sample indices"):
         idx.pad(left=10 * u.ms)  # durations in time units need the data object
@@ -437,7 +437,7 @@ def test_get_intervals_with_units(eyedata):
     iv = eyedata.get_intervals("F", (-0.2, 0.8) * u.sec, units="ms")
     np.testing.assert_allclose(iv.intervals, ref.intervals)
     # ... including sampling units
-    ix = eyedata.get_intervals("F", (-200, 800) * u.ms, units=None)
+    ix = eyedata.get_intervals("F", (-200, 800) * u.ms, units="samples")
     n = int(eyedata.fs * 0.2)
     assert ix.intervals == eyedata.get_intervals("F", (-n, 4 * n)).intervals
 

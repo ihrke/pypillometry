@@ -200,12 +200,12 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
             self.assertIn('sec', xlabel)
     
     def test_plot_masked_with_units_none(self):
-        """Test plot_masked with indices (units=None)"""
+        """Test plot_masked with indices (units="samples")"""
         self.data.pupil_blinks_detect()
         # Check if there are intervals before checking labels
         intervals = self.data.mask_as_intervals('left', 'pupil')
         fig = plt.figure()
-        self.data.plot.plot_masked('left', 'pupil', units=None)
+        self.data.plot.plot_masked('left', 'pupil', units="samples")
         self.assertIsNotNone(plt.gcf())
         # Only check x-axis label if there were intervals to plot
         if len(intervals) > 0:
@@ -248,13 +248,13 @@ class TestPlottingSmokeSimpleData(unittest.TestCase):
         self.assertIsNotNone(plt.gcf())
 
     def test_plot_masked_events_in_indices(self):
-        """with units=None, events are drawn at sample indices"""
+        """with units="samples", events are drawn at sample indices"""
         pupil = np.ones(1000)
         pupil[100:150] = np.nan
         d = pp.PupilData(time=5000 + np.arange(1000) * 10.0, left_pupil=pupil,
                          event_onsets=[6000, 9000], event_labels=["a", "b"])
         fig = plt.figure()
-        d.plot.plot_masked('left', 'pupil', units=None, show_events=True)
+        d.plot.plot_masked('left', 'pupil', units="samples", show_events=True)
         xs = [line.get_xdata()[0] for line in plt.gca().lines
               if line.get_color() == 'grey']
         np.testing.assert_allclose(xs, [100, 400])

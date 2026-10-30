@@ -18,14 +18,14 @@ class TestViewerSelections(unittest.TestCase):
     def test_sample_index(self):
         """raw arrays without time: selections are sample indices"""
         res = _selections_to_intervals({"Signal": [(10, 20)]}, sample_index=True)
-        self.assertIsNone(res["Signal"].units)
+        self.assertEqual(res["Signal"].units, "samples")
         self.assertEqual(res["Signal"].label, "selected_Signal")
 
 
 class TestViewerHighlight(unittest.TestCase):
     def test_index_on_sample_axis(self):
         """arrays without time: index intervals are not converted"""
-        iv = Intervals([(10, 20)], units=None)
+        iv = Intervals([(10, 20)], units="samples")
         res = _intervals_to_axis(iv, np.arange(100), sample_index=True)
         self.assertEqual(res, [(10, 20)])
 
@@ -38,7 +38,7 @@ class TestViewerHighlight(unittest.TestCase):
     def test_index_on_time_axis(self):
         """index intervals are placed using the time vector"""
         t = 5.0 + np.arange(100) * 0.01
-        iv = Intervals([(10, 20), (90, 100)], units=None)
+        iv = Intervals([(10, 20), (90, 100)], units="samples")
         res = _intervals_to_axis(iv, t)
         np.testing.assert_allclose(res, [(5.1, 5.2), (5.9, 6.0)])
 
@@ -47,9 +47,9 @@ class TestViewerHighlight(unittest.TestCase):
         self.assertEqual(_intervals_to_axis(iv, np.arange(10)), [(0.1, 0.2)])
 
     def test_intervals_not_modified(self):
-        iv = Intervals([(10, 20)], units=None)
+        iv = Intervals([(10, 20)], units="samples")
         _intervals_to_axis(iv, np.arange(100) * 0.01)
-        self.assertIsNone(iv.units)
+        self.assertEqual(iv.units, "samples")
         self.assertEqual(iv.intervals, [(10, 20)])
 
 

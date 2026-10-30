@@ -353,7 +353,7 @@ class EyeData(GazeData,PupilData):
         intervals : Intervals, optional
             Time intervals to use for fitting. If None, uses all available data.
             Useful for fitting only on calibration periods. Intervals in any
-            time units or in sample indices (`units=None`) are accepted; a
+            time units or in sample indices (``units="samples"``) are accepted; a
             plain list of `(start, end)` tuples is taken as ms. Intervals are
             end-exclusive.
         target_fs : float, default 50.0

@@ -415,9 +415,16 @@ class TestNormalizeUnit(unittest.TestCase):
             with self.subTest(input=input_unit):
                 self.assertEqual(normalize_unit(input_unit), expected)
     
-    def test_none_handling(self):
-        """Test that None input returns None."""
-        self.assertIsNone(normalize_unit(None))
+    def test_none_raises(self):
+        """None is not a unit (sample indices are "samples")."""
+        with self.assertRaises(ValueError) as cm:
+            normalize_unit(None)
+        self.assertIn("samples", str(cm.exception))
+
+    def test_sample_aliases(self):
+        for alias in ["samples", "sample", "index", "indices", "idx", "Samples"]:
+            with self.subTest(alias=alias):
+                self.assertEqual(normalize_unit(alias), "samples")
     
     def test_invalid_unit_raises(self):
         """Invalid units should raise ValueError."""
@@ -448,12 +455,12 @@ class TestNormalizeUnit(unittest.TestCase):
     
     def test_all_aliases_covered(self):
         """Ensure all defined aliases actually work."""
-        valid_results = CANONICAL_UNITS | {None}  # None is valid for index aliases
+        valid_results = CANONICAL_UNITS
         for alias in UNIT_ALIASES.keys():
             with self.subTest(alias=alias):
                 # Should not raise
                 result = normalize_unit(alias)
-                # Result should be one of the canonical units or None (for indices)
+                # Result should be one of the canonical units
                 self.assertIn(result, valid_results)
 
 
