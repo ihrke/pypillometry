@@ -37,10 +37,10 @@ correlation between the eyes), the bounds are decreasing.
 .. important::
 
    The default thresholds are rules of thumb. Some are based on published
-   data (blink rate) or on conventions (calibration), but most are
-   educated guesses, and where exactly a line is drawn is arbitrary. What
-   counts as good data depends on the eye tracker, the population and the
-   research question: a study of slow baseline changes tolerates more
+   data (blink rate), on our own data (noise) or on conventions
+   (calibration), but most are educated guesses, and where exactly a line
+   is drawn is arbitrary. What counts as good data depends on the eye
+   tracker, the population and the research question: a study of slow baseline changes tolerates more
    missing data than one of fast, small responses. Use the labels to find
    recordings that need a closer look, not to exclude data automatically,
    and change the thresholds if they do not fit your study.
@@ -134,13 +134,32 @@ Pupil
     trials.
 
 ``pupil.noise`` ``(0.5, 1, 2)`` % of the median pupil size
-    The sample-to-sample noise of a video eye tracker is usually a fraction
-    of a percent of the pupil size. Task-evoked dilations are often only a
-    few percent, so noise of more than 1--2% per sample makes small effects
-    hard to see without heavy filtering. These bounds are guesses; noise
-    depends a lot on the tracker, its filter settings, the sampling rate
-    and whether pupil area or diameter is recorded (in percent, the noise
-    of the area is about twice that of the diameter).
+    The bounds are based on the noise of 6 datasets recorded with different
+    eye trackers and settings: stationary EyeLink 1000 systems, portable
+    EyeLink systems and long-range EyeLink systems in a 3T and a 7T MRI
+    scanner. The noise was computed with the quality report from the raw
+    data (pupil area) of each recording and eye.
+
+    .. image:: ../images/pupil_noise_datasets.png
+       :alt: Pupil noise per recording and eye in six datasets, on a log
+             scale, with the label borders at 0.5, 1 and 2%.
+
+    In the lab setups and the 3T scanner, the medians of the datasets are
+    between about 0.05% and 0.3%, and almost all recordings are below 0.5%:
+    this is the "good" range. In the 7T scanner, the median is about 0.6%
+    and the spread is much larger, with some recordings far above 2%. The
+    "ok" range (up to 1%) covers what a difficult setup typically gives;
+    above 1% ("poor") and especially above 2% ("bad"), the noise is unusual
+    even for such setups, and the recording should be checked.
+
+    The noise also depends on the settings. In both pairs of datasets
+    recorded with the same kind of tracker, the 1000 Hz data are noisier
+    than the 500 Hz data (by about a factor of 2), and the tracker's filter
+    level matters as well. All datasets recorded pupil area; in percent, the
+    noise of the diameter is about half that of the area, so for diameter
+    data, halving the bounds is a reasonable start. Six datasets cannot
+    cover all eye trackers and settings, so treat the bounds as a starting
+    point.
 
     To see what is typical for your own setup, the script
     :download:`collect_pupil_noise.py <../scripts/collect_pupil_noise.py>`
