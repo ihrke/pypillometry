@@ -5,6 +5,7 @@ import numpy as np
 
 from pypillometry.convenience import requires_package, normalize_unit
 from pypillometry.units import UNSET, _has_units, _time_values_and_units, parse_time
+from pypillometry.state import Stateful
 
 __all__ = [
     "Intervals", "merge_intervals",
@@ -217,7 +218,7 @@ def stat_event_interval(tx,sy,intervals,statfct=np.mean):
     return res
 
 
-class Intervals:
+class Intervals(Stateful):
     """
     Container for intervals with metadata.
     
@@ -278,6 +279,11 @@ class Intervals:
     ...     print(f"{start}-{end}")
     """
     
+    # state (see pypillometry.state); intervals as (n, 2) array
+    _STATE_FIELDS = (("intervals", "pairs"), "units", "label", "event_labels",
+                     "event_indices", "event_onsets", "data_time_range",
+                     "sampling_rate", "time_offset", "interval_window")
+
     def __init__(self, intervals, units=UNSET, label=None, event_labels=None, event_indices=None, data_time_range=None, event_onsets=None, sampling_rate=None, time_offset=None, interval_window=None):
         """
         Initialize an Intervals object (see class docstring for parameters).

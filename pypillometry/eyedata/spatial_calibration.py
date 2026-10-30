@@ -8,8 +8,10 @@ spatial calibration/validation data from eye-trackers.
 import numpy as np
 from typing import Optional, Dict, Tuple
 
+from ..state import Stateful
 
-class SpatialCalibration:
+
+class SpatialCalibration(Stateful):
     """
     Store and analyze spatial calibration/validation data from eye-tracking.
     
@@ -74,6 +76,10 @@ class SpatialCalibration:
     3
     """
     
+    # state (see pypillometry.state)
+    _STATE_FIELDS = ("eye", "model", "points", "measured", "errors",
+                     "screen_resolution")
+
     def __init__(
         self,
         eye: str,

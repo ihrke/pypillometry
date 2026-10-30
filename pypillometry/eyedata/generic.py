@@ -17,6 +17,7 @@ from ..signal import baseline
 from ..intervals import stat_event_interval, Intervals
 from ..logging import logging_get_level
 from .. import config
+from .. import state
 
 import numpy as np
 import itertools
@@ -109,7 +110,7 @@ def keephistory(func):
     return wrapper
         
 
-class GenericEyeData(ABC):
+class GenericEyeData(state.VersionedState, ABC):
     """
     Generic class for eyedata. 
     Defines the basic structure of an eyedata object and 
@@ -123,6 +124,13 @@ class GenericEyeData(ABC):
     inplace: Optional[bool] ## whether to make changes in-place (None: package default)
     info: dict ## optional info about the dataset
     params: dict ## parameters 
+
+    # state (see pypillometry.state); subclasses add their own fields
+    _STATE_FIELDS = (
+        "name", "fs", "tx", ("data", "EyeDataDict"), "event_onsets",
+        "event_labels", ("blinks", "dict:Intervals", "_blinks"),
+        ("interpolated_blinks", "dict:Intervals", "_interpolated_blinks"),
+        "params", "history", "inplace", "info", ("original", "versioned"))
 
     @abstractmethod
     def __init__():
@@ -1169,14 +1177,16 @@ class GenericEyeData(ABC):
     def write_file(self, fname:str, compress:bool=True):
         """
         Save to file (using :func:`~pypillometry.io.write_pickle`).
-        
+
+        The format follows from the extension: HDF5 for ``.h5`` and
+        ``.hdf5``, pickle otherwise (e.g., ``.pypil``).
+
         Parameters
         ----------
-        
         fname: str
             filename
         compress: bool
-            compress the file with zstd (default True)
+            compress the file (default True; pickle: zstd, HDF5: gzip)
         """
         io.write_pickle(self, fname, compress=compress)
 
@@ -1184,11 +1194,13 @@ class GenericEyeData(ABC):
     @classmethod
     def from_file(cls, fname:str, **kwargs):
         """
-        Reads a :class:`~pypillometry.GenericEyeData` object from a pickle-file.
-        Use as ``pypillometry.PupilData.from_file("yourfile.pd")``.
+        Reads a :class:`~pypillometry.GenericEyeData` object from a pickle
+        or HDF5 file (see :meth:`write_file`).
+        Use as ``pypillometry.PupilData.from_file("yourfile.pypil")``.
 
         The file is read with :func:`pypillometry.io.read_pickle`, so
-        `fname` can also be an HTTP(S) or SSH URL.
+        `fname` can also be an HTTP(S) or SSH URL. Files written by older
+        versions of pypillometry are upgraded to the current version.
 
         Parameters
         ----------

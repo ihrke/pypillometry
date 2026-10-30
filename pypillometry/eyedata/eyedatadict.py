@@ -8,8 +8,9 @@ import h5py
 from typing import Any
 from loguru import logger
 from ..convenience import ByteSize, _round_values
+from ..state import Stateful
 
-class EyeDataDict(MutableMapping):
+class EyeDataDict(MutableMapping, Stateful):
     """
     A dictionary that contains 1-dimensional ndarrays of equal length
     and with the same datatype (float).
@@ -28,6 +29,10 @@ class EyeDataDict(MutableMapping):
     The dictionary can be indexed by a string "eye_variable" or by a tuple
     ("eye", "variable") like data["left","x"] or data["left_x"].
     """
+
+    # state (see pypillometry.state): data and masks
+    _STATE_FIELDS = (("values", None, "data"), "mask")
+    _STATE_EXCLUDE = ("length", "shape")
 
     def __init__(self, *args, **kwargs) -> None:
         self.data: Dict[str, NDArray] = dict()
@@ -242,6 +247,13 @@ class EyeDataDict(MutableMapping):
         if "_" not in key:
             raise ValueError("Key must be in format 'eye_variable'")
         return key
+
+    def _set_state(self, st: dict) -> None:
+        """Set data and masks from a state; length and shape follow from them."""
+        super()._set_state(st)
+        first = next(iter(self.data.values()), None)
+        self.length = 0 if first is None else first.shape[0]
+        self.shape = None if first is None else first.shape
 
     def copy(self) -> 'EyeDataDict':
         """Create a deep copy of the dictionary (data and masks)."""

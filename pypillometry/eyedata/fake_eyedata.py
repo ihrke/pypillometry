@@ -24,6 +24,11 @@ class FakeEyeData(EyeData):
     3. Accessing ground truth for validation
     """
     
+    # state (see pypillometry.state): adds to that of EyeData; sim_fct is
+    # stored as its name ("module:qualname") and imported when loading
+    _STATE_FIELDS = (("sim_fct", "function"), "sim_fct_name", "sim_params",
+                     ("sim_data", "EyeDataDict"))
+
     def __init__(self, 
                  time, left_x=None, left_y=None, left_pupil=None,
                  right_x=None, right_y=None, right_pupil=None,
@@ -56,7 +61,7 @@ class FakeEyeData(EyeData):
         self.sim_fct_name = sim_fct_name or (sim_fct.__name__ if sim_fct else None)
         self.sim_params = sim_params or {}
         self.sim_data = sim_data if sim_data is not None else EyeDataDict()
-    
+
     def get_generation_call(self):
         """
         Return string representation of the function call used to generate this data.

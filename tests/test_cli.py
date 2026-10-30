@@ -136,6 +136,13 @@ class TestEdf2pypil(CLITestCase):
         self.assertIsInstance(pp.read_pickle(out), pp.EyeData)
         self.assertFalse(os.path.exists(os.path.join(self.tmp, "rec.pkl")))
 
+    def test_output_hdf5(self):
+        out = os.path.join(self.tmp, "out.h5")
+        self.run_main([self.edf, "-o", out])
+        with open(out, "rb") as f:
+            self.assertEqual(f.read(4), b"\x89HDF")
+        self.assertIsInstance(pp.read_pickle(out), pp.EyeData)
+
     def test_keep_triggers(self):
         with patch.object(pp.EyeData, "from_eyelink", return_value={"a": 1}) as read:
             self.run_main([self.edf, "--keep-triggers"])
@@ -194,6 +201,15 @@ class TestPypilinfo(CLITestCase):
         self.assertIn("EyeData(rlmw_002_short", out)
         self.assertIn("sampling_rate", out)
 
+    def test_hdf5(self):
+        d = pp.get_example_data("rlmw_002_short")
+        fname = os.path.join(self.tmp, "rec.h5")
+        pp.write_pickle(d, fname)
+        status, out, _ = self.run_main([fname])
+        self.assertEqual(status, 0)
+        self.assertIn(f"{fname} (HDF5, ", out)
+        self.assertIn("EyeData(rlmw_002_short", out)
+
     def test_edf(self):
         with patch.object(pp.EyeData, "from_eyelink", return_value="edfdata") as read:
             status, out, _ = self.run_main([EDF, "--keep-triggers"])
@@ -212,7 +228,7 @@ class TestPypilinfo(CLITestCase):
         status, out, err = self.run_main([bad, missing, good])
         self.assertEqual(status, 1)
         self.assertIn("{'a': 1}", out)
-        self.assertIn("neither an EDF file nor a pickle file", err)
+        self.assertIn("neither an EDF file nor a pickle or HDF5 file", err)
         self.assertIn("file not found", err)
 
     def test_quality(self):

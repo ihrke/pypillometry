@@ -12,6 +12,7 @@ from loguru import logger
 import scipy.stats
 
 from .io import write_pickle, read_pickle
+from . import state
 from .units import parse_time
 from .convenience import _warn_if_ignores_mask, _check_accepts_axis
 
@@ -20,7 +21,7 @@ __all__ = [
 ]
 
 
-class SegmentedEyeData:
+class SegmentedEyeData(state.VersionedState):
     """
     Class representing segmented eye data (e.g., event-related pupil dilation).
     
@@ -50,6 +51,10 @@ class SegmentedEyeData:
         Original sampling rate in Hz
     """
     
+    # state (see pypillometry.state)
+    _STATE_FIELDS = ("name", "variable", "tx", ("data", "masked"),
+                     ("intervals", "Intervals"), "sampling_rate")
+
     def __init__(self, 
                  name: str, 
                  variable: str,
@@ -601,21 +606,24 @@ class SegmentedEyeData:
     
     def write_file(self, fname: str, compress: bool = True):
         """
-        Save to file using pickle (see :func:`~pypillometry.io.write_pickle`).
-        
+        Save to file (see :func:`~pypillometry.io.write_pickle`).
+
+        The format follows from the extension: HDF5 for ``.h5`` and
+        ``.hdf5``, pickle otherwise.
+
         Parameters
         ----------
         fname : str
             Filename to save to
         compress : bool, optional
-            compress the file with zstd (default True)
+            compress the file (default True; pickle: zstd, HDF5: gzip)
         """
         write_pickle(self, fname, compress=compress)
     
     @classmethod
     def from_file(cls, fname: str, **kwargs) -> 'SegmentedEyeData':
         """
-        Read a SegmentedEyeData object from a pickle file.
+        Read a SegmentedEyeData object from a pickle or HDF5 file.
         
         Parameters
         ----------
@@ -671,6 +679,9 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         Original sampling rate in Hz
     """
     
+    # state (see pypillometry.state): adds to that of SegmentedEyeData
+    _STATE_FIELDS = ("mask_percent", "n_subjects")
+
     def __init__(self,
                  name: str,
                  variable: str,
@@ -691,7 +702,7 @@ class GroupLevelSegmentedData(SegmentedEyeData):
         )
         self.mask_percent = mask_percent
         self.n_subjects = n_subjects
-    
+
     @classmethod
     def from_segments(cls,
                       segments: list,

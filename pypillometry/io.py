@@ -16,6 +16,12 @@ with zstd by default: a 400 MB pickle (90 MB EDF file) shrinks to about
 31 MB, takes 0.5 s to write and 0.35 s to read (uncompressed: 0.2 s from
 a warm cache, more from a slow disk or network). Pickle files should only
 be read from trusted sources.
+
+Eyedata and segmented objects can also be saved in HDF5 files (filename
+ending in ``.h5`` or ``.hdf5``), which other programs can read as well and
+which do not run code when read. Both formats store the same versioned
+state of the object (see :mod:`pypillometry.state`), so files written by
+older versions of pypillometry keep loading.
 """
 
 import gzip
@@ -28,6 +34,8 @@ from typing import Optional
 from loguru import logger
 from .convenience import is_url, suppress_all_output, requires_package
 from .logging import logging_get_level
+from . import state
+from . import hdf5
 
 try:
     from compression import zstd  # Python >= 3.14
@@ -38,6 +46,7 @@ except ImportError:
 ZSTD_LEVEL = 3
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 _GZIP_MAGIC = b"\x1f\x8b"
+_HDF5_EXTENSIONS = (".h5", ".hdf5")
 
 __all__ = [
     "osf_authenticate", "download", "fetch_url", "local_copy", "write_pickle",
@@ -523,13 +532,22 @@ def local_copy(
                 os.remove(target)
 
 
+def _is_hdf5_name(fname) -> bool:
+    """True if `fname` has an HDF5 extension (``.h5`` or ``.hdf5``)."""
+    return str(fname).lower().endswith(_HDF5_EXTENSIONS)
+
+
 def write_pickle(obj, fname, compress: bool = True):
     """
-    Store any Python object in a file using :mod:`pickle`.
+    Store any Python object in a file using :mod:`pickle` (or HDF5).
 
     By default, the file is compressed with zstd (about 13 times smaller
     for eyedata objects). :func:`read_pickle` detects the compression
     automatically.
+
+    If `fname` ends with ``.h5`` or ``.hdf5``, the object is stored in an
+    HDF5 file instead (see :mod:`pypillometry.hdf5`); this works for
+    eyedata and segmented objects only.
 
     Parameters
     ----------
@@ -538,9 +556,18 @@ def write_pickle(obj, fname, compress: bool = True):
     fname : str
         filename to save to
     compress : bool, optional
-        if True (default), compress the file with zstd; if False, write a
-        plain pickle file
+        if True (default), compress the file with zstd (HDF5: larger arrays
+        with gzip); if False, write an uncompressed file
+
+    Raises
+    ------
+    TypeError
+        if `fname` is an HDF5 file and `obj` is not an eyedata or segmented
+        object
     """
+    if _is_hdf5_name(fname):
+        hdf5.write_state(state.to_state(obj), fname, compress=compress)
+        return
     if compress:
         f = zstd.open(fname, "wb", level=ZSTD_LEVEL)
     else:
@@ -570,10 +597,12 @@ def read_pickle(
     autodelete: Optional[bool] = None,
     cache_layout: str = "flat"):
     """
-    Read a Python object from a file using :mod:`pickle`.
+    Read a Python object from a file using :mod:`pickle` (or HDF5).
 
-    Plain, zstd- and gzip-compressed pickle files are supported (the
-    format is detected from the file content).
+    Plain, zstd- and gzip-compressed pickle files and HDF5 files written
+    by :func:`write_pickle` are supported (the format is detected from the
+    file content). Objects saved with an older version of pypillometry are
+    upgraded to the current version.
 
     URLs are downloaded with :func:`~pypillometry.io.fetch_url`, in the
     same way as in :func:`~pypillometry.io.read_eyelink`.
@@ -611,8 +640,11 @@ def read_pickle(
     with local_copy(fname, cache_file=cache_file, cache_dir=cache_dir,
                     autodelete=autodelete, force_download=force_download,
                     session=session, cache_layout=cache_layout) as local:
+        if hdf5.is_hdf5(local):
+            return state.from_state(hdf5.read_state(local))
         with _open_maybe_compressed(local) as f:
-            return pickle.load(f)
+            # maps classes that moved to their new location
+            return state._Unpickler(f).load()
 
 @requires_package("eyelinkio")
 def read_eyelink(

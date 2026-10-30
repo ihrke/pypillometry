@@ -9,12 +9,14 @@
 ### Added
 
 - `EyeData.to_pupildata()` and `to_gazedata()`
-- `quality_report()`: data-quality measures (dropout, blinks, noise, jumps,
-  gaze, ...) labelled good/ok/poor/bad, as text, HTML or dict
-- Default quality thresholds based on reference data from six datasets;
-  new user-guide page on data quality
-- `pypilinfo --quality/--html/--descriptions`: quality reports (with a summary
-  table for several files)
+- `quality_report()`: data-quality measures 
+- Default quality thresholds based on reference data from six datasets
+- `pypilinfo --quality/--html/--descriptions`: quality reports
+- HDF5 files: `write_file()`/`write_pickle()` write HDF5 if filename ends `.h5`
+
+### Changed
+
+- Saved files (pickle and HDF5) contain a versioned state of the object.
 
 ### Fixed
 

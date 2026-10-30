@@ -10,6 +10,7 @@ import numpy as np
 from typing import Optional, Tuple, Union, Dict, Any
 from ..units import parse_distance, parse_angle, _has_units, Quantity, u
 from loguru import logger
+from ..state import Stateful
 
 
 
@@ -21,7 +22,7 @@ def _degrees_to_radians(value):
     return np.radians(value)
 
 
-class ExperimentalSetup:
+class ExperimentalSetup(Stateful):
     """
     Complete geometric model of an eye-tracking experimental setup.
     
@@ -151,7 +152,13 @@ class ExperimentalSetup:
     >>> # Visualize the setup
     >>> fig, axes = setup.plot()
     """
-    
+
+    # state (see pypillometry.state): the stored values (mm, radians); they
+    # are set directly when loading, not parsed or validated again
+    _STATE_FIELDS = tuple((key, None, "_" + key) for key in (
+        "screen_resolution", "physical_screen_size", "screen_offset", "d",
+        "alpha_tilt", "beta_tilt", "camera_offset", "camera_spherical", "ipd"))
+
     def __init__(
         self,
         screen_resolution: Optional[Tuple[int, int]] = None,

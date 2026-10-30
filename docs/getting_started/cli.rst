@@ -6,8 +6,8 @@ look at a recording without writing any Python code.
 
 All of them read Eyelink EDF files and eyedata objects saved with
 :func:`~pypillometry.write_pickle` or
-:meth:`~pypillometry.GenericEyeData.write_file` (e.g., ``.pkl`` or
-``.pypil``). The format is detected from the file content, not from the
+:meth:`~pypillometry.GenericEyeData.write_file` (pickle files, e.g.,
+``.pkl`` or ``.pypil``, or HDF5 files, ``.h5``). The format is detected from the file content, not from the
 extension. Instead of a local file, you can also give an HTTP(S) URL or an
 SSH URL (``ssh://server/folder/file.edf``).
 
@@ -130,6 +130,7 @@ More options:
 
     edf2pypil recording.edf              # writes recording.pkl
     edf2pypil recording.edf -o rec.pypil
+    edf2pypil recording.edf -o rec.h5    # HDF5 file
     edf2pypil recording.edf -f           # overwrite an existing file
 
 Load the result in Python with :func:`~pypillometry.read_pickle` or
