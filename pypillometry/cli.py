@@ -3,7 +3,8 @@ Command-line programs of pypillometry.
 
 - ``pypilview``: open the interactive viewer for an Eyelink EDF file or a
   saved eyedata object
-- ``edf2pypil``: read an Eyelink EDF file and save it as a pickle file
+- ``edf2pypil``: read an Eyelink EDF file and save it as a pickle (or HDF5)
+  file
 - ``pypilinfo``: print a summary or a quality report of an Eyelink EDF file
   or a saved eyedata object
 """
@@ -15,11 +16,13 @@ __all__ = []
 
 
 def _detect_format(fname):
-    """Return "edf" or "pickle" based on the first bytes of a local file, else None."""
+    """Return "edf", "pickle" or "hdf5" based on the first bytes of a local file, else None."""
     with open(fname, "rb") as f:
         head = f.read(16)
     if head.startswith(b"SR_RESEARCH"):
         return "edf"
+    if head.startswith(b"\x89HDF\r\n\x1a\n"):
+        return "hdf5"
     # pickle protocol 2 and higher, zstd- or gzip-compressed pickle
     if head.startswith((b"\x80", b"\x28\xb5\x2f\xfd", b"\x1f\x8b")):
         return "pickle"
@@ -49,10 +52,10 @@ def _set_verbosity(args):
 
 def _read_file(source, keep_triggers=False):
     """
-    Read an EDF or pickle file (local file or URL).
+    Read an EDF, pickle or HDF5 file (local file or URL).
 
-    Returns the object, the format ("edf" or "pickle") and the file size in
-    bytes. Raises ValueError if the file is neither an EDF nor a pickle file.
+    Returns the object, the format ("edf", "pickle" or "hdf5") and the file
+    size in bytes. Raises ValueError if the file has none of these formats.
     """
     import pypillometry as pp
     with pp.local_copy(source) as local:
@@ -61,10 +64,11 @@ def _read_file(source, keep_triggers=False):
         if fmt == "edf":
             d = pp.EyeData.from_eyelink(
                 local, remove_eyelink_triggers=not keep_triggers)
-        elif fmt == "pickle":
+        elif fmt in ("pickle", "hdf5"):
             d = pp.read_pickle(local)
         else:
-            raise ValueError(f"{source} is neither an EDF file nor a pickle file")
+            raise ValueError(f"{source} is neither an EDF file nor a pickle "
+                             f"or HDF5 file")
     return d, fmt, size
 
 
@@ -81,7 +85,7 @@ def _pypilview_parser():
         prog="pypilview",
         description="Open the pypillometry viewer for an Eyelink EDF file or "
                     "an eyedata object saved with pp.write_pickle() (e.g., "
-                    ".pkl or .pypil). The format is detected from the file "
+                    ".pkl, .pypil or .h5). The format is detected from the file "
                     "content. Press H in the viewer for the keyboard controls.")
     parser.add_argument("file",
                         help="local file, HTTP(S) URL or SSH URL "
@@ -102,10 +106,10 @@ def pypilview_main(argv=None):
     """
     Entry point of the ``pypilview`` command.
 
-    Reads an EDF file with :meth:`~pypillometry.EyeData.from_eyelink` or a
-    pickled eyedata object with :func:`~pypillometry.read_pickle` (the
-    format is detected from the first bytes of the file, so the extension
-    does not matter) and opens it with :func:`~pypillometry.view`. URLs are
+    Reads an EDF file with :meth:`~pypillometry.EyeData.from_eyelink` or an
+    eyedata object saved in a pickle or HDF5 file with
+    :func:`~pypillometry.read_pickle` (the format is detected from the first
+    bytes of the file, so the extension does not matter) and opens it with :func:`~pypillometry.view`. URLs are
     downloaded to a temporary directory first. Only open pickle files you
     trust: unpickling can run arbitrary code.
 
@@ -135,7 +139,7 @@ def pypilview_main(argv=None):
         d, fmt, _ = _read_file(args.file, keep_triggers=args.keep_triggers)
     except ValueError as e:
         parser.error(str(e))
-    if fmt == "pickle" and not isinstance(d, pp.GenericEyeData):
+    if fmt != "edf" and not isinstance(d, pp.GenericEyeData):
         parser.error(f"{args.file} does not contain an eyedata object "
                      f"(found {type(d).__name__})")
 
@@ -155,14 +159,16 @@ def _edf2pypil_parser():
     parser = argparse.ArgumentParser(
         prog="edf2pypil",
         description="Read an Eyelink EDF file and save it as an EyeData object "
-                    "in a pickle file (read it with pp.read_pickle() or open "
+                    "in a pickle file, or an HDF5 file if the output ends in "
+                    ".h5 or .hdf5 (read it with pp.read_pickle() or open "
                     "it with pypilview).")
     parser.add_argument("file",
                         help="EDF file, HTTP(S) URL or SSH URL "
                              "(ssh://server/folder/file.edf)")
     parser.add_argument("-o", "--output",
-                        help="output file; default: <filebase>.pkl (next to "
-                             "the EDF file, or in the current directory for URLs)")
+                        help="output file (.h5 or .hdf5: HDF5, otherwise pickle); "
+                             "default: <filebase>.pkl (next to the EDF file, or "
+                             "in the current directory for URLs)")
     parser.add_argument("-f", "--force", action="store_true",
                         help="overwrite the output file if it exists")
     parser.add_argument("--keep-triggers", action="store_true",
@@ -177,7 +183,8 @@ def edf2pypil_main(argv=None):
     Entry point of the ``edf2pypil`` command.
 
     Reads an EDF file with :meth:`~pypillometry.EyeData.from_eyelink` and
-    saves the object with :func:`~pypillometry.write_pickle`.
+    saves the object with :func:`~pypillometry.write_pickle` (as HDF5 if the
+    output file ends in ``.h5`` or ``.hdf5``).
 
     Parameters
     ----------
@@ -219,7 +226,7 @@ def _pypilinfo_parser():
     parser = argparse.ArgumentParser(
         prog="pypilinfo",
         description="Print a summary of Eyelink EDF files or eyedata objects "
-                    "saved with pp.write_pickle() (e.g., .pkl or .pypil). The "
+                    "saved with pp.write_pickle() (e.g., .pkl, .pypil or .h5). The "
                     "format is detected from the file content. Reading EDF "
                     "files is slow (about a minute for 90 MB); convert them "
                     "with edf2pypil first if you need them more than once.")
@@ -271,8 +278,8 @@ def pypilinfo_main(argv=None):
     """
     Entry point of the ``pypilinfo`` command.
 
-    Reads each file like ``pypilview`` (EDF or pickle, detected from the
-    file content) and prints its format, size and a summary of the stored
+    Reads each file like ``pypilview`` (EDF, pickle or HDF5, detected from
+    the file content) and prints its format, size and a summary of the stored
     object (its :func:`repr`). With ``--quality``, the data-quality report
     (:meth:`~pypillometry.GenericEyeData.quality_report`) is printed
     instead (with ``--descriptions``, each measure is explained); for several
