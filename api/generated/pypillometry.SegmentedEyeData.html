@@ -584,7 +584,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="pypillometry.SegmentedEyeData">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">SegmentedEyeData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intervals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">VersionedState</span></code></p>
 <p>Class representing segmented eye data (e.g., event-related pupil dilation).</p>
 <p>Holds equal-length segments of a single eye data variable (e.g., “left_pupil”, 
 “right_x”) extracted around events. Tracks masked/missing data.</p>
@@ -616,7 +616,7 @@ from the Intervals returned by
 <td><p>Extract segments from a GenericEyeData object using intervals.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.from_file" title="pypillometry.SegmentedEyeData.from_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code></a></p></td>
-<td><p>Read a SegmentedEyeData object from a pickle file.</p></td>
+<td><p>Read a SegmentedEyeData object from a pickle or HDF5 file.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.from_masked_array" title="pypillometry.SegmentedEyeData.from_masked_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_masked_array</span></code></a></p></td>
 <td><p>Create SegmentedEyeData from a masked array.</p></td>
@@ -628,7 +628,7 @@ from the Intervals returned by
 <td><p>Return a summary of the SegmentedEyeData object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.SegmentedEyeData.write_file" title="pypillometry.SegmentedEyeData.write_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_file</span></code></a></p></td>
-<td><p>Save to file using pickle (see <a class="reference internal" href="pypillometry.write_pickle.html#pypillometry.write_pickle" title="pypillometry.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>).</p></td>
+<td><p>Save to file (see <a class="reference internal" href="pypillometry.write_pickle.html#pypillometry.write_pickle" title="pypillometry.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -659,7 +659,7 @@ from the Intervals returned by
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.from_file">
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.from_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.from_file" title="Link to this definition">#</a></dt>
-<dd><p>Read a SegmentedEyeData object from a pickle file.</p>
+<dd><p>Read a SegmentedEyeData object from a pickle or HDF5 file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -818,12 +818,14 @@ percent_masked, and sampling_rate</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.SegmentedEyeData.write_file">
 <span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/segmented.html#SegmentedEyeData.write_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.SegmentedEyeData.write_file" title="Link to this definition">#</a></dt>
-<dd><p>Save to file using pickle (see <a class="reference internal" href="pypillometry.write_pickle.html#pypillometry.write_pickle" title="pypillometry.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>).</p>
+<dd><p>Save to file (see <a class="reference internal" href="pypillometry.write_pickle.html#pypillometry.write_pickle" title="pypillometry.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>).</p>
+<p>The format follows from the extension: HDF5 for <code class="docutils literal notranslate"><span class="pre">.h5</span></code> and
+<code class="docutils literal notranslate"><span class="pre">.hdf5</span></code>, pickle otherwise.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Filename to save to</p></li>
-<li><p><strong>compress</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – compress the file with zstd (default True)</p></li>
+<li><p><strong>compress</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – compress the file (default True; pickle: zstd, HDF5: gzip)</p></li>
 </ul>
 </dd>
 </dl>

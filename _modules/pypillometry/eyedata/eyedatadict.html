@@ -812,10 +812,11 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">ByteSize</span><span class="p">,</span> <span class="n">_round_values</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..state</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stateful</span>
 
 <div class="viewcode-block" id="EyeDataDict">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">EyeDataDict</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EyeDataDict</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Stateful</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A dictionary that contains 1-dimensional ndarrays of equal length</span>
 <span class="sd">    and with the same datatype (float).</span>
@@ -834,6 +835,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    The dictionary can be indexed by a string "eye_variable" or by a tuple</span>
 <span class="sd">    ("eye", "variable") like data["left","x"] or data["left_x"].</span>
 <span class="sd">    """</span>
+
+    <span class="c1"># state (see pypillometry.state): data and masks</span>
+    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">((</span><span class="s2">"values"</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"data"</span><span class="p">),</span> <span class="s2">"mask"</span><span class="p">)</span>
+    <span class="n">_STATE_EXCLUDE</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"length"</span><span class="p">,</span> <span class="s2">"shape"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -1063,6 +1068,13 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="s2">"_"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">key</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Key must be in format 'eye_variable'"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">key</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">st</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Set data and masks from a state; length and shape follow from them."""</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_state</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">first</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">first</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">first</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">first</span><span class="o">.</span><span class="n">shape</span>
 
 <div class="viewcode-block" id="EyeDataDict.copy">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.EyeDataDict.html#pypillometry.EyeDataDict.copy">[docs]</a>

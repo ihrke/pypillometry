@@ -476,8 +476,8 @@
 look at a recording without writing any Python code.</p>
 <p>All of them read Eyelink EDF files and eyedata objects saved with
 <a class="reference internal" href="../api/generated/pypillometry.write_pickle.html#pypillometry.write_pickle" title="pypillometry.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a> or
-<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.write_file" title="pypillometry.GenericEyeData.write_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_file()</span></code></a> (e.g., <code class="docutils literal notranslate"><span class="pre">.pkl</span></code> or
-<code class="docutils literal notranslate"><span class="pre">.pypil</span></code>). The format is detected from the file content, not from the
+<a class="reference internal" href="../api/generated/pypillometry.GenericEyeData.html#pypillometry.GenericEyeData.write_file" title="pypillometry.GenericEyeData.write_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_file()</span></code></a> (pickle files, e.g.,
+<code class="docutils literal notranslate"><span class="pre">.pkl</span></code> or <code class="docutils literal notranslate"><span class="pre">.pypil</span></code>, or HDF5 files, <code class="docutils literal notranslate"><span class="pre">.h5</span></code>). The format is detected from the file content, not from the
 extension. Instead of a local file, you can also give an HTTP(S) URL or an
 SSH URL (<code class="docutils literal notranslate"><span class="pre">ssh://server/folder/file.edf</span></code>).</p>
 <p>All three accept <code class="docutils literal notranslate"><span class="pre">-q</span></code> (only warnings and errors, no progress bars) and
@@ -574,6 +574,7 @@ Saved recording.pkl
 <p>More options:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>edf2pypil<span class="w"> </span>recording.edf<span class="w">              </span><span class="c1"># writes recording.pkl</span>
 edf2pypil<span class="w"> </span>recording.edf<span class="w"> </span>-o<span class="w"> </span>rec.pypil
+edf2pypil<span class="w"> </span>recording.edf<span class="w"> </span>-o<span class="w"> </span>rec.h5<span class="w">    </span><span class="c1"># HDF5 file</span>
 edf2pypil<span class="w"> </span>recording.edf<span class="w"> </span>-f<span class="w">           </span><span class="c1"># overwrite an existing file</span>
 </pre></div>
 </div>

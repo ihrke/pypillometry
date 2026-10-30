@@ -511,6 +511,33 @@ calls it with the right data and parameters. Decorate the method with
 support <code class="docutils literal notranslate"><span class="pre">eyes=</span></code>, <code class="docutils literal notranslate"><span class="pre">variables=</span></code> and <code class="docutils literal notranslate"><span class="pre">inplace=</span></code> like the existing
 methods.</p>
 </section>
+<section id="saved-files-and-their-state">
+<h2>Saved files and their state<a class="headerlink" href="#saved-files-and-their-state" title="Link to this heading">#</a></h2>
+<p>The content of eyedata and segmented objects is defined by their <em>state</em>:
+a dict with only numbers, strings, lists, dicts and numpy arrays. Each
+class lists the attributes that belong to it in <code class="docutils literal notranslate"><span class="pre">_STATE_FIELDS</span></code>
+(objects inside it, such as <a class="reference internal" href="../api/generated/pypillometry.Intervals.html#pypillometry.Intervals" title="pypillometry.Intervals"><code class="xref py py-class docutils literal notranslate"><span class="pre">Intervals</span></code></a>, become nested states; see
+<code class="docutils literal notranslate"><span class="pre">pypillometry/state.py</span></code>). Pickle files (via
+<code class="docutils literal notranslate"><span class="pre">__getstate__</span></code>/<code class="docutils literal notranslate"><span class="pre">__setstate__</span></code>) and HDF5 files
+(<code class="docutils literal notranslate"><span class="pre">pypillometry/hdf5.py</span></code>) only store this state, together with its
+<code class="docutils literal notranslate"><span class="pre">format_version</span></code>. A test (<code class="docutils literal notranslate"><span class="pre">tests/test_state.py</span></code>) fails if an object
+has an attribute that is not part of its state.</p>
+<p>If you add an attribute to a class (or change what an attribute
+contains), the saved files have to follow:</p>
+<ol class="arabic simple">
+<li><p>add it to <code class="docutils literal notranslate"><span class="pre">_STATE_FIELDS</span></code> of the class (or to <code class="docutils literal notranslate"><span class="pre">_STATE_EXCLUDE</span></code> if
+it is derived from other attributes and need not be saved),</p></li>
+<li><p>increase <code class="docutils literal notranslate"><span class="pre">FORMAT_VERSION</span></code> in <code class="docutils literal notranslate"><span class="pre">pypillometry/state.py</span></code> and add a
+function to <code class="docutils literal notranslate"><span class="pre">_MIGRATIONS</span></code> that upgrades a state of the previous
+version (e.g., sets a default for the new entry); old migrations are
+never changed,</p></li>
+<li><p>keep the fixture files of the older versions in <code class="docutils literal notranslate"><span class="pre">tests/data/state/</span></code>
+(they must keep loading) and add files written by the new version
+(e.g., <code class="docutils literal notranslate"><span class="pre">eyedata_v2.h5</span></code>).</p></li>
+</ol>
+<p>Files written before the state was versioned (pypillometry 2.0) count as
+version 0.</p>
+</section>
 <section id="documenting-code">
 <h2>Documenting code<a class="headerlink" href="#documenting-code" title="Link to this heading">#</a></h2>
 <p>Docstrings follow the <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">NumPy style</a>. Every public
@@ -668,6 +695,7 @@ and its documentation at <a class="reference external" href="https://ihrke.githu
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-to-contribute">How to contribute</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-architecture">Package architecture</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saved-files-and-their-state">Saved files and their state</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#documenting-code">Documenting code</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tests">Tests</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-the-documentation">Building the documentation</a><ul class="pst-show_toc_level nav section-nav flex-column">

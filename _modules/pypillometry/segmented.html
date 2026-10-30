@@ -816,6 +816,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">write_pickle</span><span class="p">,</span> <span class="n">read_pickle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">state</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">_warn_if_ignores_mask</span><span class="p">,</span> <span class="n">_check_accepts_axis</span>
 
@@ -826,7 +827,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="SegmentedEyeData">
 <a class="viewcode-back" href="../../api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">SegmentedEyeData</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SegmentedEyeData</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">VersionedState</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class representing segmented eye data (e.g., event-related pupil dilation).</span>
 <span class="sd">    </span>
@@ -856,6 +857,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Original sampling rate in Hz</span>
 <span class="sd">    """</span>
     
+    <span class="c1"># state (see pypillometry.state)</span>
+    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"variable"</span><span class="p">,</span> <span class="s2">"tx"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"masked"</span><span class="p">),</span>
+                     <span class="p">(</span><span class="s2">"intervals"</span><span class="p">,</span> <span class="s2">"Intervals"</span><span class="p">),</span> <span class="s2">"sampling_rate"</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                  <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
                  <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1424,14 +1429,17 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData.write_file">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">write_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">compress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Save to file using pickle (see :func:`~pypillometry.io.write_pickle`).</span>
-<span class="sd">        </span>
+<span class="sd">        Save to file (see :func:`~pypillometry.io.write_pickle`).</span>
+
+<span class="sd">        The format follows from the extension: HDF5 for ``.h5`` and</span>
+<span class="sd">        ``.hdf5``, pickle otherwise.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        fname : str</span>
 <span class="sd">            Filename to save to</span>
 <span class="sd">        compress : bool, optional</span>
-<span class="sd">            compress the file with zstd (default True)</span>
+<span class="sd">            compress the file (default True; pickle: zstd, HDF5: gzip)</span>
 <span class="sd">        """</span>
         <span class="n">write_pickle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="n">compress</span><span class="p">)</span></div>
 
@@ -1441,7 +1449,7 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'SegmentedEyeData'</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        Read a SegmentedEyeData object from a pickle file.</span>
+<span class="sd">        Read a SegmentedEyeData object from a pickle or HDF5 file.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1501,6 +1509,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        Original sampling rate in Hz</span>
 <span class="sd">    """</span>
     
+    <span class="c1"># state (see pypillometry.state): adds to that of SegmentedEyeData</span>
+    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"mask_percent"</span><span class="p">,</span> <span class="s2">"n_subjects"</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1521,7 +1532,7 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mask_percent</span> <span class="o">=</span> <span class="n">mask_percent</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_subjects</span> <span class="o">=</span> <span class="n">n_subjects</span>
-    
+
 <div class="viewcode-block" id="GroupLevelSegmentedData.from_segments">
 <a class="viewcode-back" href="../../api/generated/pypillometry.GroupLevelSegmentedData.html#pypillometry.GroupLevelSegmentedData.from_segments">[docs]</a>
     <span class="nd">@classmethod</span>

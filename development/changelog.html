@@ -481,12 +481,16 @@
 <h3>Added<a class="headerlink" href="#added" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">EyeData.to_pupildata()</span></code> and <code class="docutils literal notranslate"><span class="pre">to_gazedata()</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">quality_report()</span></code>: data-quality measures (dropout, blinks, noise, jumps,
-gaze, …) labelled good/ok/poor/bad, as text, HTML or dict</p></li>
-<li><p>Default quality thresholds based on reference data from six datasets;
-new user-guide page on data quality</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">pypilinfo</span> <span class="pre">--quality/--html/--descriptions</span></code>: quality reports (with a summary
-table for several files)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">quality_report()</span></code>: data-quality measures</p></li>
+<li><p>Default quality thresholds based on reference data from six datasets</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pypilinfo</span> <span class="pre">--quality/--html/--descriptions</span></code>: quality reports</p></li>
+<li><p>HDF5 files: <code class="docutils literal notranslate"><span class="pre">write_file()</span></code>/<code class="docutils literal notranslate"><span class="pre">write_pickle()</span></code> write HDF5 if filename ends <code class="docutils literal notranslate"><span class="pre">.h5</span></code></p></li>
+</ul>
+</section>
+<section id="changed">
+<h3>Changed<a class="headerlink" href="#changed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Saved files (pickle and HDF5) contain a versioned state of the object.</p></li>
 </ul>
 </section>
 <section id="fixed">
@@ -533,8 +537,8 @@ default for <code class="docutils literal notranslate"><span class="pre">inplace
 <li><p><code class="docutils literal notranslate"><span class="pre">pypilview</span></code>: interactive viewer EDF file stored pypil object</p></li>
 </ul>
 </section>
-<section id="changed">
-<h3>Changed<a class="headerlink" href="#changed" title="Link to this heading">#</a></h3>
+<section id="id4">
+<h3>Changed<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">read_pickle()</span></code> saves HTTP(S) downloads to a file (temporary by default)</p></li>
 <li><p>Packaging moved from <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>/<code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> to <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>.</p></li>
@@ -547,8 +551,8 @@ start/end of the interval); <code class="docutils literal notranslate"><span cla
 (or <code class="docutils literal notranslate"><span class="pre">cache_dir</span></code>) instead of downloading them on every call</p></li>
 </ul>
 </section>
-<section id="id4">
-<h3>Fixed<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<section id="id5">
+<h3>Fixed<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">pp.signal</span></code> and <code class="docutils literal notranslate"><span class="pre">pp.logging</span></code> were <code class="docutils literal notranslate"><span class="pre">scipy.signal</span></code> and the standard-library
 <code class="docutils literal notranslate"><span class="pre">logging</span></code> instead of the package’s own submodules.</p></li>
@@ -699,14 +703,15 @@ intervals, io, viewer, experimental setup).</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unreleased">Unreleased</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-changes">Breaking changes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#added">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed">Changed</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">2.0.0 (2026-10-28)</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Breaking changes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Added</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed">Changed</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Fixed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Fixed</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a></li>
 </ul>
 </li>

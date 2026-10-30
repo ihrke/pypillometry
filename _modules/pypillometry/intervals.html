@@ -809,6 +809,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">requires_package</span><span class="p">,</span> <span class="n">normalize_unit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">UNSET</span><span class="p">,</span> <span class="n">_has_units</span><span class="p">,</span> <span class="n">_time_values_and_units</span><span class="p">,</span> <span class="n">parse_time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pypillometry.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stateful</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"Intervals"</span><span class="p">,</span> <span class="s2">"merge_intervals"</span><span class="p">,</span>
@@ -1026,7 +1027,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="Intervals">
 <a class="viewcode-back" href="../../api/generated/pypillometry.Intervals.html#pypillometry.Intervals">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Intervals</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Intervals</span><span class="p">(</span><span class="n">Stateful</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Container for intervals with metadata.</span>
 <span class="sd">    </span>
@@ -1087,6 +1088,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ...     print(f"{start}-{end}")</span>
 <span class="sd">    """</span>
     
+    <span class="c1"># state (see pypillometry.state); intervals as (n, 2) array</span>
+    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">((</span><span class="s2">"intervals"</span><span class="p">,</span> <span class="s2">"pairs"</span><span class="p">),</span> <span class="s2">"units"</span><span class="p">,</span> <span class="s2">"label"</span><span class="p">,</span> <span class="s2">"event_labels"</span><span class="p">,</span>
+                     <span class="s2">"event_indices"</span><span class="p">,</span> <span class="s2">"event_onsets"</span><span class="p">,</span> <span class="s2">"data_time_range"</span><span class="p">,</span>
+                     <span class="s2">"sampling_rate"</span><span class="p">,</span> <span class="s2">"time_offset"</span><span class="p">,</span> <span class="s2">"interval_window"</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intervals</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">UNSET</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event_indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_time_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event_onsets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_offset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interval_window</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize an Intervals object (see class docstring for parameters).</span>

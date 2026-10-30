@@ -99,6 +99,26 @@ for any Python object, e.g., a list of objects or a
    Pickle files can contain arbitrary code. Only load files from sources
    you trust.
 
+If the filename ends in ``.h5`` or ``.hdf5``, the object is saved in an
+HDF5 file instead:
+
+.. code-block:: python
+
+    d.write_file("subject01.h5")
+    d = pp.EyeData.from_file("subject01.h5")
+
+HDF5 files do not run code when they are read, and other programs (e.g.,
+h5py, R or MATLAB) can read them: the data are datasets (``tx``,
+``data/values/left_pupil``, ``data/mask/left_pupil``, ...), the other information
+(name, sampling rate, blinks, history, ...) is stored in groups and
+attributes. They work for eyedata objects and :class:`SegmentedEyeData`
+(not for arbitrary Python objects). Values in ``info`` or ``params`` that
+HDF5 cannot store are saved as text (with a warning). The loading
+functions detect the format from the file content.
+
+Both formats store a versioned description of the object. Files written
+by older versions of pypillometry are upgraded when they are loaded.
+
 Saved files can be inspected with ``pypilinfo`` and opened in the viewer
 with ``pypilview`` (see :doc:`/getting_started/cli`).
 

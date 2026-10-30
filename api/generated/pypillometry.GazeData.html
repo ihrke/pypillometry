@@ -654,7 +654,7 @@ initially True). The method-level <cite>inplace</cite> argument overrides this.<
 <td><p>Reads an eyedata object from an Eyelink file.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#pypillometry.GazeData.from_file" title="pypillometry.GazeData.from_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_file</span></code></a></p></td>
-<td><p>Reads a <a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a> object from a pickle-file.</p></td>
+<td><p>Reads a <a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a> object from a pickle or HDF5 file (see <a class="reference internal" href="#pypillometry.GazeData.write_file" title="pypillometry.GazeData.write_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_file()</span></code></a>).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pypillometry.GazeData.get_blinks" title="pypillometry.GazeData.get_blinks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_blinks</span></code></a></p></td>
 <td><p>Get blinks as Intervals object or dict of Intervals.</p></td>
@@ -799,10 +799,12 @@ object returned by the “eyelinkio” package</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pypillometry.GazeData.from_file">
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.GazeData.from_file" title="Link to this definition">#</a></dt>
-<dd><p>Reads a <a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a> object from a pickle-file.
-Use as <code class="docutils literal notranslate"><span class="pre">pypillometry.PupilData.from_file(&quot;yourfile.pd&quot;)</span></code>.</p>
+<dd><p>Reads a <a class="reference internal" href="pypillometry.GenericEyeData.html#pypillometry.GenericEyeData" title="pypillometry.GenericEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenericEyeData</span></code></a> object from a pickle
+or HDF5 file (see <a class="reference internal" href="#pypillometry.GazeData.write_file" title="pypillometry.GazeData.write_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_file()</span></code></a>).
+Use as <code class="docutils literal notranslate"><span class="pre">pypillometry.PupilData.from_file(&quot;yourfile.pypil&quot;)</span></code>.</p>
 <p>The file is read with <a class="reference internal" href="pypillometry.read_pickle.html#pypillometry.read_pickle" title="pypillometry.read_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">pypillometry.io.read_pickle()</span></code></a>, so
-<cite>fname</cite> can also be an HTTP(S) or SSH URL.</p>
+<cite>fname</cite> can also be an HTTP(S) or SSH URL. Files written by older
+versions of pypillometry are upgraded to the current version.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2027,11 +2029,13 @@ if <cite>None</cite>, use the object-level setting (specified in the constructor
 <dt class="sig sig-object py" id="pypillometry.GazeData.write_file">
 <span class="sig-name descname"><span class="pre">write_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pypillometry.GazeData.write_file" title="Link to this definition">#</a></dt>
 <dd><p>Save to file (using <a class="reference internal" href="pypillometry.write_pickle.html#pypillometry.write_pickle" title="pypillometry.write_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">write_pickle()</span></code></a>).</p>
+<p>The format follows from the extension: HDF5 for <code class="docutils literal notranslate"><span class="pre">.h5</span></code> and
+<code class="docutils literal notranslate"><span class="pre">.hdf5</span></code>, pickle otherwise (e.g., <code class="docutils literal notranslate"><span class="pre">.pypil</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fname</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – str: filename</p></li>
-<li><p><strong>compress</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – bool: compress the file with zstd (default True)</p></li>
+<li><p><strong>compress</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – bool: compress the file (default True; pickle: zstd, HDF5: gzip)</p></li>
 </ul>
 </dd>
 </dl>
@@ -2062,12 +2066,6 @@ if <cite>None</cite>, use the object-level setting (specified in the constructor
 <dt class="sig sig-object py" id="pypillometry.GazeData.eyes">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">eyes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.15)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#pypillometry.GazeData.eyes" title="Link to this definition">#</a></dt>
 <dd><p>Return a list of available eyes in the dataset.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pypillometry.GazeData.params">
-<span class="sig-name descname"><span class="pre">params</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a></span><a class="headerlink" href="#pypillometry.GazeData.params" title="Link to this definition">#</a></dt>
-<dd><p>Constructor</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2176,7 +2174,6 @@ if <cite>None</cite>, use the object-level setting (specified in the constructor
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.GazeData.blinks"><code class="docutils literal notranslate"><span class="pre">blinks</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.GazeData.events"><code class="docutils literal notranslate"><span class="pre">events</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.GazeData.eyes"><code class="docutils literal notranslate"><span class="pre">eyes</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.GazeData.params"><code class="docutils literal notranslate"><span class="pre">params</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.GazeData.plot"><code class="docutils literal notranslate"><span class="pre">plot</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pypillometry.GazeData.variables"><code class="docutils literal notranslate"><span class="pre">variables</span></code></a></li>
 </ul>

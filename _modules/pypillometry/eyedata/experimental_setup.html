@@ -814,6 +814,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..units</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_distance</span><span class="p">,</span> <span class="n">parse_angle</span><span class="p">,</span> <span class="n">_has_units</span><span class="p">,</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">u</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..state</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stateful</span>
 
 
 
@@ -827,7 +828,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="ExperimentalSetup">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.ExperimentalSetup.html#pypillometry.ExperimentalSetup">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ExperimentalSetup</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExperimentalSetup</span><span class="p">(</span><span class="n">Stateful</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Complete geometric model of an eye-tracking experimental setup.</span>
 <span class="sd">    </span>
@@ -957,7 +958,13 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    &gt;&gt;&gt; # Visualize the setup</span>
 <span class="sd">    &gt;&gt;&gt; fig, axes = setup.plot()</span>
 <span class="sd">    """</span>
-    
+
+    <span class="c1"># state (see pypillometry.state): the stored values (mm, radians); they</span>
+    <span class="c1"># are set directly when loading, not parsed or validated again</span>
+    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"_"</span> <span class="o">+</span> <span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="s2">"screen_resolution"</span><span class="p">,</span> <span class="s2">"physical_screen_size"</span><span class="p">,</span> <span class="s2">"screen_offset"</span><span class="p">,</span> <span class="s2">"d"</span><span class="p">,</span>
+        <span class="s2">"alpha_tilt"</span><span class="p">,</span> <span class="s2">"beta_tilt"</span><span class="p">,</span> <span class="s2">"camera_offset"</span><span class="p">,</span> <span class="s2">"camera_spherical"</span><span class="p">,</span> <span class="s2">"ipd"</span><span class="p">))</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">screen_resolution</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>

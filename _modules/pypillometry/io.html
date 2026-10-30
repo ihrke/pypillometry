@@ -820,6 +820,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">31 MB, takes 0.5 s to write and 0.35 s to read (uncompressed: 0.2 s from</span>
 <span class="sd">a warm cache, more from a slow disk or network). Pickle files should only</span>
 <span class="sd">be read from trusted sources.</span>
+
+<span class="sd">Eyedata and segmented objects can also be saved in HDF5 files (filename</span>
+<span class="sd">ending in ``.h5`` or ``.hdf5``), which other programs can read as well and</span>
+<span class="sd">which do not run code when read. Both formats store the same versioned</span>
+<span class="sd">state of the object (see :mod:`pypillometry.state`), so files written by</span>
+<span class="sd">older versions of pypillometry keep loading.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
@@ -832,6 +838,8 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.convenience</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_url</span><span class="p">,</span> <span class="n">suppress_all_output</span><span class="p">,</span> <span class="n">requires_package</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging_get_level</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">state</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">hdf5</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">compression</span><span class="w"> </span><span class="kn">import</span> <span class="n">zstd</span>  <span class="c1"># Python &gt;= 3.14</span>
@@ -842,6 +850,7 @@ window.runMermaid = runMermaid;</script>
 <span class="n">ZSTD_LEVEL</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">_ZSTD_MAGIC</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x28\xb5\x2f\xfd</span><span class="s2">"</span>
 <span class="n">_GZIP_MAGIC</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x1f\x8b</span><span class="s2">"</span>
+<span class="n">_HDF5_EXTENSIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">".h5"</span><span class="p">,</span> <span class="s2">".hdf5"</span><span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">"osf_authenticate"</span><span class="p">,</span> <span class="s2">"download"</span><span class="p">,</span> <span class="s2">"fetch_url"</span><span class="p">,</span> <span class="s2">"local_copy"</span><span class="p">,</span> <span class="s2">"write_pickle"</span><span class="p">,</span>
@@ -1339,15 +1348,24 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_hdf5_name</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""True if `fname` has an HDF5 extension (``.h5`` or ``.hdf5``)."""</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">_HDF5_EXTENSIONS</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="write_pickle">
 <a class="viewcode-back" href="../../api/generated/pypillometry.write_pickle.html#pypillometry.write_pickle">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">write_pickle</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">compress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Store any Python object in a file using :mod:`pickle`.</span>
+<span class="sd">    Store any Python object in a file using :mod:`pickle` (or HDF5).</span>
 
 <span class="sd">    By default, the file is compressed with zstd (about 13 times smaller</span>
 <span class="sd">    for eyedata objects). :func:`read_pickle` detects the compression</span>
 <span class="sd">    automatically.</span>
+
+<span class="sd">    If `fname` ends with ``.h5`` or ``.hdf5``, the object is stored in an</span>
+<span class="sd">    HDF5 file instead (see :mod:`pypillometry.hdf5`); this works for</span>
+<span class="sd">    eyedata and segmented objects only.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1356,9 +1374,18 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    fname : str</span>
 <span class="sd">        filename to save to</span>
 <span class="sd">    compress : bool, optional</span>
-<span class="sd">        if True (default), compress the file with zstd; if False, write a</span>
-<span class="sd">        plain pickle file</span>
+<span class="sd">        if True (default), compress the file with zstd (HDF5: larger arrays</span>
+<span class="sd">        with gzip); if False, write an uncompressed file</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        if `fname` is an HDF5 file and `obj` is not an eyedata or segmented</span>
+<span class="sd">        object</span>
 <span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">_is_hdf5_name</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+        <span class="n">hdf5</span><span class="o">.</span><span class="n">write_state</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">to_state</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="n">fname</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="n">compress</span><span class="p">)</span>
+        <span class="k">return</span>
     <span class="k">if</span> <span class="n">compress</span><span class="p">:</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">zstd</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">ZSTD_LEVEL</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1391,10 +1418,12 @@ window.runMermaid = runMermaid;</script>
     <span class="n">autodelete</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cache_layout</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"flat"</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Read a Python object from a file using :mod:`pickle`.</span>
+<span class="sd">    Read a Python object from a file using :mod:`pickle` (or HDF5).</span>
 
-<span class="sd">    Plain, zstd- and gzip-compressed pickle files are supported (the</span>
-<span class="sd">    format is detected from the file content).</span>
+<span class="sd">    Plain, zstd- and gzip-compressed pickle files and HDF5 files written</span>
+<span class="sd">    by :func:`write_pickle` are supported (the format is detected from the</span>
+<span class="sd">    file content). Objects saved with an older version of pypillometry are</span>
+<span class="sd">    upgraded to the current version.</span>
 
 <span class="sd">    URLs are downloaded with :func:`~pypillometry.io.fetch_url`, in the</span>
 <span class="sd">    same way as in :func:`~pypillometry.io.read_eyelink`.</span>
@@ -1432,8 +1461,11 @@ window.runMermaid = runMermaid;</script>
     <span class="k">with</span> <span class="n">local_copy</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cache_file</span><span class="o">=</span><span class="n">cache_file</span><span class="p">,</span> <span class="n">cache_dir</span><span class="o">=</span><span class="n">cache_dir</span><span class="p">,</span>
                     <span class="n">autodelete</span><span class="o">=</span><span class="n">autodelete</span><span class="p">,</span> <span class="n">force_download</span><span class="o">=</span><span class="n">force_download</span><span class="p">,</span>
                     <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">cache_layout</span><span class="o">=</span><span class="n">cache_layout</span><span class="p">)</span> <span class="k">as</span> <span class="n">local</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">hdf5</span><span class="o">.</span><span class="n">is_hdf5</span><span class="p">(</span><span class="n">local</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">state</span><span class="o">.</span><span class="n">from_state</span><span class="p">(</span><span class="n">hdf5</span><span class="o">.</span><span class="n">read_state</span><span class="p">(</span><span class="n">local</span><span class="p">))</span>
         <span class="k">with</span> <span class="n">_open_maybe_compressed</span><span class="p">(</span><span class="n">local</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
+            <span class="c1"># maps classes that moved to their new location</span>
+            <span class="k">return</span> <span class="n">state</span><span class="o">.</span><span class="n">_Unpickler</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="read_eyelink">

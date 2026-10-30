@@ -584,18 +584,25 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="pypillometry.write_pickle">
 <span class="sig-prename descclassname"><span class="pre">pypillometry.</span></span><span class="sig-name descname"><span class="pre">write_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pypillometry/io.html#write_pickle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pypillometry.write_pickle" title="Link to this definition">#</a></dt>
-<dd><p>Store any Python object in a file using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a>.</p>
+<dd><p>Store any Python object in a file using <a class="reference external" href="https://docs.python.org/3/library/pickle.html#module-pickle" title="(in Python v3.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pickle</span></code></a> (or HDF5).</p>
 <p>By default, the file is compressed with zstd (about 13 times smaller
 for eyedata objects). <a class="reference internal" href="pypillometry.read_pickle.html#pypillometry.read_pickle" title="pypillometry.read_pickle"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_pickle()</span></code></a> detects the compression
 automatically.</p>
+<p>If <cite>fname</cite> ends with <code class="docutils literal notranslate"><span class="pre">.h5</span></code> or <code class="docutils literal notranslate"><span class="pre">.hdf5</span></code>, the object is stored in an
+HDF5 file instead (see <code class="xref py py-mod docutils literal notranslate"><span class="pre">pypillometry.hdf5</span></code>); this works for
+eyedata and segmented objects only.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>obj</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><em>object</em></a>) – object to save</p></li>
 <li><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – filename to save to</p></li>
-<li><p><strong>compress</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if True (default), compress the file with zstd; if False, write a
-plain pickle file</p></li>
+<li><p><strong>compress</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if True (default), compress the file with zstd (HDF5: larger arrays
+with gzip); if False, write an uncompressed file</p></li>
 </ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.15)"><strong>TypeError</strong></a> – if <cite>fname</cite> is an HDF5 file and <cite>obj</cite> is not an eyedata or segmented
+object</p>
 </dd>
 </dl>
 </dd></dl>

@@ -559,6 +559,22 @@ for any Python object, e.g., a list of objects or a
 <p>Pickle files can contain arbitrary code. Only load files from sources
 you trust.</p>
 </div>
+<p>If the filename ends in <code class="docutils literal notranslate"><span class="pre">.h5</span></code> or <code class="docutils literal notranslate"><span class="pre">.hdf5</span></code>, the object is saved in an
+HDF5 file instead:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="s2">"subject01.h5"</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">EyeData</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">"subject01.h5"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>HDF5 files do not run code when they are read, and other programs (e.g.,
+h5py, R or MATLAB) can read them: the data are datasets (<code class="docutils literal notranslate"><span class="pre">tx</span></code>,
+<code class="docutils literal notranslate"><span class="pre">data/values/left_pupil</span></code>, <code class="docutils literal notranslate"><span class="pre">data/mask/left_pupil</span></code>, …), the other information
+(name, sampling rate, blinks, history, …) is stored in groups and
+attributes. They work for eyedata objects and <a class="reference internal" href="../api/generated/pypillometry.SegmentedEyeData.html#pypillometry.SegmentedEyeData" title="pypillometry.SegmentedEyeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">SegmentedEyeData</span></code></a>
+(not for arbitrary Python objects). Values in <code class="docutils literal notranslate"><span class="pre">info</span></code> or <code class="docutils literal notranslate"><span class="pre">params</span></code> that
+HDF5 cannot store are saved as text (with a warning). The loading
+functions detect the format from the file content.</p>
+<p>Both formats store a versioned description of the object. Files written
+by older versions of pypillometry are upgraded when they are loaded.</p>
 <p>Saved files can be inspected with <code class="docutils literal notranslate"><span class="pre">pypilinfo</span></code> and opened in the viewer
 with <code class="docutils literal notranslate"><span class="pre">pypilview</span></code> (see <a class="reference internal" href="../getting_started/cli.html"><span class="doc">Command-line tools</span></a>).</p>
 </section>

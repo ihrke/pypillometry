@@ -812,10 +812,12 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">..state</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stateful</span>
+
 
 <div class="viewcode-block" id="SpatialCalibration">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.SpatialCalibration.html#pypillometry.SpatialCalibration">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">SpatialCalibration</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SpatialCalibration</span><span class="p">(</span><span class="n">Stateful</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Store and analyze spatial calibration/validation data from eye-tracking.</span>
 <span class="sd">    </span>
@@ -880,6 +882,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    3</span>
 <span class="sd">    """</span>
     
+    <span class="c1"># state (see pypillometry.state)</span>
+    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"eye"</span><span class="p">,</span> <span class="s2">"model"</span><span class="p">,</span> <span class="s2">"points"</span><span class="p">,</span> <span class="s2">"measured"</span><span class="p">,</span> <span class="s2">"errors"</span><span class="p">,</span>
+                     <span class="s2">"screen_resolution"</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">eye</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>

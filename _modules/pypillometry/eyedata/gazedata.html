@@ -867,6 +867,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        use the package-level setting (see :func:`~pypillometry.set_default_inplace`,</span>
 <span class="sd">        initially True). The method-level `inplace` argument overrides this.</span>
 <span class="sd">    """</span>
+    <span class="c1"># state (see pypillometry.state): adds to that of GenericEyeData</span>
+    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">((</span><span class="s2">"experimental_setup"</span><span class="p">,</span> <span class="s2">"ExperimentalSetup"</span><span class="p">),</span>
+                     <span class="p">(</span><span class="s2">"calibration"</span><span class="p">,</span> <span class="s2">"dict:SpatialCalibration"</span><span class="p">))</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                     <span class="n">time</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">left_x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>

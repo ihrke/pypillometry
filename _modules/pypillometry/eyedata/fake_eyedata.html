@@ -830,6 +830,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    3. Accessing ground truth for validation</span>
 <span class="sd">    """</span>
     
+    <span class="c1"># state (see pypillometry.state): adds to that of EyeData; sim_fct is</span>
+    <span class="c1"># stored as its name ("module:qualname") and imported when loading</span>
+    <span class="n">_STATE_FIELDS</span> <span class="o">=</span> <span class="p">((</span><span class="s2">"sim_fct"</span><span class="p">,</span> <span class="s2">"function"</span><span class="p">),</span> <span class="s2">"sim_fct_name"</span><span class="p">,</span> <span class="s2">"sim_params"</span><span class="p">,</span>
+                     <span class="p">(</span><span class="s2">"sim_data"</span><span class="p">,</span> <span class="s2">"EyeDataDict"</span><span class="p">))</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
                  <span class="n">time</span><span class="p">,</span> <span class="n">left_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">left_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">left_pupil</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">right_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">right_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">right_pupil</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -862,7 +867,7 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">sim_fct_name</span> <span class="o">=</span> <span class="n">sim_fct_name</span> <span class="ow">or</span> <span class="p">(</span><span class="n">sim_fct</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">if</span> <span class="n">sim_fct</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sim_params</span> <span class="o">=</span> <span class="n">sim_params</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sim_data</span> <span class="o">=</span> <span class="n">sim_data</span> <span class="k">if</span> <span class="n">sim_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">EyeDataDict</span><span class="p">()</span>
-    
+
 <div class="viewcode-block" id="FakeEyeData.get_generation_call">
 <a class="viewcode-back" href="../../../api/generated/pypillometry.FakeEyeData.html#pypillometry.FakeEyeData.get_generation_call">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_generation_call</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
