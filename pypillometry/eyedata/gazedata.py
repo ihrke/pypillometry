@@ -146,8 +146,10 @@ class GazeData(GenericEyeData):
             end_min=self.tx.max()/1000./60.,
             params=self._strfy_params()
         )
-        
-        return summary            
+        if len(self._excluded_ms()) > 0:
+            summary["excluded_minutes"] = self.excluded_duration("min")
+
+        return summary
     
     @keephistory
     def set_experimental_setup(self, **kwargs):
