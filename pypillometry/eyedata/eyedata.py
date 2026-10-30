@@ -4,7 +4,6 @@ from .eyedatadict import EyeDataDict
 from ..plot import EyePlotter
 from ..units import parse_distance, parse_angle
 import numpy as np
-import warnings
 from loguru import logger
 
 from .pupildata import PupilData
@@ -225,40 +224,6 @@ class EyeData(GazeData,PupilData):
         """
         drop = self._select_eyes(eyes, "x")
         return self.drop_data(eyes=drop, variables=["pupil"])
-
-    def get_pupildata(self, eye=None):
-        """
-        Return the pupil data of one eye as a PupilData object.
-
-        .. deprecated::
-            Use :meth:`to_pupildata` instead, which keeps masks, blinks and
-            all other data and can return both eyes.
-
-        Parameters
-        ----------
-        eye : str, optional
-            Which eye to return data for. If `None`, the dataset must contain
-            only one eye, which is then used.
-
-        Returns
-        -------
-        PupilData
-            the data of `eye` without gaze data
-
-        Raises
-        ------
-        ValueError
-            if `eye` is `None` and there is more than one eye, or if there is
-            no data for `eye`
-        """
-        warnings.warn("get_pupildata() is deprecated, use to_pupildata() instead",
-                      DeprecationWarning, stacklevel=2)
-        if eye is None:
-            if len(self.eyes)==1:
-                eye=self.eyes[0]
-            else:
-                raise ValueError("More than one eye in the dataset. Please specify which eye to use.")
-        return self.to_pupildata(eyes=eye)
 
     @keephistory
     def correct_pupil_foreshortening(self, eyes=[], midpoint=None, store_as="pupil", inplace=None):

@@ -367,15 +367,6 @@ class TestEyeData(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.eyedata.to_gazedata(eyes='invalid')
 
-    def test_get_pupildata_deprecated(self):
-        """get_pupildata still works but warns"""
-        with self.assertWarns(DeprecationWarning):
-            left_pd = self.eyedata.get_pupildata(eye='left')
-        self.assertEqual(left_pd.__class__, pp.PupilData)
-        self.assertEqual(left_pd.eyes, ["left"])
-        with self.assertWarns(DeprecationWarning), self.assertRaises(ValueError):
-            self.eyedata.get_pupildata()
-
     def test_correct_pupil_foreshortening(self):
         """Test the correct_pupil_foreshortening method"""
         # Test correction for both eyes
