@@ -28,7 +28,7 @@ class TestExcluded(unittest.TestCase):
         e = d.exclude_intervals([(5000, 7000)])  # first 2 s (1000 samples)
         self.assertEqual(len(d.get_excluded()), 0)  # not in place
         np.testing.assert_array_equal(e.get_excluded().intervals, [(5000, 7000)])
-        self.assertEqual(e.get_excluded(None).intervals, [(0, 1000)])
+        self.assertEqual(e.get_excluded("samples").intervals, [(0, 1000)])
         self.assertAlmostEqual(e.excluded_duration("sec"), 2.0)
         for key in e.data.mask:
             self.assertTrue(e.data.mask[key][:1000].all())
@@ -44,7 +44,7 @@ class TestExcluded(unittest.TestCase):
                                       [(5000, 7000), (10000, 11000)])
         np.testing.assert_array_equal(d.get_excluded("sec").intervals, [(5, 7), (10, 11)])
         # Intervals in sample indices
-        d = _make_data().exclude_intervals(pp.Intervals([(500, 1000)], None))
+        d = _make_data().exclude_intervals(pp.Intervals([(500, 1000)], "samples"))
         np.testing.assert_array_equal(d.get_excluded().intervals, [(6000, 7000)])
 
     def test_intervals_from_events(self):
@@ -73,7 +73,7 @@ class TestExcluded(unittest.TestCase):
         # only touches the excluded period
         f = d.pupil_blinks_detect(apply_mask=True)
         on, off = f.get_blinks("left", "pupil").intervals[1]
-        f = f.exclude_intervals(pp.Intervals([(off, off + 50)], None))
+        f = f.exclude_intervals(pp.Intervals([(off, off + 50)], "samples"))
         self.assertEqual(len(f.get_blinks("left", "pupil")), 3)
         self.assertEqual(f.nblinks()["left_pupil"], 3)
 
@@ -89,11 +89,16 @@ class TestExcluded(unittest.TestCase):
         d = _make_data().exclude_intervals([(7000, 8000)])
         r = d.reset_time()
         np.testing.assert_array_equal(r.get_excluded().intervals, [(2000, 3000)])
-        self.assertEqual(r.get_excluded(None).intervals, d.get_excluded(None).intervals)
+        self.assertEqual(r.get_excluded("samples").intervals, d.get_excluded("samples").intervals)
         s = d.sub_slice(6000, 20000, units="ms")
         np.testing.assert_array_equal(s.get_excluded().intervals, [(7000, 8000)])
-        self.assertEqual(s.get_excluded(None).intervals, [(500, 1000)])
+        self.assertEqual(s.get_excluded("samples").intervals, [(500, 1000)])
         self.assertTrue(s.data.mask["left_x"][500:1000].all())
+        # period outside of the remaining data: kept, but no samples
+        s2 = d.sub_slice(9000, 20000, units="ms")
+        np.testing.assert_array_equal(s2.get_excluded().intervals, [(7000, 8000)])
+        self.assertEqual(len(s2.get_excluded("samples")), 0)
+        self.assertEqual(s2.excluded_duration("sec"), 0)
         ds = d.downsample(100)
         self.assertEqual(ds._excluded_mask().sum(), 100)
         c = d.copy()
@@ -106,16 +111,25 @@ class TestExcluded(unittest.TestCase):
             pp.write_pickle(d, fname)
             r = pp.read_pickle(fname)
         np.testing.assert_array_equal(r.get_excluded().intervals, [(7000, 8000)])
-        # objects saved before excluded periods existed
-        del r._excluded
+        # HDF5
+        with tempfile.TemporaryDirectory() as tmp:
+            fname = os.path.join(tmp, "d.h5")
+            d.write_file(fname)
+            r = pp.EyeData.from_file(fname)
+        np.testing.assert_array_equal(r.get_excluded().intervals, [(7000, 8000)])
+        # files saved before excluded periods existed
+        r = pp.EyeData.from_file(os.path.join(os.path.dirname(__file__), "data", "state",
+                                              "eyedata_v1.pypil"))
         self.assertEqual(len(r.get_excluded()), 0)
         self.assertFalse(r._excluded_mask().any())
 
-    def test_get_pupildata_and_summary(self):
+    def test_to_pupildata_gazedata_and_summary(self):
         d = _make_data().exclude_intervals([(7000, 8000)])
-        p = d.get_pupildata("left")
+        p = d.to_pupildata("left")
         np.testing.assert_array_equal(p.get_excluded().intervals, [(7000, 8000)])
         self.assertTrue(p.data.mask["left_pupil"][1000:1500].all())
+        g = d.to_gazedata("left")
+        np.testing.assert_array_equal(g.get_excluded().intervals, [(7000, 8000)])
         self.assertAlmostEqual(d.summary()["excluded_minutes"], 1 / 60)
         self.assertNotIn("excluded_minutes", _make_data().summary())
         self.assertIn("Excluded", d._repr_html_())
