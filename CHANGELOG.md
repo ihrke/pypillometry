@@ -6,6 +6,15 @@
 
 - `EyeData.get_pupildata()` was removed, use `to_pupildata()` 
 - `Events` need time units; `units=None` (sample indices) raises an error
+- Sample indices are `units="samples"`; `units=None` raises an error
+  (`get_intervals`, `get_blinks`, `mask_as_intervals`, `Intervals`, plots)
+- Converting `Intervals` between sample indices and time needs the data
+  object: `to_units("ms", d)`, `to_mask(d)`, `Intervals.from_mask(mask, d)`;
+  `Intervals` no longer have `sampling_rate` and `time_offset`
+- `Intervals.merge(distance=...)`: plain numbers are in the units of the
+  intervals (were ms)
+- `plot_timeseries()`, `plot_scanpath()`, `sub_slice()`: default `units="ms"`
+  (was None)
 
 ### Added
 
@@ -18,11 +27,18 @@
 ### Changed
 
 - Saved files (pickle and HDF5) contain a versioned state of the object.
+- Conversions between sample indices and time use the time vector of the
+  data (a time maps to the first sample at or after it), so recordings that
+  do not start at 0 or have gaps are handled correctly
+- `fit_foreshortening(intervals=...)`: intervals are end-exclusive
 
 ### Fixed
 
 - HTML representation of eyedata objects escapes names, labels and history
 - `set_events()` stored onsets of `Events` with `units=None` as ms
+- Segments of index intervals that are not event-locked got a time axis
+  that ignored the start time of the recording
+- `plot_intervals()` with index intervals mixed sample indices and ms
 
 ## 2.0.0 (2026-10-28)
 
