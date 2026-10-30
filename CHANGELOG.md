@@ -5,6 +5,7 @@
 ### Breaking changes
 
 - `EyeData.get_pupildata()` was removed, use `to_pupildata()` 
+- `Events` need time units; `units=None` (sample indices) raises an error
 
 ### Added
 
@@ -21,6 +22,7 @@
 ### Fixed
 
 - HTML representation of eyedata objects escapes names, labels and history
+- `set_events()` stored onsets of `Events` with `units=None` as ms
 
 ## 2.0.0 (2026-10-28)
 

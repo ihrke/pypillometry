@@ -21,6 +21,9 @@ class Events:
     This class wraps arrays of event onsets and labels and provides additional
     functionality such as unit conversion, filtering, and display capabilities.
 
+    Onsets are always times (not sample indices), so they stay valid when
+    the data are sliced or resampled.
+
     The events of a dataset are obtained with
     :meth:`~pypillometry.GenericEyeData.get_events`. An (e.g., filtered)
     Events object can be passed as `event_select` to
@@ -35,7 +38,7 @@ class Events:
     labels : np.ndarray or list
         Event labels (stored as array of strings), same length as `onsets`
     units : str, Unit or None, optional
-        Units of the onsets ("ms", "sec", "min", "h", or None for indices).
+        Time units of the onsets ("ms", "sec", "min" or "h").
         Default is "ms", or the units of `onsets` if they carry units
         (otherwise, onsets with units are converted to `units`).
     data_time_range : tuple or None, optional
@@ -44,7 +47,8 @@ class Events:
     Raises
     ------
     ValueError
-        If `onsets` and `labels` differ in length.
+        If `onsets` and `labels` differ in length, or if the units are not
+        time units (e.g., None or samples).
 
     Examples
     --------
@@ -65,7 +69,13 @@ class Events:
         """
         if units is UNSET and not _has_units(onsets):
             units = "ms"
+        if units is None:
+            raise ValueError("Events need time units (e.g., units='ms'), "
+                             "not sample indices")
         onsets, self.units = _time_values_and_units(onsets, units)
+        if self.units is None:
+            raise ValueError("Events need time units (e.g., units='ms'), "
+                             "not sample indices")
         self.onsets = np.array(onsets, dtype=float)
         self.labels = np.array(labels, dtype=str)
         
@@ -137,8 +147,8 @@ class Events:
         
         Parameters
         ----------
-        target_units : str or None
-            Target units: "ms", "sec", "min", "h", or None for indices
+        target_units : str
+            Target units: "ms", "sec", "min" or "h"
             
         Returns
         -------
@@ -148,7 +158,7 @@ class Events:
         Raises
         ------
         ValueError
-            If current units are None (indices) or conversion is not possible
+            If `target_units` is not a time unit
         
         Examples
         --------
@@ -157,20 +167,12 @@ class Events:
         >>> events_sec.onsets
         array([1., 2.])
         """
-        if self.units is None:
-            raise ValueError(
-                "Cannot convert from indices (units=None). "
-                "Events with units=None represent indices, not time values."
-            )
-        
         # Normalize target units (source units already normalized in __init__)
         target_units = normalize_unit(target_units)
         
         if target_units is None:
-            raise ValueError(
-                "Cannot convert to indices (units=None). "
-                "Use appropriate methods on the eyedata object instead."
-            )
+            raise ValueError("Events need time units (e.g., 'ms'), not sample "
+                             "indices; use the data object to find samples")
         
         if self.units == target_units:
             # No conversion needed, return self
@@ -225,11 +227,7 @@ class Events:
         else:
             parts.append(f"Events: {len(self)} events")
         
-        # Add units info
-        if self.units is not None:
-            parts.append(f"units={self.units}")
-        else:
-            parts.append("units=None (indices)")
+        parts.append(f"units={self.units}")
         
         # Add time range if available
         if self.data_time_range is not None:
@@ -260,7 +258,7 @@ class Events:
             return f"<p><i>Events: 0 events (units={self.units})</i></p>"
         
         # Determine unit display
-        unit_str = self.units if self.units is not None else "indices"
+        unit_str = self.units
         
         # Create DataFrame
         df = pd.DataFrame({
@@ -344,13 +342,13 @@ class Events:
         ax = plt.gca()
 
         target_units = units if units is not None else self.units
-        if target_units is not None and target_units != self.units:
+        if target_units != self.units:
             converted = self.to_units(target_units)
         else:
             converted = self
 
         # Always label axes even if no events so the plot remains informative.
-        x_label = f"Time ({converted.units})" if converted.units is not None else "Time (indices)"
+        x_label = f"Time ({converted.units})"
         ax.set_xlabel(x_label)
         ax.set_ylabel("Event #")
 
@@ -475,9 +473,6 @@ class Events:
             if len(selector) != 2:
                 raise ValueError("Time range selector must be a tuple of (min_time, max_time)")
             if _has_units(selector):
-                if self.units is None:
-                    raise ValueError("cannot filter Events in index units by a time "
-                                     "range with units; give the range in indices")
                 selector = parse_time(selector, to=self.units, default=None)
 
             min_time, max_time = selector

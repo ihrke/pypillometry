@@ -50,12 +50,12 @@ class TestEventsClass(unittest.TestCase):
         
         self.assertIn("same length", str(cm.exception))
     
-    def test_events_creation_with_none_units(self):
-        """Test creating Events with units=None (indices)"""
-        events = Events([10, 20, 30], ["A", "B", "C"], units=None)
-        
-        self.assertEqual(events.units, None)
-        self.assertEqual(len(events), 3)
+    def test_events_creation_rejects_sample_units(self):
+        """Events onsets are always times, not sample indices"""
+        with self.assertRaises(ValueError):
+            Events([10, 20, 30], ["A", "B", "C"], units=None)
+        with self.assertRaises(ValueError):
+            Events([10, 20, 30] * pp.u.samples, ["A", "B", "C"])
     
     def test_events_empty(self):
         """Test creating empty Events"""
@@ -195,15 +195,6 @@ class TestEventsUnitConversion(unittest.TestCase):
         self.assertAlmostEqual(events_sec.data_time_range[0], 0.0)
         self.assertAlmostEqual(events_sec.data_time_range[1], 10.0)
     
-    def test_to_units_from_none_raises_error(self):
-        """Test that converting from indices (units=None) raises error"""
-        events = Events([10, 20], ["A", "B"], units=None)
-        
-        with self.assertRaises(ValueError) as cm:
-            events.to_units("ms")
-        
-        self.assertIn("indices", str(cm.exception))
-    
     def test_to_units_to_none_raises_error(self):
         """Test that converting to indices (units=None) raises error"""
         events = Events([1000, 2000], ["A", "B"], units="ms")
@@ -288,14 +279,6 @@ class TestEventsRepr(unittest.TestCase):
         repr_str = repr(events)
         
         self.assertIn("0 events", repr_str)
-    
-    def test_repr_with_none_units(self):
-        """Test repr with units=None"""
-        events = Events([10, 20], ["A", "B"], units=None)
-        repr_str = repr(events)
-        
-        self.assertIn("units=None", repr_str)
-        self.assertIn("indices", repr_str)
     
     def test_repr_with_time_range(self):
         """Test repr with data_time_range"""
@@ -445,11 +428,6 @@ class TestEventsFiltering(unittest.TestCase):
         expected = [500, 1000, 1500]
         for sel in [(0.4 * u.sec, 1.6 * u.sec), (0.4, 1.6) * u.sec, ("400 ms", "1.6 sec")]:
             np.testing.assert_array_equal(self.events.filter(sel).onsets, expected)
-
-    def test_filter_time_range_units_on_index_events(self):
-        ev = Events([10, 20], ["a", "b"], units=None)
-        with self.assertRaises(ValueError):
-            ev.filter((1 * pp.u.sec, 2 * pp.u.sec))
 
     def test_filter_time_range_beginning(self):
         """Test filtering by time range at beginning"""

@@ -404,7 +404,8 @@ def test_events_from_quantity():
     ev = Events([1, 2] * u.sec, ["a", "b"], units="ms")
     np.testing.assert_array_equal(ev.onsets, [1000, 2000])
     assert Events([1, 2], ["a", "b"]).units == "ms"
-    assert Events([1, 2], ["a", "b"], units=None).units is None
+    with pytest.raises(ValueError):
+        Events([1, 2], ["a", "b"], units=None)
 
 
 # --- EyeData methods with units ------------------------------------------------

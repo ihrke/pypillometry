@@ -1802,13 +1802,8 @@ class GenericEyeData(state.VersionedState, ABC):
         if not isinstance(events, Events):
             raise TypeError(f"events must be an Events object, got {type(events)}")
         
-        # Normalize units (handles aliases) and convert to ms if needed
-        # (internal storage is always in ms)
-        event_units = normalize_unit(events.units)
-        if event_units != "ms" and event_units is not None:
-            events = events.to_units("ms")
-        
-        # Use the existing set_event_onsets method
+        # internal storage is always in ms
+        events = events.to_units("ms")
         obj.set_event_onsets(events.onsets, events.labels)
         
         return obj
